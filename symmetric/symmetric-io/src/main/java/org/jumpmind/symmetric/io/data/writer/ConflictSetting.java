@@ -6,14 +6,14 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 
-public class ConflictSettings implements Serializable {
+public class ConflictSetting implements Serializable {
 
     public enum DetectUpdateConflict {
         USE_PK_DATA, USE_OLD_DATA, USE_CHANGED_DATA, USE_TIMESTAMP, USE_VERSION
     };
 
     public enum ResolveUpdateConflict {
-        NEWER_WINS, MANUAL, IGNORE, BLINK_FALLBACK
+        NEWER_WINS, MANUAL, IGNORE, BLIND_FALLBACK
     };
 
     public enum DetectDeleteConflict {
@@ -25,7 +25,7 @@ public class ConflictSettings implements Serializable {
     };
 
     public enum ResolveInsertConflict {
-        NEWER_WINS, MANUAL, IGNORE, BLINK_FALLBACK
+        NEWER_WINS, MANUAL, IGNORE, BLIND_FALLBACK
     };
 
     private static final long serialVersionUID = 1L;
@@ -37,10 +37,10 @@ public class ConflictSettings implements Serializable {
     private String targetTableName;
     private DetectUpdateConflict detectUpdateType = DetectUpdateConflict.USE_PK_DATA;
     private DetectDeleteConflict detectDeleteType = DetectDeleteConflict.USE_PK_DATA;
-    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.BLINK_FALLBACK;
-    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.BLINK_FALLBACK;
+    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.BLIND_FALLBACK;
+    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.BLIND_FALLBACK;
     private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE;
-    private String versionColumnName;
+    private String detectExpresssion;
     private int retryCount = -1;
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";
@@ -134,12 +134,12 @@ public class ConflictSettings implements Serializable {
         this.resolveDeleteType = resolveDeleteType;
     }
 
-    public String getVersionColumnName() {
-        return versionColumnName;
+    public String getDetectExpresssion() {
+        return detectExpresssion;
     }
 
-    public void setVersionColumnName(String conflictColumnName) {
-        this.versionColumnName = conflictColumnName;
+    public void setDetectExpresssion(String conflictColumnName) {
+        this.detectExpresssion = conflictColumnName;
     }
 
     public int getRetryCount() {

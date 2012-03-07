@@ -329,7 +329,7 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
-                ConflictSettings conflictSettings = writerSettings.getConflictSettings(
+                ConflictSetting conflictSettings = writerSettings.getConflictSettings(
                         this.targetTable, batch);
                 Column[] lookupKeys = null;
                 switch (conflictSettings.getDetectDeleteType()) {
@@ -340,13 +340,13 @@ public class DatabaseWriter implements IDataWriter {
                     case USE_TIMESTAMP:
                         List<Column> lookupColumns = new ArrayList<Column>();
                         Column versionColumn = targetTable.getColumnWithName(conflictSettings
-                                .getVersionColumnName());
+                                .getDetectExpresssion());
                         if (versionColumn != null) {
                             lookupColumns.add(versionColumn);
                         } else {
                             log.error(
                                     "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                    conflictSettings.getVersionColumnName());
+                                    conflictSettings.getDetectExpresssion());
                         }
                         Column[] pks = targetTable.getPrimaryKeyColumns();
                         for (Column column : pks) {
@@ -397,7 +397,7 @@ public class DatabaseWriter implements IDataWriter {
             }
             if (changedColumnNameList.size() > 0) {
                 if (requireNewStatement(DmlType.UPDATE, data)) {
-                    ConflictSettings conflictSettings = writerSettings.getConflictSettings(
+                    ConflictSetting conflictSettings = writerSettings.getConflictSettings(
                             this.targetTable, batch);
                     Column[] lookupKeys = null;
                     switch (conflictSettings.getDetectUpdateType()) {
@@ -421,13 +421,13 @@ public class DatabaseWriter implements IDataWriter {
                         case USE_TIMESTAMP:
                             lookupColumns = new ArrayList<Column>();
                             Column versionColumn = targetTable.getColumnWithName(conflictSettings
-                                    .getVersionColumnName());
+                                    .getDetectExpresssion());
                             if (versionColumn != null) {
                                 lookupColumns.add(versionColumn);
                             } else {
                                 log.error(
                                         "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                        conflictSettings.getVersionColumnName());
+                                        conflictSettings.getDetectExpresssion());
                             }
                             pks = targetTable.getPrimaryKeyColumns();
                             for (Column column : pks) {

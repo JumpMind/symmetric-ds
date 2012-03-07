@@ -4,6 +4,8 @@ import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.writer.ConflictEvent.Status;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,30 +14,61 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected boolean autoRegister;
-    
-    public void reportConflict(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
+
+    protected void reportConflict(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
             CsvData data, ConflictEvent conflictEvent) {
-        
+
     }
 
     public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
             CsvData data) {
         DataEventType originalEventType = data.getDataEventType();
-        ConflictSettings conflictSetting = writerSettings.getConflictSettings(
+        ConflictSetting conflictSetting = writerSettings.getConflictSettings(
                 writer.getTargetTable(), writer.getBatch());
         switch (originalEventType) {
             case INSERT:
                 switch (conflictSetting.getResolveInsertType()) {
                     case MANUAL:
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.ER, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), false);
-                    case BLINK_FALLBACK:
-                        performFallbackToUpdate(writer, data);
+                    case BLIND_FALLBACK:
+                        try {
+                            performFallbackToUpdate(writer, data);
+                            reportConflict(
+                                    writer,
+                                    writerSettings,
+                                    data,
+                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                            .getTargetTable(), Status.OK, data,
+                                            ResolveInsertConflict.BLIND_FALLBACK.name()));
+
+                        } catch (RuntimeException ex) {
+                            reportConflict(
+                                    writer,
+                                    writerSettings,
+                                    data,
+                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                            .getTargetTable(), Status.ER, data, ex.getMessage()));
+                            throw ex;
+                        }
                         break;
                     case NEWER_WINS:
                         // TODO
                         throw new NotImplementedException();
                     case IGNORE:
                     default:
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.OK, data,
+                                        ResolveInsertConflict.IGNORE.name()));
                         break;
                 }
                 break;
@@ -43,15 +76,46 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case UPDATE:
                 switch (conflictSetting.getResolveUpdateType()) {
                     case MANUAL:
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.ER, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), false);
-                    case BLINK_FALLBACK:
-                        performFallbackToInsert(writer, data);
+                    case BLIND_FALLBACK:
+                        try {
+                            performFallbackToInsert(writer, data);
+                            reportConflict(
+                                    writer,
+                                    writerSettings,
+                                    data,
+                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                            .getTargetTable(), Status.OK, data,
+                                            ResolveInsertConflict.BLIND_FALLBACK.name()));
+
+                        } catch (RuntimeException ex) {
+                            reportConflict(
+                                    writer,
+                                    writerSettings,
+                                    data,
+                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                            .getTargetTable(), Status.ER, data, ex.getMessage()));
+                            throw ex;
+                        }
                         break;
                     case NEWER_WINS:
                         // TODO
                         throw new NotImplementedException();
                     case IGNORE:
                     default:
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.OK, data,
+                                        ResolveInsertConflict.IGNORE.name()));
                         break;
                 }
                 break;
@@ -59,11 +123,24 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case DELETE:
                 switch (conflictSetting.getResolveDeleteType()) {
                     case MANUAL:
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.ER, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), false);
                     default:
                     case IGNORE:
                         writer.getStatistics().get(writer.getBatch())
                                 .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        reportConflict(
+                                writer,
+                                writerSettings,
+                                data,
+                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
+                                        .getTargetTable(), Status.OK, data,
+                                        ResolveInsertConflict.IGNORE.name()));
                         break;
                 }
                 break;

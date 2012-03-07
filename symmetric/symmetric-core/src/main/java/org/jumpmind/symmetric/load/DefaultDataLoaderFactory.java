@@ -8,7 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
@@ -30,7 +30,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     public IDataWriter getDataWriter(String sourceNodeId, IDatabasePlatform platform,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
-            List<? extends ConflictSettings> conflictSettings) {
+            List<? extends ConflictSetting> conflictSettings) {
         DatabaseWriter writer = new DatabaseWriter(platform,
                 new DefaultTransformWriterConflictResolver(transformWriter),
                 buildDatabaseWriterSettings(filters, conflictSettings));
@@ -42,7 +42,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters, List<? extends ConflictSettings> conflictSettings) {
+            List<IDatabaseWriterFilter> filters, List<? extends ConflictSetting> conflictSettings) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setMaxRowsBeforeCommit(parameterService
@@ -50,10 +50,10 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
 
-        Map<String, ConflictSettings> byChannel = new HashMap<String, ConflictSettings>();
-        Map<String, ConflictSettings> byTable = new HashMap<String, ConflictSettings>();
+        Map<String, ConflictSetting> byChannel = new HashMap<String, ConflictSetting>();
+        Map<String, ConflictSetting> byTable = new HashMap<String, ConflictSetting>();
         if (conflictSettings != null) {
-            for (ConflictSettings conflictSetting : conflictSettings) {
+            for (ConflictSetting conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
                     byTable.put(qualifiedTableName, conflictSetting);
