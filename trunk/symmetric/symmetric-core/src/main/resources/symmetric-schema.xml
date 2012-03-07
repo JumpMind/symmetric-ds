@@ -426,7 +426,7 @@
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
     </table>
     
-    <table name="conflict_settings" description="Defines how conflicts in row data should be handled during the load process.">
+    <table name="conflict_setting" description="Defines how conflicts in row data should be handled during the load process.">
         <column name="conflict_id"          type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes are captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes will be sent." />
@@ -434,12 +434,12 @@
         <column name="target_catalog_name"  type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name"   type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
         <column name="target_table_name"    type="VARCHAR" size="128" description="Optional name for a target table that this resolver will be applied to.  If left blank, the resolver will be for any table in the specified channel or specified node group." />
-        <column name="detect_update_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />
-        <column name="detect_delete_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />        
+        <column name="detect_update_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, blind_fallback, ignore), use_old_data (manual, blind_fallback,, ignore), use_timestamp_column (newer_wins, older_wins, manual, ignore), use_version_column (newer_wins, older_wins, manual, ignore)" />
+        <column name="detect_delete_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_old_data (manual, blind_fallback, ignore), use_timestamp_column (newer_wins, older_wins, manual, ignore), use_version_column (newer_wins, older_wins, manual, ignore)" />        
+        <column name="detect_expression"    type="LONGVARCHAR" description="An expression that provides additional information about the detection mechanism.  If the detection mechanism is use_timestamp_column or use_version_column then this expression will be the name of the column." />
         <column name="resolve_update_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving updates conflicts.  The possible values differ based on the detect_update_type that is specified." />
-        <column name="resolve_insert_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving insert conflicts.  The possible values are: manual, blind_fallback, newer_wins, ignore" />
+        <column name="resolve_insert_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving insert conflicts.  The possible values are: manual, blind_fallback, newer_wins, older_wins, ignore" />
         <column name="resolve_delete_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving delete conflicts.  The possible values differ based on the detect_delete_type that is specified." />
-        <column name="version_column_name"  type="VARCHAR" size="128" description="The name of a column that is used by the chosen resolver should the detector and/or resolver need a column to use in resolution" />
         <column name="retry_count"          type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict will be retried before it is skipped.  A setting of -1 means that the batch will be retried indefinitely." />
         <column name="create_time"          type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by"       type="VARCHAR" size="50"  description="The user who last updated this entry." />
@@ -456,7 +456,7 @@
         <column name="target_schema_name" type="VARCHAR" size="128" description="Name of the schema the target table is in." />
         <column name="target_table_name" type="VARCHAR" size="128" description="Name of the target table where the conflict occurred" />
         <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. " />
-        <column name="error_message" type="LONGVARCHAR" description="Record any errors or warnings that occurred when attempting to build the trigger." />                
+        <column name="message" type="LONGVARCHAR" description="General message about the conflict.  Could be the actual error." />                
         <column name="row_data" type="LONGVARCHAR"  description="The captured data change from the source table." />
         <column name="old_data" type="LONGVARCHAR"  description="The captured data values prior to an update or delete." />
         <column name="final_data" type="LONGVARCHAR"  description="The data that was applied to resolve the conflict." />
@@ -464,79 +464,6 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>
-    
-    
-    <!-- 
-    <table name="alert_def" description="The definition of an alert">
-        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this alert is assigned to.  If assigned to all node groups, then this value should be 'ALL'" />
-        <column name="type" type="VARCHAR" size="50" required="true" description="The name of the type of alert." />
-        <column name="short_desc" type="VARCHAR" size="100" required="true" description="A short description of the alert"/>
-        <column name="severity" type="VARCHAR" size="10" required="true" description="The severity level of this alert.  Possible values are: CRITICAL, WARN and INFO." />
-        <column name="enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert is currently enabled."/>
-        <column name="ack_required" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert requires acknowledgement."/>
-        <column name="start_time" type="TIME" description="The start time for the active window."/>
-        <column name="end_time" type="TIME" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>        
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>
-    
-    <table name="alert_def_param" description="Parameters that configure an specific alert type">
-        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
-        <column name="param_key" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the parameter."/>
-        <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>
-    
-    <table name="notifier_def" description="Defines a type of notification">
-        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
-        <column name="type" type="VARCHAR" size="50" required="true" description="The name of the type of notification." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>    
-
-    <table name="notifier_def_param" description="Parameters that configure an specific notify type">
-        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
-        <column name="param_key" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the parameter."/>
-        <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>
-    
-    <table name="alert_def_notifier" description="Defines a type of notification">
-        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
-        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />
-        <column name="enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert is currently enabled."/>
-        <column name="start_time" type="TIME" description="The start time for the active window."/>
-        <column name="end_time" type="TIME" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>
-    
-    <table name="alert_event" description="An actual alert">
-        <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
-        <column name="node_id" type="VARCHAR" size="50" required="true" description="Reference to the node that created the alert" />
-        <column name="alert_def_id" type="VARCHAR" size="50" required="true"  description="Reference to the alert defintion" />    
-        <column name="alert_message" type="LONGVARCHAR" required="true" description="Details about the alert"/>
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created" />
-        <column name="ack_time" type="TIMESTAMP" description="Timestamp when a user acknowledged this alert" />
-        <column name="ack_by" type="VARCHAR" size="50" description="Who acknowledged the alert"/>
-    </table>
-    
-    <table name="alert_event_notifier" description="Record of notifications sent in response to the alert">
-        <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Reference to the node that created the alert" />
-        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />            
-        <column name="status" type="VARCHAR" size="50" required="true"  description="The current status of this notification" />    
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-    </table>
-    
-    -->
         
 </database>

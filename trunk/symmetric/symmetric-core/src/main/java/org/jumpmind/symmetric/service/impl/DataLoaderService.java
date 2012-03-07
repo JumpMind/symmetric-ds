@@ -51,12 +51,12 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.DetectDeleteConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.DetectUpdateConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveDeleteConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveInsertConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectDeleteConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveDeleteConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveUpdateConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -464,7 +464,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         .getTargetSchemaName(), settings.getTargetTableName(), settings
                         .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
                 settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
-                settings.getResolveDeleteType().name(), settings.getVersionColumnName(), settings
+                settings.getResolveDeleteType().name(), settings.getDetectExpresssion(), settings
                         .getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), settings.getNodeGroupLink()
                     .getSourceNodeGroupId(), settings.getNodeGroupLink().getTargetNodeGroupId(),
@@ -472,7 +472,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             .getTargetSchemaName(), settings.getTargetTableName(), settings
                             .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
                     settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
-                    settings.getResolveDeleteType().name(), settings.getVersionColumnName(),
+                    settings.getResolveDeleteType().name(), settings.getDetectExpresssion(),
                     settings.getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId());
         }
     }
@@ -504,7 +504,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     "resolve_insert_type").toUpperCase()));
             settings.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
                     "resolve_delete_type").toUpperCase()));
-            settings.setVersionColumnName(rs.getString("version_column_name"));
+            settings.setDetectExpresssion(rs.getString("detect_expression"));
             settings.setRetryCount(rs.getInt("retry_count"));
             settings.setLastUpdateBy(rs.getString("last_update_by"));
             settings.setConflictId(rs.getString("conflict_id"));
@@ -669,7 +669,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public static class ConflictSettingsNodeGroupLink extends ConflictSettings {
+    public static class ConflictSettingsNodeGroupLink extends ConflictSetting {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
 

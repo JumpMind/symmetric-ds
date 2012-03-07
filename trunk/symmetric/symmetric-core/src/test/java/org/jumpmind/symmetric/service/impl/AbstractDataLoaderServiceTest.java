@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
 import org.jumpmind.symmetric.io.data.CsvConstants;
-import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveInsertConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
