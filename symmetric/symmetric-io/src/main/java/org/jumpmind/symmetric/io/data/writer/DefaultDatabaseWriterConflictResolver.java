@@ -6,6 +6,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.ConflictEvent.Status;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     }
 
     public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
-            CsvData data) {
+            CsvData data, LoadStatus loadStatus) {
         DataEventType originalEventType = data.getDataEventType();
         ConflictSetting conflictSetting = writerSettings.getConflictSettings(
                 writer.getTargetTable(), writer.getBatch());
@@ -35,7 +36,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 data,
                                 new ConflictEvent(writer.getBatch(), conflictSetting, writer
                                         .getTargetTable(), Status.ER, data, null));
-                        throw new ConflictException(data, writer.getTargetTable(), false);
+                        throw new ConflictException(data, writer.getTargetTable(), loadStatus, false);
                     case BLIND_FALLBACK:
                         try {
                             performFallbackToUpdate(writer, data);
@@ -82,7 +83,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 data,
                                 new ConflictEvent(writer.getBatch(), conflictSetting, writer
                                         .getTargetTable(), Status.ER, data, null));
-                        throw new ConflictException(data, writer.getTargetTable(), false);
+                        throw new ConflictException(data, writer.getTargetTable(), loadStatus, false);
                     case BLIND_FALLBACK:
                         try {
                             performFallbackToInsert(writer, data);
@@ -129,7 +130,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 data,
                                 new ConflictEvent(writer.getBatch(), conflictSetting, writer
                                         .getTargetTable(), Status.ER, data, null));
-                        throw new ConflictException(data, writer.getTargetTable(), false);
+                        throw new ConflictException(data, writer.getTargetTable(), loadStatus, false);
                     default:
                     case IGNORE:
                         writer.getStatistics().get(writer.getBatch())
@@ -151,8 +152,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     }
 
     protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data) {
-        if (!writer.update(data)) {
-            throw new ConflictException(data, writer.getTargetTable(), true);
+        LoadStatus loadStatus = writer.update(data);
+        if (loadStatus != LoadStatus.SUCCESS) {
+            throw new ConflictException(data, writer.getTargetTable(), loadStatus, true);
         } else {
             writer.getStatistics().get(writer.getBatch())
                     .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
@@ -160,8 +162,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     }
 
     protected void performFallbackToInsert(DatabaseWriter writer, CsvData csvData) {
-        if (!writer.insert(csvData)) {
-            throw new ConflictException(csvData, writer.getTargetTable(), true);
+        LoadStatus loadStatus = writer.insert(csvData);
+        if (loadStatus != LoadStatus.SUCCESS) {
+            throw new ConflictException(csvData, writer.getTargetTable(), loadStatus, true);
         } else {
             writer.getStatistics().get(writer.getBatch())
                     .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);

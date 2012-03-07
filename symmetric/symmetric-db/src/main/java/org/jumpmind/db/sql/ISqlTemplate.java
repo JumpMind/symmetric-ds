@@ -80,6 +80,8 @@ public interface ISqlTemplate {
     public SqlException translate(Exception ex);
     
     public boolean isUniqueKeyViolation(Exception ex);
+    
+    public boolean isForeignKeyViolation(Exception ex);
 
     public ISqlTransaction startSqlTransaction();
 

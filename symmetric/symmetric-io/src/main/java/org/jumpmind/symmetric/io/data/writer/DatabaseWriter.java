@@ -39,6 +39,10 @@ public class DatabaseWriter implements IDataWriter {
 
     protected final static Logger log = LoggerFactory.getLogger(DatabaseWriter.class);
 
+    public static enum LoadStatus {
+        SUCCESS, PK_CONFLICT, FK_CONFLICT
+    };
+
     protected IDatabasePlatform platform;
 
     protected ISqlTransaction transaction;
@@ -108,39 +112,38 @@ public class DatabaseWriter implements IDataWriter {
 
     public void write(CsvData data) {
         if (filterBefore(data)) {
-            boolean success = false;
+            LoadStatus loadStatus = LoadStatus.SUCCESS;
             switch (data.getDataEventType()) {
                 case UPDATE:
                     statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                    success = update(data);
+                    loadStatus = update(data);
                     break;
                 case INSERT:
                     statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                    success = insert(data);
+                    loadStatus = insert(data);
                     break;
                 case DELETE:
                     statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                    success = delete(data);
+                    loadStatus = delete(data);
                     break;
                 case BSH:
-                    success = script(data);
+                    script(data);
                     break;
                 case SQL:
-                    success = sql(data);
+                    sql(data);
                     break;
                 case CREATE:
-                    success = create(data);
+                    create(data);
                     break;
                 default:
-                    success = true;
                     break;
             }
 
-            if (!success) {
+            if (loadStatus != LoadStatus.SUCCESS) {
                 if (conflictResolver != null) {
-                    conflictResolver.needsResolved(this, writerSettings, data);
+                    conflictResolver.needsResolved(this, writerSettings, data, loadStatus);
                 } else {
-                    throw new ConflictException(data, targetTable, false);
+                    throw new ConflictException(data, targetTable, loadStatus, false);
                 }
             } else {
                 uncommittedCount++;
@@ -287,7 +290,7 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    protected boolean insert(CsvData data) {
+    protected LoadStatus insert(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data)) {
@@ -295,13 +298,16 @@ public class DatabaseWriter implements IDataWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                String[] values = (String[]) ArrayUtils.addAll(getRowData(data), getLookupKeyData(data));
+                String[] values = (String[]) ArrayUtils.addAll(getRowData(data),
+                        getLookupKeyData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
-                return count > 0;
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    return false;
+                    return LoadStatus.PK_CONFLICT;
+                } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
+                    return LoadStatus.FK_CONFLICT;
                 } else {
                     throw ex;
                 }
@@ -325,7 +331,7 @@ public class DatabaseWriter implements IDataWriter {
         return targetValues;
     }
 
-    protected boolean delete(CsvData data) {
+    protected LoadStatus delete(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
@@ -369,16 +375,26 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys, null);
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
-            long count = execute(data, getLookupKeyData(data));
-            statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
-            return count > 0;
+            try {
+                long count = execute(data, getLookupKeyData(data));
+                statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
+            } catch (SqlException ex) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                    return LoadStatus.PK_CONFLICT;
+                } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
+                    return LoadStatus.FK_CONFLICT;
+                } else {
+                    throw ex;
+                }
+            }
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
 
     }
 
-    protected boolean update(CsvData data) {
+    protected LoadStatus update(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
@@ -454,13 +470,25 @@ public class DatabaseWriter implements IDataWriter {
                 }
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
-                String[] values = (String[]) ArrayUtils.addAll(columnValues, getLookupKeyData(data));
-                long count = execute(data, values);
-                statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
-                return count > 0;
+                String[] values = (String[]) ArrayUtils
+                        .addAll(columnValues, getLookupKeyData(data));
+                try {
+                    long count = execute(data, values);
+                    statistics.get(batch)
+                            .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
+                    return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
+                } catch (SqlException ex) {
+                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                        return LoadStatus.PK_CONFLICT;
+                    } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
+                        return LoadStatus.FK_CONFLICT;
+                    } else {
+                        throw ex;
+                    }
+                }
             } else {
                 // There was no change to apply
-                return true;
+                return LoadStatus.SUCCESS;
             }
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -571,29 +599,31 @@ public class DatabaseWriter implements IDataWriter {
             boolean allPks = Table.areAllColumnsPrimaryKeys(keys);
             if (allPks) {
                 String[] keyDataAsArray = data.getParsedData(CsvData.PK_DATA);
-                if (keyDataAsArray != null && keyDataAsArray.length <=  targetTable.getPrimaryKeyColumnCount()) {
+                if (keyDataAsArray != null
+                        && keyDataAsArray.length <= targetTable.getPrimaryKeyColumnCount()) {
                     return keyDataAsArray;
-                }                
-            } 
-            
-            Map<String, String> keyData = data.toColumnNameValuePairs(targetTable, CsvData.OLD_DATA);
+                }
+            }
+
+            Map<String, String> keyData = data
+                    .toColumnNameValuePairs(targetTable, CsvData.OLD_DATA);
             if (keyData == null || keyData.size() == 0) {
                 keyData = data.toColumnNameValuePairs(targetTable, CsvData.ROW_DATA);
             }
-            
+
             if (keyData != null && keyData.size() > 0) {
                 String[] keyDataAsArray = new String[keys.length];
                 int index = 0;
                 for (Column keyColumn : keys) {
                     keyDataAsArray[index++] = keyData.get(keyColumn.getName());
                 }
-                
+
                 return keyDataAsArray;
             }
         }
-        
+
         return null;
-        
+
     }
 
     protected String getPkDataFor(CsvData data, Column column) {

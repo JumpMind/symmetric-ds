@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
 
 public class ConflictException extends RuntimeException {
 
@@ -11,11 +12,14 @@ public class ConflictException extends RuntimeException {
     protected Table table;
     
     protected boolean fallbackOperationFailed = false;
+    
+    protected LoadStatus loadStatus;
 
-    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed) {
+    public ConflictException(CsvData data, Table table, LoadStatus loadStatus, boolean fallbackOperationFailed) {
         this.data = data;
         this.table = table;
         this.fallbackOperationFailed = fallbackOperationFailed;
+        this.loadStatus = loadStatus;
     }
     
     public CsvData getData() {
@@ -28,6 +32,10 @@ public class ConflictException extends RuntimeException {
     
     public boolean isFallbackOperationFailed() {
         return fallbackOperationFailed;
+    }
+    
+    public LoadStatus getLoadStatus() {
+        return loadStatus;
     }
 
 }
