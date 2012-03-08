@@ -5,6 +5,3 @@ drop generator "gen_SYM_DATA__DATA_ID_";
 drop generator "gen_SYM_TRIGGER_TRIGGER_HIST_ID";
 drop generator "gen_SYM_DATA_DATA_ID";
 drop generator "gen_SYM_OUTGOING_BATCH_BATCH_ID";
-
-
-drop table TEST_MIXED_CASE;
