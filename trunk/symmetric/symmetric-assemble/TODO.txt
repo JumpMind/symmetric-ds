@@ -14,11 +14,7 @@ DONE = +
   * Implement a jdbc batch loader
     
 * Use data processor for extract
-  * verify stats capturing, outgoing batch updates
-    * extract millis
-    * byte count
   * add database reader filter  
-  * unit test
   
 * Integrate Eric's SecurityService changes
 * Purge stats

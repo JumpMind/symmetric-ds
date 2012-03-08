@@ -24,7 +24,7 @@
 		<version.springframwork>3.0.7.RELEASE</version.springframwork>
 		<version.jetty>7.1.6.v20100715</version.jetty>
 		<version.derby>10.5.3.0_1</version.derby>
-		<version.hsqldb>2.2.4</version.hsqldb>
+		<version.hsqldb>2.2.8</version.hsqldb>
 		<version.h2>1.2.140</version.h2>
 		<version.postgresql>9.1-901-1.jdbc4	</version.postgresql>
 		<version.mysql>5.1.17</version.mysql>
