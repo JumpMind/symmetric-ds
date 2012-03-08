@@ -53,6 +53,10 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
             info.setIdentifierQuoteString("\"");
+            info.setDelimitedIdentifiersSupported(true);
+        } else {
+            info.setIdentifierQuoteString("");
+            info.setDelimitedIdentifiersSupported(false);
         }
 
         ddlReader = new InformixDdlReader(this);
