@@ -27,13 +27,6 @@ drop table sym_registration_request;
 drop table sym_data;
 drop table sym_conflict_setting;
 drop table sym_conflict_event;
---drop table sym_alert_def_notifier;
---drop table sym_alert_event_notifier;
---drop table sym_alert_event;
---drop table sym_alert_def_param; 
---drop table sym_alert_def;
---drop table sym_notifier_def_param;
---drop table sym_notifier_def; 
 
 -- test tables for version backwards compatibility
 drop table sym_trigger_old;
