@@ -24,9 +24,9 @@ drop table sym_node_host_stats;
 drop table sym_node_host_job_stats;
 drop table sym_registration_redirect;
 drop table sym_registration_request;
-drop table sym_data;
 drop table sym_conflict_setting;
 drop table sym_conflict_event;
+drop table sym_data;
 
 -- test tables for version backwards compatibility
 drop table sym_trigger_old;
