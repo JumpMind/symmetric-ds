@@ -39,6 +39,7 @@ abstract public class AbstractSqlMap implements ISqlMap {
                     if (key != null) {
                         String value = sql.get(key);
                         sqlBuffer.append(value == null ? key : value);
+                        sqlBuffer.append(" ");
                     }
                 }
             } else if (keys.length == 1) {
