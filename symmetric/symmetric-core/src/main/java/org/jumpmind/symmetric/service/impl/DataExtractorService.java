@@ -469,9 +469,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected TransformWriter createTransformDataWriter(Node identity, Node targetNode,
             IDataWriter extractWriter) {
-        List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
-                TransformPoint.EXTRACT, true);
+        List<TransformTableNodeGroupLink> transformsList = null;
+        if (targetNode != null) {
+            transformsList = transformService.findTransformsFor(
+                    new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
+                    TransformPoint.EXTRACT, true);
+        }
         TransformTable[] transforms = transformsList != null ? transformsList
                 .toArray(new TransformTable[transformsList.size()]) : null;
         TransformWriter transformExtractWriter = new TransformWriter(
