@@ -40,17 +40,17 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTriggerRoutersColumnList",
                 ""
-                        + "tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select, tr.ping_back_enabled   ");
+                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select, tr.ping_back_enabled   ");
 
         putSql("selectRoutersColumnList",
                 ""
-                        + "r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,                            "
+                        + "  r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,                            "
                         + "  r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,        "
                         + "  r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by   ");
 
         putSql("selectTriggersColumnList",
                 ""
-                        + "t.trigger_id,t.channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,          "
+                        + "  t.trigger_id,t.channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,          "
                         + "  t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.use_stream_lobs,   "
                         + "  t.use_capture_lobs,                                                                              "
                         + "  t.excluded_column_names,                                                                         "
