@@ -739,6 +739,14 @@ public class DatabaseWriter implements IDataWriter {
                         this.writerSettings.isUsePrimaryKeysFromSource());
 
                 boolean setAllColumnsAsPrimaryKey = table.getPrimaryKeyColumnCount() == 0;
+                
+                if (StringUtils.isBlank(sourceTable.getCatalog())) {
+                    targetTable.setCatalog(null);
+                }
+                
+                if (StringUtils.isBlank(sourceTable.getSchema())) {
+                    targetTable.setSchema(null);
+                }
 
                 Column[] columns = table.getColumns();
                 for (Column column : columns) {

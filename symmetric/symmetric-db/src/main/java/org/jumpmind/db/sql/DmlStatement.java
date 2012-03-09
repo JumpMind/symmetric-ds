@@ -127,7 +127,7 @@ public class DmlStatement {
     }
 
     public String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
-        StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
+        StringBuilder sql = new StringBuilder("insert into " + tableName + " (");
         appendColumns(sql, columns);
         sql.append(") values (");
         appendColumnQuestions(sql, columns);
@@ -173,7 +173,7 @@ public class DmlStatement {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (existingCount++ > 0) {
-                    sql.append(",");
+                    sql.append(", ");
                 }
                 sql.append(quote).append(columns[i].getName()).append(quote);
             }
