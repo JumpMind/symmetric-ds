@@ -338,7 +338,9 @@ abstract public class AbstractTriggerTemplate {
 
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", quote(table.getName()), ddl);
-        ddl = FormatUtils.replace("schemaName", table.getQualifiedTablePrefix(symmetricDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString()), ddl);
+        ddl = FormatUtils.replace("schemaName", 
+                history == null ? getSourceTablePrefix(trigger)
+                        : getSourceTablePrefix(history), ddl);
 
         columns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
