@@ -19,8 +19,11 @@
  * under the License.  */
 package org.jumpmind.symmetric.db.firebird;
 
+import java.util.List;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -118,5 +121,14 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     public void truncateTable(String tableName) {
         platform.getSqlTemplate().update("delete from " + tableName);
     }
-    
+
+    @Override
+    public void cleanupTriggers() {
+        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
+        int count = 0;
+        for (String name : names) {
+            count += platform.getSqlTemplate().update("drop trigger " + name);
+        }
+        log.info("Remove {} triggers", count);
+    }
 }
