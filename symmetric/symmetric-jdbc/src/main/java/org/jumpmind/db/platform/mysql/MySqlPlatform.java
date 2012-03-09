@@ -93,7 +93,7 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setDefaultSize(Types.BINARY, 254);
         info.setDefaultSize(Types.VARBINARY, 254);
-        info.setIdentifierQuoteString("`");
+
         info.setNonBlankCharColumnSpacePadded(false);
         info.setBlankCharColumnSpacePadded(false);
         info.setCharColumnSpaceTrimmed(true);

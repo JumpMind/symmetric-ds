@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -123,7 +124,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
-            statementCount += statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statementCount += statistics.get(DataWriterStatisticConstants.LINECOUNT);
         }
         return statementCount;
     }
@@ -131,8 +132,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + getTestTable() + " where "
                 + getWhere(TEST_KEYS);
-        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql,
-                new Object[] { new Long(testTableId) });
+        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, new Long(testTableId));
 
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);
@@ -190,7 +190,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         if (expected == null) {
             Assert.assertNull("Expected empty results. " + printDatabase(), results);
         } else {
-            Assert.assertNotNull("Expected non-empty results. " + printDatabase(), results);
+            Assert.assertNotNull(String.format("Did not find the expected row: %s.", Arrays.toString(expected)), results);
             for (int i = 0; i < expected.length; i++) {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;

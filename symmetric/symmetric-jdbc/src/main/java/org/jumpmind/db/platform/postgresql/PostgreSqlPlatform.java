@@ -223,7 +223,7 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
             String tableName, Column[] keys, Column[] columns) {
         return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getPlatformInfo().isDateOverridesToTimestamp(),
-                getPlatformInfo().getIdentifierQuoteString());
+                getPlatformInfo().getDelimiterToken());
     }
     
 }

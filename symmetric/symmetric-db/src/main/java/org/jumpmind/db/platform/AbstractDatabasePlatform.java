@@ -125,7 +125,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             String tableName, Column[] keys, Column[] columns) {
         return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
-                        .getIdentifierQuoteString());
+                        .getDelimiterToken());
     }
 
     public IDdlReader getDdlReader() {

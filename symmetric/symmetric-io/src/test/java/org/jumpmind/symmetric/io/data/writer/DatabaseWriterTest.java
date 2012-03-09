@@ -19,6 +19,7 @@ import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,6 +30,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
         platform.createDatabase(platform.readDatabaseFromXml("/testDatabaseWriter.xml", true),
                 true, false);
+    }
+    
+    @Before
+    public void notExpectingError() {
+        setErrorExpected(false);
     }
 
     @Test

@@ -188,8 +188,6 @@ public class DatabasePlatformInfo {
 
     private boolean storesUpperCaseInCatalog = false;
 
-    private String identifierQuoteString = "\"";
-
     private boolean dateOverridesToTimestamp;
 
     private boolean emptyStringNulled = false;
@@ -1117,14 +1115,6 @@ public class DatabasePlatformInfo {
 
     public boolean isTriggersSupported() {
         return triggersSupported;
-    }
-
-    public void setIdentifierQuoteString(String identifierQuoteString) {
-        this.identifierQuoteString = identifierQuoteString;
-    }
-
-    public String getIdentifierQuoteString() {
-        return identifierQuoteString;
     }
 
     public boolean isDateOverridesToTimestamp() {
