@@ -96,7 +96,7 @@ abstract public class AbstractService implements IService {
 
     protected Map<String, String> createSqlReplacementTokens() {
         return createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getPlatformInfo().getIdentifierQuoteString());
+                .getPlatformInfo().getDelimiterToken());
     }
 
     protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,

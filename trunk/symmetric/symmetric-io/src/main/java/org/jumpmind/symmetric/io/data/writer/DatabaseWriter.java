@@ -111,19 +111,17 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
+        statistics.get(batch).increment(DataWriterStatisticConstants.LINECOUNT);
         if (filterBefore(data)) {
             LoadStatus loadStatus = LoadStatus.SUCCESS;
             switch (data.getDataEventType()) {
                 case UPDATE:
-                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                     loadStatus = update(data);
                     break;
                 case INSERT:
-                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                     loadStatus = insert(data);
                     break;
                 case DELETE:
-                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                     loadStatus = delete(data);
                     break;
                 case BSH:
@@ -312,6 +310,9 @@ public class DatabaseWriter implements IDataWriter {
                     throw ex;
                 }
             }
+        } catch (SqlException ex) {
+            logFailure(ex, data);
+            throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
@@ -388,6 +389,9 @@ public class DatabaseWriter implements IDataWriter {
                     throw ex;
                 }
             }
+        } catch (SqlException ex) {
+            logFailure(ex, data);
+            throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
@@ -490,9 +494,49 @@ public class DatabaseWriter implements IDataWriter {
                 // There was no change to apply
                 return LoadStatus.SUCCESS;
             }
+        } catch (SqlException ex) {
+            logFailure(ex, data);
+            throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
+    }
+
+    protected void logFailure(SqlException e, CsvData data) {
+        StringBuilder failureMessage = new StringBuilder();
+        failureMessage.append("Failed to process a ");
+        failureMessage.append(data.getDataEventType().toString().toLowerCase());
+        failureMessage.append(" event in batch ");
+        failureMessage.append(batch.getBatchId());
+        failureMessage.append(".\n");
+        if (this.currentDmlStatement != null) {
+            failureMessage.append("Failed sql was: ");
+            failureMessage.append(this.currentDmlStatement.getSql());
+            failureMessage.append("\n");
+        }
+        String rowData = data.getCsvData(CsvData.PK_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            failureMessage.append("Failed pk Data was: ");
+            failureMessage.append(rowData);
+            failureMessage.append("\n");
+        }
+
+        rowData = data.getCsvData(CsvData.ROW_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            failureMessage.append("Failed row Data was: ");
+            failureMessage.append(rowData);
+            failureMessage.append("\n");
+        }
+
+        rowData = data.getCsvData(CsvData.OLD_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            failureMessage.append("Failed old Data was: ");
+            failureMessage.append(rowData);
+            failureMessage.append("\n");
+        }
+        
+        log.error(failureMessage.toString());
+
     }
 
     protected boolean script(CsvData data) {

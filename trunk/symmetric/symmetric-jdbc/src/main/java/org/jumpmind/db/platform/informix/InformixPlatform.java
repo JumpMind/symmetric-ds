@@ -52,11 +52,9 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         Map<String, String> env = System.getenv();
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
-            info.setIdentifierQuoteString("\"");
             info.setDelimiterToken("\"");
             info.setDelimitedIdentifiersSupported(true);
         } else {
-            info.setIdentifierQuoteString("");
             info.setDelimiterToken("");
             info.setDelimitedIdentifiersSupported(false);
         }

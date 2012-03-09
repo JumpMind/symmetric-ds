@@ -20,9 +20,6 @@
 
 package org.jumpmind.symmetric.db;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,11 +140,10 @@ abstract public class AbstractEmbeddedTrigger {
     protected Object appendVirtualTableStringValue(Object value, StringBuilder out) {
         if (value == null) {
             out.append("null");
-        } else if (value instanceof String || value instanceof BufferedReader) {
-            if (value instanceof BufferedReader) {
+        } else if (value instanceof String || value instanceof Reader) {
+            if (value instanceof Reader) {
                 try {
-                    BufferedReader reader = (BufferedReader) value;
-                    value = readStringAndClose(reader, -1);
+                    value = readStringAndClose((Reader) value, -1);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -159,7 +155,7 @@ abstract public class AbstractEmbeddedTrigger {
             out.append(value);
         } else if (value instanceof Boolean) {
             out.append(value);
-        } else if (value instanceof ByteArrayInputStream || value instanceof BufferedInputStream) {
+        } else if (value instanceof InputStream) {
             out.append("'");
             try {
                 value = convertBytesToString(readBytesAndClose((InputStream) value, -1));

@@ -139,7 +139,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
             String tableName, Column[] keys, Column[] columns) {
         return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
-                        .getIdentifierQuoteString());
+                        .getDelimiterToken());
     }
 
 }

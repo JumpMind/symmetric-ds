@@ -20,7 +20,7 @@ public class SqlException extends RuntimeException {
 
     public SqlException(Throwable cause) {
         super(cause);
-    }
+    }    
     
     public int getErrorCode() {
         Throwable rootCause = getRootCause();
@@ -38,7 +38,15 @@ public class SqlException extends RuntimeException {
             rootCause = cause;
             cause = cause.getCause();
         }
+        
+        if (rootCause != null) {
+            rootCause = this;
+        }
         return rootCause;
+    }
+    
+    public String getRootMessage() {
+        return getRootCause().getMessage();
     }
 
 }

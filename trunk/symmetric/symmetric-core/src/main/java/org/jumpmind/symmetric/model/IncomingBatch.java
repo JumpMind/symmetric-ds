@@ -106,7 +106,7 @@ public class IncomingBatch implements Serializable {
         byteCount = readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT);
         filterMillis = writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS);
         databaseMillis = writerStatistics.get(DataWriterStatisticConstants.DATABASEMILLIS);
-        statementCount = writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statementCount = writerStatistics.get(DataWriterStatisticConstants.LINECOUNT);
         fallbackInsertCount = writerStatistics
                 .get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
         fallbackUpdateCount = writerStatistics
