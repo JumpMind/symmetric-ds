@@ -516,21 +516,21 @@ public class DatabaseWriter implements IDataWriter {
         }
         String rowData = data.getCsvData(CsvData.PK_DATA);
         if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed pk Data was: ");
+            failureMessage.append("Failed pk data was: ");
             failureMessage.append(rowData);
             failureMessage.append("\n");
         }
 
         rowData = data.getCsvData(CsvData.ROW_DATA);
         if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed row Data was: ");
+            failureMessage.append("Failed row data was: ");
             failureMessage.append(rowData);
             failureMessage.append("\n");
         }
 
         rowData = data.getCsvData(CsvData.OLD_DATA);
         if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed old Data was: ");
+            failureMessage.append("Failed old data was: ");
             failureMessage.append(rowData);
             failureMessage.append("\n");
         }
