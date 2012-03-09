@@ -112,10 +112,10 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
         if (0 == getSqlTemplate().update(updateSql, obj.getVarcharValue(),
                 obj.getLongVarcharValue(), obj.getTimestampValue(), obj.getDateValue(),
-                obj.isBitValue() ? 1 : 0, obj.getBigIntValue(), obj.getDecimalValue(),
+                obj.isBitValue(), obj.getBigIntValue(), obj.getDecimalValue(),
                 obj.getId())) {
             getSqlTemplate().update(insertSql, obj.getVarcharValue(), obj.getLongVarcharValue(),
-                    obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue() ? 1 : 0,
+                    obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
                     obj.getBigIntValue(), obj.getDecimalValue(), obj.getId());
         }
 
