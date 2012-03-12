@@ -58,22 +58,22 @@ public class DmlStatement {
             boolean isDateOverrideToTimestamp, String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
-        quote = identifierQuoteString == null ? "" : identifierQuoteString;
+        this.quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
-            sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
+            this.sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
         } else if (type == DmlType.UPDATE) {
-            sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
+            this.sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
         } else if (type == DmlType.DELETE) {
-            sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
+            this.sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
         } else if (type == DmlType.COUNT) {
-            sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
+            this.sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
         } else if (type == DmlType.FROM) {
-            sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);            
+            this.sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);            
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
-        dmlType = type;
-        types = buildTypes(keys, columns, isDateOverrideToTimestamp);
+        this.dmlType = type;
+        this.types = buildTypes(keys, columns, isDateOverrideToTimestamp);
 
     }
 
@@ -152,7 +152,7 @@ public class DmlStatement {
     }
     
     protected String buildFromSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder("from ").append(tableName).append(
+        StringBuilder sql = new StringBuilder(" from ").append(tableName).append(
                 " where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
