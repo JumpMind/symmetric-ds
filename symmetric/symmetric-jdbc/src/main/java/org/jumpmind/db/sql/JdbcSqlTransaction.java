@@ -126,7 +126,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return queryForObject(sql, Integer.class, args);
     }
 
-    public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
+    public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return executeCallback(new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
@@ -138,7 +138,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = (T) rs.getObject(1);
+                        result = JdbcUtils.getObjectFromResultSet(rs, clazz);
                     }
                 } finally {
                     JdbcSqlTemplate.close(rs);

@@ -12,7 +12,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -96,13 +95,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     JdbcUtils.setValues(ps, expandArgs(sql, args));
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        if (Date.class.isAssignableFrom(clazz)) {
-                            result = (T) rs.getTimestamp(1);
-                        } else if (String.class.isAssignableFrom(clazz)) {
-                            result = (T) rs.getString(1);
-                        } else {
-                            result = (T) rs.getObject(1);
-                        }
+                        result = JdbcUtils.getObjectFromResultSet(rs, clazz);
                     }
                 } finally {
                     close(rs);
