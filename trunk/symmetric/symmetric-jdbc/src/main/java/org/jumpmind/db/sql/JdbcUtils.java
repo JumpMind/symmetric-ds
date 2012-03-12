@@ -1,8 +1,10 @@
 package org.jumpmind.db.sql;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,19 @@ abstract public class JdbcUtils {
     private static Logger log = LoggerFactory.getLogger(JdbcUtils.class);
 
     private JdbcUtils() {
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T getObjectFromResultSet(ResultSet rs, Class<T> clazz) throws SQLException {
+        T result;
+        if (Date.class.isAssignableFrom(clazz)) {
+            result = (T) rs.getTimestamp(1);
+        } else if (String.class.isAssignableFrom(clazz)) {
+            result = (T) rs.getString(1);
+        } else {
+            result = (T) rs.getObject(1);
+        }
+        return result;
     }
     
     public static void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
