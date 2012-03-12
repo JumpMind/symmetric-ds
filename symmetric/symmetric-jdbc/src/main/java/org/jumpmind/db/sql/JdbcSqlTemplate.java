@@ -84,7 +84,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {
-            @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
                 T result = null;
                 PreparedStatement ps = null;

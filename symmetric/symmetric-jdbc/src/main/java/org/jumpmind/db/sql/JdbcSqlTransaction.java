@@ -128,7 +128,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return executeCallback(new IConnectionCallback<T>() {
-            @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
                 T result = null;
                 PreparedStatement ps = null;
