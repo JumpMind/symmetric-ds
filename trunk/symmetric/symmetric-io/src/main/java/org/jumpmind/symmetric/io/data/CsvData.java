@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
 /**
  * Holder for references to both parsed and unparsed CSV data.
@@ -183,12 +184,37 @@ public class CsvData {
         }
         return values;
     }
+    
+    public String[] getPkData(Table table) {
+        String[] data = getPkData(table, CsvData.PK_DATA);
+        if (data == null || data.length == 0) {
+            data = getPkData(table, CsvData.OLD_DATA);
+            if (data == null || data.length == 0) {
+                data = getPkData(table, CsvData.ROW_DATA);
+            }
+        }
+        return data;
+    }
+
+    public String[] getPkData(Table table, String key) {
+        Map<String, String> data = toColumnNameValuePairs(table, key);
+        String[] keyNames = table.getPrimaryKeyColumnNames();
+        if (keyNames != null && data.size() > 0) {
+            String[] keyValues = new String[keyNames.length];
+            for (int i = 0; i < keyNames.length; i++) {
+                keyValues[i] = data.get(keyNames[i]);
+            }
+            return keyValues;
+        } else {
+            return null;
+        }
+    }
 
     public Map<String, String> toColumnNameValuePairs(Table table, String key) {
         String[] values = getParsedData(key);
         String[] keyNames = table.getColumnNames();
         if (values != null && keyNames != null && values.length >= keyNames.length) {
-            Map<String, String> map = new HashMap<String, String>(keyNames.length);
+            Map<String, String> map = new LinkedCaseInsensitiveMap<String>(keyNames.length);
             for (int i = 0; i < keyNames.length; i++) {
                 map.put(keyNames[i], values[i]);
             }

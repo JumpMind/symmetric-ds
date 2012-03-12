@@ -49,7 +49,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
     }
 
     @Override
-    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data) {
+    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, boolean fallbackChanges) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
         if (transformedData != null) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
@@ -65,7 +65,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 }
             }
         } else {
-            super.performFallbackToUpdate(writer, data);
+            super.performFallbackToUpdate(writer, data, fallbackChanges);
         }
     }
 

@@ -116,7 +116,7 @@ public class DatabaseWriter implements IDataWriter {
             LoadStatus loadStatus = LoadStatus.SUCCESS;
             switch (data.getDataEventType()) {
                 case UPDATE:
-                    loadStatus = update(data);
+                    loadStatus = update(data, true, true);
                     break;
                 case INSERT:
                     loadStatus = insert(data);
@@ -398,7 +398,7 @@ public class DatabaseWriter implements IDataWriter {
 
     }
 
-    protected LoadStatus update(CsvData data) {
+    protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
@@ -408,7 +408,7 @@ public class DatabaseWriter implements IDataWriter {
             for (int i = 0; i < columnValues.length; i++) {
                 Column column = targetTable.getColumn(i);
                 if (column != null) {
-                    if (doesColumnNeedUpdated(i, column, data)) {
+                    if (!applyChangesOnly || doesColumnNeedUpdated(i, column, data)) {
                         changedColumnNameList.add(column.getName());
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
@@ -417,52 +417,59 @@ public class DatabaseWriter implements IDataWriter {
             }
             if (changedColumnNameList.size() > 0) {
                 if (requireNewStatement(DmlType.UPDATE, data)) {
-                    ConflictSetting conflictSettings = writerSettings.getConflictSettings(
-                            this.targetTable, batch);
                     Column[] lookupKeys = null;
-                    switch (conflictSettings.getDetectUpdateType()) {
-                        case USE_CHANGED_DATA:
-                            ArrayList<Column> lookupColumns = new ArrayList<Column>(
-                                    changedColumnMetaList);
-                            Column[] pks = targetTable.getPrimaryKeyColumns();
-                            for (Column column : pks) {
-                                // make sure all of the PK keys are in the list
-                                // only once
-                                // and are always at the end of the list
-                                lookupColumns.remove(column);
-                                lookupColumns.add(column);
-                            }
-                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
-                            break;
-                        case USE_OLD_DATA:
-                            lookupKeys = targetTable.getColumns();
-                            break;
-                        case USE_VERSION:
-                        case USE_TIMESTAMP:
-                            lookupColumns = new ArrayList<Column>();
-                            Column versionColumn = targetTable.getColumnWithName(conflictSettings
-                                    .getDetectExpresssion());
-                            if (versionColumn != null) {
-                                lookupColumns.add(versionColumn);
-                            } else {
-                                log.error(
-                                        "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                        conflictSettings.getDetectExpresssion());
-                            }
-                            pks = targetTable.getPrimaryKeyColumns();
-                            for (Column column : pks) {
-                                // make sure all of the PK keys are in the list
-                                // only once
-                                // and are always at the end of the list
-                                lookupColumns.remove(column);
-                                lookupColumns.add(column);
-                            }
-                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
-                            break;
-                        case USE_PK_DATA:
-                        default:
-                            lookupKeys = targetTable.getPrimaryKeyColumns();
-                            break;
+                    if (!useConflictDetection) {
+                        lookupKeys = targetTable.getPrimaryKeyColumns();
+                    } else {
+                        ConflictSetting conflictSettings = writerSettings.getConflictSettings(
+                                this.targetTable, batch);
+                        switch (conflictSettings.getDetectUpdateType()) {
+                            case USE_CHANGED_DATA:
+                                ArrayList<Column> lookupColumns = new ArrayList<Column>(
+                                        changedColumnMetaList);
+                                Column[] pks = targetTable.getPrimaryKeyColumns();
+                                for (Column column : pks) {
+                                    // make sure all of the PK keys are in the
+                                    // list only once and are always at the end
+                                    // of the list
+                                    lookupColumns.remove(column);
+                                    lookupColumns.add(column);
+                                }
+                                lookupKeys = lookupColumns
+                                        .toArray(new Column[lookupColumns.size()]);
+                                break;
+                            case USE_OLD_DATA:
+                                lookupKeys = targetTable.getColumns();
+                                break;
+                            case USE_VERSION:
+                            case USE_TIMESTAMP:
+                                lookupColumns = new ArrayList<Column>();
+                                Column versionColumn = targetTable
+                                        .getColumnWithName(conflictSettings.getDetectExpresssion());
+                                if (versionColumn != null) {
+                                    lookupColumns.add(versionColumn);
+                                } else {
+                                    log.error(
+                                            "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
+                                            conflictSettings.getDetectExpresssion());
+                                }
+                                pks = targetTable.getPrimaryKeyColumns();
+                                for (Column column : pks) {
+                                    // make sure all of the PK keys are in the
+                                    // list
+                                    // only once
+                                    // and are always at the end of the list
+                                    lookupColumns.remove(column);
+                                    lookupColumns.add(column);
+                                }
+                                lookupKeys = lookupColumns
+                                        .toArray(new Column[lookupColumns.size()]);
+                                break;
+                            case USE_PK_DATA:
+                            default:
+                                lookupKeys = targetTable.getPrimaryKeyColumns();
+                                break;
+                        }
                     }
                     this.currentDmlStatement = platform
                             .createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(),
@@ -534,7 +541,7 @@ public class DatabaseWriter implements IDataWriter {
             failureMessage.append(rowData);
             failureMessage.append("\n");
         }
-        
+
         log.error(failureMessage.toString());
 
     }
@@ -739,11 +746,11 @@ public class DatabaseWriter implements IDataWriter {
                         this.writerSettings.isUsePrimaryKeysFromSource());
 
                 boolean setAllColumnsAsPrimaryKey = table.getPrimaryKeyColumnCount() == 0;
-                
+
                 if (StringUtils.isBlank(sourceTable.getCatalog())) {
                     table.setCatalog(null);
                 }
-                
+
                 if (StringUtils.isBlank(sourceTable.getSchema())) {
                     table.setSchema(null);
                 }
@@ -795,6 +802,10 @@ public class DatabaseWriter implements IDataWriter {
 
     public ISqlTransaction getTransaction() {
         return transaction;
+    }
+
+    public IDatabasePlatform getPlatform() {
+        return platform;
     }
 
 }

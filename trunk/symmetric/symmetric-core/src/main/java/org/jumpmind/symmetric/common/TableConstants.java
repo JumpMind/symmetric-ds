@@ -57,7 +57,6 @@ public class TableConstants {
     public static final String SYM_REGISTRATION_REDIRECT = "registration_redirect";
     public static final String SYM_NODE_CHANNEL_CTL = "node_channel_ctl";
     public static final String SYM_CONFLICT_SETTINGS = "conflict_setting";
-    public static final String SYM_CONFLICT_EVENT = "conflict_event";
     public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
 
@@ -112,7 +111,6 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_INCOMING_BATCH));
         tables.add(getTableName(tablePrefix, SYM_LOCK));
         tables.add(getTableName(tablePrefix, SYM_CONFLICT_SETTINGS));
-        tables.add(getTableName(tablePrefix, SYM_CONFLICT_EVENT));
         return tables;
     }
 

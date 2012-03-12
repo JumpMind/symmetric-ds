@@ -39,7 +39,7 @@ import org.jumpmind.db.model.Table;
 public class DmlStatement {
     
     public enum DmlType {
-        INSERT, UPDATE, DELETE, COUNT, UNKNOWN
+        INSERT, UPDATE, DELETE, COUNT, FROM, UNKNOWN
     };
 
     protected DmlType dmlType;
@@ -67,6 +67,8 @@ public class DmlStatement {
             sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
         } else if (type == DmlType.COUNT) {
             sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
+        } else if (type == DmlType.FROM) {
+            sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);            
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
@@ -126,7 +128,7 @@ public class DmlStatement {
         return types;
     }
 
-    public String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
+    protected String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + " (");
         appendColumns(sql, columns);
         sql.append(") values (");
@@ -135,7 +137,7 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
+    protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
         appendColumnEquals(sql, columns, ", ");
         sql.append(" where ");
@@ -143,20 +145,27 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildDeleteSql(String tableName, Column[] keyColumns) {
+    protected String buildDeleteSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
+    
+    protected String buildFromSql(String tableName, Column[] keyColumns) {
+        StringBuilder sql = new StringBuilder("from ").append(tableName).append(
+                " where ");
+        appendColumnEquals(sql, keyColumns, " and ");
+        return sql.toString();
+    }
 
-    public String buildCountSql(String tableName, Column[] keyColumns) {
+    protected String buildCountSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(
                 " where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
 
-    public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -168,7 +177,7 @@ public class DmlStatement {
         }
     }
 
-    public int appendColumns(StringBuilder sql, Column[] columns) {
+    protected int appendColumns(StringBuilder sql, Column[] columns) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -181,7 +190,7 @@ public class DmlStatement {
         return existingCount;
     }
 
-    public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
+    protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 sql.append("?").append(",");
@@ -192,6 +201,13 @@ public class DmlStatement {
            sql.replace(sql.length()-1, sql.length(), "");    
         }
                 
+    }
+    
+    public String getColumnsSql(Column[] columns) {
+        StringBuilder sql = new StringBuilder("select ");
+        appendColumns(sql, columns);
+        sql.append(getSql());
+        return sql.toString();
     }
 
     public String getSql() {

@@ -13,7 +13,7 @@ public class ConflictSetting implements Serializable {
     };
 
     public enum ResolveUpdateConflict {
-        NEWER_WINS, MANUAL, IGNORE, BLIND_FALLBACK
+        NEWER_WINS_ROW, MANUAL, IGNORE_ROW, IGNORE_BATCH, FALLBACK_ALL
     };
 
     public enum DetectDeleteConflict {
@@ -21,15 +21,15 @@ public class ConflictSetting implements Serializable {
     };
 
     public enum ResolveDeleteConflict {
-        MANUAL, IGNORE
+        MANUAL, IGNORE_ROW, IGNORE_BATCH, NEWER_WINS_ROW
     };
 
     public enum ResolveInsertConflict {
-        NEWER_WINS, MANUAL, IGNORE, BLIND_FALLBACK
+        NEWER_WINS_ROW, MANUAL, IGNORE_ROW, IGNORE_BATCH, FALLBACK_ALL, FALLBACK_CHANGES
     };
 
     private static final long serialVersionUID = 1L;
-    
+
     private String conflictSettingId = "default";
     private String targetChannelId;
     private String targetCatalogName;
@@ -38,18 +38,19 @@ public class ConflictSetting implements Serializable {
     private DetectUpdateConflict detectUpdateType = DetectUpdateConflict.USE_PK_DATA;
     private DetectDeleteConflict detectDeleteType = DetectDeleteConflict.USE_PK_DATA;
     private String detectExpresssion;
-    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.BLIND_FALLBACK;
-    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.BLIND_FALLBACK;
-    private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE;
-    private boolean resolveAuditEnabled;    
+    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.FALLBACK_ALL;
+    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.FALLBACK_CHANGES;
+    private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE_ROW;
+    private boolean resolveAuditEnabled;
     private int retryCount = -1;
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";
     private Date lastUpdateTime = new Date();
-    
+
     public String toQualifiedTableName() {
         if (StringUtils.isNotBlank(targetTableName)) {
-            return Table.getFullyQualifiedTableName(targetCatalogName, targetSchemaName, targetTableName);
+            return Table.getFullyQualifiedTableName(targetCatalogName, targetSchemaName,
+                    targetTableName);
         } else {
             return null;
         }
@@ -178,7 +179,7 @@ public class ConflictSetting implements Serializable {
     public boolean isResolveAuditEnabled() {
         return resolveAuditEnabled;
     }
-    
+
     public void setResolveAuditEnabled(boolean resolveAuditEnabled) {
         this.resolveAuditEnabled = resolveAuditEnabled;
     }
