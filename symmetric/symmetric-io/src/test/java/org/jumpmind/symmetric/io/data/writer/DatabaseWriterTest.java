@@ -18,6 +18,8 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveUpdateConflict;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,10 +33,96 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         platform.createDatabase(platform.readDatabaseFromXml("/testDatabaseWriter.xml", true),
                 true, false);
     }
-    
+
     @Before
     public void notExpectingError() {
         setErrorExpected(false);
+        writerSettings.setDefaultConflictSetting(new ConflictSetting());
+    }
+
+    @Test
+    public void testUpdateDetectTimestampNewerWins() {
+        ConflictSetting setting = new ConflictSetting();
+        setting.setDetectUpdateType(DetectUpdateConflict.USE_TIMESTAMP);
+        setting.setDetectExpresssion("time_value");
+        setting.setResolveUpdateType(ResolveUpdateConflict.NEWER_WINS_ROW);
+        writerSettings.setDefaultConflictSetting(setting);
+
+        String id = getNextId();
+        String[] originalValues = massageExpectectedResultsForDialect(new String[] { id,
+                "string2", "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
+
+        CsvData data = new CsvData(DataEventType.INSERT, originalValues);
+        writeData(data, originalValues);
+
+        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldNotBeApplied[2] = "updated string";
+        updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
+        data = new CsvData(DataEventType.UPDATE, massageExpectectedResultsForDialect(updateShouldNotBeApplied));
+        writeData(data, originalValues);
+        
+        
+        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldBeApplied[2] = "string3";
+        updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
+        data = new CsvData(DataEventType.UPDATE, massageExpectectedResultsForDialect(updateShouldBeApplied));
+        writeData(data, updateShouldBeApplied);
+
+    }
+
+    @Test
+    public void testUpdateDetectVersionIgnoreRow() {
+
+    }
+
+    @Test
+    public void testUpdateDetectVersionIgnoreBatch() {
+
+    }
+
+    @Test
+    public void testUpdateDetectOldDataIgnoreRow() {
+
+    }
+
+    @Test
+    public void testUpdateDetectOldDataIgnoreBatch() {
+
+    }
+
+    @Test
+    public void testUpdateDetectOldDataManual() {
+    }
+
+    @Test
+    public void testUpdateDetectChangedDataIgnoreRow() {
+
+    }
+
+    @Test
+    public void testUpdateDetectChangedDataIgnoreBatch() {
+
+    }
+
+    @Test
+    public void testUpdateDetectChangedDataFallbackAll() {
+
+    }
+
+    @Test
+    public void testDeleteDetectTimestampIgnoreRow() {
+
+    }
+
+    @Test
+    public void testDeleteDetectTimestampIgnoreBatch() {
+
+    }
+
+    @Test
+    public void testDeleteDetectTimestampNewerWins() {
+
     }
 
     @Test
@@ -272,7 +360,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                 totalSeconds <= targetTime);
     }
 
-    private void massageExpectectedResultsForDialect(String[] values) {
+    private String[] massageExpectectedResultsForDialect(String[] values) {
         if (values[5] != null
                 && (!(platform instanceof OraclePlatform || platform instanceof MsSqlPlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
@@ -288,6 +376,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             DecimalFormat df = new DecimalFormat("0.00####################################");
             values[10] = df.format(new BigDecimal(values[10]).setScale(scale, RoundingMode.DOWN));
         }
+        return values;
     }
 
 }

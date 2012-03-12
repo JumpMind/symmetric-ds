@@ -4,6 +4,8 @@
 <database name="databasewritertest">
 
 	<table name="test_dataloader_table">
+        <column name="id" type="INTEGER" required="true" autoIncrement="true"
+            primaryKey="true" />    
 		<column name="string_value" type="VARCHAR" size="50" />
 		<column name="string_required_value" type="VARCHAR" size="50"
 			required="true" />
@@ -11,8 +13,6 @@
 		<column name="char_required_value" type="CHAR" size="50"
 			required="true" />
 		<column name="date_value" type="DATE" />
-		<column name="id" type="INTEGER" required="true" autoIncrement="true"
-			primaryKey="true" />
 		<column name="time_value" type="TIMESTAMP" />
 		<column name="boolean_value" type="BIT" size="1" />
 		<column name="integer_value" type="INTEGER" />

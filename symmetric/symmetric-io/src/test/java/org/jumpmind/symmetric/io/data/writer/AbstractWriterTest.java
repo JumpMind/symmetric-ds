@@ -41,6 +41,8 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected static long batchId = 10000;
 
     protected static long sequenceId = 10000;
+    
+    protected DatabaseWriterSettings writerSettings = new DatabaseWriterSettings();
 
     protected synchronized long getNextBatchId() {
         return ++batchId;
@@ -86,7 +88,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected long writeData(TableCsvData... datas) {
-        return writeData(new DatabaseWriter(platform), datas);
+        return writeData(new DatabaseWriter(platform, writerSettings), datas);
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {

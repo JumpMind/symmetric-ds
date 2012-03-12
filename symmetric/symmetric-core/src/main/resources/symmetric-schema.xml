@@ -447,25 +447,5 @@
         <column name="last_update_time"     type="TIMESTAMP" required="true"  description="The date and time when a user last updated this entry." />
     </table>
     
-    <table name="conflict_event" description="Identifies rows that were in conflict and how the conflicts were resolved.">
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
-        <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="This is the row number in the batch for the data that was being processed when the batch failed." />
-        <column name="conflict_setting_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />        
-        <column name="status" type="CHAR" size="2"  description="The current status of the conflict.  The possible values are: Resolved (OK), Conflict (ER)." />
-        <column name="conflict_type" type="CHAR" size="2"  description="The type of conflict. Valid values are PK (Primary Key Violation) and FK (Foreign Key Violation)." />        
-        <column name="target_catalog_name" type="VARCHAR" size="128" description="Name of the catalog the target table is in." />
-        <column name="target_schema_name" type="VARCHAR" size="128" description="Name of the schema the target table is in." />
-        <column name="target_table_name" type="VARCHAR" size="128" description="Name of the target table where the conflict occurred" />
-        <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. " />
-        <column name="message" type="LONGVARCHAR" description="General message about the conflict.  Could be the actual error." />                
-        <column name="row_data" type="LONGVARCHAR"  description="The captured data change from the source table." />
-        <column name="old_data" type="LONGVARCHAR"  description="The captured data values prior to an update or delete." />
-        <column name="final_data" type="LONGVARCHAR"  description="The data that was applied to resolve the conflict." />
-        <column name="retry_count" type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict has been retried." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>    
         
 </database>

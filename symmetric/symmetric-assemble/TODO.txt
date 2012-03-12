@@ -77,3 +77,4 @@ Documentation
   * dataloader.enable.fallback.insert
   * dataloader.enable.fallback.update
 * The following property is not longer needed: dataloader.enable.fallback.savepoint
+* routing.wait.for.data.timeout.seconds new property
