@@ -70,6 +70,10 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         writeData(data, updateShouldBeApplied);
 
     }
+    
+    @Test
+    public void testInsertDetectTimestampNewerWins() {
+    }
 
     @Test
     public void testUpdateDetectVersionIgnoreRow() {

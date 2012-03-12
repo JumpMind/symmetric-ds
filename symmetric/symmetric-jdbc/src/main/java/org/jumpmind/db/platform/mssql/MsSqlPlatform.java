@@ -39,7 +39,7 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     /* The standard SQLServer jdbc driver. */
     public static final String JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver";
 
-    /* The subprotocol used by the standard SQL Server driver. */
+    /* The sub protocol used by the standard SQL Server driver. */
     public static final String JDBC_SUBPROTOCOL = "jtds";
 
     /*

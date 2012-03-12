@@ -408,7 +408,7 @@ public class DatabaseWriter implements IDataWriter {
             for (int i = 0; i < columnValues.length; i++) {
                 Column column = targetTable.getColumn(i);
                 if (column != null) {
-                    if (!applyChangesOnly || doesColumnNeedUpdated(i, column, data)) {
+                    if (doesColumnNeedUpdated(i, column, data, applyChangesOnly)) {
                         changedColumnNameList.add(column.getName());
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
@@ -621,13 +621,13 @@ public class DatabaseWriter implements IDataWriter {
 
     }
 
-    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data) {
+    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data, boolean applyChangesOnly) {
         boolean needsUpdated = true;
         String[] oldData = data.getParsedData(CsvData.OLD_DATA);
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
         if (!platform.getPlatformInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
             needsUpdated = false;
-        } else if (oldData != null) {
+        } else if (oldData != null && applyChangesOnly) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || (platform.isLob(column.getTypeCode()) && StringUtils
                             .isBlank(oldData[columnIndex]));
