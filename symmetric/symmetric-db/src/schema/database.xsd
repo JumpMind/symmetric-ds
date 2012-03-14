@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+<xsd:schema 
             targetNamespace="http://db.apache.org/schemas"
             xmlns:db="http://db.apache.org/schemas"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -200,7 +200,7 @@
 
     <xsd:attribute name="type"
                    type="db:jdbc-type"
-                   use="required"
+                   use="optional"
                    default="VARCHAR" >
       <xsd:annotation>
         <xsd:documentation>
@@ -213,7 +213,7 @@
   <xsd:complexType name="table-type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="column"
-                   type="column-type">
+                   type="db:column-type">
         <xsd:annotation>
           <xsd:documentation>
             TODO
@@ -389,7 +389,7 @@
   <xsd:complexType name="foreign-key-type">
     <xsd:sequence minOccurs="1" maxOccurs="unbounded">
       <xsd:element name="reference"
-                   type="reference-type">
+                   type="db:reference-type">
         <xsd:annotation>
           <xsd:documentation>
             TODO
