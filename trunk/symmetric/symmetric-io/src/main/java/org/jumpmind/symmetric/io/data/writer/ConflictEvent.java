@@ -13,7 +13,7 @@ public class ConflictEvent implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK, CD, IG
+        RESOLVED, NEEDS_RESOLVED, IGNORED
     };
     
     public enum ConflictType {

@@ -460,23 +460,24 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void save(ConflictSettingsNodeGroupLink setting) {
         this.lastConflictCacheResetTimeInMs = 0;
         if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
-                .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
-                setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
-                        .getTargetSchemaName(), setting.getTargetTableName(), setting
-                        .getDetectUpdateType().name(), setting.getDetectDeleteType().name(),
+                .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
+                .getTargetChannelId(), setting.getTargetCatalogName(), setting
+                .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectUpdateType()
+                .name(), setting.getDetectInsertType(), setting.getDetectDeleteType().name(),
                 setting.getResolveUpdateType().name(), setting.getResolveInsertType().name(),
-                setting.getResolveDeleteType().name(), setting.isResolveAuditEnabled() ? 1 : 0,
-                setting.getDetectExpresssion(), setting.getRetryCount(), setting
+                setting.getResolveDeleteType().name(), setting.isResolveChangesOnly() ? 1 : 0,
+                setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpresssion(), setting
                         .getLastUpdateBy(), setting.getConflictSettingId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
                     .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
                     setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
                             .getTargetSchemaName(), setting.getTargetTableName(), setting
-                            .getDetectUpdateType().name(), setting.getDetectDeleteType().name(),
-                    setting.getResolveUpdateType().name(), setting.getResolveInsertType().name(),
-                    setting.getResolveDeleteType().name(), setting.isResolveAuditEnabled() ? 1
-                            : 0, setting.getDetectExpresssion(), setting.getRetryCount(),
-                    setting.getLastUpdateBy(), setting.getConflictSettingId());
+                            .getDetectUpdateType().name(), setting.getDetectInsertType().name(),
+                    setting.getDetectDeleteType().name(), setting.getResolveUpdateType().name(),
+                    setting.getResolveInsertType().name(), setting.getResolveDeleteType().name(),
+                    setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
+                    setting.getDetectExpresssion(), setting.getLastUpdateBy(), setting
+                            .getConflictSettingId());
         }
     }
 
@@ -507,9 +508,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     "resolve_insert_type").toUpperCase()));
             setting.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
                     "resolve_delete_type").toUpperCase()));
+            setting.setResolveChangesOnly(rs.getBoolean("resolve_changes_only"));
+            setting.setResolveRowOnly(rs.getBoolean("resolve_row_only"));
             setting.setDetectExpresssion(rs.getString("detect_expression"));
-            setting.setRetryCount(rs.getInt("retry_count"));
-            setting.setResolveAuditEnabled(rs.getBoolean("resolve_audit_enabled"));
             setting.setLastUpdateBy(rs.getString("last_update_by"));
             setting.setConflictSettingId(rs.getString("conflict_setting_id"));
             setting.setCreateTime(rs.getDateTime("create_time"));
