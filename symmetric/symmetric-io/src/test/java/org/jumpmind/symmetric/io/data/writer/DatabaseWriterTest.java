@@ -45,7 +45,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         ConflictSetting setting = new ConflictSetting();
         setting.setDetectUpdateType(DetectUpdateConflict.USE_TIMESTAMP);
         setting.setDetectExpresssion("time_value");
-        setting.setResolveUpdateType(ResolveUpdateConflict.NEWER_WINS_ROW);
+        setting.setResolveRowOnly(true);
+        setting.setResolveChangesOnly(true);
+        setting.setResolveUpdateType(ResolveUpdateConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
 
         String id = getNextId();

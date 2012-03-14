@@ -8,27 +8,31 @@ import org.jumpmind.db.model.Table;
 
 public class ConflictSetting implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     public enum DetectUpdateConflict {
         USE_PK_DATA, USE_OLD_DATA, USE_CHANGED_DATA, USE_TIMESTAMP, USE_VERSION
     };
 
     public enum ResolveUpdateConflict {
-        NEWER_WINS_ROW, MANUAL, IGNORE_ROW, IGNORE_BATCH, FALLBACK_ALL
+        NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
 
     public enum DetectDeleteConflict {
         USE_PK_DATA, USE_OLD_DATA, USE_TIMESTAMP, USE_VERSION
     };
-
+    
     public enum ResolveDeleteConflict {
-        MANUAL, IGNORE_ROW, IGNORE_BATCH, NEWER_WINS_ROW
+        MANUAL, IGNORE, NEWER_WINS
     };
+    
+    public enum DetectInsertConflict {
+        USE_PK_DATA, USE_TIMESTAMP, USE_VERSION
+    }
 
     public enum ResolveInsertConflict {
-        NEWER_WINS_ROW, MANUAL, IGNORE_ROW, IGNORE_BATCH, FALLBACK_ALL, FALLBACK_CHANGES
+        NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
-
-    private static final long serialVersionUID = 1L;
 
     private String conflictSettingId = "default";
     private String targetChannelId;
@@ -36,13 +40,14 @@ public class ConflictSetting implements Serializable {
     private String targetSchemaName;
     private String targetTableName;
     private DetectUpdateConflict detectUpdateType = DetectUpdateConflict.USE_PK_DATA;
+    private DetectInsertConflict detectInsertType = DetectInsertConflict.USE_PK_DATA;
     private DetectDeleteConflict detectDeleteType = DetectDeleteConflict.USE_PK_DATA;
     private String detectExpresssion;
-    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.FALLBACK_ALL;
-    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.FALLBACK_CHANGES;
-    private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE_ROW;
-    private boolean resolveAuditEnabled;
-    private int retryCount = -1;
+    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.FALLBACK;
+    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.FALLBACK;
+    private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE;
+    private boolean resolveChangesOnly = true;
+    private boolean resolveRowOnly = true;
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";
     private Date lastUpdateTime = new Date();
@@ -95,13 +100,21 @@ public class ConflictSetting implements Serializable {
     public void setTargetTableName(String targetTableName) {
         this.targetTableName = targetTableName;
     }
-
+    
     public DetectUpdateConflict getDetectUpdateType() {
         return detectUpdateType;
     }
 
     public void setDetectUpdateType(DetectUpdateConflict detectUpdateType) {
         this.detectUpdateType = detectUpdateType;
+    }
+    
+    public void setDetectInsertType(DetectInsertConflict detectInsertType) {
+        this.detectInsertType = detectInsertType;
+    }
+    
+    public DetectInsertConflict getDetectInsertType() {
+        return detectInsertType;
     }
 
     public DetectDeleteConflict getDetectDeleteType() {
@@ -135,6 +148,22 @@ public class ConflictSetting implements Serializable {
     public void setResolveDeleteType(ResolveDeleteConflict resolveDeleteType) {
         this.resolveDeleteType = resolveDeleteType;
     }
+    
+    public boolean isResolveChangesOnly() {
+        return resolveChangesOnly;
+    }
+    
+    public void setResolveChangesOnly(boolean resolveChangesOnly) {
+        this.resolveChangesOnly = resolveChangesOnly;
+    }
+    
+    public boolean isResolveRowOnly() {
+        return resolveRowOnly;
+    }
+    
+    public void setResolveRowOnly(boolean resolveRowOnly) {
+        this.resolveRowOnly = resolveRowOnly;
+    }
 
     public String getDetectExpresssion() {
         return detectExpresssion;
@@ -142,14 +171,6 @@ public class ConflictSetting implements Serializable {
 
     public void setDetectExpresssion(String conflictColumnName) {
         this.detectExpresssion = conflictColumnName;
-    }
-
-    public int getRetryCount() {
-        return retryCount;
-    }
-
-    public void setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
     }
 
     public Date getCreateTime() {
@@ -176,11 +197,4 @@ public class ConflictSetting implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    public boolean isResolveAuditEnabled() {
-        return resolveAuditEnabled;
-    }
-
-    public void setResolveAuditEnabled(boolean resolveAuditEnabled) {
-        this.resolveAuditEnabled = resolveAuditEnabled;
-    }
 }
