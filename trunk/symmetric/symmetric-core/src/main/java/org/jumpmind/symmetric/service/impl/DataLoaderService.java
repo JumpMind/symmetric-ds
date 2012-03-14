@@ -463,7 +463,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
                 .getTargetChannelId(), setting.getTargetCatalogName(), setting
                 .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectUpdateType()
-                .name(), setting.getDetectInsertType(), setting.getDetectDeleteType().name(),
+                .name(), setting.getDetectInsertType().name(), setting.getDetectDeleteType().name(),
                 setting.getResolveUpdateType().name(), setting.getResolveInsertType().name(),
                 setting.getResolveDeleteType().name(), setting.isResolveChangesOnly() ? 1 : 0,
                 setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpresssion(), setting
