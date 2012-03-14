@@ -34,6 +34,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -51,7 +52,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
-import org.springframework.dao.CannotAcquireLockException;
 
 /**
  * @see INodeService
@@ -466,9 +466,9 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
-        } catch (CannotAcquireLockException ex) {
-            log.error("Could not acquire lock on the table after {} ms.  The status is unknown.",
-                    (System.currentTimeMillis() - ts));
+        } catch (SqlException ex) {
+            log.error("Could not query table after {} ms.  The status is unknown.",
+                    (System.currentTimeMillis() - ts), ex);
             return NodeStatus.STATUS_UNKNOWN;
         }
     }

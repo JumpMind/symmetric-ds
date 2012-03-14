@@ -44,7 +44,6 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -75,7 +74,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
         this.springContext = springContext;
     }
 
-    public void register() throws BeansException {
+    public void register() {
 
         if (!initialized) {
             extensions = new TreeMap<String, IExtensionPoint>();

@@ -28,6 +28,7 @@
 		<version.h2>1.3.164</version.h2>
 		<version.postgresql>9.1-901-1.jdbc4	</version.postgresql>
 		<version.mysql>5.1.17</version.mysql>
+		<version.slf4j>1.6.4</version.slf4j>
 		<test.root>h2</test.root>
 		<test.client>h2</test.client>
 	</properties>
@@ -69,11 +70,11 @@
 			<id>snapshot</id>
 			<url>http://snapshots.repository.codehaus.org</url>
 		</repository>
-        <repository>
-            <id>symmetric-local</id>
-            <name>symmetric-local</name>
-            <url>file://${project.basedir}/src/repository</url>
-        </repository>		
+		<repository>
+			<id>symmetric-local</id>
+			<name>symmetric-local</name>
+			<url>file://${project.basedir}/src/repository</url>
+		</repository>
 	</repositories>
 
 	<issueManagement>
@@ -286,47 +287,47 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <forkMode>always</forkMode>
-                    <argLine>-Xms512m -Xmx1024m</argLine>
-                    <systemProperties>
-                        <property>
-                            <name>test.root</name>
-                            <value>${test.root}</value>
-                        </property>
-                        <property>
-                            <name>test.client</name>
-                            <value>${test.client}</value>
-                        </property>
-                    </systemProperties>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/ojdbc6.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/ojdbc5.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/ojdbc14.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/db2jcc.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/ifxjdbc.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/ifxlang.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/interclient.jar
-                        </additionalClasspathElement>
-                    </additionalClasspathElements>
-                </configuration>
-            </plugin>
-			
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>always</forkMode>
+					<argLine>-Xms512m -Xmx1024m</argLine>
+					<systemProperties>
+						<property>
+							<name>test.root</name>
+							<value>${test.root}</value>
+						</property>
+						<property>
+							<name>test.client</name>
+							<value>${test.client}</value>
+						</property>
+					</systemProperties>
+					<additionalClasspathElements>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/ojdbc6.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/ojdbc5.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/ojdbc14.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/db2jcc.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/ifxjdbc.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/ifxlang.jar
+						</additionalClasspathElement>
+						<additionalClasspathElement>
+							${user.home}/.symmetricds/lib/interclient.jar
+						</additionalClasspathElement>
+					</additionalClasspathElements>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
@@ -389,7 +390,7 @@
 						<artifactId>stax-api</artifactId>
 					</exclusion>
 				</exclusions>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>org.jumpmind.symmetric</groupId>
 				<artifactId>symmetric-io</artifactId>
@@ -410,13 +411,13 @@
 				<artifactId>symmetric-core</artifactId>
 				<type>test-jar</type>
 				<version>3.0.0-SNAPSHOT</version>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>org.jumpmind.symmetric</groupId>
 				<artifactId>symmetric-client</artifactId>
 				<type>test-jar</type>
 				<version>3.0.0-SNAPSHOT</version>
-			</dependency>						
+			</dependency>
 			<dependency>
 				<groupId>org.jumpmind.symmetric</groupId>
 				<artifactId>symmetric-client</artifactId>
@@ -435,12 +436,17 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>1.6.4</version>
+				<version>${version.slf4j}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>${version.slf4j}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
-				<version>1.6.4</version>
+				<version>${version.slf4j}</version>
 			</dependency>
 			<dependency>
 				<groupId>log4j</groupId>
@@ -466,6 +472,23 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
 				<version>${version.springframwork}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>				
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-asm</artifactId>
+				<version>${version.springframwork}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -476,6 +499,12 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-jdbc</artifactId>
 				<version>${version.springframwork}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>				
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -525,19 +554,9 @@
 				<version>3.2</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.1.1</version>
-			</dependency>
-			<dependency>
 				<groupId>commons-lang</groupId>
 				<artifactId>commons-lang</artifactId>
 				<version>2.3</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-math</groupId>
-				<artifactId>commons-math</artifactId>
-				<version>1.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-cli</groupId>
@@ -557,6 +576,10 @@
 					<exclusion>
 						<groupId>commons-collections</groupId>
 						<artifactId>commons-collections</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>

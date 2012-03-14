@@ -21,11 +21,11 @@
 package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.impl.SecurityService;
 
 public class DefaultNodeIdGenerator implements INodeIdGenerator {
 
@@ -69,6 +69,6 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
     }
 
     public String generatePassword(INodeService nodeService, Node node) {
-        return new RandomDataImpl().nextSecureHexString(30);
+        return new SecurityService().nextSecureHexString(30);
     }
 }

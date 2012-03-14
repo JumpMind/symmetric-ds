@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IIncomingBatchService
@@ -68,7 +67,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 new IncomingBatchMapper());
     }
 
-    @Transactional
     public void markIncomingBatchesOk(String nodeId) {
         List<IncomingBatch> batches = listIncomingBatchesInErrorFor(nodeId);
         for (IncomingBatch incomingBatch : batches) {

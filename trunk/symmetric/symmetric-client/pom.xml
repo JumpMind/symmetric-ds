@@ -76,10 +76,6 @@
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-math</groupId>
-			<artifactId>commons-math</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.beanshell</groupId>
 			<artifactId>bsh</artifactId>
 		</dependency>

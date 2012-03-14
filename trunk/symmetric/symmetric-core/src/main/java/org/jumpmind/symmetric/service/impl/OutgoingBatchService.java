@@ -50,7 +50,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IOutgoingBatchService
@@ -70,8 +69,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
-    @Transactional
+    
     public void markAllAsSentForNode(Node node) {
         OutgoingBatches batches = null;
         do {
