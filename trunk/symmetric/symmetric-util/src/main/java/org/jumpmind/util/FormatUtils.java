@@ -76,6 +76,20 @@ public final class FormatUtils {
         }
     }
     
+    public static boolean toBoolean(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            if (value.equals("1")) {
+                return true;
+            } else if (value.equals("0")) {
+                return false;
+            } else {
+                return Boolean.parseBoolean(value);
+            }
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isMixedCase(String text) {
         char[] chars = text.toCharArray();
         boolean upper = false;

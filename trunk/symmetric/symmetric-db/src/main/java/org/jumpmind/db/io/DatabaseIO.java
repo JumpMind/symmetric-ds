@@ -19,302 +19,271 @@ package org.jumpmind.db.io;
  * under the License.
  */
 
-import java.beans.IntrospectionException;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.apache.commons.betwixt.io.BeanReader;
-import org.apache.commons.betwixt.io.BeanWriter;
-import org.apache.commons.betwixt.strategy.HyphenatedNameMapper;
+import org.apache.commons.io.IOUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.NonUniqueIndex;
+import org.jumpmind.db.model.Reference;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.platform.DdlException;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.jumpmind.util.FormatUtils;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 /*
  * This class provides functions to read and write database models from/to XML.
- * 
- * @version $Revision: 481151 $
  */
-public class DatabaseIO
-{
-    /* The name of the XML attribute use to denote that teh content of a data XML
-        element uses Base64 encoding. */
-    public static final String BASE64_ATTR_NAME = "base64";
-
-    /* Whether to validate the XML. */
-    private boolean _validateXml = true;
-    /* Whether to use the internal dtd that comes with DdlUtils. */
-    private boolean _useInternalDtd = true;
-
-    /*
-     * Returns whether XML is validated upon reading it.
-     * 
-     * @return <code>true</code> if read XML is validated
-     */
-    public boolean isValidateXml()
-    {
-        return _validateXml;
-    }
-
-    /*
-     * Specifies whether XML shall be validated upon reading it.
-     * 
-     * @param validateXml <code>true</code> if read XML shall be validated
-     */
-    public void setValidateXml(boolean validateXml)
-    {
-        _validateXml = validateXml;
-    }
-
-    /*
-     * Returns whether the internal dtd that comes with DdlUtils is used.
-     * 
-     * @return <code>true</code> if parsing uses the internal dtd
-     */
-    public boolean isUseInternalDtd()
-    {
-        return _useInternalDtd;
-    }
-
-    /*
-     * Specifies whether the internal dtd is to be used.
-     *
-     * @param useInternalDtd Whether to use the internal dtd 
-     */
-    public void setUseInternalDtd(boolean useInternalDtd)
-    {
-        _useInternalDtd = useInternalDtd;
-    }
-
-    /*
-     * Returns the commons-betwixt mapping file as an {@link org.xml.sax.InputSource} object.
-     * Per default, this will be classpath resource under the path <code>/mapping.xml</code>.
-     *  
-     * @return The input source for the mapping
-     */
-    protected InputSource getBetwixtMapping()
-    {
-        return new InputSource(getClass().getResourceAsStream("mapping.xml"));
-    }
-    
-    /*
-     * Returns a new bean reader configured to read database models.
-     * 
-     * @return The reader
-     */
-    public BeanReader getReader() throws IntrospectionException, SAXException, IOException
-    {
-        BeanReader reader = new BeanReader();
-
-        reader.getXMLIntrospector().getConfiguration().setAttributesForPrimitives(true);
-        reader.getXMLIntrospector().getConfiguration().setWrapCollectionsInElement(false);
-        reader.getXMLIntrospector().getConfiguration().setElementNameMapper(new HyphenatedNameMapper());
-        reader.setValidating(isValidateXml());
-        if (isUseInternalDtd())
-        {
-            reader.setEntityResolver(new LocalEntityResolver());
-        }
-        reader.registerMultiMapping(getBetwixtMapping());
-
-        return reader;
-    }
-
-    /*
-     * Returns a new bean writer configured to writer database models.
-     * 
-     * @param output The target output writer
-     * @return The writer
-     */
-    protected BeanWriter getWriter(Writer output) throws DdlException
-    {
-        try
-        {
-            BeanWriter writer = new BeanWriter(output);
-    
-            writer.getXMLIntrospector().register(getBetwixtMapping());
-            writer.getXMLIntrospector().getConfiguration().setAttributesForPrimitives(true);
-            writer.getXMLIntrospector().getConfiguration().setWrapCollectionsInElement(false);
-            writer.getXMLIntrospector().getConfiguration().setElementNameMapper(new HyphenatedNameMapper());
-            writer.getBindingConfiguration().setMapIDs(false);
-            writer.enablePrettyPrint();
-    
-            return writer;
-        }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
-    }
+public class DatabaseIO {
 
     /*
      * Reads the database model contained in the specified file.
      * 
      * @param filename The model file name
+     * 
      * @return The database model
      */
-    public Database read(String filename) throws DdlException
-    {
-        Database model = null;
-
-        try
-        {
-            model = (Database)getReader().parse(filename);
-        }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
-        model.initialize();
-        return model;
+    public Database read(String filename) throws DdlException {
+        return read(new File(filename));
     }
 
     /*
      * Reads the database model contained in the specified file.
      * 
      * @param file The model file
+     * 
      * @return The database model
      */
-    public Database read(File file) throws DdlException
-    {
-        Database model = null;
-
-        try
-        {
-            model = (Database)getReader().parse(file);
+    public Database read(File file) throws DdlException {
+        FileReader reader = null;
+        try {
+            reader = new FileReader(file);
+            return read(reader);
+        } catch (DdlException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new DdlException(ex);
+        } finally {
+            IOUtils.closeQuietly(reader);
         }
-        catch (Exception ex)
-        {
+    }
+
+    public Database read(InputStream is) throws DdlException {
+        try {
+            return read(new InputStreamReader(is, "UTF-8"));
+        } catch (DdlException ex) {
+            throw ex;
+        } catch (Exception ex) {
             throw new DdlException(ex);
         }
-        model.initialize();
-        return model;
     }
 
     /*
      * Reads the database model given by the reader.
      * 
      * @param reader The reader that returns the model XML
+     * 
      * @return The database model
      */
-    public Database read(Reader reader) throws DdlException
-    {
-        Database model = null;
-
-        try
-        {
-            model = (Database)getReader().parse(reader);
-        }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
-        model.initialize();
-        return model;
+    public Database read(Reader reader) throws DdlException {
+        return read(reader, true);
     }
 
     /*
-     * Reads the database model from the given input source.
-     *
-     * @param source The input source
+     * Reads the database model given by the reader.
+     * 
+     * @param reader The reader that returns the model XML
+     * 
      * @return The database model
      */
-    public Database read(InputSource source) throws DdlException
-    {
-        Database model = null;
+    public Database read(Reader reader, boolean validate) throws DdlException {
+        try {
+            boolean done = false;
+            Database database = null;
+            Table table = null;
+            ForeignKey fk = null;
+            IIndex index = null;
 
-        try
-        {
-            model = (Database)getReader().parse(source);
+            XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
+            parser.setInput(reader);
+
+            int eventType = parser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT && !done) {
+                switch (eventType) {
+                    case XmlPullParser.START_DOCUMENT:
+                        database = new Database();
+                        break;
+                    case XmlPullParser.START_TAG:
+                        String name = parser.getName();
+                        if (name.equalsIgnoreCase("database")) {
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    database.setName(attributeValue);
+                                }
+                            }
+                        } else if (name.equalsIgnoreCase("table")) {
+                            table = new Table();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    table.setName(attributeValue);
+                                }
+                            }
+                            database.addTable(table);
+                        } else if (name.equalsIgnoreCase("column")) {
+                            Column column = new Column();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    column.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("primaryKey")) {
+                                    column.setPrimaryKey(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("required")) {
+                                    column.setRequired(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("type")) {
+                                    column.setType(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("size")) {
+                                    column.setSize(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("default")) {
+                                    column.setDefaultValue(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("autoIncrement")) {
+                                    column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("javaName")) {
+                                    column.setJavaName(attributeValue);
+                                }
+                            }
+                            if (table != null) {
+                                table.addColumn(column);
+                            }
+                        } else if (name.equalsIgnoreCase("foreign-key")) {
+                            fk = new ForeignKey();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    fk.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("foreignTable")) {
+                                    fk.setForeignTableName(attributeValue);
+                                }
+                            }
+                            table.addForeignKey(fk);
+                        } else if (name.equalsIgnoreCase("reference")) {
+                            Reference ref = new Reference();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("local")) {
+                                    ref.setLocalColumnName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("foreign")) {
+                                    ref.setForeignColumnName(attributeValue);
+                                }
+                            }
+                            fk.addReference(ref);
+                        } else if (name.equalsIgnoreCase("index")
+                                || name.equalsIgnoreCase("unique")) {
+                            if (name.equalsIgnoreCase("index")) {
+                                index = new NonUniqueIndex();
+                            } else {
+                                index = new UniqueIndex();
+                            }
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    index.setName(attributeValue);
+                                }
+                            }
+                            table.addIndex(index);
+                        } else if (name.equalsIgnoreCase("index-column")) {
+                            IndexColumn indexColumn = new IndexColumn();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    indexColumn.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("size")) {
+                                    indexColumn.setSize(attributeValue);
+                                }
+                            }
+                            if (index != null) {
+                                index.addColumn(indexColumn);
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        name = parser.getName();
+                        if (name.equalsIgnoreCase("database")) {
+                            done = true;
+                        } else if (name.equalsIgnoreCase("index")
+                                || name.equalsIgnoreCase("unique")) {
+                            index = null;
+                        } else if (name.equalsIgnoreCase("table")) {
+                            table = null;
+                        } else if (name.equalsIgnoreCase("foreign-key")) {
+                            fk = null;
+                        }
+                        break;
+                }
+                eventType = parser.next();
+            }
+
+            if (validate) {
+                database.initialize();
+            }
+            return database;
+        } catch (Exception e) {
+            throw new DdlException(e);
         }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
-        model.initialize();
-        return model;
     }
 
     /*
      * Writes the database model to the specified file.
      * 
-     * @param model    The database model
+     * @param model The database model
+     * 
      * @param filename The model file name
      */
-    public void write(Database model, String filename) throws DdlException
-    {
-        try
-        {
-            BufferedWriter writer = null;
+    public void write(Database model, String filename) throws DdlException {
 
-            try
-            {
-                writer = new BufferedWriter(new FileWriter(filename));
-    
-                write(model, writer);
-                writer.flush();
-            }
-            finally
-            {
-                if (writer != null)
-                {
-                    writer.close();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
     }
 
     /*
-     * Writes the database model to the given output stream. Note that this method
-     * does not flush the stream.
+     * Writes the database model to the given output stream. Note that this
+     * method does not flush the stream.
      * 
-     * @param model  The database model
+     * @param model The database model
+     * 
      * @param output The output stream
      */
-    public void write(Database model, OutputStream output) throws DdlException
-    {
-        write(model, getWriter(new OutputStreamWriter(output)));
+    public void write(Database model, OutputStream output) throws DdlException {
+
     }
 
     /*
-     * Writes the database model to the given output writer. Note that this method
-     * does not flush the writer.
+     * Writes the database model to the given output writer. Note that this
+     * method does not flush the writer.
      * 
-     * @param model  The database model
+     * @param model The database model
+     * 
      * @param output The output writer
      */
-    public void write(Database model, Writer output) throws DdlException
-    {
-        write(model, getWriter(output));
+    public void write(Database model, Writer output) throws DdlException {
+
     }
 
-    /*
-     * Internal method that writes the database model using the given bean writer.
-     * 
-     * @param model  The database model
-     * @param writer The bean writer
-     */
-    private void write(Database model, BeanWriter writer) throws DdlException
-    {
-        try
-        {
-            writer.writeXmlDeclaration("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">");
-            writer.write(model);
-            writer.flush();
-        }
-        catch (Exception ex)
-        {
-            throw new DdlException(ex);
-        }
-    }
 }

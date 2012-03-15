@@ -22,12 +22,8 @@ package org.jumpmind.db.platform.oracle;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
@@ -40,7 +36,6 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
 
@@ -53,33 +48,11 @@ public class OracleBuilder extends AbstractDdlBuilder {
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
 
-    /* The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
-    private Pattern isoDatePattern;
-
-    /* The regular expression pattern for ISO times, i.e. 'HH:MI:SS'. */
-    private Pattern isoTimePattern;
-
-    /*
-     * The regular expression pattern for ISO timestamps, i.e. 'YYYY-MM-DD
-     * HH:MI:SS.fffffffff'.
-     */
-    private Pattern isoTimestampPattern;
-
     public OracleBuilder(IDatabasePlatform platform) {
         super(platform);
 
         addEscapedCharSequence("'", "''");
 
-        PatternCompiler compiler = new Perl5Compiler();
-
-        try {
-            isoDatePattern = compiler.compile("\\d{4}\\-\\d{2}\\-\\d{2}");
-            isoTimePattern = compiler.compile("\\d{2}:\\d{2}:\\d{2}");
-            isoTimestampPattern = compiler
-                    .compile("\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}[\\.\\d{1,8}]?");
-        } catch (MalformedPatternException ex) {
-            throw new DdlException(ex);
-        }
     }
 
     @Override
@@ -258,15 +231,15 @@ public class OracleBuilder extends AbstractDdlBuilder {
         // format has to be database-dependent
         // and thus the user has to ensure that it is correct
         else if (column.getTypeCode() == Types.DATE) {
-            if (new Perl5Matcher().matches(column.getDefaultValue(), isoDatePattern)) {
+            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2}",column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD')";
             }
         } else if (column.getTypeCode() == Types.TIME) {
-            if (new Perl5Matcher().matches(column.getDefaultValue(), isoTimePattern)) {
+            if (Pattern.matches("\\d{2}:\\d{2}:\\d{2}", column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'HH24:MI:SS')";
             }
         } else if (column.getTypeCode() == Types.TIMESTAMP) {
-            if (new Perl5Matcher().matches(column.getDefaultValue(), isoTimestampPattern)) {
+            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}[\\.\\d{1,8}]?", column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD HH24:MI:SS')";
             }
         }

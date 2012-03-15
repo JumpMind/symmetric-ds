@@ -27,8 +27,6 @@ import org.apache.commons.lang.builder.EqualsBuilder;
  * Provides compatibility with Torque-style xml with separate &lt;index&gt; and
  * &lt;unique&gt; tags, but adds no functionality.  All indexes are treated the
  * same by the Table.
- * 
- * @version $Revision: 463305 $
  */
 public class UniqueIndex extends IndexImpBase
 {

@@ -27,13 +27,9 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -47,35 +43,26 @@ import org.jumpmind.db.platform.IDatabasePlatform;
  * Reads a database model from a Microsoft Sql Server database.
  */
 public class MsSqlDdlReader extends AbstractJdbcDdlReader {
-    
+
     /* Known system tables that Sql Server creates (e.g. automatic maintenance). */
     private static final String[] KNOWN_SYSTEM_TABLES = { "dtproperties" };
-    
+
     /* The regular expression pattern for the ISO dates. */
-    private Pattern _isoDatePattern;
-    
+    private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
+
     /* The regular expression pattern for the ISO times. */
-    private Pattern _isoTimePattern;
+    private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
     public MsSqlDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
-
-        PatternCompiler compiler = new Perl5Compiler();
-
-        try {
-            _isoDatePattern = compiler.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
-            _isoTimePattern = compiler.compile("'(\\d{2}:\\d{2}:\\d{2})'");
-        } catch (MalformedPatternException ex) {
-            throw new DdlException(ex);
-        }
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
-            throws SQLException {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
 
         for (int idx = 0; idx < KNOWN_SYSTEM_TABLES.length; idx++) {
@@ -158,7 +145,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
         Column column = super.readColumn(metaData, values);
         String defaultValue = column.getDefaultValue();
 
@@ -173,13 +161,16 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 // Sql Server maintains the default values for DATE/TIME jdbc
                 // types, so we have to
                 // migrate the default value to TIMESTAMP
-                PatternMatcher matcher = new Perl5Matcher();
+                Matcher matcher = isoDatePattern.matcher(defaultValue);
                 Timestamp timestamp = null;
 
-                if (matcher.matches(defaultValue, _isoDatePattern)) {
-                    timestamp = new Timestamp(Date.valueOf(matcher.getMatch().group(1)).getTime());
-                } else if (matcher.matches(defaultValue, _isoTimePattern)) {
-                    timestamp = new Timestamp(Time.valueOf(matcher.getMatch().group(1)).getTime());
+                if (matcher.matches()) {
+                    timestamp = new Timestamp(Date.valueOf(matcher.group(1)).getTime());
+                } else {
+                    matcher = isoTimePattern.matcher(defaultValue);
+                    if (matcher.matches()) {
+                        timestamp = new Timestamp(Time.valueOf(matcher.group(1)).getTime());
+                    }
                 }
                 if (timestamp != null) {
                     defaultValue = timestamp.toString();
