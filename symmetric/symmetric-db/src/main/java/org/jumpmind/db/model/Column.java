@@ -26,10 +26,10 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jumpmind.db.platform.PlatformUtils;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * Represents a column in the database model.
@@ -456,11 +456,11 @@ public class Column implements Cloneable, Serializable {
                     case Types.TIMESTAMP:
                         return Timestamp.valueOf(defaultValue);
                     case Types.BIT:
-                        return ConvertUtils.convert(defaultValue, Boolean.class);
+                        return FormatUtils.toBoolean(defaultValue);
                     default:
                         if (PlatformUtils.supportsJava14JdbcTypes()
                                 && (typeCode == PlatformUtils.determineBooleanTypeCode())) {
-                            return ConvertUtils.convert(defaultValue, Boolean.class);
+                            return FormatUtils.toBoolean(defaultValue);
                         }
                         break;
                 }
@@ -471,7 +471,7 @@ public class Column implements Cloneable, Serializable {
             }
         }
         return defaultValue;
-    }
+    }    
 
     /**
      * Sets the default value of the column. Note that this expression will be

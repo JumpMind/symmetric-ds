@@ -31,13 +31,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -46,38 +42,29 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 /*
  * Reads a database model from a Sybase database.
  */
 public class SybaseDdlReader extends AbstractJdbcDdlReader {
+
     /* The regular expression pattern for the ISO dates. */
-    private Pattern _isoDatePattern;
+    private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
 
     /* The regular expression pattern for the ISO times. */
-    private Pattern _isoTimePattern;
+    private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
     public SybaseDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
-
-        PatternCompiler compiler = new Perl5Compiler();
-
-        try {
-            _isoDatePattern = compiler.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
-            _isoTimePattern = compiler.compile("'(\\d{2}:\\d{2}:\\d{2})'");
-        } catch (MalformedPatternException ex) {
-            throw new DdlException(ex);
-        }
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values)
-            throws SQLException {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
@@ -99,7 +86,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
         if ((column.getTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
@@ -111,13 +98,16 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
                 // Sybase maintains the default values for DATE/TIME jdbc types,
                 // so we have to
                 // migrate the default value to TIMESTAMP
-                PatternMatcher matcher = new Perl5Matcher();
+                Matcher matcher = isoDatePattern.matcher(column.getDefaultValue());
                 Timestamp timestamp = null;
 
-                if (matcher.matches(column.getDefaultValue(), _isoDatePattern)) {
-                    timestamp = new Timestamp(Date.valueOf(matcher.getMatch().group(1)).getTime());
-                } else if (matcher.matches(column.getDefaultValue(), _isoTimePattern)) {
-                    timestamp = new Timestamp(Time.valueOf(matcher.getMatch().group(1)).getTime());
+                if (matcher.matches()) {
+                    timestamp = new Timestamp(Date.valueOf(matcher.group(1)).getTime());
+                } else {
+                    matcher = isoTimePattern.matcher(column.getDefaultValue());
+                    if (matcher.matches()) {
+                        timestamp = new Timestamp(Time.valueOf(matcher.group(1)).getTime());
+                    }
                 }
                 if (timestamp != null) {
                     column.setDefaultValue(timestamp.toString());
@@ -130,7 +120,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices)
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,IIndex> knownIndices)
             throws SQLException {
         if (getPlatform().isDelimitedIdentifierModeOn()) {
             String indexName = (String) values.get("INDEX_NAME");
@@ -153,7 +143,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Collection readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
+    protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         // Sybase (or jConnect) does not return the foreign key names, thus we
         // have to
@@ -176,7 +166,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
         Statement stmt = connection.createStatement();
         PreparedStatement prepStmt = connection
                 .prepareStatement("SELECT name FROM syscolumns WHERE id = ? AND colid = ?");
-        ArrayList result = new ArrayList();
+        ArrayList<ForeignKey> result = new ArrayList<ForeignKey>();
 
         try {
             ResultSet fkRs = stmt.executeQuery(query.toString());

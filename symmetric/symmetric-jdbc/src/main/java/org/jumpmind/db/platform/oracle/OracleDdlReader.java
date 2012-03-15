@@ -32,20 +32,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 
@@ -72,16 +67,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
 
-        PatternCompiler compiler = new Perl5Compiler();
-
-        try {
-            oracleIsoDatePattern = compiler.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
-            oracleIsoTimePattern = compiler.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
-            oracleIsoTimestampPattern = compiler
-                    .compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)");
-        } catch (MalformedPatternException ex) {
-            throw new DdlException(ex);
-        }
+        oracleIsoDatePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
+        oracleIsoTimePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
+        oracleIsoTimestampPattern = Pattern
+                .compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)");
     }
 
     @Override
@@ -132,7 +121,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("DATE")) {
             return Types.DATE;
-        } else if (typeName != null && typeName.startsWith("TIMESTAMP") && !typeName.endsWith("TIME ZONE")) {
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP")
+                && !typeName.endsWith("TIME ZONE")) {
             // This is for Oracle's TIMESTAMP(9)
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
@@ -164,64 +154,69 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
             switch (column.getSizeAsInt()) {
-            case 3:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.TINYINT);
-                }
-                break;
-            case 5:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.SMALLINT);
-                }
-                break;
-            case 18:
-                column.setTypeCode(Types.REAL);
-                break;
-            case 22:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.INTEGER);
-                }
-                break;
-            case 38:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.BIGINT);
-                } else {
-                    column.setTypeCode(Types.DOUBLE);
-                }
-                break;
+                case 3:
+                    if (column.getScale() == 0) {
+                        column.setTypeCode(Types.TINYINT);
+                    }
+                    break;
+                case 5:
+                    if (column.getScale() == 0) {
+                        column.setTypeCode(Types.SMALLINT);
+                    }
+                    break;
+                case 18:
+                    column.setTypeCode(Types.REAL);
+                    break;
+                case 22:
+                    if (column.getScale() == 0) {
+                        column.setTypeCode(Types.INTEGER);
+                    }
+                    break;
+                case 38:
+                    if (column.getScale() == 0) {
+                        column.setTypeCode(Types.BIGINT);
+                    } else {
+                        column.setTypeCode(Types.DOUBLE);
+                    }
+                    break;
             }
         } else if (column.getTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
             // FLOAT but with
             // different sizes (63 for REAL, 126 for FLOAT/DOUBLE PRECISION)
             switch (column.getSizeAsInt()) {
-            case 63:
-                column.setTypeCode(Types.REAL);
-                break;
-            case 126:
-                column.setTypeCode(Types.DOUBLE);
-                break;
+                case 63:
+                    column.setTypeCode(Types.REAL);
+                    break;
+                case 126:
+                    column.setTypeCode(Types.DOUBLE);
+                    break;
             }
         } else if ((column.getTypeCode() == Types.DATE)
                 || (column.getTypeCode() == Types.TIMESTAMP)) {
             // we also reverse the ISO-format adaptation, and adjust the default
             // value to timestamp
             if (column.getDefaultValue() != null) {
-                PatternMatcher matcher = new Perl5Matcher();
                 Timestamp timestamp = null;
 
-                if (matcher.matches(column.getDefaultValue(), oracleIsoTimestampPattern)) {
-                    String timestampVal = matcher.getMatch().group(1);
+                Matcher matcher = oracleIsoTimestampPattern.matcher(column.getDefaultValue());
 
+                if (matcher.matches()) {
+                    String timestampVal = matcher.group(1);
                     timestamp = Timestamp.valueOf(timestampVal);
-                } else if (matcher.matches(column.getDefaultValue(), oracleIsoDatePattern)) {
-                    String dateVal = matcher.getMatch().group(1);
+                } else {
+                    matcher = oracleIsoDatePattern.matcher(column.getDefaultValue());
+                    if (matcher.matches()) {
+                        String dateVal = matcher.group(1);
+                        timestamp = new Timestamp(Date.valueOf(dateVal).getTime());
+                    } else {
+                        matcher = oracleIsoTimePattern.matcher(column.getDefaultValue());
+                        if (matcher.matches()) {
+                            String timeVal = matcher.group(1);
 
-                    timestamp = new Timestamp(Date.valueOf(dateVal).getTime());
-                } else if (matcher.matches(column.getDefaultValue(), oracleIsoTimePattern)) {
-                    String timeVal = matcher.getMatch().group(1);
-
-                    timestamp = new Timestamp(Time.valueOf(timeVal).getTime());
+                            timestamp = new Timestamp(Time.valueOf(timeVal).getTime());
+                        }
+                    }
                 }
                 if (timestamp != null) {
                     column.setDefaultValue(timestamp.toString());
@@ -268,8 +263,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         // determine whether it fits our auto-increment definition
         PreparedStatement prepStmt = null;
         IDdlBuilder builder = getPlatform().getDdlBuilder();
-        String triggerName = builder.getConstraintName(OracleBuilder.PREFIX_TRIGGER, table, column.getName(), null);
-        String seqName = builder.getConstraintName(OracleBuilder.PREFIX_SEQUENCE, table, column.getName(), null);
+        String triggerName = builder.getConstraintName(OracleBuilder.PREFIX_TRIGGER, table,
+                column.getName(), null);
+        String seqName = builder.getConstraintName(OracleBuilder.PREFIX_SEQUENCE, table,
+                column.getName(), null);
 
         if (!getPlatform().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();

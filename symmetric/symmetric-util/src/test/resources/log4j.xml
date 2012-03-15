@@ -12,6 +12,10 @@
     <category name="org.jumpmind">
         <priority value="INFO" />
     </category>
+    
+    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
+        <priority value="ERROR" />
+    </category>    
 
     <root>
         <priority value="WARN" />

@@ -24,17 +24,15 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-import org.apache.commons.beanutils.ConversionException;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * Helper class for dealing with default values, e.g. converting them to other
  * types.
- * 
- * @version $Revision: 289996 $
  */
 public class DefaultValueHelper {
+
     /**
      * Converts the given default value from the specified original to the
      * target jdbc type.
@@ -52,35 +50,35 @@ public class DefaultValueHelper {
 
         if (defaultValue != null) {
             switch (originalTypeCode) {
-            case Types.BIT:
-                result = convertBoolean(defaultValue, targetTypeCode).toString();
-                break;
-            case Types.DATE:
-                if (targetTypeCode == Types.TIMESTAMP) {
-                    try {
-                        Date date = Date.valueOf(result);
-
-                        return new Timestamp(date.getTime()).toString();
-                    } catch (IllegalArgumentException ex) {
-                    }
-                }
-                break;
-            case Types.TIME:
-                if (targetTypeCode == Types.TIMESTAMP) {
-                    try {
-                        Time time = Time.valueOf(result);
-
-                        return new Timestamp(time.getTime()).toString();
-                    } catch (IllegalArgumentException ex) {
-                    }
-                }
-                break;
-            default:
-                if (PlatformUtils.supportsJava14JdbcTypes()
-                        && (originalTypeCode == PlatformUtils.determineBooleanTypeCode())) {
+                case Types.BIT:
                     result = convertBoolean(defaultValue, targetTypeCode).toString();
-                }
-                break;
+                    break;
+                case Types.DATE:
+                    if (targetTypeCode == Types.TIMESTAMP) {
+                        try {
+                            Date date = Date.valueOf(result);
+
+                            return new Timestamp(date.getTime()).toString();
+                        } catch (IllegalArgumentException ex) {
+                        }
+                    }
+                    break;
+                case Types.TIME:
+                    if (targetTypeCode == Types.TIMESTAMP) {
+                        try {
+                            Time time = Time.valueOf(result);
+
+                            return new Timestamp(time.getTime()).toString();
+                        } catch (IllegalArgumentException ex) {
+                        }
+                    }
+                    break;
+                default:
+                    if (PlatformUtils.supportsJava14JdbcTypes()
+                            && (originalTypeCode == PlatformUtils.determineBooleanTypeCode())) {
+                        result = convertBoolean(defaultValue, targetTypeCode).toString();
+                    }
+                    break;
             }
         }
         return result;
@@ -96,23 +94,17 @@ public class DefaultValueHelper {
      * @return The converted value
      */
     private Object convertBoolean(String defaultValue, int targetTypeCode) {
-        Boolean value = null;
+        boolean value = FormatUtils.toBoolean(defaultValue);
         Object result = null;
-
-        try {
-            value = (Boolean) ConvertUtils.convert(defaultValue, Boolean.class);
-        } catch (ConversionException ex) {
-            return defaultValue;
-        }
 
         if ((targetTypeCode == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (targetTypeCode == PlatformUtils
                         .determineBooleanTypeCode()))) {
             result = value;
         } else if (TypeMap.isNumericType(targetTypeCode)) {
-            result = (value.booleanValue() ? new Integer(1) : new Integer(0));
+            result = (value ? new Integer(1) : new Integer(0));
         } else {
-            result = value.toString();
+            result = Boolean.toString(value);
         }
         return result;
     }
