@@ -34,7 +34,7 @@ import org.jumpmind.db.sql.JdbcUtils;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
- * The platform for Oracle 8.
+ * Provides support for the Oracle platform.
  */
 public class OraclePlatform extends AbstractJdbcDatabasePlatform {
 
