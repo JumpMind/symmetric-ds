@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -160,7 +161,9 @@ public class DatabaseIO {
                                 } else if (attributeName.equalsIgnoreCase("size")) {
                                     column.setSize(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("default")) {
-                                    column.setDefaultValue(attributeValue);
+                                    if (StringUtils.isNotBlank(attributeValue)) {
+                                        column.setDefaultValue(attributeValue);
+                                    }
                                 } else if (attributeName.equalsIgnoreCase("autoIncrement")) {
                                     column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("javaName")) {

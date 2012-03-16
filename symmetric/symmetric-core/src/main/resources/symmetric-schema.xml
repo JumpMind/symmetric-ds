@@ -262,7 +262,7 @@
     <table name="trigger_hist" description="A history of a table's definition and the trigger used to capture data from the table. When a database trigger captures a data change, it references a trigger_hist entry so it is possible to know which columns the data represents. trigger_hist entries are made during the sync trigger process, which runs at each startup, each night in the syncTriggersJob, or any time the syncTriggers() JMX method is manually invoked. A new entry is made when a table definition or a trigger definition is changed, which causes a database trigger to be created or rebuilt.">
         <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a trigger_hist entry" />
         <column name="trigger_id" type="VARCHAR" size="50" required="true"  description="Unique identifier for a trigger" />
-        <column name="source_table_name" type="VARCHAR" default="" size="50" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="source_catalog_name" type="VARCHAR" size="50"  description="The catalog name where the source table resides." />
         <column name="source_schema_name" type="VARCHAR" size="50"  description="The schema name where the source table resides." />
         <column name="name_for_update_trigger" type="VARCHAR" size="50" required="true"  description="The name used when the insert trigger was created." />
@@ -275,7 +275,7 @@
         <column name="last_trigger_build_reason" size="1" type="CHAR" required="true"  description="The following reasons for a change are possible: New trigger that has not been created before (N); Schema changes in the table were detected (S); Configuration changes in Trigger (C); Trigger was missing (T)." />
         <column name="error_message" type="LONGVARCHAR" description="Record any errors or warnings that occurred when attempting to build the trigger." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="inactive_time" type="TIMESTAMP"  description="    The date and time when a trigger was inactivated." />
+        <column name="inactive_time" type="TIMESTAMP"  description="The date and time when a trigger was inactivated." />
     </table>    
     
     <table name="data" description="The captured data change that occurred to a row in the database. Entries in data are created by database triggers.">

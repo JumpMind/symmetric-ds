@@ -202,9 +202,9 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Collection readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
+    protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
-        Map fks = new ListOrderedMap();
+        Map<String, ForeignKey> fks = new ListOrderedMap();
         ResultSet fkData = null;
 
         try {
