@@ -10,5 +10,6 @@ abstract public class DatabaseNamesConstants {
     public final static String INFORMIX = "Informix Dynamic Server11";
     public final static String INTERBASE = "Interbase";
     public final static String FIREBIRD = "Firebird";
+    public final static String SQLITE = "sqlite";
     
 }

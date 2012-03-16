@@ -79,6 +79,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     /* The platform that this model reader belongs to. */
     private IDatabasePlatform platform;
+    
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
