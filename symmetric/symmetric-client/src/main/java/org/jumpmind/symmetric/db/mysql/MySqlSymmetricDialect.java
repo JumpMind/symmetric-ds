@@ -49,7 +49,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new MySqlTriggerTemplate(this);
+        this.triggerTemplate = new MySqlTriggerTemplate(this);
         this.parameterService = parameterService;
     }
 
@@ -71,7 +71,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     protected void createRequiredFunctions() {
-        String[] functions = triggerText.getFunctionsToInstall();
+        String[] functions = triggerTemplate.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
             if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
                 String funcName = parameterService.getTablePrefix()
@@ -79,9 +79,9 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                         + functions[i].substring(0, functions[i].length()
                                 - this.functionTemplateKeySuffix.length());
                 if (platform.getSqlTemplate().queryForInt(
-                        triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                        triggerTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
                     platform.getSqlTemplate().update(
-                            triggerText.getFunctionSql(functions[i], funcName));
+                            triggerTemplate.getFunctionSql(functions[i], funcName));
                     log.info("Just installed {}", funcName);
                 }
             }

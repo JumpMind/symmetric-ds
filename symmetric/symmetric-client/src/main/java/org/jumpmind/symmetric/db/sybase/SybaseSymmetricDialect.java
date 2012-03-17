@@ -53,7 +53,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
        
     public SybaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new SybaseTriggerTemplate(this);
+        this.triggerTemplate = new SybaseTriggerTemplate(this);
     } 
 
     @Override

@@ -50,7 +50,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new InterbaseTriggerTemplate(this);
+        this.triggerTemplate = new InterbaseTriggerTemplate(this);
     }
     
     @Override
