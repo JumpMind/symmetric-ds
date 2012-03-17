@@ -120,4 +120,6 @@ public interface IIndex extends Cloneable, Serializable
      * @return The string representation
      */
     public String toVerboseString();
+    
+    public boolean hasAllPrimaryKeys();
 }

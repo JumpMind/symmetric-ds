@@ -27,70 +27,70 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 /**
  * Represents a column of an index in the database model.
  */
-public class IndexColumn implements Cloneable, Serializable
-{
+public class IndexColumn implements Cloneable, Serializable {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5009366896427504739L;
 
     /** The position within the owning index. */
-    private int    _ordinalPosition;
-    
+    private int ordinalPosition;
+
     /** The indexed column. */
-    private Column _column;
-    
+    private Column column;
+
     /** The name of the column. */
-    protected String _name;
-    
+    protected String name;
+
     /** The size of the column in the index. */
-    protected String _size;
-
-    /**
-     * Creates a new index column object.
-     */
-    public IndexColumn()
-    {
-    }
+    protected String size;
     
+    protected boolean primaryKey;
+
     /**
      * Creates a new index column object.
-     * 
-     * @param column The indexed column
      */
-    public IndexColumn(Column column)
-    {
-        _column = column;
-        _name   = column.getName();
+    public IndexColumn() {
     }
 
     /**
      * Creates a new index column object.
      * 
-     * @param columnName The name of the corresponding table column
+     * @param column
+     *            The indexed column
      */
-    public IndexColumn(String columnName)
-    {
-        _name = columnName;
+    public IndexColumn(Column column) {
+        this.column = column;
+        this.name = column.getName();
+        this.primaryKey = column.isPrimaryKey();        
+    }
+
+    /**
+     * Creates a new index column object.
+     * 
+     * @param columnName
+     *            The name of the corresponding table column
+     */
+    public IndexColumn(String columnName) {
+        name = columnName;
     }
 
     /**
      * Returns the position within the owning index.
-     *
+     * 
      * @return The position
      */
-    public int getOrdinalPosition()
-    {
-        return _ordinalPosition;
+    public int getOrdinalPosition() {
+        return ordinalPosition;
     }
 
     /**
-     * Sets the position within the owning index. Please note that you should not
-     * change the value once the column has been added to a index.
-     *
-     * @param position The position
+     * Sets the position within the owning index. Please note that you should
+     * not change the value once the column has been added to a index.
+     * 
+     * @param position
+     *            The position
      */
-    public void setOrdinalPosition(int position)
-    {
-        _ordinalPosition = position;
+    public void setOrdinalPosition(int position) {
+        this.ordinalPosition = position;
     }
 
     /**
@@ -98,40 +98,39 @@ public class IndexColumn implements Cloneable, Serializable
      * 
      * @return The name
      */
-    public String getName()
-    {
-        return _name;
+    public String getName() {
+        return name;
     }
-    
+
     /**
      * Sets the name of the column.
      * 
-     * @param name The name
+     * @param name
+     *            The name
      */
-    public void setName(String name)
-    {
-        _name = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
      * Returns the indexed column.
-     *
+     * 
      * @return The column
      */
-    public Column getColumn()
-    {
-        return _column;
+    public Column getColumn() {
+        return column;
     }
 
     /**
      * Sets the indexed column.
-     *
-     * @param column The column
+     * 
+     * @param column
+     *            The column
      */
-    public void setColumn(Column column)
-    {
-        _column = column;
-        _name   = (column == null ? null : column.getName());
+    public void setColumn(Column column) {
+        this.column = column;
+        this.name = (column == null ? name : column.getName());
+        this.primaryKey = (column == null ? primaryKey : column.isPrimaryKey());
     }
 
     /**
@@ -139,80 +138,66 @@ public class IndexColumn implements Cloneable, Serializable
      * 
      * @return The size
      */
-    public String getSize()
-    {
-        return _size;
+    public String getSize() {
+        return size;
     }
 
     /**
      * Sets the size of the column in the index.
      * 
-     * @param size The size
+     * @param size
+     *            The size
      */
-    public void setSize(String size)
-    {
-        _size = size;
+    public void setSize(String size) {
+        this.size = size;
+    }
+    
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+    
+    public boolean isPrimaryKey() {
+        return primaryKey;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Object clone() throws CloneNotSupportedException
-    {
-        IndexColumn result = (IndexColumn)super.clone();
+    public Object clone() throws CloneNotSupportedException {
+        IndexColumn result = (IndexColumn) super.clone();
 
-        result._name = _name;
-        result._size = _size;
+        result.name = name;
+        result.size = size;
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof IndexColumn)
-        {
-            IndexColumn other = (IndexColumn)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof IndexColumn) {
+            IndexColumn other = (IndexColumn) obj;
 
-            return new EqualsBuilder().append(_name, other._name)
-                                      .append(_size, other._size)
-                                      .isEquals();
-        }
-        else
-        {
+            return new EqualsBuilder().append(name, other.name).append(size, other.size)
+                    .isEquals();
+        } else {
             return false;
         }
     }
 
     /**
-     * Compares this index column to the given one while ignoring the case of identifiers.
+     * Compares this index column to the given one while ignoring the case of
+     * identifiers.
      * 
-     * @param other The other index column
-     * @return <code>true</code> if this index column is equal (ignoring case) to the given one
+     * @param other
+     *            The other index column
+     * @return <code>true</code> if this index column is equal (ignoring case)
+     *         to the given one
      */
-    public boolean equalsIgnoreCase(IndexColumn other)
-    {
-        return new EqualsBuilder().append(_name.toUpperCase(), other._name.toUpperCase())
-                                  .append(_size, other._size)
-                                  .isEquals();
+    public boolean equalsIgnoreCase(IndexColumn other) {
+        return new EqualsBuilder().append(name.toUpperCase(), other.name.toUpperCase())
+                .append(size, other.size).isEquals();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37).append(_name)
-                                          .append(_size)
-                                          .toHashCode();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(size).toHashCode();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toString()
-    {
+    public String toString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Index column [name=");
