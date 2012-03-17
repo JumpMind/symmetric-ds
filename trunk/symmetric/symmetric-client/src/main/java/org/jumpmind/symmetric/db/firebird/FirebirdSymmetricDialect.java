@@ -42,7 +42,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     public FirebirdSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new FirebirdTriggerTemplate(this);
+        this.triggerTemplate = new FirebirdTriggerTemplate(this);
     }
     
     @Override

@@ -35,7 +35,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
 
     public HsqlDb2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new HsqlDb2TriggerTemplate(this);
+        this.triggerTemplate = new HsqlDb2TriggerTemplate(this);
         platform.getSqlTemplate().update("SET DATABASE DEFAULT TABLE TYPE CACHED");
     }
 

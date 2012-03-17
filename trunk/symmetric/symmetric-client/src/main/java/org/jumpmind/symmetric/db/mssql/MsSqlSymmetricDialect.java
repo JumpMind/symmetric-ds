@@ -52,7 +52,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new MsSqlTriggerTemplate(this);
+        this.triggerTemplate = new MsSqlTriggerTemplate(this);
     }
 
     @Override

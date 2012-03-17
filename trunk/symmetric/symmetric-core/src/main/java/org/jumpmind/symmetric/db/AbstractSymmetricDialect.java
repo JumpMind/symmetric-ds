@@ -69,7 +69,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected IDatabasePlatform platform;
 
-    protected AbstractTriggerTemplate triggerText;
+    protected AbstractTriggerTemplate triggerTemplate;
 
     protected IParameterService parameterService;
 
@@ -150,13 +150,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     protected void createRequiredFunctions() {
-        String[] functions = triggerText.getFunctionsToInstall();
+        String[] functions = triggerTemplate.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
             String funcName = this.parameterService.getTablePrefix() + "_" + functions[i];
             if (this.platform.getSqlTemplate().queryForInt(
-                    triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                    triggerTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
                 this.platform.getSqlTemplate().update(
-                        triggerText.getFunctionSql(functions[i], funcName));
+                        triggerTemplate.getFunctionSql(functions[i], funcName));
                 log.info("Just installed {}", funcName);
             }
         }
@@ -176,7 +176,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
             TriggerHistory triggerHistory, Channel channel) {
-        return triggerText.createInitalLoadSql(node, trigger, table, triggerHistory, channel)
+        return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel)
                 .trim();
     }
 
@@ -188,7 +188,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
-        return triggerText.createCsvDataSql(
+        return triggerTemplate.createCsvDataSql(
                 trigger,
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
@@ -198,7 +198,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
             Channel channel, String whereClause) {
-        return triggerText.createCsvPrimaryKeySql(
+        return triggerTemplate.createCsvPrimaryKeySql(
                 trigger,
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
@@ -250,7 +250,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
-        String triggerSql = triggerText.createTriggerDDL(dml, trigger, hist, channel, tablePrefix,
+        String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table, defaultCatalog, defaultSchema);
 
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
@@ -309,7 +309,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
             Channel channel, String tablePrefix, Table table) {
-        return triggerText.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
+        return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
                 platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
@@ -744,8 +744,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         databaseUpgradeListeners.add(listener);
     }
 
-    public AbstractTriggerTemplate getTriggerText() {
-        return triggerText;
+    public AbstractTriggerTemplate getTriggerTemplate() {
+        return triggerTemplate;
     }
 
     protected void close(ISqlTransaction transaction) {

@@ -36,7 +36,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     public Db2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new Db2TriggerTemplate(this);
+        this.triggerTemplate = new Db2TriggerTemplate(this);
     }
 
     protected boolean createTablesIfNecessary() {
