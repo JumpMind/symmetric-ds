@@ -26,71 +26,56 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Represents an index definition for a table.
- * 
- * @version $Revision: 289996 $
  */
-public class NonUniqueIndex extends IndexImpBase
-{
+public class NonUniqueIndex extends IndexImpBase {
+
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3591499395114850301L;
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isUnique()
-    {
+    public NonUniqueIndex() {
+    }
+
+    public NonUniqueIndex(String name) {
+        setName(name);
+    }
+
+    public boolean isUnique() {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Object clone() throws CloneNotSupportedException
-    {
+    @SuppressWarnings("unchecked")
+    public Object clone() throws CloneNotSupportedException {
         NonUniqueIndex result = new NonUniqueIndex();
 
-        result._name    = _name;
-        result._columns = (ArrayList)_columns.clone();
+        result.name = name;
+        result.columns = (ArrayList<IndexColumn>) columns.clone();
 
         return result;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof NonUniqueIndex)
-        {
-            NonUniqueIndex other = (NonUniqueIndex)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof NonUniqueIndex) {
+            NonUniqueIndex other = (NonUniqueIndex) obj;
 
-            return new EqualsBuilder().append(_name,    other._name)
-                                      .append(_columns, other._columns)
-                                      .isEquals();
-        }
-        else
-        {
+            return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
+                    .isEquals();
+        } else {
             return false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equalsIgnoreCase(IIndex other)
-    {
-        if (other instanceof NonUniqueIndex)
-        {
-            NonUniqueIndex otherIndex = (NonUniqueIndex)other;
+    public boolean equalsIgnoreCase(IIndex other) {
+        if (other instanceof NonUniqueIndex) {
+            NonUniqueIndex otherIndex = (NonUniqueIndex) other;
 
-            boolean checkName = (_name != null) && (_name.length() > 0) &&
-                                (otherIndex._name != null) && (otherIndex._name.length() > 0);
+            boolean checkName = (name != null) && (name.length() > 0) && (otherIndex.name != null)
+                    && (otherIndex.name.length() > 0);
 
-            if ((!checkName || _name.equalsIgnoreCase(otherIndex._name)) &&
-                (getColumnCount() == otherIndex.getColumnCount()))
-            {
-                for (int idx = 0; idx < getColumnCount(); idx++)
-                {
-                    if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx)))
-                    {
+            if ((!checkName || name.equalsIgnoreCase(otherIndex.name))
+                    && (getColumnCount() == otherIndex.getColumnCount())) {
+                for (int idx = 0; idx < getColumnCount(); idx++) {
+                    if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx))) {
                         return false;
                     }
                 }
@@ -100,21 +85,11 @@ public class NonUniqueIndex extends IndexImpBase
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37).append(_name)
-                                          .append(_columns)
-                                          .toHashCode();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(columns).toHashCode();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toString()
-    {
+    public String toString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Index [name=");
@@ -126,18 +101,13 @@ public class NonUniqueIndex extends IndexImpBase
         return result.toString();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toVerboseString()
-    {
+    public String toVerboseString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Index [");
         result.append(getName());
         result.append("] columns:");
-        for (int idx = 0; idx < getColumnCount(); idx++)
-        {
+        for (int idx = 0; idx < getColumnCount(); idx++) {
             result.append(" ");
             result.append(getColumn(idx).toString());
         }

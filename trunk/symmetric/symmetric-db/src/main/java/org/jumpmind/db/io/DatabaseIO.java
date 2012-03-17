@@ -223,6 +223,8 @@ public class DatabaseIO {
                                     indexColumn.setSize(attributeValue);
                                 }
                             }
+
+                            indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
                             if (index != null) {
                                 index.addColumn(indexColumn);
                             }

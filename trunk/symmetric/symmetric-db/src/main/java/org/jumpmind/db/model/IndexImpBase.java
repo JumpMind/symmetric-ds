@@ -23,112 +23,77 @@ import java.util.ArrayList;
 
 /**
  * Base class for indices.
- * 
- * @version $Revision: $
  */
-public abstract class IndexImpBase implements IIndex
-{
+public abstract class IndexImpBase implements IIndex {
+
+    private static final long serialVersionUID = 1L;
+
     /** The name of the index. */
-    protected String    _name;
+    protected String name;
+
     /** The columns making up the index. */
-    protected ArrayList _columns = new ArrayList();
+    protected ArrayList<IndexColumn> columns = new ArrayList<IndexColumn>();
 
-    /**
-     * {@inheritDoc}
-     */
-    public String getName()
-    {
-        return _name;
+    public String getName() {
+        return name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setName(String name)
-    {
-        _name = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public int getColumnCount()
-    {
-        return _columns.size();
+    public int getColumnCount() {
+        return columns.size();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public IndexColumn getColumn(int idx)
-    {
-        return (IndexColumn)_columns.get(idx);
+    public IndexColumn getColumn(int idx) {
+        return (IndexColumn) columns.get(idx);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public IndexColumn[] getColumns()
-    {
-        return (IndexColumn[])_columns.toArray(new IndexColumn[_columns.size()]);
+    public IndexColumn[] getColumns() {
+        return (IndexColumn[]) columns.toArray(new IndexColumn[columns.size()]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean hasColumn(Column column)
-    {
-        for (int idx = 0; idx < _columns.size(); idx++)
-        {
+    public boolean hasColumn(Column column) {
+        for (int idx = 0; idx < columns.size(); idx++) {
             IndexColumn curColumn = getColumn(idx);
 
-            if (column.equals(curColumn.getColumn()))
-            {
+            if (column.equals(curColumn.getColumn())) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void addColumn(IndexColumn column)
-    {
-        if (column != null)
-        {
-            for (int idx = 0; idx < _columns.size(); idx++)
-            {
+    public void addColumn(IndexColumn column) {
+        if (column != null) {
+            for (int idx = 0; idx < columns.size(); idx++) {
                 IndexColumn curColumn = getColumn(idx);
 
-                if (curColumn.getOrdinalPosition() > column.getOrdinalPosition())
-                {
-                    _columns.add(idx, column);
+                if (curColumn.getOrdinalPosition() > column.getOrdinalPosition()) {
+                    columns.add(idx, column);
                     return;
                 }
             }
-            _columns.add(column);
+            columns.add(column);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void removeColumn(IndexColumn column)
-    {
-        _columns.remove(column);
+    public void removeColumn(IndexColumn column) {
+        columns.remove(column);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void removeColumn(int idx)
-    {
-        _columns.remove(idx);
+    public void removeColumn(int idx) {
+        columns.remove(idx);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public abstract Object clone() throws CloneNotSupportedException;
+    
+    public boolean hasAllPrimaryKeys() {
+        boolean hasAllPrimaryKeys = true;
+        for (IndexColumn col : columns) {
+            hasAllPrimaryKeys &= col.isPrimaryKey();
+        }
+        return hasAllPrimaryKeys;
+    }
 }
