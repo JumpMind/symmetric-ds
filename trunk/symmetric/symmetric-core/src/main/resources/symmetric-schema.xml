@@ -447,6 +447,22 @@
         <column name="last_update_by"       type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time"     type="TIMESTAMP" required="true"  description="The date and time when a user last updated this entry." />
     </table>
-    
+
+    <table name="incoming_error" description="The captured data change that is in error for a batch.  The user can tell the system what to do by updating the resolve columns.  Entries in data_error are created when an incoming batch encounters an error.">
+        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
+        <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="The row number in the batch that encountered an error when loading." />
+        <column name="target_catalog_name" type="VARCHAR" size="50" description="The catalog name for the table being loaded." />
+        <column name="target_schema_name" type="VARCHAR" size="50" description="The schema name for the table being loaded." />
+        <column name="target_table_name" type="VARCHAR" size="50" required="true" description="The table name for the table being loaded." />
+        <column name="event_type" type="CHAR" size="1" required="true" description="The type of event captured by this entry. For triggers, this is the change that occurred, which is 'I' for insert, 'U' for update, or 'D' for delete. Other events include: 'R' for reloading the entire table (or subset of the table) to the node; 'S' for running dynamic SQL at the node, which is used for adhoc administration." />
+        <column name="row_data" type="LONGVARCHAR" description="The row data from the batch as captured from the source. The column values are stored in comma-separated values (CSV) format." />
+        <column name="old_data" type="LONGVARCHAR" description="The old row data prior to update from the batch as captured from the source.  The column values are stored in CSV format." />
+        <column name="resolve_data" type="LONGVARCHAR" description="The capture data change from the user that is used instead of row_data.  This is useful when resolving a conflict manually by specifying the data that should load." />
+        <column name="resolve_ignore" type="BOOLEANINT" size="1" default="0" description="Indication from the user that the row_data should be ignored and the batch can continue loading with the next row." />        
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />
+    </table>
         
 </database>
