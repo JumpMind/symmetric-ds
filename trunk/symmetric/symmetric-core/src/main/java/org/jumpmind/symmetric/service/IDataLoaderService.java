@@ -29,6 +29,7 @@ import java.util.List;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -61,5 +62,9 @@ public interface IDataLoaderService {
     public void delete(ConflictSettingsNodeGroupLink settings);
     
     public void save(ConflictSettingsNodeGroupLink settings);
+
+    public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
+
+    public void saveIncomingError(IncomingError incomingError);
 
 }

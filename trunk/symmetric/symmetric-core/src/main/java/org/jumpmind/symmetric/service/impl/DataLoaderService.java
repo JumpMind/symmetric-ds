@@ -73,6 +73,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -481,6 +482,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    public List<IncomingError> getIncomingErrors(long batchId, String nodeId) {
+    	return null;
+    }
+
+    public void saveIncomingError(IncomingError incomingError) {
+    }
+    
     /**
      * Used for unit tests
      */
