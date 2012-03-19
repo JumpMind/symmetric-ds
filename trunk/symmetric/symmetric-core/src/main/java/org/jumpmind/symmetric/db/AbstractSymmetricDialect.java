@@ -162,9 +162,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    public BinaryEncoding getBinaryEncoding() {
-        return BinaryEncoding.NONE;
-    }
+    
+    abstract public BinaryEncoding getBinaryEncoding();
 
     abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema,
             String tableName, String triggerName);
