@@ -38,6 +38,7 @@ public class CsvData {
     public static final String OLD_DATA = "oldData";
     public static final String ROW_DATA = "rowData";
     public static final String PK_DATA = "pkData";
+    public static final String RESOLVE_DATA = "resolveData";
 
     public static final String ATTRIBUTE_TABLE_NAME = "tableName";
     public static final String ATTRIBUTE_CHANNEL_ID = "channelId";
@@ -70,6 +71,13 @@ public class CsvData {
     public CsvData(DataEventType dataEventType, String[] rowData) {
         this(dataEventType);
         this.putParsedData(ROW_DATA, rowData);
+    }
+
+    public CsvData(DataEventType dataEventType, String[] rowData, String[] oldData, String[] resolveData) {
+        this(dataEventType);
+        this.putParsedData(ROW_DATA, rowData);
+        this.putParsedData(OLD_DATA, oldData);
+        this.putParsedData(RESOLVE_DATA, resolveData);
     }
 
     public CsvData() {
