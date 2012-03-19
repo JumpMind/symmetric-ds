@@ -40,7 +40,7 @@ public class DatabaseWriter implements IDataWriter {
     protected final static Logger log = LoggerFactory.getLogger(DatabaseWriter.class);
 
     public static enum LoadStatus {
-        SUCCESS, PK_CONFLICT, FK_CONFLICT
+        SUCCESS, CONFLICT, FK_CONFLICT
     };
 
     protected IDatabasePlatform platform;
@@ -137,7 +137,7 @@ public class DatabaseWriter implements IDataWriter {
                     break;
             }
 
-            if (loadStatus != LoadStatus.SUCCESS) {
+            if (loadStatus == LoadStatus.CONFLICT) {
                 if (conflictResolver != null) {
                     conflictResolver.needsResolved(this, writerSettings, data, loadStatus);
                 } else {
@@ -300,10 +300,10 @@ public class DatabaseWriter implements IDataWriter {
                         getLookupKeyData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
-                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    return LoadStatus.PK_CONFLICT;
+                    return LoadStatus.CONFLICT;
                 } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
                     return LoadStatus.FK_CONFLICT;
                 } else {
@@ -378,10 +378,10 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 long count = execute(data, getLookupKeyData(data));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
-                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    return LoadStatus.PK_CONFLICT;
+                    return LoadStatus.CONFLICT;
                 } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
                     return LoadStatus.FK_CONFLICT;
                 } else {
@@ -486,10 +486,10 @@ public class DatabaseWriter implements IDataWriter {
                     long count = execute(data, values);
                     statistics.get(batch)
                             .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
-                    return count > 0 ? LoadStatus.SUCCESS : LoadStatus.PK_CONFLICT;
+                    return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
                 } catch (SqlException ex) {
                     if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                        return LoadStatus.PK_CONFLICT;
+                        return LoadStatus.CONFLICT;
                     } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
                         return LoadStatus.FK_CONFLICT;
                     } else {
