@@ -44,7 +44,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         putSql("selectIncomingErrorSql",
         		"select batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
         		"target_table_name, event_type, row_data, old_data, resolve_data, resolve_ignore, " +
-        		"create_time, last_update_by, last_update_time from $(incoming_error)");
+        		"create_time, last_update_by, last_update_time from $(incoming_error) where batch_id = ? and node_id = ?");
 
         putSql("selectCurrentIncomingErrorSql",
         		"select e.batch_id, e.node_id, e.failed_row_number, e.failed_line_number, e.target_catalog_name, e.target_schema_name, " +
@@ -58,7 +58,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         		"insert into $(incoming_error) " +
         		"(batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
         		"target_table_name, event_type, row_data, old_data, resolve_data, resolve_ignore, " +
-        		"create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        		"create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateIncomingErrorSql",
         		"update $(incoming_error) set resolve_data = ?, resolve_ignore = ? " +

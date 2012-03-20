@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
@@ -30,10 +31,10 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     public IDataWriter getDataWriter(String sourceNodeId, IDatabasePlatform platform,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
-            List<? extends ConflictSetting> conflictSettings) {
+            List<? extends ConflictSetting> conflictSettings, List<ResolvedData> resolvedData) {
         DatabaseWriter writer = new DatabaseWriter(platform,
                 new DefaultTransformWriterConflictResolver(transformWriter),
-                buildDatabaseWriterSettings(filters, conflictSettings));
+                buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));
         return writer;
     }
 
@@ -42,7 +43,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters, List<? extends ConflictSetting> conflictSettings) {
+            List<IDatabaseWriterFilter> filters, List<? extends ConflictSetting> conflictSettings,
+            List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setMaxRowsBeforeCommit(parameterService
@@ -66,6 +68,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         }
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
+        settings.setResolvedData(resolvedDatas);
         return settings;
     }
 

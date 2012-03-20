@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.ResolvedData;
 
 public class DatabaseWriterSettings {
 
@@ -22,6 +23,8 @@ public class DatabaseWriterSettings {
     protected Map<String, ConflictSetting> conflictSettingsByTable;
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
+    
+    protected List<ResolvedData> resolvedData;
 
     public long getMaxRowsBeforeCommit() {
         return maxRowsBeforeCommit;
@@ -77,6 +80,25 @@ public class DatabaseWriterSettings {
 
     public void setDatabaseWriterFilters(List<IDatabaseWriterFilter> databaseWriterFilters) {
         this.databaseWriterFilters = databaseWriterFilters;
+    }
+    
+    public void setResolvedData(List<ResolvedData> resolvedData) {
+        this.resolvedData = resolvedData;
+    }
+    
+    public List<ResolvedData> getResolvedData() {
+        return resolvedData;
+    }
+    
+    public ResolvedData getResolvedData (long rowNumber) {
+        if (resolvedData != null) {
+            for (ResolvedData data : resolvedData) {
+                if (data.getRowNumber() == rowNumber) {
+                    return data;
+                }
+            }
+        }
+        return null;
     }
 
     public ConflictSetting getConflictSettings(Table table, Batch batch) {

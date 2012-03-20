@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 public class TableConstants {
 
     public static final String SYM_PARAMETER = "parameter";
-    public static final String SYM_LOCK = "lock";    
+    public static final String SYM_LOCK = "lock";
     public static final String SYM_OUTGOING_BATCH = "outgoing_batch";
     public static final String SYM_INCOMING_BATCH = "incoming_batch";
     public static final String SYM_TRIGGER = "trigger";
@@ -62,9 +62,9 @@ public class TableConstants {
     public static final String SYM_INCOMING_ERROR = "incoming_error";
 
     private static Set<String> tablesWithPrefix;
-    
+
     private static Set<String> configTablesWithPrefix;
-    
+
     private static Set<String> tablesWithoutPrefix;
 
     public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };
@@ -75,55 +75,39 @@ public class TableConstants {
         }
         return tablesWithPrefix;
     }
-    
+
     public static final Set<String> getConfigTables(String tablePrefix) {
         if (configTablesWithPrefix == null) {
             configTablesWithPrefix = populateConfigTables(tablePrefix);
         }
         return configTablesWithPrefix;
     }
-    
+
     public static final Set<String> getTablesWithoutPrefix() {
         if (tablesWithoutPrefix == null) {
             tablesWithoutPrefix = populateAllTables("");
         }
         return tablesWithoutPrefix;
     }
-    
+
     protected static Set<String> populateConfigTables(String tablePrefix) {
         HashSet<String> configTables = new HashSet<String>();
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_GROUP));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_GROUP_LINK));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_HOST));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_SECURITY));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_PARAMETER));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_CHANNEL));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_CHANNEL_CTL));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_TRIGGER));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_ROUTER));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_TRIGGER_ROUTER));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_TRANSFORM_TABLE));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_TRANSFORM_COLUMN));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_CONFLICT_SETTINGS));
-        configTables.add(getTableName(tablePrefix,
-                TableConstants.SYM_NODE_IDENTITY));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_LINK));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_ROUTER));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_CONFLICT_SETTINGS));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         return configTables;
     }
 

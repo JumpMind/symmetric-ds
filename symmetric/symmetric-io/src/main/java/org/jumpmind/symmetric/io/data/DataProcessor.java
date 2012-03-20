@@ -16,6 +16,12 @@ public class DataProcessor {
     protected IDataWriter defaultDataWriter;
 
     protected IDataProcessorListener listener;
+    
+    protected Table currentTable;
+    
+    protected CsvData currentData;
+    
+    protected Batch currentBatch;
 
     public DataProcessor() {
     }
@@ -46,27 +52,25 @@ public class DataProcessor {
         try {
             DataContext context = new DataContext(dataReader);
             dataReader.open(context);
-            Batch batch = null;
             do {
-                batch = dataReader.nextBatch();
-                if (batch != null) {
-                    context.setBatch(batch);
+                currentBatch = dataReader.nextBatch();
+                if (currentBatch != null) {
+                    context.setBatch(currentBatch);
                     boolean endBatchCalled = false;
                     IDataWriter dataWriter = null;
                     try {
-                        int dataRow = 0;
                         boolean processBatch = listener == null ? true : listener
                                 .beforeBatchStarted(context);
 
                         if (processBatch) {
-                            dataWriter = chooseDataWriter(batch);
+                            dataWriter = chooseDataWriter(currentBatch);
                             processBatch &= dataWriter != null;
                         }
 
                         if (processBatch) {
                             context.setWriter(dataWriter);
                             dataWriter.open(context);
-                            dataWriter.start(batch);
+                            dataWriter.start(currentBatch);
                             if (listener != null) {
                                 listener.afterBatchStarted(context);
                             }
@@ -74,16 +78,16 @@ public class DataProcessor {
 
                         // pull and process any data events that are not wrapped
                         // in a table
-                        dataRow += forEachDataInTable(context, processBatch, batch);
+                        forEachDataInTable(context, processBatch, currentBatch);
 
                         // pull and process all data events wrapped in tables
-                        dataRow += forEachTableInBatch(context, processBatch, batch);
+                        forEachTableInBatch(context, processBatch, currentBatch);
 
                         if (processBatch) {
                             if (listener != null) {
                                 listener.beforeBatchEnd(context);
                             }
-                            dataWriter.end(batch, false);
+                            dataWriter.end(currentBatch, false);
                             endBatchCalled = true;
                             if (listener != null) {
                                 listener.batchSuccessful(context);
@@ -96,7 +100,7 @@ public class DataProcessor {
                             }
                         } finally {
                             if (dataWriter != null && !endBatchCalled) {
-                                dataWriter.end(batch, true);
+                                dataWriter.end(currentBatch, true);
                             }
                         }
                         rethrow(ex);
@@ -104,7 +108,7 @@ public class DataProcessor {
                         close(dataWriter);
                     }
                 }
-            } while (batch != null);
+            } while (currentBatch != null);
         } finally {
             close(this.dataReader);
         }
@@ -112,43 +116,43 @@ public class DataProcessor {
 
     protected int forEachTableInBatch(DataContext context, boolean processBatch, Batch batch) {
         int dataRow = 0;
-        Table table = null;
         do {
-            table = dataReader.nextTable();
-            if (table != null) {
+            currentTable = dataReader.nextTable();
+            context.setTable(currentTable);
+            if (currentTable != null) {                
                 boolean processTable = false;
                 try {
                     if (processBatch) {
-                        processTable = context.getWriter().start(table);
+                        processTable = context.getWriter().start(currentTable);
                     }
                     dataRow += forEachDataInTable(context, processTable, batch);
                 } finally {
                     if (processTable) {
-                        context.getWriter().end(table);
+                        context.getWriter().end(currentTable);
                     }
                 }
             }
-        } while (table != null);
+        } while (currentTable != null);
         return dataRow;
     }
 
     protected int forEachDataInTable(DataContext context, boolean processTable, Batch batch) {
         int dataRow = 0;
-        CsvData data = null;
         do {
             batch.startTimer(STAT_READ_DATA);
-            data = dataReader.nextData();
+            currentData = dataReader.nextData();
+            context.setData(currentData);
             batch.incrementDataReadMillis(batch.endTimer(STAT_READ_DATA));
-            if (data != null) {
+            if (currentData != null) {                
                 dataRow++;
                 if (processTable) {
                     batch.startTimer(STAT_WRITE_DATA);
                     batch.incrementLineCount();
-                    context.getWriter().write(data);
+                    context.getWriter().write(currentData);
                     batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
                 }
             }
-        } while (data != null);
+        } while (currentData != null);
         return dataRow;
     }
 
