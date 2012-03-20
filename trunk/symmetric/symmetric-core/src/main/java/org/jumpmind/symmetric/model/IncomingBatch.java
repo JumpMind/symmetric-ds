@@ -116,6 +116,7 @@ public class IncomingBatch implements Serializable {
         fallbackUpdateCount = writerStatistics
                 .get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
         missingDeleteCount = writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+        ignoreCount = writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT);
         lastUpdatedTime = new Date();
         if (!isSuccess) {
             failedRowNumber = statementCount;
