@@ -65,6 +65,10 @@ public interface IDataLoaderService {
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 
-    public void saveIncomingError(IncomingError incomingError);
+    public IncomingError getCurrentIncomingError(long batchId, String nodeId);
+    
+    public void insertIncomingError(IncomingError incomingError);
+    
+    public void updateIncomingError(IncomingError incomingError);
 
 }

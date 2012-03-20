@@ -487,10 +487,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return sqlTemplate.query(getSql("selectIncomingErrorSql"), new IncomingErrorMapper(), batchId, nodeId);
     }
 
-    public void saveIncomingError(IncomingError incomingError) {
-    	sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId());
+    public IncomingError getCurrentIncomingError(long batchId, String nodeId) {
+        return sqlTemplate.queryForObject(getSql("selectCurrentIncomingErrorSql"), new IncomingErrorMapper(), batchId, nodeId);
     }
-    
+
+    public void insertIncomingError(IncomingError incomingError) {
+    	sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(), incomingError.getNodeId(),
+    			incomingError.getFailedRowNumber(), incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
+    			incomingError.getTargetSchemaName(), incomingError.getTargetTableName(), incomingError.getEventType().getCode(),
+    			incomingError.getRowData(), incomingError.getOldData(), incomingError.getResolveData(), incomingError.getResolveData(),
+    			incomingError.getCreateTime(), incomingError.getLastUpdateBy(), incomingError.getLastUpdateTime());
+    }
+
+    public void updateIncomingError(IncomingError incomingError) {
+    	sqlTemplate.update(getSql("updateIncomingErrorSql"), incomingError.getResolveData(), incomingError.getResolveData(),
+    			incomingError.getBatchId(), incomingError.getNodeId(), incomingError.getFailedRowNumber());
+    }
+
     /**
      * Used for unit tests
      */
