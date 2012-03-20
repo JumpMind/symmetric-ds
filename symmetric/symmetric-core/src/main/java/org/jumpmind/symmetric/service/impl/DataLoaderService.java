@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
@@ -483,10 +484,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId) {
-    	return null;
+        return sqlTemplate.query(getSql("selectIncomingErrorSql"), new IncomingErrorMapper(), batchId, nodeId);
     }
 
     public void saveIncomingError(IncomingError incomingError) {
+    	sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId());
     }
     
     /**
@@ -527,6 +529,27 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    class IncomingErrorMapper implements ISqlRowMapper<IncomingError> {
+    	public IncomingError mapRow(Row rs) {
+    		IncomingError incomingError = new IncomingError();
+    		incomingError.setBatchId(rs.getLong("batch_id"));
+    		incomingError.setNodeId(rs.getString("node_id"));
+    		incomingError.setFailedRowNumber(rs.getLong("failed_row_number"));
+    		incomingError.setTargetCatalogName(rs.getString("target_catalog_name"));
+    		incomingError.setTargetSchemaName(rs.getString("target_schema_name"));
+    		incomingError.setTargetTableName(rs.getString("target_table_name"));
+    		incomingError.setEventType(DataEventType.valueOf(rs.getString("event_type")));
+    		incomingError.setRowData(rs.getString("row_data"));
+    		incomingError.setOldData(rs.getString("old_data"));
+    		incomingError.setResolveData(rs.getString("resolve_data"));
+    		incomingError.setResolveIgnore(rs.getBoolean("resolve_ignore"));
+    		incomingError.setCreateTime(rs.getDateTime("create_time"));
+    		incomingError.setLastUpdateBy(rs.getString("last_update_by"));
+    		incomingError.setLastUpdateTime(rs.getDateTime("last_update_time"));
+    		return incomingError;
+    	}
+    }
+    
     class LoadIntoDatabaseOnArrivalListener implements IProtocolDataWriterListener {
 
         private ManageIncomingBatchListener listener;
