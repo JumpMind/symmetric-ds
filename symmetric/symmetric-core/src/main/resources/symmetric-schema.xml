@@ -455,6 +455,7 @@
         <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
         <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="The row number in the batch that encountered an error when loading." />
+        <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
         <column name="target_catalog_name" type="VARCHAR" size="50" description="The catalog name for the table being loaded." />
         <column name="target_schema_name" type="VARCHAR" size="50" description="The schema name for the table being loaded." />
         <column name="target_table_name" type="VARCHAR" size="50" required="true" description="The table name for the table being loaded." />

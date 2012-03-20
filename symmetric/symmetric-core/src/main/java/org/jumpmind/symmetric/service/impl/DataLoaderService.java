@@ -535,6 +535,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     		incomingError.setBatchId(rs.getLong("batch_id"));
     		incomingError.setNodeId(rs.getString("node_id"));
     		incomingError.setFailedRowNumber(rs.getLong("failed_row_number"));
+    		incomingError.setFailedLineNumber(rs.getLong("failed_line_number"));
     		incomingError.setTargetCatalogName(rs.getString("target_catalog_name"));
     		incomingError.setTargetSchemaName(rs.getString("target_schema_name"));
     		incomingError.setTargetTableName(rs.getString("target_table_name"));

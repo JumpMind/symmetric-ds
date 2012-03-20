@@ -42,12 +42,13 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
                 "create_time, last_update_by, last_update_time, conflict_setting_id from $(conflict_setting) ");
 
         putSql("selectIncomingErrorSql",
-        		"select batch_id, node_id, failed_row_number, target_catalog_name, target_schema_name, " +
+        		"select batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
         		"target_table_name, event_type, row_data, old_data, resolve_data, resolve_ignore, " +
         		"create_time, last_update_by, last_update_time from $(incoming_error)");
         
         putSql("insertIncomingErrorSql", 
-        		"insert into $(incoming_error) (batch_id, node_id, failed_row_number, target_catalog_name, target_schema_name, " +
+        		"insert into $(incoming_error) " +
+        		"(batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
         		"target_table_name, event_type, row_data, old_data, resolve_data, resolve_ignore, " +
         		"create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
