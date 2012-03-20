@@ -36,6 +36,8 @@ public class IncomingError implements Serializable {
 
     private long failedRowNumber;
 
+    private long failedLineNumber;
+
     private String targetCatalogName;
 
     private String targetSchemaName;
@@ -174,6 +176,14 @@ public class IncomingError implements Serializable {
 
 	public void setLastUpdateBy(String lastUpdateBy) {
 		this.lastUpdateBy = lastUpdateBy;
+	}
+
+	public long getFailedLineNumber() {
+		return failedLineNumber;
+	}
+
+	public void setFailedLineNumber(long failedLineNumber) {
+		this.failedLineNumber = failedLineNumber;
 	}
 
 }
