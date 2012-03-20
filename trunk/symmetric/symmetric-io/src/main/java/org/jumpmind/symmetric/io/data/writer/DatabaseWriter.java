@@ -40,7 +40,7 @@ public class DatabaseWriter implements IDataWriter {
     protected final static Logger log = LoggerFactory.getLogger(DatabaseWriter.class);
 
     public static enum LoadStatus {
-        SUCCESS, CONFLICT, FK_CONFLICT
+        SUCCESS, CONFLICT
     };
 
     protected IDatabasePlatform platform;
@@ -140,7 +140,7 @@ public class DatabaseWriter implements IDataWriter {
 
             if (loadStatus == LoadStatus.CONFLICT) {
                 if (conflictResolver != null) {
-                    conflictResolver.needsResolved(this, writerSettings, data, loadStatus);
+                    conflictResolver.needsResolved(this, data, loadStatus);
                 } else {
                     throw new ConflictException(data, targetTable, loadStatus, false);
                 }
@@ -305,8 +305,6 @@ public class DatabaseWriter implements IDataWriter {
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     return LoadStatus.CONFLICT;
-                } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
-                    return LoadStatus.FK_CONFLICT;
                 } else {
                     throw ex;
                 }
@@ -383,8 +381,6 @@ public class DatabaseWriter implements IDataWriter {
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     return LoadStatus.CONFLICT;
-                } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
-                    return LoadStatus.FK_CONFLICT;
                 } else {
                     throw ex;
                 }
@@ -491,8 +487,6 @@ public class DatabaseWriter implements IDataWriter {
                 } catch (SqlException ex) {
                     if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                         return LoadStatus.CONFLICT;
-                    } else if (platform.getSqlTemplate().isForeignKeyViolation(ex)) {
-                        return LoadStatus.FK_CONFLICT;
                     } else {
                         throw ex;
                     }
@@ -806,6 +800,10 @@ public class DatabaseWriter implements IDataWriter {
 
     public IDatabasePlatform getPlatform() {
         return platform;
+    }
+    
+    public DatabaseWriterSettings getWriterSettings() {
+        return writerSettings;
     }
 
 }

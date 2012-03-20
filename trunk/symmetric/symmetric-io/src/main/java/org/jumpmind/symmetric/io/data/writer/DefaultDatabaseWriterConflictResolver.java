@@ -11,6 +11,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectInsertConflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
@@ -21,19 +22,26 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    protected boolean autoRegister;
-
-    public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
-            CsvData data, LoadStatus loadStatus) {
+    public void needsResolved(DatabaseWriter writer, CsvData data, LoadStatus loadStatus) {
         DataEventType originalEventType = data.getDataEventType();
+        DatabaseWriterSettings writerSettings = writer.getWriterSettings();
         ConflictSetting conflictSetting = writerSettings.getConflictSettings(
                 writer.getTargetTable(), writer.getBatch());
+        long statementCount = writer.getStatistics().get(writer.getBatch())
+                .get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
         switch (originalEventType) {
             case INSERT:
                 switch (conflictSetting.getResolveInsertType()) {
                     case MANUAL:
-                        throw new ConflictException(data, writer.getTargetTable(), loadStatus,
-                                false);
+                        if (resolvedData != null) {
+                            // TODO - attempt to resolve
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        } else {
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        }
                     case FALLBACK:
                         performFallbackToUpdate(writer, data,
                                 conflictSetting.isResolveChangesOnly());
@@ -54,6 +62,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     case IGNORE:
                     default:
                         if (conflictSetting.isResolveRowOnly()) {
+                            writer.getStatistics().get(writer.getBatch())
+                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
                         } else {
                             throw new NotImplementedException();
                         }
@@ -64,8 +74,15 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case UPDATE:
                 switch (conflictSetting.getResolveUpdateType()) {
                     case MANUAL:
-                        throw new ConflictException(data, writer.getTargetTable(), loadStatus,
-                                false);
+                        if (resolvedData != null) {
+                            // TODO - attempt to resolve
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        } else {
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        }
+
                     case FALLBACK:
                         performFallbackToInsert(writer, data);
                         break;
@@ -82,6 +99,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     case IGNORE:
                     default:
                         if (conflictSetting.isResolveRowOnly()) {
+                            writer.getStatistics().get(writer.getBatch())
+                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
                         } else {
                             throw new NotImplementedException();
                         }
@@ -92,11 +111,20 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case DELETE:
                 switch (conflictSetting.getResolveDeleteType()) {
                     case MANUAL:
-                        throw new ConflictException(data, writer.getTargetTable(), loadStatus,
-                                false);
+                        if (resolvedData != null) {
+                            // TODO - attempt to resolve
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        } else {
+                            throw new ConflictException(data, writer.getTargetTable(), loadStatus,
+                                    false);
+                        }
+
                     default:
                     case IGNORE:
                         if (conflictSetting.isResolveRowOnly()) {
+                            writer.getStatistics().get(writer.getBatch())
+                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
                             writer.getStatistics().get(writer.getBatch())
                                     .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                             break;
@@ -162,10 +190,6 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             writer.getStatistics().get(writer.getBatch())
                     .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
         }
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
     }
 
 }

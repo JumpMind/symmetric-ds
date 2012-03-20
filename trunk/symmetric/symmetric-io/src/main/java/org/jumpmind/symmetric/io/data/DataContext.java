@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.io.data;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.util.Context;
 
 public class DataContext extends Context {
@@ -9,6 +10,10 @@ public class DataContext extends Context {
     protected IDataReader reader;
 
     protected Batch batch;
+    
+    protected Table table;
+    
+    protected CsvData data;
 
     public DataContext(Batch batch) {
         this.batch = batch;
@@ -39,6 +44,22 @@ public class DataContext extends Context {
 
     public Batch getBatch() {
         return batch;
+    }
+    
+    public void setData(CsvData data) {
+        this.data = data;
+    }
+    
+    public CsvData getData() {
+        return data;
+    }
+    
+    public void setTable(Table table) {
+        this.table = table;
+    }
+    
+    public Table getTable() {
+        return table;
     }
 
 }

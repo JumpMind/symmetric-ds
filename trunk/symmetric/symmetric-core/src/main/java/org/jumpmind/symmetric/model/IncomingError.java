@@ -46,15 +46,15 @@ public class IncomingError implements Serializable {
 
     private DataEventType eventType;
     
-    private CsvData csvData;
+    private CsvData csvData = new CsvData();
         
-    private boolean resolveIgnore;
+    private boolean resolveIgnore = false;
     
-    private Date createTime;
+    private Date createTime = new Date();
 
-    private Date lastUpdateTime;
+    private Date lastUpdateTime = new Date();
 
-    private String lastUpdateBy;
+    private String lastUpdateBy = "symmetricds";
 
     public String getRowData() {
         return csvData.getCsvData(CsvData.ROW_DATA);

@@ -6,6 +6,6 @@ import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
 
 public interface IDatabaseWriterConflictResolver extends IExtensionPoint {
 
-    public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings, CsvData data, LoadStatus loadStatus);
+    public void needsResolved(DatabaseWriter writer, CsvData data, LoadStatus loadStatus);
 
 }
