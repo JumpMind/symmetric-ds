@@ -11,10 +11,8 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.writer.ConflictEvent.Status;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectInsertConflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +23,6 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
     protected boolean autoRegister;
 
-    protected void reportConflict(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
-            CsvData data, ConflictEvent conflictEvent) {
-
-    }
-
     public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
             CsvData data, LoadStatus loadStatus) {
         DataEventType originalEventType = data.getDataEventType();
@@ -39,36 +32,11 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case INSERT:
                 switch (conflictSetting.getResolveInsertType()) {
                     case MANUAL:
-                        reportConflict(
-                                writer,
-                                writerSettings,
-                                data,
-                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                        .getTargetTable(), Status.NEEDS_RESOLVED, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), loadStatus,
                                 false);
                     case FALLBACK:
-                        try {
-                            performFallbackToUpdate(writer, data,
-                                    conflictSetting.isResolveChangesOnly());
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.RESOLVED, data,
-                                            ResolveInsertConflict.FALLBACK.name()));
-
-                        } catch (RuntimeException ex) {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.NEEDS_RESOLVED, data, ex
-                                            .getMessage()));
-                            throw ex;
-                        }
+                        performFallbackToUpdate(writer, data,
+                                conflictSetting.isResolveChangesOnly());
                         break;
                     case NEWER_WINS:
                         if ((conflictSetting.getDetectInsertType() == DetectInsertConflict.USE_TIMESTAMP && isTimestampNewer(
@@ -77,37 +45,15 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                         conflictSetting, writer, data))) {
                             try {
                                 performFallbackToUpdate(writer, data, false);
-                                reportConflict(writer, writerSettings, data, new ConflictEvent(
-                                        writer.getBatch(), conflictSetting,
-                                        writer.getTargetTable(), Status.RESOLVED, data,
-                                        ResolveInsertConflict.NEWER_WINS.name()));
                             } catch (RuntimeException ex) {
-                                reportConflict(writer, writerSettings, data,
-                                        new ConflictEvent(writer.getBatch(), conflictSetting,
-                                                writer.getTargetTable(), Status.NEEDS_RESOLVED,
-                                                data, ex.getMessage()));
                                 throw ex;
                             }
                         } else {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.IGNORED, data,
-                                            ResolveInsertConflict.NEWER_WINS.name()));
                         }
                         break;
                     case IGNORE:
                     default:
                         if (conflictSetting.isResolveRowOnly()) {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.IGNORED, data,
-                                            ResolveInsertConflict.IGNORE.name()));
                         } else {
                             throw new NotImplementedException();
                         }
@@ -118,76 +64,24 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case UPDATE:
                 switch (conflictSetting.getResolveUpdateType()) {
                     case MANUAL:
-                        reportConflict(
-                                writer,
-                                writerSettings,
-                                data,
-                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                        .getTargetTable(), Status.NEEDS_RESOLVED, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), loadStatus,
                                 false);
                     case FALLBACK:
-                        try {
-                            performFallbackToInsert(writer, data);
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.RESOLVED, data,
-                                            ResolveInsertConflict.FALLBACK.name()));
-
-                        } catch (RuntimeException ex) {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.NEEDS_RESOLVED, data, ex
-                                            .getMessage()));
-                            throw ex;
-                        }
+                        performFallbackToInsert(writer, data);
                         break;
                     case NEWER_WINS:
                         if ((conflictSetting.getDetectUpdateType() == DetectUpdateConflict.USE_TIMESTAMP && isTimestampNewer(
                                 conflictSetting, writer, data))
                                 || (conflictSetting.getDetectUpdateType() == DetectUpdateConflict.USE_VERSION && isVersionNewer(
                                         conflictSetting, writer, data))) {
-                            try {
-                                performFallbackToUpdate(writer, data,
-                                        conflictSetting.isResolveChangesOnly());
-                                reportConflict(writer, writerSettings, data, new ConflictEvent(
-                                        writer.getBatch(), conflictSetting,
-                                        writer.getTargetTable(), Status.RESOLVED, data,
-                                        ResolveInsertConflict.NEWER_WINS.name()));
-
-                            } catch (RuntimeException ex) {
-                                reportConflict(writer, writerSettings, data,
-                                        new ConflictEvent(writer.getBatch(), conflictSetting,
-                                                writer.getTargetTable(), Status.NEEDS_RESOLVED,
-                                                data, ex.getMessage()));
-                                throw ex;
-                            }
+                            performFallbackToUpdate(writer, data,
+                                    conflictSetting.isResolveChangesOnly());
                         } else {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.IGNORED, data,
-                                            ResolveInsertConflict.NEWER_WINS.name()));
                         }
                         break;
                     case IGNORE:
                     default:
                         if (conflictSetting.isResolveRowOnly()) {
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.RESOLVED, data,
-                                            ResolveInsertConflict.IGNORE.name()));
                         } else {
                             throw new NotImplementedException();
                         }
@@ -198,12 +92,6 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case DELETE:
                 switch (conflictSetting.getResolveDeleteType()) {
                     case MANUAL:
-                        reportConflict(
-                                writer,
-                                writerSettings,
-                                data,
-                                new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                        .getTargetTable(), Status.NEEDS_RESOLVED, data, null));
                         throw new ConflictException(data, writer.getTargetTable(), loadStatus,
                                 false);
                     default:
@@ -211,13 +99,6 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         if (conflictSetting.isResolveRowOnly()) {
                             writer.getStatistics().get(writer.getBatch())
                                     .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
-                            reportConflict(
-                                    writer,
-                                    writerSettings,
-                                    data,
-                                    new ConflictEvent(writer.getBatch(), conflictSetting, writer
-                                            .getTargetTable(), Status.RESOLVED, data,
-                                            ResolveInsertConflict.IGNORE.name()));
                             break;
                         } else {
                             throw new NotImplementedException();

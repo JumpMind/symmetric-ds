@@ -21,6 +21,10 @@ public class Statistics {
             return 0l;
         }
     } 
+    
+    public void set(String category, long value) {
+        stats.put(category, value);
+    }
 
     public void increment(String category, long increment) {
         Long value = stats.get(category);

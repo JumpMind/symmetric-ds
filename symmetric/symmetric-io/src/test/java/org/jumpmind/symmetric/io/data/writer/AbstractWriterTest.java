@@ -126,7 +126,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
-            statementCount += statistics.get(DataWriterStatisticConstants.LINECOUNT);
+            statementCount += statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
         }
         return statementCount;
     }

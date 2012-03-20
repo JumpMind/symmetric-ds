@@ -6,6 +6,12 @@ DONE = +
 * Setup build for 
   * 3.x
 
+* Conflict Resolution
+  * Add line number to incoming and outgoing batches
+  * Update incoming and outgoing batches
+  * record incoming errors
+  * get incoming errors and weave results
+
 * Port CsvLoader and DataLoaderTest over.  Check-in and make sure all unit tests work.
   * Add settings to channel
   * Lookup/choose datawriter based on channel settings
@@ -13,9 +19,6 @@ DONE = +
   * SqlScript for Informix
   * Implement a jdbc batch loader
     
-* Use data processor for extract
-  * add database reader filter  
-  
 * Integrate Eric's SecurityService changes
 * Purge stats
 
