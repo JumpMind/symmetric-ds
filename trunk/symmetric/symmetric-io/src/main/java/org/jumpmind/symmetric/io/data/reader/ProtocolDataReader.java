@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProtocolDataReader implements IDataReader {
+    
+    public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName() + ".lineNumber";
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -48,6 +50,7 @@ public class ProtocolDataReader implements IDataReader {
     protected String channelId;
     protected String sourceNodeId;
     protected BinaryEncoding binaryEncoding;
+    protected int lineNumber = 0;
 
     public ProtocolDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())));
@@ -95,6 +98,7 @@ public class ProtocolDataReader implements IDataReader {
         if (this.stagedResource != null && this.reader == null) {
             this.reader = this.stagedResource.getReader();
         }
+        this.lineNumber = 0;
         this.context = context;
         this.csvReader = CsvUtils.getCsvReader(reader);
         this.next = readNext();
@@ -108,6 +112,8 @@ public class ProtocolDataReader implements IDataReader {
             String[] parsedOldData = null;
             long bytesRead = 0;
             while (csvReader.readRecord()) {
+                lineNumber++;
+                context.put(CTX_LINE_NUMBER, lineNumber);
                 if (log.isDebugEnabled()) {
                     log.debug(csvReader.getRawRecord());
                 }

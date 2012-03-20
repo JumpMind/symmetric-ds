@@ -70,12 +70,16 @@ public class IncomingBatch implements Serializable {
     private long fallbackInsertCount;
 
     private long fallbackUpdateCount;
+    
+    private long ignoreCount;
 
     private long missingDeleteCount;
 
     private long skipCount;
 
     private long failedRowNumber;
+    
+    private long failedLineNumber;
 
     private String sqlState;
 
@@ -106,7 +110,7 @@ public class IncomingBatch implements Serializable {
         byteCount = readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT);
         filterMillis = writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS);
         databaseMillis = writerStatistics.get(DataWriterStatisticConstants.DATABASEMILLIS);
-        statementCount = writerStatistics.get(DataWriterStatisticConstants.LINECOUNT);
+        statementCount = writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
         fallbackInsertCount = writerStatistics
                 .get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
         fallbackUpdateCount = writerStatistics
@@ -114,10 +118,8 @@ public class IncomingBatch implements Serializable {
         missingDeleteCount = writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
         lastUpdatedTime = new Date();
         if (!isSuccess) {
-            failedRowNumber = writerStatistics.get(DataWriterStatisticConstants.FAILEDROWNUMBER);
-            if (failedRowNumber == 0) {
-                failedRowNumber = statementCount;
-            }
+            failedRowNumber = statementCount;
+            failedLineNumber = writerStatistics.get(DataWriterStatisticConstants.LINENUMBER);
         }
     }
 
@@ -309,6 +311,22 @@ public class IncomingBatch implements Serializable {
 
     public boolean isErrorFlag() {
         return errorFlag;
+    }
+    
+    public void setFailedLineNumber(long failedLineNumber) {
+        this.failedLineNumber = failedLineNumber;
+    }
+    
+    public long getFailedLineNumber() {
+        return failedLineNumber;
+    }
+    
+    public void setIgnoreCount(long ignoreCount) {
+        this.ignoreCount = ignoreCount;
+    }
+    
+    public long getIgnoreCount() {
+        return ignoreCount;
     }
 
     @Override

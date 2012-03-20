@@ -111,7 +111,8 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        statistics.get(batch).increment(DataWriterStatisticConstants.LINECOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         if (filterBefore(data)) {
             LoadStatus loadStatus = LoadStatus.SUCCESS;
             switch (data.getDataEventType()) {
