@@ -12,7 +12,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -149,20 +148,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 return result;
             }
         });
-    }
-
-    public <T> Map<String, T> queryForMap(final String sql, final ISqlRowMapper<T> mapper,
-            final String keyColumn, Object... args) {
-        final Map<String, T> result = new HashMap<String, T>();
-        query(sql, new ISqlRowMapper<T>() {
-            public T mapRow(Row row) {
-                String keyName = row.getString(keyColumn);
-                T object = mapper.mapRow(row);
-                result.put(keyName, object);
-                return object;
-            }
-        }, args);
-        return result;
     }
 
     public Map<String, Object> queryForMap(final String sql, final Object... args) {

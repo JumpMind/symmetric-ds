@@ -63,6 +63,20 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         }, args);
         return map;
     }
+    
+    public <T> Map<String, T> queryForMap(final String sql, final ISqlRowMapper<T> mapper,
+            final String keyColumn, Object... args) {
+        final Map<String, T> result = new HashMap<String, T>();
+        query(sql, new ISqlRowMapper<T>() {
+            public T mapRow(Row row) {
+                String keyName = row.getString(keyColumn);
+                T object = mapper.mapRow(row);
+                result.put(keyName, object);
+                return object;
+            }
+        }, args);
+        return result;
+    }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper) {
         return this.queryForCursor(sql, mapper, null, null);

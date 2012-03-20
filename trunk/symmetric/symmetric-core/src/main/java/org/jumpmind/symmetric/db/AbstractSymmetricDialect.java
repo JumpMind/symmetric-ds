@@ -421,7 +421,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                             .beforeUpgrade(this, this.parameterService.getTablePrefix(),
                                     modelFromDatabase, modelFromXml);
                     new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute();
+                            .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
                 }
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
@@ -429,13 +429,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 log.info("Alter SQL Generated: {}", alterSql);
 
                 new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                        .execute();
+                        .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.afterUpgrade(this,
                             this.parameterService.getTablePrefix(), modelFromXml);
                     new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute();
+                            .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
                 }
 
                 log.info("Done with auto update of SymmetricDS tables");

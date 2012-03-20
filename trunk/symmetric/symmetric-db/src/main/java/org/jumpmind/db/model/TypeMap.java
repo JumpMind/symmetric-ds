@@ -103,10 +103,13 @@ public abstract class TypeMap
     public static final String NVARCHAR = "NVARCHAR";
     public static final String LONGNVARCHAR = "LONGNVARCHAR";
     public static final String NCLOB = "NCLOB";
+    
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap _typeNameToTypeCode = new HashMap();
+    
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */
     private static HashMap _typeCodeToTypeName = new HashMap();
+    
     /** Conatins the types per category. */
     private static HashMap _typesPerCategory = new HashMap();
 

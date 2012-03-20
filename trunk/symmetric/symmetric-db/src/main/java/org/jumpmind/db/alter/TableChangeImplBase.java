@@ -23,13 +23,11 @@ import org.jumpmind.db.model.Table;
 
 /**
  * Base class for change implementations.
- * 
- * @version $Revision: $
  */
 public abstract class TableChangeImplBase implements TableChange
 {
     /** The affected table. */
-    private Table _table;
+    private Table table;
 
     /**
      * Creates a new change object.
@@ -38,7 +36,7 @@ public abstract class TableChangeImplBase implements TableChange
      */
     public TableChangeImplBase(Table table)
     {
-        _table = table;
+        this.table = table;
     }
 
     /**
@@ -48,6 +46,6 @@ public abstract class TableChangeImplBase implements TableChange
      */
     public Table getChangedTable()
     {
-        return _table;
+        return table;
     }
 }
