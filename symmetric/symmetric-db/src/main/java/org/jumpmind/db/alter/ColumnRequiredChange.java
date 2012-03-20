@@ -24,46 +24,39 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 
 /**
- * Represents the change of the required constraint of a column. Since it is a boolean value,
- * this means the required constraint will simply be toggled.
- * 
- * @version $Revision: $
+ * Represents the change of the required constraint of a column. Since it is a
+ * boolean value, this means the required constraint will simply be toggled.
  */
-public class ColumnRequiredChange extends TableChangeImplBase implements ColumnChange
-{
+public class ColumnRequiredChange extends TableChangeImplBase implements ColumnChange {
+    
     /** The column. */
-    private Column _column;
+    private Column column;
 
     /**
      * Creates a new change object.
      * 
-     * @param table  The table of the column
-     * @param column The column
+     * @param table
+     *            The table of the column
+     * @param column
+     *            The column
      */
-    public ColumnRequiredChange(Table table, Column column)
-    {
+    public ColumnRequiredChange(Table table, Column column) {
         super(table);
-        _column = column;
+        this.column = column;
     }
 
     /**
      * Returns the column.
-     *
+     * 
      * @return The column
      */
-    public Column getChangedColumn()
-    {
-        return _column;
+    public Column getChangedColumn() {
+        return column;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
-        Column column = table.findColumn(_column.getName(), caseSensitive);
-
-        column.setRequired(!_column.isRequired());
+    public void apply(Database database, boolean caseSensitive) {
+        Table table = database.findTable(getChangedTable().getName(), caseSensitive);
+        Column column = table.findColumn(this.column.getName(), caseSensitive);
+        column.setRequired(!column.isRequired());
     }
 }

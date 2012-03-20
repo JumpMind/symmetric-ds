@@ -120,7 +120,7 @@ public class SqlScript {
                     }
                     toExecute = FormatUtils.replaceTokens(toExecute, replacementTokens, false);
                     if (StringUtils.isNotBlank(toExecute)) {
-                        statements.add(toExecute);
+                        statements.add(toExecute.trim());
                     }
                     sql.setLength(0);
                 } else {

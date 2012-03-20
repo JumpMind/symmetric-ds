@@ -205,6 +205,11 @@ public class DatabasePlatformInfo {
     private boolean nonBlankCharColumnSpacePadded;
 
     private boolean charColumnSpaceTrimmed;
+    
+    /**
+     * Indicates whether each ddl statement needs to be committed.
+     */
+    private boolean requiresAutoCommitForDdl = false;
 
     /* Contains non-default mappings from jdbc to native types. */
     private Map<Integer, String> nativeTypes = new HashMap<Integer, String>();
@@ -1163,5 +1168,13 @@ public class DatabasePlatformInfo {
     
     public void setAutoIncrementUpdateAllowed(boolean autoIncrementUpdateAllowed) {
         this.autoIncrementUpdateAllowed = autoIncrementUpdateAllowed;
+    }
+    
+    public void setRequiresAutoCommitForDdl(boolean requireAutoCommitForDdl) {
+        this.requiresAutoCommitForDdl = requireAutoCommitForDdl;
+    }
+    
+    public boolean isRequiresAutoCommitForDdl() {
+        return requiresAutoCommitForDdl;
     }
 }
