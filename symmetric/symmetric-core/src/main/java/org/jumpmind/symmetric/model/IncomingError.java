@@ -58,6 +58,18 @@ public class IncomingError implements Serializable {
 
     private String lastUpdateBy = "symmetricds";
 
+    public String[] getParsedRowData() {
+        return csvData.getParsedData(CsvData.ROW_DATA);
+    }
+
+    public String[] getParsedOldData() {
+        return csvData.getParsedData(CsvData.OLD_DATA);
+    }
+
+    public String[] getParsedResolveData() {
+        return csvData.getParsedData(CsvData.RESOLVE_DATA);
+    }
+
     public String getRowData() {
         return csvData.getCsvData(CsvData.ROW_DATA);
     }
