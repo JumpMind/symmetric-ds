@@ -388,7 +388,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (incomingError.isResolveIgnore()
                         || StringUtils.isNotBlank(incomingError.getResolveData())) {
                     resolvedDatas.add(new ResolvedData(incomingError.getFailedRowNumber(),
-                            incomingError.getResolveData()));
+                            incomingError.getResolveData(), incomingError.isResolveIgnore()));
                 }
             }
 
