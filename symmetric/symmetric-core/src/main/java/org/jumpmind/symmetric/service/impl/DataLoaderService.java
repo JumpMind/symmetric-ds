@@ -129,7 +129,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
-    private Map<NodeGroupLink, List<ConflictSettingsNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictSettingsNodeGroupLink>>();
+    private Map<NodeGroupLink, List<ConflictSettingNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictSettingNodeGroupLink>>();
 
     private long lastConflictCacheResetTimeInMs = 0;
 
@@ -441,8 +441,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         return factory;
     }
+    
+    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks() {
+        List<ConflictSettingNodeGroupLink> list = new ArrayList<DataLoaderService.ConflictSettingNodeGroupLink>();
+        list = sqlTemplate.query(getSql("selectConflictSettingsSql"),
+                new ConflictSettingsNodeGroupLinkMapper());
+        return list;
+    }
 
-    public List<ConflictSettingsNodeGroupLink> getConflictSettingsNodeGroupLinks(
+    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks(
             NodeGroupLink link, boolean refreshCache) {
         if (link != null) {
             long cacheTime = parameterService
@@ -455,7 +462,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
 
-            List<ConflictSettingsNodeGroupLink> list = conflictSettingsCache.get(link);
+            List<ConflictSettingNodeGroupLink> list = conflictSettingsCache.get(link);
             if (list == null) {
                 list = sqlTemplate.query(
                         getSql("selectConflictSettingsSql",
@@ -469,15 +476,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             return list;
         } else {
-            return new ArrayList<DataLoaderService.ConflictSettingsNodeGroupLink>(0);
+            return new ArrayList<DataLoaderService.ConflictSettingNodeGroupLink>(0);
         }
     }
 
-    public void delete(ConflictSettingsNodeGroupLink settings) {
+    public void delete(ConflictSettingNodeGroupLink settings) {
         sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictSettingId());
     }
 
-    public void save(ConflictSettingsNodeGroupLink setting) {
+    public void save(ConflictSettingNodeGroupLink setting) {
         this.lastConflictCacheResetTimeInMs = 0;
         if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
@@ -537,9 +544,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     class ConflictSettingsNodeGroupLinkMapper implements
-            ISqlRowMapper<ConflictSettingsNodeGroupLink> {
-        public ConflictSettingsNodeGroupLink mapRow(Row rs) {
-            ConflictSettingsNodeGroupLink setting = new ConflictSettingsNodeGroupLink();
+            ISqlRowMapper<ConflictSettingNodeGroupLink> {
+        public ConflictSettingNodeGroupLink mapRow(Row rs) {
+            ConflictSettingNodeGroupLink setting = new ConflictSettingNodeGroupLink();
             setting.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
                     .getString("target_node_group_id")));
             setting.setTargetChannelId(rs.getString("target_channel_id"));
@@ -773,7 +780,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public static class ConflictSettingsNodeGroupLink extends ConflictSetting {
+    public static class ConflictSettingNodeGroupLink extends ConflictSetting {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
 
