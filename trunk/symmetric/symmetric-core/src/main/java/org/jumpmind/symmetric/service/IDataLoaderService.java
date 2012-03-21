@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
-import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingsNodeGroupLink;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingNodeGroupLink;
 
 /**
  * This service provides an API to load data into a SymmetricDS node's database
@@ -57,11 +57,13 @@ public interface IDataLoaderService {
     
     public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
     
-    public List<ConflictSettingsNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
+    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
     
-    public void delete(ConflictSettingsNodeGroupLink settings);
+    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks();
     
-    public void save(ConflictSettingsNodeGroupLink settings);
+    public void delete(ConflictSettingNodeGroupLink settings);
+    
+    public void save(ConflictSettingNodeGroupLink settings);
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 

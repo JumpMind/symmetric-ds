@@ -431,8 +431,8 @@
     
     <table name="conflict_setting" description="Defines how conflicts in row data should be handled during the load process.">
         <column name="conflict_setting_id"  type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a specific conflict detection setting." />
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The source node group for which this setting will be applied to. References a node group link." />
-        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The target node group for which this setting will be applied to.  References a node group link." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The source node group for which this setting will be applied to. References a node group link." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The target node group for which this setting will be applied to.  References a node group link." />
         <column name="target_channel_id"    type="VARCHAR" size="20"  description="Optional channel that this setting will be applied to." />                
         <column name="target_catalog_name"  type="VARCHAR" size="128" description="Optional database catalog that the target table belongs to. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name"   type="VARCHAR" size="128" description="Optional database schema that the target table belongs to. Only use this if the target table is not in the default schema." />

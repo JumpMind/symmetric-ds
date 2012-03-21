@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConfli
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingsNodeGroupLink;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingNodeGroupLink;
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.After;
@@ -340,7 +340,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
                 "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
         
-        ConflictSettingsNodeGroupLink conflictSettings = new ConflictSettingsNodeGroupLink();
+        ConflictSettingNodeGroupLink conflictSettings = new ConflictSettingNodeGroupLink();
         conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
         conflictSettings.setConflictSettingId("dont_fallback");
         conflictSettings.setResolveInsertType(ResolveInsertConflict.MANUAL);
