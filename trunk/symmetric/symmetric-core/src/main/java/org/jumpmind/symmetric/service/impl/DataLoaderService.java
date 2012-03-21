@@ -516,7 +516,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 incomingError.getNodeId(), incomingError.getFailedRowNumber(),
                 incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
                 incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
-                incomingError.getEventType().getCode(), incomingError.getRowData(),
+                incomingError.getEventType().getCode(), incomingError.getColumnNames(), incomingError.getRowData(),
                 incomingError.getOldData(), incomingError.getResolveData(),
                 incomingError.getResolveData(), incomingError.getCreateTime(),
                 incomingError.getLastUpdateBy(), incomingError.getLastUpdateTime());
@@ -577,6 +577,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             incomingError.setTargetSchemaName(rs.getString("target_schema_name"));
             incomingError.setTargetTableName(rs.getString("target_table_name"));
             incomingError.setEventType(DataEventType.getEventType(rs.getString("event_type")));
+            incomingError.setColumnNames(rs.getString("column_names"));
             incomingError.setRowData(rs.getString("row_data"));
             incomingError.setOldData(rs.getString("old_data"));
             incomingError.setResolveData(rs.getString("resolve_data"));
