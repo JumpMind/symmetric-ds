@@ -70,6 +70,10 @@ public class IncomingError implements Serializable {
         return csvData.getParsedData(CsvData.RESOLVE_DATA);
     }
 
+    public void setParsedResolveData(String[] resolveData) {
+        csvData.putParsedData(CsvData.RESOLVE_DATA, resolveData);
+    }
+
     public String getRowData() {
         return csvData.getCsvData(CsvData.ROW_DATA);
     }
