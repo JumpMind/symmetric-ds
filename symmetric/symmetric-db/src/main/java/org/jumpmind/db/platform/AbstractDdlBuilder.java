@@ -1403,51 +1403,54 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getTypeCode()) {
-        case Types.DATE:
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            if (!(value instanceof String) && (getValueDateFormat() != null)) {
-                // TODO: Can the format method handle java.sql.Date properly ?
-                result.append(getValueDateFormat().format(value));
-            } else {
+            case Types.DATE:
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                if (!(value instanceof String) && (getValueDateFormat() != null)) {
+                    // TODO: Can the format method handle java.sql.Date properly
+                    // ?
+                    result.append(getValueDateFormat().format(value));
+                } else {
+                    result.append(value.toString());
+                }
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                break;
+            case Types.TIME:
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                if (!(value instanceof String) && (getValueTimeFormat() != null)) {
+                    // TODO: Can the format method handle java.sql.Date properly
+                    // ?
+                    result.append(getValueTimeFormat().format(value));
+                } else {
+                    result.append(value.toString());
+                }
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                break;
+            case Types.TIMESTAMP:
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                // TODO: SimpleDateFormat does not support nano seconds so we
+                // would
+                // need a custom date formatter for timestamps
                 result.append(value.toString());
-            }
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            break;
-        case Types.TIME:
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            if (!(value instanceof String) && (getValueTimeFormat() != null)) {
-                // TODO: Can the format method handle java.sql.Date properly ?
-                result.append(getValueTimeFormat().format(value));
-            } else {
-                result.append(value.toString());
-            }
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            break;
-        case Types.TIMESTAMP:
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            // TODO: SimpleDateFormat does not support nano seconds so we would
-            // need a custom date formatter for timestamps
-            result.append(value.toString());
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            break;
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            if (!(value instanceof String) && (getValueNumberFormat() != null)) {
-                result.append(getValueNumberFormat().format(value));
-            } else {
-                result.append(value.toString());
-            }
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            break;
-        default:
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            result.append(escapeStringValue(value.toString()));
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
-            break;
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                break;
+            case Types.REAL:
+            case Types.NUMERIC:
+            case Types.FLOAT:
+            case Types.DOUBLE:
+            case Types.DECIMAL:
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                if (!(value instanceof String) && (getValueNumberFormat() != null)) {
+                    result.append(getValueNumberFormat().format(value));
+                } else {
+                    result.append(value.toString());
+                }
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                break;
+            default:
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(escapeStringValue(value.toString()));
+                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                break;
         }
         return result.toString();
     }
@@ -1637,6 +1640,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
         }
+
+        if (column.isPrimaryKey() && platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
+            writeColumnEmbeddedPrimaryKey(table, column, ddl);
+        }
+
         if (column.isAutoIncrement()
                 && !platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()) {
             if (!platform.getPlatformInfo().isNonPKIdentityColumnsSupported()
@@ -1651,6 +1659,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" ");
             writeColumnAutoIncrementStmt(table, column, ddl);
         }
+    }
+    
+    protected void writeColumnEmbeddedPrimaryKey(Table table, Column column, StringBuilder ddl) {
+        
     }
 
     /**
