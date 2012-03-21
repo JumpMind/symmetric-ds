@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
@@ -109,11 +108,11 @@ public class TriggerHistory implements Serializable {
         this();        
         this.lastTriggerBuildReason = reason;
         this.sourceTableName = trigger.getSourceTableName();
-        this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
+        this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
-        this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
+        this.pkColumnNames = Table.getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         this.triggerRowHash = trigger.toHashedValue();
         tableHash = table.calculateTableHashcode();
     }
@@ -123,20 +122,6 @@ public class TriggerHistory implements Serializable {
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceTableName = trigger.getSourceTableName();
         this.triggerId = trigger.getTriggerId();
-    }
-
-    private String getCommaDeliminatedColumns(Column[] cols) {
-        StringBuilder columns = new StringBuilder();
-        if (cols != null && cols.length > 0) {
-            for (Column column : cols) {
-                columns.append(column.getName());
-                columns.append(",");
-            }
-            columns.replace(columns.length() - 1, columns.length(), "");
-            return columns.toString();
-        } else {
-            return " ";
-        }
     }
 
     public String getTriggerNameForDmlType(DataEventType type) {
