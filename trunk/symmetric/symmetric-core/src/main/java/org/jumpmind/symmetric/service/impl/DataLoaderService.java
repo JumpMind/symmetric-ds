@@ -532,7 +532,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void updateIncomingError(IncomingError incomingError) {
         sqlTemplate.update(getSql("updateIncomingErrorSql"), incomingError.getResolveData(),
-                incomingError.getResolveData(), incomingError.getBatchId(),
+                incomingError.isResolveIgnore(), incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber());
     }
 
