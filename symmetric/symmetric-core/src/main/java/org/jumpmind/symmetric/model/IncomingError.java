@@ -45,7 +45,9 @@ public class IncomingError implements Serializable {
     private String targetTableName;
 
     private DataEventType eventType;
-    
+
+    private String columnNames;
+
     private CsvData csvData = new CsvData();
         
     private boolean resolveIgnore = false;
@@ -184,6 +186,14 @@ public class IncomingError implements Serializable {
 
 	public void setFailedLineNumber(long failedLineNumber) {
 		this.failedLineNumber = failedLineNumber;
+	}
+
+	public String getColumnNames() {
+		return columnNames;
+	}
+
+	public void setColumnNames(String columnNames) {
+		this.columnNames = columnNames;
 	}
 
 }
