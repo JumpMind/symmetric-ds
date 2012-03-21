@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -740,6 +741,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             IncomingError error = new IncomingError();
                             error.setBatchId(this.currentBatch.getBatchId());
                             error.setNodeId(this.currentBatch.getNodeId());
+                            error.setColumnNames(Table.getCommaDeliminatedColumns(context.getTable().getColumns()));
                             error.setCsvData(context.getData());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());

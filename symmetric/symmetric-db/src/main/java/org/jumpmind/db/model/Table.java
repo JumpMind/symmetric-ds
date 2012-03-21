@@ -1074,4 +1074,18 @@ public class Table implements Serializable, Cloneable {
         return table;
     }
 
+    public static String getCommaDeliminatedColumns(Column[] cols) {
+        StringBuilder columns = new StringBuilder();
+        if (cols != null && cols.length > 0) {
+            for (Column column : cols) {
+                columns.append(column.getName());
+                columns.append(",");
+            }
+            columns.replace(columns.length() - 1, columns.length(), "");
+            return columns.toString();
+        } else {
+            return " ";
+        }
+    }
+
 }
