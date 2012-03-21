@@ -248,6 +248,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
                         nodeChannelCacheTime = System.currentTimeMillis();
                     }
+                    
+                    if (nodeId != null) {
                     nodeChannels = sqlTemplate.query(getSql("selectNodeChannelsSql"),
                             new ISqlRowMapper<NodeChannel>() {
                                 public NodeChannel mapRow(Row row) {
@@ -277,9 +279,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     nodeChannel.setDataLoaderType(row.getString("data_loader_type"));
                                     return nodeChannel;
                                 };
-                            }, nodeId);
+                            }, nodeId);                    
                     nodeChannelCache.put(nodeId, nodeChannels);
                     loaded = true;
+                    } else {
+                        nodeChannels = new ArrayList<NodeChannel>(0);
+                    }
                 }
             }
         }
