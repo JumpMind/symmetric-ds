@@ -335,10 +335,10 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
-                ConflictSetting conflictSettings = writerSettings.getConflictSettings(
+                Conflict conflictSettings = writerSettings.getConflictSettings(
                         this.targetTable, batch);
                 Column[] lookupKeys = null;
-                switch (conflictSettings.getDetectDeleteType()) {
+                switch (conflictSettings.getDetectType()) {
                     case USE_OLD_DATA:
                         lookupKeys = targetTable.getColumns();
                         break;
@@ -417,9 +417,9 @@ public class DatabaseWriter implements IDataWriter {
                     if (!useConflictDetection) {
                         lookupKeys = targetTable.getPrimaryKeyColumns();
                     } else {
-                        ConflictSetting conflictSettings = writerSettings.getConflictSettings(
+                        Conflict conflictSettings = writerSettings.getConflictSettings(
                                 this.targetTable, batch);
-                        switch (conflictSettings.getDetectUpdateType()) {
+                        switch (conflictSettings.getDetectType()) {
                             case USE_CHANGED_DATA:
                                 ArrayList<Column> lookupColumns = new ArrayList<Column>(
                                         changedColumnMetaList);

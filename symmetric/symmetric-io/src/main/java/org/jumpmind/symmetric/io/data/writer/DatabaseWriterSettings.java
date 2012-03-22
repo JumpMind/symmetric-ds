@@ -16,11 +16,11 @@ public class DatabaseWriterSettings {
 
     protected boolean usePrimaryKeysFromSource = true;
 
-    protected ConflictSetting defaultConflictSetting;
+    protected Conflict defaultConflictSetting;
 
-    protected Map<String, ConflictSetting> conflictSettingsByChannel;
+    protected Map<String, Conflict> conflictSettingsByChannel;
 
-    protected Map<String, ConflictSetting> conflictSettingsByTable;
+    protected Map<String, Conflict> conflictSettingsByTable;
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
     
@@ -50,27 +50,27 @@ public class DatabaseWriterSettings {
         this.usePrimaryKeysFromSource = usePrimaryKeysFromSource;
     }
 
-    public ConflictSetting getDefaultConflictSetting() {
+    public Conflict getDefaultConflictSetting() {
         return defaultConflictSetting;
     }
 
-    public void setDefaultConflictSetting(ConflictSetting defaultConflictSetting) {
+    public void setDefaultConflictSetting(Conflict defaultConflictSetting) {
         this.defaultConflictSetting = defaultConflictSetting;
     }
 
-    public Map<String, ConflictSetting> getConflictSettingsByChannel() {
+    public Map<String, Conflict> getConflictSettingsByChannel() {
         return conflictSettingsByChannel;
     }
 
-    public void setConflictSettingsByChannel(Map<String, ConflictSetting> conflictSettingsByChannel) {
+    public void setConflictSettingsByChannel(Map<String, Conflict> conflictSettingsByChannel) {
         this.conflictSettingsByChannel = conflictSettingsByChannel;
     }
 
-    public Map<String, ConflictSetting> getConflictSettingsByTable() {
+    public Map<String, Conflict> getConflictSettingsByTable() {
         return conflictSettingsByTable;
     }
 
-    public void setConflictSettingsByTable(Map<String, ConflictSetting> conflictSettingsByTable) {
+    public void setConflictSettingsByTable(Map<String, Conflict> conflictSettingsByTable) {
         this.conflictSettingsByTable = conflictSettingsByTable;
     }
 
@@ -101,11 +101,11 @@ public class DatabaseWriterSettings {
         return null;
     }
 
-    public ConflictSetting getConflictSettings(Table table, Batch batch) {
-        ConflictSetting settings = null;
+    public Conflict getConflictSettings(Table table, Batch batch) {
+        Conflict settings = null;
         String fullyQualifiedName = table.getFullyQualifiedTableName();
         if (conflictSettingsByTable != null) {
-            ConflictSetting found = conflictSettingsByTable.get(fullyQualifiedName);
+            Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
 
             if (found == null) {
                 found = conflictSettingsByTable.get(table.getName());
@@ -127,7 +127,7 @@ public class DatabaseWriterSettings {
         }
 
         if (settings == null) {
-            settings = new ConflictSetting();
+            settings = new Conflict();
         }
 
         return settings;

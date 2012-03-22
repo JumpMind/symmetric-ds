@@ -6,46 +6,26 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 
-public class ConflictSetting implements Serializable {
+public class Conflict implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum DetectUpdateConflict {
+    public enum DetectConflict {
         USE_PK_DATA, USE_OLD_DATA, USE_CHANGED_DATA, USE_TIMESTAMP, USE_VERSION
     };
 
-    public enum ResolveUpdateConflict {
+    public enum ResolveConflict {
         NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
 
-    public enum DetectDeleteConflict {
-        USE_PK_DATA, USE_OLD_DATA, USE_TIMESTAMP, USE_VERSION
-    };
-    
-    public enum ResolveDeleteConflict {
-        MANUAL, IGNORE, NEWER_WINS
-    };
-    
-    public enum DetectInsertConflict {
-        USE_PK_DATA, USE_TIMESTAMP, USE_VERSION
-    }
-
-    public enum ResolveInsertConflict {
-        NEWER_WINS, MANUAL, IGNORE, FALLBACK
-    };
-
-    private String conflictSettingId = "default";
+    private String conflictId = "default";
     private String targetChannelId;
     private String targetCatalogName;
     private String targetSchemaName;
     private String targetTableName;
-    private DetectUpdateConflict detectUpdateType = DetectUpdateConflict.USE_PK_DATA;
-    private DetectInsertConflict detectInsertType = DetectInsertConflict.USE_PK_DATA;
-    private DetectDeleteConflict detectDeleteType = DetectDeleteConflict.USE_PK_DATA;
+    private DetectConflict detectType = DetectConflict.USE_PK_DATA;
     private String detectExpresssion;
-    private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.FALLBACK;
-    private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.FALLBACK;
-    private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE;
+    private ResolveConflict resolveType = ResolveConflict.FALLBACK;
     private boolean resolveChangesOnly = true;
     private boolean resolveRowOnly = true;
     private Date createTime = new Date();
@@ -61,12 +41,12 @@ public class ConflictSetting implements Serializable {
         }
     }
 
-    public String getConflictSettingId() {
-        return conflictSettingId;
+    public String getConflictId() {
+        return conflictId;
     }
 
-    public void setConflictSettingId(String conflictId) {
-        this.conflictSettingId = conflictId;
+    public void setConflictId(String conflictId) {
+        this.conflictId = conflictId;
     }
 
     public String getTargetChannelId() {
@@ -101,54 +81,22 @@ public class ConflictSetting implements Serializable {
         this.targetTableName = targetTableName;
     }
     
-    public DetectUpdateConflict getDetectUpdateType() {
-        return detectUpdateType;
+    public DetectConflict getDetectType() {
+        return detectType;
     }
 
-    public void setDetectUpdateType(DetectUpdateConflict detectUpdateType) {
-        this.detectUpdateType = detectUpdateType;
-    }
-    
-    public void setDetectInsertType(DetectInsertConflict detectInsertType) {
-        this.detectInsertType = detectInsertType;
-    }
-    
-    public DetectInsertConflict getDetectInsertType() {
-        return detectInsertType;
+    public void setDetectType(DetectConflict detectUpdateType) {
+        this.detectType = detectUpdateType;
     }
 
-    public DetectDeleteConflict getDetectDeleteType() {
-        return detectDeleteType;
+    public ResolveConflict getResolveType() {
+        return resolveType;
     }
 
-    public void setDetectDeleteType(DetectDeleteConflict detectDeleteType) {
-        this.detectDeleteType = detectDeleteType;
+    public void setResolveType(ResolveConflict resolveUpdateType) {
+        this.resolveType = resolveUpdateType;
     }
 
-    public ResolveUpdateConflict getResolveUpdateType() {
-        return resolveUpdateType;
-    }
-
-    public void setResolveUpdateType(ResolveUpdateConflict resolveUpdateType) {
-        this.resolveUpdateType = resolveUpdateType;
-    }
-
-    public ResolveInsertConflict getResolveInsertType() {
-        return resolveInsertType;
-    }
-
-    public void setResolveInsertType(ResolveInsertConflict resolveInsertType) {
-        this.resolveInsertType = resolveInsertType;
-    }
-
-    public ResolveDeleteConflict getResolveDeleteType() {
-        return resolveDeleteType;
-    }
-
-    public void setResolveDeleteType(ResolveDeleteConflict resolveDeleteType) {
-        this.resolveDeleteType = resolveDeleteType;
-    }
-    
     public boolean isResolveChangesOnly() {
         return resolveChangesOnly;
     }

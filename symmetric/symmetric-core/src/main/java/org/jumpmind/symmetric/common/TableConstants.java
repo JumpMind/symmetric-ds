@@ -56,7 +56,7 @@ public class TableConstants {
     public static final String SYM_REGISTRATION_REQUEST = "registration_request";
     public static final String SYM_REGISTRATION_REDIRECT = "registration_redirect";
     public static final String SYM_NODE_CHANNEL_CTL = "node_channel_ctl";
-    public static final String SYM_CONFLICT_SETTINGS = "conflict_setting";
+    public static final String SYM_CONFLICT = "conflict";
     public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
     public static final String SYM_INCOMING_ERROR = "incoming_error";
@@ -106,7 +106,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_CONFLICT_SETTINGS));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_CONFLICT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         return configTables;
     }
@@ -141,7 +141,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_OUTGOING_BATCH));
         tables.add(getTableName(tablePrefix, SYM_INCOMING_BATCH));
         tables.add(getTableName(tablePrefix, SYM_LOCK));
-        tables.add(getTableName(tablePrefix, SYM_CONFLICT_SETTINGS));
+        tables.add(getTableName(tablePrefix, SYM_CONFLICT));
         tables.add(getTableName(tablePrefix, SYM_INCOMING_ERROR));
         return tables;
     }

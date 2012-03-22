@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
 import org.jumpmind.symmetric.io.data.CsvConstants;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -342,8 +342,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         
         ConflictSettingNodeGroupLink conflictSettings = new ConflictSettingNodeGroupLink();
         conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
-        conflictSettings.setConflictSettingId("dont_fallback");
-        conflictSettings.setResolveInsertType(ResolveInsertConflict.MANUAL);
+        conflictSettings.setConflictId("dont_fallback");
+        conflictSettings.setResolveType(ResolveConflict.MANUAL);
         getSymmetricEngine().getDataLoaderService().save(conflictSettings);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
