@@ -12,34 +12,31 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("updateConflictSettingsSql", 
-          "update $(conflict_setting) set                                                                " +
+          "update $(conflict) set                                                                        " +
           "source_node_group_id=?, target_node_group_id=?,                                               " +
           "target_channel_id=?, target_catalog_name=?, target_schema_name=?, target_table_name=?,        " +
-          "detect_update_type=?, detect_insert_type=?, detect_delete_type=?,                             " +
-          "resolve_update_type=?, resolve_insert_type=?, resolve_delete_type=?, resolve_changes_only=?,  " +
+          "detect_type=?, resolve_type=?, resolve_changes_only=?,                                        " +
           "resolve_row_only=?, detect_expression=?,                                                      " +
-          "last_update_by=?, last_update_time=current_timestamp where conflict_setting_id=?              ");
+          "last_update_by=?, last_update_time=current_timestamp where conflict_id=?                      ");
         
         putSql("insertConflictSettingsSql", 
-          "insert into $(conflict_setting) (                                                        " +
-          "source_node_group_id, target_node_group_id,                                              " +
-          "target_channel_id, target_catalog_name, target_schema_name, target_table_name,           " +
-          "detect_update_type, detect_insert_type, detect_delete_type,                              " +
-          "resolve_update_type, resolve_insert_type, resolve_delete_type,                           " +
-          "resolve_changes_only, resolve_row_only, detect_expression,                               " +
-          "create_time, last_update_by, last_update_time, conflict_setting_id)                      " +
-          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+          "insert into $(conflict) (                                                                      " +
+          "source_node_group_id, target_node_group_id,                                                    " +
+          "target_channel_id, target_catalog_name, target_schema_name, target_table_name,                 " +
+          "detect_type, resolve_type,                                                                     " +
+          "resolve_changes_only, resolve_row_only, detect_expression,                                     " +
+          "create_time, last_update_by, last_update_time, conflict_id)                                    " +
+          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
         
-        putSql("deleteConflictSettingsSql", "delete from $(conflict_setting) where conflict_setting_id=?");
+        putSql("deleteConflictSettingsSql", "delete from $(conflict) where conflict_id=?");
         
         putSql("selectConflictSettingsSql",
                 "select " +
                 "source_node_group_id, target_node_group_id,                                              " +
                 "target_channel_id, target_catalog_name, target_schema_name, target_table_name,           " +
-                "detect_update_type, detect_insert_type, detect_delete_type,                              " +
-                "resolve_update_type, resolve_insert_type, resolve_delete_type,                           " +
+                "detect_type, resolve_type,                                                               " +
                 "resolve_changes_only, resolve_row_only, detect_expression,                               " +
-                "create_time, last_update_by, last_update_time, conflict_setting_id from $(conflict_setting) ");
+                "create_time, last_update_by, last_update_time, conflict_id from $(conflict)              ");
 
         putSql("selectIncomingErrorSql",
         		"select batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +

@@ -55,12 +55,9 @@ import org.jumpmind.symmetric.io.data.ResolvedData;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectDeleteConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveDeleteConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveInsertConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -481,7 +478,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void delete(ConflictSettingNodeGroupLink settings) {
-        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictSettingId());
+        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
     }
 
     public void save(ConflictSettingNodeGroupLink setting) {
@@ -489,23 +486,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
                 .getTargetChannelId(), setting.getTargetCatalogName(), setting
-                .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectUpdateType()
-                .name(), setting.getDetectInsertType().name(),
-                setting.getDetectDeleteType().name(), setting.getResolveUpdateType().name(),
-                setting.getResolveInsertType().name(), setting.getResolveDeleteType().name(),
+                .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectType()
+                .name(), setting.getResolveType().name(),
                 setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0, setting
                         .getDetectExpresssion(), setting.getLastUpdateBy(), setting
-                        .getConflictSettingId()) == 0) {
+                        .getConflictId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
                     .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
                     setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
                             .getTargetSchemaName(), setting.getTargetTableName(), setting
-                            .getDetectUpdateType().name(), setting.getDetectInsertType().name(),
-                    setting.getDetectDeleteType().name(), setting.getResolveUpdateType().name(),
-                    setting.getResolveInsertType().name(), setting.getResolveDeleteType().name(),
+                            .getDetectType().name(), setting.getResolveType().name(),                    
                     setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
                     setting.getDetectExpresssion(), setting.getLastUpdateBy(), setting
-                            .getConflictSettingId());
+                            .getConflictId());
         }
     }
 
@@ -553,21 +546,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             setting.setTargetCatalogName(rs.getString("target_catalog_name"));
             setting.setTargetSchemaName(rs.getString("target_schema_name"));
             setting.setTargetTableName(rs.getString("target_table_name"));
-            setting.setDetectUpdateType(DetectUpdateConflict.valueOf(rs.getString(
-                    "detect_update_type").toUpperCase()));
-            setting.setDetectDeleteType(DetectDeleteConflict.valueOf(rs.getString(
-                    "detect_delete_type").toUpperCase()));
-            setting.setResolveUpdateType(ResolveUpdateConflict.valueOf(rs.getString(
-                    "resolve_update_type").toUpperCase()));
-            setting.setResolveInsertType(ResolveInsertConflict.valueOf(rs.getString(
-                    "resolve_insert_type").toUpperCase()));
-            setting.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
-                    "resolve_delete_type").toUpperCase()));
+            setting.setDetectType(DetectConflict.valueOf(rs.getString(
+                    "detect_type").toUpperCase()));
+            setting.setResolveType(ResolveConflict.valueOf(rs.getString(
+                    "resolve_type").toUpperCase()));
             setting.setResolveChangesOnly(rs.getBoolean("resolve_changes_only"));
             setting.setResolveRowOnly(rs.getBoolean("resolve_row_only"));
             setting.setDetectExpresssion(rs.getString("detect_expression"));
             setting.setLastUpdateBy(rs.getString("last_update_by"));
-            setting.setConflictSettingId(rs.getString("conflict_setting_id"));
+            setting.setConflictId(rs.getString("conflict_id"));
             setting.setCreateTime(rs.getDateTime("create_time"));
             setting.setLastUpdateTime(rs.getDateTime("last_update_time"));
             return setting;
@@ -780,7 +767,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public static class ConflictSettingNodeGroupLink extends ConflictSetting {
+    public static class ConflictSettingNodeGroupLink extends Conflict {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
 

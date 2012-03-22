@@ -18,8 +18,8 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.ResolveUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,17 +37,17 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Before
     public void notExpectingError() {
         setErrorExpected(false);
-        writerSettings.setDefaultConflictSetting(new ConflictSetting());
+        writerSettings.setDefaultConflictSetting(new Conflict());
     }
 
     @Test
     public void testUpdateDetectTimestampNewerWins() {
-        ConflictSetting setting = new ConflictSetting();
-        setting.setDetectUpdateType(DetectUpdateConflict.USE_TIMESTAMP);
+        Conflict setting = new Conflict();
+        setting.setDetectType(DetectConflict.USE_TIMESTAMP);
         setting.setDetectExpresssion("time_value");
         setting.setResolveRowOnly(true);
         setting.setResolveChangesOnly(true);
-        setting.setResolveUpdateType(ResolveUpdateConflict.NEWER_WINS);
+        setting.setResolveType(ResolveConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
 
         String id = getNextId();

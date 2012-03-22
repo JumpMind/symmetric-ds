@@ -12,8 +12,7 @@ import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.ResolvedData;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectInsertConflict;
-import org.jumpmind.symmetric.io.data.writer.ConflictSetting.DetectUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,14 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     public void needsResolved(DatabaseWriter writer, CsvData data, LoadStatus loadStatus) {
         DataEventType originalEventType = data.getDataEventType();
         DatabaseWriterSettings writerSettings = writer.getWriterSettings();
-        ConflictSetting conflictSetting = writerSettings.getConflictSettings(
+        Conflict conflictSetting = writerSettings.getConflictSettings(
                 writer.getTargetTable(), writer.getBatch());
         long statementCount = writer.getStatistics().get(writer.getBatch())
                 .get(DataWriterStatisticConstants.STATEMENTCOUNT);
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
         switch (originalEventType) {
             case INSERT:
-                switch (conflictSetting.getResolveInsertType()) {
+                switch (conflictSetting.getResolveType()) {
                     case MANUAL:
                         if (resolvedData != null) {
                             // TODO - attempt to resolve
@@ -47,9 +46,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 conflictSetting.isResolveChangesOnly());
                         break;
                     case NEWER_WINS:
-                        if ((conflictSetting.getDetectInsertType() == DetectInsertConflict.USE_TIMESTAMP && isTimestampNewer(
+                        if ((conflictSetting.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
                                 conflictSetting, writer, data))
-                                || (conflictSetting.getDetectInsertType() == DetectInsertConflict.USE_VERSION && isVersionNewer(
+                                || (conflictSetting.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflictSetting, writer, data))) {
                             try {
                                 performFallbackToUpdate(writer, data, false);
@@ -72,7 +71,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 break;
 
             case UPDATE:
-                switch (conflictSetting.getResolveUpdateType()) {
+                switch (conflictSetting.getResolveType()) {
                     case MANUAL:
                         if (resolvedData != null) {
                             // TODO - attempt to resolve
@@ -87,9 +86,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         performFallbackToInsert(writer, data);
                         break;
                     case NEWER_WINS:
-                        if ((conflictSetting.getDetectUpdateType() == DetectUpdateConflict.USE_TIMESTAMP && isTimestampNewer(
+                        if ((conflictSetting.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
                                 conflictSetting, writer, data))
-                                || (conflictSetting.getDetectUpdateType() == DetectUpdateConflict.USE_VERSION && isVersionNewer(
+                                || (conflictSetting.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflictSetting, writer, data))) {
                             performFallbackToUpdate(writer, data,
                                     conflictSetting.isResolveChangesOnly());
@@ -109,7 +108,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 break;
 
             case DELETE:
-                switch (conflictSetting.getResolveDeleteType()) {
+                switch (conflictSetting.getResolveType()) {
                     case MANUAL:
                         if (resolvedData != null) {
                             // TODO - attempt to resolve
@@ -139,7 +138,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         }
     }
 
-    protected boolean isTimestampNewer(ConflictSetting conflictSetting, DatabaseWriter writer,
+    protected boolean isTimestampNewer(Conflict conflictSetting, DatabaseWriter writer,
             CsvData data) {
         String columnName = conflictSetting.getDetectExpresssion();
         Table table = writer.getTargetTable();
@@ -155,7 +154,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         return loadingTs.after(existingTs);
     }
 
-    protected boolean isVersionNewer(ConflictSetting conflictSetting, DatabaseWriter writer,
+    protected boolean isVersionNewer(Conflict conflictSetting, DatabaseWriter writer,
             CsvData data) {
         String columnName = conflictSetting.getDetectExpresssion();
         Table table = writer.getTargetTable();
