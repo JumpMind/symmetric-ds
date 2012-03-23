@@ -48,6 +48,8 @@ public class IncomingError implements Serializable {
 
     private String columnNames;
 
+    private String primaryKeyColumnNames;
+
     private CsvData csvData = new CsvData();
         
     private boolean resolveIgnore = false;
@@ -210,6 +212,14 @@ public class IncomingError implements Serializable {
 
 	public void setColumnNames(String columnNames) {
 		this.columnNames = columnNames;
+	}
+
+	public String getPrimaryKeyColumnNames() {
+		return primaryKeyColumnNames;
+	}
+
+	public void setPrimaryKeyColumnNames(String primaryKeyColumnNames) {
+		this.primaryKeyColumnNames = primaryKeyColumnNames;
 	}
 
 }
