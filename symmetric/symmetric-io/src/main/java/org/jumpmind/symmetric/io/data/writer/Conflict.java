@@ -18,7 +18,7 @@ public class Conflict implements Serializable {
         NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
 
-    private String conflictId = "default";
+    private String conflictId;
     private String targetChannelId;
     private String targetCatalogName;
     private String targetSchemaName;
