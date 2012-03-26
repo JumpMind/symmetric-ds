@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +17,11 @@ public class DataProcessor {
     protected IDataWriter defaultDataWriter;
 
     protected IDataProcessorListener listener;
-    
+
     protected Table currentTable;
-    
+
     protected CsvData currentData;
-    
+
     protected Batch currentBatch;
 
     public DataProcessor() {
@@ -41,7 +42,8 @@ public class DataProcessor {
      * This method may be overridden in order to choose different
      * {@link IDataWriter} based on the batch that is being written.
      * 
-     * @param batch The batch that is about to be written
+     * @param batch
+     *            The batch that is about to be written
      * @return The data writer to use for the writing of the batch
      */
     protected IDataWriter chooseDataWriter(Batch batch) {
@@ -119,13 +121,17 @@ public class DataProcessor {
         do {
             currentTable = dataReader.nextTable();
             context.setTable(currentTable);
-            if (currentTable != null) {                
+            if (currentTable != null) {
                 boolean processTable = false;
                 try {
-                    if (processBatch) {
-                        processTable = context.getWriter().start(currentTable);
+                    try {
+                        if (processBatch) {
+                            processTable = context.getWriter().start(currentTable);
+                        }
+                        dataRow += forEachDataInTable(context, processTable, batch);
+                    } catch (IgnoreBatchException ex) {
+                        processBatch = false;
                     }
-                    dataRow += forEachDataInTable(context, processTable, batch);
                 } finally {
                     if (processTable) {
                         context.getWriter().end(currentTable);
@@ -138,21 +144,31 @@ public class DataProcessor {
 
     protected int forEachDataInTable(DataContext context, boolean processTable, Batch batch) {
         int dataRow = 0;
+        IgnoreBatchException ignore = null;
         do {
             batch.startTimer(STAT_READ_DATA);
             currentData = dataReader.nextData();
             context.setData(currentData);
             batch.incrementDataReadMillis(batch.endTimer(STAT_READ_DATA));
-            if (currentData != null) {                
+            if (currentData != null) {
                 dataRow++;
                 if (processTable) {
-                    batch.startTimer(STAT_WRITE_DATA);
-                    batch.incrementLineCount();
-                    context.getWriter().write(currentData);
-                    batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
+                    try {
+                        batch.startTimer(STAT_WRITE_DATA);
+                        batch.incrementLineCount();
+                        context.getWriter().write(currentData);
+                        batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
+                    } catch (IgnoreBatchException ex) {
+                        ignore = ex;
+                        processTable = false;
+                    }
                 }
             }
         } while (currentData != null);
+
+        if (ignore != null) {
+            throw ignore;
+        }
         return dataRow;
     }
 

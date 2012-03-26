@@ -23,7 +23,6 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -111,52 +110,57 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-        if (filterBefore(data)) {
-            LoadStatus loadStatus = LoadStatus.SUCCESS;
-            switch (data.getDataEventType()) {
-                case UPDATE:
-                    loadStatus = update(data, true, true);
-                    break;
-                case INSERT:
-                    loadStatus = insert(data);
-                    break;
-                case DELETE:
-                    loadStatus = delete(data);
-                    break;
-                case BSH:
-                    script(data);
-                    break;
-                case SQL:
-                    sql(data);
-                    break;
-                case CREATE:
-                    create(data);
-                    break;
-                default:
-                    break;
-            }
-
-            if (loadStatus == LoadStatus.CONFLICT) {
-                if (conflictResolver != null) {
-                    conflictResolver.needsResolved(this, data, loadStatus);
-                } else {
-                    throw new ConflictException(data, targetTable, loadStatus, false);
+        try {
+            statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+            if (filterBefore(data)) {
+                LoadStatus loadStatus = LoadStatus.SUCCESS;
+                switch (data.getDataEventType()) {
+                    case UPDATE:
+                        loadStatus = update(data, true, true);
+                        break;
+                    case INSERT:
+                        loadStatus = insert(data);
+                        break;
+                    case DELETE:
+                        loadStatus = delete(data, true);
+                        break;
+                    case BSH:
+                        script(data);
+                        break;
+                    case SQL:
+                        sql(data);
+                        break;
+                    case CREATE:
+                        create(data);
+                        break;
+                    default:
+                        break;
                 }
-            } else {
-                uncommittedCount++;
+
+                if (loadStatus == LoadStatus.CONFLICT) {
+                    if (conflictResolver != null) {
+                        conflictResolver.needsResolved(this, data, loadStatus);
+                    } else {
+                        throw new ConflictException(data, targetTable, false);
+                    }
+                } else {
+                    uncommittedCount++;
+                }
+
+                lastData = data;
+
+                filterAfter(data);
+
+                if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
+                    notifyFiltersEarlyCommit();
+                    commit();
+                }
+
             }
 
-            lastData = data;
-
-            filterAfter(data);
-
-            if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
-                notifyFiltersEarlyCommit();
-                commit();
-            }
-
+        } catch (IgnoreBatchException ex) {
+            rollback();
         }
 
     }
@@ -331,42 +335,46 @@ public class DatabaseWriter implements IDataWriter {
         return targetValues;
     }
 
-    protected LoadStatus delete(CsvData data) {
+    protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
-                Conflict conflictSettings = writerSettings.getConflictSettings(
-                        this.targetTable, batch);
+                Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
                 Column[] lookupKeys = null;
-                switch (conflictSettings.getDetectType()) {
-                    case USE_OLD_DATA:
-                        lookupKeys = targetTable.getColumns();
-                        break;
-                    case USE_VERSION:
-                    case USE_TIMESTAMP:
-                        List<Column> lookupColumns = new ArrayList<Column>();
-                        Column versionColumn = targetTable.getColumnWithName(conflictSettings
-                                .getDetectExpression());
-                        if (versionColumn != null) {
-                            lookupColumns.add(versionColumn);
-                        } else {
-                            log.error(
-                                    "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                    conflictSettings.getDetectExpression());
-                        }
-                        Column[] pks = targetTable.getPrimaryKeyColumns();
-                        for (Column column : pks) {
-                            // make sure all of the PK keys are in the list only
-                            // once and are always at the end of the list
-                            lookupColumns.remove(column);
-                            lookupColumns.add(column);
-                        }
-                        lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
-                        break;
-                    case USE_PK_DATA:
-                    default:
-                        lookupKeys = targetTable.getPrimaryKeyColumns();
-                        break;
+                if (!useConflictDetection) {
+                    lookupKeys = targetTable.getPrimaryKeyColumns();
+                } else {
+                    switch (conflict.getDetectType()) {
+                        case USE_OLD_DATA:
+                            lookupKeys = targetTable.getColumns();
+                            break;
+                        case USE_VERSION:
+                        case USE_TIMESTAMP:
+                            List<Column> lookupColumns = new ArrayList<Column>();
+                            Column versionColumn = targetTable.getColumnWithName(conflict
+                                    .getDetectExpression());
+                            if (versionColumn != null) {
+                                lookupColumns.add(versionColumn);
+                            } else {
+                                log.error(
+                                        "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
+                                        conflict.getDetectExpression());
+                            }
+                            Column[] pks = targetTable.getPrimaryKeyColumns();
+                            for (Column column : pks) {
+                                // make sure all of the PK keys are in the list
+                                // only
+                                // once and are always at the end of the list
+                                lookupColumns.remove(column);
+                                lookupColumns.add(column);
+                            }
+                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
+                            break;
+                        case USE_PK_DATA:
+                        default:
+                            lookupKeys = targetTable.getPrimaryKeyColumns();
+                            break;
+                    }
                 }
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
@@ -417,9 +425,8 @@ public class DatabaseWriter implements IDataWriter {
                     if (!useConflictDetection) {
                         lookupKeys = targetTable.getPrimaryKeyColumns();
                     } else {
-                        Conflict conflictSettings = writerSettings.getConflictSettings(
-                                this.targetTable, batch);
-                        switch (conflictSettings.getDetectType()) {
+                        Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
+                        switch (conflict.getDetectType()) {
                             case USE_CHANGED_DATA:
                                 ArrayList<Column> lookupColumns = new ArrayList<Column>(
                                         changedColumnMetaList);
@@ -440,14 +447,14 @@ public class DatabaseWriter implements IDataWriter {
                             case USE_VERSION:
                             case USE_TIMESTAMP:
                                 lookupColumns = new ArrayList<Column>();
-                                Column versionColumn = targetTable
-                                        .getColumnWithName(conflictSettings.getDetectExpression());
+                                Column versionColumn = targetTable.getColumnWithName(conflict
+                                        .getDetectExpression());
                                 if (versionColumn != null) {
                                     lookupColumns.add(versionColumn);
                                 } else {
                                     log.error(
                                             "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                            conflictSettings.getDetectExpression());
+                                            conflict.getDetectExpression());
                                 }
                                 pks = targetTable.getPrimaryKeyColumns();
                                 for (Column column : pks) {
@@ -615,7 +622,8 @@ public class DatabaseWriter implements IDataWriter {
 
     }
 
-    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data, boolean applyChangesOnly) {
+    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data,
+            boolean applyChangesOnly) {
         boolean needsUpdated = true;
         String[] oldData = data.getParsedData(CsvData.OLD_DATA);
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
@@ -801,7 +809,7 @@ public class DatabaseWriter implements IDataWriter {
     public IDatabasePlatform getPlatform() {
         return platform;
     }
-    
+
     public DatabaseWriterSettings getWriterSettings() {
         return writerSettings;
     }
