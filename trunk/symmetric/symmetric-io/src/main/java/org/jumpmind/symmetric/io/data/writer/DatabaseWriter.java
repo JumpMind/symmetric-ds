@@ -346,13 +346,13 @@ public class DatabaseWriter implements IDataWriter {
                     case USE_TIMESTAMP:
                         List<Column> lookupColumns = new ArrayList<Column>();
                         Column versionColumn = targetTable.getColumnWithName(conflictSettings
-                                .getDetectExpresssion());
+                                .getDetectExpression());
                         if (versionColumn != null) {
                             lookupColumns.add(versionColumn);
                         } else {
                             log.error(
                                     "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                    conflictSettings.getDetectExpresssion());
+                                    conflictSettings.getDetectExpression());
                         }
                         Column[] pks = targetTable.getPrimaryKeyColumns();
                         for (Column column : pks) {
@@ -441,13 +441,13 @@ public class DatabaseWriter implements IDataWriter {
                             case USE_TIMESTAMP:
                                 lookupColumns = new ArrayList<Column>();
                                 Column versionColumn = targetTable
-                                        .getColumnWithName(conflictSettings.getDetectExpresssion());
+                                        .getColumnWithName(conflictSettings.getDetectExpression());
                                 if (versionColumn != null) {
                                     lookupColumns.add(versionColumn);
                                 } else {
                                     log.error(
                                             "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                            conflictSettings.getDetectExpresssion());
+                                            conflictSettings.getDetectExpression());
                                 }
                                 pks = targetTable.getPrimaryKeyColumns();
                                 for (Column column : pks) {

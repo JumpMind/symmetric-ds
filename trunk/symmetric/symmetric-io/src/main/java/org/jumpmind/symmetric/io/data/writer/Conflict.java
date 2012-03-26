@@ -24,7 +24,7 @@ public class Conflict implements Serializable {
     private String targetSchemaName;
     private String targetTableName;
     private DetectConflict detectType = DetectConflict.USE_PK_DATA;
-    private String detectExpresssion;
+    private String detectExpression;
     private ResolveConflict resolveType = ResolveConflict.FALLBACK;
     private boolean resolveChangesOnly = true;
     private boolean resolveRowOnly = true;
@@ -113,12 +113,12 @@ public class Conflict implements Serializable {
         this.resolveRowOnly = resolveRowOnly;
     }
 
-    public String getDetectExpresssion() {
-        return detectExpresssion;
+    public String getDetectExpression() {
+        return detectExpression;
     }
 
-    public void setDetectExpresssion(String conflictColumnName) {
-        this.detectExpresssion = conflictColumnName;
+    public void setDetectExpression(String conflictColumnName) {
+        this.detectExpression = conflictColumnName;
     }
 
     public Date getCreateTime() {
