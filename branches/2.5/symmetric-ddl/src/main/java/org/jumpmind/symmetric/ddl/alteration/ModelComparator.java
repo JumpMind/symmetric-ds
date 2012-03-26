@@ -342,8 +342,9 @@ public class ModelComparator
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn.getTypeCode()));
         }
 
-        boolean sizeMatters  = _platformInfo.hasSize(sourceColumn.getTypeCode());
-        boolean scaleMatters = _platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
+        // if size only matters to the target type, then drive checks off of the target
+        boolean sizeMatters  = _platformInfo.hasSize(targetColumn.getTypeCode());
+        boolean scaleMatters = _platformInfo.hasPrecisionAndScale(targetColumn.getTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
@@ -376,9 +377,12 @@ public class ModelComparator
 
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
-
-        if (((sourceDefaultValue == null) && (targetDefaultValue != null)) ||
-            ((sourceDefaultValue != null) && !sourceDefaultValue.equals(targetDefaultValue)))
+        
+        if (
+            (sourceDefaultValue == null && targetDefaultValue != null) ||
+            (sourceDefaultValue != null && targetDefaultValue == null) ||
+            (sourceDefaultValue != null && targetDefaultValue != null && 
+                    !sourceDefaultValue.toString().equals(targetDefaultValue.toString())))
         {
             if (_log.isDebugEnabled()) {
                 _log.debug("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed default value from " + sourceColumn.getDefaultValue() + " to " + targetColumn.getDefaultValue());

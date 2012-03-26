@@ -61,7 +61,7 @@ public class Oracle8Platform extends PlatformImplBase
         info.addNativeTypeMapping(Types.ARRAY,         "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.BIGINT,        "NUMBER(38)");
         info.addNativeTypeMapping(Types.BINARY,        "RAW",              Types.VARBINARY);
-        info.addNativeTypeMapping(Types.BIT,           "NUMBER(1)");
+        info.addNativeTypeMapping(Types.BIT,           "NUMBER(1)",        Types.DECIMAL);
         info.addNativeTypeMapping(Types.DATE,          "DATE",             Types.TIMESTAMP);
         info.addNativeTypeMapping(Types.DECIMAL,       "NUMBER");
         info.addNativeTypeMapping(Types.DISTINCT,      "BLOB",             Types.BLOB);
@@ -72,14 +72,14 @@ public class Oracle8Platform extends PlatformImplBase
         info.addNativeTypeMapping(Types.LONGVARCHAR,   "CLOB",             Types.CLOB);
         info.addNativeTypeMapping(Types.NULL,          "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.NUMERIC,       "NUMBER",           Types.DECIMAL);
+        info.addNativeTypeMapping(Types.TINYINT,       "NUMBER(3)",        Types.DECIMAL);
+        info.addNativeTypeMapping(Types.SMALLINT,      "NUMBER(5)",        Types.DECIMAL);
         info.addNativeTypeMapping(Types.INTEGER,       "NUMBER(22)",       Types.DECIMAL);
         info.addNativeTypeMapping(Types.OTHER,         "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.REF,           "BLOB",             Types.BLOB);
-        info.addNativeTypeMapping(Types.SMALLINT,      "NUMBER(5)");
         info.addNativeTypeMapping(Types.STRUCT,        "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.TIME,          "DATE",             Types.DATE);
         info.addNativeTypeMapping(Types.TIMESTAMP,     "DATE");
-        info.addNativeTypeMapping(Types.TINYINT,       "NUMBER(3)");
         info.addNativeTypeMapping(Types.VARBINARY,     "RAW");
         info.addNativeTypeMapping(Types.VARCHAR,       "VARCHAR2");
 
