@@ -323,8 +323,8 @@ public class ModelComparator {
                     .getTypeCode()));
         }
 
-        boolean sizeMatters = platformInfo.hasSize(sourceColumn.getTypeCode());
-        boolean scaleMatters = platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
+        boolean sizeMatters = platformInfo.hasSize(targetColumn.getTypeCode());
+        boolean scaleMatters = platformInfo.hasPrecisionAndScale(targetColumn.getTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
@@ -363,8 +363,10 @@ public class ModelComparator {
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
 
-        if (((sourceDefaultValue == null) && (targetDefaultValue != null))
-                || ((sourceDefaultValue != null) && !sourceDefaultValue.equals(targetDefaultValue))) {
+        if ((sourceDefaultValue == null && targetDefaultValue != null)
+                || (sourceDefaultValue != null && targetDefaultValue == null)
+                || (sourceDefaultValue != null && targetDefaultValue != null && !sourceDefaultValue
+                        .toString().equals(targetDefaultValue.toString()))) {
             if (log.isDebugEnabled()) {
                 log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed default value from "
