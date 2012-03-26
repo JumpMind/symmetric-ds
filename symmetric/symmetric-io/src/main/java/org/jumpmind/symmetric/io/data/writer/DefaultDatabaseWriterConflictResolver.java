@@ -25,33 +25,12 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         DatabaseWriterSettings writerSettings = writer.getWriterSettings();
         Conflict conflict = writerSettings.pickConflict(writer.getTargetTable(), writer.getBatch());
         Statistics statistics = writer.getStatistics().get(writer.getBatch());
-        long statementCount = statistics
-                .get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        long statementCount = statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
         long lineNumber = statistics.get(DataWriterStatisticConstants.LINENUMBER);
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
 
-        if (log.isDebugEnabled()) {
-            log.debug(
-                    "Conflict detected: {} in batch {} at line {} for table {}",
-                    new Object[] { conflict.getConflictId() == null ? "default" : conflict
-                            .getConflictId(), writer.getBatch().getBatchId(), lineNumber, writer.getTargetTable().getFullyQualifiedTableName() });
-            String csvData = data.getCsvData(CsvData.ROW_DATA);
-            if (StringUtils.isNotBlank(csvData)) {
-                log.debug("Row data: {}", csvData);
-            }
-            
-            csvData = data.getCsvData(CsvData.OLD_DATA);
-            if (StringUtils.isNotBlank(csvData)) {
-                log.debug("Old data: {}", csvData);
-            }
-            
-            csvData = resolvedData != null ? resolvedData.getResolvedData() : null;
-            if (StringUtils.isNotBlank(csvData)) {
-                log.debug("Resolve data: {}", csvData);
-            }
-
-        }
-
+        logConflictHappened(conflict, data, writer, resolvedData, lineNumber);
+        
         switch (originalEventType) {
             case INSERT:
                 switch (conflict.getResolveType()) {
@@ -138,6 +117,31 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
             default:
                 break;
+        }
+    }
+
+    protected void logConflictHappened(Conflict conflict, CsvData data, DatabaseWriter writer,
+            ResolvedData resolvedData, long lineNumber) {
+        if (log.isDebugEnabled()) {
+            log.debug("Conflict detected: {} in batch {} at line {} for table {}", new Object[] {
+                    conflict.getConflictId() == null ? "default" : conflict.getConflictId(),
+                    writer.getBatch().getBatchId(), lineNumber,
+                    writer.getTargetTable().getFullyQualifiedTableName() });
+            String csvData = data.getCsvData(CsvData.ROW_DATA);
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Row data: {}", csvData);
+            }
+
+            csvData = data.getCsvData(CsvData.OLD_DATA);
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Old data: {}", csvData);
+            }
+
+            csvData = resolvedData != null ? resolvedData.getResolvedData() : null;
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Resolve data: {}", csvData);
+            }
+
         }
     }
 
