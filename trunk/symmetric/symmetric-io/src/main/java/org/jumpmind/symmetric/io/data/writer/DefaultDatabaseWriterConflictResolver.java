@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.sql.Timestamp;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
@@ -11,6 +12,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
+import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,15 +24,37 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         DataEventType originalEventType = data.getDataEventType();
         DatabaseWriterSettings writerSettings = writer.getWriterSettings();
         Conflict conflict = writerSettings.pickConflict(writer.getTargetTable(), writer.getBatch());
-        long statementCount = writer.getStatistics().get(writer.getBatch())
+        Statistics statistics = writer.getStatistics().get(writer.getBatch());
+        long statementCount = statistics
                 .get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        long lineNumber = statistics.get(DataWriterStatisticConstants.LINENUMBER);
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
+
+        if (log.isDebugEnabled()) {
+            log.debug(
+                    "Conflict detected: {} in batch {} at line {} for table {}",
+                    new Object[] { conflict.getConflictId() == null ? "default" : conflict
+                            .getConflictId(), writer.getBatch().getBatchId(), lineNumber, writer.getTargetTable().getFullyQualifiedTableName() });
+            String csvData = data.getCsvData(CsvData.ROW_DATA);
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Row data: {}", csvData);
+            }
+            
+            csvData = data.getCsvData(CsvData.OLD_DATA);
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Old data: {}", csvData);
+            }
+            
+            csvData = resolvedData != null ? resolvedData.getResolvedData() : null;
+            if (StringUtils.isNotBlank(csvData)) {
+                log.debug("Resolve data: {}", csvData);
+            }
+
+        }
+
         switch (originalEventType) {
             case INSERT:
                 switch (conflict.getResolveType()) {
-                    case MANUAL:
-                        attemptToResolve(resolvedData, data, writer, conflict);
-                        break;
                     case FALLBACK:
                         performFallbackToUpdate(writer, data, conflict.isResolveChangesOnly());
                         break;
@@ -51,22 +75,18 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         }
                         break;
                     case IGNORE:
-                    default:
-                        if (conflict.isResolveRowOnly()) {
-                            writer.getStatistics().get(writer.getBatch())
-                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
-                        } else {
-                            throw new IgnoreBatchException();
-                        }
+                        ignore(writer, conflict);
                         break;
+                    case MANUAL:
+                    default:
+                        attemptToResolve(resolvedData, data, writer, conflict);
+                        break;
+
                 }
                 break;
 
             case UPDATE:
                 switch (conflict.getResolveType()) {
-                    case MANUAL:
-                        attemptToResolve(resolvedData, data, writer, conflict);
-                        break;
                     case FALLBACK:
                         performFallbackToInsert(writer, data);
                         break;
@@ -83,20 +103,25 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         }
                         break;
                     case IGNORE:
-                    default:
-                        if (conflict.isResolveRowOnly()) {
-                            writer.getStatistics().get(writer.getBatch())
-                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
-                        } else {
-                            throw new IgnoreBatchException();
-                        }
+                        ignore(writer, conflict);
                         break;
+                    case MANUAL:
+                    default:
+                        attemptToResolve(resolvedData, data, writer, conflict);
+                        break;
+
                 }
                 break;
 
             case DELETE:
                 switch (conflict.getResolveType()) {
+                    case IGNORE:
+                        writer.getStatistics().get(writer.getBatch())
+                                .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        ignore(writer, conflict);
+                        break;
                     case MANUAL:
+                    default:
                         if (resolvedData != null) {
                             if (!resolvedData.isIgnoreRow()) {
                                 writer.delete(data, false);
@@ -106,22 +131,22 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 }
                             }
                         }
-                    default:
-                    case IGNORE:
-                        if (conflict.isResolveRowOnly()) {
-                            writer.getStatistics().get(writer.getBatch())
-                                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
-                            writer.getStatistics().get(writer.getBatch())
-                                    .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
-                            break;
-                        } else {
-                            throw new IgnoreBatchException();
-                        }
+                        break;
+
                 }
                 break;
 
             default:
                 break;
+        }
+    }
+
+    protected void ignore(DatabaseWriter writer, Conflict conflict) {
+        if (conflict.isResolveRowOnly()) {
+            writer.getStatistics().get(writer.getBatch())
+                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
+        } else {
+            throw new IgnoreBatchException();
         }
     }
 

@@ -13,6 +13,10 @@
         <priority value="INFO" />
     </category>
     
+    <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver">
+        <priority value="DEBUG" />
+    </category>    
+    
     <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
         <priority value="ERROR" />
     </category>    

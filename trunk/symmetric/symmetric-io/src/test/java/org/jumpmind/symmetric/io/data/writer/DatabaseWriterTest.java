@@ -43,6 +43,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testUpdateDetectTimestampNewerWins() {
         Conflict setting = new Conflict();
+        setting.setConflictId("unit.test");
         setting.setDetectType(DetectConflict.USE_TIMESTAMP);
         setting.setDetectExpression("time_value");
         setting.setResolveRowOnly(true);
@@ -76,6 +77,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testInsertDetectTimestampNewerWins() {
         Conflict setting = new Conflict();
+        setting.setConflictId("unit.test");
         setting.setDetectType(DetectConflict.USE_TIMESTAMP);
         setting.setDetectExpression("time_value");
         setting.setResolveRowOnly(true);
@@ -107,6 +109,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testUpdateDetectVersionNewWins() {
         Conflict setting = new Conflict();
+        setting.setConflictId("unit.test");
         setting.setDetectType(DetectConflict.USE_VERSION);
         setting.setDetectExpression("integer_value");
         setting.setResolveRowOnly(true);
@@ -139,6 +142,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testUpdateDetectVersionIgnoreBatch() {
         Conflict setting = new Conflict();
+        setting.setConflictId("unit.test");
         setting.setDetectType(DetectConflict.USE_VERSION);
         setting.setDetectExpression("integer_value");
         setting.setResolveRowOnly(false);
