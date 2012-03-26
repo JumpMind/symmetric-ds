@@ -44,7 +44,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void testUpdateDetectTimestampNewerWins() {
         Conflict setting = new Conflict();
         setting.setDetectType(DetectConflict.USE_TIMESTAMP);
-        setting.setDetectExpresssion("time_value");
+        setting.setDetectExpression("time_value");
         setting.setResolveRowOnly(true);
         setting.setResolveChangesOnly(true);
         setting.setResolveType(ResolveConflict.NEWER_WINS);

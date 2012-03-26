@@ -140,7 +140,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
     protected boolean isTimestampNewer(Conflict conflictSetting, DatabaseWriter writer,
             CsvData data) {
-        String columnName = conflictSetting.getDetectExpresssion();
+        String columnName = conflictSetting.getDetectExpression();
         Table table = writer.getTargetTable();
         String[] pkData = data.getPkData(table);
         Object[] objectValues = writer.getPlatform().getObjectValues(
@@ -156,7 +156,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
     protected boolean isVersionNewer(Conflict conflictSetting, DatabaseWriter writer,
             CsvData data) {
-        String columnName = conflictSetting.getDetectExpresssion();
+        String columnName = conflictSetting.getDetectExpression();
         Table table = writer.getTargetTable();
         String[] pkData = data.getPkData(table);
         Object[] objectValues = writer.getPlatform().getObjectValues(

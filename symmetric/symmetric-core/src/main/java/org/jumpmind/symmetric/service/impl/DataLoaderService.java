@@ -489,7 +489,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectType()
                 .name(), setting.getResolveType().name(),
                 setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0, setting
-                        .getDetectExpresssion(), setting.getLastUpdateBy(), setting
+                        .getDetectExpression(), setting.getLastUpdateBy(), setting
                         .getConflictId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
                     .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
@@ -497,7 +497,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             .getTargetSchemaName(), setting.getTargetTableName(), setting
                             .getDetectType().name(), setting.getResolveType().name(),                    
                     setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
-                    setting.getDetectExpresssion(), setting.getLastUpdateBy(), setting
+                    setting.getDetectExpression(), setting.getLastUpdateBy(), setting
                             .getConflictId());
         }
     }
@@ -553,7 +553,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     "resolve_type").toUpperCase()));
             setting.setResolveChangesOnly(rs.getBoolean("resolve_changes_only"));
             setting.setResolveRowOnly(rs.getBoolean("resolve_row_only"));
-            setting.setDetectExpresssion(rs.getString("detect_expression"));
+            setting.setDetectExpression(rs.getString("detect_expression"));
             setting.setLastUpdateBy(rs.getString("last_update_by"));
             setting.setConflictId(rs.getString("conflict_id"));
             setting.setCreateTime(rs.getDateTime("create_time"));
