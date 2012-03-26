@@ -94,9 +94,11 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
             case DELETE:
                 switch (conflict.getResolveType()) {
-                    case IGNORE:
+                    case FALLBACK:
                         writer.getStatistics().get(writer.getBatch())
-                                .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        break;
+                    case IGNORE:
                         ignore(writer, conflict);
                         break;
                     case MANUAL:
