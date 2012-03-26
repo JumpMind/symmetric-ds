@@ -70,7 +70,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
         info.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
         info.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        info.addNativeTypeMapping(Types.BIT, "NUMBER(1)");
+        info.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
         info.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
         info.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
         info.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
@@ -88,7 +88,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
         info.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
         info.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        info.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)");
+        info.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
         info.addNativeTypeMapping(Types.VARBINARY, "RAW");
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
 
