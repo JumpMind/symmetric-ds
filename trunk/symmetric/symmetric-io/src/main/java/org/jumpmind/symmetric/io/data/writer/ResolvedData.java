@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.io.data;
+package org.jumpmind.symmetric.io.data.writer;
 
 public class ResolvedData {
 

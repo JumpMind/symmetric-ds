@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.ResolvedData;
 
 public class DatabaseWriterSettings {
 
@@ -101,7 +100,7 @@ public class DatabaseWriterSettings {
         return null;
     }
 
-    public Conflict getConflictSettings(Table table, Batch batch) {
+    public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;
         String fullyQualifiedName = table.getFullyQualifiedTableName();
         if (conflictSettingsByTable != null) {

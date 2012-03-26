@@ -8,12 +8,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
 
