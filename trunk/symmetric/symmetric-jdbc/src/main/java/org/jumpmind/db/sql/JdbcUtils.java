@@ -1,5 +1,6 @@
 package org.jumpmind.db.sql;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +29,16 @@ abstract public class JdbcUtils {
             result = (T) rs.getTimestamp(1);
         } else if (String.class.isAssignableFrom(clazz)) {
             result = (T) rs.getString(1);
+        } else if (Long.class.isAssignableFrom(clazz)) {
+            result = (T)new Long(rs.getLong(1));
+        } else if (Integer.class.isAssignableFrom(clazz)) {
+            result = (T)new Integer(rs.getInt(1));
+        } else if (Float.class.isAssignableFrom(clazz)) {
+            result = (T)new Float(rs.getFloat(1));
+        } else if (Double.class.isAssignableFrom(clazz)) {
+            result = (T)new Double(rs.getDouble(1));            
+        } else if (BigDecimal.class.isAssignableFrom(clazz)) {
+            result = (T)rs.getBigDecimal(1);            
         } else {
             result = (T) rs.getObject(1);
         }

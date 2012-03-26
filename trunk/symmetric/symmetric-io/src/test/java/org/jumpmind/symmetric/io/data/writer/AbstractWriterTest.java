@@ -71,6 +71,11 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected String getTestTable() {
         return TEST_TABLE;
     }
+    
+    protected void writeData(CsvData... data) {
+        Table table = buildSourceTable(TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+        writeData(new TableCsvData(table, data));        
+    }
 
     protected void writeData(CsvData data, String[] expectedValues, String[] columnNames) {
         writeData(data, expectedValues, getTestTable(), TEST_KEYS, columnNames);
@@ -105,6 +110,8 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
                         }
                         writer.end(tableCsvData.table);
                     }
+                    writer.end(batch, false);
+                } catch (IgnoreBatchException ex) {
                     writer.end(batch, false);
                 } catch (Exception ex) {
                     writer.end(batch, true);

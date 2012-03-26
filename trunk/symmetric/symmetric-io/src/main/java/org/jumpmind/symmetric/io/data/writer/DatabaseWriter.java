@@ -161,6 +161,7 @@ public class DatabaseWriter implements IDataWriter {
 
         } catch (IgnoreBatchException ex) {
             rollback();
+            throw ex;
         }
 
     }

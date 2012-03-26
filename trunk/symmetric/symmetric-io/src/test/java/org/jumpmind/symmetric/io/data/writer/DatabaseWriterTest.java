@@ -75,15 +75,99 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     
     @Test
     public void testInsertDetectTimestampNewerWins() {
+        Conflict setting = new Conflict();
+        setting.setDetectType(DetectConflict.USE_TIMESTAMP);
+        setting.setDetectExpression("time_value");
+        setting.setResolveRowOnly(true);
+        setting.setResolveChangesOnly(false);
+        setting.setResolveType(ResolveConflict.NEWER_WINS);
+        writerSettings.setDefaultConflictSetting(setting);
+
+        String id = getNextId();
+        String[] originalValues = massageExpectectedResultsForDialect(new String[] { id,
+                "string2", "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
+
+        CsvData data = new CsvData(DataEventType.INSERT, originalValues);
+        writeData(data, originalValues);
+
+        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldNotBeApplied[2] = "updated string";
+        updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
+        data = new CsvData(DataEventType.INSERT, massageExpectectedResultsForDialect(updateShouldNotBeApplied));
+        writeData(data, originalValues);        
+        
+        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldBeApplied[2] = "string3";
+        updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
+        data = new CsvData(DataEventType.INSERT, massageExpectectedResultsForDialect(updateShouldBeApplied));
+        writeData(data, updateShouldBeApplied);        
     }
 
     @Test
-    public void testUpdateDetectVersionIgnoreRow() {
+    public void testUpdateDetectVersionNewWins() {
+        Conflict setting = new Conflict();
+        setting.setDetectType(DetectConflict.USE_VERSION);
+        setting.setDetectExpression("integer_value");
+        setting.setResolveRowOnly(true);
+        setting.setResolveChangesOnly(false);
+        setting.setResolveType(ResolveConflict.NEWER_WINS);
+        writerSettings.setDefaultConflictSetting(setting);
 
+        String id = getNextId();
+        String[] originalValues = massageExpectectedResultsForDialect(new String[] { id,
+                "string2", "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
+
+        CsvData data = new CsvData(DataEventType.INSERT, originalValues);
+        writeData(data, originalValues);
+
+        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldNotBeApplied[2] = "updated string";
+        updateShouldNotBeApplied[8] = "46";
+        data = new CsvData(DataEventType.UPDATE, massageExpectectedResultsForDialect(updateShouldNotBeApplied));
+        writeData(data, originalValues);
+        
+        
+        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldBeApplied[2] = "string3";
+        updateShouldBeApplied[8] = "48";
+        data = new CsvData(DataEventType.UPDATE, massageExpectectedResultsForDialect(updateShouldBeApplied));
+        writeData(data, updateShouldBeApplied);
     }
 
     @Test
     public void testUpdateDetectVersionIgnoreBatch() {
+        Conflict setting = new Conflict();
+        setting.setDetectType(DetectConflict.USE_VERSION);
+        setting.setDetectExpression("integer_value");
+        setting.setResolveRowOnly(false);
+        setting.setResolveChangesOnly(false);
+        setting.setResolveType(ResolveConflict.NEWER_WINS);
+        writerSettings.setDefaultConflictSetting(setting);
+        
+        String id = getNextId();
+        String[] originalValues = massageExpectectedResultsForDialect(new String[] { id,
+                "string2", "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" });
+
+        CsvData data = new CsvData(DataEventType.INSERT, originalValues);
+        writeData(data, originalValues);
+        
+        long before = countRows(TEST_TABLE);
+        
+        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        updateShouldNotBeApplied[2] = "updated string";
+        updateShouldNotBeApplied[8] = "1";
+        CsvData update = new CsvData(DataEventType.UPDATE, massageExpectectedResultsForDialect(updateShouldNotBeApplied));  
+        String newId = getNextId();
+        CsvData newInsert = new CsvData(DataEventType.INSERT, massageExpectectedResultsForDialect(new String[] { newId,
+                "string2", "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" }));
+
+        writeData(update, newInsert);
+        
+        Assert.assertEquals(before, countRows(TEST_TABLE));
 
     }
 
@@ -129,6 +213,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testDeleteDetectTimestampNewerWins() {
 
+    }
+    
+    @Test
+    public void testInsertDetectTimestampManual () {
+        
+    }
+    
+    @Test
+    public void testUpdateDetectChangedDataManual () {
+        
     }
 
     @Test
