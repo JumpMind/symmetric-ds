@@ -167,12 +167,6 @@ public class OracleModelReader extends JdbcModelReader
 			// Note that the JDBC driver returns DECIMAL for these NUMBER columns
 			switch (column.getSizeAsInt())
 			{
-				case 3:
-					if (column.getScale() == 0)
-					{
-						column.setTypeCode(Types.TINYINT);
-					}
-					break;
 				case 5:
 					if (column.getScale() == 0)
 					{
