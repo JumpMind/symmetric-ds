@@ -45,6 +45,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 throw ex;
                             }
                         } else {
+                            if (!conflict.isResolveRowOnly()) {
+                                throw new IgnoreBatchException();
+                            }
                         }
                         break;
                     case IGNORE:
@@ -74,6 +77,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                         conflict, writer, data))) {
                             performFallbackToUpdate(writer, data, conflict.isResolveChangesOnly());
                         } else {
+                            if (!conflict.isResolveRowOnly()) {
+                                throw new IgnoreBatchException();
+                            }
                         }
                         break;
                     case IGNORE:
@@ -94,6 +100,10 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         if (resolvedData != null) {
                             if (!resolvedData.isIgnoreRow()) {
                                 writer.delete(data, false);
+                            } else {
+                                if (!conflict.isResolveRowOnly()) {
+                                    throw new IgnoreBatchException();
+                                }
                             }
                         }
                     default:
