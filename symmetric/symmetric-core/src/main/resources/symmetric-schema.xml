@@ -311,7 +311,7 @@
     
     <table name="data_event" description="Represents routing of a data row to one or more nodes. Entries in data_event are created by database triggers. ">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="Id of the data to be routed." />
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1"  description="The node_id of the node that is to receive the data." />
+        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" description="The node_id of the node that is to receive the data." />
         <column name="router_id" type="VARCHAR" size="50" required="true"  primaryKey="true"  description="The router_id of the router that routed this data_event." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_de_batchid">
