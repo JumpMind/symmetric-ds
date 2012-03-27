@@ -26,8 +26,6 @@ import org.jumpmind.db.platform.DdlException;
 
 /**
  * Represents the addition of a column to a table.
- * 
- * @version $Revision: $
  */
 public class AddColumnChange extends TableChangeImplBase
 {

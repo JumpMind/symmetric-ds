@@ -38,17 +38,15 @@ import org.slf4j.LoggerFactory;
  * adapt the first model so that it becomes the second one. Neither of the
  * models are changed in the process, however, it is also assumed that the
  * models do not change in between.
- * 
- * TODO: Add support and tests for the change of the column order
  */
 public class ModelComparator {
-    
+
     /** The log for this comparator. */
     private final Logger log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
     private DatabasePlatformInfo platformInfo;
-    
+
     /** Whether comparison is case sensitive. */
     private boolean caseSensitive;
 
@@ -83,9 +81,7 @@ public class ModelComparator {
             Table sourceTable = sourceModel.findTable(targetTable.getName(), caseSensitive);
 
             if (sourceTable == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Table " + targetTable.getName() + " needs to be added");
-                }
+                log.debug("Table {} needs to be added", targetTable.getName());
                 changes.add(new AddTableChange(targetTable));
                 for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
                     // we have to use target table's definition here because the
@@ -104,9 +100,7 @@ public class ModelComparator {
 
             if ((targetTable == null) && (sourceTable.getName() != null)
                     && (sourceTable.getName().length() > 0)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Table " + sourceTable.getName() + " needs to be removed");
-                }
+                log.debug("Table {} needs to be removed", sourceTable.getName());
                 changes.add(new RemoveTableChange(sourceTable));
                 // we assume that the target model is sound, ie. that there are
                 // no longer any foreign
@@ -177,8 +171,8 @@ public class ModelComparator {
 
             if (targetIndex == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Index " + sourceIndex.getName()
-                            + " needs to be removed from table " + sourceTable.getName());
+                    log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
+                            + sourceTable.getName());
                 }
                 changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
             }
@@ -198,17 +192,15 @@ public class ModelComparator {
             }
         }
 
-        HashMap addColumnChanges = new HashMap();
+        HashMap<Column, TableChange> addColumnChanges = new HashMap<Column, TableChange>();
 
         for (int columnIdx = 0; columnIdx < targetTable.getColumnCount(); columnIdx++) {
             Column targetColumn = targetTable.getColumn(columnIdx);
             Column sourceColumn = sourceTable.findColumn(targetColumn.getName(), caseSensitive);
 
             if (sourceColumn == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Column " + targetColumn.getName()
-                            + " needs to be created for table " + sourceTable.getName());
-                }
+                log.debug("Column {} needs to be created for table {}",
+                        new Object[] { targetColumn.getName(), sourceTable.getName() });
 
                 AddColumnChange change = new AddColumnChange(sourceTable, targetColumn,
                         columnIdx > 0 ? targetTable.getColumn(columnIdx - 1) : null,
@@ -307,18 +299,17 @@ public class ModelComparator {
      *            The target column
      * @return The changes
      */
-    public List compareColumns(Table sourceTable, Column sourceColumn, Table targetTable,
-            Column targetColumn) {
-        ArrayList changes = new ArrayList();
+    public List<TableChange> compareColumns(Table sourceTable, Column sourceColumn,
+            Table targetTable, Column targetColumn) {
+        ArrayList<TableChange> changes = new ArrayList<TableChange>();
 
         if (targetColumn.getTypeCode() != sourceColumn.getTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
                         .getTypeCode()) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed type codes from "
-                        + sourceColumn.getTypeCode() + " to " + targetColumn.getTypeCode());
-            }
+            log.debug(
+                    "The {} column on the {} table changed type codes from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.getTypeCode(), targetColumn.getTypeCode() });
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
                     .getTypeCode()));
         }
@@ -337,12 +328,10 @@ public class ModelComparator {
             }
         }
         if (sizeMatters && !StringUtils.equals(sourceColumn.getSize(), targetSize)) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed size from ("
-                        + sourceColumn.getSizeAsInt() + ") to (" + targetColumn.getSizeAsInt()
-                        + ")");
-            }
+            log.debug("The {} column on the {} table changed size from ({}) to ({})", new Object[] {
+                    sourceColumn.getName(), sourceTable.getName(), sourceColumn.getSizeAsInt(),
+                    targetColumn.getSizeAsInt() });
+
             changes.add(new ColumnSizeChange(sourceTable, sourceColumn,
                     targetColumn.getSizeAsInt(), targetColumn.getScale()));
         } else if (scaleMatters && (!StringUtils.equals(sourceColumn.getSize(), targetSize) ||
@@ -350,12 +339,11 @@ public class ModelComparator {
         // size or precision
                 (!(sourceColumn.getScale() < 0 && targetColumn.getScale() == 0) && sourceColumn
                         .getScale() != targetColumn.getScale()))) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed scale from ("
-                        + sourceColumn.getSizeAsInt() + "," + sourceColumn.getScale() + ") to ("
-                        + targetColumn.getSizeAsInt() + "," + targetColumn.getScale() + ")");
-            }
+            log.debug(
+                    "The {} column on the {} table changed scale from ({},{}) to ({},{})",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.getSizeAsInt(), sourceColumn.getScale(),
+                            targetColumn.getSizeAsInt(), targetColumn.getScale() });
             changes.add(new ColumnSizeChange(sourceTable, sourceColumn,
                     targetColumn.getSizeAsInt(), targetColumn.getScale()));
         }
@@ -367,30 +355,27 @@ public class ModelComparator {
                 || (sourceDefaultValue != null && targetDefaultValue == null)
                 || (sourceDefaultValue != null && targetDefaultValue != null && !sourceDefaultValue
                         .toString().equals(targetDefaultValue.toString()))) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed default value from "
-                        + sourceColumn.getDefaultValue() + " to " + targetColumn.getDefaultValue());
-            }
+            log.debug(
+                    "The {} column on the {} table changed default value from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.getDefaultValue(), targetColumn.getDefaultValue() });
             changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn
                     .getDefaultValue()));
         }
 
         if (sourceColumn.isRequired() != targetColumn.isRequired()) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed required status from "
-                        + sourceColumn.isRequired() + " to " + targetColumn.isRequired());
-            }
+            log.debug(
+                    "The {} column on the {} table changed required status from {} to {}",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.isRequired(), targetColumn.isRequired() });
             changes.add(new ColumnRequiredChange(sourceTable, sourceColumn));
         }
 
         if (sourceColumn.isAutoIncrement() != targetColumn.isAutoIncrement()) {
-            if (log.isDebugEnabled()) {
-                log.debug("The " + sourceColumn.getName() + " column on the "
-                        + sourceTable.getName() + " table changed auto increment status from "
-                        + sourceColumn.isAutoIncrement() + " to " + targetColumn.isAutoIncrement());
-            }
+            log.debug(
+                    "The {} column on the {} table changed auto increment status from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.isAutoIncrement(), targetColumn.isAutoIncrement() });
             changes.add(new ColumnAutoIncrementChange(sourceTable, sourceColumn));
         }
 
