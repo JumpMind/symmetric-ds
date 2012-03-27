@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<project default="dump-metadata"
+	     name="DdlUtils"
+	     basedir=".">
+  <!-- Allow values set at the commandline or in the environment to override the defaults -->
+  <property environment="env"/>
+  <!-- Load the jdbc properties as specified by the jdbc.properties.file variable-->
+  <property file="${jdbc.properties.file}"/>
+  <!-- Load the build properties -->
+  <property file="build.properties"/>
+
+  <!-- These properties can be overriden on the commandline using -D --> 
+  <property name="outputfile" value="metadata.xml"/>
+  <property name="tabletypes" value="TABLE"/>
+  <property name="catalogpattern" value=""/>
+  <property name="schemapattern" value=""/>
+  <property name="tablepattern" value=""/>
+  <property name="columnpattern" value=""/>
+  <property name="procedurepattern" value=""/>
+  <property name="dumptables" value="true"/>
+  <property name="dumpprocedures" value="true"/>
+  <property name="modelname" value=""/>
+  
+  <!-- The classpath used for running the dump task -->
+  <path id="project-classpath">
+    <fileset dir="${lib.dir}">
+        <include name="**/*.jar"/>
+        <include name="**/*.zip"/>
+    </fileset>
+    <pathelement path="${build.java.dir}"/>
+  </path>
+
+  <taskdef classname="org.jumpmind.symmetric.ddl.task.DumpMetadataTask"
+           name="dumpMetadata"
+           classpathref="project-classpath" />
+  <taskdef classname="org.jumpmind.symmetric.ddl.task.DatabaseToDdlTask"
+           name="databaseToDdl"
+           classpathref="project-classpath" />
+	
+  <target name="dump-metadata"
+          description="Dumps the metadata using the connection properties from the file specified via the jdbc.properties.file environment variable">
+    <dumpMetadata outputfile="${outputfile}"
+                  tabletypes="${tabletypes}"
+                  catalogpattern="${catalogpattern}"
+                  schemapattern="${schemapattern}"
+                  tablepattern="${tablepattern}"
+                  columnpattern="${columnpattern}"
+                  procedurepattern="${procedurepattern}"
+                  dumptables="${dumptables}"
+                  dumpprocedures="${dumpprocedures}">
+      <database driverclassname="${datasource.driverClassName}"
+                url="${datasource.url}"
+                username="${datasource.username}"
+                password="${datasource.password}"/> 
+    </dumpMetadata> 
+  </target>
+  <target name="dump-model"
+          description="Dumps the database model using the connection properties from the file specified via the jdbc.properties.file environment variable">
+    <databaseToDdl databasetype="${ddlutils.platform}"
+                   tabletypes="${tabletypes}"
+                   catalogpattern="${catalogpattern}"
+                   schemapattern="${schemapattern}"
+                   modelname="${modelname}">
+      <database driverclassname="${datasource.driverClassName}"
+                url="${datasource.url}"
+                username="${datasource.username}"
+                password="${datasource.password}"/> 
+      <writeschematofile outputfile="${outputfile}"/> 
+    </databaseToDdl> 
+  </target>
+</project>
