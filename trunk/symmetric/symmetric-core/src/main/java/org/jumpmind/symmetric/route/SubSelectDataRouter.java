@@ -80,6 +80,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
             sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
                     .getTargetNodeGroupId());
+            sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
             List<String> ids = template.query(String.format("%s%s", sql, subSelect),
                     new StringMapper(), sqlParams);
