@@ -43,6 +43,8 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected static long sequenceId = 10000;
     
     protected DatabaseWriterSettings writerSettings = new DatabaseWriterSettings();
+    
+    protected IDataWriter lastDataWriterUsed;
 
     protected synchronized long getNextBatchId() {
         return ++batchId;
@@ -97,6 +99,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
+        this.lastDataWriterUsed = writer;
         DataContext context = new DataContext();
         writer.open(context);
         try {
@@ -238,6 +241,10 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
 
     public boolean isErrorExpected() {
         return errorExpected;
+    }
+    
+    public Map<String,Object> queryForRow(String id) {
+        return platform.getSqlTemplate().queryForMap("select * from " + TEST_TABLE + " where id=?", new Integer(id));
     }
 
     protected class TableCsvData {

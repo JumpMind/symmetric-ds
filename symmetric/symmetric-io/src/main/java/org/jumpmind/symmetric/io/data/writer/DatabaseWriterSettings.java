@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +80,15 @@ public class DatabaseWriterSettings {
 
     public void setDatabaseWriterFilters(List<IDatabaseWriterFilter> databaseWriterFilters) {
         this.databaseWriterFilters = databaseWriterFilters;
+    }
+    
+    public void setResolvedData(ResolvedData... resolvedData) {
+        this.resolvedData = new ArrayList<ResolvedData>();
+        if (resolvedData != null) {
+            for (ResolvedData data : resolvedData) {
+                this.resolvedData.add(data);
+            }
+        }
     }
     
     public void setResolvedData(List<ResolvedData> resolvedData) {
