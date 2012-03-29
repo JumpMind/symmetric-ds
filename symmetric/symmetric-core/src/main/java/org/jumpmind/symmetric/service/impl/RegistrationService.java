@@ -258,7 +258,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
         int maxNumberOfAttempts = parameterService
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
-            boolean errorOccurred = false;
             try {
                 log.info("Unregistered node is attempting to register ");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
@@ -278,13 +277,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());
-                } else if (!errorOccurred) {
+                } else {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
                     registered = false;
-                } else {
-                    log.error("Node registration is unavailable.");
-                    registered = false;
-                }
+                } 
             }
 
             if (!registered && maxNumberOfAttempts != 0) {
