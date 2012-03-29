@@ -2,25 +2,10 @@ TODO = *
 DONE = +
 
 * Go through every class and fix javadoc, remove unused methods, follow conventions, and fix generics/warnings
-
-* Setup build for 
-  * 3.x
-
-* Conflict Resolution
-  * Add line number to incoming and outgoing batches
-  * Update incoming and outgoing batches
-  * record incoming errors
-  * get incoming errors and weave results
-
-* Port CsvLoader and DataLoaderTest over.  Check-in and make sure all unit tests work.
-  * Add settings to channel
-  * Lookup/choose datawriter based on channel settings
-  * clean up error handling in loader service
-  * SqlScript for Informix
-  * Implement a jdbc batch loader
     
 * Integrate Eric's SecurityService changes
 * Purge stats
+* Delete from sym_data_gap instead of marking gaps as Ok. 
 
 * Get rid of IOException in service apis in favor of IoException
 * Can BatchInfo go away?  
