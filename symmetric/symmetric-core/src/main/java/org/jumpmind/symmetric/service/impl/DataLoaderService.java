@@ -224,8 +224,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             loadDataFromPull(null, status);
             nodeService.findIdentity(false);
         } catch (MalformedURLException e) {
-            log.error("Could not connect to the {} node's transport because of a bad URL: {}",
-                    remote.getNodeId(), remote.getSyncUrl());
+            if (remote != null) {
+                log.error("Could not connect to the {} node's transport because of a bad URL: {}",
+                        remote.getNodeId(), remote.getSyncUrl());
+            } else {
+                log.error(e.getMessage(), e);
+            }
             throw e;
         }
     }
@@ -438,7 +442,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         return factory;
     }
-    
+
     public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks() {
         List<ConflictSettingNodeGroupLink> list = new ArrayList<DataLoaderService.ConflictSettingNodeGroupLink>();
         list = sqlTemplate.query(getSql("selectConflictSettingsSql"),
@@ -446,8 +450,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return list;
     }
 
-    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks(
-            NodeGroupLink link, boolean refreshCache) {
+    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link,
+            boolean refreshCache) {
         if (link != null) {
             long cacheTime = parameterService
                     .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
@@ -487,16 +491,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
                 .getTargetChannelId(), setting.getTargetCatalogName(), setting
                 .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectType()
-                .name(), setting.getResolveType().name(),
-                setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0, setting
-                        .getDetectExpression(), setting.getLastUpdateBy(), setting
-                        .getConflictId()) == 0) {
+                .name(), setting.getResolveType().name(), setting.isResolveChangesOnly() ? 1 : 0,
+                setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(), setting
+                        .getLastUpdateBy(), setting.getConflictId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
                     .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
                     setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
                             .getTargetSchemaName(), setting.getTargetTableName(), setting
-                            .getDetectType().name(), setting.getResolveType().name(),                    
-                    setting.isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
+                            .getDetectType().name(), setting.getResolveType().name(), setting
+                            .isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
                     setting.getDetectExpression(), setting.getLastUpdateBy(), setting
                             .getConflictId());
         }
@@ -517,7 +520,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 incomingError.getNodeId(), incomingError.getFailedRowNumber(),
                 incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
                 incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
-                incomingError.getEventType().getCode(), incomingError.getColumnNames(), 
+                incomingError.getEventType().getCode(), incomingError.getColumnNames(),
                 incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
                 incomingError.getOldData(), incomingError.getResolveData(),
                 incomingError.getResolveData(), incomingError.getCreateTime(),
@@ -547,10 +550,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             setting.setTargetCatalogName(rs.getString("target_catalog_name"));
             setting.setTargetSchemaName(rs.getString("target_schema_name"));
             setting.setTargetTableName(rs.getString("target_table_name"));
-            setting.setDetectType(DetectConflict.valueOf(rs.getString(
-                    "detect_type").toUpperCase()));
-            setting.setResolveType(ResolveConflict.valueOf(rs.getString(
-                    "resolve_type").toUpperCase()));
+            setting.setDetectType(DetectConflict.valueOf(rs.getString("detect_type").toUpperCase()));
+            setting.setResolveType(ResolveConflict.valueOf(rs.getString("resolve_type")
+                    .toUpperCase()));
             setting.setResolveChangesOnly(rs.getBoolean("resolve_changes_only"));
             setting.setResolveRowOnly(rs.getBoolean("resolve_row_only"));
             setting.setDetectExpression(rs.getString("detect_expression"));
@@ -737,8 +739,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             IncomingError error = new IncomingError();
                             error.setBatchId(this.currentBatch.getBatchId());
                             error.setNodeId(this.currentBatch.getNodeId());
-                            error.setColumnNames(Table.getCommaDeliminatedColumns(context.getTable().getColumns()));
-                            error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context.getTable().getPrimaryKeyColumns()));
+                            error.setColumnNames(Table.getCommaDeliminatedColumns(context
+                                    .getTable().getColumns()));
+                            error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
+                                    .getTable().getPrimaryKeyColumns()));
                             error.setCsvData(context.getData());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());

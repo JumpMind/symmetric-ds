@@ -903,8 +903,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } catch (Exception ex) {
-                log.error("Failed to create triggers for {}", ex,
-                        trigger.qualifiedSourceTableName());
+                log.error(
+                        String.format("Failed to create triggers for %s",
+                                trigger.qualifiedSourceTableName()), ex);
 
                 if (newestHistory != null) {
                     // Make sure all the triggers are removed from the table

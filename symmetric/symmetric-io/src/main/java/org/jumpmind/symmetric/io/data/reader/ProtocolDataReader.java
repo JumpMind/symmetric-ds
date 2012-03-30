@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,24 +172,24 @@ public class ProtocolDataReader implements IDataReader {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.INSERT);
                     data.putParsedData(CsvData.ROW_DATA,
-                            Arrays.copyOfRange(tokens, 1, tokens.length));
+                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
-                    parsedOldData = Arrays.copyOfRange(tokens, 1, tokens.length);
+                    parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.UPDATE);
                     data.putParsedData(CsvData.ROW_DATA,
-                            Arrays.copyOfRange(tokens, 1, table.getColumnCount() + 1));
+                            CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
                     data.putParsedData(CsvData.PK_DATA,
-                            Arrays.copyOfRange(tokens, table.getColumnCount() + 1, tokens.length));
+                            CollectionUtils.copyOfRange(tokens, table.getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.DELETE);
                     data.putParsedData(CsvData.PK_DATA,
-                            Arrays.copyOfRange(tokens, 1, tokens.length));
+                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.SQL)) {

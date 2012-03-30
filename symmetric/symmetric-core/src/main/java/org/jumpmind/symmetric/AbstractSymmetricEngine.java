@@ -318,7 +318,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
                     triggerRouterService.syncTriggers();
                     heartbeat(false);
-                    if (startJobs) {
+                    if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
                     log.info("Started SymmetricDS");

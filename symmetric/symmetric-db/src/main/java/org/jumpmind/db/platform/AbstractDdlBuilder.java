@@ -19,7 +19,6 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
-import java.rmi.server.UID;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -1660,9 +1659,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             writeColumnAutoIncrementStmt(table, column, ddl);
         }
     }
-    
+
     protected void writeColumnEmbeddedPrimaryKey(Table table, Column column, StringBuilder ddl) {
-        
+
     }
 
     /**
@@ -2384,15 +2383,4 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append(getIndent());
     }
 
-    /**
-     * Creates a reasonably unique identifier only consisting of hexadecimal
-     * characters and underscores. It looks like
-     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48
-     * characters long.
-     * 
-     * @return The identifier
-     */
-    protected String createUniqueIdentifier() {
-        return new UID().toString().replace(':', '_').replace('-', '_');
-    }
 }

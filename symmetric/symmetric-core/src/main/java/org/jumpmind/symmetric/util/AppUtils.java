@@ -28,9 +28,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
@@ -143,22 +140,6 @@ public class AppUtils {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
             log.warn("{}", e.getMessage());
-        }
-    }
-
-    /**
-     * Attempt to close all the connections to a database that a DataSource has.
-     * This method should not be relied upon as it only works with certain
-     * {@link DataSource} implementations.
-     */
-    public static void resetDataSource(DataSource ds) {
-        if (ds instanceof BasicDataSource) {
-            BasicDataSource bds = (BasicDataSource) ds;
-            try {
-                bds.close();
-            } catch (Exception ex) {
-                log.warn(ex.getMessage(),ex);
-            }
         }
     }
 

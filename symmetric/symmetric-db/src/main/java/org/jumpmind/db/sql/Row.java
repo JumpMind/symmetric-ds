@@ -31,7 +31,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         Object obj = this.values().iterator().next();
         return toBytes(obj);
     }
-    
+
     protected byte[] toBytes(Object obj) {
         if (obj != null) {
             if (obj instanceof byte[]) {
@@ -94,7 +94,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public String getString(String columnName) {
         return getString(columnName, true);
     }
-    
+
     public byte[] getBytes(String columnName) {
         Object obj = get(columnName);
         return toBytes(obj);
@@ -138,7 +138,9 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
 
     public boolean getBoolean(String columnName) {
         Object obj = this.get(columnName);
-        if (obj instanceof Number) {
+        if ("1".equals(obj)) {
+            return true;
+        } else if (obj instanceof Number) {
             int value = ((Number) obj).intValue();
             return value > 0 ? true : false;
         } else if (obj instanceof Boolean) {
