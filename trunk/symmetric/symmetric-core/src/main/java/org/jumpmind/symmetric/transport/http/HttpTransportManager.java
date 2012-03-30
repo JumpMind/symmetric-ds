@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.transport.http;
 
@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -55,68 +56,76 @@ import org.jumpmind.symmetric.web.WebConstants;
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
     private IParameterService parameterService;
-    
+
     public HttpTransportManager() {
     }
-    
+
     public HttpTransportManager(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
-        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(engine.getNodeService(), engine.getBandwidthService()));
+        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(
+                engine.getNodeService(), engine.getBandwidthService()));
     }
-    
-    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {
+
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
+            String securityToken, String registrationUrl) throws IOException {
         if (list != null && list.size() > 0) {
             String data = getAcknowledgementData(local.getNodeId(), list);
             return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
         }
-        return  HttpURLConnection.HTTP_OK;
+        return HttpURLConnection.HTTP_OK;
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local, String securityToken) throws IOException {
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local,
+            String securityToken) throws IOException {
         writeMessage(out, getAcknowledgementData(local.getNodeId(), list));
     }
 
-    protected int sendMessage(String action, Node remote, Node local, String data, String securityToken, String registrationUrl) throws IOException {
-        HttpURLConnection conn = sendMessage(new URL(buildURL(action, remote, local, securityToken, registrationUrl)), data);
-        return conn.getResponseCode();
+    protected int sendMessage(String action, Node remote, Node local, String data,
+            String securityToken, String registrationUrl) throws IOException {
+        return sendMessage(
+                new URL(buildURL(action, remote, local, securityToken, registrationUrl)), data);
     }
 
-    protected HttpURLConnection sendMessage(URL url, String data) throws IOException {
+    protected int sendMessage(URL url, String data) throws IOException {
         HttpURLConnection conn = openConnection(url, getBasicAuthUsername(), getBasicAuthPassword());
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
-        conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
-        
-        writeMessage(conn.getOutputStream(), data);
+        //conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
+        OutputStream os = conn.getOutputStream();
+        try {
+            writeMessage(os, data);
+            return conn.getResponseCode();
+        } finally {
+            IOUtils.closeQuietly(os);
+        }
+    }
+
+    public static HttpURLConnection openConnection(URL url, String username, String password)
+            throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        setBasicAuthIfNeeded(conn, username, password);
         return conn;
     }
 
-    public static HttpURLConnection openConnection(URL url, String username, String password) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        setBasicAuthIfNeeded(conn, username, password);        
-        return conn;
-    }
-    
     public static void setBasicAuthIfNeeded(HttpURLConnection conn, String username, String password) {
         if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
             String userpassword = username + ":" + password;
-            String encodedAuthorization = new String(Base64.encodeBase64( userpassword.getBytes()));
-            conn.setRequestProperty("Authorization", "Basic "+
-                  encodedAuthorization);
+            String encodedAuthorization = new String(Base64.encodeBase64(userpassword.getBytes()));
+            conn.setRequestProperty("Authorization", "Basic " + encodedAuthorization);
         }
     }
-    
+
     public int getOutputStreamSize() {
         return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_SIZE);
     }
-    
+
     public boolean isOutputStreamEnabled() {
         return parameterService.is(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_ENABLED);
     }
-    
+
     public int getHttpTimeOutInMs() {
         return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
@@ -144,14 +153,13 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public void writeMessage(OutputStream out, String data) throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
         pw.println(data);
-        pw.close();
+        pw.flush();
     }
 
-    public IIncomingTransport getPullTransport(Node remote, Node local,
-            String securityToken, Map<String, String> requestProperties, String registrationUrl)
-            throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL(
-                "pull", remote, local, securityToken, registrationUrl)));
+    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException {
+        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local,
+                securityToken, registrationUrl)));
         if (requestProperties != null) {
             for (String key : requestProperties.keySet()) {
                 conn.addRequestProperty(key, requestProperties.get(key));
@@ -160,16 +168,20 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return new HttpIncomingTransport(conn, parameterService);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
+            String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(), getCompressionStrategy(), getCompressionLevel(), 
-                getBasicAuthUsername(), getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+                getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
     }
 
-    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))), parameterService);
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
+            throws IOException {
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(
+                registrationUrl, node))), parameterService);
     }
-    
+
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
@@ -191,7 +203,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
-        HttpURLConnection conn = HttpTransportManager.openConnection(url, getBasicAuthUsername(), getBasicAuthPassword());
+        HttpURLConnection conn = HttpTransportManager.openConnection(url, getBasicAuthUsername(),
+                getBasicAuthPassword());
         conn.setRequestProperty("accept-encoding", "gzip");
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
@@ -214,11 +227,14 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     /**
      * Build a url for an action. Include the nodeid and the security token.
      */
-    protected String buildURL(String action, Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
-        return addSecurityToken((resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + action), "&", local.getNodeId(), securityToken);
+    protected String buildURL(String action, Node remote, Node local, String securityToken,
+            String registrationUrl) throws IOException {
+        return addSecurityToken((resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + action),
+                "&", local.getNodeId(), securityToken);
     }
 
-    protected String addSecurityToken(String base, String connector, String nodeId, String securityToken) {
+    protected String addSecurityToken(String base, String connector, String nodeId,
+            String securityToken) {
         StringBuilder sb = new StringBuilder(addNodeId(base, nodeId, "?"));
         sb.append(connector);
         sb.append(WebConstants.SECURITY_TOKEN);

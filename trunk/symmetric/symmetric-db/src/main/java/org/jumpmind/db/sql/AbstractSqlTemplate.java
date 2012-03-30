@@ -35,7 +35,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
     
     public int queryForInt(String sql, Object... args) {
-        Number number = queryForObject(sql, Number.class, args);
+        Integer number = queryForObject(sql, Integer.class, args);
         if (number != null) {
             return number.intValue();
         } else {
@@ -44,7 +44,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public long queryForLong(String sql, Object... args) {
-        Number number = queryForObject(sql, Number.class, args);
+        Long number = queryForObject(sql, Long.class, args);
         if (number != null) {
             return number.longValue();
         } else {
