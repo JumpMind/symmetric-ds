@@ -37,13 +37,13 @@ public class ConfigurationChangedDataRouterTest {
 
         THREE_TIER_NETWORKED_ROOT = new NetworkedNode(new Node("corp", "corp"));
 
-        Node rgn1 = new Node("rgn1", "region");
-        rgn1.setCreatedAtNodeId("corp");
-        THREE_TIER_NETWORKED_ROOT.addChild(new NetworkedNode(rgn1));
-
         Node rgn2 = new Node("rgn2", "region");
         rgn2.setCreatedAtNodeId("corp");
         THREE_TIER_NETWORKED_ROOT.addChild(new NetworkedNode(rgn2));
+        
+        Node rgn1 = new Node("rgn1", "region");
+        rgn1.setCreatedAtNodeId("corp");
+        THREE_TIER_NETWORKED_ROOT.addChild(new NetworkedNode(rgn1));
 
         Node laptop1 = new Node("laptop1", "laptop");
         laptop1.setCreatedAtNodeId("rgn1");
@@ -98,18 +98,63 @@ public class ConfigurationChangedDataRouterTest {
     }
     
     @Test
+    public void testRouteLaptop1FromRgn1() {
+        IDataRouter router = buildTestableRouter(
+                THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
+                THREE_TIER_NETWORKED_ROOT);
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("laptop1").getNode());
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false);
+        Assert.assertNotNull(nodeIds);
+        Assert.assertEquals(1, nodeIds.size());
+        Assert.assertEquals("laptop1", nodeIds.iterator().next());
+    }    
+    
+    @Test
     public void testRouteLaptop1FromCorp() {
         IDataRouter router = buildTestableRouter(
                 THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
                 THREE_TIER_NETWORKED_ROOT);
         Set<Node> nodes = new HashSet<Node>();
-        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn1", nodeIds.iterator().next());
     }
+    
+    @Test
+    public void testRouteRgn2FromCorp() {
+        IDataRouter router = buildTestableRouter(
+                THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
+                THREE_TIER_NETWORKED_ROOT);
+        
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
+        
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn2"), nodes, false);
+        Assert.assertNotNull(nodeIds);
+        Assert.assertEquals(1, nodeIds.size());
+        Assert.assertEquals("rgn2", nodeIds.iterator().next());
+    }    
+    
+    @Test
+    public void testRouteRgn1FromCorp() {
+        IDataRouter router = buildTestableRouter(
+                THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
+                THREE_TIER_NETWORKED_ROOT);
+        
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
+        
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn1"), nodes, false);
+        Assert.assertNotNull(nodeIds);
+        Assert.assertEquals(1, nodeIds.size());
+        Assert.assertEquals("rgn1", nodeIds.iterator().next());
+    }       
     
     @Test
     public void testRouteS1ToDWFromRegsvr() {
