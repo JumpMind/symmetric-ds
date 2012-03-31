@@ -74,6 +74,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         Map<String, String> columnValues = getDataMap(dataMetaData);
 
         Node me = findIdentity();
+        
         NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
 
         // if this is sym_node or sym_node_security determine which nodes it
@@ -206,8 +207,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo.getNodeGroupId())) {
                     return true;
                 } else {
-                    return networkedNodeThatCouldBeRoutedTo
-                            .hasChildrenThatBelongToGroups(groupsThatWillBeInterested);
+                    return false;
                 }
             } else {
                 return false;

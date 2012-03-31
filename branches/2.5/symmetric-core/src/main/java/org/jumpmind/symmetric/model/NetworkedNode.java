@@ -70,7 +70,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
                     } else {
                         int numberOfLinksAwayFromMe = child.getNumberOfLinksAwayFromMe(nodeId,
                                 numberOfLinksIAmFromRoot + 1);
-                        if (numberOfLinksAwayFromMe > numberOfLinksIAmFromRoot) {
+                        if (numberOfLinksAwayFromMe > (numberOfLinksIAmFromRoot+1)) {
                             return numberOfLinksAwayFromMe;
                         }
                     }
