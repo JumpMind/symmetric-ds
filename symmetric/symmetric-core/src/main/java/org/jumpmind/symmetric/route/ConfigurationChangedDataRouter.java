@@ -217,8 +217,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo.getNodeGroupId())) {
                     return true;
                 } else {
-                    return networkedNodeThatCouldBeRoutedTo
-                            .hasChildrenThatBelongToGroups(groupsThatWillBeInterested);
+                    return false;
                 }
             } else {
                 return false;
