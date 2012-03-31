@@ -57,7 +57,5 @@ public interface IRouterService extends IService {
     public Map<String, IDataRouter> getRouters();
     
     public void stop ();
-    
-    public void destroy();        
-    
+
 }
