@@ -221,9 +221,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.dataService = new DataService(parameterService, symmetricDialect, deploymentType,
                 triggerRouterService, nodeService, purgeService, configurationService,
                 outgoingBatchService, statisticManager);
-        this.routerService = new RouterService(parameterService, symmetricDialect, clusterService,
-                dataService, configurationService, triggerRouterService, outgoingBatchService,
-                nodeService, statisticManager, transformService);
+        this.routerService = buildRouterService();
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
                 nodeService, dataService, transformService, statisticManager, stagingManager);
@@ -257,6 +255,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
 
     }   
+    
+    protected IRouterService buildRouterService() {
+        return new RouterService(parameterService, symmetricDialect, clusterService,
+                dataService, configurationService, triggerRouterService, outgoingBatchService,
+                nodeService, statisticManager, transformService);
+    }
 
     protected static ISecurityService createSecurityService() {
         // TODO check system property. integrate eric's changes
@@ -360,7 +364,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (jobManager != null) {
             jobManager.destroy();
         }
-        getRouterService().destroy();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
     }

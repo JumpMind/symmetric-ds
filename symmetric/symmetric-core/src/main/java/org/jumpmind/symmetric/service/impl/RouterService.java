@@ -116,7 +116,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.outgoingBatchService = outgoingBatchService;
         this.nodeService = nodeService;
         this.statisticManager = statisticManager;
-        
+
         this.batchAlgorithms = new HashMap<String, IBatchAlgorithm>();
         this.batchAlgorithms.put("default", new DefaultBatchAlgorithm());
         this.batchAlgorithms.put("nontransactional", new NonTransactionalBatchAlgorithm());
@@ -131,10 +131,11 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
         this.routers.put("column", new ColumnMatchDataRouter(configurationService));
-        
-        setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
+
+        setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
-    
+
     /**
      * For use in data load events
      */
@@ -143,45 +144,21 @@ public class RouterService extends AbstractService implements IRouterService {
         IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
-        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet, initialLoad);
+        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet,
+                initialLoad);
         return nodeIds != null && nodeIds.contains(node.getNodeId());
     }
 
-    protected synchronized ExecutorService getReadService() {
-        if (readThread == null) {
-            readThread = Executors.newCachedThreadPool(new ThreadFactory() {
-                final AtomicInteger threadNumber = new AtomicInteger(1);
-                final String namePrefix = parameterService.getEngineName().toLowerCase()
-                        + "-router-reader-";
-
-                public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r);
-                    t.setName(namePrefix + threadNumber.getAndIncrement());
-                    if (t.isDaemon()) {
-                        t.setDaemon(false);
-                    }
-                    if (t.getPriority() != Thread.NORM_PRIORITY) {
-                        t.setPriority(Thread.NORM_PRIORITY);
-                    }
-                    return t;
-                }
-            });
-        }
-        return readThread;
-    }
-
     public synchronized void stop() {
-        try {
-            log.info("RouterService is shutting down");
-            getReadService().shutdown();
-            readThread = null;
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+        if (readThread != null) {
+            try {
+                log.info("RouterService is shutting down");
+                readThread.shutdown();
+                readThread = null;
+            } catch (Exception ex) {
+                log.error(ex.getMessage(), ex);
+            }
         }
-    }
-
-    public synchronized void destroy() {
-
     }
 
     /**
@@ -274,7 +251,9 @@ public class RouterService extends AbstractService implements IRouterService {
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
-            log.error("Failed to route and batch data on '{}' channel", nodeChannel.getChannelId(), ex);
+            log.error(
+                    String.format("Failed to route and batch data on '%s' channel",
+                            nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
             }
@@ -362,6 +341,33 @@ public class RouterService extends AbstractService implements IRouterService {
         return nodes;
     }
 
+    protected IDataToRouteReader startReading(ChannelRouterContext context) {
+        if (readThread == null) {
+            readThread = Executors.newCachedThreadPool(new ThreadFactory() {
+                final AtomicInteger threadNumber = new AtomicInteger(1);
+                final String namePrefix = parameterService.getEngineName().toLowerCase()
+                        + "-router-reader-";
+
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName(namePrefix + threadNumber.getAndIncrement());
+                    if (t.isDaemon()) {
+                        t.setDaemon(false);
+                    }
+                    if (t.getPriority() != Thread.NORM_PRIORITY) {
+                        t.setPriority(Thread.NORM_PRIORITY);
+                    }
+                    return t;
+                }
+            });
+        }
+
+        IDataToRouteReader reader = new DataGapRouteReader(this, context, dataService,
+                symmetricDialect, parameterService);
+        readThread.execute(reader);
+        return reader;
+    }
+
     /**
      * Pre-read data and fill up a queue so we can peek ahead to see if we have
      * crossed a database transaction boundary. Then route each {@link Data}
@@ -374,9 +380,7 @@ public class RouterService extends AbstractService implements IRouterService {
      *            The current context of the routing process
      */
     protected int selectDataAndRoute(ChannelRouterContext context) throws SQLException {
-        IDataToRouteReader reader = new DataGapRouteReader(this, context, dataService,
-                symmetricDialect, parameterService);
-        getReadService().execute(reader);
+        IDataToRouteReader reader = startReading(context);
         Data data = null;
         int totalDataCount = 0;
         int totalDataEventCount = 0;
