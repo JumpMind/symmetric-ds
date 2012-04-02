@@ -1,0 +1,51 @@
+ ------
+ SymmetricDS
+ ------
+ ------
+ Date
+ ------
+
+Overview
+
+ SymmetricDS is an asynchronous data replication software package that supports multiple subscribers and bi-directional
+ synchronization. It uses web and database technologies to replicate tables between relational
+ databases, in near real time if desired. The software was designed to scale for a large number of databases, work across
+ low-bandwidth connections, and withstand periods of network outage.  
+
+ By using database triggers, SymmetricDS guarantees that data changes are captured and atomicity is preserved.
+ Support for database vendors is provided through a Database Dialect layer,
+ with implementations for MySQL, Oracle, SQL Server, PostgreSQL, DB2, Firebird, HSQLDB, H2, and Apache Derby included.
+
+[images/n-tier-sync.gif]
+ 
+ Synchronization can be configured to push data or pull data on a periodic basis.
+ SymmetricDS allows for synchronization between two or more tiers of nodes, as might be needed in the following scenarios:
+
+    * A handful of regional servers synchronizing from the general office to remote geographical areas
+     
+    * Dozens of Point of Sale (POS) register nodes using an embedded database to sync with a store server
+    
+    * Thousands of store server nodes using a departmental class database to sync with a regional node
+    
+ 
+ Deployment options include the following:
+ 
+    * Web application archive (WAR) deployed to an application server such as Tomcat, Jetty, or JBoss
+    
+    * Standalone service
+    
+    * Embedded in an application
+ 
+ SymmetricDS is written in Java and licensed as open source software under the 
+ {{{./license.html}GNU Lesser General Public License}} (LGPL).
+
+Background
+ 
+ The idea of SymmetricDS was born from a real-world need. Several of the original developers were, several years
+ ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
+ conclusion that the software available for trickling back transactions to corporate headquarters 
+ (frequently known as the 'central office' or 'general office') did not meet the project needs. The developers started 
+ an open-source project, now known as SymmetricDS, to build a generalized, flexible software product that would allow 
+ scalable replication across heterogeneous databases for the project and for others with similar needs.  Over the years,
+ SymmetricDS has been used very successfully in a variety of domains, including but not limited to retail,
+ medical, and telecommunications, and in installations with just a few nodes to tens of thousands of nodes.
