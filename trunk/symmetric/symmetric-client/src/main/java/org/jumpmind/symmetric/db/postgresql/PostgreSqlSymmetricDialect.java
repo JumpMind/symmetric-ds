@@ -53,12 +53,15 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        if (getMajorVersion() > 8 || (getMajorVersion() == 8 && getMinorVersion() >= 3)) {
-            log.info("Enabling transaction ID support");
+
+    	
+        if (transactionIdSupported()) {
+            log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
-            transactionIdExpression = TRANSACTION_ID_EXPRESSION;
+            transactionIdExpression = TRANSACTION_ID_EXPRESSION;        	
         }
-        ISqlTransaction transaction = null;
+
+    	ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
             enableSyncTriggers(transaction);
@@ -74,6 +77,17 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     }
 
+    private boolean transactionIdSupported() {
+    	
+    	boolean transactionIdSupported = false;
+    	
+    	if (platform.getSqlTemplate().queryForInt("select count(*) from information_schema.routines where routine_name='txid_current'") > 0) {
+    		transactionIdSupported = true;
+    	}
+    	
+    	return transactionIdSupported;
+    }
+    
     @Override
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
