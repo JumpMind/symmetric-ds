@@ -64,11 +64,13 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        if (getMajorVersion() > 8 || (getMajorVersion() == 8 && getMinorVersion() >= 3)) {
+    	
+        if (transactionIdSupported()) {
             log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
-            transactionIdExpression = TRANSACTION_ID_EXPRESSION;
+            transactionIdExpression = TRANSACTION_ID_EXPRESSION;        	
         }
+        
         try {
             enableSyncTriggers(jdbcTemplate);
         } catch (Exception e) {
@@ -78,6 +80,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     }
 
+    private boolean transactionIdSupported() {
+    	
+    	boolean transactionIdSupported = false;
+    	
+    	if (jdbcTemplate.queryForInt("select count(*) from information_schema.routines where routine_name='txid_current'") > 0) {
+    		transactionIdSupported = true;
+    	}
+    	
+    	return transactionIdSupported;
+    }
+    
     @Override
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
