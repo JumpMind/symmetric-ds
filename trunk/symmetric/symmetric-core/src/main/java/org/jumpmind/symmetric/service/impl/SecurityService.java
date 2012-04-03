@@ -83,7 +83,7 @@ public class SecurityService implements ISecurityService {
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
-        log.info("SecretKeyUsing", cipher.getAlgorithm(), cipher.getProvider().getName());
+        log.info("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider().getName());
         return cipher;
     }
 
@@ -108,12 +108,12 @@ public class SecurityService implements ISecurityService {
         KeyStore ks = getKeyStore(password);
         KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
         if (entry == null) {
-            log.debug("SecretKeyGenerating");
+            log.debug("Generating secret key.");
             entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
-            log.debug("SecretKeyRetrieving");
+            log.debug("Retrieving secret key.");
         }
         return entry.getSecretKey();
     }
