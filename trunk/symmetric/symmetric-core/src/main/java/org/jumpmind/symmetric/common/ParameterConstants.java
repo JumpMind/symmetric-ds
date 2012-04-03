@@ -185,6 +185,8 @@ final public class ParameterConstants {
     
     public final static String DB_MASTER_COLLATION = "db.master.collation";   
     
+    public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
