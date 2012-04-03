@@ -16,17 +16,20 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service;
 
 
 /**
- * 
+ * Pluggable Service API that is responsible for encrypting and decrypting data.
  */
 public interface ISecurityService {
 
     public void init();
+    
+    public String nextSecureHexString(int len);
 
     public String encrypt(String plainText);
     

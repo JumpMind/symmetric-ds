@@ -97,9 +97,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 	}
 
 	public static BasicDataSource createBasicDataSource(File propsFile) {
+	    TypedProperties properties = createTypedPropertiesFactory(propsFile, null).reload();
 		return createBasicDataSource(
-				createTypedPropertiesFactory(propsFile, null).reload(),
-				createSecurityService());
+				properties,
+				createSecurityService(properties));
 	}
 
 	public static BasicDataSource createBasicDataSource(

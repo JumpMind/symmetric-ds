@@ -87,7 +87,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     private boolean starting = false;
 
     private boolean setup = false;
-    
+
     protected String deploymentType;
 
     protected ITypedPropertiesFactory propertiesFactory;
@@ -145,15 +145,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IJobManager jobManager;
 
     protected IExtensionPointManager extensionPointManger;
-    
+
     protected IStagingManager stagingManager;
-    
+
     protected Date lastRestartTime = null;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
     abstract protected IDatabasePlatform createDatabasePlatform(TypedProperties properties);
-    
+
     private boolean registerEngine = true;
 
     protected AbstractSymmetricEngine(boolean registerEngine) {
@@ -181,14 +181,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             return null;
         }
     }
-    
+
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
 
     protected void init() {
-        this.securityService = createSecurityService();
         this.propertiesFactory = createTypedPropertiesFactory();
+        this.securityService = createSecurityService(propertiesFactory.reload());
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
@@ -254,19 +254,26 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             registerHandleToEngine();
         }
 
-    }   
-    
-    protected IRouterService buildRouterService() {
-        return new RouterService(parameterService, symmetricDialect, clusterService,
-                dataService, configurationService, triggerRouterService, outgoingBatchService,
-                nodeService, statisticManager, transformService);
     }
 
-    protected static ISecurityService createSecurityService() {
-        // TODO check system property. integrate eric's changes
-        return new SecurityService();
+    protected IRouterService buildRouterService() {
+        return new RouterService(parameterService, symmetricDialect, clusterService, dataService,
+                configurationService, triggerRouterService, outgoingBatchService, nodeService,
+                statisticManager, transformService);
     }
-    
+
+    protected static ISecurityService createSecurityService(TypedProperties properties) {
+        try {
+            String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
+                    SecurityService.class.getName());            
+            return (ISecurityService) Class.forName(className).newInstance();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     abstract protected IStagingManager createStagingManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
@@ -339,8 +346,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         log.info(
                 "SymmetricDS: type={}, name={}, version={}, groupId={}, externalId={}, databaseName={}, databaseVersion={}, driverName={}, driverVersion={}",
-                new Object[] { getDeploymentType(), getEngineName(),
-                        Version.version(), getParameterService().getNodeGroupId(),
+                new Object[] { getDeploymentType(), getEngineName(), Version.version(),
+                        getParameterService().getNodeGroupId(),
                         getParameterService().getExternalId(), symmetricDialect.getName(),
                         symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
                         symmetricDialect.getDriverVersion() });
@@ -383,7 +390,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void syncTriggers() {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         triggerRouterService.syncTriggers();
     }
 
@@ -392,17 +399,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public RemoteNodeStatuses pull() {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         return pullService.pullData();
     }
 
     public void route() {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         routerService.routeData();
     }
 
     public void purge() {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         purgeService.purgeOutgoing();
         purgeService.purgeIncoming();
         purgeService.purgeDataGaps();
@@ -480,17 +487,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void heartbeat(boolean force) {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         dataService.heartbeat(force);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
     public void reOpenRegistration(String nodeId) {
-        MDC.put("engineName", getEngineName());        
+        MDC.put("engineName", getEngineName());
         registrationService.reOpenRegistration(nodeId);
     }
 
@@ -617,7 +624,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IExtensionPointManager getExtensionPointManager() {
         return extensionPointManger;
     }
-    
+
     public IStagingManager getStagingManager() {
         return stagingManager;
     }
@@ -660,22 +667,22 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
 
     }
-    
+
     public Date getLastRestartTime() {
         return lastRestartTime;
     }
-    
-    public ISqlTemplate getSqlTemplate() {     
+
+    public ISqlTemplate getSqlTemplate() {
         return getSymmetricDialect().getPlatform().getSqlTemplate();
     }
 
     public Logger getLog() {
         return log;
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T> T getDataSource() {
-        return (T)getSymmetricDialect().getPlatform().getDataSource();
+        return (T) getSymmetricDialect().getPlatform().getDataSource();
     }
 
 }
