@@ -110,7 +110,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             String lastTransactionId = null;
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
             boolean nontransactional = context.getChannel().getBatchAlgorithm()
-                    .equals("nontransactional");
+                    .equals("nontransactional") || !symmetricDialect.supportsTransactionId();
 
             cursor = prepareCursor();
 
