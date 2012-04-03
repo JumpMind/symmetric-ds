@@ -81,7 +81,7 @@ public class SecurityService extends AbstractService implements ISecurityService
     protected void initializeCipher(Cipher cipher, int mode) throws Exception {
         AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
         
-        if (paramSpec instanceof PBEParameterSpec) {
+        if (paramSpec instanceof PBEParameterSpec || cipher.getAlgorithm().indexOf("PBE") != -1) {
             paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
             cipher.init(mode, secretKey, paramSpec);
         } else if (paramSpec instanceof IvParameterSpec) {
