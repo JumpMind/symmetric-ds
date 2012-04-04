@@ -19,11 +19,14 @@ package org.jumpmind.db.io;
  * under the License.
  */
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -264,7 +267,20 @@ public class DatabaseIO {
      * @param filename The model file name
      */
     public void write(Database model, String filename) throws DdlException {
-
+		try {
+			BufferedWriter writer = null;
+			try {
+				writer = new BufferedWriter(new FileWriter(filename));
+				write(model, writer);
+				writer.flush();
+			} finally {
+				if (writer != null) {
+					writer.close();
+				}
+			}
+		} catch (Exception ex) {
+			throw new DdlException(ex);
+		}
     }
 
     /*
@@ -276,7 +292,7 @@ public class DatabaseIO {
      * @param output The output stream
      */
     public void write(Database model, OutputStream output) throws DdlException {
-
+        write(model, new OutputStreamWriter(output));
     }
 
     /*
@@ -288,7 +304,54 @@ public class DatabaseIO {
      * @param output The output writer
      */
     public void write(Database model, Writer output) throws DdlException {
+    	try {
+	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">");
+	    	output.write("<database name=\"" + model.getName() + "\" defaultIdMethod=\"" + model.getIdMethod() +
+	    			"version=\"" + model.getVersion() + "\">");
+	    	
+	    	for (Table table : model.getTables()) {
+	    		output.write("<table name=\"" + table.getName() + "\" description=\"" + table.getDescription() + ">");
+	    		
+	    		for (Column column : table.getColumns()) {
+	    			output.write("<column name=\"" + column.getName() + "\" primaryKey=\"" + column.isPrimaryKey() +
+	    					"\" required=\"" + column.isRequired() + "\" type=\"" + column.getType() + 
+	    					"\" size=\"" + column.getSize() + "\" default=\"" + column.getDefaultValue() +
+	    					"\" autoIncrement=\"" + column.isAutoIncrement() + "\" description=\"" + column.getDescription() +
+	    					"\" javaName=\"" + column.getJavaName() + "\"/>");
+	    		}
 
+	    		for (ForeignKey fk : table.getForeignKeys()) {
+	    			output.write("<foreign-key name=\"" + fk.getName() + "\" foreignTable=\"" + fk.getForeignTableName() + "\">");	    			
+	    			for (Reference ref : fk.getReferences()) {
+	    				output.write("<reference local=\"" + ref.getLocalColumnName() + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>");
+	    			}
+	    			output.write("</foreign-key>");
+	    		}
+
+	    		for (IIndex index : table.getIndices()) {
+	    			if (index.isUnique()) {
+	    				output.write("<unique name=\"" + index.getName() + "\">");
+	    				for (IndexColumn column : index.getColumns()) {
+	    					output.write("<unique-column name=\"" + column.getName() + "\"/>");
+		    			}
+	    				output.write("</unique>");
+	    			} else {
+	    				output.write("<index name=\"" + index.getName() + "\">");
+		    			for (IndexColumn column : index.getColumns()) {
+	    					output.write("<index-column name=\"" + column.getName() + "\" size=\"" + column.getSize() + "\"/>");
+		    			}
+	    				output.write("</index>");
+	    			}
+	    		}
+
+	    		output.write("</table>");
+	    	}
+
+	    	output.write("</database>");
+	    	output.flush();
+    	} catch (Exception e) {
+    		throw new DdlException(e);
+    	}
     }
 
 }
