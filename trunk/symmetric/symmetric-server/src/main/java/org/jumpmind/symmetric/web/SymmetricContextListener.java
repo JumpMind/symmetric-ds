@@ -24,7 +24,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-
 public class SymmetricContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {
@@ -33,6 +32,8 @@ public class SymmetricContextListener implements ServletContextListener {
         String multiServerMode = ctx.getInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE);
         engineHolder.setMultiServerMode(multiServerMode != null
                 && multiServerMode.equalsIgnoreCase("true"));
+        engineHolder.setSingleServerPropertiesFile(ctx
+                .getInitParameter(WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE));
         ctx.setAttribute(WebConstants.ATTR_ENGINE_HOLDER, engineHolder);
         engineHolder.start();
     }

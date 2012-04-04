@@ -55,7 +55,6 @@ import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -402,7 +401,6 @@ public class SymmetricLauncher {
 
         if (line.hasOption(OPTION_PROPERTIES_FILE)) {
             propertiesFile = line.getOptionValue(OPTION_PROPERTIES_FILE);
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
             if (!new File(propertiesFile).exists()) {
                 throw new SymmetricException("Could not find the properties file specified: %s",
                         line.getOptionValue(OPTION_PROPERTIES_FILE));

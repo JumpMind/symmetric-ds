@@ -49,6 +49,8 @@ public class SymmetricEngineHolder {
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
     private boolean multiServerMode = false;
+    
+    private String singleServerPropertiesFile;
 
     private static Date createTime = new Date();
 
@@ -68,6 +70,14 @@ public class SymmetricEngineHolder {
 
     public boolean isMultiServerMode() {
         return multiServerMode;
+    }
+    
+    public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
+        this.singleServerPropertiesFile = singleServerPropertiesFile;
+    }
+    
+    public String getSingleServerPropertiesFile() {
+        return singleServerPropertiesFile;
     }
 
     public boolean areEnginesConfigured() {
@@ -104,7 +114,7 @@ public class SymmetricEngineHolder {
             }
 
         } else {
-            ISymmetricEngine engine = create(null);
+            ISymmetricEngine engine = create(singleServerPropertiesFile);
             engine.start();
         }
     }
@@ -112,7 +122,7 @@ public class SymmetricEngineHolder {
     protected ISymmetricEngine create(String propertiesFile) {
         ServerSymmetricEngine engine = null;
         try {
-            engine = new ServerSymmetricEngine(new File(propertiesFile));
+            engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile) : null);
             engine.setDeploymentType(deploymentType);
             if (!engines.containsKey(engine.getEngineName())) {
                 engines.put(engine.getEngineName(), engine);

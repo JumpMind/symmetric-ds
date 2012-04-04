@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +72,7 @@ public class SymmetricWebServer {
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(
             Constants.SYS_PROP_DEFAULT_HTTPS_PORT, "31417");
-    
+
     public static final int DEFAULT_MAX_IDLE_TIME = 7200000;
 
     /**
@@ -185,11 +186,11 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime / 1000);
+        webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
+                Boolean.toString(propertiesFile == null));
+        webapp.getServletContext().setInitParameter(
+                WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
         server.setHandler(webapp);
-
-        if (!StringUtils.isBlank(propertiesFile)) {
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
-        }
 
         server.start();
 
@@ -220,13 +221,15 @@ public class SymmetricWebServer {
                 if (engineHolder.getEngines().size() == 1) {
                     return engineHolder.getEngines().values().iterator().next();
                 } else {
-                    throw new IllegalStateException("Could not choose a single engine to return.  There are "+engineHolder.getEngines().size()+" engines configured.");
+                    throw new IllegalStateException(
+                            "Could not choose a single engine to return.  There are "
+                                    + engineHolder.getEngines().size() + " engines configured.");
                 }
             }
         }
         return engine;
     }
-    
+
     public void waitForEnginesToComeOnline(long maxWaitTimeInMs) throws InterruptedException {
         long startTime = System.currentTimeMillis();
         ServletContext servletContext = getServletContext();
@@ -235,11 +238,11 @@ public class SymmetricWebServer {
                     .getSymmetricEngineHolder(servletContext);
             while (engineHolder.areEnginesStarting()) {
                 AppUtils.sleep(500);
-                if ((System.currentTimeMillis()-startTime) > maxWaitTimeInMs) {
+                if ((System.currentTimeMillis() - startTime) > maxWaitTimeInMs) {
                     throw new InterruptedException("Timed out waiting for engines to start");
                 }
             }
-        }        
+        }
     }
 
     protected void setupBasicAuthIfNeeded(Server server) {
@@ -321,7 +324,7 @@ public class SymmetricWebServer {
                 mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
             } else if (StringUtils.isNotBlank(host)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", host));
-            } 
+            }
             mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
             ObjectName processorName = getXslJmxAdaptorName();
             mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
@@ -438,4 +441,5 @@ public class SymmetricWebServer {
     public String getName() {
         return name;
     }
+
 }
