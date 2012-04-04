@@ -142,7 +142,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         }
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("About to refresh the cache of transformation because new configuration come through the data loader");
+            log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             transformService.resetCache();
         }
     }
