@@ -3,7 +3,6 @@ DONE = +
 
 * Go through every class and fix javadoc, remove unused methods, follow conventions, and fix generics/warnings
     
-* Integrate Eric's SecurityService changes
 * Purge stats
 * Delete from sym_data_gap instead of marking gaps as Ok. 
 
