@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -63,7 +63,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private INodeService nodeService;
 
     private IClusterService clusterService;
-    
+
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
@@ -90,17 +90,23 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
                                 log.debug("Push requested for {}", node);
-                                RemoteNodeStatus status = pushToNode(node, identity, identitySecurity);
+                                RemoteNodeStatus status = pushToNode(node, identity,
+                                        identitySecurity);
                                 statuses.add(status);
                                 if (status.getBatchesProcessed() > 0) {
-                                    log.info("Pushed data to {}. {} data and {} batches were processed.", new Object[] {node, status.getDataProcessed(), status.getBatchesProcessed()});
+                                    log.info(
+                                            "Pushed data to {}. {} data and {} batches were processed.",
+                                            new Object[] { node, status.getDataProcessed(),
+                                                    status.getBatchesProcessed() });
                                 } else if (status.failed()) {
                                     log.warn("There was an error while pushing data to the server");
                                 }
                                 log.debug("Push completed for {}", node);
                             }
                         } else {
-                            log.error("Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", identity.getNodeId());
+                            log.error(
+                                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
+                                    identity.getNodeId());
                         }
                     }
                 } finally {
@@ -117,8 +123,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         RemoteNodeStatus status = new RemoteNodeStatus(remote.getNodeId());
         IOutgoingWithResponseTransport transport = null;
         try {
-            transport = transportManager.getPushTransport(remote, identity, identitySecurity
-                    .getNodePassword(), parameterService.getRegistrationUrl());
+            transport = transportManager.getPushTransport(remote, identity,
+                    identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
 
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
@@ -130,6 +136,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 log.debug("Reading ack: {}", ackString);
                 log.debug("Reading extend ack: {}", ackExtendedString);
 
+                String line = null;
+                do {
+                    line = reader.readLine();
+                    if (line != null) {
+                        log.info("Read another unexpected line {}", line);
+                    }
+                } while (line != null);
+
                 if (StringUtils.isBlank(ackString)) {
                     log.error("Did not receive an acknowledgement for the batches sent.");
                 }
@@ -138,17 +152,16 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         ackExtendedString);
 
                 for (BatchInfo batchInfo : batches) {
-                    log.debug("Saving ack: {}, {}", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
-                            : "error"));
+                    log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
+                            (batchInfo.isOk() ? "OK" : "error"));
                     acknowledgeService.ack(batchInfo);
                 }
-                
+
                 status.updateOutgoingStatus(extractedBatches, batches);
-            } 
+            }
         } catch (ConnectException ex) {
-            log.warn("",
-                    (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remote
-                            .getSyncUrl()));
+            log.warn("", (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl()
+                    : remote.getSyncUrl()));
             fireOffline(ex, remote, status);
         } catch (ConnectionRejectedException ex) {
             log.warn("The server was too busy to accept the connection");
@@ -171,7 +184,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes
             // in our list
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
             fireOffline(ex, remote, status);
         } finally {
             try {
