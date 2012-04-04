@@ -400,11 +400,10 @@ public class SymmetricLauncher {
             return true;
         }
 
-        // validate that block-size has been set
         if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-            propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
+            propertiesFile = line.getOptionValue(OPTION_PROPERTIES_FILE);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
-            if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
+            if (!new File(propertiesFile).exists()) {
                 throw new SymmetricException("Could not find the properties file specified: %s",
                         line.getOptionValue(OPTION_PROPERTIES_FILE));
             }
