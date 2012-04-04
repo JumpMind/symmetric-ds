@@ -186,10 +186,16 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime / 1000);
-        webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
-                Boolean.toString(propertiesFile == null));
-        webapp.getServletContext().setInitParameter(
-                WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
+        if (propertiesFile != null) {
+            webapp.getServletContext().setInitParameter(
+                    WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
+            webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
+                    Boolean.toString(false));            
+        } else {
+            webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
+                    Boolean.toString(true));
+
+        }
         server.setHandler(webapp);
 
         server.start();
