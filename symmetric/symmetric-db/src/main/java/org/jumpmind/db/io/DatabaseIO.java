@@ -305,53 +305,76 @@ public class DatabaseIO {
      */
     public void write(Database model, Writer output) throws DdlException {
     	try {
-	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">");
-	    	output.write("<database name=\"" + model.getName() + "\" defaultIdMethod=\"" + model.getIdMethod() +
-	    			"version=\"" + model.getVersion() + "\">");
+	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">\n");
+	    	output.write("<database name=\"" + model.getName() + "\"");
+	    	if (model.getIdMethod() != null) {
+	    		output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
+	    	}
+	    	output.write(">\n");
 	    	
 	    	for (Table table : model.getTables()) {
-	    		output.write("<table name=\"" + table.getName() + "\" description=\"" + table.getDescription() + ">");
+	    		output.write("\t<table name=\"" + table.getName() + "\">\n");
 	    		
 	    		for (Column column : table.getColumns()) {
-	    			output.write("<column name=\"" + column.getName() + "\" primaryKey=\"" + column.isPrimaryKey() +
-	    					"\" required=\"" + column.isRequired() + "\" type=\"" + column.getType() + 
-	    					"\" size=\"" + column.getSize() + "\" default=\"" + column.getDefaultValue() +
-	    					"\" autoIncrement=\"" + column.isAutoIncrement() + "\" description=\"" + column.getDescription() +
-	    					"\" javaName=\"" + column.getJavaName() + "\"/>");
+	    			output.write("\t\t<column name=\"" + column.getName() + "\"");
+	    			if (column.isPrimaryKey()) {
+	    				output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
+	    			}
+	    			if (column.isRequired()) {
+	    				output.write(" required=\"" + column.isRequired() + "\"");
+	    			}
+	    			if (column.getType() != null) {
+	    				output.write(" type=\"" + column.getType() + "\"");
+	    			}
+	    			if (column.getSize() != null) {
+	    				output.write(" size=\"" + column.getSize() + "\"");
+	    			}
+	    			if (column.getDefaultValue() != null) {
+	    				output.write(" default=\"" + column.getDefaultValue() + "\"");
+	    			}
+	    			if (column.isAutoIncrement()) {
+	    				output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
+	    			}
+	    			if (column.getJavaName() != null) {
+	    				output.write(" javaName=\"" + column.getJavaName() + "\"");
+	    			}
+	    			output.write("/>\n");
 	    		}
 
 	    		for (ForeignKey fk : table.getForeignKeys()) {
-	    			output.write("<foreign-key name=\"" + fk.getName() + "\" foreignTable=\"" + fk.getForeignTableName() + "\">");	    			
+	    			output.write("\t\t<foreign-key name=\"" + fk.getName() + "\" foreignTable=\"" + fk.getForeignTableName() + "\">\n");
 	    			for (Reference ref : fk.getReferences()) {
-	    				output.write("<reference local=\"" + ref.getLocalColumnName() + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>");
+	    				output.write("\t\t\t<reference local=\"" + ref.getLocalColumnName() + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>\n");
 	    			}
-	    			output.write("</foreign-key>");
+	    			output.write("\t\t</foreign-key>\n");
 	    		}
 
 	    		for (IIndex index : table.getIndices()) {
 	    			if (index.isUnique()) {
-	    				output.write("<unique name=\"" + index.getName() + "\">");
+	    				output.write("\t\t<unique name=\"" + index.getName() + "\">\n");
 	    				for (IndexColumn column : index.getColumns()) {
-	    					output.write("<unique-column name=\"" + column.getName() + "\"/>");
+	    					output.write("\t\t\t<unique-column name=\"" + column.getName() + "\"/>\n");
 		    			}
-	    				output.write("</unique>");
+	    				output.write("\t\t</unique>\n");
 	    			} else {
-	    				output.write("<index name=\"" + index.getName() + "\">");
+	    				output.write("\t\t<index name=\"" + index.getName() + "\">\n");
 		    			for (IndexColumn column : index.getColumns()) {
-	    					output.write("<index-column name=\"" + column.getName() + "\" size=\"" + column.getSize() + "\"/>");
+	    					output.write("\t\t\t<index-column name=\"" + column.getName() + "\"");
+	    					if (column.getSize() != null) {
+	    						output.write(" size=\"" + column.getSize() + "\"");
+	    					}
+	    					output.write("/>\n");
 		    			}
-	    				output.write("</index>");
+	    				output.write("\t\t</index>\n");
 	    			}
 	    		}
 
-	    		output.write("</table>");
+	    		output.write("\t</table>\n");
 	    	}
 
-	    	output.write("</database>");
-	    	output.flush();
+	    	output.write("</database>\n");
     	} catch (Exception e) {
     		throw new DdlException(e);
     	}
     }
-
 }
