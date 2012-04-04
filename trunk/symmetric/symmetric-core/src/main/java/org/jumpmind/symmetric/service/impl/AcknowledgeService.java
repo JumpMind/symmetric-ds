@@ -117,10 +117,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             outgoingBatch.getBatchId());
                     if (stagingResource != null) {
                         stagingResource.setState(State.DONE);
-                    } else {
-                        log.warn(
-                                "Could not find the staged resource for node {} and batch {} to mark as done",
-                                outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
                     }
                 }
 
