@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
@@ -275,7 +277,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 log.warn("NodeRegisteringFailedConnection");
             } catch (Exception e) {
                 log.error(e);
-            }
+            }   
 
             maxNumberOfAttempts--;
 
@@ -285,6 +287,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("NodeRegistered", node.getNodeId());
+                    sendInitialLoadFromRegisteredNode();
                 } else if (!errorOccurred) {
                     log.error("NodeRegisteringFailedIdentityMissing");
                     registered = false;
@@ -303,6 +306,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throw new RegistrationFailedException(String.format(
                     "Failed after trying to register %s times.",
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
+        }
+    }
+    
+    protected void sendInitialLoadFromRegisteredNode() {
+        if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+            List<Node> nodes = new ArrayList<Node>();
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
+            for (Node node : nodes) {
+                nodeService.setInitialLoadEnabled(node.getNodeId(), true);
+            }
         }
     }
 
