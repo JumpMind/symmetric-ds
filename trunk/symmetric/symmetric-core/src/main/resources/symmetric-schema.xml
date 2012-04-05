@@ -279,7 +279,7 @@
     </table>    
     
     <table name="data" description="The captured data change that occurred to a row in the database. Entries in data are created by database triggers.">
-        <column name="data_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
+        <column name="data_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
         <column name="table_name" type="VARCHAR" size="50" required="true"  description="The name of the table in which a change occurred that this entry records." />
         <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. For triggers, this is the change that occurred, which is 'I' for insert, 'U' for update, or 'D' for delete. Other events include: 'R' for reloading the entire table (or subset of the table) to the node; 'S' for running dynamic SQL at the node, which is used for adhoc administration." />
         <column name="row_data" type="LONGVARCHAR"  description="The captured data change from the synchronized table. The column values are stored in comma-separated values (CSV) format." />
@@ -310,8 +310,8 @@
      </table>    
     
     <table name="data_event" description="Represents routing of a data row to one or more nodes. Entries in data_event are created by database triggers. ">
-        <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="Id of the data to be routed." />
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" description="The node_id of the node that is to receive the data." />
+        <column name="data_id" type="BIGINT" required="true" primaryKey="true"  description="Id of the data to be routed." />
+        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="The node_id of the node that is to receive the data." />
         <column name="router_id" type="VARCHAR" size="50" required="true"  primaryKey="true"  description="The router_id of the router that routed this data_event." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_de_batchid">
@@ -320,7 +320,7 @@
     </table>
     
     <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="A unique id for the batch." />
+        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be currently routing (RE), newly created and ready for replication (NE), being queried from the database (QE), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK) or error (ER)." />
@@ -362,7 +362,7 @@
     </table>
     
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
-        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
+        <column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="The current status of the batch can be loading (LD), successfully loaded (OK), in error (ER) or skipped (SK)" />
@@ -448,7 +448,7 @@
     </table>
 
     <table name="incoming_error" description="The captured data change that is in error for a batch.  The user can tell the system what to do by updating the resolve columns.  Entries in data_error are created when an incoming batch encounters an error.">
-        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
+        <column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
         <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="The row number in the batch that encountered an error when loading." />
         <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
