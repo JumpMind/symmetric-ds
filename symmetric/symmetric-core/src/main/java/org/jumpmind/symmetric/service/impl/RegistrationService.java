@@ -300,11 +300,18 @@ public class RegistrationService extends AbstractService implements IRegistratio
     
     protected void sendInitialLoadFromRegisteredNode() {
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+            boolean queuedLoad = false;
             List<Node> nodes = new ArrayList<Node>();
             nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
             nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
             for (Node node : nodes) {
+                log.info("Enabling an initial load to {}", node.getNodeId());
                 nodeService.setInitialLoadEnabled(node.getNodeId(), true);
+                queuedLoad = true;
+            }
+            
+            if (!queuedLoad) {
+                log.info("{} was enabled but no nodes were linked to load", ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
             }
         }
     }    
