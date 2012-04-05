@@ -92,7 +92,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         // if this is sym_node or sym_node_security determine which nodes it
         // goes to.
         if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
-                || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) 
+                || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)) {
 
             String nodeIdInQuestion = columnValues.get("NODE_ID");
@@ -101,22 +101,26 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
                         nodeGroupLinks)
                         && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
-                                rootNetworkedNode, me)) {
+                                rootNetworkedNode, me)
+                        || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                     if (nodeIds == null) {
                         nodeIds = new HashSet<String>();
                     }
                     nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                 }
             }
-            
-            // don't route node security to it's own node.  that node will get node security
+
+            // don't route node security to it's own node. that node will get
+            // node security
             // via registration and it will be updated by initial load
-            if (!initialLoad && nodeIds != null && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+            if (!initialLoad && nodeIds != null
+                    && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
                 nodeIds.remove(nodeIdInQuestion);
             }
         } else {
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)) {
+                if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)
+                        || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                     if (nodeIds == null) {
                         nodeIds = new HashSet<String>();
                     }
@@ -128,7 +132,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     && (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
                             || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
                             || tableMatches(dataMetaData, TableConstants.SYM_ROUTER) || tableMatches(
-                            dataMetaData, TableConstants.SYM_NODE_GROUP_LINK))) {
+                                dataMetaData, TableConstants.SYM_NODE_GROUP_LINK))) {
                 routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
             }
 
