@@ -71,8 +71,10 @@ final public class ParameterConstants {
     
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
+    
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
@@ -80,7 +82,7 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_EXTRA_TABLES = "auto.config.extra.tables.ddlutil.xml";
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
-
+    
     public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
     public final static String INITIAL_LOAD_DELETE_FIRST_SQL = "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
