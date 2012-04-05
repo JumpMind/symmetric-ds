@@ -125,7 +125,22 @@ public class ConfigurationChangedDataRouterTest {
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn2", nodeIds.iterator().next());
-    }    
+    }  
+    
+    @Test
+    public void testConfigurationExtract() {
+        IDataRouter router = buildTestableRouter(
+                THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
+                THREE_TIER_NETWORKED_ROOT);
+        
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode());
+        
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "corp"), nodes, true);
+        Assert.assertNotNull(nodeIds);
+        Assert.assertEquals(1, nodeIds.size());
+        Assert.assertEquals("corp", nodeIds.iterator().next());  
+    }
     
     @Test
     public void testRouteRgn1FromCorp() {
