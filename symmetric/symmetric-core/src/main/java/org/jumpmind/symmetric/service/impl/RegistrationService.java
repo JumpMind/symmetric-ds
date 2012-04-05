@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
@@ -277,6 +279,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());
+                    sendInitialLoadFromRegisteredNode();
                 } else {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
                     registered = false;
@@ -294,6 +297,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
         }
     }
+    
+    protected void sendInitialLoadFromRegisteredNode() {
+        if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+            List<Node> nodes = new ArrayList<Node>();
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
+            for (Node node : nodes) {
+                nodeService.setInitialLoadEnabled(node.getNodeId(), true);
+            }
+        }
+    }    
 
     /**
      * @see IRegistrationService#reOpenRegistration(String)
