@@ -64,8 +64,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     protected ITransformService transformService;
 
-    public Set<String> routeToNodes(IRouterContext routingContext,
-            DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
+    public Set<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData,
+            Set<Node> possibleTargetNodes, boolean initialLoad) {
 
         // the list of nodeIds that we will return
         Set<String> nodeIds = null;
@@ -74,7 +74,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         Map<String, String> columnValues = getDataMap(dataMetaData);
 
         Node me = findIdentity();
-        
+
         NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
 
         // if this is sym_node or sym_node_security determine which nodes it
@@ -85,25 +85,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             String nodeIdInQuestion = columnValues.get("NODE_ID");
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
-                        nodeGroupLinks)
-                        && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
-                                rootNetworkedNode, me)) {
-                    if (nodeIds == null) {
-                        nodeIds = new HashSet<String>();
-                    }                   
-                    nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
-                }
-            }
-            
-            // don't route node security to it's own node.  that node will get node security
-            // via registration and it will be updated by initial load
-            if (!initialLoad && nodeIds != null && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                nodeIds.remove(nodeIdInQuestion);
-            }
-        } else {
-            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)) {
+                if ((isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
+                        nodeGroupLinks) && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
+                        rootNetworkedNode, me))
+                        || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                     if (nodeIds == null) {
                         nodeIds = new HashSet<String>();
                     }
@@ -111,16 +96,31 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
 
-			if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())
-					&& (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
-							|| tableMatches(dataMetaData,
-									TableConstants.SYM_TRIGGER_ROUTER)
-							|| tableMatches(dataMetaData,
-									TableConstants.SYM_ROUTER) || tableMatches(
-							dataMetaData, TableConstants.SYM_NODE_GROUP_LINK))) {
-				routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED,
-						Boolean.TRUE);
-			}
+            // don't route node security to it's own node. that node will get
+            // node security
+            // via registration and it will be updated by initial load
+            if (!initialLoad && nodeIds != null
+                    && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+                nodeIds.remove(nodeIdInQuestion);
+            }
+        } else {
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)
+                        || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
+                    if (nodeIds == null) {
+                        nodeIds = new HashSet<String>();
+                    }
+                    nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
+                }
+            }
+
+            if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())
+                    && (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
+                            || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
+                            || tableMatches(dataMetaData, TableConstants.SYM_ROUTER) || tableMatches(
+                            dataMetaData, TableConstants.SYM_NODE_GROUP_LINK))) {
+                routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+            }
 
             if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
@@ -178,11 +178,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     // always route changes to parent nodes
                     return true;
                 }
-                
-                                
+
                 String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
-                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId()) &&
-                        !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
+                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId())
+                        && !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
                     if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
                         return true;
                     } else {
