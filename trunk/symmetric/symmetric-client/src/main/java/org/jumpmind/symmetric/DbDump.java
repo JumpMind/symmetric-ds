@@ -21,30 +21,21 @@
 
 package org.jumpmind.symmetric;
 
-import java.io.File;
 import java.io.OutputStream;
-import java.text.ParseException;
-import java.util.List;
-
-import javax.swing.text.html.Option;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.PosixParser;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.db.platform.mysql.MySqlPlatform;
 
 /**
  * Dump the structure and data from database tables to file.
@@ -55,7 +46,17 @@ public class DbDump extends AbstractCommandLauncher {
 	private static final Log log = LogFactory.getLog(DbDump.class);
 
 	private static final String OPTION_XML = "xml";
-    	
+	
+	private static final String OPTION_COMPATIBLE = "compatible";
+	
+	private static final String OPTION_ADD_DROP_TABLE = "add-drop-table";
+	
+	private static final String OPTION_NO_CREATE_INFO = "no-create-info";
+	
+	private static final String OPTION_NO_DATA = "no-data";
+
+	private static final String OPTION_COMMENTS = "comments";
+	
     public DbDump(String commandName, String messageKeyPrefix) {
 		super(commandName, messageKeyPrefix);
 	}
@@ -74,27 +75,67 @@ public class DbDump extends AbstractCommandLauncher {
     protected void buildOptions(Options options) {
 		super.buildOptions(options);
     	addOption(options, "x", OPTION_XML, false);
+    	addOption(options, null, OPTION_COMPATIBLE, true);
+    	addOption(options, null, OPTION_ADD_DROP_TABLE, false);
+    	addOption(options, null, OPTION_NO_CREATE_INFO, false);
+    	addOption(options, null, OPTION_NO_DATA, false);
+    	addOption(options, "i", OPTION_COMMENTS, false);
     }
     
 	@Override
 	protected boolean executeOptions(CommandLine line) throws Exception {
+		// TODO: get table names list as args
+		
         if (line.hasOption(OPTION_XML)) {
         	dumpSchemaAsXml(System.out);
-        	return true;
+        } else {
+	    	dumpSchemaAsSql(System.out, line.hasOption(OPTION_ADD_DROP_TABLE), line.hasOption(OPTION_NO_CREATE_INFO),
+	    			line.hasOption(OPTION_NO_DATA), line.hasOption(OPTION_COMMENTS));
         }
-		return false;
+    	return true;
 	}
 
     public void dumpSchemaAsXml(OutputStream output) throws Exception {
+    	/* TODO:
+    	 * <dbdump> <database></database> </dbdump>
+    	 * <table_data name="mytable"><row><field name="myfield">value</field></row></table_data>
+    	 */
     	IDatabasePlatform platform = getDatabasePlatform();
         Database db = platform.readDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), null);
         new DatabaseIO().write(db, output);
+        output.flush();
     }
 
-    public void dumpSchemaAsSql(OutputStream output) throws Exception {
+    public void dumpSchemaAsSql(OutputStream output, boolean addDropTable, boolean noCreateInfo, boolean noData, boolean comments) throws Exception {
     	IDatabasePlatform platform = getDatabasePlatform();
-        Database db = platform.readDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), null);
-        output.write(platform.getDdlBuilder().createTables(db, false).getBytes());
+    	String catalog = platform.getDefaultCatalog();
+    	String schema = platform.getDefaultSchema();
+    	
+        Database db = platform.readDatabase(catalog, schema, null);
+        IDatabasePlatform target = new MySqlPlatform(null, new DatabasePlatformSettings());
+        Writer writer = new OutputStreamWriter(output);
+    	SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+
+    	if (comments) {
+        	writer.write("-- SymmetricDS " + Version.version() + " " + commandName + "\n--\n");
+        	writer.write("-- Catalog: " + (catalog == null ? "" : catalog) + " Schema: " + (schema == null ? "" : schema) + "\n");
+        	writer.write("-- Started on " + df.format(new Date()) + "\n");
+        	// TODO: write jdbc url?  compatible?
+        }
+
+        if (!noCreateInfo) {
+        	writer.write(target.getDdlBuilder().createTables(db, addDropTable));
+        }
+        
+        if (!noData) {
+        	// TODO: dump data
+        }
+        
+        if (comments) {
+        	writer.write("-- Completed on " + df.format(new Date()) + "\n");
+        }
+        writer.flush();
+        writer.close();
     }
 
 //    public void copyFromTables(List<TableToExtract> tables) {
