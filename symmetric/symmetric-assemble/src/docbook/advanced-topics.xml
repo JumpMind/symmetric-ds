@@ -790,7 +790,7 @@ net stop symmetric</programlisting>
    -alias sym.secret -genseckey -keyalg idea -keysize 56 \
    -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider \
    -providerPath ..\lib\bcprov-ext.jar</programlisting>
-            <programlisting>sym -jcep org.bouncycastle.jce.provider.BouncyCastleProvider -e secret</programlisting>
+            <programlisting>symadmin -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider -e secret</programlisting>
 
             To customize the encryption, write a Java class that implements the ISecurityService or extends the default SecurityService, and place
             the class on the classpath in either <filename class="directory">lib</filename> or
@@ -801,7 +801,7 @@ net stop symmetric</programlisting>
 
             Remember to specify your properties file when encrypting passwords, so it will use your custom ISecurityService.
 
-            <programlisting>sym -p symmetric.properties -e secret</programlisting>
+            <programlisting>symadmin -p symmetric.properties -e secret</programlisting>
         </para>
     </section>
     <section id="secure-transport">
