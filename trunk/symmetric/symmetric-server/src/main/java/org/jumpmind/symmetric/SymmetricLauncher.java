@@ -126,7 +126,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                 || line.hasOption(OPTION_START_MIXED_SERVER)) {
         	SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime,
-                    propertiesFile.getCanonicalPath(), true, noNio, noDirectBuffer);
+                    propertiesFile != null ? propertiesFile.getCanonicalPath() : null, true, noNio, noDirectBuffer);
             webServer.setHost(host);
             if (line.hasOption(OPTION_START_SERVER)) {
                 webServer.start(port);
