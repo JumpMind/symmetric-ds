@@ -93,6 +93,8 @@ public interface IRegistrationService {
     
     public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations);
     
+    public boolean deleteRegistrationRequest(RegistrationRequest request);
+    
     public void saveRegisgtrationRequest(RegistrationRequest request);
 
     public boolean isRegisteredWithServer();
