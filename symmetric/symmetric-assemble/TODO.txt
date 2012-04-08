@@ -4,7 +4,8 @@ DONE = +
 * Go through every class and fix javadoc, remove unused methods, follow conventions, and fix generics/warnings
     
 * Purge stats
-* Delete from sym_data_gap instead of marking gaps as Ok. 
+* Delete from sym_data_gap instead of marking gaps as Ok.
+* Support wildcards in source_table_name 
 
 * Get rid of IOException in service apis in favor of IoException
 * Can BatchInfo go away?  
@@ -65,3 +66,4 @@ Documentation
   * dataloader.enable.fallback.update
 * The following property is not longer needed: dataloader.enable.fallback.savepoint
 * routing.wait.for.data.timeout.seconds new property
+* new dbdump utility

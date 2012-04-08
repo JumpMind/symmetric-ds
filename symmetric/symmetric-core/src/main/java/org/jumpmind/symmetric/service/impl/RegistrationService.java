@@ -189,6 +189,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         return requests;
     }
+    
+    public boolean deleteRegistrationRequest(RegistrationRequest request) {
+        String externalId = request.getExternalId() == null ? "" : request.getExternalId();
+        String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
+        return 0 < sqlTemplate.update(
+                getSql("deleteRegistrationRequestSql"),
+                new Object[] { nodeGroupId,
+                    externalId, request.getIpAddress(), request.getHostName(),
+                    RegistrationStatus.RQ.name()});        
+    }
 
     public void saveRegisgtrationRequest(RegistrationRequest request) {
         String externalId = request.getExternalId() == null ? "" : request.getExternalId();
