@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="hsqldb2StringTemplate" class="java.lang.String">
+        <constructor-arg>
+            <value>
+                <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"' end ]]>
+            </value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="hsqldb2Dialect" class="org.jumpmind.symmetric.db.hsqldb2.HsqlDb2Dialect"
+        scope="prototype">
+        <property name="primaryKeyViolationSqlStates" value="23505"/>
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                
+                <property name="functionInstalledSql" value="select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME=UPPER('$(functionName)')"/>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="BASE_64_ENCODE">
+                            <value>
+                                <![CDATA[CREATE FUNCTION $(functionName)(binaryData BINARY) 
+                                           RETURNS VARCHAR(1000000)
+                                           NO SQL
+                                           LANGUAGE JAVA PARAMETER STYLE JAVA
+                                           EXTERNAL NAME
+                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'
+                                            ]]>
+                            </value>
+                        </entry>
+                        <entry key="SET_SESSION">
+                            <value>
+                                <![CDATA[CREATE PROCEDURE $(functionName)(key VARCHAR(50), data VARCHAR(50))
+                                           NO SQL
+                                           LANGUAGE JAVA PARAMETER STYLE JAVA
+                                           EXTERNAL NAME
+                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'
+                                               ]]>
+                            </value>
+                        </entry>
+                        <entry key="GET_SESSION">
+                            <value>
+                                <![CDATA[CREATE FUNCTION $(functionName)(key VARCHAR(50))
+                                           RETURNS VARCHAR(50)
+                                           NO SQL
+                                           LANGUAGE JAVA PARAMETER STYLE JAVA
+                                           EXTERNAL NAME 
+                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'
+                                              ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate" ref="hsqldb2StringTemplate" />
+                <property name="clobColumnTemplate" ref="hsqldb2StringTemplate" />
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then ''else '"'||rawtohex($(tableAlias)."$(columnName)")||'"' end ]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ]]>
+                    </value>
+                </property>
+                <property name="datetimeColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" then '"1"' else '"0"' end]]>
+                    </value>
+                </property>
+                <property name="oldTriggerValue" value="oldrow" />
+                <property name="newTriggerValue" value="newrow" />
+                <property name="triggerConcatCharacter" value="||" />
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after insert on $(schemaName)$(tableName)  
+                                referencing new row as newrow                                                           
+                                for each row begin atomic
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'I',
+                                      $(triggerHistoryId),                                      
+                                      $(columns),
+                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after update on $(schemaName)$(tableName)
+                                referencing new row as newrow
+                                            old row as oldrow
+                                for each row begin atomic
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
+	                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+	                                    values(
+	                                      '$(targetTableName)',
+	                                      'U',
+	                                      $(triggerHistoryId),
+	                                      $(oldKeys),
+	                                      $(columns),
+	                                      $(oldColumns),
+	                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),
+	                                      $(externalSelect),
+	                                      CURRENT_TIMESTAMP
+	                                    );
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after delete on $(schemaName)$(tableName)
+                                referencing old row as oldrow                                
+                                for each row begin atomic
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'D',
+                                      $(triggerHistoryId),
+                                      $(oldKeys),
+                                      $(oldColumns),
+                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>
