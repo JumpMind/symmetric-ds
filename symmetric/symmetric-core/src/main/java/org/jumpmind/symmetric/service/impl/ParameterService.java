@@ -256,11 +256,11 @@ public class ParameterService implements IParameterService {
     }
 
     public String getExternalId() {
-        return getWithHostName(ParameterConstants.EXTERNAL_ID);
+        return substituteVariables(ParameterConstants.EXTERNAL_ID);
     }
 
     public String getSyncUrl() {
-        return getWithHostName(ParameterConstants.SYNC_URL);
+        return substituteVariables(ParameterConstants.SYNC_URL);
     }
 
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
@@ -272,7 +272,7 @@ public class ParameterService implements IParameterService {
         return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
     }
 
-    protected String getWithHostName(String paramKey) {
+    protected String substituteVariables(String paramKey) {
         String value = getString(paramKey);
         if (!StringUtils.isBlank(value)) {
             if (value.contains("hostName")) {
@@ -280,6 +280,9 @@ public class ParameterService implements IParameterService {
             }
             if (value.contains("ipAddress")) {
                 value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
+            }
+            if (value.contains("engineName")) {
+                value = FormatUtils.replace("engineName", getEngineName(), value);
             }
         }
         return value;
