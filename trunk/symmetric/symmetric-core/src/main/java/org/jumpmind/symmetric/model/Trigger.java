@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,6 +215,10 @@ public class Trigger implements Serializable {
 
     public String getSourceTableName() {
         return sourceTableName;
+    }
+    
+    public boolean isSourceTableNameWildcarded() {
+        return sourceTableName != null && sourceTableName.contains(FormatUtils.WILDCARD);
     }
 
     public void setSourceTableName(String sourceTableName) {
