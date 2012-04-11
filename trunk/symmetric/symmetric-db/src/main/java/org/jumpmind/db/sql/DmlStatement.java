@@ -39,7 +39,7 @@ import org.jumpmind.db.model.Table;
 public class DmlStatement {
     
     public enum DmlType {
-        INSERT, UPDATE, DELETE, COUNT, FROM, SELECT, UNKNOWN
+        INSERT, UPDATE, DELETE, COUNT, FROM, SELECT, SELECT_ALL, UNKNOWN
     };
 
     protected DmlType dmlType;
@@ -71,6 +71,8 @@ public class DmlStatement {
             this.sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);            
         } else if (type == DmlType.SELECT) {
             this.sql = buildSelectSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
+        } else if (type == DmlType.SELECT_ALL) {
+            this.sql = buildSelectSqlAll(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
@@ -172,6 +174,13 @@ public class DmlStatement {
         appendColumns(sql, columns);
         sql.append(" from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, " and ");
+        return sql.toString();
+    }
+
+    protected String buildSelectSqlAll(String tableName, Column[] keyColumns, Column[] columns) {
+        StringBuilder sql = new StringBuilder("select ");
+        appendColumns(sql, columns);
+        sql.append(" from ").append(tableName);
         return sql.toString();
     }
 
