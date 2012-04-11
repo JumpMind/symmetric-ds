@@ -95,6 +95,11 @@ public class SqlScript {
         }
     }
 
+    public SqlScript(List<String> sqlScript, ISqlTemplate sqlTemplate, boolean failOnError,
+            String delimiter, Map<String, String> replacementTokens) {
+        init(sqlScript, sqlTemplate, failOnError, delimiter, replacementTokens);
+    }
+
     private void init(List<String> sqlScript, ISqlTemplate sqlTemplate, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
         this.statements = parseLines(sqlScript, replacementTokens);
