@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 public final class FormatUtils {
+    
+    public final static String WILDCARD = "*";
 
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
 
@@ -104,7 +106,7 @@ public final class FormatUtils {
     public static boolean isWildCardMatch(String text, String pattern) {
         // Create the cards by splitting using a RegEx. If more speed
         // is desired, a simpler character based splitting can be done.
-        String[] cards = pattern.split("\\*");
+        String[] cards = pattern.split("\\" + WILDCARD);
 
         // Iterate over the cards.
         for (String card : cards) {

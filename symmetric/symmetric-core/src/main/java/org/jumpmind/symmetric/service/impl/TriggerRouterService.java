@@ -833,7 +833,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
         Set<Table> tables = new HashSet<Table>();
 
-        if (trigger.getSourceTableName().contains("*")) {
+        if (trigger.isSourceTableNameWildcarded()) {
             Database database = symmetricDialect.getPlatform().readDatabase(
                     trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                     new String[] { "TABLE" });
@@ -890,7 +890,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
                                 trigger.getTriggerId(), trigger.getSourceCatalogName(),
                                 trigger.getSourceSchemaName(),
-                                trigger.getSourceTableName().contains("*") ? table.getName()
+                                trigger.isSourceTableNameWildcarded() ? table.getName()
                                         : trigger.getSourceTableName());
 
                         boolean forceRebuildOfTriggers = false;
@@ -1046,7 +1046,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.getTriggerId(),
                     trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(),
-                    trigger.getSourceTableName().contains("*") ? table.getName() : trigger
+                    trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
                             .getSourceTableName());
         }
 
@@ -1110,7 +1110,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId());
-            if (trigger.getSourceTableName().contains("*")) {
+            if (trigger.isSourceTableNameWildcarded()) {
               triggerSuffix2 = replaceCharsForTriggerName(table.getName());  
             }             
             String triggerSuffix3 = replaceCharsForTriggerName("_"

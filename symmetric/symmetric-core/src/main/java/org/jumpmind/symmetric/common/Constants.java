@@ -29,8 +29,6 @@ final public class Constants {
     private Constants() {
     }
         
-    public static final String WILDCARD = "*";
-    
     public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
 
     public static final String STAGING_CATEGORY_INCOMING = "incoming";
