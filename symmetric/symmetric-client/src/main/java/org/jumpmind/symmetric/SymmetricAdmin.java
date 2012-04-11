@@ -24,12 +24,10 @@ package org.jumpmind.symmetric;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.cli.CommandLine;
@@ -37,12 +35,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.db.io.DatabaseIO;
-import org.jumpmind.db.model.Database;
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.common.SecurityConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -76,10 +69,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String OPTION_PURGE = "purge";
 
-    private static final String OPTION_RUN_DDL_XML = "run-ddl";
-
-    private static final String OPTION_RUN_SQL = "run-sql";
-
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
@@ -105,16 +94,20 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 	@Override
     protected void buildOptions(Options options) {
 		super.buildOptions(options);
-        addOption(options, "c", OPTION_DDL_GEN, true);
+        
+        // TODO: move generate symmetric DDL to DbDump?
+		addOption(options, "c", OPTION_DDL_GEN, true);
+
         addOption(options, "X", OPTION_PURGE, false);
         addOption(options, "g", OPTION_PROPERTIES_GEN, true);
-        addOption(options, "r", OPTION_RUN_DDL_XML, true);
-        addOption(options, "s", OPTION_RUN_SQL, true);
         addOption(options, "a", OPTION_AUTO_CREATE, false);
         addOption(options, "R", OPTION_OPEN_REGISTRATION, true);
         addOption(options, "l", OPTION_RELOAD_NODE, true);
+
+        // TODO: move dump batch and load batch to DbDump/Load?
         addOption(options, "d", OPTION_DUMP_BATCH, true);
         addOption(options, "b", OPTION_LOAD_BATCH, true);
+
         addOption(options, "t", OPTION_TRIGGER_GEN, true);
         addOption(options, "o", OPTION_TRIGGER_GEN_ALWAYS, false);
         addOption(options, "e", OPTION_ENCRYPT_TEXT, true);
@@ -189,18 +182,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
         if (line.hasOption(OPTION_AUTO_CREATE)) {
             autoCreateDatabase(getSymmetricEngine());
-            System.exit(0);
-            return true;
-        }
-
-        if (line.hasOption(OPTION_RUN_DDL_XML)) {
-            runDdlXml(getSymmetricEngine(), line.getOptionValue(OPTION_RUN_DDL_XML));
-            System.exit(0);
-            return true;
-        }
-
-        if (line.hasOption(OPTION_RUN_SQL)) {
-            runSql(getSymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
             System.exit(0);
             return true;
         }
@@ -327,32 +308,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void autoCreateDatabase(ISymmetricEngine engine) {
         engine.setupDatabase(true);
-    }
-
-    private void runDdlXml(ISymmetricEngine engine, String fileName) throws FileNotFoundException {
-        ISymmetricDialect dialect = engine.getSymmetricDialect();
-        File file = new File(fileName);
-        if (file.exists() && file.isFile()) {
-            IDatabasePlatform pf = dialect.getPlatform();
-            Database db = new DatabaseIO().read(new File(fileName));
-            pf.createDatabase(db, false, true);
-        } else {
-            throw new SymmetricException("Could not find file %s", fileName);
-        }
-    }
-
-    private void runSql(ISymmetricEngine engine, String fileName) throws FileNotFoundException,
-            MalformedURLException {
-        ISymmetricDialect dialect = engine.getSymmetricDialect();
-        File file = new File(fileName);
-        if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform()
-                    .getSqlTemplate(), true, SqlScript.QUERY_ENDS, dialect.getPlatform()
-                    .getSqlScriptReplacementTokens());
-            script.execute();
-        } else {
-            throw new SymmetricException("Could not find file %s", fileName);
-        }
     }
 
 }
