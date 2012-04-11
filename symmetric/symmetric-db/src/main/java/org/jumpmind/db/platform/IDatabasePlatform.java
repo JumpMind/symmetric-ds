@@ -27,6 +27,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
 
@@ -196,6 +197,8 @@ public interface IDatabasePlatform {
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
             String[] values);
     
+    public String[] getStringValues(Column[] metaData, Row row);
+
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
 
     public boolean isLob(int type);
