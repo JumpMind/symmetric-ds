@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -56,6 +57,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see ITriggerRouterService
@@ -197,9 +199,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return history;
     }
 
-    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId) {
-        return (TriggerHistory) sqlTemplate.queryForObject(getSql("latestTriggerHistSql"),
-                new TriggerHistoryMapper(), triggerId);
+    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
+            String schemaName, String tableName) {
+        List<TriggerHistory> triggerHistories = sqlTemplate.query(getSql("latestTriggerHistSql"),
+                new TriggerHistoryMapper(), triggerId, tableName);
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            if ((StringUtils.isBlank(catalogName) && StringUtils.isBlank(triggerHistory
+                    .getSourceCatalogName()))
+                    || (StringUtils.isNotBlank(catalogName) && catalogName.equals(triggerHistory
+                            .getSourceCatalogName()))) {
+                if ((StringUtils.isBlank(schemaName) && StringUtils.isBlank(triggerHistory
+                        .getSourceSchemaName()))
+                        || (StringUtils.isNotBlank(schemaName) && catalogName.equals(triggerHistory
+                                .getSourceSchemaName()))) {
+                    return triggerHistory;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -813,6 +830,41 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return new TriggerSelector(toList(getTriggerRoutersForCurrentNode(true).values())).select();
     }
 
+    protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
+        Set<Table> tables = new HashSet<Table>();
+
+        if (trigger.getSourceTableName().contains("*")) {
+            Database database = symmetricDialect.getPlatform().readDatabase(
+                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                    new String[] { "TABLE" });
+            Table[] tableArray = database.getTables();
+            for (Table table : tableArray) {
+                if (FormatUtils.isWildCardMatch(table.getName(), trigger.getSourceTableName())
+                        && !containsExactMatchForSourceTableName(table.getName(), triggers)
+                        && !table.getName().toLowerCase().startsWith(tablePrefix)) {
+                    tables.add(table);
+                }
+            }
+        } else {
+            Table table = symmetricDialect.getPlatform().getTableFromCache(
+                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                    trigger.getSourceTableName(), true);
+            if (table != null) {
+                tables.add(table);
+            }
+        }
+        return tables;
+    }
+
+    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers) {
+        for (Trigger trigger : triggers) {
+            if (trigger.getSourceTableName().equals(tableName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
             boolean genAlways) {
 
@@ -820,10 +872,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             TriggerHistory newestHistory = null;
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
-
-                Table table = symmetricDialect.getPlatform().getTableFromCache(
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), true);
 
                 String errorMessage = null;
                 Channel channel = configurationService.getChannel(trigger.getChannelId());
@@ -836,56 +884,66 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.setChannelId(Constants.CHANNEL_DEFAULT);
                 }
 
-                if (table != null) {
-                    TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(trigger
-                            .getTriggerId());
+                Set<Table> tables = getTablesForTrigger(trigger, triggers);
+                if (tables.size() > 0) {
+                    for (Table table : tables) {
+                        TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
+                                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                                trigger.getSourceSchemaName(),
+                                trigger.getSourceTableName().contains("*") ? table.getName()
+                                        : trigger.getSourceTableName());
 
-                    boolean forceRebuildOfTriggers = false;
-                    if (latestHistoryBeforeRebuild == null) {
-                        reason = TriggerReBuildReason.NEW_TRIGGERS;
-                        forceRebuildOfTriggers = true;
+                        boolean forceRebuildOfTriggers = false;
+                        if (latestHistoryBeforeRebuild == null) {
+                            reason = TriggerReBuildReason.NEW_TRIGGERS;
+                            forceRebuildOfTriggers = true;
 
-                    } else if (table.calculateTableHashcode() != latestHistoryBeforeRebuild
-                            .getTableHash()) {
-                        reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
-                        forceRebuildOfTriggers = true;
+                        } else if (table.calculateTableHashcode() != latestHistoryBeforeRebuild
+                                .getTableHash()) {
+                            reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
+                            forceRebuildOfTriggers = true;
 
-                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
-                            .getCreateTime())
-                            || trigger.toHashedValue() != latestHistoryBeforeRebuild
-                                    .getTriggerRowHash()) {
-                        reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
-                        forceRebuildOfTriggers = true;
-                    } else if (genAlways) {
-                        reason = TriggerReBuildReason.FORCED;
-                        forceRebuildOfTriggers = true;
-                    }
+                        } else if (trigger
+                                .hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
+                                        .getCreateTime())
+                                || trigger.toHashedValue() != latestHistoryBeforeRebuild
+                                        .getTriggerRowHash()) {
+                            reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
+                            forceRebuildOfTriggers = true;
+                        } else if (genAlways) {
+                            reason = TriggerReBuildReason.FORCED;
+                            forceRebuildOfTriggers = true;
+                        }
 
-                    boolean supportsTriggers = symmetricDialect.getPlatform().getPlatformInfo()
-                            .isTriggersSupported();
+                        boolean supportsTriggers = symmetricDialect.getPlatform().getPlatformInfo()
+                                .isTriggersSupported();
 
-                    newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
-                            trigger, DataEventType.INSERT, reason, latestHistoryBeforeRebuild,
-                            null, trigger.isSyncOnInsert() && supportsTriggers, table);
+                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
+                                forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
+                                latestHistoryBeforeRebuild, null, trigger.isSyncOnInsert()
+                                        && supportsTriggers, table);
 
-                    newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
-                            trigger, DataEventType.UPDATE, reason, latestHistoryBeforeRebuild,
-                            newestHistory, trigger.isSyncOnUpdate() && supportsTriggers, table);
+                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
+                                forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
+                                latestHistoryBeforeRebuild, newestHistory, trigger.isSyncOnUpdate()
+                                        && supportsTriggers, table);
 
-                    newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
-                            trigger, DataEventType.DELETE, reason, latestHistoryBeforeRebuild,
-                            newestHistory, trigger.isSyncOnDelete() && supportsTriggers, table);
+                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
+                                forceRebuildOfTriggers, trigger, DataEventType.DELETE, reason,
+                                latestHistoryBeforeRebuild, newestHistory, trigger.isSyncOnDelete()
+                                        && supportsTriggers, table);
 
-                    if (latestHistoryBeforeRebuild != null && newestHistory != null) {
-                        inactivateTriggerHistory(latestHistoryBeforeRebuild);
-                    }
+                        if (latestHistoryBeforeRebuild != null && newestHistory != null) {
+                            inactivateTriggerHistory(latestHistoryBeforeRebuild);
+                        }
 
-                    if (newestHistory != null) {
-                        newestHistory.setErrorMessage(errorMessage);
-                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                            if (this.triggerCreationListeners != null) {
-                                for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                                    l.triggerCreated(trigger, newestHistory);
+                        if (newestHistory != null) {
+                            newestHistory.setErrorMessage(errorMessage);
+                            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                                if (this.triggerCreationListeners != null) {
+                                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                                        l.triggerCreated(trigger, newestHistory);
+                                    }
                                 }
                             }
                         }
@@ -942,11 +1000,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
         newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                maxTriggerNameLength, trigger).toUpperCase());
+                maxTriggerNameLength, trigger, table).toUpperCase());
         newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                maxTriggerNameLength, trigger).toUpperCase());
+                maxTriggerNameLength, trigger, table).toUpperCase());
         newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                maxTriggerNameLength, trigger).toUpperCase());
+                maxTriggerNameLength, trigger, table).toUpperCase());
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -984,7 +1042,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (hist == null
                 && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
             insert(newTriggerHist);
-            hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
+            hist = getNewestTriggerHistoryForTrigger(
+                    trigger.getTriggerId(),
+                    trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(),
+                    trigger.getSourceTableName().contains("*") ? table.getName() : trigger
+                            .getSourceTableName());
         }
 
         try {
@@ -1022,7 +1085,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerName.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
     }
 
-    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger) {
+    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, Table table) {
 
         String triggerName = null;
         switch (dml) {
@@ -1047,6 +1110,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId());
+            if (trigger.getSourceTableName().contains("*")) {
+              triggerSuffix2 = replaceCharsForTriggerName(table.getName());  
+            }             
             String triggerSuffix3 = replaceCharsForTriggerName("_"
                     + parameterService.getNodeGroupId());
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2 + triggerSuffix3;

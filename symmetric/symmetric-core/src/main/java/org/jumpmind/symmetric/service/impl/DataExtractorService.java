@@ -159,8 +159,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                    triggerRouter.getTrigger().getTriggerId(), null, null, triggerRouter
+                            .getTrigger().getSourceTableName());
             if (triggerHistory == null) {
                 Table table = symmetricDialect.getTable(triggerRouter.getTrigger(), false);
                 if (table == null) {
@@ -184,8 +185,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                    triggerRouter.getTrigger().getTriggerId(), null, null, null);
             if (triggerHistory == null) {
                 triggerHistory = new TriggerHistory(symmetricDialect.getTable(
                         triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
@@ -208,7 +209,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ExtractDataReader dataReader = new ExtractDataReader(this.symmetricDialect.getPlatform(),
                 source);
 
-        ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer);
+        ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                writer);
         DataProcessor processor = new DataProcessor(dataReader, dataWriter);
         processor.process();
 
@@ -312,9 +314,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (streamToFileEnabled) {
             transformExtractWriter = createTransformDataWriter(identity, targetNode,
-                    new StagingDataWriter(nodeService.findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
+                    new StagingDataWriter(nodeService.findIdentityNodeId(),
+                            Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
         } else {
-            transformExtractWriter = createTransformDataWriter(identity, targetNode,
+            transformExtractWriter = createTransformDataWriter(
+                    identity,
+                    targetNode,
                     new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport.open()));
         }
 
@@ -391,7 +396,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (extractedBatch != null) {
                             IDataReader dataReader = new ProtocolDataReader(extractedBatch);
                             if (dataWriter == null) {
-                                dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport.open());
+                                dataWriter = new ProtocolDataWriter(
+                                        nodeService.findIdentityNodeId(), targetTransport.open());
                             }
                             new DataProcessor(dataReader, dataWriter).process();
                         }
@@ -460,7 +466,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
                     new SelectFromSymDataSource(batch, targetNode));
             new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
-                    targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer))).process();
+                    targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer)))
+                    .process();
             foundBatch = true;
 
         }
@@ -798,8 +805,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TriggerHistory triggerHistory) {
             this.node = node;
             this.triggerRouter = triggerRouter;
+            Trigger trigger = triggerRouter.getTrigger();
             this.triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            trigger.getSourceTableName());
         }
 
         public SelectFromTableEvent(Data data) {
