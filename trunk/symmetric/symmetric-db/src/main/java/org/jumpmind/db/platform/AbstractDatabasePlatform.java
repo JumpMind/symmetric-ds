@@ -47,6 +47,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
@@ -383,6 +384,20 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return list.toArray();
     }
 
+    public String[] getStringValues(Column[] metaData, Row row) {
+        String[] values = new String[metaData.length];
+        for (int i = 0; i < metaData.length; i++) {
+            if (metaData[i].isOfTextType()) {
+                values[i] = row.getString(metaData[i].getName());
+            } else if (metaData[i].isOfNumericType()) {
+                values[i] = row.getString(metaData[i].getName());
+            } else if (metaData[i].isOfBinaryType()) {
+                values[i] = row.getString(metaData[i].getName());
+            }
+        }
+        return values;
+    }
+    
     public Map<String, String> getSqlScriptReplacementTokens() {
         return null;
     }
