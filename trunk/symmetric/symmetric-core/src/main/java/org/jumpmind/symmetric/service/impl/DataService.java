@@ -147,13 +147,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
-                .getTriggerId());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                trigger.getSourceTableName());
 
         if (history == null) {
             triggerRouterService.syncTriggers();
             history = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(), null, null, null);
         }
 
         if (history == null) {
@@ -166,8 +167,11 @@ public class DataService extends AbstractService implements IDataService {
     public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter,
             boolean isLoad) {
         String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter);
+        Trigger trigger = triggerRouter.getTrigger();
         TriggerHistory history = triggerRouterService
-                .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+                .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName());
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, triggerRouter.getTrigger()
                         .getChannelId(), null, null);
@@ -177,8 +181,9 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql,
             boolean isLoad) {
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
-                .getTriggerId());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                trigger.getSourceTableName());
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
@@ -221,8 +226,11 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter,
             String xml, boolean isLoad) {
+        Trigger trigger = triggerRouter.getTrigger();
         TriggerHistory history = triggerRouterService
-                .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+                .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName());
         Data data = new Data(
                 triggerRouter.getTrigger().getSourceTableName(),
                 DataEventType.CREATE,
@@ -569,7 +577,9 @@ public class DataService extends AbstractService implements IDataService {
         Data data = null;
         if (trigger != null) {
             TriggerHistory triggerHistory = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            trigger.getSourceTableName());
             if (triggerHistory == null) {
                 triggerHistory = triggerRouterService.findTriggerHistory(trigger
                         .getSourceTableName());

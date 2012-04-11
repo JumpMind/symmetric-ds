@@ -22,17 +22,19 @@ package org.jumpmind.symmetric.common;
 import org.jumpmind.symmetric.model.DataEvent;
 
 /**
- * 
+ * General purpose constants used by SymmetricDS
  */
 final public class Constants {
-
-    public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
-
-    public static final String STAGING_CATEGORY_INCOMING = "incoming";
 
     private Constants() {
     }
         
+    public static final String WILDCARD = "*";
+    
+    public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
+
+    public static final String STAGING_CATEGORY_INCOMING = "incoming";
+
     public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
     
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
