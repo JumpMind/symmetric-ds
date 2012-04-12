@@ -213,24 +213,28 @@ public abstract class AbstractCommandLauncher {
         }
     }
 
-    protected ISymmetricEngine getSymmetricEngine() throws Exception {
+    protected ISymmetricEngine getSymmetricEngine() {
     	return getSymmetricEngine(true);
     }
 
-    protected ISymmetricEngine getSymmetricEngine(boolean testConnection) throws Exception {
+    protected ISymmetricEngine getSymmetricEngine(boolean testConnection) {
     	if (engine == null) {
     		if (testConnection) {
-	            BasicDataSource ds = ClientSymmetricEngine.createBasicDataSource(propertiesFile);
-	            Connection conn = ds.getConnection();
-	            conn.close();
-	            ds.close();
+    		    try {
+    	            BasicDataSource ds = ClientSymmetricEngine.createBasicDataSource(propertiesFile);
+    	            Connection conn = ds.getConnection();
+    	            conn.close();
+    	            ds.close();
+    		    } catch (Exception e) {
+    		        throw new RuntimeException(e);
+    		    }
     		}
             engine = new ClientSymmetricEngine(propertiesFile);
         }
     	return engine;
     }
     
-    protected IDatabasePlatform getDatabasePlatform() throws Exception {
+    protected IDatabasePlatform getDatabasePlatform() {
     	if (platform == null) {
     		platform = getSymmetricEngine().getSymmetricDialect().getPlatform();
     	}
