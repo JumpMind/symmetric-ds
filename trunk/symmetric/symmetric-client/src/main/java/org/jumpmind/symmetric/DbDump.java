@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -29,16 +30,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import javax.sql.DataSource;
+
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -50,256 +50,224 @@ import org.jumpmind.symmetric.csv.CsvWriter;
 /**
  * Dump the structure and data from database tables to file.
  */
-public class DbDump extends AbstractCommandLauncher {
+public class DbDump {
 
-    @SuppressWarnings("unused")
-	private static final Log log = LogFactory.getLog(DbDump.class);
+    public enum Format { SQL, CSV, XML };
 
-	private static final String OPTION_XML = "xml";
-
-	private static final String OPTION_CSV = "csv";
-
-	private static final String OPTION_COMPATIBLE = "compatible";
-	
-	private static final String OPTION_ADD_DROP_TABLE = "add-drop-table";
-	
-	private static final String OPTION_NO_CREATE_INFO = "no-create-info";
-	
-	private static final String OPTION_NO_DATA = "no-data";
-
-	private static final String OPTION_COMMENTS = "comments";
-	
-    public DbDump(String commandName, String messageKeyPrefix) {
-		super(commandName, messageKeyPrefix);
-	}
-
-	public static void main(String[] args) throws Exception {
-        new DbDump("dbdump", "DbDump.Option.").execute(args);
-    }
-	
-    protected void printHelp(Options options) {
-    	System.out.println(commandName + " version " + Version.version());
-    	System.out.println("Dump the structure and data from database tables to file.\n");
-    	super.printHelp(options);
-    }
-
-	@Override
-    protected void buildOptions(Options options) {
-		super.buildOptions(options);
-    	addOption(options, "x", OPTION_XML, false);
-    	addOption(options, null, OPTION_CSV, false);
-    	addOption(options, null, OPTION_COMPATIBLE, true);
-    	addOption(options, null, OPTION_ADD_DROP_TABLE, false);
-    	addOption(options, null, OPTION_NO_CREATE_INFO, false);
-    	addOption(options, null, OPTION_NO_DATA, false);
-    	addOption(options, "i", OPTION_COMMENTS, false);
-    }
-    
-	@Override
-	protected boolean executeOptions(CommandLine line) throws Exception {
-		// TODO: get table names list as args
+    public enum Compatible { DB2, DERBY, FIREBIRD, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRESQL, SYBASE };
 		
-        if (line.hasOption(OPTION_XML)) {
-        	dumpTablesAsXml(System.out, line.getArgs(), line.hasOption(OPTION_NO_CREATE_INFO),
-	    			line.hasOption(OPTION_NO_DATA), line.hasOption(OPTION_COMMENTS));
-        } else if (line.hasOption(OPTION_CSV)) {
-        	dumpTablesAsCsv(System.out, line.getArgs(), line.hasOption(OPTION_NO_DATA), line.hasOption(OPTION_COMMENTS));        	
-        } else {
-	    	dumpTablesAsSql(System.out, line.getArgs(), line.hasOption(OPTION_ADD_DROP_TABLE), line.hasOption(OPTION_NO_CREATE_INFO),
-	    			line.hasOption(OPTION_NO_DATA), line.hasOption(OPTION_COMMENTS));
-        }
-    	return true;
-	}
+	private Format format = Format.SQL;
+	
+	private Compatible compatible = Compatible.ORACLE;
+	
+	private boolean addDropTable;
+	
+	private boolean noCreateInfo;
+	
+	private boolean noData;
+	
+	private boolean comments;
+	
+	private String catalog;
+	
+	private String schema;
 
-    public void dumpTablesAsXml(OutputStream output, String[] tables, boolean noCreateInfo, boolean noData, boolean comments) throws Exception {
-    	/* TODO:
-    	 * <dbdump> <database></database> </dbdump>
-    	 * <table_data name="mytable"><row><field name="myfield">value</field></row></table_data>
-    	 */
-    	IDatabasePlatform platform = getDatabasePlatform();
-    	String catalog = platform.getDefaultCatalog();
-    	String schema = platform.getDefaultSchema();
+	private IDatabasePlatform platform;
 
-        Database db = platform.readDatabase(catalog, schema, null);
-        Writer writer = new OutputStreamWriter(output);
-    	SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-        
-    	if (comments) {
-        	writer.write("<!-- SymmetricDS " + Version.version() + " " + commandName + " -->\n");
-        	writer.write("<!-- Catalog: " + (catalog == null ? "" : catalog) + " Schema: " + (schema == null ? "" : schema) + " -->\n");
-        	writer.write("<!-- Started on " + df.format(new Date()) + " -->\n");
-        }
-
-        new DatabaseIO().write(db, output);
-        writer.flush();
-        writer.close();
+    public DbDump(IDatabasePlatform platform) {
+        this.platform = platform;
     }
 
-    public void dumpTablesAsSql(OutputStream output, String[] tables, boolean addDropTable, boolean noCreateInfo, boolean noData, boolean comments) throws Exception {
-    	IDatabasePlatform platform = getDatabasePlatform();
-    	String catalog = platform.getDefaultCatalog();
-    	String schema = platform.getDefaultSchema();
-    	
-        Database db = platform.readDatabase(catalog, schema, null);
-        
-        // IDatabasePlatform target = Factory.getPlatform("mysql");
-        
-        IDatabasePlatform target = new MySqlDatabasePlatform(null, new DatabasePlatformSettings());
-        Writer writer = new OutputStreamWriter(output);
-    	SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-
-    	if (comments) {
-        	writer.write("-- SymmetricDS " + Version.version() + " " + commandName + "\n--\n");
-        	writer.write("-- Catalog: " + (catalog == null ? "" : catalog) + " Schema: " + (schema == null ? "" : schema) + "\n");
-        	writer.write("-- Started on " + df.format(new Date()) + "\n");
-        	// TODO: write jdbc url?  compatible?
-        }
-
-        if (!noCreateInfo) {
-        	writer.write(target.getDdlBuilder().createTables(db, addDropTable));
-        }
-        
-        if (!noData) {
-        	// TODO: dump data
-        }
-        
-        if (comments) {
-        	writer.write("-- Completed on " + df.format(new Date()) + "\n");
-        }
-        writer.flush();
-        writer.close();
+    public DbDump(DataSource dataSource) {
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null);
     }
 
-    public void dumpTablesAsCsv(OutputStream output, String[] tableNames, boolean noData, boolean comments) throws Exception {
-    	final IDatabasePlatform platform = getDatabasePlatform();
-        Writer writer = new OutputStreamWriter(output);
-    	String catalog = platform.getDefaultCatalog();
-    	String schema = platform.getDefaultSchema();    	
-    	ArrayList<Table> tableList = new ArrayList<Table>();
+    public String dumpTables() throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        dumpTables(output);
+        output.close();
+        return output.toString();
+    }
 
-        if (tableNames.length == 0) {
-            Database database = platform.readDatabase(catalog, schema, null);
-            for (Table table : database.getTables()) {
+    public String dumpTables(String[] tableNames) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        dumpTables(output, tableNames);
+        output.close();
+        return output.toString();
+    }
+
+    public String dumpTables(Table[] tables) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        dumpTables(output, tables);
+        output.close();
+        return output.toString();
+    }
+
+    public void dumpTables(OutputStream output) throws IOException {
+        Database database = platform.readDatabase(getDefaultCatalog(), getDefaultSchema(), null);
+        dumpTables(output, database.getTables());
+    }
+
+    public void dumpTables(OutputStream output, String[] tableNames) throws IOException {
+        ArrayList<Table> tableList = new ArrayList<Table>();
+
+        for (String tableName : tableNames) {
+            Table table = platform.readTableFromDatabase(getDefaultCatalog(), getDefaultSchema(), tableName);
+            if (table != null) {
                 tableList.add(table);
+            } else {
+                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + getDefaultCatalog() +
+                        " and schema " + getDefaultSchema());               
             }
-        } else {
-        	for (String tableName : tableNames) {
-        	    Table table = platform.readTableFromDatabase(catalog, schema, tableName);
-        	    if (table != null) {
-        	        tableList.add(table);
-        	    } else {
-                    throw new RuntimeException("Cannot find table " + tableName + " in catalog " + catalog +
-                            " and schema " + schema);    	        
-        	    }
-        	}
         }
-    	
-    	for (Table table : tableList) {
-            final CsvWriter csvWriter = new CsvWriter(writer, ',');
-            csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        dumpTables(output, tableList.toArray(new Table[tableList.size()]));
+    }
 
-    	    if (comments) {
-    	        csvWriter.writeComment(" Table: " + table.getFullyQualifiedTableName());
-    	    }
+    public void dumpTables(OutputStream output, Table[] tables) throws IOException {
+        final Writer writer = new OutputStreamWriter(output);
+        final CsvWriter csvWriter = new CsvWriter(writer, ',');
+        final ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
-    	    csvWriter.writeRecord(table.getColumnNames());
+        IDatabasePlatform target = new MySqlDatabasePlatform(null, new DatabasePlatformSettings());
+        SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+        writeComment(writer, "SymmetricDS " + Version.version() + " " + DbDump.class.getSimpleName());
+        writeComment(writer, "Catalog: " + getDefaultCatalog());
+        writeComment(writer, "Schema: " + getDefaultSchema());
+        writeComment(writer, "Started on " + df.format(new Date()));
 
-    		if (!noData) {
-                ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+    	for (Table table : tables) {
+            writeComment(writer, "Table: " + table.getName());
+            
+            if (! noCreateInfo) {
+                Database db = new Database();
+                db.addTable(table);
+                if (format == Format.SQL) {
+                    writer.write(target.getDdlBuilder().createTables(db, addDropTable));
+                } else if (format == Format.XML) {
+                    new DatabaseIO().write(db, output);
+                } else if (format == Format.CSV) {
+                    csvWriter.writeRecord(table.getColumnNames());
+                }
+            }
+
+    		if (! noData) {
                 DmlStatement stmt = platform.createDmlStatement(DmlType.SELECT_ALL, table);
                 final Column[] columns = table.getColumns();
 
                 sqlTemplate.queryForObject(stmt.getSql(), new ISqlRowMapper<Object>() {
                     public Object mapRow(Row row) {
                         String[] values = platform.getStringValues(columns, row);
-                        try {
-                            csvWriter.writeRecord(values, true);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        if (format == Format.CSV) {
+                            try {
+                                csvWriter.writeRecord(values, true);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else if (format == Format.SQL) {
+                            
+                        } else if (format == Format.XML){
+                            
                         }
                     	return values;
                     }
                 });
 	        }
-            csvWriter.flush();
     	}
     	
-        writer.flush();
-        writer.close();
+        writeComment(writer, "Completed on " + df.format(new Date()));
+        output.flush();
+    	csvWriter.flush();
+    }
+    
+    protected void writeComment(Writer writer, String commentStr) throws IOException {
+        if (comments) {
+            if (format == Format.CSV) {
+                writer.write("# " + commentStr + "\n");
+            } else if (format == Format.XML) {
+                writer.write("<!-- " + commentStr + " -->\n");
+            } else if (format == Format.SQL) {
+                writer.write("-- SymmetricDS " + Version.version() + "\n--\n");
+            }
+            writer.flush();
+        }
     }
 
-//    public void copyFromTables(List<TableToExtract> tables) {
-//        long batchId = 1;
-//        for (TableToExtract tableToRead : tables) {
-//            logger.info("(%d of %d) Copying table %s ", batchId, tables.size(), tableToRead
-//                    .getTable().getTableName());
-//            Batch batch = new Batch(batchId++);
-//            int expectedCount = this.sourceDbDialect.getSqlTemplate().queryForInt(
-//                    this.sourceDbDialect.getDataCaptureBuilder().createTableExtractCountSql(
-//                            tableToRead, parameters));
-//            long ts = System.currentTimeMillis();
-//            DataProcessor processor = new DataProcessor(new SqlTableDataReader(
-//                    this.sourceDbDialect, batch, tableToRead), getDataWriter(true, expectedCount));
-//            processor.process(new DataContext(parameters));
-//            long totalTableCopyTime = System.currentTimeMillis() - ts;
-//            logger.info(
-//                    "It took %d ms to copy %d rows from table %s.  It took %d ms to read the data and %d ms to write the data.",
-//                    totalTableCopyTime, batch.getLineCount(),
-//                    tableToRead.getTable().getTableName(), batch.getDataReadMillis(),
-//                    batch.getDataWriteMillis());
-//
-//        }
-//    }
-//
-//    protected IDataWriter getDataWriter(final boolean expectedSizeIsInRows, final long expectedSize) {
-//        IDataFilter progressFilter = new IDataFilter() {
-//            long statementCount = 0;
-//            long currentBatchSize = 0;
-//            long totalBatchSize = 0;
-//            int percent = 0;
-//
-//            public boolean filter(DataContext context, Batch batch, Table table, Data data) {
-//                statementCount++;
-//                if (batch.getReadByteCount() < currentBatchSize) {
-//                    totalBatchSize += currentBatchSize;
-//                }
-//                currentBatchSize = batch.getReadByteCount();
-//                long actualSize = statementCount;
-//                if (!expectedSizeIsInRows) {
-//                    actualSize = currentBatchSize + totalBatchSize;
-//                }
-//                int currentPercent = (int) (((double) actualSize / (double) expectedSize) * 100);
-//                if (currentPercent != percent) {
-//                    percent = currentPercent;
-//                    logger.info(buildProgressBar(percent, batch.getLineCount()));
-//                }
-//                return true;
-//            }
-//        };
-//
-//        if (targetFileDir != null) {
-//            return new FileCsvDataWriter(this.targetFileDir, progressFilter);
-//        } else {
-//            return new SqlDataWriter(this.targetDbDialect, parameters, progressFilter);
-//        }
-//    }
-//
-//    protected String buildProgressBar(int percent, long lineCount) {
-//        StringBuilder b = new StringBuilder("|");
-//        for (int i = 1; i <= 25; i++) {
-//            if (percent >= i * 4) {
-//                b.append("=");
-//            } else {
-//                b.append(" ");
-//            }
-//        }
-//        b.append("| ");
-//        b.append(percent);
-//        b.append("% Processed ");
-//        b.append(lineCount);
-//        b.append(" rows ");
-//        b.append("\r");
-//        return b.toString();
-//    }
+    public String getDefaultCatalog() {
+        if (catalog != null) {
+            return catalog;
+        }
+        return platform.getDefaultCatalog();
+    }
 
+    public String getDefaultSchema() {
+        if (schema != null) {
+            return schema;
+        }
+        return platform.getDefaultSchema();
+    }
+
+    public Format getFormat() {
+        return format;
+    }
+
+    public void setFormat(Format format) {
+        this.format = format;
+    }
+
+    public Compatible getCompatible() {
+        return compatible;
+    }
+
+    public void setCompatible(Compatible compatible) {
+        this.compatible = compatible;
+    }
+
+    public boolean isAddDropTable() {
+        return addDropTable;
+    }
+
+    public void setAddDropTable(boolean addDropTable) {
+        this.addDropTable = addDropTable;
+    }
+
+    public boolean isNoCreateInfo() {
+        return noCreateInfo;
+    }
+
+    public void setNoCreateInfo(boolean noCreateInfo) {
+        this.noCreateInfo = noCreateInfo;
+    }
+
+    public boolean isNoData() {
+        return noData;
+    }
+
+    public void setNoData(boolean noData) {
+        this.noData = noData;
+    }
+
+    public boolean isComments() {
+        return comments;
+    }
+
+    public void setComments(boolean comments) {
+        this.comments = comments;
+    }
+
+    public String getCatalog() {
+        return catalog;
+    }
+
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
 }

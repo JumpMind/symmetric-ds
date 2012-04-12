@@ -23,6 +23,7 @@ package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -103,17 +104,17 @@ public class DbLoad extends AbstractCommandLauncher {
             loadTablesFromCsv(in);           
         } else {
             loadTablesFromSql(in);
-        }        
+        }
     }
 
-    public void loadTablesFromXml(InputStream in) throws Exception {
+    public void loadTablesFromXml(InputStream in) {
         // TODO: read in data from XML also
         IDatabasePlatform platform = getDatabasePlatform();
         Database database = new DatabaseIO().read(in);
         platform.createDatabase(database, false, true);
     }
 
-    public void loadTablesFromCsv(InputStream in) throws Exception {
+    public void loadTablesFromCsv(InputStream in) throws IOException {
         IDatabasePlatform platform = getDatabasePlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         Table table = platform.readTableFromDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), "item");
