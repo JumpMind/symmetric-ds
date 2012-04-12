@@ -54,7 +54,6 @@ Documentation
 * Node concurrency manager no longer allows the same node to make a second request while it already has a reservation
 * Added stage management job (that purges staged files)
 * Removed support for db.force.delimited.identifier.mode.on & db.force.delimited.identifier.mode.off
-* Removed support for db.metadata.ignore.case
 * SymmetricDS tables are now created in the default case of the database
 * Now supports mixed case tables on Firebird.
 * Got rid of the isAutoRegister() method from IExtensionPoint

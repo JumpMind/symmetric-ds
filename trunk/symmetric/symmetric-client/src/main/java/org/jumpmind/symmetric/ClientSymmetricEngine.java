@@ -107,9 +107,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 			TypedProperties properties, ISecurityService securityService) {
 		BasicDataSource dataSource = new BasicDataSource();
 		dataSource.setDriverClassName(properties.get(
-				ParameterConstants.DBPOOL_DRIVER, null));
-		dataSource.setUrl(properties.get(ParameterConstants.DBPOOL_URL, null));
-		String user = properties.get(ParameterConstants.DBPOOL_USER, "");
+				ParameterConstants.DB_POOL_DRIVER, null));
+		dataSource.setUrl(properties.get(ParameterConstants.DB_POOL_URL, null));
+		String user = properties.get(ParameterConstants.DB_POOL_USER, "");
 		if (user != null && user.startsWith(SecurityConstants.PREFIX_ENC)) {
 			user = securityService.decrypt(user
 					.substring(SecurityConstants.PREFIX_ENC.length()));
@@ -117,7 +117,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 		dataSource.setUsername(user);
 
 		String password = properties
-				.get(ParameterConstants.DBPOOL_PASSWORD, "");
+				.get(ParameterConstants.DB_POOL_PASSWORD, "");
 		if (password != null
 				&& password.startsWith(SecurityConstants.PREFIX_ENC)) {
 			password = securityService.decrypt(password
@@ -125,22 +125,22 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 		}
 		dataSource.setPassword(password);
 		dataSource.setInitialSize(properties.getInt(
-				ParameterConstants.DBPOOL_INITIAL_SIZE, 5));
+				ParameterConstants.DB_POOL_INITIAL_SIZE, 5));
 		dataSource.setMaxActive(properties.getInt(
-				ParameterConstants.DBPOOL_MAX_ACTIVE, 20));
+				ParameterConstants.DB_POOL_MAX_ACTIVE, 20));
 		dataSource.setMaxWait(properties.getInt(
-				ParameterConstants.DBPOOL_MAX_WAIT, 5000));
+				ParameterConstants.DB_POOL_MAX_WAIT, 5000));
 		dataSource
 				.setMinEvictableIdleTimeMillis(properties
-						.getInt(ParameterConstants.DBPOOL_MIN_EVICTABLE_IDLE_TIME_MILLIS,
+						.getInt(ParameterConstants.DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS,
 								60000));
 		dataSource.setTimeBetweenEvictionRunsMillis(120000);
 		dataSource.setNumTestsPerEvictionRun(10);
 		dataSource.setValidationQuery(properties.get(
-				ParameterConstants.DBPOOL_VALIDATION_QUERY, null));
+				ParameterConstants.DB_POOL_VALIDATION_QUERY, null));
 
 		String connectionProperties = properties.get(
-				ParameterConstants.DBPOOL_CONNECTION_PROPERTIES, null);
+				ParameterConstants.DB_POOL_CONNECTION_PROPERTIES, null);
 		if (StringUtils.isNotBlank(connectionProperties)) {
 			String[] tokens = connectionProperties.split(";");
 			for (String property : tokens) {

@@ -9,39 +9,35 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
     public NodeServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
-        putSql("findSymmetricVersionSql", 
-                  "select symmetric_version from $(node)                      "
-                + "  where node_id in (select node_id from $(node_identity))  ");
+        putSql("findSymmetricVersionSql",
+                "select symmetric_version from $(node)                      "
+                        + "  where node_id in (select node_id from $(node_identity))  ");
 
         putSql("insertNodeIdentitySql", "" + "insert into $(node_identity) values(?)   ");
 
         putSql("doesNodeGroupExistSql", ""
                 + "select count(*) from $(node_group) where node_group_id=?   ");
 
-        putSql("insertNodeGroupSql",
-                ""
-                        + "insert into $(node_group) (description, node_group_id) values(?, ?)   ");
+        putSql("insertNodeGroupSql", ""
+                + "insert into $(node_group) (description, node_group_id) values(?, ?)   ");
 
-        putSql("nodeChannelControlIgnoreSql",
-                ""
-                        + "update $(node_channel_ctl) set ignore_enabled=? where node_id=? and   "
-                        + "  channel_id=?                                                              ");
+        putSql("nodeChannelControlIgnoreSql", ""
+                + "update $(node_channel_ctl) set ignore_enabled=? where node_id=? and   "
+                + "  channel_id=?                                                              ");
 
         putSql("insertNodeChannelControlSql", ""
                 + "insert into $(node_channel_ctl)                                   "
                 + "  (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)   ");
 
         putSql("insertNodeSql",
-                ""
-                        + "insert into $(node) (node_id, node_group_id, external_id, created_at_node_id, timezone_offset, heartbeat_time) values (?, ?, ?, ?, ?, current_timestamp)   ");
+                "insert into $(node) (node_id, node_group_id, external_id, created_at_node_id, timezone_offset, heartbeat_time) values (?, ?, ?, ?, ?, current_timestamp)   ");
 
         putSql("updateNodeSql",
-                ""
-                        + "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "
+                "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "
                         + "  database_version=?, schema_version=?, symmetric_version=?, sync_url=?, heartbeat_time=?,                                                      "
                         + "  sync_enabled=?, timezone_offset=?, batch_to_send_count=?, batch_in_error_count=?, created_at_node_id=?, deployment_type=? where node_id = ?   ");
 
-        putSql("findNodeSql", "" + "where node_id = ?   ");
+        putSql("findNodeSql", "where node_id = ?   ");
 
         putSql("findNodeByExternalIdSql", ""
                 + "where node_group_id = ? and external_id = ? order by node_id   ");
@@ -50,41 +46,34 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 + "where node_group_id = ? and sync_enabled=1 order by node_id   ");
 
         putSql("findNodesWithOpenRegistrationSql",
-                ""
-                        + "where node_id in (select node_id from $(node_security) where registration_enabled=1)   ");
+                "where node_id in (select node_id from $(node_security) where registration_enabled=1)   ");
 
         putSql("findNodesCreatedByMeSql", ""
                 + "where created_at_node_id=? and created_at_node_id != node_id   ");
 
         putSql("findNodeSecuritySql",
-                ""
-                        + "select node_id, node_password, registration_enabled, registration_time,                           "
+                "select node_id, node_password, registration_enabled, registration_time,                           "
                         + "  initial_load_enabled, initial_load_time, created_at_node_id from $(node_security) where   "
                         + "  node_id = ?                                                                                     ");
 
         putSql("selectExternalIdsSql",
-                ""
-                        + "select distinct(external_id) from $(node) where sync_enabled=1 order by external_id asc   ");
+                "select distinct(external_id) from $(node) where sync_enabled=1 order by external_id asc   ");
 
         putSql("findAllNodeSecuritySql",
-                ""
-                        + "select node_id, node_password, registration_enabled, registration_time,                     "
+                "select node_id, node_password, registration_enabled, registration_time,                     "
                         + "  initial_load_enabled, initial_load_time, created_at_node_id from $(node_security)   ");
 
-        putSql("deleteNodeSecuritySql", ""
-                + "delete from $(node_security) where node_id = ?   ");
+        putSql("deleteNodeSecuritySql", "delete from $(node_security) where node_id = ?");
 
-        putSql("deleteNodeSql", "" + "delete from $(node) where node_id = ?   ");
+        putSql("deleteNodeSql", "delete from $(node) where node_id = ?");
 
-        putSql("findNodeIdentitySql", ""
-                + "inner join $(node_identity) i on c.node_id =   "
+        putSql("findNodeIdentitySql", "inner join $(node_identity) i on c.node_id =   "
                 + "  i.node_id                                          ");
 
-        putSql("deleteNodeIdentitySql", "" + "delete from $(node_identity)   ");
+        putSql("deleteNodeIdentitySql", "delete from $(node_identity)   ");
 
         putSql("isNodeRegisteredSql",
-                ""
-                        + "select count(*) from $(node_security) s inner join                             "
+                "select count(*) from $(node_security) s inner join                             "
                         + "  $(node) n on n.node_id=s.node_id where n.node_group_id=? and                 "
                         + "  n.external_id=? and s.registration_time is not null and s.registration_enabled=0   ");
 
@@ -123,10 +112,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "insert into $(node_security) (node_id, node_password, created_at_node_id) values (?, ?, ?)   ");
 
-        putSql("getDataLoadStatusSql",
-                ""
-                        + "select initial_load_enabled, initial_load_time from $(node_security) ns,   "
-                        + "  $(node_identity) ni where ns.node_id=ni.node_id                          ");
+        putSql("getDataLoadStatusSql", ""
+                + "select initial_load_enabled, initial_load_time from $(node_security) ns,   "
+                + "  $(node_identity) ni where ns.node_id=ni.node_id                          ");
 
         putSql("insertNodeHostSql",
                 ""

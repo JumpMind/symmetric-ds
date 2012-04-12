@@ -228,18 +228,18 @@ public class SymmetricEngineHolder {
         if (StringUtils.isBlank(properties.getProperty(ParameterConstants.SYNC_URL))) {
             throw new IllegalStateException("Missing property " + ParameterConstants.SYNC_URL);
         }
-        if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DBPOOL_DRIVER))) {
-            throw new IllegalStateException("Missing property " + ParameterConstants.DBPOOL_DRIVER);
+        if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DB_POOL_DRIVER))) {
+            throw new IllegalStateException("Missing property " + ParameterConstants.DB_POOL_DRIVER);
         }
-        if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DBPOOL_URL))) {
-            throw new IllegalStateException("Missing property " + ParameterConstants.DBPOOL_URL);
+        if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DB_POOL_URL))) {
+            throw new IllegalStateException("Missing property " + ParameterConstants.DB_POOL_URL);
         }
-        if (!properties.containsKey(ParameterConstants.DBPOOL_USER)) {
-            throw new IllegalStateException("Missing property " + ParameterConstants.DBPOOL_USER);
+        if (!properties.containsKey(ParameterConstants.DB_POOL_USER)) {
+            throw new IllegalStateException("Missing property " + ParameterConstants.DB_POOL_USER);
         }
-        if (!properties.containsKey(ParameterConstants.DBPOOL_PASSWORD)) {
+        if (!properties.containsKey(ParameterConstants.DB_POOL_PASSWORD)) {
             throw new IllegalStateException("Missing property "
-                    + ParameterConstants.DBPOOL_PASSWORD);
+                    + ParameterConstants.DB_POOL_PASSWORD);
         }
         if (!properties.containsKey(ParameterConstants.REGISTRATION_URL)) {
             properties.setProperty(ParameterConstants.REGISTRATION_URL, "");

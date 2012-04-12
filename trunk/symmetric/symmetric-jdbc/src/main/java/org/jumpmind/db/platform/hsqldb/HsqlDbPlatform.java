@@ -70,7 +70,7 @@ public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);

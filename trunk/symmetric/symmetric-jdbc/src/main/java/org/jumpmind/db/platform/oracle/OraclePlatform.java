@@ -100,7 +100,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.BINARY, 254);
         info.setDefaultSize(Types.VARBINARY, 254);
 
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setDateOverridesToTimestamp(true);
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);

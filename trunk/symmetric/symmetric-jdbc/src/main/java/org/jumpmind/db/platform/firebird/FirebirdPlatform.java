@@ -81,7 +81,7 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setDefaultSize(Types.CHAR, 254);
 
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);

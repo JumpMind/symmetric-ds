@@ -218,5 +218,9 @@ public interface IDatabasePlatform {
     public boolean isStoresMixedCaseQuotedIdentifiers();
     
     public <T> T getDataSource();
+    
+    public void setMetadataIgnoreCase(boolean value);
+    
+    public boolean isMetadataIgnoreCase();
 
 }
