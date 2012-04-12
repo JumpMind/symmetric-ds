@@ -113,7 +113,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     clusterService.unlock(ClusterConstants.PUSH);
                 }
             } else {
-                log.info("Did not run the push process because the cluster service has it locked.");
+                log.info("Did not run the push process because the cluster service has it locked");
             }
         }
         return statuses;
@@ -145,7 +145,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 } while (line != null);
 
                 if (StringUtils.isBlank(ackString)) {
-                    log.error("Did not receive an acknowledgement for the batches sent.");
+                    log.error("Did not receive an acknowledgement for the batches sent");
                 }
 
                 List<BatchInfo> batches = transportManager.readAcknowledgement(ackString,

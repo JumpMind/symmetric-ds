@@ -66,7 +66,7 @@ abstract public class AbstractTransportManager {
      */
     public String resolveURL(String syncUrl, String registrationUrl) {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
-            log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
+            log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
             return registrationUrl;
         } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
             try {

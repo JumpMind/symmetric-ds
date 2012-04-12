@@ -274,9 +274,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 log.info("Unregistered node is attempting to register ");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
-                log.warn("Connection failed while registering.");
+                log.warn("Connection failed while registering");
             } catch (UnknownHostException e) {
-                log.warn("Connection failed while registering.");
+                log.warn("Connection failed while registering");
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -291,7 +291,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     log.info("Successfully registered node [id={}]", node.getNodeId());
                     sendInitialLoadFromRegisteredNode();
                 } else {
-                    log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
+                    log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     registered = false;
                 } 
             }
@@ -387,7 +387,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return nodeId;
         } else {
             throw new IllegalStateException(
-                    "This node has not been configured.  Could not find a row in the identity table.");
+                    "This node has not been configured.  Could not find a row in the identity table");
         }
     }
 
