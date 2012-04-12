@@ -35,9 +35,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 /*
  * The SQL Builder for PostgresSql.
  */
-public class PostgreSqlBuilder extends AbstractDdlBuilder {
+public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     
-    public PostgreSqlBuilder(IDatabasePlatform platform) {
+    public PostgreSqlDdlBuilder(IDatabasePlatform platform) {
         super(platform);
 
         // we need to handle the backslash first otherwise the other

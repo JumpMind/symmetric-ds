@@ -31,10 +31,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 /*
  * The platform implementation for Derby.
  */
-public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = DatabaseNamesConstants.DERBY;
+public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The derby jdbc driver for use as a client for a normal server. */
     public static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";
@@ -48,7 +45,7 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new Derby platform instance.
      */
-    public DerbyPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public DerbyDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
@@ -83,7 +80,7 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         
         ddlReader = new DerbyDdlReader(this);
-        ddlBuilder = new DerbyBuilder(this);
+        ddlBuilder = new DerbyDdlBuilder(this);
     }
 
     @Override
@@ -92,7 +89,7 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.DERBY;
     }
     
     public String getDefaultSchema() {

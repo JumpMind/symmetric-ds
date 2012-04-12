@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.hsqldb;
+package org.jumpmind.db.platform.hsqldb2;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,14 +24,13 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
  * The platform implementation for the HsqlDb database.
  */
-public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
-    /* Database name of this platform. */
-    public static final String DATABASENAME = "HsqlDb";
+public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard Hsqldb jdbc driver. */
     public static final String JDBC_DRIVER = "org.hsqldb.jdbcDriver";
@@ -42,7 +41,7 @@ public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new instance of the Hsqldb platform.
      */
-    public HsqlDbPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public HsqlDb2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setNonPKIdentityColumnsSupported(false);
@@ -76,26 +75,31 @@ public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        ddlReader = new HsqlDbDdlReader(this);
-        ddlBuilder = new HsqlDbBuilder(this);
-
+        ddlReader = new HsqlDb2DdlReader(this);
+        ddlBuilder = new HsqlDb2DdlBuilder(this);
     }
     
     @Override
     protected void createSqlTemplate() {
-        this.sqlTemplate = new HsqlDbJdbcSqlTemplate(dataSource, settings, null);
+        this.sqlTemplate = new HsqlDb2JdbcSqlTemplate(dataSource, settings, null);
     }
 
     public String getName() {
-        return DATABASENAME;
-    }
-    
-    public String getDefaultCatalog() {
-        return null;
+        return DatabaseNamesConstants.HSQLDB;
     }
 
     public String getDefaultSchema() {
         return null;
     }
-    
+
+    public String getDefaultCatalog() {
+        if (defaultCatalog == null) {
+            defaultCatalog = (String) getSqlTemplate()
+                    .queryForObject(
+                            "select value from INFORMATION_SCHEMA.SYSTEM_SESSIONINFO where key='CURRENT SCHEMA'",
+                            String.class);
+        }
+        return defaultCatalog;
+    }
+
 }

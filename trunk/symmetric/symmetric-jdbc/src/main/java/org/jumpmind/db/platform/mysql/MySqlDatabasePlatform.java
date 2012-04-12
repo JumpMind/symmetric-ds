@@ -25,15 +25,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
  * The platform implementation for MySQL.
  */
-public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = "MySQL";
+public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard MySQL jdbc driver. */
     public static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
@@ -47,7 +45,7 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MySqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public MySqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, overrideSettings(settings));
 
         info.setMaxIdentifierLength(64);
@@ -104,7 +102,7 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setSyntheticDefaultValueForRequiredReturned(false);
         
         ddlReader = new MySqlDdlReader(this);
-        ddlBuilder = new MySqlBuilder(this);
+        ddlBuilder = new MySqlDdlBuilder(this);
     }
     
     @Override
@@ -122,7 +120,7 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.MYSQL;
     }
     
     public String getDefaultSchema() {

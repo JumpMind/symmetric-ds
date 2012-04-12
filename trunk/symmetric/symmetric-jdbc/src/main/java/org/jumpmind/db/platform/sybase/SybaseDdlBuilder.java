@@ -49,9 +49,9 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for Sybase.
  */
-public class SybaseBuilder extends AbstractDdlBuilder {
+public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
-    public SybaseBuilder(IDatabasePlatform platform) {
+    public SybaseDdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

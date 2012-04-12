@@ -12,11 +12,11 @@ import java.util.UUID;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.informix.InformixPlatform;
-import org.jumpmind.db.platform.mssql.MsSqlPlatform;
-import org.jumpmind.db.platform.mysql.MySqlPlatform;
-import org.jumpmind.db.platform.oracle.OraclePlatform;
-import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -453,7 +453,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
     @Test
     public void testBinaryColumnTypesForPostgres() throws Exception {
-        if (platform instanceof PostgreSqlPlatform) {
+        if (platform instanceof PostgreSqlDatabasePlatform) {
             platform.getSqlTemplate().update("drop table if exists test_postgres_binary_types");
             platform.getSqlTemplate().update(
                     "create table test_postgres_binary_types (binary_data oid)");
@@ -504,7 +504,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
 
         double targetTime = 15.0;
-        if (platform instanceof InformixPlatform) {
+        if (platform instanceof InformixDatabasePlatform) {
             targetTime = 20.0;
         }
 
@@ -517,15 +517,15 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
     private String[] massageExpectectedResultsForDialect(String[] values) {
         if (values[5] != null
-                && (!(platform instanceof OraclePlatform || platform instanceof MsSqlPlatform))) {
+                && (!(platform instanceof OracleDatabasePlatform || platform instanceof MsSqlDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
         if (values[10] != null) {
             values[10] = values[10].replace(',', '.');
         }
-        if (values[10] != null && !(platform instanceof OraclePlatform)) {
+        if (values[10] != null && !(platform instanceof OracleDatabasePlatform)) {
             int scale = 17;
-            if (platform instanceof MySqlPlatform) {
+            if (platform instanceof MySqlDatabasePlatform) {
                 scale = 16;
             }
             DecimalFormat df = new DecimalFormat("0.00####################################");

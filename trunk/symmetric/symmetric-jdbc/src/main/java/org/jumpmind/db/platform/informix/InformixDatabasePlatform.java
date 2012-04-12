@@ -12,9 +12,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
-public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
-
-    public static final String DATABASENAME = DatabaseNamesConstants.INFORMIX;
+public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
 
@@ -22,7 +20,7 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public InformixPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public InformixDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
@@ -60,7 +58,7 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         }
 
         ddlReader = new InformixDdlReader(this);
-        ddlBuilder = new InformixBuilder(this);
+        ddlBuilder = new InformixDdlBuilder(this);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
@@ -72,7 +70,7 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.INFORMIX;
     }
     
 

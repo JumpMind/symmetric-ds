@@ -56,7 +56,7 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for the Microsoft SQL Server.
  */
-public class MsSqlBuilder extends AbstractDdlBuilder {
+public class MsSqlDdlBuilder extends AbstractDdlBuilder {
 
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -64,7 +64,7 @@ public class MsSqlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MsSqlBuilder(IDatabasePlatform platform) {
+    public MsSqlDdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

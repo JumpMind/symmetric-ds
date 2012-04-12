@@ -41,9 +41,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 /*
  * The SQL Builder for the H2 database. 
  */
-public class H2Builder extends AbstractDdlBuilder {
+public class H2DdlBuilder extends AbstractDdlBuilder {
 
-    public H2Builder(IDatabasePlatform platform) {
+    public H2DdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

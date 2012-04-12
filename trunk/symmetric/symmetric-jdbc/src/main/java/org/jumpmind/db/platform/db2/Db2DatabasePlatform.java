@@ -31,10 +31,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 /*
  * The DB2 platform implementation.
  */
-public class Db2Platform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = DatabaseNamesConstants.DB2;
+public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard DB2 jdbc driver. */
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
@@ -45,7 +42,7 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public Db2Platform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public Db2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         // the BINARY types are also handled by Db2Builder.getSqlType(Column)
@@ -81,7 +78,7 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         
         ddlReader = new Db2DdlReader(this);
-        ddlBuilder = new Db2Builder(this);
+        ddlBuilder = new Db2DdlBuilder(this);
     }
     
     @Override
@@ -90,7 +87,7 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.DB2;
     }
     
     public String getDefaultSchema() {

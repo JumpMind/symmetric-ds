@@ -40,18 +40,18 @@ import org.jumpmind.db.util.BinaryEncoding;
 /*
  * The platform implementation for PostgresSql.
  */
-public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
-    /* Database name of this platform. */
-    public static final String DATABASENAME = DatabaseNamesConstants.POSTGRESQL;
+public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
+
     /* The standard PostgreSQL jdbc driver. */
     public static final String JDBC_DRIVER = "org.postgresql.Driver";
+    
     /* The subprotocol used by the standard PostgreSQL driver. */
     public static final String JDBC_SUBPROTOCOL = "postgresql";       
 
     /*
      * Creates a new platform instance.
      */
-    public PostgreSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public PostgreSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, overrideSettings(settings));
 
         // this is the default length though it might be changed when building
@@ -95,7 +95,7 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
 
         ddlReader = new PostgreSqlDdlReader(this);
-        ddlBuilder = new PostgreSqlBuilder(this);
+        ddlBuilder = new PostgreSqlDdlBuilder(this);
     }
     
     protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
@@ -111,7 +111,7 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.POSTGRESQL;
     }
     
     public String getDefaultSchema() {
