@@ -196,6 +196,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         MDC.put("engineName", this.parameterService.getEngineName());
 
+        this.platform.setMetadataIgnoreCase(this.parameterService
+                .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
         this.platform.setClearCacheModelTimeoutInMs(parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
 

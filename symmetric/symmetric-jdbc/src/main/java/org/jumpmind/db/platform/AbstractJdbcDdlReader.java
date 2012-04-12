@@ -538,16 +538,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 metaData.setCatalog(catalog);
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
-                String tableName = table;
-                if (getPlatformInfo().isStoresUpperCaseInCatalog() && !FormatUtils.isMixedCase(tableName)) {
-                    tableName = tableName.toUpperCase();
-                } else if (!FormatUtils.isMixedCase(tableName)){
-                    tableName = tableName.toLowerCase();
-                }
 
                 ResultSet tableData = null;
                 try {
-                    tableData = metaData.getTables(getTableNamePattern(tableName));
+                    tableData = metaData.getTables(getTableNamePattern(table));
                     if (tableData != null && tableData.next()) {
                         Map<String, Object> values = readColumns(tableData, initColumnsForTable());
                         return readTable(connection, metaData, values);

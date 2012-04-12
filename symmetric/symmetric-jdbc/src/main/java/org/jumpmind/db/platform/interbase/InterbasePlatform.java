@@ -88,7 +88,7 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         info.setHasSize(Types.BINARY, false);
         info.setHasSize(Types.VARBINARY, false);
 
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);

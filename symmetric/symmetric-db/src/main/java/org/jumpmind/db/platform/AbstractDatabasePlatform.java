@@ -110,6 +110,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Boolean storesUpperCaseIdentifiers;
 
     protected Boolean storesMixedCaseIdentifiers;
+    
+    protected boolean metadataIgnoreCase = true;
 
     public AbstractDatabasePlatform() {
         setDelimitedIdentifierModeOn(true);
@@ -249,8 +251,38 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return model;
     }
 
-    public Table readTableFromDatabase(String catalogName, String schemaName, String tablename) {
-        return ddlReader.readTable(catalogName, schemaName, tablename);
+    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
+        Table table = ddlReader.readTable(catalogName, schemaName, tableName);
+        if (table == null && metadataIgnoreCase) {
+            
+            if (isStoresUpperCaseIdentifiers()) {
+                catalogName = StringUtils.upperCase(catalogName);
+                schemaName = StringUtils.upperCase(schemaName);
+                tableName = StringUtils.upperCase(tableName);               
+                table = ddlReader.readTable(catalogName, schemaName, tableName);
+            } else {
+                catalogName = StringUtils.lowerCase(catalogName);
+                schemaName = StringUtils.lowerCase(schemaName);
+                tableName = StringUtils.lowerCase(tableName);               
+                table = ddlReader.readTable(catalogName, schemaName, tableName);
+            }
+
+            if (table == null) {
+                
+                if (!isStoresUpperCaseIdentifiers()) {
+                    catalogName = StringUtils.upperCase(catalogName);
+                    schemaName = StringUtils.upperCase(schemaName);
+                    tableName = StringUtils.upperCase(tableName);               
+                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+                } else {
+                    catalogName = StringUtils.lowerCase(catalogName);
+                    schemaName = StringUtils.lowerCase(schemaName);
+                    tableName = StringUtils.lowerCase(tableName);               
+                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+                }
+            }            
+        }
+        return table;
     }
 
     public void resetCachedTableModel() {
@@ -453,6 +485,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         return lobColumns;
+    }
+    
+    public void setMetadataIgnoreCase(boolean metadataIgnoreCase) {
+        this.metadataIgnoreCase = metadataIgnoreCase;
+    }
+    
+    public boolean isMetadataIgnoreCase() {
+        return metadataIgnoreCase;
     }
 
     public boolean isStoresMixedCaseQuotedIdentifiers() {

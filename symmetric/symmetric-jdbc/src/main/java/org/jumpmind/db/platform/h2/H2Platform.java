@@ -72,7 +72,7 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setNonBlankCharColumnSpacePadded(false);
         info.setBlankCharColumnSpacePadded(false);
         info.setCharColumnSpaceTrimmed(true);

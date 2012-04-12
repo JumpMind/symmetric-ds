@@ -186,8 +186,6 @@ public class DatabasePlatformInfo {
     /* The text separating individual sql commands. */
     private String sqlCommandDelimiter = ";";
 
-    private boolean storesUpperCaseInCatalog = false;
-
     private boolean dateOverridesToTimestamp;
 
     private boolean emptyStringNulled = false;
@@ -1104,14 +1102,6 @@ public class DatabasePlatformInfo {
         } else {
             this.typesWithPrecisionAndScale.remove(new Integer(sqlTypeCode));
         }
-    }
-
-    public void setStoresUpperCaseInCatalog(boolean storesUpperCaseInCatalog) {
-        this.storesUpperCaseInCatalog = storesUpperCaseInCatalog;
-    }
-
-    public boolean isStoresUpperCaseInCatalog() {
-        return storesUpperCaseInCatalog;
     }
 
     public void setTriggersSupported(boolean triggersSupported) {

@@ -113,7 +113,7 @@ final public class ParameterConstants {
     public final static String DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE = "dataextractor.keepalive.period.ms";
     public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
     public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
-    
+
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
@@ -144,17 +144,18 @@ final public class ParameterConstants {
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
 
-    public final static String DBPOOL_URL = "db.url";
-    public final static String DBPOOL_DRIVER = "db.driver";
-    public final static String DBPOOL_USER = "db.user";
-    public final static String DBPOOL_PASSWORD = "db.password";
-    public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
-    public final static String DBPOOL_MAX_ACTIVE = "db.pool.max.active";
-    public final static String DBPOOL_MAX_WAIT = "db.pool.max.wait.millis";
-    public final static String DBPOOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
-    public final static String DBPOOL_VALIDATION_QUERY = "db.validation.query";
-    public final static String DBPOOL_CONNECTION_PROPERTIES = "db.connection.properties";
-
+    public final static String DB_POOL_URL = "db.url";
+    public final static String DB_POOL_DRIVER = "db.driver";
+    public final static String DB_POOL_USER = "db.user";
+    public final static String DB_POOL_PASSWORD = "db.password";
+    public final static String DB_POOL_INITIAL_SIZE = "db.pool.initial.size";
+    public final static String DB_POOL_MAX_ACTIVE = "db.pool.max.active";
+    public final static String DB_POOL_MAX_WAIT = "db.pool.max.wait.millis";
+    public final static String DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
+    public final static String DB_POOL_VALIDATION_QUERY = "db.validation.query";
+    public final static String DB_POOL_CONNECTION_PROPERTIES = "db.connection.properties";
+    
+    public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";

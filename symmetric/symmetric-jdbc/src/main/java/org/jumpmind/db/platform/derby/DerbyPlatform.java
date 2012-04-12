@@ -76,7 +76,7 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
 
         info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE");
         info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
-        info.setStoresUpperCaseInCatalog(true);
+        
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);
