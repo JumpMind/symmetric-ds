@@ -292,7 +292,13 @@ public class DatabaseIO {
      * @param output The output stream
      */
     public void write(Database model, OutputStream output) throws DdlException {
-        write(model, new OutputStreamWriter(output));
+        Writer writer = new OutputStreamWriter(output);
+        write(model, writer);
+        try {
+            writer.flush();
+        } catch (Exception e) {
+            throw new DdlException(e);
+        }
     }
 
     /*
