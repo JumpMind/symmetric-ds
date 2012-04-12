@@ -27,15 +27,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
  * The platform implementation for Sybase.
  */
-public class SybasePlatform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = "Sybase";
+public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard Sybase jdbc driver. */
     public static final String JDBC_DRIVER = "com.sybase.jdbc2.jdbc.SybDriver";
@@ -51,7 +49,7 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public SybasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public SybaseDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
@@ -99,7 +97,7 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         info.setAutoIncrementUpdateAllowed(false);
         
         ddlReader = new SybaseDdlReader(this);
-        ddlBuilder = new SybaseBuilder(this);
+        ddlBuilder = new SybaseDdlBuilder(this);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
@@ -111,7 +109,7 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
     }
     
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.SYBASE;
     }
 
     public String getDefaultCatalog() {

@@ -9,9 +9,9 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
-public class InformixBuilder extends AbstractDdlBuilder {
+public class InformixDdlBuilder extends AbstractDdlBuilder {
 
-    public InformixBuilder(IDatabasePlatform platform) {
+    public InformixDdlBuilder(IDatabasePlatform platform) {
         super(platform);
     }
 

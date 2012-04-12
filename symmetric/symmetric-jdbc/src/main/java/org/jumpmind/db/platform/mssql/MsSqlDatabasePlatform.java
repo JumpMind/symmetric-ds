@@ -31,10 +31,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 /*
  * The platform implementation for the Microsoft SQL Server database.
  */
-public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = DatabaseNamesConstants.MSSQL;
+public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard SQLServer jdbc driver. */
     public static final String JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver";
@@ -45,7 +42,7 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MsSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public MsSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
@@ -86,7 +83,7 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setAutoIncrementUpdateAllowed(false);
         
         ddlReader = new MsSqlDdlReader(this);
-        ddlBuilder = new MsSqlBuilder(this);
+        ddlBuilder = new MsSqlDdlBuilder(this);
 
     }
 
@@ -96,7 +93,7 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.MSSQL;
     }
 
     public String getDefaultCatalog() {

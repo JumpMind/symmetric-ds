@@ -39,7 +39,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.mysql.MySqlPlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -144,7 +144,7 @@ public class DbDump extends AbstractCommandLauncher {
         
         // IDatabasePlatform target = Factory.getPlatform("mysql");
         
-        IDatabasePlatform target = new MySqlPlatform(null, new DatabasePlatformSettings());
+        IDatabasePlatform target = new MySqlDatabasePlatform(null, new DatabasePlatformSettings());
         Writer writer = new OutputStreamWriter(output);
     	SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
 

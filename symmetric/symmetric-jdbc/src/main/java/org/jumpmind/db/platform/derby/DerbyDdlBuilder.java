@@ -37,9 +37,9 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for Derby.
  */
-public class DerbyBuilder extends AbstractDdlBuilder {
+public class DerbyDdlBuilder extends AbstractDdlBuilder {
 
-    public DerbyBuilder(IDatabasePlatform platform) {
+    public DerbyDdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

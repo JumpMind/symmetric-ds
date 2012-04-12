@@ -137,7 +137,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
         String name;
 
         for (int idx = 0; idx < columns.length; idx++) {
-            name = ((FirebirdBuilder) getPlatform().getDdlBuilder()).getGeneratorName(table,
+            name = ((FirebirdDdlBuilder) getPlatform().getDdlBuilder()).getGeneratorName(table,
                     columns[idx]);
             if (!getPlatform().isDelimitedIdentifierModeOn()) {
                 name = name.toUpperCase();

@@ -25,16 +25,14 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 /*
  * The platform implementation for the H2 database.
  */
-public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String[] DATABASENAMES = { "H2", "H21" };
+public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
     /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.h2.Driver";
@@ -45,7 +43,7 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
     /*
      * Creates a new instance of the H2 platform.
      */
-    public H2Platform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public H2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setNonPKIdentityColumnsSupported(false);
@@ -79,7 +77,7 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         info.setEmptyStringNulled(false);
 
         ddlReader = new H2DdlReader(this);
-        ddlBuilder = new H2Builder(this);
+        ddlBuilder = new H2DdlBuilder(this);
     }
     
     @Override
@@ -88,7 +86,7 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
     }
 
     public String getName() {
-        return DATABASENAMES[0];
+        return DatabaseNamesConstants.H2;
     }
     
     public String getDefaultSchema() {

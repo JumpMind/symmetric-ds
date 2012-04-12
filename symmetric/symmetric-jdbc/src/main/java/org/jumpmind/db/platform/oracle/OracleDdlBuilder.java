@@ -42,13 +42,13 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for Oracle.
  */
-public class OracleBuilder extends AbstractDdlBuilder {
+public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     protected static final String PREFIX_TRIGGER = "TRG";
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
 
-    public OracleBuilder(IDatabasePlatform platform) {
+    public OracleDdlBuilder(IDatabasePlatform platform) {
         super(platform);
 
         addEscapedCharSequence("'", "''");

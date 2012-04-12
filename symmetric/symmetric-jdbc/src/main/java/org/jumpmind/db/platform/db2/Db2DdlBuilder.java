@@ -41,9 +41,9 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The DDL Builder for DB2.
  */
-public class Db2Builder extends AbstractDdlBuilder {
+public class Db2DdlBuilder extends AbstractDdlBuilder {
     
-    public Db2Builder(IDatabasePlatform platform) {
+    public Db2DdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

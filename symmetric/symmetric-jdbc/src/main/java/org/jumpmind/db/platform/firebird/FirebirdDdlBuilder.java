@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.interbase;
+package org.jumpmind.db.platform.firebird;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -36,17 +36,16 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
- * The SQL Builder for the Interbase database.
+ * The SQL Builder for the FireBird database.
  */
-public class InterbaseBuilder extends AbstractDdlBuilder {
-
-    public InterbaseBuilder(IDatabasePlatform platform) {
+public class FirebirdDdlBuilder extends AbstractDdlBuilder {
+    public FirebirdDdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void createTable(Table table, StringBuilder ddl) {
+    public void createTable(Table table, StringBuilder ddl)  {
         super.createTable(table, ddl);
 
         // creating generator and trigger for auto-increment
@@ -58,19 +57,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
-                        .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
-                    Types.SMALLINT).toString();
-        } else {
-            return super.getNativeDefaultValue(column);
-        }
-    }
-
-    @Override
-    public void dropTable(Table table, StringBuilder ddl) {
+    public void dropTable(Table table, StringBuilder ddl)  {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
@@ -80,21 +67,12 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
         super.dropTable(table, ddl);
     }
 
-    @Override
-    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        // Index names in Interbase are unique to a schema and hence we do not
-        // need the ON <tablename> clause
-        ddl.append("DROP INDEX ");
-        printIdentifier(getIndexName(index), ddl);
-        printEndOfStatement(ddl);
-    }
-
     /*
      * Writes the creation statements to make the given column an auto-increment
      * column.
      */
-    private void writeAutoIncrementCreateStmts(Table table, Column column,
-            StringBuilder ddl) {
+    private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl)
+             {
         ddl.append("CREATE GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -117,8 +95,12 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
     /*
      * Writes the statements to drop the auto-increment status for the given
      * column.
+     * 
+     * @param table The table
+     * 
+     * @param column The column to remove the auto-increment status for
      */
-    private void writeAutoIncrementDropStmts(Table table, Column column, StringBuilder ddl) {
+    private void writeAutoIncrementDropStmts(Table table, Column column, StringBuilder ddl)  {
         ddl.append("DROP TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -165,7 +147,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl)  {
         // we're using a generator
     }
 
@@ -189,34 +171,43 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
         }
     }
 
-    public String fixLastIdentityValues(Table table) {
-        Column[] columns = table.getAutoIncrementColumns();
-
-        if (columns.length == 0) {
-            return null;
+    @Override
+    protected String getNativeDefaultValue(Column column) {
+        if ((column.getTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+                        .determineBooleanTypeCode()))) {
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+                    Types.SMALLINT).toString();
         } else {
-            StringBuffer result = new StringBuffer();
-
-            result.append("SELECT ");
-            for (int idx = 0; idx < columns.length; idx++) {
-                result.append("GEN_ID(");
-                result.append(getDelimitedIdentifier(getGeneratorName(table, columns[idx])));
-                result.append(", (SELECT MAX(").append(columns[idx].getName()).append(")+1 FROM ");
-                result.append(table.getName()).append("))");
-            }
-            result.append(" FROM RDB$DATABASE");
-            return result.toString();
+            return super.getNativeDefaultValue(column);
         }
     }
 
     @Override
+    public void createExternalForeignKeys(Database database, StringBuilder ddl)  {
+        for (int idx = 0; idx < database.getTableCount(); idx++) {
+            createExternalForeignKeys(database, database.getTable(idx), ddl);
+        }
+    }
+
+    @Override
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl)  {
+        // Index names in Firebird are unique to a schema and hence Firebird
+        // does not
+        // use the ON <tablename> clause
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
+    }
+
+    @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl)  {
         // TODO: Dropping of primary keys is currently not supported because we
         // cannot
         // determine the pk constraint names and drop them in one go
-        // (We could used a stored procedure if Interbase would allow them to
-        // use DDL)
+        // (We could used a stored procedure if Firebird would allow them to use
+        // DDL)
         // This will be easier once named primary keys are supported
         boolean pkColumnAdded = false;
 
@@ -247,7 +238,6 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
                 }
             }
         }
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -265,7 +255,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
      * Processes the addition of a column to a table.
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change, StringBuilder ddl) {
+            AddColumnChange change, StringBuilder ddl)  {
         ddl.append("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
@@ -285,17 +275,17 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
                 prevColumn = curTable.findColumn(prevColumn.getName(),
                         platform.isDelimitedIdentifierModeOn());
             }
-            // Even though Interbase can only add columns, we can move them
-            // later on
+            // Even though Firebird can only add columns, we can move them later
+            // on
             ddl.append("ALTER TABLE ");
             printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
             printIndent(ddl);
             ddl.append("ALTER ");
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
             ddl.append(" POSITION ");
-            // column positions start at 1 in Interbase
-            ddl.append(prevColumn == null ? "1" : String.valueOf(curTable
-                    .getColumnIndex(prevColumn) + 1));
+            // column positions start at 1 in Firebird
+            ddl.append(prevColumn == null ? "1" : String
+                    .valueOf(curTable.getColumnIndex(prevColumn) + 2));
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
@@ -308,7 +298,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
      * Processes the removal of a column from a table.
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change, StringBuilder ddl) {
+            RemoveColumnChange change, StringBuilder ddl)  {
         if (change.getColumn().isAutoIncrement()) {
             writeAutoIncrementDropStmts(change.getChangedTable(), change.getColumn(), ddl);
         }

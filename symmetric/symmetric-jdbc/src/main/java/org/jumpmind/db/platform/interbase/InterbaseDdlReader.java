@@ -73,7 +73,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         if (column.getTypeCode() == Types.VARCHAR) {
             int size = Integer.parseInt(column.getSize());
-            if (size >= InterbasePlatform.SWITCH_TO_LONGVARCHAR_SIZE) {
+            if (size >= InterbaseDatabasePlatform.SWITCH_TO_LONGVARCHAR_SIZE) {
                 column.setTypeCode(Types.LONGVARCHAR);
             }
         }
@@ -194,7 +194,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         // shortened
         // we have to determine for each column whether there is a generator for
         // it
-        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
+        InterbaseDdlBuilder builder = (InterbaseDdlBuilder) getPlatform().getDdlBuilder();
         Column[] columns = table.getColumns();
         HashMap<String, Column> names = new HashMap<String, Column>();
         String name;
@@ -321,7 +321,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
+        InterbaseDdlBuilder builder = (InterbaseDdlBuilder) getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         StringBuffer query = new StringBuffer();
@@ -351,7 +351,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index)
             throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
+        InterbaseDdlBuilder builder = (InterbaseDdlBuilder) getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);

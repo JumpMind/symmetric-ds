@@ -22,20 +22,20 @@
 package org.jumpmind.symmetric.db;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2Platform;
-import org.jumpmind.db.platform.derby.DerbyPlatform;
-import org.jumpmind.db.platform.firebird.FirebirdPlatform;
+import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
+import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
+import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
-import org.jumpmind.db.platform.h2.H2Platform;
-import org.jumpmind.db.platform.hsqldb.HsqlDbPlatform;
-import org.jumpmind.db.platform.hsqldb2.HsqlDb2Platform;
-import org.jumpmind.db.platform.informix.InformixPlatform;
-import org.jumpmind.db.platform.interbase.InterbasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlPlatform;
-import org.jumpmind.db.platform.mysql.MySqlPlatform;
-import org.jumpmind.db.platform.oracle.OraclePlatform;
-import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.db.platform.sybase.SybasePlatform;
+import org.jumpmind.db.platform.h2.H2DatabasePlatform;
+import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
+import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
+import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
@@ -76,27 +76,27 @@ public class JdbcSymmetricDialectFactory {
 
         AbstractSymmetricDialect dialect = null;
 
-        if (platform instanceof MySqlPlatform) {
+        if (platform instanceof MySqlDatabasePlatform) {
             dialect = new MySqlSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof OraclePlatform) {
+        } else if (platform instanceof OracleDatabasePlatform) {
             dialect = new OracleSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof MsSqlPlatform) {
+        } else if (platform instanceof MsSqlDatabasePlatform) {
             dialect = new MsSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof GreenplumPlatform) {
             dialect = new GreenplumSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof PostgreSqlPlatform) {
+        } else if (platform instanceof PostgreSqlDatabasePlatform) {
             dialect = new PostgreSqlSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof DerbyPlatform) {
+        } else if (platform instanceof DerbyDatabasePlatform) {
             dialect = new DerbySymmetricDialect(parameterService, platform);
-        } else if (platform instanceof H2Platform) {
+        } else if (platform instanceof H2DatabasePlatform) {
             dialect = new H2SymmetricDialect(parameterService, platform);
-        } else if (platform instanceof HsqlDbPlatform) {
+        } else if (platform instanceof HsqlDbDatabasePlatform) {
             dialect = new HsqlDbSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof HsqlDb2Platform) {
+        } else if (platform instanceof HsqlDb2DatabasePlatform) {
             dialect = new HsqlDb2SymmetricDialect(parameterService, platform);
-        } else if (platform instanceof InformixPlatform) {
+        } else if (platform instanceof InformixDatabasePlatform) {
             dialect = new InformixSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof Db2Platform) {
+        } else if (platform instanceof Db2DatabasePlatform) {
             int dbMajorVersion = platform.getSqlTemplate().getDatabaseMajorVersion();
             int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();
             if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
@@ -104,11 +104,11 @@ public class JdbcSymmetricDialectFactory {
             } else {
                 dialect = new Db2v9SymmetricDialect(parameterService, platform);
             }
-        } else if (platform instanceof FirebirdPlatform) {
+        } else if (platform instanceof FirebirdDatabasePlatform) {
             dialect = new FirebirdSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof SybasePlatform) {
+        } else if (platform instanceof SybaseDatabasePlatform) {
             dialect = new SybaseSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof InterbasePlatform) {
+        } else if (platform instanceof InterbaseDatabasePlatform) {
             dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else {
             throw new DbNotSupportedException();

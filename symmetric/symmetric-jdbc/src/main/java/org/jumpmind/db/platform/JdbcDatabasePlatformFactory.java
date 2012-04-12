@@ -31,20 +31,20 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.db2.Db2Platform;
-import org.jumpmind.db.platform.derby.DerbyPlatform;
-import org.jumpmind.db.platform.firebird.FirebirdPlatform;
+import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
+import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
+import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
-import org.jumpmind.db.platform.h2.H2Platform;
-import org.jumpmind.db.platform.hsqldb.HsqlDbPlatform;
-import org.jumpmind.db.platform.hsqldb2.HsqlDb2Platform;
-import org.jumpmind.db.platform.informix.InformixPlatform;
-import org.jumpmind.db.platform.interbase.InterbasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlPlatform;
-import org.jumpmind.db.platform.mysql.MySqlPlatform;
-import org.jumpmind.db.platform.oracle.OraclePlatform;
-import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.db.platform.sybase.SybasePlatform;
+import org.jumpmind.db.platform.h2.H2DatabasePlatform;
+import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
+import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
+import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 
 /*
@@ -61,49 +61,46 @@ public class JdbcDatabasePlatformFactory {
      * Maps the sub-protocl part of a jdbc connection url to a OJB platform
      * name.
      */
-    private static HashMap<String, String> jdbcSubProtocolToPlatform = new HashMap<String, String>();
+    private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
 
     static {
 
-        for (String name : H2Platform.DATABASENAMES) {
-            addPlatform(platforms, name, H2Platform.class);
-        }
-        addPlatform(platforms, InformixPlatform.DATABASENAME, InformixPlatform.class);
-        addPlatform(platforms, DerbyPlatform.DATABASENAME, DerbyPlatform.class);
-        addPlatform(platforms, FirebirdPlatform.DATABASENAME, FirebirdPlatform.class);
-        addPlatform(platforms, GreenplumPlatform.DATABASENAME, GreenplumPlatform.class);
-        addPlatform(platforms, HsqlDbPlatform.DATABASENAME, HsqlDbPlatform.class);
-        addPlatform(platforms, HsqlDb2Platform.DATABASENAME, HsqlDb2Platform.class);
-        addPlatform(platforms, InterbasePlatform.DATABASENAME, InterbasePlatform.class);
-        addPlatform(platforms, MsSqlPlatform.DATABASENAME, MsSqlPlatform.class);
-        addPlatform(platforms, MySqlPlatform.DATABASENAME, MySqlPlatform.class);
-        addPlatform(platforms, OraclePlatform.DATABASENAME, OraclePlatform.class);
-        addPlatform(platforms, PostgreSqlPlatform.DATABASENAME, PostgreSqlPlatform.class);
-        addPlatform(platforms, SybasePlatform.DATABASENAME, SybasePlatform.class);
-        addPlatform(platforms, Db2Platform.DATABASENAME, Db2Platform.class);
+        addPlatform(platforms, "H2", H2DatabasePlatform.class);
+        addPlatform(platforms, "H21", H2DatabasePlatform.class);
+        addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
+        addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
+        addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
+        addPlatform(platforms, "HsqlDb", HsqlDbDatabasePlatform.class);
+        addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
+        addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
+        addPlatform(platforms, "MsSQL", MsSqlDatabasePlatform.class);
+        addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
+        addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
+        addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
+        addPlatform(platforms, "Sybase", SybaseDatabasePlatform.class);
+        addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
 
-        // Note that currently Sapdb and MaxDB have equal subprotocols and
-        // drivers so we have no means to distinguish them
-        jdbcSubProtocolToPlatform.put(Db2Platform.JDBC_SUBPROTOCOL, Db2Platform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(DerbyPlatform.JDBC_SUBPROTOCOL, DerbyPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
-                FirebirdPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(HsqlDbPlatform.JDBC_SUBPROTOCOL, HsqlDbPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(InterbasePlatform.JDBC_SUBPROTOCOL,
-                InterbasePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(MsSqlPlatform.JDBC_SUBPROTOCOL, MsSqlPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(MySqlPlatform.JDBC_SUBPROTOCOL, MySqlPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_THIN,
-                OraclePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_OCI8,
-                OraclePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_THIN_OLD,
-                OraclePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(PostgreSqlPlatform.JDBC_SUBPROTOCOL,
-                PostgreSqlPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(SybasePlatform.JDBC_SUBPROTOCOL, SybasePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
-                FirebirdPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
+                FirebirdDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(HsqlDbDatabasePlatform.JDBC_SUBPROTOCOL, HsqlDbDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
+                InterbaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSqlDatabasePlatform.JDBC_SUBPROTOCOL, MsSqlDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
+                OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_OCI8,
+                OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN_OLD,
+                OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL,
+                PostgreSqlDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(SybaseDatabasePlatform.JDBC_SUBPROTOCOL, SybaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
+                FirebirdDatabasePlatform.class);
     }   
     
     /*
@@ -138,15 +135,13 @@ public class JdbcDatabasePlatformFactory {
             String[] nameVersion) throws DdlException {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
+        
         if (platformClass == null) {
             platformClass = platforms.get(nameVersion[0].toLowerCase());
         }
 
         if (platformClass == null) {
-            String databaseName = jdbcSubProtocolToPlatform.get(nameVersion[2]);
-            if (databaseName != null) {
-                platformClass = platforms.get(databaseName.toLowerCase());
-            }
+            platformClass = jdbcSubProtocolToPlatform.get(nameVersion[2]);
         }
 
         if (platformClass == null) {
@@ -181,9 +176,9 @@ public class JdbcDatabasePlatformFactory {
              * or Greenplum
              */
             /* query the metadata to determine which one it is */
-            if (nameVersion[0].equalsIgnoreCase(PostgreSqlPlatform.DATABASENAME)) {
+            if (nameVersion[0].equalsIgnoreCase("PostgreSql")) {
                 if (isGreenplumDatabase(connection)) {
-                    nameVersion[0] = GreenplumPlatform.DATABASE;
+                    nameVersion[0] = DatabaseNamesConstants.GREENPLUM;
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 }
             }
@@ -214,7 +209,7 @@ public class JdbcDatabasePlatformFactory {
             while (rs.next()) {
                 productName = rs.getString(1);
             }
-            if (productName != null && productName.equalsIgnoreCase(GreenplumPlatform.DATABASE)) {
+            if (productName != null && productName.equalsIgnoreCase("Greenplum")) {
                 isGreenplum = true;
             }
         } catch (SQLException ex) {
@@ -339,6 +334,5 @@ public class JdbcDatabasePlatformFactory {
                     + " interface");
         }
         platformMap.put(platformName.toLowerCase(), platformClass);
-
     }
 }

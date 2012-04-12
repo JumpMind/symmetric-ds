@@ -41,9 +41,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 /*
  * The SQL Builder for MySQL.
  */
-public class MySqlBuilder extends AbstractDdlBuilder {
+public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
-    public MySqlBuilder(IDatabasePlatform platform) {
+    public MySqlDdlBuilder(IDatabasePlatform platform) {
         super(platform);
 
         // we need to handle the backslash first otherwise the other

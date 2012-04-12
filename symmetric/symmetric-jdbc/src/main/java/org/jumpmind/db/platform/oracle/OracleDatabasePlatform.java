@@ -36,10 +36,7 @@ import org.springframework.jdbc.support.lob.OracleLobHandler;
 /*
  * Provides support for the Oracle platform.
  */
-public class OraclePlatform extends AbstractJdbcDatabasePlatform {
-
-    /* Database name of this platform. */
-    public static final String DATABASENAME = DatabaseNamesConstants.ORACLE;
+public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard Oracle jdbc driver. */
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
@@ -59,7 +56,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public OraclePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public OracleDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
         info.setMaxIdentifierLength(30);
@@ -108,7 +105,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(true);
 
         ddlReader = new OracleDdlReader(this);
-        ddlBuilder = new OracleBuilder(this);
+        ddlBuilder = new OracleDdlBuilder(this);
     }
 
     @Override
@@ -119,7 +116,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DATABASENAME;
+        return DatabaseNamesConstants.ORACLE;
     }
 
     public String getDefaultCatalog() {

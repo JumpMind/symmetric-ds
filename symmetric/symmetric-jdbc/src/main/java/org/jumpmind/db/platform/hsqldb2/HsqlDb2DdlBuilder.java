@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.hsqldb;
+package org.jumpmind.db.platform.hsqldb2;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,15 +19,20 @@ package org.jumpmind.db.platform.hsqldb;
  * under the License.
  */
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
 import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -35,9 +40,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 /*
  * The SQL Builder for the HsqlDb database.
  */
-public class HsqlDbBuilder extends AbstractDdlBuilder {
+public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
 
-    public HsqlDbBuilder(IDatabasePlatform platform) {
+    public HsqlDb2DdlBuilder(IDatabasePlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }
@@ -55,16 +60,42 @@ public class HsqlDbBuilder extends AbstractDdlBuilder {
         return "CALL IDENTITY()";
     }
 
+    protected boolean shouldGeneratePrimaryKeys(Column[] primaryKeyColumns) {
+        if (primaryKeyColumns != null && primaryKeyColumns.length == 1) {
+            return !primaryKeyColumns[0].isAutoIncrement();
+        } else {
+            return true;
+        }
+    }
+
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
-        // HsqlDb can only drop columns that are not part of a primary key
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
+            // HsqlDb can only drop columns that are not part of a primary key
             if ((change instanceof RemoveColumnChange)
                     && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
-                return;
+                changeIt.remove();
+            }
+
+            // LONGVARCHAR columns always report changes
+            if (change instanceof ColumnSizeChange) {
+                ColumnSizeChange sizeChange = (ColumnSizeChange) change;
+                if (sizeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                        && sizeChange.getNewSize() == 0) {
+                    changeIt.remove();
+                }
+            }
+
+            // LONGVARCHAR columns always report changes
+            if (change instanceof ColumnDataTypeChange) {
+                ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
+                if (dataTypeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                        && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
+                    changeIt.remove();
+                }
             }
         }
 
@@ -86,7 +117,7 @@ public class HsqlDbBuilder extends AbstractDdlBuilder {
 
         for (ListIterator<AddColumnChange> changeIt = addColumnChanges
                 .listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
-            AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
+            AddColumnChange addColumnChange = changeIt.previous();
 
             processChange(currentModel, desiredModel, addColumnChange, ddl);
             changeIt.remove();
@@ -134,6 +165,13 @@ public class HsqlDbBuilder extends AbstractDdlBuilder {
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+    }
+
+    @Override
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
 }
