@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,7 +83,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected IDdlBuilder ddlBuilder;
 
-    protected Database cachedModel = new Database();
+    protected Map<String, Table> tableCache = new HashMap<String, Table>();
 
     private long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
@@ -109,8 +110,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected Boolean storesUpperCaseIdentifiers;
 
+    protected Boolean storesLowerCaseIdentifiers;
+
     protected Boolean storesMixedCaseIdentifiers;
-    
+
     protected boolean metadataIgnoreCase = true;
 
     public AbstractDatabasePlatform() {
@@ -252,48 +255,63 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
+        String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
+                schemaName, tableName);
         Table table = ddlReader.readTable(catalogName, schemaName, tableName);
         if (table == null && metadataIgnoreCase) {
-            
             if (isStoresUpperCaseIdentifiers()) {
                 catalogName = StringUtils.upperCase(catalogName);
                 schemaName = StringUtils.upperCase(schemaName);
-                tableName = StringUtils.upperCase(tableName);               
-                table = ddlReader.readTable(catalogName, schemaName, tableName);
-            } else {
+                tableName = StringUtils.upperCase(tableName);
+                // if we didn't find the table, the database stores upper case,
+                // and the catalog, schema or table were not in upper case
+                // already then it is probably stored in uppercase
+                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
+                        catalogName, schemaName, tableName))) {
+                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+                }
+            } else if (isStoresLowerCaseIdentifiers()) {
                 catalogName = StringUtils.lowerCase(catalogName);
                 schemaName = StringUtils.lowerCase(schemaName);
-                tableName = StringUtils.lowerCase(tableName);               
-                table = ddlReader.readTable(catalogName, schemaName, tableName);
+                tableName = StringUtils.lowerCase(tableName);
+                // if we didn't find the table, the database stores lower case,
+                // and the catalog, schema or table were not in lower case
+                // already then it is probably stored in uppercase
+                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
+                        catalogName, schemaName, tableName))) {
+                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+                }
+            } else {
+                tableName = StringUtils.lowerCase(tableName);
+                // Last ditch lower case effort. This case applied to
+                // symmetricds tables stored in a mixed case schema or catalog
+                // whose default case is different on the source system than on
+                // the target system.
+                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
+                        catalogName, schemaName, tableName))) {
+                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+                }
             }
 
             if (table == null) {
-                
-                if (!isStoresUpperCaseIdentifiers()) {
-                    catalogName = StringUtils.upperCase(catalogName);
-                    schemaName = StringUtils.upperCase(schemaName);
-                    tableName = StringUtils.upperCase(tableName);               
-                    table = ddlReader.readTable(catalogName, schemaName, tableName);
-                } else {
-                    catalogName = StringUtils.lowerCase(catalogName);
-                    schemaName = StringUtils.lowerCase(schemaName);
-                    tableName = StringUtils.lowerCase(tableName);               
+                // Last ditch upper case effort. This case applied to
+                // symmetricds tables stored in a mixed case schema or catalog
+                // whose default case is different on the source system than on
+                // the target system.
+                tableName = StringUtils.upperCase(tableName);
+                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
+                        catalogName, schemaName, tableName))) {
                     table = ddlReader.readTable(catalogName, schemaName, tableName);
                 }
-            }            
+            }
         }
         return table;
     }
 
     public void resetCachedTableModel() {
         synchronized (this.getClass()) {
-            this.cachedModel.resetTableIndexCache();
-            Table[] tables = this.cachedModel.getTables();
-            if (tables != null) {
-                for (Table table : tables) {
-                    this.cachedModel.removeTable(table);
-                }
-            }
+            this.tableCache = new HashMap<String, Table>();
+            lastTimeCachedModelClearedInMs = System.currentTimeMillis();
         }
     }
 
@@ -304,28 +322,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Table getTableFromCache(String catalogName, String schemaName, String tableName,
             boolean forceReread) {
         if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > clearCacheModelTimeoutInMs) {
-            synchronized (this.getClass()) {
-                cachedModel = new Database();
-                lastTimeCachedModelClearedInMs = System.currentTimeMillis();
-            }
+            resetCachedTableModel();
         }
         catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
         schemaName = schemaName == null ? getDefaultSchema() : schemaName;
-        Database model = cachedModel;
-        Table retTable = model != null ? model.findTable(catalogName, schemaName, tableName) : null;
+        Map<String, Table> model = tableCache;
+        String key = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
+        Table retTable = model != null ? model.get(key) : null;
         if (retTable == null || forceReread) {
             synchronized (this.getClass()) {
                 try {
                     Table table = readTableFromDatabase(catalogName, schemaName, tableName);
-
-                    if (retTable != null) {
-                        cachedModel.removeTable(retTable);
-                    }
-
-                    if (table != null) {
-                        cachedModel.addTable(table);
-                    }
-
+                    tableCache.put(key, table);
                     retTable = table;
                 } catch (RuntimeException ex) {
                     throw ex;
@@ -429,7 +437,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return values;
     }
-    
+
     public Map<String, String> getSqlScriptReplacementTokens() {
         return null;
     }
@@ -486,13 +494,20 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return lobColumns;
     }
-    
+
     public void setMetadataIgnoreCase(boolean metadataIgnoreCase) {
         this.metadataIgnoreCase = metadataIgnoreCase;
     }
-    
+
     public boolean isMetadataIgnoreCase() {
         return metadataIgnoreCase;
+    }
+
+    public boolean isStoresLowerCaseIdentifiers() {
+        if (storesLowerCaseIdentifiers == null) {
+            storesLowerCaseIdentifiers = getSqlTemplate().isStoresLowerCaseIdentifiers();
+        }
+        return storesLowerCaseIdentifiers;
     }
 
     public boolean isStoresMixedCaseQuotedIdentifiers() {

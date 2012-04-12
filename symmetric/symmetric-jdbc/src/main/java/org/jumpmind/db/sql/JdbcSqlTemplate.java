@@ -506,6 +506,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
+    
+    public boolean isStoresLowerCaseIdentifiers() {
+        return execute(new IConnectionCallback<Boolean>() {
+            public Boolean execute(Connection con) throws SQLException {
+                return con.getMetaData().storesLowerCaseIdentifiers();
+            }
+        });
+    }
 
     public String getDatabaseProductVersion() {
         return execute(new IConnectionCallback<String>() {
