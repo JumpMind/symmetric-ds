@@ -108,12 +108,12 @@ public class SecurityService implements ISecurityService {
         KeyStore ks = getKeyStore(password);
         KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
         if (entry == null) {
-            log.debug("Generating secret key.");
+            log.debug("Generating secret key");
             entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
-            log.debug("Retrieving secret key.");
+            log.debug("Retrieving secret key");
         }
         return entry.getSecretKey();
     }

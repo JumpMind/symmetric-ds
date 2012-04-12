@@ -44,7 +44,7 @@ public class PullJob extends AbstractJob {
         while (engine.getNodeService().isDataLoadStarted() &&
                 !statuses.errorOccurred() && 
                 statuses.wasBatchProcessed()) {
-            log.info("Immediate pull requested while in reload mode.");
+            log.info("Immediate pull requested while in reload mode");
             statuses = engine.getPullService().pullData();
         }
         

@@ -114,7 +114,7 @@ abstract public class TestSetupUtil {
         File clientDbDir = new File("target/clientdbs");
         if (clientDbDir.exists()) {
             try {
-                logger.info("Removing client database files.");
+                logger.info("Removing client database files");
                 FileUtils.deleteDirectory(clientDbDir);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);

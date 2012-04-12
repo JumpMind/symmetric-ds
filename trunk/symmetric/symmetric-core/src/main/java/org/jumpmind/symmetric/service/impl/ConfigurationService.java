@@ -330,14 +330,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            log.info("Initializing SymmetricDS database.");
+            log.info("Initializing SymmetricDS database");
             symmetricDialect.initTablesAndFunctions();
             autoConfigChannels();
             autoConfigRegistrationServer();
             parameterService.rereadParameters();
-            log.info("Done initializing SymmetricDS database.");
+            log.info("Done initializing SymmetricDS database");
         } else {
-            log.info("SymmetricDS is not configured to auto-create the database.");
+            log.info("SymmetricDS is not configured to auto-create the database");
         }
     }
 
@@ -350,7 +350,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     log.info("Auto-configuring {} channel.", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.debug("No need to create channel {}.  It already exists.", defaultChannel.getChannelId());
+                    log.debug("No need to create channel {}.  It already exists", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();

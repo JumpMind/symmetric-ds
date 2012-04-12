@@ -191,7 +191,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
 
         if (data == null) {
-            throw new SymmetricException("The read of the data to route queue has timed out.");
+            throw new SymmetricException("The read of the data to route queue has timed out");
         } else if (data instanceof EOD) {
             data = null;
         }
