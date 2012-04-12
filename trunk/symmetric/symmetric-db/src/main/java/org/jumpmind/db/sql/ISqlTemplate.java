@@ -103,6 +103,8 @@ public interface ISqlTemplate {
     
     public boolean isStoresUpperCaseIdentifiers();
     
+    public boolean isStoresLowerCaseIdentifiers();
+    
     public boolean isStoresMixedCaseQuotedIdentifiers();
 
     public long insertWithGeneratedKey(final String sql, String column, final String sequenceName,
