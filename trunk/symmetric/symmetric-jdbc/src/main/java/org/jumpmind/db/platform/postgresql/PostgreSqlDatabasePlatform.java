@@ -95,7 +95,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
 
         ddlReader = new PostgreSqlDdlReader(this);
-        ddlBuilder = new PostgreSqlDdlBuilder(this);
+        ddlBuilder = new PostgreSqlDdlBuilder(info);
     }
     
     public static boolean isUsePseudoSequence() {

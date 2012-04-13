@@ -35,7 +35,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -43,8 +43,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class Db2DdlBuilder extends AbstractDdlBuilder {
     
-    public Db2DdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public Db2DdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -96,7 +96,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
                 Object sizeSpec = targetColumn.getSize();
 
                 if (sizeSpec == null) {
-                    sizeSpec = platform.getPlatformInfo()
+                    sizeSpec = platformInfo
                             .getDefaultSize(targetColumn.getTypeCode());
                 }
                 type = "CHAR(" + sizeSpec.toString() + ")";
@@ -161,7 +161,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -175,7 +175,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -188,7 +188,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -203,7 +203,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(),
                 change.getNewPrimaryKeyColumns(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
     
 }

@@ -51,7 +51,7 @@ public class GreenplumDdlReader extends PostgreSqlDdlReader {
             // for every row, set the distributionKey for the corresponding
             // columns
             while (rs.next()) {
-                Column column = table.findColumn(rs.getString(2).trim(), getPlatform()
+                Column column = table.findColumn(rs.getString(2).trim(), getPlatform().getDdlBuilder()
                         .isDelimitedIdentifierModeOn());
                 if (column != null) {
                     column.setDistributionKey(true);

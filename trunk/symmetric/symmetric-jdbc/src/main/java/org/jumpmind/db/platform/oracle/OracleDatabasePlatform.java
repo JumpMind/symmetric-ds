@@ -105,7 +105,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(true);
 
         ddlReader = new OracleDdlReader(this);
-        ddlBuilder = new OracleDdlBuilder(this);
+        ddlBuilder = new OracleDdlBuilder(info);
     }
 
     @Override

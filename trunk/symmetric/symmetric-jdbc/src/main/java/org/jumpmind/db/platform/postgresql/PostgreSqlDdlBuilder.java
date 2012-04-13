@@ -30,15 +30,15 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for PostgresSql.
  */
 public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
-    public PostgreSqlDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public PostgreSqlDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
@@ -241,7 +241,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -264,6 +264,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         if (change.getColumn().isAutoIncrement()) {
             dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
         }
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 }

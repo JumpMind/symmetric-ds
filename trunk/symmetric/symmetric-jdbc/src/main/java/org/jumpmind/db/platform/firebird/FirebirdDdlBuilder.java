@@ -32,15 +32,15 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
  * The SQL Builder for the FireBird database.
  */
 public class FirebirdDdlBuilder extends AbstractDdlBuilder {
-    public FirebirdDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public FirebirdDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -264,7 +264,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
 
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
-                platform.isDelimitedIdentifierModeOn());
+                delimitedIdentifierModeOn);
 
         if (!change.isAtEnd()) {
             Column prevColumn = change.getPreviousColumn();
@@ -273,7 +273,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 // we need the corresponding column object from the current
                 // table
                 prevColumn = curTable.findColumn(prevColumn.getName(),
-                        platform.isDelimitedIdentifierModeOn());
+                        delimitedIdentifierModeOn);
             }
             // Even though Firebird can only add columns, we can move them later
             // on
@@ -291,7 +291,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         if (change.getNewColumn().isAutoIncrement()) {
             writeAutoIncrementCreateStmts(curTable, change.getNewColumn(), ddl);
         }
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -308,6 +308,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 }

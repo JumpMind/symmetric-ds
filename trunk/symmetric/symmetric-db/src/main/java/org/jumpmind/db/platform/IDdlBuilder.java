@@ -24,5 +24,16 @@ public interface IDdlBuilder {
     public String alterDatabase(Database currentModel, Database desiredModel);
     
     public String dropTables(Database database);
+    
+    /*
+     * Determines whether delimited identifiers are used or normal SQL92
+     * identifiers (which may only contain alphanumerical characters and the
+     * underscore, must start with a letter and cannot be a reserved keyword).
+     * Per default, delimited identifiers are not used
+     * 
+     * @return <code>true</code> if delimited identifiers are used
+     */
+    public boolean isDelimitedIdentifierModeOn();
+
 
 }

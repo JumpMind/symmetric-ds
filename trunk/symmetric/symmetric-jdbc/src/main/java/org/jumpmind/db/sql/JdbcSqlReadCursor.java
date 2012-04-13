@@ -6,10 +6,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import org.jumpmind.db.sql.ISqlReadCursor;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.Row;
-
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     protected Connection c;

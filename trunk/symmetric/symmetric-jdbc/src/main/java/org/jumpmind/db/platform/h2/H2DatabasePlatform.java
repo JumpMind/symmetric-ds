@@ -77,7 +77,7 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
         info.setEmptyStringNulled(false);
 
         ddlReader = new H2DdlReader(this);
-        ddlBuilder = new H2DdlBuilder(this);
+        ddlBuilder = new H2DdlBuilder(info);
     }
     
     @Override

@@ -88,7 +88,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         try {
             List<Column> columns = new ArrayList<Column>();
 
-            if (getPlatform().isDelimitedIdentifierModeOn()) {
+            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
                 // it is not able to find the columns for the table
                 // So we have to filter manually below
@@ -136,14 +136,14 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
 
         try {
-            prepStmt.setString(1, getPlatform().isDelimitedIdentifierModeOn() ? table.getName()
+            prepStmt.setString(1, getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? table.getName()
                     : table.getName().toUpperCase());
 
             ResultSet rs = prepStmt.executeQuery();
 
             while (rs.next()) {
                 String columnName = rs.getString(1).trim();
-                Column column = table.findColumn(columnName, getPlatform()
+                Column column = table.findColumn(columnName, getPlatform().getDdlBuilder()
                         .isDelimitedIdentifierModeOn());
 
                 if (column != null) {
@@ -201,7 +201,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
         for (int idx = 0; idx < columns.length; idx++) {
             name = builder.getGeneratorName(table, columns[idx]);
-            if (!getPlatform().isDelimitedIdentifierModeOn()) {
+            if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 name = name.toUpperCase();
             }
             names.put(name, columns[idx]);
@@ -256,7 +256,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         ResultSet pkData = null;
 
         try {
-            if (getPlatform().isDelimitedIdentifierModeOn()) {
+            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
                 // it is not able to find the primary key info for the table
                 // So we have to filter manually below
@@ -291,7 +291,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         ResultSet fkData = null;
 
         try {
-            if (getPlatform().isDelimitedIdentifierModeOn()) {
+            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
                 // it is not able to find the foreign key info for the table
                 // So we have to filter manually below
@@ -333,7 +333,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         try {
             stmt.setString(
                     1,
-                    getPlatform().isDelimitedIdentifierModeOn() ? tableName : tableName
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
                             .toUpperCase());
             stmt.setString(2, "PRIMARY KEY");
             stmt.setString(3, indexName);
@@ -364,7 +364,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         try {
             stmt.setString(
                     1,
-                    getPlatform().isDelimitedIdentifierModeOn() ? tableName : tableName
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
                             .toUpperCase());
             stmt.setString(2, "FOREIGN KEY");
             stmt.setString(3, fkName);
@@ -397,7 +397,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
             String tablePattern = table.getName();
 
-            if (getPlatform().isDelimitedIdentifierModeOn()) {
+            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 tablePattern = tablePattern.toUpperCase();
             }
 
@@ -414,7 +414,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                     schema = (String) values.get("TABLE_SCHEM");
                     found = true;
 
-                    if (getPlatform().isDelimitedIdentifierModeOn()) {
+                    if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                         // Jaybird has a problem when delimited identifiers are
                         // used as
                         // it is not able to find the columns for the table
@@ -428,12 +428,12 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                     while (found && columnData.next()) {
                         values = readColumns(columnData, getColumnsForColumn());
 
-                        if (getPlatform().isDelimitedIdentifierModeOn()
+                        if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()
                                 && !tableName.equals(values.get("TABLE_NAME"))) {
                             continue;
                         }
 
-                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
+                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform().getDdlBuilder()
                                 .isDelimitedIdentifierModeOn()) == null) {
                             found = false;
                         }

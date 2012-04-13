@@ -30,15 +30,15 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
 public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
 
-    public HsqlDbDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public HsqlDbDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -119,7 +119,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -133,7 +133,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
 }

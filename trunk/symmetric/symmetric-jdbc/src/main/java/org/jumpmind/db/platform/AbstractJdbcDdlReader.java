@@ -50,7 +50,6 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -705,7 +704,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
             String name = fk.getReference(columnIdx).getLocalColumnName();
             Column localColumn = table
-                    .findColumn(name, getPlatform().isDelimitedIdentifierModeOn());
+                    .findColumn(name, getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn());
 
             if (mustBeUnique && !localColumn.isPrimaryKey()) {
                 mustBeUnique = false;
@@ -1149,11 +1148,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
-        if (getPlatform().isDelimitedIdentifierModeOn()) {
+        if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         query.append(identifier);
-        if (getPlatform().isDelimitedIdentifierModeOn()) {
+        if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         return query;
@@ -1166,7 +1165,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected void sortForeignKeys(Database model) {
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
-            model.getTable(tableIdx).sortForeignKeys(getPlatform().isDelimitedIdentifierModeOn());
+            model.getTable(tableIdx).sortForeignKeys(getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn());
         }
     }
 
@@ -1233,7 +1232,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             String tablePattern = table.getName();
 
-            if (getPlatform().isDelimitedIdentifierModeOn()) {
+            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 tablePattern = tablePattern.toUpperCase();
             }
 
@@ -1254,7 +1253,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     while (found && columnData.next()) {
                         values = readColumns(columnData, getColumnsForColumn());
 
-                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
+                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform().getDdlBuilder()
                                 .isDelimitedIdentifierModeOn()) == null) {
                             found = false;
                         }

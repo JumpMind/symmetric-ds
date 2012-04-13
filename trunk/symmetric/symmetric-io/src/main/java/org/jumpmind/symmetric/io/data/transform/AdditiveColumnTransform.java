@@ -27,7 +27,7 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
     }
     
     public String getFullyQualifiedTableName(IDatabasePlatform platform, String schema, String catalog, String tableName) {
-        String quote = platform.isDelimitedIdentifierModeOn() ? platform
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
             .getPlatformInfo().getDelimiterToken() : "";
         tableName = quote + tableName + quote;
         if (!StringUtils.isBlank(schema)) {
@@ -52,7 +52,7 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                     newValue = numericValue.toString();
                 }
                 
-                String quote = platform.isDelimitedIdentifierModeOn() ? platform
+                String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
                         .getPlatformInfo().getDelimiterToken() : "";
                 StringBuilder sql = new StringBuilder(String.format("update %s set %s=%s+%s where ",
                         getFullyQualifiedTableName(platform, data.getSchemaName(), data.getCatalogName(), data.getTableName()), 

@@ -78,7 +78,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         
         ddlReader = new Db2DdlReader(this);
-        ddlBuilder = new Db2DdlBuilder(this);
+        ddlBuilder = new Db2DdlBuilder(info);
     }
     
     @Override

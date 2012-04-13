@@ -36,15 +36,15 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for MySQL.
  */
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
-    public MySqlDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public MySqlDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
@@ -165,7 +165,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         for (Iterator<Column> columnIt = changedColumns.iterator(); columnIt.hasNext();) {
             Column sourceColumn = columnIt.next();
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                    platform.isDelimitedIdentifierModeOn());
+                    delimitedIdentifierModeOn);
 
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
@@ -188,7 +188,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" FIRST");
         }
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -202,7 +202,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -215,7 +215,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -230,7 +230,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(),
                 change.getNewPrimaryKeyColumns(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*

@@ -50,7 +50,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -64,8 +64,8 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MsSqlDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public MsSqlDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -150,25 +150,25 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             break;
         case Types.DATE:
             result.append("CAST(");
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(value instanceof String ? (String) value : getValueDateFormat().format(
                     value));
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         case Types.TIME:
             result.append("CAST(");
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(value instanceof String ? (String) value : getValueTimeFormat().format(
                     value));
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         case Types.TIMESTAMP:
             result.append("CAST(");
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(value.toString());
-            result.append(platform.getPlatformInfo().getValueQuoteToken());
+            result.append(platformInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         }
@@ -225,8 +225,8 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
      * @return The quotation-on statement
      */
     private String getQuotationOnStatement() {
-        if (platform.isDelimitedIdentifierModeOn()) {
-            return "SET quoted_identifier on" + platform.getPlatformInfo().getSqlCommandDelimiter()
+        if (delimitedIdentifierModeOn) {
+            return "SET quoted_identifier on" + platformInfo.getSqlCommandDelimiter()
                     + "\n";
         } else {
             return "";
@@ -260,7 +260,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         result.append("SET IDENTITY_INSERT ");
         result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" ON");
-        result.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+        result.append(platformInfo.getSqlCommandDelimiter());
 
         return result.toString();
     }
@@ -279,7 +279,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         result.append("SET IDENTITY_INSERT ");
         result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" OFF");
-        result.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+        result.append(platformInfo.getSqlCommandDelimiter());
 
         return result.toString();
     }
@@ -469,7 +469,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
                 ColumnChange change = (ColumnChange) changeIt.next();
                 Column sourceColumn = change.getChangedColumn();
                 Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                        platform.isDelimitedIdentifierModeOn());
+                        delimitedIdentifierModeOn);
 
                 if (!processedColumns.contains(targetColumn)) {
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn,
@@ -478,7 +478,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
                     processedColumns.add(targetColumn);
                 }
                 changes.remove(change);
-                change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+                change.apply(currentModel, delimitedIdentifierModeOn);
             }
         }
         // Finally we add primary keys
@@ -510,7 +510,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -524,7 +524,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -560,7 +560,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         println("  DEALLOCATE refcursor", ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*

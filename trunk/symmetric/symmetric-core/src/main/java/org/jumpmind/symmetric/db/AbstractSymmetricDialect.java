@@ -639,7 +639,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void truncateTable(String tableName) {
-        String quote = platform.isDelimitedIdentifierModeOn() ? platform.getPlatformInfo()
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform.getPlatformInfo()
                 .getDelimiterToken() : "";
         boolean success = false;
         int tryCount = 5;
