@@ -83,7 +83,7 @@ public class DbImport {
     
     protected void importTablesFromCsv(InputStream in) throws IOException {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        Table table = platform.readTableFromDatabase(getDefaultCatalog(), getDefaultSchema(), "item");
+        Table table = platform.readTableFromDatabase(catalog, schema, "item");
         if (table == null) {
             throw new RuntimeException("Unable to find table");
         }
@@ -121,20 +121,6 @@ public class DbImport {
         SqlScript script = new SqlScript(lines, platform.getSqlTemplate(), true, SqlScript.QUERY_ENDS, 
                 platform.getSqlScriptReplacementTokens());
         script.execute();
-    }
-
-    public String getDefaultCatalog() {
-        if (catalog != null) {
-            return catalog;
-        }
-        return platform.getDefaultCatalog();
-    }
-
-    public String getDefaultSchema() {
-        if (schema != null) {
-            return schema;
-        }
-        return platform.getDefaultSchema();
     }
 
     public Format getFormat() {
