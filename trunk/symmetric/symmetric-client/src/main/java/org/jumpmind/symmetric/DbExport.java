@@ -39,7 +39,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
-import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -79,7 +79,7 @@ public class DbExport {
     }
 
     public DbExport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null);
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new DatabasePlatformSettings());
     }
 
     public String exportTables() throws IOException {
@@ -104,7 +104,7 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output) throws IOException {
-        Database database = platform.readDatabase(getDefaultCatalog(), getDefaultSchema(), null);
+        Database database = platform.readDatabase(catalog, schema, null);
         exportTables(output, database.getTables());
     }
 
@@ -112,12 +112,12 @@ public class DbExport {
         ArrayList<Table> tableList = new ArrayList<Table>();
 
         for (String tableName : tableNames) {
-            Table table = platform.readTableFromDatabase(getDefaultCatalog(), getDefaultSchema(), tableName);
+            Table table = platform.readTableFromDatabase(catalog, schema, tableName);
             if (table != null) {
                 tableList.add(table);
             } else {
-                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + getDefaultCatalog() +
-                        " and schema " + getDefaultSchema());               
+                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + catalog +
+                        " and schema " + schema);
             }
         }
         exportTables(output, tableList.toArray(new Table[tableList.size()]));
@@ -128,12 +128,12 @@ public class DbExport {
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
         final ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
-        IDatabasePlatform target = new MySqlDatabasePlatform(null, new DatabasePlatformSettings());
-        SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        IDatabasePlatform target = new OracleDatabasePlatform(null, new DatabasePlatformSettings());
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         writeComment(writer, "SymmetricDS " + Version.version() + " " + DbExport.class.getSimpleName());
-        writeComment(writer, "Catalog: " + getDefaultCatalog());
-        writeComment(writer, "Schema: " + getDefaultSchema());
+        writeComment(writer, "Catalog: " + catalog);
+        writeComment(writer, "Schema: " + schema);
         writeComment(writer, "Started on " + df.format(new Date()));
 
     	for (Table table : tables) {
@@ -187,24 +187,10 @@ public class DbExport {
             } else if (format == Format.XML) {
                 writer.write("<!-- " + commentStr + " -->\n");
             } else if (format == Format.SQL) {
-                writer.write("-- SymmetricDS " + Version.version() + "\n--\n");
+                writer.write("-- " + commentStr + "\n");
             }
             writer.flush();
         }
-    }
-
-    public String getDefaultCatalog() {
-        if (catalog != null) {
-            return catalog;
-        }
-        return platform.getDefaultCatalog();
-    }
-
-    public String getDefaultSchema() {
-        if (schema != null) {
-            return schema;
-        }
-        return platform.getDefaultSchema();
     }
 
     public Format getFormat() {
