@@ -16,11 +16,18 @@ import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 import org.jumpmind.db.platform.sybase.SybaseDdlBuilder;
 
+/**
+ * Factory that creates {@link IDdlBuilder} from {@link DatabaseNamesConstants} values.
+ */
 final public class DdlBuilderFactory {
 
     private DdlBuilderFactory() {
     }
 
+    /**
+     * @param databaseName see {@link DatabaseNamesConstants}
+     * @return the associated ddl builder 
+     */
     public static final IDdlBuilder createDdlBuilder(String databaseName) {
         if (DatabaseNamesConstants.DB2.equals(databaseName)) {
             return new Db2DdlBuilder();
