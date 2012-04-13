@@ -12,17 +12,21 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
         this.requiresAutoCommitFalseToSetFetchSize = true;
-        primaryKeyViolationSqlStates = new String[] {"23505"};
+        primaryKeyViolationSqlStates = new String[] { "23505" };
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select currval('" + sequenceName + "_seq')";
+        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+            return "select seq_id from " + sequenceName + "_tbl";
+        } else {
+            return "select currval('" + sequenceName + "_seq')";
+        }
     }
 
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
 }
