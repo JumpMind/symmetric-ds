@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.load.StatementBuilder;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
@@ -165,7 +166,11 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select currval('" + sequenceName + "_seq')";
+        if (PostgreSqlPlatform.isUsePseudoSequence()) {
+            return "select seq_id from " + sequenceName  + "_tbl";
+        } else {
+            return "select currval('" + sequenceName + "_seq')";
+        }
     }
 
     @Override

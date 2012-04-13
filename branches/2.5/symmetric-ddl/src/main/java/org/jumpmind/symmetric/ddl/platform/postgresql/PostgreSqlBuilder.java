@@ -20,6 +20,7 @@ package org.jumpmind.symmetric.ddl.platform.postgresql;
  */
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -113,9 +114,40 @@ public class PostgreSqlBuilder extends SqlBuilder
      */
     private void createAutoIncrementSequence(Table table, Column column) throws IOException
     {
-        print("CREATE SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        printEndOfStatement();
+        if (PostgreSqlPlatform.isUsePseudoSequence()) {
+            print("CREATE TABLE ");
+            print(getConstraintName(null, table, column.getName(), "tbl"));
+            print("(SEQ_ID int8)");
+            printEndOfStatement();
+            
+            print("CREATE FUNCTION ");
+            print(getConstraintName(null, table, column.getName(), "seq"));
+            print("() ");
+            print("RETURNS INT8 AS $$ ");
+            print("DECLARE curVal int8; ");
+            print("BEGIN ");
+            print("  select seq_id into curVal from ");
+            print(getConstraintName(null, table, column.getName(), "tbl"));
+            print(" for update;");            
+            print("  if curVal is null then ");
+            print("      insert into ");
+            print(getConstraintName(null, table, column.getName(), "tbl"));
+            print(" values(1); ");
+            print("      curVal = 0; ");
+            print("  else "); 
+            print("      update ");
+            print(getConstraintName(null, table, column.getName(), "tbl"));
+            print(" set seq_id=curVal+1; ");
+            print("  end if; ");
+            print("  return curVal+1; ");
+            print("END; ");
+            println("$$ LANGUAGE plpgsql; ");
+
+        } else {
+            print("CREATE SEQUENCE ");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
+            printEndOfStatement();
+        }
     }
 
     /*
@@ -126,9 +158,20 @@ public class PostgreSqlBuilder extends SqlBuilder
      */
     private void dropAutoIncrementSequence(Table table, Column column) throws IOException
     {
-        print("DROP SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        printEndOfStatement();
+        if (PostgreSqlPlatform.isUsePseudoSequence()) {
+            print("DROP TABLE ");
+            print(getConstraintName(null, table, column.getName(), "tbl"));
+            printEndOfStatement();
+            
+            print("DROP FUNCTION ");
+            print(getConstraintName(null, table, column.getName(), "seq"));
+            print("()");
+            printEndOfStatement();
+        } else {
+            print("DROP SEQUENCE ");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
+            printEndOfStatement();
+        }
     }
 
     /*
@@ -136,9 +179,15 @@ public class PostgreSqlBuilder extends SqlBuilder
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
     {
-        print(" DEFAULT nextval('");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        print("')");
+        if (PostgreSqlPlatform.isUsePseudoSequence()) {
+            print(" DEFAULT ");
+            print(getConstraintName(null, table, column.getName(), "seq"));
+            print("()");
+        } else {
+            print(" DEFAULT nextval('");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
+            print("')");
+        }
     }
 
     /*
