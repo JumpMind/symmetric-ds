@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.interbase;
+package org.jumpmind.db.platform.firebird;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -32,16 +32,50 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
- * The SQL Builder for the Interbase database.
+ * The SQL Builder for the FireBird database.
  */
-public class InterbaseDdlBuilder extends AbstractDdlBuilder {
+public class FirebirdDdlBuilder extends AbstractDdlBuilder {
 
-    public InterbaseDdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public FirebirdDdlBuilder() {
+        databaseInfo.setMaxIdentifierLength(31);
+        databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
+        databaseInfo.setCommentPrefix("/*");
+        databaseInfo.setCommentSuffix("*/");
+
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "BLOB SUB_TYPE TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "BLOB SUB_TYPE TEXT");
+        databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.LONGVARBINARY);
+        // This is back-mapped to REAL in the model reader
+        databaseInfo.addNativeTypeMapping(Types.REAL, "FLOAT");
+        databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BLOB", Types.LONGVARBINARY);
+
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
+        databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "LONGVARBINARY");
+
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
+
         addEscapedCharSequence("'", "''");
     }
 
@@ -58,18 +92,6 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
-                        .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
-                    Types.SMALLINT).toString();
-        } else {
-            return super.getNativeDefaultValue(column);
-        }
-    }
-
-    @Override
     public void dropTable(Table table, StringBuilder ddl) {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
@@ -80,21 +102,11 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         super.dropTable(table, ddl);
     }
 
-    @Override
-    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        // Index names in Interbase are unique to a schema and hence we do not
-        // need the ON <tablename> clause
-        ddl.append("DROP INDEX ");
-        printIdentifier(getIndexName(index), ddl);
-        printEndOfStatement(ddl);
-    }
-
     /*
      * Writes the creation statements to make the given column an auto-increment
      * column.
      */
-    private void writeAutoIncrementCreateStmts(Table table, Column column,
-            StringBuilder ddl) {
+    private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl) {
         ddl.append("CREATE GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -117,6 +129,10 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
     /*
      * Writes the statements to drop the auto-increment status for the given
      * column.
+     * 
+     * @param table The table
+     * 
+     * @param column The column to remove the auto-increment status for
      */
     private void writeAutoIncrementDropStmts(Table table, Column column, StringBuilder ddl) {
         ddl.append("DROP TRIGGER ");
@@ -189,24 +205,33 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         }
     }
 
-    public String fixLastIdentityValues(Table table) {
-        Column[] columns = table.getAutoIncrementColumns();
-
-        if (columns.length == 0) {
-            return null;
+    @Override
+    protected String getNativeDefaultValue(Column column) {
+        if ((column.getTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+                        .determineBooleanTypeCode()))) {
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+                    Types.SMALLINT).toString();
         } else {
-            StringBuffer result = new StringBuffer();
-
-            result.append("SELECT ");
-            for (int idx = 0; idx < columns.length; idx++) {
-                result.append("GEN_ID(");
-                result.append(getDelimitedIdentifier(getGeneratorName(table, columns[idx])));
-                result.append(", (SELECT MAX(").append(columns[idx].getName()).append(")+1 FROM ");
-                result.append(table.getName()).append("))");
-            }
-            result.append(" FROM RDB$DATABASE");
-            return result.toString();
+            return super.getNativeDefaultValue(column);
         }
+    }
+
+    @Override
+    public void createExternalForeignKeys(Database database, StringBuilder ddl) {
+        for (int idx = 0; idx < database.getTableCount(); idx++) {
+            createExternalForeignKeys(database, database.getTable(idx), ddl);
+        }
+    }
+
+    @Override
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
+        // Index names in Firebird are unique to a schema and hence Firebird
+        // does not
+        // use the ON <tablename> clause
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
@@ -215,8 +240,8 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         // TODO: Dropping of primary keys is currently not supported because we
         // cannot
         // determine the pk constraint names and drop them in one go
-        // (We could used a stored procedure if Interbase would allow them to
-        // use DDL)
+        // (We could used a stored procedure if Firebird would allow them to use
+        // DDL)
         // This will be easier once named primary keys are supported
         boolean pkColumnAdded = false;
 
@@ -247,7 +272,6 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
                 }
             }
         }
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -282,20 +306,19 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
             if (prevColumn != null) {
                 // we need the corresponding column object from the current
                 // table
-                prevColumn = curTable.findColumn(prevColumn.getName(),
-                        delimitedIdentifierModeOn);
+                prevColumn = curTable.findColumn(prevColumn.getName(), delimitedIdentifierModeOn);
             }
-            // Even though Interbase can only add columns, we can move them
-            // later on
+            // Even though Firebird can only add columns, we can move them later
+            // on
             ddl.append("ALTER TABLE ");
             printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
             printIndent(ddl);
             ddl.append("ALTER ");
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
             ddl.append(" POSITION ");
-            // column positions start at 1 in Interbase
+            // column positions start at 1 in Firebird
             ddl.append(prevColumn == null ? "1" : String.valueOf(curTable
-                    .getColumnIndex(prevColumn) + 1));
+                    .getColumnIndex(prevColumn) + 2));
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {

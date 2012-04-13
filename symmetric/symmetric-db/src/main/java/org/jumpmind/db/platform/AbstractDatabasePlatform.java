@@ -75,9 +75,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     /* The log for this platform. */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    /* The platform info. */
-    protected DatabasePlatformInfo info = new DatabasePlatformInfo();
-
     /* The model reader for this platform. */
     protected IDdlReader ddlReader;
 
@@ -109,6 +106,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public AbstractDatabasePlatform() {
     }
+    
+    public DatabaseInfo getDatabaseInfo() {
+        return getDdlBuilder().getDatabaseInfo();
+    }
 
     abstract public ISqlTemplate getSqlTemplate();
 
@@ -120,8 +121,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns) {
         return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
-                        .getDelimiterToken());
+                getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp(), getDdlBuilder()
+                        .getDatabaseInfo().getDelimiterToken());
     }
 
     public IDdlReader getDdlReader() {
@@ -130,10 +131,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public IDdlBuilder getDdlBuilder() {
         return ddlBuilder;
-    }
-
-    public DatabasePlatformInfo getPlatformInfo() {
-        return info;
     }
 
     public void setClearCacheModelTimeoutInMs(long clearCacheModelTimeoutInMs) {
@@ -176,7 +173,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             log.debug("Generated create sql: \n", createSql);
         }
 
-        String delimiter = info.getSqlCommandDelimiter();
+        String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
         new SqlScript(createSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
     }
 
@@ -201,7 +198,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (log.isDebugEnabled()) {
             log.debug("Generated alter sql: \n", alterSql);
         }
-        String delimiter = info.getSqlCommandDelimiter();
+        String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
         new SqlScript(alterSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
 
     }
@@ -321,22 +318,24 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             try {
                 if (column != null) {
                     int type = column.getTypeCode();
-                    if ((value == null || (info.isEmptyStringNulled() && value.equals("")))
-                            && column.isRequired() && column.isOfTextType()) {
+                    if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
+                            .equals(""))) && column.isRequired() && column.isOfTextType()) {
                         objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                     }
                     if (value != null) {
-                        if (type == Types.DATE && !info.isDateOverridesToTimestamp()) {
+                        if (type == Types.DATE
+                                && !getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp()) {
                             objectValue = parseDate(value);
                         } else if (type == Types.TIMESTAMP
-                                || (type == Types.DATE && info.isDateOverridesToTimestamp())) {
+                                || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
+                                        .isDateOverridesToTimestamp())) {
                             objectValue = Timestamp.valueOf(value);
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && info
-                                    .isBlankCharColumnSpacePadded())
-                                    || (StringUtils.isNotBlank(charValue) && info
-                                            .isNonBlankCharColumnSpacePadded())) {
+                            if ((StringUtils.isBlank(charValue) && getDdlBuilder()
+                                    .getDatabaseInfo().isBlankCharColumnSpacePadded())
+                                    || (StringUtils.isNotBlank(charValue) && getDdlBuilder()
+                                            .getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
                                 objectValue = StringUtils.rightPad(value.toString(),
                                         column.getSizeAsInt(), ' ');
                             }

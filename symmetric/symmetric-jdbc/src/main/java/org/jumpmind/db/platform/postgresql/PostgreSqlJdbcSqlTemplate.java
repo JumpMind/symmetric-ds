@@ -17,7 +17,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
-        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+        if (PostgreSqlDdlBuilder.isUsePseudoSequence()) {
             return "select seq_id from " + sequenceName + "_tbl";
         } else {
             return "select currval('" + sequenceName + "_seq')";

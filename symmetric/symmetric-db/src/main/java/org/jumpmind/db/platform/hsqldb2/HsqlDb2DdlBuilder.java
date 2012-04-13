@@ -35,15 +35,44 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
 public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
 
-    public HsqlDb2DdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public HsqlDb2DdlBuilder() {
+        databaseInfo.setNonPKIdentityColumnsSupported(false);
+        databaseInfo.setIdentityOverrideAllowed(false);
+        databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
+
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGVARBINARY", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGVARBINARY", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGVARCHAR", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "LONGVARBINARY", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OBJECT");
+        databaseInfo.addNativeTypeMapping(Types.NULL, "LONGVARBINARY", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.REF, "LONGVARBINARY", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "LONGVARBINARY", Types.LONGVARBINARY);
+        // JDBC's TINYINT requires a value range of -255 to 255, but HsqlDb's is
+        // only -128 to 127
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+
+        databaseInfo.addNativeTypeMapping("BIT", "BOOLEAN", "BOOLEAN");
+        databaseInfo.addNativeTypeMapping("DATALINK", "LONGVARBINARY", "LONGVARBINARY");
+
+        databaseInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
+
+        
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
+
         addEscapedCharSequence("'", "''");
     }
 

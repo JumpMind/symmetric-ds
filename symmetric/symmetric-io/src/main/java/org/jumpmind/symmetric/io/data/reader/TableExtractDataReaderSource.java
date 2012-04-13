@@ -69,7 +69,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
 
     protected void startNewCursor() {
         String sql = String.format("select * from %s %s", table.getFullyQualifiedTableName(platform
-                .getPlatformInfo().getDelimiterToken()),
+                .getDatabaseInfo().getDelimiterToken()),
                 StringUtils.isNotBlank(whereClause) ? " where " + whereClause : "");
         this.cursor = platform.getSqlTemplate().queryForCursor(sql, new ISqlRowMapper<CsvData>() {
             public CsvData mapRow(Row row) {

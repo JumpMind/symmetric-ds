@@ -29,7 +29,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class ModelComparator {
     private final Logger log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
-    private DatabasePlatformInfo platformInfo;
+    private DatabaseInfo platformInfo;
 
     /** Whether comparison is case sensitive. */
     private boolean caseSensitive;
@@ -58,7 +58,7 @@ public class ModelComparator {
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(DatabasePlatformInfo platformInfo, boolean caseSensitive) {
+    public ModelComparator(DatabaseInfo platformInfo, boolean caseSensitive) {
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }

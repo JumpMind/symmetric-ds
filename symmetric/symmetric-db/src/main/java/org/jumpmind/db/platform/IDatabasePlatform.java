@@ -39,19 +39,19 @@ public interface IDatabasePlatform {
 
     public String getName();
 
-    /*
+    /**
      * Returns the info object for this platform.
      * 
      * @return The info object
      */
-    public DatabasePlatformInfo getPlatformInfo();
+    public DatabaseInfo getDatabaseInfo();
 
-    /*
+    /**
      * Returns a new ddl builder for the this platform.
      */
     public IDdlBuilder getDdlBuilder();
 
-    /*
+    /**
      * Returns the model reader (which reads a database model from a live
      * database) for this platform.
      * 
@@ -61,7 +61,7 @@ public interface IDatabasePlatform {
 
     public ISqlTemplate getSqlTemplate();
 
-/**
+    /**
      * The amount of time table metadata will be cached when using {@link IDatabasePlatform#getT
      * @param clearCacheModelTimeoutInMs
      */
@@ -73,7 +73,7 @@ public interface IDatabasePlatform {
 
     public String getDefaultCatalog();
 
-    /*
+    /**
      * Determines whether SQL insert statements can specify values for identity
      * columns. This setting is only relevant if the database supports it
      * ({@link PlatformInfo#isIdentityOverrideAllowed()}). If this is off, then
@@ -83,7 +83,7 @@ public interface IDatabasePlatform {
      */
     public boolean isIdentityOverrideOn();
 
-    /*
+    /**
      * Specifies whether SQL insert statements can specify values for identity
      * columns. This setting is only relevant if the database supports it
      * ({@link PlatformInfo#isIdentityOverrideAllowed()}). If this is off, then
@@ -94,7 +94,7 @@ public interface IDatabasePlatform {
      */
     public void setIdentityOverrideOn(boolean identityOverrideOn);
 
-    /*
+    /**
      * Determines whether foreign keys of a table read from a live database are
      * alphabetically sorted.
      * 
@@ -102,7 +102,7 @@ public interface IDatabasePlatform {
      */
     public boolean isForeignKeysSorted();
 
-    /*
+    /**
      * Specifies whether foreign keys read from a live database, shall be
      * alphabetically sorted.
      * 
@@ -111,7 +111,7 @@ public interface IDatabasePlatform {
      */
     public void setForeignKeysSorted(boolean foreignKeysSorted);
 
-    /*
+    /**
      * Reads the database model from the live database to which the given
      * connection is pointing.
      */

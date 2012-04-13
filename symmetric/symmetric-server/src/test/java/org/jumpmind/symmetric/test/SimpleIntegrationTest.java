@@ -805,7 +805,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void syncUpdateWithEmptyKey() {
         logTestRunning();
         try {
-            if (getClient().getSymmetricDialect().getPlatform().getPlatformInfo()
+            if (getClient().getSymmetricDialect().getPlatform().getDatabaseInfo()
                     .isEmptyStringNulled()) {
                 return;
             }
@@ -947,9 +947,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testCaseSensitiveTableNames() {
         logTestRunning();
-        String rquote = getServer().getSymmetricDialect().getPlatform().getPlatformInfo()
+        String rquote = getServer().getSymmetricDialect().getPlatform().getDatabaseInfo()
                 .getDelimiterToken();
-        String cquote = getClient().getSymmetricDialect().getPlatform().getPlatformInfo()
+        String cquote = getClient().getSymmetricDialect().getPlatform().getDatabaseInfo()
                 .getDelimiterToken();
         getServer().getSqlTemplate().update(
                 "insert into " + rquote + "Test_Mixed_Case" + rquote + " values(?,?)", 1, "Hello");

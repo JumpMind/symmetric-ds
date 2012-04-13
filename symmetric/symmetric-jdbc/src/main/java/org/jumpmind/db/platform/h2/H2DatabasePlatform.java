@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.h2;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,39 +43,8 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
      */
     public H2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-
-        info.setNonPKIdentityColumnsSupported(false);
-        info.setIdentityOverrideAllowed(false);
-        info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-        info.setNullAsDefaultValueRequired(false);
-        info.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.DISTINCT, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.REF, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
-        info.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
-
-        info.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
-        info.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
-        info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
-        info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
-
-        
-        info.setNonBlankCharColumnSpacePadded(false);
-        info.setBlankCharColumnSpacePadded(false);
-        info.setCharColumnSpaceTrimmed(true);
-        info.setEmptyStringNulled(false);
-
         ddlReader = new H2DdlReader(this);
-        ddlBuilder = new H2DdlBuilder(info);
+        ddlBuilder = new H2DdlBuilder();
     }
     
     @Override

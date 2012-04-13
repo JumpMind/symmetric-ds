@@ -165,7 +165,7 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String quote(String name) {
-        String quote = symmetricDialect.getPlatform().getPlatformInfo().getDelimiterToken();
+        String quote = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
         if (StringUtils.isNotBlank(quote)) {
             return quote + name + quote;
         } else {

@@ -43,7 +43,6 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -51,8 +50,52 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
-    public SybaseDdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public SybaseDdlBuilder() {
+
+        databaseInfo.setMaxIdentifierLength(128);
+        databaseInfo.setNullAsDefaultValueRequired(true);
+        databaseInfo.setCommentPrefix("/*");
+        databaseInfo.setCommentSuffix("*/");
+        databaseInfo.setDelimiterToken("\"");
+
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE");
+        // BIGINT is mapped back in the model reader
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
+        // we're not using the native BIT type because it is rather limited
+        // (cannot be NULL, cannot be indexed)
+        databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "INT");
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
+        databaseInfo.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
+        databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
+
+        databaseInfo.setDefaultSize(Types.BINARY, 254);
+        databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+
+        databaseInfo.setDateOverridesToTimestamp(true);
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setAutoIncrementUpdateAllowed(false);
+        
         addEscapedCharSequence("'", "''");
     }
 

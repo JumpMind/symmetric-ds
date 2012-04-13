@@ -19,6 +19,7 @@ package org.jumpmind.db.platform.postgresql;
  * under the License.
  */
 
+import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,16 +31,51 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for PostgresSql.
  */
 public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
-    public PostgreSqlDdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public PostgreSqlDdlBuilder() {
+        // this is the default length though it might be changed when building
+        // PostgreSQL
+        // in file src/include/postgres_ext.h
+        databaseInfo.setMaxIdentifierLength(31);
 
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMERIC", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BYTEA");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.NULL, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.REF, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BYTEA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "BOOLEAN", "BIT");
+        databaseInfo.addNativeTypeMapping("DATALINK", "BYTEA", "LONGVARBINARY");
+
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+
+        // no support for specifying the size for these types (because they are
+        // mapped to BYTEA which back-maps to BLOB)
+        databaseInfo.setHasSize(Types.BINARY, false);
+        databaseInfo.setHasSize(Types.VARBINARY, false);
+
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
@@ -50,6 +86,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\r", "\\r");
         addEscapedCharSequence("\t", "\\t");
     }
+    
+    public static boolean isUsePseudoSequence() {
+        return "true".equalsIgnoreCase(System.getProperty("org.jumpmind.symmetric.ddl.use.table.seq", "false"));
+    }    
 
     @Override
     public void dropTable(Table table, StringBuilder ddl) {
@@ -92,7 +132,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * @param column The column
      */
     private void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
-        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+        if (isUsePseudoSequence()) {
             ddl.append("CREATE TABLE ");
             ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
             ddl.append("(SEQ_ID int8)");
@@ -135,7 +175,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * @param column The column
      */
     private void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
-        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+        if (isUsePseudoSequence()) {
             ddl.append("DROP TABLE ");
             ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
             printEndOfStatement(ddl);
@@ -153,7 +193,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
-        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+        if (isUsePseudoSequence()) {
             ddl.append(" DEFAULT ");
             ddl.append(getConstraintName(null, table, column.getName(), "seq"));
             ddl.append("()");

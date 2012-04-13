@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.db2;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,42 +41,9 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
      * Creates a new platform instance.
      */
     public Db2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
-        super(dataSource, settings);
-
-        // the BINARY types are also handled by Db2Builder.getSqlType(Column)
-        info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.BINARY, "CHAR {0} FOR BIT DATA");
-        info.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "LONG VARCHAR");
-        info.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.VARBINARY, "VARCHAR {0} FOR BIT DATA");
-        info.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
-
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-        info.setDefaultSize(Types.BINARY, 254);
-        info.setDefaultSize(Types.VARBINARY, 254);
-        
-
-        info.setMaxIdentifierLength(128);
-        info.setMaxColumnNameLength(128);
-        info.setMaxConstraintNameLength(128);
-        info.setMaxForeignKeyNameLength(128);
-        
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-        
+        super(dataSource, settings);        
         ddlReader = new Db2DdlReader(this);
-        ddlBuilder = new Db2DdlBuilder(info);
+        ddlBuilder = new Db2DdlBuilder();
     }
     
     @Override

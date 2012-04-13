@@ -628,7 +628,7 @@ public class DatabaseWriter implements IDataWriter {
         boolean needsUpdated = true;
         String[] oldData = data.getParsedData(CsvData.OLD_DATA);
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
-        if (!platform.getPlatformInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
+        if (!platform.getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
