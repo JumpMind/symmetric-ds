@@ -21,22 +21,20 @@
 
 package org.jumpmind.symmetric;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
+import javax.sql.DataSource;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -47,77 +45,45 @@ import org.jumpmind.symmetric.csv.CsvReader;
 /**
  * Import data from file to database tables.
  */
-public class DbImport extends AbstractCommandLauncher {
+public class DbImport {
 
-    @SuppressWarnings("unused")
-    private static final Log log = LogFactory.getLog(DbImport.class);
-
-    private static final String OPTION_XML = "xml";
-
-    private static final String OPTION_CSV = "csv";
-    
-    public DbImport(String commandName, String messageKeyPrefix) {
-        super(commandName, messageKeyPrefix);
-    }
-
-    public static void main(String[] args) throws Exception {
-        new DbImport("dbimport", "DbImport.Option.").execute(args);
-    }
-    
-    protected void printHelp(Options options) {
-        System.out.println(commandName + " version " + Version.version());
-        System.out.println("Import data from file to database tables.\n");
-        super.printHelp(options);
-    }
-
-    @Override
-    protected void buildOptions(Options options) {
-        super.buildOptions(options);
-        addOption(options, "x", OPTION_XML, false);
-        addOption(options, null, OPTION_CSV, false);
-    }
-    
-    @Override
-    protected boolean executeOptions(CommandLine line) throws Exception {
-        String[] args = line.getArgs();
+    public enum Format { SQL, CSV, XML };
         
-        if (args.length == 0) {
-            executeOption(line, System.in);
-        } else {
-            for (String fileName : args) {
-                if (! new File(fileName).exists()) {
-                    throw new RuntimeException("Cannot find file " + fileName);
-                }
-            }
-            for (String fileName : args) {
-                executeOption(line, new FileInputStream(fileName));
-            }
+    private Format format = Format.SQL;
+
+    private String catalog;
+    
+    private String schema;
+
+    private IDatabasePlatform platform;
+    
+    public DbImport(IDatabasePlatform platform) {
+        this.platform = platform;
+    }
+
+    public DbImport(DataSource dataSource) {
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null);
+    }
+
+    public void importTables(String importData) throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+        importTables(in);
+        in.close();
+    }
+    
+    public void importTables(InputStream in) throws IOException {
+        if (format == Format.SQL) {
+            importTablesFromSql(in);
+        } else if (format == Format.CSV) {
+            importTablesFromCsv(in);
+        } else if (format == Format.XML) {
+            importTablesFromXml(in);
         }
-
-        return true;
     }
-
-    protected void executeOption(CommandLine line, InputStream in) throws Exception {
-        if (line.hasOption(OPTION_XML)) {
-            loadTablesFromXml(in);
-        } else if (line.hasOption(OPTION_CSV)) {
-            loadTablesFromCsv(in);           
-        } else {
-            loadTablesFromSql(in);
-        }
-    }
-
-    public void loadTablesFromXml(InputStream in) {
-        // TODO: read in data from XML also
-        IDatabasePlatform platform = getDatabasePlatform();
-        Database database = new DatabaseIO().read(in);
-        platform.createDatabase(database, false, true);
-    }
-
-    public void loadTablesFromCsv(InputStream in) throws IOException {
-        IDatabasePlatform platform = getDatabasePlatform();
+    
+    protected void importTablesFromCsv(InputStream in) throws IOException {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        Table table = platform.readTableFromDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), "item");
+        Table table = platform.readTableFromDatabase(getDefaultCatalog(), getDefaultSchema(), "item");
         if (table == null) {
             throw new RuntimeException("Unable to find table");
         }
@@ -142,14 +108,64 @@ public class DbImport extends AbstractCommandLauncher {
         csvReader.close();
     }
 
-    public void loadTablesFromSql(InputStream in) throws Exception {
-        IDatabasePlatform platform = getDatabasePlatform();
+    protected void importTablesFromXml(InputStream in) {
+        // TODO: read in data from XML also
+        Database database = new DatabaseIO().read(in);
+        platform.createDatabase(database, false, true);
+    }
 
+    protected void importTablesFromSql(InputStream in) throws IOException {
         // TODO: SqlScript should be able to stream from standard input to run large SQL script
         List<String> lines = IOUtils.readLines(in);
 
         SqlScript script = new SqlScript(lines, platform.getSqlTemplate(), true, SqlScript.QUERY_ENDS, 
                 platform.getSqlScriptReplacementTokens());
         script.execute();
+    }
+
+    public String getDefaultCatalog() {
+        if (catalog != null) {
+            return catalog;
+        }
+        return platform.getDefaultCatalog();
+    }
+
+    public String getDefaultSchema() {
+        if (schema != null) {
+            return schema;
+        }
+        return platform.getDefaultSchema();
+    }
+
+    public Format getFormat() {
+        return format;
+    }
+
+    public void setFormat(Format format) {
+        this.format = format;
+    }
+
+    public String getCatalog() {
+        return catalog;
+    }
+
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public IDatabasePlatform getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(IDatabasePlatform platform) {
+        this.platform = platform;
     }
 }
