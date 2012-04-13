@@ -47,4 +47,4 @@ done
 
 #echo $CLASSPATH
 
-exec "$RUNJAVA" -Duser.language=en -Djava.io.tmpdir=../tmp -Dorg.mortbay.jetty.Request.maxFormContentSize=800000 -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dsun.net.client.defaultReadTimeout=1800000 -Dsun.net.client.defaultConnectTimeout=1800000 -Dlog4j.configuration=$LOG4JXML -cp $CLASSPATH org.jumpmind.symmetric.DbImport "$@"
+exec "$RUNJAVA" -Duser.language=en -Djava.io.tmpdir=../tmp -Dorg.mortbay.jetty.Request.maxFormContentSize=800000 -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dsun.net.client.defaultReadTimeout=1800000 -Dsun.net.client.defaultConnectTimeout=1800000 -Dlog4j.configuration=$LOG4JXML -cp $CLASSPATH org.jumpmind.symmetric.DbImportCommand "$@"
