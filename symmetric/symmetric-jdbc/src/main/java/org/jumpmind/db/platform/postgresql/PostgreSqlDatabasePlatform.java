@@ -98,6 +98,10 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         ddlBuilder = new PostgreSqlDdlBuilder(this);
     }
     
+    public static boolean isUsePseudoSequence() {
+        return "true".equalsIgnoreCase(System.getProperty("org.jumpmind.symmetric.ddl.use.table.seq", "false"));
+    }    
+    
     protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
         // Query timeout needs to be zero for postrgres because the jdbc driver does
         // not support a timeout setting of of other than zero.

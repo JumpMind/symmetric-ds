@@ -36,7 +36,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
  * The SQL Builder for PostgresSql.
  */
 public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
-    
+
     public PostgreSqlDdlBuilder(IDatabasePlatform platform) {
         super(platform);
 
@@ -52,7 +52,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void dropTable(Table table, StringBuilder ddl)  {
+    public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE ");
         printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" CASCADE");
@@ -66,14 +66,14 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl)  {
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
     }
 
     @Override
-    public void createTable(Table table, StringBuilder ddl)  {
+    public void createTable(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
 
@@ -91,10 +91,40 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * 
      * @param column The column
      */
-    private void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl)  {
-        ddl.append("CREATE SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
-        printEndOfStatement(ddl);
+    private void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+            ddl.append("CREATE TABLE ");
+            ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
+            ddl.append("(SEQ_ID int8)");
+            printEndOfStatement(ddl);
+
+            ddl.append("CREATE FUNCTION ");
+            ddl.append(getConstraintName(null, table, column.getName(), "seq"));
+            ddl.append("() ");
+            ddl.append("RETURNS INT8 AS $$ ");
+            ddl.append("DECLARE curVal int8; ");
+            ddl.append("BEGIN ");
+            ddl.append("  select seq_id into curVal from ");
+            ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
+            ddl.append(" for update;");
+            ddl.append("  if curVal is null then ");
+            ddl.append("      insert into ");
+            ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
+            ddl.append(" values(1); ");
+            ddl.append("      curVal = 0; ");
+            ddl.append("  else ");
+            ddl.append("      update ");
+            ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
+            ddl.append(" set seq_id=curVal+1; ");
+            ddl.append("  end if; ");
+            ddl.append("  return curVal+1; ");
+            ddl.append("END; ");
+            println("$$ LANGUAGE plpgsql; ", ddl);
+        } else {
+            ddl.append("CREATE SEQUENCE ");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+            printEndOfStatement(ddl);
+        }
     }
 
     /*
@@ -104,17 +134,34 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * 
      * @param column The column
      */
-    private void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl)  {
-        ddl.append("DROP SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
-        printEndOfStatement(ddl);
+    private void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+            ddl.append("DROP TABLE ");
+            ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
+            printEndOfStatement(ddl);
+
+            ddl.append("DROP FUNCTION ");
+            ddl.append(getConstraintName(null, table, column.getName(), "seq"));
+            ddl.append("()");
+            printEndOfStatement(ddl);
+        } else {
+            ddl.append("DROP SEQUENCE ");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+            printEndOfStatement(ddl);
+        }
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl)  {
-        ddl.append(" DEFAULT nextval('");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
-        ddl.append("')");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        if (PostgreSqlDatabasePlatform.isUsePseudoSequence()) {
+            ddl.append(" DEFAULT ");
+            ddl.append(getConstraintName(null, table, column.getName(), "seq"));
+            ddl.append("()");
+        } else {
+            ddl.append(" DEFAULT nextval('");
+            printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+            ddl.append("')");
+        }
     }
 
     @Override
@@ -143,7 +190,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -187,7 +234,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change, StringBuilder ddl)  {
+            AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
@@ -207,7 +254,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change, StringBuilder ddl)  {
+            RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
