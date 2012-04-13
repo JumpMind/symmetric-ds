@@ -86,7 +86,7 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
 
         ddlReader = new FirebirdDdlReader(this);
-        ddlBuilder = new FirebirdDdlBuilder(this);
+        ddlBuilder = new FirebirdDdlBuilder(info);
     }
     
     @Override

@@ -83,7 +83,7 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setAutoIncrementUpdateAllowed(false);
         
         ddlReader = new MsSqlDdlReader(this);
-        ddlBuilder = new MsSqlDdlBuilder(this);
+        ddlBuilder = new MsSqlDdlBuilder(info);
 
     }
 

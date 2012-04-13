@@ -76,7 +76,7 @@ public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
 
         ddlReader = new HsqlDb2DdlReader(this);
-        ddlBuilder = new HsqlDb2DdlBuilder(this);
+        ddlBuilder = new HsqlDb2DdlBuilder(info);
     }
     
     @Override

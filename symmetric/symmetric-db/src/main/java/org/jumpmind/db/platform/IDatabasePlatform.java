@@ -74,57 +74,6 @@ public interface IDatabasePlatform {
     public String getDefaultCatalog();
 
     /*
-     * Determines whether script mode is on. This means that the generated SQL
-     * is not intended to be sent directly to the database but rather to be
-     * saved in a SQL script file. Per default, script mode is off.
-     * 
-     * @return <code>true</code> if script mode is on
-     */
-    public boolean isScriptModeOn();
-
-    /*
-     * Specifies whether script mode is on. This means that the generated SQL is
-     * not intended to be sent directly to the database but rather to be saved
-     * in a SQL script file.
-     * 
-     * @param scriptModeOn <code>true</code> if script mode is on
-     */
-    public void setScriptModeOn(boolean scriptModeOn);
-
-    /*
-     * Determines whether delimited identifiers are used or normal SQL92
-     * identifiers (which may only contain alphanumerical characters and the
-     * underscore, must start with a letter and cannot be a reserved keyword).
-     * Per default, delimited identifiers are not used
-     * 
-     * @return <code>true</code> if delimited identifiers are used
-     */
-    public boolean isDelimitedIdentifierModeOn();
-
-    /*
-     * Specifies whether delimited identifiers are used or normal SQL92
-     * identifiers.
-     * 
-     * @param delimitedIdentifierModeOn <code>true</code> if delimited
-     * identifiers shall be used
-     */
-    public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn);
-
-    /*
-     * Determines whether SQL comments are generated.
-     * 
-     * @return <code>true</code> if SQL comments shall be generated
-     */
-    public boolean isSqlCommentsOn();
-
-    /*
-     * Specifies whether SQL comments shall be generated.
-     * 
-     * @param sqlCommentsOn <code>true</code> if SQL comments shall be generated
-     */
-    public void setSqlCommentsOn(boolean sqlCommentsOn);
-
-    /*
      * Determines whether SQL insert statements can specify values for identity
      * columns. This setting is only relevant if the database supports it
      * ({@link PlatformInfo#isIdentityOverrideAllowed()}). If this is off, then

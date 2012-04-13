@@ -76,7 +76,7 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
 
         ddlReader = new HsqlDbDdlReader(this);
-        ddlBuilder = new HsqlDbDdlBuilder(this);
+        ddlBuilder = new HsqlDbDdlBuilder(info);
 
     }
     

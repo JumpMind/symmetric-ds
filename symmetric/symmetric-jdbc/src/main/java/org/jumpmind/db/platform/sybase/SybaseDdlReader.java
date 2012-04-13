@@ -122,7 +122,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,IIndex> knownIndices)
             throws SQLException {
-        if (getPlatform().isDelimitedIdentifierModeOn()) {
+        if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             String indexName = (String) values.get("INDEX_NAME");
 
             // Sometimes, Sybase keeps the delimiter quotes around the index

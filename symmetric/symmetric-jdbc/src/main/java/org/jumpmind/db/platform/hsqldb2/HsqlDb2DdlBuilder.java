@@ -35,15 +35,15 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
 public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
 
-    public HsqlDb2DdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public HsqlDb2DdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -150,7 +150,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -164,7 +164,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     @Override

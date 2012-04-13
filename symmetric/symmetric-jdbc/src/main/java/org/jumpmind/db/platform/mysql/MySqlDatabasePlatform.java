@@ -102,7 +102,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setSyntheticDefaultValueForRequiredReturned(false);
         
         ddlReader = new MySqlDdlReader(this);
-        ddlBuilder = new MySqlDdlBuilder(this);
+        ddlBuilder = new MySqlDdlBuilder(info);
     }
     
     @Override

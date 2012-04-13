@@ -89,15 +89,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected long clearCacheModelTimeoutInMs = DateUtils.MILLIS_PER_HOUR;
 
-    /* Whether script mode is on. */
-    protected boolean scriptModeOn;
-
-    /* Whether SQL comments are generated or not. */
-    protected boolean sqlCommentsOn = false;
-
-    /* Whether delimited identifiers are used or not. */
-    protected boolean delimitedIdentifierModeOn;
-
     /* Whether identity override is enabled. */
     protected boolean identityOverrideOn;
 
@@ -117,7 +108,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected boolean metadataIgnoreCase = true;
 
     public AbstractDatabasePlatform() {
-        setDelimitedIdentifierModeOn(true);
     }
 
     abstract public ISqlTemplate getSqlTemplate();
@@ -152,36 +142,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public long getClearCacheModelTimeoutInMs() {
         return clearCacheModelTimeoutInMs;
-    }
-
-    public boolean isScriptModeOn() {
-        return scriptModeOn;
-    }
-
-    public void setScriptModeOn(boolean scriptModeOn) {
-        this.scriptModeOn = scriptModeOn;
-    }
-
-    public boolean isSqlCommentsOn() {
-        return sqlCommentsOn;
-    }
-
-    public void setSqlCommentsOn(boolean sqlCommentsOn) {
-        if (!getPlatformInfo().isSqlCommentsSupported() && sqlCommentsOn) {
-            throw new DdlException("Platform does not support SQL comments");
-        }
-        this.sqlCommentsOn = sqlCommentsOn;
-    }
-
-    public boolean isDelimitedIdentifierModeOn() {
-        return delimitedIdentifierModeOn;
-    }
-
-    public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
-        if (!getPlatformInfo().isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
-            throw new DdlException("Platform does not support delimited identifier");
-        }
-        this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
     }
 
     public boolean isIdentityOverrideOn() {

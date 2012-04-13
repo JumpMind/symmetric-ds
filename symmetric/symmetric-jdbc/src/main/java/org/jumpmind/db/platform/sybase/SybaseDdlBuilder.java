@@ -43,7 +43,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -51,8 +51,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
-    public SybaseDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public SybaseDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -186,7 +186,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
      * @return The quotation-on statement
      */
     protected String getQuotationOnStatement() {
-        if (platform.isDelimitedIdentifierModeOn()) {
+        if (delimitedIdentifierModeOn) {
             return "SET quoted_identifier on";
         } else {
             return "";
@@ -335,13 +335,13 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
                             (ColumnDefaultValueChange) changesPerColumn.get(0), ddl);
                 } else {
                     Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                            platform.isDelimitedIdentifierModeOn());
+                            delimitedIdentifierModeOn);
 
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                 }
                 for (Iterator changeIt = changesPerColumn.iterator(); changeIt.hasNext();) {
                     ((ColumnChange) changeIt.next()).apply(currentModel,
-                            platform.isDelimitedIdentifierModeOn());
+                            delimitedIdentifierModeOn);
                 }
             }
         }
@@ -374,7 +374,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -388,7 +388,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -428,7 +428,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
         println("  END", ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -444,9 +444,9 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
 
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
-                platform.isDelimitedIdentifierModeOn());
+                delimitedIdentifierModeOn);
         Column curColumn = curTable.findColumn(change.getChangedColumn().getName(),
-                platform.isDelimitedIdentifierModeOn());
+                delimitedIdentifierModeOn);
 
         ddl.append(" DEFAULT ");
         if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode())) {
@@ -455,7 +455,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
             ddl.append("NULL");
         }
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*

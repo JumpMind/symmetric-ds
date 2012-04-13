@@ -32,7 +32,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -40,8 +40,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class InterbaseDdlBuilder extends AbstractDdlBuilder {
 
-    public InterbaseDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public InterbaseDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -274,7 +274,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
 
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
-                platform.isDelimitedIdentifierModeOn());
+                delimitedIdentifierModeOn);
 
         if (!change.isAtEnd()) {
             Column prevColumn = change.getPreviousColumn();
@@ -283,7 +283,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
                 // we need the corresponding column object from the current
                 // table
                 prevColumn = curTable.findColumn(prevColumn.getName(),
-                        platform.isDelimitedIdentifierModeOn());
+                        delimitedIdentifierModeOn);
             }
             // Even though Interbase can only add columns, we can move them
             // later on
@@ -301,7 +301,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if (change.getNewColumn().isAutoIncrement()) {
             writeAutoIncrementCreateStmts(curTable, change.getNewColumn(), ddl);
         }
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -318,6 +318,6 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 }

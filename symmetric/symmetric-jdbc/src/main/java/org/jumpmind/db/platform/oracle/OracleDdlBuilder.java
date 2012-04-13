@@ -36,7 +36,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -48,11 +48,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
 
-    public OracleDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
-
+    public OracleDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
-
     }
 
     @Override
@@ -106,7 +104,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         String columnName = getColumnName(column);
         String triggerName = getConstraintName(PREFIX_TRIGGER, table, column.getName(), null);
 
-        if (platform.isScriptModeOn()) {
+        if (scriptModeOn) {
             // For the script, we output a more nicely formatted version
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printlnIdentifier(triggerName, ddl);
@@ -121,9 +119,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
-            println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
+            println(platformInfo.getSqlCommandDelimiter(), ddl);
             ddl.append("END");
-            println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
+            println(platformInfo.getSqlCommandDelimiter(), ddl);
             println("/", ddl);
             println(ddl);
         } else {
@@ -144,14 +142,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
-            ddl.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+            ddl.append(platformInfo.getSqlCommandDelimiter());
             ddl.append(" END");
             // It is important that there is a semicolon at the end of the
             // statement (or more
             // precisely, at the end of the PL/SQL block), and thus we put two
             // semicolons here
             // because the tokenizer will remove the one at the end
-            ddl.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+            ddl.append(platformInfo.getSqlCommandDelimiter());
             printEndOfStatement(ddl);
         }
     }
@@ -208,9 +206,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValueStr);
             }
@@ -362,7 +360,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             createAutoIncrementSequence(change.getChangedTable(), change.getNewColumn(), ddl);
             createAutoIncrementTrigger(change.getChangedTable(), change.getNewColumn(), ddl);
         }
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -380,7 +378,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -393,7 +391,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
 }

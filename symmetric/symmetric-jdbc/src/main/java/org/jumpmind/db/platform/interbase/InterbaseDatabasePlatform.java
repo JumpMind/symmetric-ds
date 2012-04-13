@@ -92,7 +92,7 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);        
 
         ddlReader = new InterbaseDdlReader(this);
-        ddlBuilder = new InterbaseDdlBuilder(this);
+        ddlBuilder = new InterbaseDdlBuilder(info);
     }
     
     @Override

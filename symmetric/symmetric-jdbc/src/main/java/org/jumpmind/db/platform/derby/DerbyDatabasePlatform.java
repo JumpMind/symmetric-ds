@@ -80,7 +80,7 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         
         ddlReader = new DerbyDdlReader(this);
-        ddlBuilder = new DerbyDdlBuilder(this);
+        ddlBuilder = new DerbyDdlBuilder(info);
     }
 
     @Override

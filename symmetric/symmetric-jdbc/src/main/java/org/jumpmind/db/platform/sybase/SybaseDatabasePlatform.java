@@ -97,7 +97,7 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         info.setAutoIncrementUpdateAllowed(false);
         
         ddlReader = new SybaseDdlReader(this);
-        ddlBuilder = new SybaseDdlBuilder(this);
+        ddlBuilder = new SybaseDdlBuilder(info);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");

@@ -31,7 +31,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -39,8 +39,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class DerbyDdlBuilder extends AbstractDdlBuilder {
 
-    public DerbyDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public DerbyDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -132,7 +132,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
     
 }

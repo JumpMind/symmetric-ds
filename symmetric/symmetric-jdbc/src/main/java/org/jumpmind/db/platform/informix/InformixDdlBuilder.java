@@ -7,12 +7,12 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 public class InformixDdlBuilder extends AbstractDdlBuilder {
 
-    public InformixDdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public InformixDdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     protected void processChange(Database currentModel, Database desiredModel,
@@ -84,6 +84,6 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(),
                 change.getNewPrimaryKeyColumns(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 }

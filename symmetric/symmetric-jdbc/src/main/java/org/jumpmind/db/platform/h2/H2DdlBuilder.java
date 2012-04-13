@@ -36,15 +36,15 @@ import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for the H2 database. 
  */
 public class H2DdlBuilder extends AbstractDdlBuilder {
 
-    public H2DdlBuilder(IDatabasePlatform platform) {
-        super(platform);
+    public H2DdlBuilder(DatabasePlatformInfo platformInfo) {
+        super(platformInfo);
         addEscapedCharSequence("'", "''");
     }
 
@@ -60,7 +60,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /*
@@ -74,7 +74,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!platform.getPlatformInfo().isDefaultValuesForLongTypesSupported()
+            if (!platformInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -93,7 +93,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()
+        } else if (platformInfo.isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
@@ -115,9 +115,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValueStr);
             }

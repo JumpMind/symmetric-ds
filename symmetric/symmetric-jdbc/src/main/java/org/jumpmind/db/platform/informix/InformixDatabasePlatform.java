@@ -58,7 +58,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
         }
 
         ddlReader = new InformixDdlReader(this);
-        ddlBuilder = new InformixDdlBuilder(this);
+        ddlBuilder = new InformixDdlBuilder(info);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");

@@ -92,9 +92,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /** The Log to which logging calls will be made. */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    /** The platform that this builder belongs to. */
-    protected IDatabasePlatform platform;
-
     /** The indentation used to indent commands. */
     private String indent = "    ";
 
@@ -116,14 +113,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /** The character sequences that need escaping. */
     private Map<String, String> charSequencesToEscape = new LinkedHashMap<String, String>();
 
+    protected DatabasePlatformInfo platformInfo;
+
+    protected boolean delimitedIdentifierModeOn = true;
+
+    protected boolean sqlCommentsOn = false;
+
+    protected boolean scriptModeOn = false;
+
     /**
      * Creates a new sql builder.
-     * 
-     * @param platform
-     *            The platform this builder belongs to
      */
-    public AbstractDdlBuilder(IDatabasePlatform platform) {
-        this.platform = platform;
+    public AbstractDdlBuilder(DatabasePlatformInfo platformInfo) {
+        this.platformInfo = platformInfo;
     }
 
     /**
@@ -326,15 +328,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * algorithm by redefining the individual methods that compromise it.
      */
     public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl) {
-        ModelComparator comparator = new ModelComparator(platform.getPlatformInfo(),
-                platform.isDelimitedIdentifierModeOn());
+        ModelComparator comparator = new ModelComparator(platformInfo, delimitedIdentifierModeOn);
         List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
         processChanges(currentModel, desiredModel, changes, ddl);
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel) {
-        ModelComparator comparator = new ModelComparator(platform.getPlatformInfo(),
-                platform.isDelimitedIdentifierModeOn());
+        ModelComparator comparator = new ModelComparator(platformInfo, delimitedIdentifierModeOn);
         List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
         return changes.size() > 0;
     }
@@ -445,7 +445,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveForeignKeyChange change, StringBuilder ddl) {
         writeExternalForeignKeyDropStmt(change.getChangedTable(), change.getForeignKey(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -461,7 +461,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveIndexChange change, StringBuilder ddl) {
         writeExternalIndexDropStmt(change.getChangedTable(), change.getIndex(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -477,7 +477,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveTableChange change, StringBuilder ddl) {
         dropTable(change.getChangedTable(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -493,7 +493,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddTableChange change, StringBuilder ddl) {
         createTable(change.getNewTable(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -510,7 +510,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             AddForeignKeyChange change, StringBuilder ddl) {
         writeExternalForeignKeyCreateStmt(desiredModel, change.getChangedTable(),
                 change.getNewForeignKey(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -526,7 +526,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddIndexChange change, StringBuilder ddl) {
         writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex(), ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -543,7 +543,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             Collection<TableChange> changes, StringBuilder ddl) {
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
-        boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
+        boolean caseSensitive = delimitedIdentifierModeOn;
 
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables
@@ -623,7 +623,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     private List<ForeignKey> getUnchangedForeignKeys(Database currentModel, Database desiredModel,
             String tableName) {
         ArrayList<ForeignKey> unchangedFKs = new ArrayList<ForeignKey>();
-        boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
+        boolean caseSensitive = delimitedIdentifierModeOn;
         Table sourceTable = currentModel.findTable(tableName, caseSensitive);
         Table targetTable = desiredModel.findTable(tableName, caseSensitive);
 
@@ -654,7 +654,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     private void addRelevantFKsFromUnchangedTables(Database currentModel, Database desiredModel,
             Set<String> namesOfKnownChangedTables, Map<String, List<ForeignKey>> fksPerTable) {
-        boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
+        boolean caseSensitive = delimitedIdentifierModeOn;
 
         for (int tableIdx = 0; tableIdx < desiredModel.getTableCount(); tableIdx++) {
             Table targetTable = desiredModel.getTable(tableIdx);
@@ -695,10 +695,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             String tableName, List<TableChange> changes, StringBuilder ddl) {
-        Table sourceTable = currentModel.findTable(tableName,
-                platform.isDelimitedIdentifierModeOn());
-        Table targetTable = desiredModel.findTable(tableName,
-                platform.isDelimitedIdentifierModeOn());
+        Table sourceTable = currentModel.findTable(tableName, delimitedIdentifierModeOn);
+        Table targetTable = desiredModel.findTable(tableName, delimitedIdentifierModeOn);
 
         // we're enforcing a full rebuild in case of the addition of a required
         // column without a default value that is not autoincrement
@@ -830,7 +828,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     public void restoreTableFromBackup(Table backupTable, Table targetTable,
-            LinkedHashMap columnMap, StringBuilder ddl) {
+            LinkedHashMap<Column, Column> columnMap, StringBuilder ddl) {
         ddl.append("DELETE FROM ");
         printIdentifier(getTableName(targetTable.getName()), ddl);
         printEndOfStatement(ddl);
@@ -909,7 +907,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
 
-        boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
+        boolean caseSensitive = delimitedIdentifierModeOn;
 
         for (int idx = 0; idx < targetTable.getIndexCount(); idx++) {
             IIndex targetIndex = targetTable.getIndex(idx);
@@ -939,24 +937,25 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The target table
      */
     public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
-        LinkedHashMap columnMap = getCopyDataColumnMapping(sourceTable, targetTable);
+        LinkedHashMap<Column, Column> columnMap = getCopyDataColumnMapping(sourceTable, targetTable);
         writeCopyDataStatement(sourceTable, targetTable, columnMap, ddl);
     }
 
     public void writeCopyDataStatement(Table sourceTable, Table targetTable,
-            LinkedHashMap columnMap, StringBuilder ddl) {
+            LinkedHashMap<Column, Column> columnMap, StringBuilder ddl) {
         ddl.append("INSERT INTO ");
         printIdentifier(getTableName(targetTable.getName()), ddl);
         ddl.append(" (");
-        for (Iterator columnIt = columnMap.values().iterator(); columnIt.hasNext();) {
+        for (Iterator<Column> columnIt = columnMap.values().iterator(); columnIt.hasNext();) {
             printIdentifier(getColumnName((Column) columnIt.next()), ddl);
             if (columnIt.hasNext()) {
                 ddl.append(",");
             }
         }
         ddl.append(") SELECT ");
-        for (Iterator columnsIt = columnMap.entrySet().iterator(); columnsIt.hasNext();) {
-            Map.Entry entry = (Map.Entry) columnsIt.next();
+        for (Iterator<Map.Entry<Column, Column>> columnsIt = columnMap.entrySet().iterator(); columnsIt
+                .hasNext();) {
+            Map.Entry<Column, Column> entry = columnsIt.next();
 
             writeCastExpression((Column) entry.getKey(), (Column) entry.getValue(), ddl);
             if (columnsIt.hasNext()) {
@@ -968,13 +967,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         printEndOfStatement(ddl);
     }
 
-    public LinkedHashMap getCopyDataColumnMapping(Table sourceTable, Table targetTable) {
-        LinkedHashMap columns = new LinkedHashMap();
+    public LinkedHashMap<Column, Column> getCopyDataColumnMapping(Table sourceTable,
+            Table targetTable) {
+        LinkedHashMap<Column, Column> columns = new LinkedHashMap<Column, Column>();
 
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             Column sourceColumn = sourceTable.getColumn(idx);
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                    platform.isDelimitedIdentifierModeOn());
+                    delimitedIdentifierModeOn);
 
             if (targetColumn != null) {
                 columns.put(sourceColumn, targetColumn);
@@ -983,8 +983,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return columns;
     }
 
-    public LinkedHashMap getCopyDataColumnOrderedMapping(Table sourceTable, Table targetTable) {
-        LinkedHashMap columns = new LinkedHashMap();
+    public LinkedHashMap<Column, Column> getCopyDataColumnOrderedMapping(Table sourceTable,
+            Table targetTable) {
+        LinkedHashMap<Column, Column> columns = new LinkedHashMap<Column, Column>();
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             columns.put(sourceTable.getColumn(idx), targetTable.getColumn(idx));
         }
@@ -1008,7 +1009,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             AddPrimaryKeyChange change, StringBuilder ddl) {
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns(),
                 ddl);
-        change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
+        change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
     /**
@@ -1025,7 +1026,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The corresponding foreign key if found
      */
     protected ForeignKey findCorrespondingForeignKey(Table table, ForeignKey fk) {
-        boolean caseMatters = platform.isDelimitedIdentifierModeOn();
+        boolean caseMatters = delimitedIdentifierModeOn;
         boolean checkFkName = (fk.getName() != null) && (fk.getName().length() > 0);
         Reference[] refs = fk.getReferences();
         ArrayList<Reference> curRefs = new ArrayList<Reference>();
@@ -1100,10 +1101,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
-        if (!platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
+        if (!platformInfo.isPrimaryKeyEmbedded()) {
             writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
         }
-        if (!platform.getPlatformInfo().isIndicesEmbedded()) {
+        if (!platformInfo.isIndicesEmbedded()) {
             writeExternalIndicesCreateStmt(table, ddl);
         }
     }
@@ -1125,7 +1126,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates external foreign key creation statements if necessary.
      */
     public void createExternalForeignKeys(Database database, Table table, StringBuilder ddl) {
-        if (!platform.getPlatformInfo().isForeignKeysEmbedded()) {
+        if (!platformInfo.isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx), ddl);
             }
@@ -1208,7 +1209,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      */
     public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
-        if (!platform.getPlatformInfo().isForeignKeysEmbedded()) {
+        if (!platformInfo.isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx), ddl);
             }
@@ -1403,7 +1404,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getTypeCode()) {
             case Types.DATE:
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueDateFormat() != null)) {
                     // TODO: Can the format method handle java.sql.Date properly
                     // ?
@@ -1411,10 +1412,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 break;
             case Types.TIME:
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueTimeFormat() != null)) {
                     // TODO: Can the format method handle java.sql.Date properly
                     // ?
@@ -1422,33 +1423,33 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 break;
             case Types.TIMESTAMP:
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 // TODO: SimpleDateFormat does not support nano seconds so we
                 // would
                 // need a custom date formatter for timestamps
                 result.append(value.toString());
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 break;
             case Types.REAL:
             case Types.NUMERIC:
             case Types.FLOAT:
             case Types.DOUBLE:
             case Types.DECIMAL:
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueNumberFormat() != null)) {
                     result.append(getValueNumberFormat().format(value));
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 break;
             default:
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 result.append(escapeStringValue(value.toString()));
-                result.append(platform.getPlatformInfo().getValueQuoteToken());
+                result.append(platformInfo.getValueQuoteToken());
                 break;
         }
         return result.toString();
@@ -1534,7 +1535,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The table name
      */
     public String getTableName(String tableName) {
-        return shortenName(tableName, platform.getPlatformInfo().getMaxTableNameLength());
+        return shortenName(tableName, platformInfo.getMaxTableNameLength());
     }
 
     /**
@@ -1573,13 +1574,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         writeColumns(table, ddl);
 
-        if (platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
+        if (platformInfo.isPrimaryKeyEmbedded()) {
             writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
-        if (platform.getPlatformInfo().isForeignKeysEmbedded()) {
+        if (platformInfo.isForeignKeysEmbedded()) {
             writeEmbeddedForeignKeysStmt(table, ddl);
         }
-        if (platform.getPlatformInfo().isIndicesEmbedded()) {
+        if (platformInfo.isIndicesEmbedded()) {
             writeEmbeddedIndicesStmt(table, ddl);
         }
         println(ddl);
@@ -1619,7 +1620,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The column name
      */
     protected String getColumnName(Column column) {
-        return shortenName(column.getName(), platform.getPlatformInfo().getMaxColumnNameLength());
+        return shortenName(column.getName(), platformInfo.getMaxColumnNameLength());
     }
 
     /**
@@ -1634,20 +1635,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (column.isRequired()) {
             ddl.append(" ");
             writeColumnNotNullableStmt(ddl);
-        } else if (platform.getPlatformInfo().isNullAsDefaultValueRequired()
-                && platform.getPlatformInfo().hasNullDefault(column.getTypeCode())) {
+        } else if (platformInfo.isNullAsDefaultValueRequired()
+                && platformInfo.hasNullDefault(column.getTypeCode())) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
         }
 
-        if (column.isPrimaryKey() && platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
+        if (column.isPrimaryKey() && platformInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }
 
-        if (column.isAutoIncrement()
-                && !platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()) {
-            if (!platform.getPlatformInfo().isNonPKIdentityColumnsSupported()
-                    && !column.isPrimaryKey()) {
+        if (column.isAutoIncrement() && !platformInfo.isDefaultValueUsedForIdentitySpec()) {
+            if (!platformInfo.isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
                 throw new ModelException(
                         "Column "
                                 + column.getName()
@@ -1682,14 +1681,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Object sizeSpec = column.getSize();
 
         if (sizeSpec == null) {
-            sizeSpec = platform.getPlatformInfo().getDefaultSize(column.getTypeCode());
+            sizeSpec = platformInfo.getDefaultSize(column.getTypeCode());
         }
         if (sizeSpec != null) {
-            if (platform.getPlatformInfo().hasSize(column.getTypeCode())) {
+            if (platformInfo.hasSize(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(sizeSpec.toString());
                 sqlType.append(")");
-            } else if (platform.getPlatformInfo().hasPrecisionAndScale(column.getTypeCode())) {
+            } else if (platformInfo.hasPrecisionAndScale(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(column.getSizeAsInt());
                 sqlType.append(",");
@@ -1711,7 +1710,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The native type
      */
     protected String getNativeType(Column column) {
-        String nativeType = (String) platform.getPlatformInfo().getNativeType(column.getTypeCode());
+        String nativeType = (String) platformInfo.getNativeType(column.getTypeCode());
 
         return nativeType == null ? column.getType() : nativeType;
     }
@@ -1787,7 +1786,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!platform.getPlatformInfo().isDefaultValuesForLongTypesSupported()
+            if (!platformInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -1798,8 +1797,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()
-                && column.isAutoIncrement()) {
+        } else if (platformInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
         }
@@ -1821,9 +1819,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValue.toString()));
-                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platformInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValue.toString());
             }
@@ -1887,14 +1885,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         String desiredDefault = desiredColumn.getDefaultValue();
         String currentDefault = currentColumn.getDefaultValue();
         boolean defaultsEqual = (desiredDefault == null) || desiredDefault.equals(currentDefault);
-        boolean sizeMatters = platform.getPlatformInfo().hasSize(currentColumn.getTypeCode())
+        boolean sizeMatters = platformInfo.hasSize(currentColumn.getTypeCode())
                 && (desiredColumn.getSize() != null);
 
         // We're comparing the jdbc type that corresponds to the native type for
         // the
         // desired type, in order to avoid repeated altering of a perfectly
         // valid column
-        if ((platform.getPlatformInfo().getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
+        if ((platformInfo.getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
                 .getTypeCode())
                 || (desiredColumn.isRequired() != currentColumn.isRequired())
                 || (sizeMatters && !StringUtils.equals(desiredColumn.getSize(),
@@ -1931,7 +1929,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             name.append(fk.getForeignTableName());
             fkName = getConstraintName(null, table, "FK", name.toString());
         }
-        fkName = shortenName(fkName, platform.getPlatformInfo().getMaxForeignKeyNameLength());
+        fkName = shortenName(fkName, platformInfo.getMaxForeignKeyNameLength());
 
         if (needsName) {
             log.warn("Encountered a foreign key in table " + table.getName()
@@ -1972,8 +1970,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             result.append("_");
             result.append(suffix);
         }
-        return shortenName(result.toString(), platform.getPlatformInfo()
-                .getMaxConstraintNameLength());
+        return shortenName(result.toString(), platformInfo.getMaxConstraintNameLength());
     }
 
     /**
@@ -2055,7 +2052,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The index name
      */
     public String getIndexName(IIndex index) {
-        return shortenName(index.getName(), platform.getPlatformInfo().getMaxConstraintNameLength());
+        return shortenName(index.getName(), platformInfo.getMaxConstraintNameLength());
     }
 
     /**
@@ -2068,7 +2065,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             IIndex index = table.getIndex(idx);
 
-            if (!index.isUnique() && !platform.getPlatformInfo().isIndicesSupported()) {
+            if (!index.isUnique() && !platformInfo.isIndicesSupported()) {
                 throw new ModelException("Platform does not support non-unique indices");
             }
             writeExternalIndexCreateStmt(table, index, ddl);
@@ -2079,7 +2076,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Writes the indexes embedded within the create table statement.
      */
     protected void writeEmbeddedIndicesStmt(Table table, StringBuilder ddl) {
-        if (platform.getPlatformInfo().isIndicesSupported()) {
+        if (platformInfo.isIndicesSupported()) {
             for (int idx = 0; idx < table.getIndexCount(); idx++) {
                 printStartOfEmbeddedStatement(ddl);
                 writeEmbeddedIndexCreateStmt(table, table.getIndex(idx), ddl);
@@ -2091,7 +2088,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Writes the given index of the table.
      */
     protected void writeExternalIndexCreateStmt(Table table, IIndex index, StringBuilder ddl) {
-        if (platform.getPlatformInfo().isIndicesSupported()) {
+        if (platformInfo.isIndicesSupported()) {
             if (index.getName() == null) {
                 log.warn("Cannot write unnamed index " + index);
             } else {
@@ -2165,12 +2162,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Generates the statement to drop a non-embedded index from the database.
      */
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        if (platform.getPlatformInfo().isAlterTableForDropUsed()) {
+        if (platformInfo.isAlterTableForDropUsed()) {
             writeTableAlterStmt(table, ddl);
         }
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
-        if (!platform.getPlatformInfo().isAlterTableForDropUsed()) {
+        if (!platformInfo.isAlterTableForDropUsed()) {
             ddl.append(" ON ");
             printIdentifier(getTableName(table.getName()), ddl);
         }
@@ -2188,7 +2185,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 log.warn("Foreign key table is null for key " + key);
             } else {
                 printStartOfEmbeddedStatement(ddl);
-                if (platform.getPlatformInfo().isEmbeddedForeignKeysNamed()) {
+                if (platformInfo.isEmbeddedForeignKeysNamed()) {
                     ddl.append("CONSTRAINT ");
                     printIdentifier(getForeignKeyName(table, key), ddl);
                     ddl.append(" ");
@@ -2280,10 +2277,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         printEndOfStatement(ddl);
     }
 
-    //
-    // Helper methods
-    //
-
     /**
      * Prints an SQL comment to the current stream.
      * 
@@ -2291,13 +2284,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The comment text
      */
     protected void printComment(String text, StringBuilder ddl) {
-        if (platform.isSqlCommentsOn()) {
-            ddl.append(platform.getPlatformInfo().getCommentPrefix());
+        if (sqlCommentsOn) {
+            ddl.append(platformInfo.getCommentPrefix());
             // Some databases insist on a space after the prefix
             ddl.append(" ");
             ddl.append(text);
             ddl.append(" ");
-            ddl.append(platform.getPlatformInfo().getCommentSuffix());
+            ddl.append(platformInfo.getCommentSuffix());
             println(ddl);
         }
     }
@@ -2315,7 +2308,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * followed by a carriage return.
      */
     protected void printEndOfStatement(StringBuilder ddl) {
-        println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
+        println(platformInfo.getSqlCommandDelimiter(), ddl);
     }
 
     /**
@@ -2335,9 +2328,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *         identifier is returned unchanged
      */
     protected String getDelimitedIdentifier(String identifier) {
-        if (platform.isDelimitedIdentifierModeOn()) {
-            return platform.getPlatformInfo().getDelimiterToken() + identifier
-                    + platform.getPlatformInfo().getDelimiterToken();
+        if (delimitedIdentifierModeOn) {
+            return platformInfo.getDelimiterToken() + identifier + platformInfo.getDelimiterToken();
         } else {
             return identifier;
         }
@@ -2381,6 +2373,75 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void printIndent(StringBuilder ddl) {
         ddl.append(getIndent());
+    }
+    
+    /*
+     * Determines whether script mode is on. This means that the generated SQL
+     * is not intended to be sent directly to the database but rather to be
+     * saved in a SQL script file. Per default, script mode is off.
+     * 
+     * @return <code>true</code> if script mode is on
+     */
+    public boolean isScriptModeOn() {
+        return scriptModeOn;
+    }
+
+    /*
+     * Specifies whether script mode is on. This means that the generated SQL is
+     * not intended to be sent directly to the database but rather to be saved
+     * in a SQL script file.
+     * 
+     * @param scriptModeOn <code>true</code> if script mode is on
+     */
+    public void setScriptModeOn(boolean scriptModeOn) {
+        this.scriptModeOn = scriptModeOn;
+    }
+
+    /*
+     * Determines whether SQL comments are generated.
+     * 
+     * @return <code>true</code> if SQL comments shall be generated
+     */
+    public boolean isSqlCommentsOn() {
+        return sqlCommentsOn;
+    }
+
+    /*
+     * Specifies whether SQL comments shall be generated.
+     * 
+     * @param sqlCommentsOn <code>true</code> if SQL comments shall be generated
+     */
+    public void setSqlCommentsOn(boolean sqlCommentsOn) {
+        if (!platformInfo.isSqlCommentsSupported() && sqlCommentsOn) {
+            throw new DdlException("Platform does not support SQL comments");
+        }
+        this.sqlCommentsOn = sqlCommentsOn;
+    }
+
+    /*
+     * Determines whether delimited identifiers are used or normal SQL92
+     * identifiers (which may only contain alphanumerical characters and the
+     * underscore, must start with a letter and cannot be a reserved keyword).
+     * Per default, delimited identifiers are not used
+     * 
+     * @return <code>true</code> if delimited identifiers are used
+     */
+    public boolean isDelimitedIdentifierModeOn() {
+        return delimitedIdentifierModeOn;
+    }
+
+    /*
+     * Specifies whether delimited identifiers are used or normal SQL92
+     * identifiers.
+     * 
+     * @param delimitedIdentifierModeOn <code>true</code> if delimited
+     * identifiers shall be used
+     */
+    public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
+        if (!platformInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
+            throw new DdlException("Platform does not support delimited identifier");
+        }
+        this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
     }
 
 }

@@ -263,7 +263,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         String seqName = builder.getConstraintName(OracleDdlBuilder.PREFIX_SEQUENCE, table,
                 column.getName(), null);
 
-        if (!getPlatform().isDelimitedIdentifierModeOn()) {
+        if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();
             seqName = seqName.toUpperCase();
         }
@@ -327,7 +327,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             stmt = connection.prepareStatement(query.toString());
             stmt.setString(
                     1,
-                    getPlatform().isDelimitedIdentifierModeOn() ? tableName : tableName
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
                             .toUpperCase());
             stmt.setString(2, "N");
             stmt.setString(3, "TABLE");
