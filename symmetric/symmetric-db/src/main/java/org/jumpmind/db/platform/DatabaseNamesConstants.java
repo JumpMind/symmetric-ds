@@ -7,6 +7,7 @@ final public class DatabaseNamesConstants {
     
     public final static String H2 = "h2";
     public final static String HSQLDB = "hsqldb";
+    public final static String HSQLDB2 = "hsqldb2";
     public final static String DERBY = "derby";
     public final static String GREENPLUM = "greenplum";
     public final static String INFORMIX = "informix";
