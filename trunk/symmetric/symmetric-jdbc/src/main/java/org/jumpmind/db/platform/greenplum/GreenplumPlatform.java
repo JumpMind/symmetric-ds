@@ -14,8 +14,8 @@ public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
     
     public GreenplumPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-        info.setTriggersSupported(false);
         this.ddlReader = new GreenplumDdlReader(this);
+        this.ddlBuilder = new GreenplumDdlBuilder();
     }
     
     @Override

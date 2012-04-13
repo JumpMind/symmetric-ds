@@ -633,10 +633,10 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     protected String translateExpectedString(String value, boolean isRequired) {
         if (isRequired
                 && (value == null || (value.equals("") && getDbDialect().getPlatform()
-                        .getPlatformInfo().isEmptyStringNulled()))) {
+                        .getDatabaseInfo().isEmptyStringNulled()))) {
             return AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         } else if (value != null && value.equals("")
-                && getDbDialect().getPlatform().getPlatformInfo().isEmptyStringNulled()) {
+                && getDbDialect().getPlatform().getDatabaseInfo().isEmptyStringNulled()) {
             return null;
         }
         return value;
@@ -647,12 +647,12 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
             value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
         if (value != null
-                && ((StringUtils.isBlank(value) && getDbDialect().getPlatform().getPlatformInfo()
+                && ((StringUtils.isBlank(value) && getDbDialect().getPlatform().getDatabaseInfo()
                         .isBlankCharColumnSpacePadded()) || (StringUtils.isNotBlank(value) && getDbDialect()
-                        .getPlatform().getPlatformInfo().isNonBlankCharColumnSpacePadded()))) {
+                        .getPlatform().getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
             return StringUtils.rightPad(value, size);
         } else if (value != null
-                && getDbDialect().getPlatform().getPlatformInfo().isCharColumnSpaceTrimmed()) {
+                && getDbDialect().getPlatform().getDatabaseInfo().isCharColumnSpaceTrimmed()) {
             return value.replaceFirst(" *$", "");
         }
         return value;

@@ -1,6 +1,5 @@
 package org.jumpmind.db.platform.informix;
 
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,42 +22,8 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public InformixDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
-        info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
-        info.addNativeTypeMapping(Types.VARBINARY, "BYTE", Types.BINARY);
-
-        info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
-
-        info.setDefaultSize(Types.VARCHAR, 255);
-        info.setDefaultSize(Types.CHAR, 255);
-
-        info.setAlterTableForDropUsed(true);
-        info.setSystemIndicesReturned(true);
-        
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-        info.setAutoIncrementUpdateAllowed(false);
-        
-        Map<String, String> env = System.getenv();
-        String clientIdentifierMode = env.get("DELIMIDENT");
-        if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
-            info.setDelimiterToken("\"");
-            info.setDelimitedIdentifiersSupported(true);
-        } else {
-            info.setDelimiterToken("");
-            info.setDelimitedIdentifiersSupported(false);
-        }
-
         ddlReader = new InformixDdlReader(this);
-        ddlBuilder = new InformixDdlBuilder(info);
+        ddlBuilder = new InformixDdlBuilder();
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");

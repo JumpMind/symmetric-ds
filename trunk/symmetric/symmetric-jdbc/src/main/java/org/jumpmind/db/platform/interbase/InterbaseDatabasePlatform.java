@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.interbase;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -38,61 +36,13 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /* The subprotocol used by the interbase driver. */
     public static final String JDBC_SUBPROTOCOL = "interbase";
 
-    public static int SWITCH_TO_LONGVARCHAR_SIZE = 4096;
-
     /*
      * Creates a new platform instance.
      */
     public InterbaseDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-
-        info.setMaxIdentifierLength(31);
-        info.setCommentPrefix("/*");
-        info.setCommentSuffix("*/");
-        info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-
-        // BINARY and VARBINARY are also handled by the
-        // InterbaseBuilder.getSqlType method
-        info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BIGINT, "NUMERIC(18,0)");
-        // Theoretically we could use (VAR)CHAR CHARACTER SET OCTETS but the
-        // JDBC driver is not
-        // able to handle that properly (the byte[]/BinaryStream accessors do
-        // not work)
-        info.addNativeTypeMapping(Types.BINARY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.BLOB, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.CLOB, "BLOB SUB_TYPE TEXT");
-        info.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(" + SWITCH_TO_LONGVARCHAR_SIZE + ")",
-                Types.VARCHAR);
-        info.addNativeTypeMapping(Types.NULL, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.REAL, "FLOAT");
-        info.addNativeTypeMapping(Types.REF, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.VARBINARY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
-        info.addNativeTypeMapping("DATALINK", "BLOB", "LONGVARBINARY");
-
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-        info.setHasSize(Types.BINARY, false);
-        info.setHasSize(Types.VARBINARY, false);
-
-        
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);        
-
         ddlReader = new InterbaseDdlReader(this);
-        ddlBuilder = new InterbaseDdlBuilder(info);
+        ddlBuilder = new InterbaseDdlBuilder();
     }
     
     @Override

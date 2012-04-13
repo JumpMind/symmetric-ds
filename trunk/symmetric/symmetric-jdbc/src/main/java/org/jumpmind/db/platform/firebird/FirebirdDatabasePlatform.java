@@ -19,13 +19,10 @@ package org.jumpmind.db.platform.firebird;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
@@ -45,48 +42,8 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public FirebirdDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-
-        DatabasePlatformInfo info = getPlatformInfo();
-
-        info.setMaxIdentifierLength(31);
-        info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-        info.setCommentPrefix("/*");
-        info.setCommentSuffix("*/");
-
-        info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BINARY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.CLOB, "BLOB SUB_TYPE TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BLOB, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "BLOB SUB_TYPE TEXT");
-        info.addNativeTypeMapping(Types.NULL, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER, "BLOB", Types.LONGVARBINARY);
-        // This is back-mapped to REAL in the model reader
-        info.addNativeTypeMapping(Types.REAL, "FLOAT");
-        info.addNativeTypeMapping(Types.REF, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.VARBINARY, "BLOB", Types.LONGVARBINARY);
-
-        info.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
-        info.addNativeTypeMapping("DATALINK", "BLOB", "LONGVARBINARY");
-
-        info.setDefaultSize(Types.VARCHAR, 254);
-        info.setDefaultSize(Types.CHAR, 254);
-
-        
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-
         ddlReader = new FirebirdDdlReader(this);
-        ddlBuilder = new FirebirdDdlBuilder(info);
+        ddlBuilder = new FirebirdDdlBuilder();
     }
     
     @Override

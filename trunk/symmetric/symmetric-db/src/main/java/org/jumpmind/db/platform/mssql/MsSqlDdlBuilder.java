@@ -50,7 +50,6 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -64,8 +63,45 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MsSqlDdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public MsSqlDdlBuilder() {
+
+        databaseInfo.setMaxIdentifierLength(128);
+
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
+        // BIGINT will be mapped back to BIGINT by the model reader
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.FLOAT);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "INT");
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
+        databaseInfo.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
+        databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
+
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setDefaultSize(Types.BINARY, 254);
+        databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+
+        
+        databaseInfo.setDateOverridesToTimestamp(true);
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setAutoIncrementUpdateAllowed(false);
+        
         addEscapedCharSequence("'", "''");
     }
 
@@ -150,25 +186,25 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             break;
         case Types.DATE:
             result.append("CAST(");
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(value instanceof String ? (String) value : getValueDateFormat().format(
                     value));
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         case Types.TIME:
             result.append("CAST(");
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(value instanceof String ? (String) value : getValueTimeFormat().format(
                     value));
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         case Types.TIMESTAMP:
             result.append("CAST(");
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(value.toString());
-            result.append(platformInfo.getValueQuoteToken());
+            result.append(databaseInfo.getValueQuoteToken());
             result.append(" AS datetime)");
             break;
         }
@@ -226,7 +262,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
      */
     private String getQuotationOnStatement() {
         if (delimitedIdentifierModeOn) {
-            return "SET quoted_identifier on" + platformInfo.getSqlCommandDelimiter()
+            return "SET quoted_identifier on" + databaseInfo.getSqlCommandDelimiter()
                     + "\n";
         } else {
             return "";
@@ -260,7 +296,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         result.append("SET IDENTITY_INSERT ");
         result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" ON");
-        result.append(platformInfo.getSqlCommandDelimiter());
+        result.append(databaseInfo.getSqlCommandDelimiter());
 
         return result.toString();
     }
@@ -279,7 +315,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         result.append("SET IDENTITY_INSERT ");
         result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" OFF");
-        result.append(platformInfo.getSqlCommandDelimiter());
+        result.append(databaseInfo.getSqlCommandDelimiter());
 
         return result.toString();
     }

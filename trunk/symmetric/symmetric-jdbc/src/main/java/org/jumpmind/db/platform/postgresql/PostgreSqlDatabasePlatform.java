@@ -53,54 +53,9 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public PostgreSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, overrideSettings(settings));
-
-        // this is the default length though it might be changed when building
-        // PostgreSQL
-        // in file src/include/postgres_ext.h
-        info.setMaxIdentifierLength(31);
-
-        info.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BINARY, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BIT, "BOOLEAN");
-        info.addNativeTypeMapping(Types.BLOB, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.DECIMAL, "NUMERIC", Types.NUMERIC);
-        info.addNativeTypeMapping(Types.DISTINCT, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BYTEA");
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.NULL, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.REF, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.VARBINARY, "BYTEA", Types.LONGVARBINARY);
-        info.addNativeTypeMapping("BOOLEAN", "BOOLEAN", "BIT");
-        info.addNativeTypeMapping("DATALINK", "BYTEA", "LONGVARBINARY");
-
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-
-        // no support for specifying the size for these types (because they are
-        // mapped
-        // to BYTEA which back-maps to BLOB)
-        info.setHasSize(Types.BINARY, false);
-        info.setHasSize(Types.VARBINARY, false);
-
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-
         ddlReader = new PostgreSqlDdlReader(this);
-        ddlBuilder = new PostgreSqlDdlBuilder(info);
-    }
-    
-    public static boolean isUsePseudoSequence() {
-        return "true".equalsIgnoreCase(System.getProperty("org.jumpmind.symmetric.ddl.use.table.seq", "false"));
-    }    
+        ddlBuilder = new PostgreSqlDdlBuilder();
+    }   
     
     protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
         // Query timeout needs to be zero for postrgres because the jdbc driver does
@@ -226,8 +181,8 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns) {
         return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getPlatformInfo().isDateOverridesToTimestamp(),
-                getPlatformInfo().getDelimiterToken());
+                getDatabaseInfo().isDateOverridesToTimestamp(),
+                getDatabaseInfo().getDelimiterToken());
     }
     
 }

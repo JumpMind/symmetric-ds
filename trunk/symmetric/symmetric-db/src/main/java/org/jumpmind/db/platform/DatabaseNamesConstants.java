@@ -1,7 +1,10 @@
 package org.jumpmind.db.platform;
 
-abstract public class DatabaseNamesConstants {
+final public class DatabaseNamesConstants {
 
+    private DatabaseNamesConstants() {
+    }
+    
     public final static String H2 = "h2";
     public final static String HSQLDB = "hsqldb";
     public final static String DERBY = "derby";

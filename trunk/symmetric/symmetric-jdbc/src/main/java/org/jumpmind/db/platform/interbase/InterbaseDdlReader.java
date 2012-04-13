@@ -73,7 +73,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         if (column.getTypeCode() == Types.VARCHAR) {
             int size = Integer.parseInt(column.getSize());
-            if (size >= InterbaseDatabasePlatform.SWITCH_TO_LONGVARCHAR_SIZE) {
+            if (size >= InterbaseDdlBuilder.SWITCH_TO_LONGVARCHAR_SIZE) {
                 column.setTypeCode(Types.LONGVARCHAR);
             }
         }

@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.mssql;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,47 +42,8 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public MsSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-
-        info.setMaxIdentifierLength(128);
-
-        info.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
-        // BIGINT will be mapped back to BIGINT by the model reader
-        info.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
-        info.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.FLOAT);
-        info.addNativeTypeMapping(Types.INTEGER, "INT");
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
-        info.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
-        info.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
-
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-        info.setDefaultSize(Types.BINARY, 254);
-        info.setDefaultSize(Types.VARBINARY, 254);
-
-        
-        info.setDateOverridesToTimestamp(true);
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-        info.setAutoIncrementUpdateAllowed(false);
-        
         ddlReader = new MsSqlDdlReader(this);
-        ddlBuilder = new MsSqlDdlBuilder(info);
-
+        ddlBuilder = new MsSqlDdlBuilder();
     }
 
     @Override

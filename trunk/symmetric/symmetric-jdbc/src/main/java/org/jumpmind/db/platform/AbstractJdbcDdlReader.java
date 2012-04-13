@@ -138,8 +138,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The platform settings
      */
-    public DatabasePlatformInfo getPlatformInfo() {
-        return platform.getPlatformInfo();
+    public DatabaseInfo getPlatformInfo() {
+        return platform.getDatabaseInfo();
     }
 
     /*

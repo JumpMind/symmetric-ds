@@ -36,7 +36,6 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -48,8 +47,52 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
 
-    public OracleDdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public OracleDdlBuilder() {
+        databaseInfo.setMaxIdentifierLength(30);
+        databaseInfo.setIdentityStatusReadingSupported(false);
+
+        // Note that the back-mappings are partially done by the model reader,
+        // not the driver
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
+        databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
+        databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
+
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
+        databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
+
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setDefaultSize(Types.BINARY, 254);
+        databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+
+        
+        databaseInfo.setDateOverridesToTimestamp(true);
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(true);
+
         addEscapedCharSequence("'", "''");
     }
 
@@ -119,9 +162,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
-            println(platformInfo.getSqlCommandDelimiter(), ddl);
+            println(databaseInfo.getSqlCommandDelimiter(), ddl);
             ddl.append("END");
-            println(platformInfo.getSqlCommandDelimiter(), ddl);
+            println(databaseInfo.getSqlCommandDelimiter(), ddl);
             println("/", ddl);
             println(ddl);
         } else {
@@ -142,14 +185,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
-            ddl.append(platformInfo.getSqlCommandDelimiter());
+            ddl.append(databaseInfo.getSqlCommandDelimiter());
             ddl.append(" END");
             // It is important that there is a semicolon at the end of the
             // statement (or more
             // precisely, at the end of the PL/SQL block), and thus we put two
             // semicolons here
             // because the tokenizer will remove the one at the end
-            ddl.append(platformInfo.getSqlCommandDelimiter());
+            ddl.append(databaseInfo.getSqlCommandDelimiter());
             printEndOfStatement(ddl);
         }
     }
@@ -206,9 +249,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValueStr);
             }

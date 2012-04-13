@@ -35,7 +35,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -43,8 +43,40 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class Db2DdlBuilder extends AbstractDdlBuilder {
     
-    public Db2DdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public Db2DdlBuilder() {
+        super();
+        // the BINARY types are also handled by Db2Builder.getSqlType(Column)
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "CHAR {0} FOR BIT DATA");
+        databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LONG VARCHAR");
+        databaseInfo.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "VARCHAR {0} FOR BIT DATA");
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
+
+        databaseInfo.setDefaultSize(Types.CHAR, 254);
+        databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setDefaultSize(Types.BINARY, 254);
+        databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        
+
+        databaseInfo.setMaxIdentifierLength(128);
+        databaseInfo.setMaxColumnNameLength(128);
+        databaseInfo.setMaxConstraintNameLength(128);
+        databaseInfo.setMaxForeignKeyNameLength(128);
+        
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
+        databaseInfo.setEmptyStringNulled(false);
+        
         addEscapedCharSequence("'", "''");
     }
 
@@ -96,7 +128,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
                 Object sizeSpec = targetColumn.getSize();
 
                 if (sizeSpec == null) {
-                    sizeSpec = platformInfo
+                    sizeSpec = databaseInfo
                             .getDefaultSize(targetColumn.getTypeCode());
                 }
                 type = "CHAR(" + sizeSpec.toString() + ")";

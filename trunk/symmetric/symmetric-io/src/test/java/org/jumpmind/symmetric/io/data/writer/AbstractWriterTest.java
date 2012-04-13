@@ -173,11 +173,11 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
 
     protected String translateExpectedString(String value, boolean isRequired) {
         if (isRequired
-                && (value == null || (value.equals("") && platform.getPlatformInfo()
+                && (value == null || (value.equals("") && platform.getDatabaseInfo()
                         .isEmptyStringNulled()))) {
             return AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         } else if (value != null && value.equals("")
-                && platform.getPlatformInfo().isEmptyStringNulled()) {
+                && platform.getDatabaseInfo().isEmptyStringNulled()) {
             return null;
         }
         return value;
@@ -188,11 +188,11 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
             value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
         if (value != null
-                && ((StringUtils.isBlank(value) && platform.getPlatformInfo()
+                && ((StringUtils.isBlank(value) && platform.getDatabaseInfo()
                         .isBlankCharColumnSpacePadded()) || (StringUtils.isNotBlank(value) && platform
-                        .getPlatformInfo().isNonBlankCharColumnSpacePadded()))) {
+                        .getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
             return StringUtils.rightPad(value, size);
-        } else if (value != null && platform.getPlatformInfo().isCharColumnSpaceTrimmed()) {
+        } else if (value != null && platform.getDatabaseInfo().isCharColumnSpaceTrimmed()) {
             return value.replaceFirst(" *$", "");
         }
         return value;

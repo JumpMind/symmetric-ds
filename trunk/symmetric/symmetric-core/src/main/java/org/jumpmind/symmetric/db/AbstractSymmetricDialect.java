@@ -124,7 +124,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      * getMaxColumnNameLength()
      */
     public int getMaxTriggerNameLength() {
-        int max = getPlatform().getPlatformInfo().getMaxColumnNameLength();
+        int max = getPlatform().getDatabaseInfo().getMaxColumnNameLength();
         return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
@@ -414,14 +414,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("There are SymmetricDS tables that needed altered");
-                String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
+                String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener
                             .beforeUpgrade(this, this.parameterService.getTablePrefix(),
                                     modelFromDatabase, modelFromXml);
                     new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
+                            .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
@@ -429,13 +429,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 log.info("Alter SQL Generated: {}", alterSql);
 
                 new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                        .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
+                        .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.afterUpgrade(this,
                             this.parameterService.getTablePrefix(), modelFromXml);
                     new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute(platform.getPlatformInfo().isRequiresAutoCommitForDdl());
+                            .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
                 log.info("Done with auto update of SymmetricDS tables");
@@ -639,7 +639,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void truncateTable(String tableName) {
-        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform.getPlatformInfo()
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform.getDatabaseInfo()
                 .getDelimiterToken() : "";
         boolean success = false;
         int tryCount = 5;

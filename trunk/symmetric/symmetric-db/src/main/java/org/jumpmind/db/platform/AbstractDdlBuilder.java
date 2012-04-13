@@ -113,7 +113,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /** The character sequences that need escaping. */
     private Map<String, String> charSequencesToEscape = new LinkedHashMap<String, String>();
 
-    protected DatabasePlatformInfo platformInfo;
+    protected DatabaseInfo databaseInfo = new DatabaseInfo();
 
     protected boolean delimitedIdentifierModeOn = true;
 
@@ -124,8 +124,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Creates a new sql builder.
      */
-    public AbstractDdlBuilder(DatabasePlatformInfo platformInfo) {
-        this.platformInfo = platformInfo;
+    public AbstractDdlBuilder() {
     }
 
     /**
@@ -328,13 +327,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * algorithm by redefining the individual methods that compromise it.
      */
     public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl) {
-        ModelComparator comparator = new ModelComparator(platformInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
         List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
         processChanges(currentModel, desiredModel, changes, ddl);
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel) {
-        ModelComparator comparator = new ModelComparator(platformInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
         List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
         return changes.size() > 0;
     }
@@ -1101,10 +1100,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
-        if (!platformInfo.isPrimaryKeyEmbedded()) {
+        if (!databaseInfo.isPrimaryKeyEmbedded()) {
             writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
         }
-        if (!platformInfo.isIndicesEmbedded()) {
+        if (!databaseInfo.isIndicesEmbedded()) {
             writeExternalIndicesCreateStmt(table, ddl);
         }
     }
@@ -1126,7 +1125,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates external foreign key creation statements if necessary.
      */
     public void createExternalForeignKeys(Database database, Table table, StringBuilder ddl) {
-        if (!platformInfo.isForeignKeysEmbedded()) {
+        if (!databaseInfo.isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx), ddl);
             }
@@ -1209,7 +1208,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      */
     public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
-        if (!platformInfo.isForeignKeysEmbedded()) {
+        if (!databaseInfo.isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx), ddl);
             }
@@ -1404,7 +1403,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getTypeCode()) {
             case Types.DATE:
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueDateFormat() != null)) {
                     // TODO: Can the format method handle java.sql.Date properly
                     // ?
@@ -1412,10 +1411,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 break;
             case Types.TIME:
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueTimeFormat() != null)) {
                     // TODO: Can the format method handle java.sql.Date properly
                     // ?
@@ -1423,33 +1422,33 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 break;
             case Types.TIMESTAMP:
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 // TODO: SimpleDateFormat does not support nano seconds so we
                 // would
                 // need a custom date formatter for timestamps
                 result.append(value.toString());
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 break;
             case Types.REAL:
             case Types.NUMERIC:
             case Types.FLOAT:
             case Types.DOUBLE:
             case Types.DECIMAL:
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueNumberFormat() != null)) {
                     result.append(getValueNumberFormat().format(value));
                 } else {
                     result.append(value.toString());
                 }
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 break;
             default:
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 result.append(escapeStringValue(value.toString()));
-                result.append(platformInfo.getValueQuoteToken());
+                result.append(databaseInfo.getValueQuoteToken());
                 break;
         }
         return result.toString();
@@ -1535,7 +1534,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The table name
      */
     public String getTableName(String tableName) {
-        return shortenName(tableName, platformInfo.getMaxTableNameLength());
+        return shortenName(tableName, databaseInfo.getMaxTableNameLength());
     }
 
     /**
@@ -1574,13 +1573,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         writeColumns(table, ddl);
 
-        if (platformInfo.isPrimaryKeyEmbedded()) {
+        if (databaseInfo.isPrimaryKeyEmbedded()) {
             writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
-        if (platformInfo.isForeignKeysEmbedded()) {
+        if (databaseInfo.isForeignKeysEmbedded()) {
             writeEmbeddedForeignKeysStmt(table, ddl);
         }
-        if (platformInfo.isIndicesEmbedded()) {
+        if (databaseInfo.isIndicesEmbedded()) {
             writeEmbeddedIndicesStmt(table, ddl);
         }
         println(ddl);
@@ -1620,7 +1619,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The column name
      */
     protected String getColumnName(Column column) {
-        return shortenName(column.getName(), platformInfo.getMaxColumnNameLength());
+        return shortenName(column.getName(), databaseInfo.getMaxColumnNameLength());
     }
 
     /**
@@ -1635,18 +1634,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (column.isRequired()) {
             ddl.append(" ");
             writeColumnNotNullableStmt(ddl);
-        } else if (platformInfo.isNullAsDefaultValueRequired()
-                && platformInfo.hasNullDefault(column.getTypeCode())) {
+        } else if (databaseInfo.isNullAsDefaultValueRequired()
+                && databaseInfo.hasNullDefault(column.getTypeCode())) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
         }
 
-        if (column.isPrimaryKey() && platformInfo.isPrimaryKeyEmbedded()) {
+        if (column.isPrimaryKey() && databaseInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }
 
-        if (column.isAutoIncrement() && !platformInfo.isDefaultValueUsedForIdentitySpec()) {
-            if (!platformInfo.isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
+        if (column.isAutoIncrement() && !databaseInfo.isDefaultValueUsedForIdentitySpec()) {
+            if (!databaseInfo.isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
                 throw new ModelException(
                         "Column "
                                 + column.getName()
@@ -1681,14 +1680,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Object sizeSpec = column.getSize();
 
         if (sizeSpec == null) {
-            sizeSpec = platformInfo.getDefaultSize(column.getTypeCode());
+            sizeSpec = databaseInfo.getDefaultSize(column.getTypeCode());
         }
         if (sizeSpec != null) {
-            if (platformInfo.hasSize(column.getTypeCode())) {
+            if (databaseInfo.hasSize(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(sizeSpec.toString());
                 sqlType.append(")");
-            } else if (platformInfo.hasPrecisionAndScale(column.getTypeCode())) {
+            } else if (databaseInfo.hasPrecisionAndScale(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(column.getSizeAsInt());
                 sqlType.append(",");
@@ -1710,7 +1709,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The native type
      */
     protected String getNativeType(Column column) {
-        String nativeType = (String) platformInfo.getNativeType(column.getTypeCode());
+        String nativeType = (String) databaseInfo.getNativeType(column.getTypeCode());
 
         return nativeType == null ? column.getType() : nativeType;
     }
@@ -1786,7 +1785,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!platformInfo.isDefaultValuesForLongTypesSupported()
+            if (!databaseInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -1797,7 +1796,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (platformInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
+        } else if (databaseInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
         }
@@ -1819,9 +1818,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValue.toString()));
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValue.toString());
             }
@@ -1885,14 +1884,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         String desiredDefault = desiredColumn.getDefaultValue();
         String currentDefault = currentColumn.getDefaultValue();
         boolean defaultsEqual = (desiredDefault == null) || desiredDefault.equals(currentDefault);
-        boolean sizeMatters = platformInfo.hasSize(currentColumn.getTypeCode())
+        boolean sizeMatters = databaseInfo.hasSize(currentColumn.getTypeCode())
                 && (desiredColumn.getSize() != null);
 
         // We're comparing the jdbc type that corresponds to the native type for
         // the
         // desired type, in order to avoid repeated altering of a perfectly
         // valid column
-        if ((platformInfo.getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
+        if ((databaseInfo.getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
                 .getTypeCode())
                 || (desiredColumn.isRequired() != currentColumn.isRequired())
                 || (sizeMatters && !StringUtils.equals(desiredColumn.getSize(),
@@ -1929,7 +1928,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             name.append(fk.getForeignTableName());
             fkName = getConstraintName(null, table, "FK", name.toString());
         }
-        fkName = shortenName(fkName, platformInfo.getMaxForeignKeyNameLength());
+        fkName = shortenName(fkName, databaseInfo.getMaxForeignKeyNameLength());
 
         if (needsName) {
             log.warn("Encountered a foreign key in table " + table.getName()
@@ -1970,7 +1969,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             result.append("_");
             result.append(suffix);
         }
-        return shortenName(result.toString(), platformInfo.getMaxConstraintNameLength());
+        return shortenName(result.toString(), databaseInfo.getMaxConstraintNameLength());
     }
 
     /**
@@ -2052,7 +2051,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The index name
      */
     public String getIndexName(IIndex index) {
-        return shortenName(index.getName(), platformInfo.getMaxConstraintNameLength());
+        return shortenName(index.getName(), databaseInfo.getMaxConstraintNameLength());
     }
 
     /**
@@ -2065,7 +2064,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             IIndex index = table.getIndex(idx);
 
-            if (!index.isUnique() && !platformInfo.isIndicesSupported()) {
+            if (!index.isUnique() && !databaseInfo.isIndicesSupported()) {
                 throw new ModelException("Platform does not support non-unique indices");
             }
             writeExternalIndexCreateStmt(table, index, ddl);
@@ -2076,7 +2075,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Writes the indexes embedded within the create table statement.
      */
     protected void writeEmbeddedIndicesStmt(Table table, StringBuilder ddl) {
-        if (platformInfo.isIndicesSupported()) {
+        if (databaseInfo.isIndicesSupported()) {
             for (int idx = 0; idx < table.getIndexCount(); idx++) {
                 printStartOfEmbeddedStatement(ddl);
                 writeEmbeddedIndexCreateStmt(table, table.getIndex(idx), ddl);
@@ -2088,7 +2087,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Writes the given index of the table.
      */
     protected void writeExternalIndexCreateStmt(Table table, IIndex index, StringBuilder ddl) {
-        if (platformInfo.isIndicesSupported()) {
+        if (databaseInfo.isIndicesSupported()) {
             if (index.getName() == null) {
                 log.warn("Cannot write unnamed index " + index);
             } else {
@@ -2162,12 +2161,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Generates the statement to drop a non-embedded index from the database.
      */
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        if (platformInfo.isAlterTableForDropUsed()) {
+        if (databaseInfo.isAlterTableForDropUsed()) {
             writeTableAlterStmt(table, ddl);
         }
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
-        if (!platformInfo.isAlterTableForDropUsed()) {
+        if (!databaseInfo.isAlterTableForDropUsed()) {
             ddl.append(" ON ");
             printIdentifier(getTableName(table.getName()), ddl);
         }
@@ -2185,7 +2184,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 log.warn("Foreign key table is null for key " + key);
             } else {
                 printStartOfEmbeddedStatement(ddl);
-                if (platformInfo.isEmbeddedForeignKeysNamed()) {
+                if (databaseInfo.isEmbeddedForeignKeysNamed()) {
                     ddl.append("CONSTRAINT ");
                     printIdentifier(getForeignKeyName(table, key), ddl);
                     ddl.append(" ");
@@ -2285,12 +2284,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void printComment(String text, StringBuilder ddl) {
         if (sqlCommentsOn) {
-            ddl.append(platformInfo.getCommentPrefix());
+            ddl.append(databaseInfo.getCommentPrefix());
             // Some databases insist on a space after the prefix
             ddl.append(" ");
             ddl.append(text);
             ddl.append(" ");
-            ddl.append(platformInfo.getCommentSuffix());
+            ddl.append(databaseInfo.getCommentSuffix());
             println(ddl);
         }
     }
@@ -2308,7 +2307,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * followed by a carriage return.
      */
     protected void printEndOfStatement(StringBuilder ddl) {
-        println(platformInfo.getSqlCommandDelimiter(), ddl);
+        println(databaseInfo.getSqlCommandDelimiter(), ddl);
     }
 
     /**
@@ -2329,7 +2328,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected String getDelimitedIdentifier(String identifier) {
         if (delimitedIdentifierModeOn) {
-            return platformInfo.getDelimiterToken() + identifier + platformInfo.getDelimiterToken();
+            return databaseInfo.getDelimiterToken() + identifier + databaseInfo.getDelimiterToken();
         } else {
             return identifier;
         }
@@ -2412,7 +2411,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @param sqlCommentsOn <code>true</code> if SQL comments shall be generated
      */
     public void setSqlCommentsOn(boolean sqlCommentsOn) {
-        if (!platformInfo.isSqlCommentsSupported() && sqlCommentsOn) {
+        if (!databaseInfo.isSqlCommentsSupported() && sqlCommentsOn) {
             throw new DdlException("Platform does not support SQL comments");
         }
         this.sqlCommentsOn = sqlCommentsOn;
@@ -2438,10 +2437,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * identifiers shall be used
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
-        if (!platformInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
+        if (!databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
             throw new DdlException("Platform does not support delimited identifier");
         }
         this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
+    }
+    
+    public DatabaseInfo getDatabaseInfo() {
+        return databaseInfo;
     }
 
 }

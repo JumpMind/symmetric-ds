@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.oracle;
  * under the License.
  */
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,54 +56,8 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public OracleDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-
-        info.setMaxIdentifierLength(30);
-        info.setIdentityStatusReadingSupported(false);
-
-        // Note that the back-mappings are partially done by the model reader,
-        // not the driver
-        info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
-        info.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        info.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
-        info.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
-        info.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
-        info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
-        info.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
-        info.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        info.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
-        info.addNativeTypeMapping(Types.VARBINARY, "RAW");
-        info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
-
-        info.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
-        info.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
-
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-        info.setDefaultSize(Types.BINARY, 254);
-        info.setDefaultSize(Types.VARBINARY, 254);
-
-        
-        info.setDateOverridesToTimestamp(true);
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(true);
-
         ddlReader = new OracleDdlReader(this);
-        ddlBuilder = new OracleDdlBuilder(info);
+        ddlBuilder = new OracleDdlBuilder();
     }
 
     @Override
@@ -135,7 +87,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns) {
         return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
+                getDatabaseInfo().isDateOverridesToTimestamp(), getDatabaseInfo()
                         .getDelimiterToken());
     }
 

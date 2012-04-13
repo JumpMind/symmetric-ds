@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.sybase;
  * under the License.
  */
 
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,52 +51,8 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public SybaseDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
 
-        info.setMaxIdentifierLength(128);
-        info.setNullAsDefaultValueRequired(true);
-        info.setCommentPrefix("/*");
-        info.setCommentSuffix("*/");
-        info.setDelimiterToken("\"");
-
-        info.addNativeTypeMapping(Types.ARRAY, "IMAGE");
-        // BIGINT is mapped back in the model reader
-        info.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
-        // we're not using the native BIT type because it is rather limited
-        // (cannot be NULL, cannot be indexed)
-        info.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
-        info.addNativeTypeMapping(Types.INTEGER, "INT");
-        info.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
-        info.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
-        info.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        info.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
-        info.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
-
-        info.setDefaultSize(Types.BINARY, 254);
-        info.setDefaultSize(Types.VARBINARY, 254);
-        info.setDefaultSize(Types.CHAR, 254);
-        info.setDefaultSize(Types.VARCHAR, 254);
-
-        info.setDateOverridesToTimestamp(true);
-        info.setNonBlankCharColumnSpacePadded(true);
-        info.setBlankCharColumnSpacePadded(true);
-        info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-        info.setAutoIncrementUpdateAllowed(false);
-        
         ddlReader = new SybaseDdlReader(this);
-        ddlBuilder = new SybaseDdlBuilder(info);
+        ddlBuilder = new SybaseDdlBuilder();
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");

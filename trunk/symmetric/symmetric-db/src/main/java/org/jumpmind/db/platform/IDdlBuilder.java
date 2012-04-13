@@ -34,6 +34,7 @@ public interface IDdlBuilder {
      * @return <code>true</code> if delimited identifiers are used
      */
     public boolean isDelimitedIdentifierModeOn();
-
+    
+    public DatabaseInfo getDatabaseInfo();
 
 }

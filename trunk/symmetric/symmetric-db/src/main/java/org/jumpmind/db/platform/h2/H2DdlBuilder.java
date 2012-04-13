@@ -36,15 +36,43 @@ import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /*
  * The SQL Builder for the H2 database. 
  */
 public class H2DdlBuilder extends AbstractDdlBuilder {
 
-    public H2DdlBuilder(DatabasePlatformInfo platformInfo) {
-        super(platformInfo);
+    public H2DdlBuilder() {
+        databaseInfo.setNonPKIdentityColumnsSupported(false);
+        databaseInfo.setIdentityOverrideAllowed(false);
+        databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
+        databaseInfo.setNullAsDefaultValueRequired(false);
+        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.REF, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
+        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
+
+        databaseInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
+
+        
+        databaseInfo.setNonBlankCharColumnSpacePadded(false);
+        databaseInfo.setBlankCharColumnSpacePadded(false);
+        databaseInfo.setCharColumnSpaceTrimmed(true);
+        databaseInfo.setEmptyStringNulled(false);
+
         addEscapedCharSequence("'", "''");
     }
 
@@ -82,7 +110,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!platformInfo.isDefaultValuesForLongTypesSupported()
+            if (!databaseInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -93,7 +121,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (platformInfo.isDefaultValueUsedForIdentitySpec()
+        } else if (databaseInfo.isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
@@ -115,9 +143,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(platformInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValueStr);
             }

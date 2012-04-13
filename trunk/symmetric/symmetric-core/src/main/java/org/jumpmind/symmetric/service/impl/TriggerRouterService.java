@@ -915,7 +915,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             forceRebuildOfTriggers = true;
                         }
 
-                        boolean supportsTriggers = symmetricDialect.getPlatform().getPlatformInfo()
+                        boolean supportsTriggers = symmetricDialect.getPlatform().getDatabaseInfo()
                                 .isTriggersSupported();
 
                         newestHistory = rebuildTriggerIfNecessary(sqlBuffer,

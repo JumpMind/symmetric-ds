@@ -32,12 +32,10 @@ import org.slf4j.LoggerFactory;
 /*
  * Contains information about the database platform such as supported features and native type mappings.
  */
-public class DatabasePlatformInfo {
+public class DatabaseInfo {
     
     /* The Log to which logging calls will be made. */
-    private final Logger log = LoggerFactory.getLogger(DatabasePlatformInfo.class);
-
-    // properties influencing the definition of columns
+    private final Logger log = LoggerFactory.getLogger(DatabaseInfo.class);
 
     /*
      * Whether the database requires the explicit stating of NULL as the default
@@ -245,7 +243,7 @@ public class DatabasePlatformInfo {
     /*
      * Creates a new platform info object.
      */
-    public DatabasePlatformInfo() {
+    public DatabaseInfo() {
         this.typesWithNullDefault.add(new Integer(Types.CHAR));
         this.typesWithNullDefault.add(new Integer(Types.VARCHAR));
         this.typesWithNullDefault.add(new Integer(Types.LONGVARCHAR));

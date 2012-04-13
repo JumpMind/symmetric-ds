@@ -50,7 +50,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
             // don't send new heart beat events if we haven't sent
             // the last ones ...
             if (!nodeService.isRegistrationServer()) {
-                if (!symmetricDialect.getPlatform().getPlatformInfo().isTriggersSupported()) {
+                if (!symmetricDialect.getPlatform().getDatabaseInfo().isTriggersSupported()) {
                     dataService.insertHeartbeatEvent(me, false);
                     for (Node node : children) {
                         dataService.insertHeartbeatEvent(node, false);
