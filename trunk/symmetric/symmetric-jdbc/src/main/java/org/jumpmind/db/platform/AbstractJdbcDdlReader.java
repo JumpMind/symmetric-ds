@@ -443,14 +443,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 Database db = new Database();
                 db.setName(Table.getQualifiedTablePrefix(catalog, schema));
                 db.addTables(readTables(connection, catalog, schema, tableTypes));
-                // Note that we do this here instead of in readTable since
-                // platforms may
-                // redefine the readTable method whereas it is highly unlikely
-                // that this method gets
-                // redefined
-                if (getPlatform().isForeignKeysSorted()) {
-                    sortForeignKeys(db);
-                }
                 db.initialize();
                 return db;
             }
@@ -1156,17 +1148,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         return query;
-    }
-
-    /*
-     * Sorts the foreign keys in the tables of the model.
-     * 
-     * @param model The model
-     */
-    protected void sortForeignKeys(Database model) {
-        for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
-            model.getTable(tableIdx).sortForeignKeys(getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn());
-        }
     }
 
     /*

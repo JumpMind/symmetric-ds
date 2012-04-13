@@ -61,6 +61,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
+    /* The log for this platform. */
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
 
@@ -72,9 +75,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     /* The default name for models read from the database, if no name as given. */
     protected static final String MODEL_DEFAULT_NAME = "default";
 
-    /* The log for this platform. */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
     /* The model reader for this platform. */
     protected IDdlReader ddlReader;
 
@@ -85,12 +85,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     private long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
     protected long clearCacheModelTimeoutInMs = DateUtils.MILLIS_PER_HOUR;
-
-    /* Whether identity override is enabled. */
-    protected boolean identityOverrideOn;
-
-    /* Whether read foreign keys shall be sorted alphabetically. */
-    protected boolean foreignKeysSorted;
 
     protected String defaultSchema;
 
@@ -139,22 +133,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public long getClearCacheModelTimeoutInMs() {
         return clearCacheModelTimeoutInMs;
-    }
-
-    public boolean isIdentityOverrideOn() {
-        return identityOverrideOn;
-    }
-
-    public void setIdentityOverrideOn(boolean identityOverrideOn) {
-        this.identityOverrideOn = identityOverrideOn;
-    }
-
-    public boolean isForeignKeysSorted() {
-        return foreignKeysSorted;
-    }
-
-    public void setForeignKeysSorted(boolean foreignKeysSorted) {
-        this.foreignKeysSorted = foreignKeysSorted;
     }
 
     public void dropDatabase(Database database, boolean continueOnError) {
