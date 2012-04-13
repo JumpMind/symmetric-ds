@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
  */
 public class PostgreSqlPlatform extends PlatformImplBase
 {
+        
     /* Database name of this platform. */
     public static final String DATABASENAME      = "PostgreSql";
     /* The standard PostgreSQL jdbc driver. */
@@ -89,6 +90,10 @@ public class PostgreSqlPlatform extends PlatformImplBase
 
         setSqlBuilder(new PostgreSqlBuilder(this));
         setModelReader(new PostgreSqlModelReader(this));
+    }
+    
+    public static boolean isUsePseudoSequence() {
+        return "true".equalsIgnoreCase(System.getProperty("org.jumpmind.symmetric.ddl.use.table.seq", "false"));
     }
 
     /*
