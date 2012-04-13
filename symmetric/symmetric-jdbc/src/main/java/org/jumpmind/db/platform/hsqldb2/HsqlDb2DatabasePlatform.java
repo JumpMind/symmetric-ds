@@ -51,7 +51,7 @@ public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getName() {
-        return DatabaseNamesConstants.HSQLDB;
+        return DatabaseNamesConstants.HSQLDB2;
     }
 
     public String getDefaultSchema() {
