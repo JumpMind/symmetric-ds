@@ -44,7 +44,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_COMMENTS = "comments";
 
     public DbExportCommand() {
-        super("dbexport", "DbExport.Option.");
+        super("dbexport", "[tablename...]", "DbExport.Option.");
     }
     
     public static void main(String[] args) {
@@ -52,7 +52,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     }
     
     protected void printHelp(Options options) {
-        System.out.println(commandName + " version " + Version.version());
+        System.out.println(app + " version " + Version.version());
         System.out.println("Export the structure and data from database tables to file.\n");
         super.printHelp(options);
     }

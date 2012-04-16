@@ -72,7 +72,9 @@ public abstract class AbstractCommandLauncher {
 
     protected static final String COMMON_MESSAGE_KEY_PREFIX = "Common.Option.";
     
-    protected String commandName;
+    protected String app;
+    
+    protected String argSyntax;
     
     protected String messageKeyPrefix;
 
@@ -82,8 +84,9 @@ public abstract class AbstractCommandLauncher {
     
     protected IDatabasePlatform platform;
 
-    public AbstractCommandLauncher(String commandName, String messageKeyPrefix) {
-    	this.commandName = commandName;
+    public AbstractCommandLauncher(String app, String argSyntax, String messageKeyPrefix) {
+        this.app = app;
+    	this.argSyntax = argSyntax;
     	this.messageKeyPrefix = messageKeyPrefix;
     }
 
@@ -126,13 +129,13 @@ public abstract class AbstractCommandLauncher {
     }
     
     protected void printHelp(Options options) {
-        new HelpFormatter().printHelp(commandName, options);
+        new HelpFormatter().printHelp(app + " " + argSyntax, options);
     }
 
     protected void printUsage(Options options) {
     	PrintWriter writer = new PrintWriter(System.out);
-        new HelpFormatter().printUsage(writer, 80, commandName, options);
-        writer.write("For more options, use " + commandName + " --" + OPTION_HELP + "\n");
+        new HelpFormatter().printUsage(writer, 80, app, options);
+        writer.write("For more options, use " + app + " --" + OPTION_HELP + "\n");
         writer.flush();
     }
 
