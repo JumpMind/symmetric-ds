@@ -53,16 +53,16 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
 
-    public SymmetricLauncher(String commandName, String messageKeyPrefix) {
-		super(commandName, messageKeyPrefix);
+    public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
+		super(app, argSyntax, messageKeyPrefix);
 	}
 
     public static void main(String... args) throws Exception {
-        new SymmetricLauncher("sym", "Launcher.Option.").execute(args);
+        new SymmetricLauncher("sym", "", "Launcher.Option.").execute(args);
     }
 
     protected void printHelp(Options options) {
-    	System.out.println(commandName + " version " + Version.version());
+    	System.out.println(app + " version " + Version.version());
     	System.out.println("Launch the SymmetricDS engine as a standalone client or server.\n");
     	super.printHelp(options);
     }
