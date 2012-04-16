@@ -58,7 +58,8 @@ abstract public class TestSetupUtil {
         try {
             ISymmetricDialect dialect = engine.getSymmetricDialect();
             IDatabasePlatform platform = dialect.getPlatform();
-
+            IDdlBuilder builder = platform.getDdlBuilder();
+            
             dialect.cleanupTriggers();
 
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
@@ -66,12 +67,13 @@ abstract public class TestSetupUtil {
             if (url != null) {
                 new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
             }
-
-            Database testDb = getTestDatabase(dialect.getPlatform());
-            IDdlBuilder builder = platform.getDdlBuilder();
-            String sql = builder.dropTables(testDb);
+            
+            Database db2drop = platform.readDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), new String[] {"TABLE"});
+            String sql = builder.dropTables(db2drop);
             new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-
+            
+            Database testDb = getTestDatabase(platform);                        
+            
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT),
                     platform.getSqlTemplate(), false).execute(true);
 
