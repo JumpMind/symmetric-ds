@@ -34,9 +34,15 @@ import org.jumpmind.symmetric.DbImport.Format;
 public class DbImportCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_FORMAT = "format";
+    
+    private static final String OPTION_CATALOG = "catalog";
+    
+    private static final String OPTION_SCHEMA = "schema";
+    
+    private static final String OPTION_TABLE = "table";
 
     public DbImportCommand() {
-        super("dbimport", "DbImport.Option.");
+        super("dbimport", "[file...]", "DbImport.Option.");
     }
     
     public static void main(String[] args) {
@@ -44,7 +50,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     }
     
     protected void printHelp(Options options) {
-        System.out.println(commandName + " version " + Version.version());
+        System.out.println(app + " version " + Version.version());
         System.out.println("Import data from file to database tables.\n");
         super.printHelp(options);
     }
@@ -53,6 +59,9 @@ public class DbImportCommand extends AbstractCommandLauncher {
     protected void buildOptions(Options options) {
         super.buildOptions(options);
         addOption(options, null, OPTION_FORMAT, true);
+        addOption(options, null, OPTION_CATALOG, true);
+        addOption(options, null, OPTION_SCHEMA, true);
+        addOption(options, null, OPTION_TABLE, true);
     }
     
     @Override
@@ -62,10 +71,16 @@ public class DbImportCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_FORMAT)) {
             dbImport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
         }
+        if (line.hasOption(OPTION_CATALOG)) {
+            dbImport.setCatalog(line.getOptionValue(OPTION_CATALOG));
+        }
+        if (line.hasOption(OPTION_SCHEMA)) {
+            dbImport.setSchema(line.getOptionValue(OPTION_SCHEMA));
+        }
 
         String[] args = line.getArgs();
         if (args.length == 0) {
-            dbImport.importTables(System.in);
+            dbImport.importTables(System.in, line.getOptionValue(OPTION_TABLE));
         } else {
             for (String fileName : args) {
                 if (! new File(fileName).exists()) {
@@ -74,7 +89,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
             }
             for (String fileName : args) {
                 FileInputStream in = new FileInputStream(fileName);
-                dbImport.importTables(in);
+                dbImport.importTables(in, line.getOptionValue(OPTION_TABLE));
                 in.close();
             }
         }

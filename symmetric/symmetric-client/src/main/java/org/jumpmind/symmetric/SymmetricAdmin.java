@@ -77,16 +77,16 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String OPTION_CREATE_WAR = "create-war";
 
-    public SymmetricAdmin(String commandName, String messageKeyPrefix) {
-		super(commandName, messageKeyPrefix);
+    public SymmetricAdmin(String app, String argSyntax, String messageKeyPrefix) {
+		super(app, argSyntax, messageKeyPrefix);
 	}
 
 	public static void main(String[] args) throws Exception {
-        new SymmetricAdmin("symadmin", "SymAdmin.Option.").execute(args);
+        new SymmetricAdmin("symadmin", "", "SymAdmin.Option.").execute(args);
     }
 	
     protected void printHelp(Options options) {
-    	System.out.println(commandName + " version " + Version.version());
+    	System.out.println(app + " version " + Version.version());
     	System.out.println("Perform administration tasks with SymmetricDS.\n");
     	super.printHelp(options);
     }

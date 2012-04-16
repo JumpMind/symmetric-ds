@@ -66,6 +66,8 @@ public class DbExport {
 	
 	private boolean noData;
 	
+	private boolean ignoreMissingTables;
+
 	private boolean comments;
 	
 	private String catalog;
@@ -115,7 +117,7 @@ public class DbExport {
             Table table = platform.readTableFromDatabase(catalog, schema, tableName);
             if (table != null) {
                 tableList.add(table);
-            } else {
+            } else if (! ignoreMissingTables){
                 throw new RuntimeException("Cannot find table " + tableName + " in catalog " + catalog +
                         " and schema " + schema);
             }
@@ -132,8 +134,8 @@ public class DbExport {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         writeComment(writer, "SymmetricDS " + Version.version() + " " + DbExport.class.getSimpleName());
-        writeComment(writer, "Catalog: " + catalog);
-        writeComment(writer, "Schema: " + schema);
+        writeComment(writer, "Catalog: " + (catalog != null ? catalog : ""));
+        writeComment(writer, "Schema: " + (schema != null ? schema : ""));
         writeComment(writer, "Started on " + df.format(new Date()));
 
     	for (Table table : tables) {
@@ -255,5 +257,13 @@ public class DbExport {
 
     public void setSchema(String schema) {
         this.schema = schema;
+    }
+
+    public boolean isIgnoreMissingTables() {
+        return ignoreMissingTables;
+    }
+
+    public void setIgnoreMissingTables(boolean ignoreMissingTables) {
+        this.ignoreMissingTables = ignoreMissingTables;
     }
 }

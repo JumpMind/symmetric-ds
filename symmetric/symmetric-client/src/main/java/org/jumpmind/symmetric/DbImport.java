@@ -54,7 +54,7 @@ public class DbImport {
     private String catalog;
     
     private String schema;
-
+    
     private IDatabasePlatform platform;
     
     public DbImport(IDatabasePlatform platform) {
@@ -72,18 +72,22 @@ public class DbImport {
     }
     
     public void importTables(InputStream in) throws IOException {
+        importTables(in, null);
+    }
+
+    public void importTables(InputStream in, String tableName) throws IOException {
         if (format == Format.SQL) {
             importTablesFromSql(in);
         } else if (format == Format.CSV) {
-            importTablesFromCsv(in);
+            importTablesFromCsv(in, tableName);
         } else if (format == Format.XML) {
             importTablesFromXml(in);
         }
     }
-    
-    protected void importTablesFromCsv(InputStream in) throws IOException {
+
+    protected void importTablesFromCsv(InputStream in, String tableName) throws IOException {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        Table table = platform.readTableFromDatabase(catalog, schema, "item");
+        Table table = platform.readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table");
         }
@@ -154,4 +158,5 @@ public class DbImport {
     public void setPlatform(IDatabasePlatform platform) {
         this.platform = platform;
     }
+
 }
