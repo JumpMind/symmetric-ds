@@ -70,15 +70,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private Map<String, Router> routersCache;
 
+    private long routersCacheTime;
+
     private Map<String, Trigger> triggersCache;
+
+    private long triggersCacheTime;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
     private long triggerRouterCacheTime;
-
-    private long routersCacheTime;
-
-    private long triggersCacheTime;
 
     private List<ITriggerCreationListener> triggerCreationListeners;
 

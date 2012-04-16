@@ -33,14 +33,19 @@ import org.jumpmind.db.util.BinaryEncoding;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries
- * and manipulations. It also contains an sql builder that is specific to this platform.
+ * and manipulations. It also contains functionality to read and build DDL to create and
+ * alter database tables.
  */
 public interface IDatabasePlatform {
 
+    /**
+     * @see DatabaseNamesConstants
+     * @return a constant that represents this database type from {@link DatabaseNamesConstants}
+     */
     public String getName();
 
     /**
-     * Returns the info object for this platform.
+     * Returns information about this platform.
      * 
      * @return The info object
      */
@@ -52,7 +57,7 @@ public interface IDatabasePlatform {
     public IDdlBuilder getDdlBuilder();
 
     /**
-     * Returns the model reader (which reads a database model from a live
+     * Returns the ddl reader (which reads a database model from a live
      * database) for this platform.
      * 
      * @return The model reader
@@ -123,6 +128,8 @@ public interface IDatabasePlatform {
     public Map<String, String> getSqlScriptReplacementTokens();
     
     public String scrubSql(String sql);
+    
+    public boolean isStoresLowerCaseIdentifiers();
     
     public boolean isStoresUpperCaseIdentifiers();
     
