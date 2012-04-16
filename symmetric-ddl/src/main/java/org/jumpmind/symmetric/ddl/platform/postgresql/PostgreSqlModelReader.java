@@ -150,8 +150,9 @@ public class PostgreSqlModelReader extends JdbcModelReader
         if ((defaultValue != null) && (defaultValue.length() > 0))
         {
             // If the default value looks like "nextval('ROUNDTRIP_VALUE_seq'::text)"
-            // then it is an auto-increment column
-            if (defaultValue.startsWith("nextval("))
+            // then it is an auto-increment column            
+            if (defaultValue.startsWith("nextval(") || 
+                    (PostgreSqlPlatform.isUsePseudoSequence() && defaultValue.endsWith("seq()")))
             {
                 column.setAutoIncrement(true);
                 defaultValue = null;
