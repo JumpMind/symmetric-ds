@@ -53,8 +53,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
 
         if (table != null) {
             // PostgreSQL also returns unique indics for non-pk auto-increment
-            // columns
-            // which are of the form "[table]_[column]_key"
+            // columns which are of the form "[table]_[column]_key"
             HashMap uniquesByName = new HashMap();
 
             for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
@@ -131,7 +130,8 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             // If the default value looks like
             // "nextval('ROUNDTRIP_VALUE_seq'::text)"
             // then it is an auto-increment column
-            if (defaultValue.startsWith("nextval(")) {
+            if (defaultValue.startsWith("nextval(") || 
+                    (PostgreSqlDdlBuilder.isUsePseudoSequence() && defaultValue.endsWith("seq()"))) {
                 column.setAutoIncrement(true);
                 defaultValue = null;
             } else {
