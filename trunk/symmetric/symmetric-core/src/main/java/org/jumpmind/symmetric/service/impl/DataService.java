@@ -28,6 +28,8 @@ import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.SortByForeignKeyComparator;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -147,14 +150,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                trigger.getSourceTableName());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName());
 
         if (history == null) {
             triggerRouterService.syncTriggers();
-            history = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(), null, null, null);
+            history = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                    trigger.getTriggerId(), null, null, null);
         }
 
         if (history == null) {
@@ -168,10 +171,9 @@ public class DataService extends AbstractService implements IDataService {
             boolean isLoad) {
         String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter);
         Trigger trigger = triggerRouter.getTrigger();
-        TriggerHistory history = triggerRouterService
-                .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName());
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, triggerRouter.getTrigger()
                         .getChannelId(), null, null);
@@ -181,9 +183,9 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql,
             boolean isLoad) {
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                trigger.getSourceTableName());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName());
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
@@ -227,10 +229,9 @@ public class DataService extends AbstractService implements IDataService {
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter,
             String xml, boolean isLoad) {
         Trigger trigger = triggerRouter.getTrigger();
-        TriggerHistory history = triggerRouterService
-                .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName());
         Data data = new Data(
                 triggerRouter.getTrigger().getSourceTableName(),
                 DataEventType.CREATE,
@@ -372,79 +373,144 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvents(Node targetNode) {
+        // outgoing data events are pointless because we are reloading all
+        // data
+        outgoingBatchService.markAllAsSentForNode(targetNode);
 
-        // TODO transactional?
-        {
-            // outgoing data events are pointless because we are reloading all
-            // data
-            outgoingBatchService.markAllAsSentForNode(targetNode);
+        Node sourceNode = nodeService.findIdentity();
 
-            Node sourceNode = nodeService.findIdentity();
-
-            if (reloadListeners != null) {
-                for (IReloadListener listener : reloadListeners) {
-                    listener.beforeReload(targetNode);
-                }
+        if (reloadListeners != null) {
+            for (IReloadListener listener : reloadListeners) {
+                listener.beforeReload(targetNode);
             }
+        }
 
-            // insert node security so the client doing the initial load knows
-            // that an initial load is currently happening
-            insertNodeSecurityUpdate(targetNode, true);
+        // insert node security so the client doing the initial load knows
+        // that an initial load is currently happening
+        insertNodeSecurityUpdate(targetNode, true);
 
-            List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
-                    triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(
-                            sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+        List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
 
-            for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
-                TriggerRouter triggerRouter = iterator.next();
-                Trigger trigger = triggerRouter.getTrigger();
-                Table table = symmetricDialect.getPlatform().getTableFromCache(
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), true);
-                if (table == null) {
-                    log.warn("", trigger.qualifiedSourceTableName());
-                    iterator.remove();
-                }
-            }
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+                sourceNode, targetNode, triggerHistories);
 
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+            for (TriggerHistory triggerHistory : triggerHistories) {
+                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                        .getTriggerHistoryId());
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     String xml = symmetricDialect.getCreateTableXML(triggerRouter);
                     insertCreateEvent(targetNode, triggerRouter, xml, true);
                 }
             }
+        }
 
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+            for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
+                    .listIterator(); triggerHistoryIterator.hasPrevious();) {
+                TriggerHistory triggerHistory = triggerHistoryIterator.previous();
+                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                        .getTriggerHistoryId());
                 for (ListIterator<TriggerRouter> iterator = triggerRouters
                         .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
                     TriggerRouter triggerRouter = iterator.previous();
                     insertPurgeEvent(targetNode, triggerRouter, true);
                 }
             }
+        }
 
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                    .getTriggerHistoryId());
             for (TriggerRouter trigger : triggerRouters) {
                 insertReloadEvent(targetNode, trigger);
             }
+        }
 
-            if (reloadListeners != null) {
-                for (IReloadListener listener : reloadListeners) {
-                    listener.afterReload(targetNode);
+        if (reloadListeners != null) {
+            for (IReloadListener listener : reloadListeners) {
+                listener.afterReload(targetNode);
+            }
+        }
+
+        nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
+
+        // don't mark this batch as a load batch so it is forced to go last
+        insertNodeSecurityUpdate(targetNode,
+                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
+
+        statisticManager.incrementNodesLoaded(1);
+
+        // remove all incoming events from the node are starting a reload
+        // for.
+        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+
+    }
+
+    private Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
+            Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories) {
+
+        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
+                triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(
+                        sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+        for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
+            TriggerRouter triggerRouter = iterator.next();
+            Trigger trigger = triggerRouter.getTrigger();
+            Table table = symmetricDialect.getPlatform().getTableFromCache(
+                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                    trigger.getSourceTableName(), false);
+            if (table == null) {
+                log.warn("Could not find the table {} represented by trigger {}",
+                        trigger.qualifiedSourceTableName(), trigger.getTriggerId());
+                iterator.remove();
+            }
+        }
+
+        final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
+                triggerHistories.size());
+
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRoutersForTriggerHistory = new ArrayList<TriggerRouter>();
+            triggerRoutersByHistoryId.put(triggerHistory.getTriggerHistoryId(),
+                    triggerRoutersForTriggerHistory);
+
+            String triggerId = triggerHistory.getTriggerId();
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
+                    triggerRoutersForTriggerHistory.add(triggerRouter);
                 }
             }
-
-            nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
-
-            // don't mark this batch as a load batch so it is forced to go last
-            insertNodeSecurityUpdate(targetNode,
-                    parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
-
-            statisticManager.incrementNodesLoaded(1);
-
-            // remove all incoming events from the node are starting a reload
-            // for.
-            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-
         }
+
+        Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
+            public int compare(TriggerHistory o1, TriggerHistory o2) {
+                List<TriggerRouter> triggerRoutersForTriggerHist1 = triggerRoutersByHistoryId
+                        .get(o1.getTriggerHistoryId());
+                for (TriggerRouter triggerRouter1 : triggerRoutersForTriggerHist1) {
+                    List<TriggerRouter> triggerRoutersForTriggerHist2 = triggerRoutersByHistoryId
+                            .get(o2.getTriggerHistoryId());
+                    for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
+                        if (triggerRouter1.getInitialLoadOrder() < triggerRouter2
+                                .getInitialLoadOrder()) {
+                            return -1;
+                        } else if (triggerRouter1.getInitialLoadOrder() > triggerRouter2
+                                .getInitialLoadOrder()) {
+                            return 1;
+                        }
+                    }
+                }
+
+                Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
+                        o1.getSourceSchemaName(), o1.getSourceTableName(), false);
+                Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
+                        o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+                return new SortByForeignKeyComparator().compare(table1, table2);
+            };
+        };
+
+        Collections.sort(triggerHistories, comparator);
+
+        return triggerRoutersByHistoryId;
 
     }
 
@@ -576,10 +642,9 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(Trigger trigger, String whereClause) {
         Data data = null;
         if (trigger != null) {
-            TriggerHistory triggerHistory = triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            trigger.getSourceTableName());
+            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
+                    trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(), trigger.getSourceTableName());
             if (triggerHistory == null) {
                 triggerHistory = triggerRouterService.findTriggerHistory(trigger
                         .getSourceTableName());

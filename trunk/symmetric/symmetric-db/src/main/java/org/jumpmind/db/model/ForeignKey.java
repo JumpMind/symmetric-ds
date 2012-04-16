@@ -31,35 +31,51 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * 
  * @version $Revision: 504014 $
  */
-public class ForeignKey implements Cloneable
-{
+public class ForeignKey implements Cloneable {
+
     /** The name of the foreign key, may be <code>null</code>. */
-    private String _name;
+    private String name;
+
     /** The target table. */
-    private Table _foreignTable;
+    private Table foreignTable;
+
     /** The name of the foreign table. */
-    private String _foreignTableName;
+    private String foreignTableName;
+
     /** The references between local and remote columns. */
-    private ListOrderedSet _references = new ListOrderedSet();
+    private ListOrderedSet references = new ListOrderedSet();
+
     /** Whether this foreign key has an associated auto-generated index. */
-    private boolean _autoIndexPresent;
+    private boolean autoIndexPresent;
 
     /**
      * Creates a new foreign key object that has no name.
      */
-    public ForeignKey()
-    {
+    public ForeignKey() {
         this(null);
     }
-    
+
     /**
      * Creates a new foreign key object.
      * 
-     * @param name The name of the foreign key
+     * @param name
+     *            The name of the foreign key
      */
-    public ForeignKey(String name)
-    {
-        _name = name;
+    public ForeignKey(String name) {
+        this(name, null);
+    }
+
+    /**
+     * Creates a new foreign key object.
+     * 
+     * @param name
+     *            The name of the foreign key
+     * @param foreignKeyTableName
+     *            The name of the foreign key table
+     */
+    public ForeignKey(String name, String foreignKeyTableName) {
+        this.name = name;
+        this.foreignTableName = foreignKeyTableName;
     }
 
     /**
@@ -67,40 +83,38 @@ public class ForeignKey implements Cloneable
      * 
      * @return The name
      */
-    public String getName()
-    {
-        return _name;
+    public String getName() {
+        return name;
     }
 
     /**
      * Sets the name of this foreign key.
      * 
-     * @param name The name
+     * @param name
+     *            The name
      */
-    public void setName(String name)
-    {
-        _name = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
      * Returns the foreign table.
-     *
+     * 
      * @return The foreign table
      */
-    public Table getForeignTable()
-    {
-        return _foreignTable;
+    public Table getForeignTable() {
+        return foreignTable;
     }
 
     /**
      * Sets the foreign table.
-     *
-     * @param foreignTable The foreign table
+     * 
+     * @param foreignTable
+     *            The foreign table
      */
-    public void setForeignTable(Table foreignTable)
-    {
-        _foreignTable     = foreignTable;
-        _foreignTableName = (foreignTable == null ? null : foreignTable.getName());
+    public void setForeignTable(Table foreignTable) {
+        this.foreignTable = foreignTable;
+        this.foreignTableName = (foreignTable == null ? null : foreignTable.getName());
     }
 
     /**
@@ -108,25 +122,23 @@ public class ForeignKey implements Cloneable
      * 
      * @return The table name
      */
-    public String getForeignTableName()
-    {
-        return _foreignTableName;
+    public String getForeignTableName() {
+        return foreignTableName;
     }
-    
+
     /**
-     * Sets the name of the foreign table. Please note that you should not use this method
-     * when manually constructing or manipulating the database model. Rather utilize the
-     * {@link #setForeignTable(Table)} method.
+     * Sets the name of the foreign table. Please note that you should not use
+     * this method when manually constructing or manipulating the database
+     * model. Rather utilize the {@link #setForeignTable(Table)} method.
      * 
-     * @param foreignTableName The table name
+     * @param foreignTableName
+     *            The table name
      */
-    public void setForeignTableName(String foreignTableName)
-    {
-        if ((_foreignTable != null) && !_foreignTable.getName().equals(foreignTableName))
-        {
-            _foreignTable = null;
+    public void setForeignTableName(String foreignTableName) {
+        if ((foreignTable != null) && !foreignTable.getName().equals(foreignTableName)) {
+            foreignTable = null;
         }
-        _foreignTableName = foreignTableName;
+        this.foreignTableName = foreignTableName;
     }
 
     /**
@@ -134,20 +146,19 @@ public class ForeignKey implements Cloneable
      * 
      * @return The number of references
      */
-    public int getReferenceCount()
-    {
-        return _references.size();
+    public int getReferenceCount() {
+        return references.size();
     }
 
     /**
      * Returns the indicated reference.
      * 
-     * @param idx The index
+     * @param idx
+     *            The index
      * @return The reference
      */
-    public Reference getReference(int idx)
-    {
-        return (Reference)_references.get(idx);
+    public Reference getReference(int idx) {
+        return (Reference) references.get(idx);
     }
 
     /**
@@ -155,9 +166,8 @@ public class ForeignKey implements Cloneable
      * 
      * @return The references
      */
-    public Reference[] getReferences()
-    {
-        return (Reference[])_references.toArray(new Reference[_references.size()]);
+    public Reference[] getReferences() {
+        return (Reference[]) references.toArray(new Reference[references.size()]);
     }
 
     /**
@@ -165,72 +175,65 @@ public class ForeignKey implements Cloneable
      * 
      * @return The first reference
      */
-    public Reference getFirstReference()
-    {
-        return (Reference)(_references.isEmpty() ? null : _references.get(0));
+    public Reference getFirstReference() {
+        return (Reference) (references.isEmpty() ? null : references.get(0));
     }
 
     /**
-     * Adds a reference, ie. a mapping between a local column (in the table that owns this foreign key)
-     * and a remote column.
+     * Adds a reference, ie. a mapping between a local column (in the table that
+     * owns this foreign key) and a remote column.
      * 
-     * @param reference The reference to add
+     * @param reference
+     *            The reference to add
      */
-    public void addReference(Reference reference)
-    {
-        if (reference != null)
-        {
-            for (int idx = 0; idx < _references.size(); idx++)
-            {
+    public void addReference(Reference reference) {
+        if (reference != null) {
+            for (int idx = 0; idx < references.size(); idx++) {
                 Reference curRef = getReference(idx);
 
-                if (curRef.getSequenceValue() > reference.getSequenceValue())
-                {
-                    _references.add(idx, reference);
+                if (curRef.getSequenceValue() > reference.getSequenceValue()) {
+                    references.add(idx, reference);
                     return;
                 }
             }
-            _references.add(reference);
+            references.add(reference);
         }
     }
 
     /**
      * Removes the given reference.
      * 
-     * @param reference The reference to remove
+     * @param reference
+     *            The reference to remove
      */
-    public void removeReference(Reference reference)
-    {
-        if (reference != null)
-        {
-            _references.remove(reference);
+    public void removeReference(Reference reference) {
+        if (reference != null) {
+            references.remove(reference);
         }
     }
 
     /**
      * Removes the indicated reference.
      * 
-     * @param idx The index of the reference to remove
+     * @param idx
+     *            The index of the reference to remove
      */
-    public void removeReference(int idx)
-    {
-        _references.remove(idx);
+    public void removeReference(int idx) {
+        references.remove(idx);
     }
 
     /**
      * Determines whether this foreign key uses the given column as a local
      * column in a reference.
      * 
-     * @param column The column to check
+     * @param column
+     *            The column to check
      * @return <code>true</code> if a reference uses the column as a local
      *         column
      */
-    public boolean hasLocalColumn(Column column)
-    {
-        for (int idx = 0; idx < getReferenceCount(); idx++)
-        {
-            if (column.equals(getReference(idx).getLocalColumn()))
-            {
+    public boolean hasLocalColumn(Column column) {
+        for (int idx = 0; idx < getReferenceCount(); idx++) {
+            if (column.equals(getReference(idx).getLocalColumn())) {
                 return true;
             }
         }
@@ -241,56 +244,53 @@ public class ForeignKey implements Cloneable
      * Determines whether this foreign key uses the given column as a foreign
      * column in a reference.
      * 
-     * @param column The column to check
+     * @param column
+     *            The column to check
      * @return <code>true</code> if a reference uses the column as a foreign
      *         column
      */
-    public boolean hasForeignColumn(Column column)
-    {
-        for (int idx = 0; idx < getReferenceCount(); idx++)
-        {
-            if (column.equals(getReference(idx).getForeignColumn()))
-            {
+    public boolean hasForeignColumn(Column column) {
+        for (int idx = 0; idx < getReferenceCount(); idx++) {
+            if (column.equals(getReference(idx).getForeignColumn())) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
-     * Determines whether this foreign key has an auto-generated associated index.
+     * Determines whether this foreign key has an auto-generated associated
+     * index.
      * 
      * @return <code>true</code> if an auto-generated index exists
      */
-    public boolean isAutoIndexPresent()
-    {
-        return _autoIndexPresent;
+    public boolean isAutoIndexPresent() {
+        return autoIndexPresent;
     }
 
     /**
-     * Specifies whether this foreign key has an auto-generated associated index.
+     * Specifies whether this foreign key has an auto-generated associated
+     * index.
      * 
-     * @param autoIndexPresent <code>true</code> if an auto-generated index exists
+     * @param autoIndexPresent
+     *            <code>true</code> if an auto-generated index exists
      */
-    public void setAutoIndexPresent(boolean autoIndexPresent)
-    {
-        _autoIndexPresent = autoIndexPresent;
+    public void setAutoIndexPresent(boolean autoIndexPresent) {
+        this.autoIndexPresent = autoIndexPresent;
     }
 
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
-    {
-        ForeignKey result = (ForeignKey)super.clone();
+    public Object clone() throws CloneNotSupportedException {
+        ForeignKey result = (ForeignKey) super.clone();
 
-        result._name             = _name;
-        result._foreignTableName = _foreignTableName;
-        result._references       = new ListOrderedSet();
+        result.name = name;
+        result.foreignTableName = foreignTableName;
+        result.references = new ListOrderedSet();
 
-        for (Iterator it = _references.iterator(); it.hasNext();)
-        {
-            result._references.add(((Reference)it.next()).clone());
+        for (Iterator it = references.iterator(); it.hasNext();) {
+            result.references.add(((Reference) it.next()).clone());
         }
 
         return result;
@@ -299,73 +299,64 @@ public class ForeignKey implements Cloneable
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof ForeignKey)
-        {
-            ForeignKey otherFk = (ForeignKey)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof ForeignKey) {
+            ForeignKey otherFk = (ForeignKey) obj;
 
             // Note that this compares case sensitive
-            // Note also that we can simply compare the references regardless of their order
+            // Note also that we can simply compare the references regardless of
+            // their order
             // (which is irrelevant for fks) because they are contained in a set
             EqualsBuilder builder = new EqualsBuilder();
 
-            if ((_name != null) && (_name.length() > 0) && (otherFk._name != null) && (otherFk._name.length() > 0))
-            {
-                builder.append(_name, otherFk._name);
+            if ((name != null) && (name.length() > 0) && (otherFk.name != null)
+                    && (otherFk.name.length() > 0)) {
+                builder.append(name, otherFk.name);
             }
-            return builder.append(_foreignTableName, otherFk._foreignTableName)
-                          .append(_references,       otherFk._references)
-                          .isEquals();
-        }
-        else
-        {
+            return builder.append(foreignTableName, otherFk.foreignTableName)
+                    .append(references, otherFk.references).isEquals();
+        } else {
             return false;
         }
     }
 
     /**
-     * Compares this foreign key to the given one while ignoring the case of identifiers.
+     * Compares this foreign key to the given one while ignoring the case of
+     * identifiers.
      * 
-     * @param otherFk The other foreign key
-     * @return <code>true</code> if this foreign key is equal (ignoring case) to the given one
+     * @param otherFk
+     *            The other foreign key
+     * @return <code>true</code> if this foreign key is equal (ignoring case) to
+     *         the given one
      */
-    public boolean equalsIgnoreCase(ForeignKey otherFk)
-    {
-        boolean checkName = (_name != null) && (_name.length() > 0) &&
-                            (otherFk._name != null) && (otherFk._name.length() > 0);
+    public boolean equalsIgnoreCase(ForeignKey otherFk) {
+        boolean checkName = (name != null) && (name.length() > 0) && (otherFk.name != null)
+                && (otherFk.name.length() > 0);
 
-        if ((!checkName || _name.equalsIgnoreCase(otherFk._name)) &&
-            _foreignTableName.equalsIgnoreCase(otherFk._foreignTableName))
-        {
-            HashSet otherRefs = new HashSet();
+        if ((!checkName || name.equalsIgnoreCase(otherFk.name))
+                && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
+            HashSet<Reference> otherRefs = new HashSet<Reference>();
 
-            otherRefs.addAll(otherFk._references);
-            for (Iterator it = _references.iterator(); it.hasNext();)
-            {
-                Reference curLocalRef = (Reference)it.next();
-                boolean   found       = false;
+            otherRefs.addAll(otherFk.references);
+            for (Iterator it = references.iterator(); it.hasNext();) {
+                Reference curLocalRef = (Reference) it.next();
+                boolean found = false;
 
-                for (Iterator otherIt = otherRefs.iterator(); otherIt.hasNext();)
-                {
-                    Reference curOtherRef = (Reference)otherIt.next();
+                for (Iterator otherIt = otherRefs.iterator(); otherIt.hasNext();) {
+                    Reference curOtherRef = (Reference) otherIt.next();
 
-                    if (curLocalRef.equalsIgnoreCase(curOtherRef))
-                    {
+                    if (curLocalRef.equalsIgnoreCase(curOtherRef)) {
                         otherIt.remove();
                         found = true;
                         break;
                     }
                 }
-                if (!found)
-                {
+                if (!found) {
                     return false;
                 }
             }
             return otherRefs.isEmpty();
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -373,24 +364,19 @@ public class ForeignKey implements Cloneable
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37).append(_name)
-                                          .append(_foreignTableName)
-                                          .append(_references)
-                                          .toHashCode();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(foreignTableName).append(references)
+                .toHashCode();
     }
 
     /**
      * {@inheritDoc}
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Foreign key [");
-        if ((getName() != null) && (getName().length() > 0))
-        {
+        if ((getName() != null) && (getName().length() > 0)) {
             result.append("name=");
             result.append(getName());
             result.append("; ");
@@ -409,13 +395,11 @@ public class ForeignKey implements Cloneable
      * 
      * @return The string representation
      */
-    public String toVerboseString()
-    {
+    public String toVerboseString() {
         StringBuffer result = new StringBuffer();
 
         result.append("ForeignK ky [");
-        if ((getName() != null) && (getName().length() > 0))
-        {
+        if ((getName() != null) && (getName().length() > 0)) {
             result.append("name=");
             result.append(getName());
             result.append("; ");
@@ -423,8 +407,7 @@ public class ForeignKey implements Cloneable
         result.append("foreign table=");
         result.append(getForeignTableName());
         result.append("] references:");
-        for (int idx = 0; idx < getReferenceCount(); idx++)
-        {
+        for (int idx = 0; idx < getReferenceCount(); idx++) {
             result.append(" ");
             result.append(getReference(idx).toString());
         }

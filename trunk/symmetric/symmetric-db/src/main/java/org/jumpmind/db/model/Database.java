@@ -462,7 +462,7 @@ public class Database implements Serializable, Cloneable {
     public void resetTableIndexCache() {
         tableIndexCache.clear();
     }
-
+    
     /**
      * {@inheritDoc}
      */
