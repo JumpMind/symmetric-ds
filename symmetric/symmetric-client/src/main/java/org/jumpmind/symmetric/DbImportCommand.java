@@ -40,6 +40,8 @@ public class DbImportCommand extends AbstractCommandLauncher {
     private static final String OPTION_SCHEMA = "schema";
     
     private static final String OPTION_TABLE = "table";
+    
+    private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
 
     public DbImportCommand() {
         super("dbimport", "[file...]", "DbImport.Option.");
@@ -62,6 +64,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_CATALOG, true);
         addOption(options, null, OPTION_SCHEMA, true);
         addOption(options, null, OPTION_TABLE, true);
+        addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
     }
     
     @Override
@@ -76,6 +79,9 @@ public class DbImportCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_SCHEMA)) {
             dbImport.setSchema(line.getOptionValue(OPTION_SCHEMA));
+        }
+        if (line.hasOption(OPTION_USE_VARIABLE_DATES)) {
+            dbImport.setUseVariableForDates(true);
         }
 
         String[] args = line.getArgs();

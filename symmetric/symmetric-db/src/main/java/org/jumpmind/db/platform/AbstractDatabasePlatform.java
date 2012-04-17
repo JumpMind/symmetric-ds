@@ -28,8 +28,8 @@ import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +39,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -69,7 +70,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+    
+    public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 
+    public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
+    
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
     /* The default name for models read from the database, if no name as given. */
@@ -288,6 +293,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {
+        return getObjectValues(encoding, values, orderedMetaData, false);
+    }
+
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
+            Column[] orderedMetaData, boolean useVariableDates) {
         List<Object> list = new ArrayList<Object>(values.length);
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
@@ -301,13 +311,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                     }
                     if (value != null) {
-                        if (type == Types.DATE
-                                && !getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp()) {
-                            objectValue = parseDate(value);
-                        } else if (type == Types.TIMESTAMP
-                                || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
-                                        .isDateOverridesToTimestamp())) {
-                            objectValue = Timestamp.valueOf(value);
+                        if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                            objectValue = parseDate(type, value, useVariableDates);
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
                             if ((StringUtils.isBlank(charValue) && getDdlBuilder()
@@ -339,8 +344,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                             } else if (encoding == BinaryEncoding.HEX) {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
-                        } else if (type == Types.TIME) {
-                            objectValue = parseTime(value);
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
@@ -361,15 +364,38 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return list.toArray();
     }
 
-    public String[] getStringValues(Column[] metaData, Row row) {
+    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates) {
         String[] values = new String[metaData.length];
         for (int i = 0; i < metaData.length; i++) {
-            if (metaData[i].isOfTextType()) {
-                values[i] = row.getString(metaData[i].getName());
-            } else if (metaData[i].isOfNumericType()) {
-                values[i] = row.getString(metaData[i].getName());
-            } else if (metaData[i].isOfBinaryType()) {
-                values[i] = row.getString(metaData[i].getName());
+            Column column = metaData[i];
+            String name = column.getName();
+            int type = column.getJdbcTypeCode();
+
+            if (row.get(name) != null) {
+                if (column.isOfTextType()) {
+                    values[i] = row.getString(name);
+                } else if (column.isOfNumericType()) {
+                    values[i] = row.getString(name);
+                } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                    Date date = row.getDateTime(name);
+                    if (useVariableDates) {
+                        long diff = date.getTime() - System.currentTimeMillis();
+                        values[i] = "${curdate" + (diff > 0 ? "+" : "-") + "}";
+                    } else if (type == Types.TIME) {
+                        values[i] = TIME_FORMATTER.format(date);
+                    } else {
+                        values[i] = TIMESTAMP_FORMATTER.format(date);
+                    }
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (encoding == BinaryEncoding.NONE) {
+                        values[i] = row.getString(name);
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        values[i] = new String(Base64.encodeBase64(bytes));
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        values[i] = new String(Hex.encodeHex(bytes));
+                    }
+                }
             }
         }
         return values;
@@ -395,19 +421,31 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected String cleanTextForTextBasedColumns(String text) {
         return text;
     }
-
-    protected java.util.Date parseDate(String value) {
+    
+    protected java.util.Date parseDate(int type, String value, boolean useVariableDates) {
         try {
-            return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
+            boolean useTimestamp = (type == Types.TIMESTAMP) || (type == Types.DATE &&
+                    getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp());
 
-    protected java.util.Date parseTime(String value) {
-        try {
-            return DateUtils.parseDate(value, TIME_PATTERNS);
-        } catch (ParseException e) {
+            if (useVariableDates && value.startsWith("${curdate")) {
+                long time = Long.parseLong(value.substring(10, value.length() - 1));
+                if (value.substring(9, 9).equals("-")) {
+                    time *= -1L;
+                }
+                time += System.currentTimeMillis();
+                if (useTimestamp) {
+                    return new Timestamp(time);
+                }
+                return new Date(time);
+            } else {
+                if (useTimestamp) {
+                    return Timestamp.valueOf(value);
+                } else if (type == Types.TIME) {
+                    return DateUtils.parseDate(value, TIME_PATTERNS);
+                }
+                return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
+            }
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

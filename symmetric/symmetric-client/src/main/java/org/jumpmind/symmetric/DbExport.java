@@ -45,6 +45,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.csv.CsvWriter;
 
 /**
@@ -67,6 +68,8 @@ public class DbExport {
 	private boolean noData;
 	
 	private boolean ignoreMissingTables;
+	
+	private boolean useVariableDates;
 
 	private boolean comments;
 	
@@ -159,7 +162,7 @@ public class DbExport {
 
                 sqlTemplate.queryForObject(stmt.getSql(), new ISqlRowMapper<Object>() {
                     public Object mapRow(Row row) {
-                        String[] values = platform.getStringValues(columns, row);
+                        String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
                         if (format == Format.CSV) {
                             try {
                                 csvWriter.writeRecord(values, true);
@@ -167,8 +170,10 @@ public class DbExport {
                                 throw new RuntimeException(e);
                             }
                         } else if (format == Format.SQL) {
+                            // TODO: write insert statements
                             
                         } else if (format == Format.XML){
+                            // TODO: write XML data
                             
                         }
                     	return values;
@@ -265,5 +270,13 @@ public class DbExport {
 
     public void setIgnoreMissingTables(boolean ignoreMissingTables) {
         this.ignoreMissingTables = ignoreMissingTables;
+    }
+
+    public boolean isUseVariableDates() {
+        return useVariableDates;
+    }
+
+    public void setUseVariableForDates(boolean useVariableDates) {
+        this.useVariableDates = useVariableDates;
     }
 }
