@@ -55,6 +55,8 @@ public class DbImport {
     
     private String schema;
     
+    private boolean useVariableDates;
+
     private IDatabasePlatform platform;
     
     public DbImport(IDatabasePlatform platform) {
@@ -157,6 +159,14 @@ public class DbImport {
 
     public void setPlatform(IDatabasePlatform platform) {
         this.platform = platform;
+    }
+
+    public boolean isUseVariableDates() {
+        return useVariableDates;
+    }
+
+    public void setUseVariableForDates(boolean useVariableDates) {
+        this.useVariableDates = useVariableDates;
     }
 
 }
