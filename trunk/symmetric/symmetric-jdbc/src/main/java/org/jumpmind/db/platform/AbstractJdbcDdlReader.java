@@ -547,6 +547,32 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     }
     
+    public Table readTable(final String catalog, final String schema, final String tableName, final String sql) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return postprocessTableFromDatabase(sqlTemplate.execute( new IConnectionCallback<Table>() {
+            public Table execute(Connection connection) throws SQLException {
+                Statement st = connection.createStatement();
+                ResultSet rs = st.executeQuery(sql);
+                ResultSetMetaData rsm = rs.getMetaData();
+                Table table = new Table();
+                table.setCatalog(catalog);
+                table.setSchema(schema);
+                table.setName(tableName);
+                for (int i = 1; i <= rsm.getColumnCount(); i++) {
+                    Column column = new Column(rsm.getColumnName(i));
+                    column.setJdbcTypeCode(rsm.getColumnType(i));
+                    column.setTypeCode(rsm.getColumnType(i));
+                    column.setRequired(rsm.isNullable(i) == 0);
+                    column.setScale(rsm.getScale(i));
+                    column.setPrecisionRadix(rsm.getPrecision(i));
+                    column.setAutoIncrement(rsm.isAutoIncrement(i));
+                    table.addColumn(column);
+                }
+                return table;
+            }
+        }));
+    }
+
     protected Table postprocessTableFromDatabase(Table table) {
         if (table != null) {
             for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
