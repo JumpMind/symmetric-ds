@@ -43,6 +43,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
 
+    private static final String OPTION_SQL = "sql";
+
     private static final String OPTION_COMMENTS = "comments";
 
     public DbExportCommand() {
@@ -68,6 +70,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_NO_CREATE_INFO, false);
         addOption(options, null, OPTION_NO_DATA, false);
         addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
+        addOption(options, null, OPTION_SQL, true);
         addOption(options, "i", OPTION_COMMENTS, false);
     }
     
@@ -100,6 +103,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
         String[] args = line.getArgs();
         if (args.length == 0) {
             dbExport.exportTables(System.out);
+        } else if (line.hasOption(OPTION_SQL)) {
+            dbExport.exportTables(System.out, args[0], line.getOptionValue(OPTION_SQL));
         } else {
             dbExport.exportTables(System.out, args);
         }

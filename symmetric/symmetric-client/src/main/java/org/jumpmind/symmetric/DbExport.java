@@ -128,7 +128,16 @@ public class DbExport {
         exportTables(output, tableList.toArray(new Table[tableList.size()]));
     }
 
+    public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
+        Table table = platform.getDdlReader().readTable(catalog, schema, tableName, sql);
+        exportTables(output, new Table[] { table }, sql);
+    }
+
     public void exportTables(OutputStream output, Table[] tables) throws IOException {
+        exportTables(output, tables, null);
+    }
+    
+    public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
         final Writer writer = new OutputStreamWriter(output);
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
         final ISqlTemplate sqlTemplate = platform.getSqlTemplate();
@@ -157,10 +166,13 @@ public class DbExport {
             }
 
     		if (! noData) {
-                DmlStatement stmt = platform.createDmlStatement(DmlType.SELECT_ALL, table);
                 final Column[] columns = table.getColumns();
-
-                sqlTemplate.queryForObject(stmt.getSql(), new ISqlRowMapper<Object>() {
+                if (sql == null) {
+                    DmlStatement stmt = platform.createDmlStatement(DmlType.SELECT_ALL, table);
+                    sql = stmt.getSql();
+                }
+                
+                sqlTemplate.queryForObject(sql, new ISqlRowMapper<Object>() {
                     public Object mapRow(Row row) {
                         String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
                         if (format == Format.CSV) {
