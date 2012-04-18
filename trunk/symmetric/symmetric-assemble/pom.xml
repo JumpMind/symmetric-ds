@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-alpha.2</version>
     <name>assemble</name>
 
     <licenses>
@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0-alpha.2</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
