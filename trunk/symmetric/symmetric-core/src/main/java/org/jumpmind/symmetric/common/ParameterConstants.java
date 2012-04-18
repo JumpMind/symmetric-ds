@@ -55,7 +55,6 @@ final public class ParameterConstants {
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
-    public final static String JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN = "job.synctriggers.aftermidnight.minutes";
 
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
 
@@ -76,7 +75,6 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
     public final static String AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
     public final static String AUTO_CONFIGURE_EXTRA_TABLES = "auto.config.extra.tables.ddlutil.xml";
-    public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
     public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
