@@ -69,6 +69,19 @@
                             <finalName>symmetric-client-${pom.version}</finalName>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>docbook</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/src/assembly/assembly-docbook.xml</descriptor>
+                            </descriptors>
+                            <finalName>symmetric-docbook-${pom.version}</finalName>
+                        </configuration>
+                    </execution>                    
                 </executions>
             </plugin>
             <!-- Use this command to deploy the maven site (instead of site:deploy):
