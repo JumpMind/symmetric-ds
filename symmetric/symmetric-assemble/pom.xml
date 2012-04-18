@@ -79,7 +79,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-docbook.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-docbook-${pom.version}</finalName>
+                            <finalName>docbook</finalName>
                         </configuration>
                     </execution>                    
                 </executions>
@@ -281,7 +281,6 @@
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
-                                        <delete file="${docbook.build}/symmetric-schema.xml" />
                                         <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
                                         <delete file="${basedir}/target/torque/sqldbmap.properties" />
                                         <delete file="${basedir}/target/torque/context.doc.properties" />
