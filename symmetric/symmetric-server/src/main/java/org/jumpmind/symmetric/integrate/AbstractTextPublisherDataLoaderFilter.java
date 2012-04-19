@@ -74,7 +74,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         this.beanName = name;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+    public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
         if (tableName != null && tableName.equals(table.getName())) {
             DataEventType eventType = data.getDataEventType();
@@ -115,7 +115,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         }
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void batchComplete(
+    public void batchComplete(
             DataContext context) {
         if (doesTextExistToPublish(context)) {
             finalizeAndPublish(context);

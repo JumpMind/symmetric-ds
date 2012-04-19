@@ -49,7 +49,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
     private boolean enabled = true;
     
     @Override
-    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+    public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
         filterColumnValues(context, table, data);
         return true;

@@ -4,8 +4,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public interface IDatabaseWriterFilter extends IExtensionPoint {
 
@@ -16,14 +14,14 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      * @return true if the row should be loaded. false if the filter has handled
      *         the row and it should be ignored.
      */
-    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+    public boolean beforeWrite(
             DataContext context, Table table, CsvData data);
 
     /**
      * Called right after a DML statement has been successfully executed against
      * the database for the data.
      */
-    public <R extends IDataReader, W extends IDataWriter> void afterWrite(
+    public void afterWrite(
             DataContext context, Table table, CsvData data);
 
     /**
@@ -31,7 +29,7 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      * missing. This might return true if the filter will be performing
      * transformations on the data and inserting the data itself.
      */
-    public <R extends IDataReader, W extends IDataWriter> boolean handlesMissingTable(
+    public boolean handlesMissingTable(
             DataContext context, Table table);
 
     /**
@@ -39,28 +37,28 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      * property is set and the max number of rows is reached and a commit is
      * about to happen, then this method is called.
      */
-    public <R extends IDataReader, W extends IDataWriter> void earlyCommit(
+    public void earlyCommit(
             DataContext context);
 
     /**
      * This method is called after a batch has been successfully processed. It
      * is called in the scope of the transaction that controls the batch commit.
      */
-    public <R extends IDataReader, W extends IDataWriter> void batchComplete(
+    public void batchComplete(
             DataContext context);
 
     /**
      * This method is called after the database transaction for the batch has
      * been committed.
      */
-    public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
+    public void batchCommitted(
             DataContext context);
 
     /**
      * This method is called after the database transaction for the batch has
      * been rolled back.
      */
-    public <R extends IDataReader, W extends IDataWriter> void batchRolledback(
+    public void batchRolledback(
             DataContext context);
 
 }
