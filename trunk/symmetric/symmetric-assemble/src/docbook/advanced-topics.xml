@@ -30,7 +30,7 @@
         </para>  
         <para>
             More complex conflict resolution strategies can be accomplished by using the 
-            <literal>IDataLoaderFilter</literal> extension point which has access to both 
+            <literal>IDatabaseWriterFilter</literal> extension point which has access to both 
             old and new data.
         </para>         
     </section>     

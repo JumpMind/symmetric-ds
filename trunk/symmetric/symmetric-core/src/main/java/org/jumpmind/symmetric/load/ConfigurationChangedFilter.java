@@ -95,7 +95,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         }
     }
 
-    private <R extends IDataReader, W extends IDataWriter> void recordTransformFlushNeeded(
+    private void recordTransformFlushNeeded(
             DataContext context, Table table) {
         if (isTransformFlushNeeded(table)) {
             context.put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, true);
@@ -128,7 +128,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     }
 
     @Override
-    public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
+    public void batchCommitted(
             DataContext context) {
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data loader");

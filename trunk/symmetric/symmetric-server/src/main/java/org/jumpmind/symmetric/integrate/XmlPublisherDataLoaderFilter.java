@@ -31,9 +31,10 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
- * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that
+ * This is an optional {@link IDatabaseWriterFilter} and {@link IBatchListener} that
  * is capable of translating table data to XML and publishing it for consumption
  * by the enterprise. It uses JDOM internally to create an XML representation of
  * SymmetricDS data.
@@ -67,7 +68,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
 
     protected boolean loadDataInTargetDatabase = true;
 
-    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+    public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(table.getName())) {
@@ -85,7 +86,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
         return loadDataInTargetDatabase;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void batchComplete(
+    public void batchComplete(
             DataContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
@@ -96,24 +97,24 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void afterWrite(
+    public void afterWrite(
             DataContext context, Table table, CsvData data) {
     }
 
-    public <R extends IDataReader, W extends IDataWriter> boolean handlesMissingTable(
+    public boolean handlesMissingTable(
             DataContext context, Table table) {
         return false;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void earlyCommit(
+    public void earlyCommit(
             DataContext context) {
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
+    public void batchCommitted(
             DataContext context) {
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void batchRolledback(
+    public void batchRolledback(
             DataContext context) {
     }
 

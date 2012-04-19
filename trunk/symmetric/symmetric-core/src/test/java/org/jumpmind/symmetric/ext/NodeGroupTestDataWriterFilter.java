@@ -41,7 +41,7 @@ public class NodeGroupTestDataWriterFilter extends DatabaseWriterFilterAdapter i
     }
 
     @Override
-    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+    public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
         numberOfTimesCalled++;
         return true;
