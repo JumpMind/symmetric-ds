@@ -40,7 +40,6 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
-import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -168,27 +167,26 @@ public class DbExport {
     		if (! noData) {
                 final Column[] columns = table.getColumns();
                 if (sql == null) {
-                    DmlStatement stmt = platform.createDmlStatement(DmlType.SELECT_ALL, table);
-                    sql = stmt.getSql();
+                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
                 }
+                final String insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
+                final String selectSql = sql;
                 
-                sqlTemplate.queryForObject(sql, new ISqlRowMapper<Object>() {
+                sqlTemplate.queryForObject(selectSql, new ISqlRowMapper<Object>() {
                     public Object mapRow(Row row) {
                         String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
-                        if (format == Format.CSV) {
-                            try {
-                                csvWriter.writeRecord(values, true);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                        try {
+                            if (format == Format.CSV) {
+                                    csvWriter.writeRecord(values, true);
+                            } else if (format == Format.SQL) {
+                                writer.write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row, useVariableDates) + "\n");
+                            } else if (format == Format.XML){
+                                // TODO: write XML data                                
                             }
-                        } else if (format == Format.SQL) {
-                            // TODO: write insert statements
-                            
-                        } else if (format == Format.XML){
-                            // TODO: write XML data
-                            
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    	return values;
+                    	return null;
                     }
                 });
 	        }
@@ -197,6 +195,7 @@ public class DbExport {
         writeComment(writer, "Completed on " + df.format(new Date()));
         output.flush();
     	csvWriter.flush();
+    	writer.flush();
     }
     
     protected void writeComment(Writer writer, String commentStr) throws IOException {
