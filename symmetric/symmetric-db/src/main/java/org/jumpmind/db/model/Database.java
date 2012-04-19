@@ -204,6 +204,12 @@ public class Database implements Serializable, Cloneable {
         }
     }
 
+    public void addTables(Table[] tables) {
+        for (Table table : tables) {
+            addTable(table);
+        }
+    }
+
     /**
      * Removes the given table.
      * 
