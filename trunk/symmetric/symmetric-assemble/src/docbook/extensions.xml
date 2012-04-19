@@ -8,7 +8,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Extension Points</title>           
         <para>
-             SymmetricDS can be extended using it's plug-in architecture. A Java class that implements 
+             SymmetricDS has a pluggable architecture that can be extended. A Java class that implements 
              the appropriate extension point interface, can implement custom logic and change the behavior
              of SymmetricDS to suit special needs.  All supported extension 
              points extend the <literal>IExtensionPoint</literal> interface.  The available extension points are documented in the following sections.  
