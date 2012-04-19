@@ -14,14 +14,14 @@
              points extend the <literal>IExtensionPoint</literal> interface.  The available extension points are documented in the following sections.  
         </para>
         <para>
-             When an engine starts up, the <literal>ExtensionPointManager</literal> searches a <ulink url="http://springframework.org">Spring Framework</ulink> 
+             When SymmetricDS starts up, the <literal>ExtensionPointManager</literal> searches a <ulink url="http://springframework.org">Spring Framework</ulink> 
              context for classes that implement the <literal>IExtensionPoint</literal> interface, then creates and registers
              the class with the appropriate SymmetricDS component.  
         </para>
         <para>
-             The <literal>ISymmetricEngineAware</literal> interface may be optionally implemented if the
-             extension point needs a handle to the <literal>ISymmetricEngine</literal> in order to 
-             gain access to the database or a SymmetricDS service.
+             If an extension point needs access to SymmetricDS services or needs to connect to the database
+             it may implement the <literal>ISymmetricEngineAware</literal> interface in order to
+             get a handle to the <literal>ISymmetricEngine</literal>.
         </para>
         <para>
              The <literal>INodeGroupExtensionPoint</literal> interface may be optionally implemented to indicate that a registered 
@@ -35,7 +35,7 @@
 ]]></programlisting>             
         </para>        
         <para>
-             Extensions can be configured in the <literal>conf/symmetric-extensions.xml</literal> file.
+             Extensions are configured in the <literal>conf/symmetric-extensions.xml</literal> file.
         </para>
         <section id="extensions-parameter-filter">
             <title>IParameterFilter</title>
