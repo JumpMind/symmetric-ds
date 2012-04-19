@@ -1144,4 +1144,5 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             </para>        
         </section> -->
     </section>
+    <xi:include href="conflicts.xml" />
 </chapter>

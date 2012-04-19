@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="extensions" xmlns="http://docbook.org/ns/docbook"
+<section version="5.0" xml:id="extensions" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
          xmlns:ns="http://docbook.org/ns/docbook"
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
-         xmlns:html="http://www.w3.org/1999/xhtml">
+         xmlns:html="http://www.w3.org/1999/xhtml">         
     <title>Extension Points</title>           
         <para>
              SymmetricDS has a pluggable architecture that can be extended. A Java class that implements 
@@ -207,4 +207,4 @@
             Implement this extension point to intercept the saving and rendering of the node password.
             </para>
         </section>        
-    </chapter>
+    </section>

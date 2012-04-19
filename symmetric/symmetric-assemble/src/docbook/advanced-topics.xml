@@ -1033,25 +1033,5 @@ Enter key password for <sym>
             basic authentication is setup with the standard configuration in the WEB.xml file. 
         </para>
     </section>
-    <section id="multi-server">
-        <title>Multi-Server Mode</title>
-        <para>
-            SymmetricDS supports running multiple SymmetricDS instances that leverage the same web server in the same
-            process.  This mode can be turned on in the <code>web/WEB-INF/web.xml</code> file.  By default, <code>multiServerMode</code>
-            is turned off. 
-        </para>
-            <programlisting>
-<![CDATA[    <context-param>
-        <param-name>multiServerMode</param-name>
-        <param-value>true</param-value>
-    </context-param>
-]]></programlisting>
-        <para>
-            When <code>multiServerMode</code> is turned on, SymmetricDS will initialize itself with an instance of 
-            a node for each properties file found in the <code>engines</code> directory.  Each node will inherit 
-            common properties from <code>conf/symmetric.properties</code>.   Each properties file must specify the 
-            minimum required properties to define a single node.  In addition, the properties file is required to also specify
-            a property, <code>engine.name</code>, that provides a unique name for the node's engine.  
-        </para>        
-    </section>    
+    <xi:include href="extensions.xml" />
 </chapter>

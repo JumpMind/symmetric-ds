@@ -7,7 +7,7 @@
       xmlns:mml="http://www.w3.org/1998/Math/MathML"
       xmlns:html="http://www.w3.org/1999/xhtml">
     <bookinfo>
-        <title>SymmetricDS 3 User Guide</title>
+        <title>SymmetricDS User Guide</title>
         <authorgroup>
             <author>
                 <firstname>Eric</firstname>
@@ -26,7 +26,7 @@
                 <surname>Wilmer</surname>
             </author>
         </authorgroup>
-        <edition>Version 3.0 for SymmetricDS 3</edition>
+        <edition>Version 3.0 for SymmetricDS</edition>
         <copyright>
             <year>2007 - 2012</year>
             <holder>JumpMind, Inc</holder>
@@ -36,7 +36,7 @@
         </releaseinfo>
         <legalnotice>
             <para>
-                Permission to use, copy, modify, and distribute the SymmetricDS 3 User Guide Version
+                Permission to use, copy, modify, and distribute the SymmetricDS User Guide Version
                 3.0 for any purpose and without fee is hereby granted in perpetuity, provided that
                 the above copyright notice and this paragraph appear in all copies.
             </para>
@@ -62,8 +62,7 @@
     <xi:include href="tutorial.xml" />
     <xi:include href="planning.xml" />
     <xi:include href="configuration.xml" />
-    <xi:include href="advanced-topics.xml" />
-    <xi:include href="extensions.xml" />
+    <xi:include href="advanced-topics.xml" />    
     <xi:include href="administration.xml" />
     <xi:include href="symmetric-schema.xml" />
     <xi:include href="parameters.xml" />
