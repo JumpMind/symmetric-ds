@@ -309,9 +309,17 @@ public class DatabaseIO {
      * 
      * @param output The output writer
      */
+
     public void write(Database model, Writer output) throws DdlException {
+        write(model, output);
+    }
+
+    public void write(Database model, Writer output, String rootElementName) throws DdlException {
     	try {
 	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">\n");
+	    	if (rootElementName != null) {
+	    	    output.write("<" + rootElementName + ">\n");
+	    	}
 	    	output.write("<database name=\"" + model.getName() + "\"");
 	    	if (model.getIdMethod() != null) {
 	    		output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
