@@ -1,7 +1,7 @@
 <chapter version="5.0" xml:id="tutorial" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Hands-on Tutorial</title>
+    <title>Quick Start</title>
     <para>Now that several of the features of SymmetricDS have been discussed, a quick working example of SymmetricDS is in order. 
         This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between two running
         instances of SymmetricDS. This example models a retail business that has a central office database (called "root") and

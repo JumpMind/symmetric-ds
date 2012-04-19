@@ -3,7 +3,7 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Planning an Implementation</title>
+    <title>Planning</title>
     <para>
     In the previous Chapter we presented a high level introduction to some basic concepts
     in SymmetricDS, some of the high-level features, and a tutorial demonstrating a basic, working
