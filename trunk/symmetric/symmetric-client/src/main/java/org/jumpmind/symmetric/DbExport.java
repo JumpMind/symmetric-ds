@@ -39,9 +39,10 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.SortByForeignKeyComparator;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
-import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -143,7 +144,7 @@ public class DbExport {
         
         Arrays.sort(tables, new SortByForeignKeyComparator());
 
-        IDatabasePlatform target = new OracleDatabasePlatform(null, new DatabasePlatformSettings());
+        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible.toString().toLowerCase());
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         writeComment(writer, "SymmetricDS " + Version.version() + " " + DbExport.class.getSimpleName());
@@ -166,7 +167,7 @@ public class DbExport {
                 Database db = new Database();
                 db.addTable(table);
                 if (format == Format.SQL) {
-                    writer.write(target.getDdlBuilder().createTables(db, addDropTable));
+                    writer.write(target.createTables(db, addDropTable));
                 } else if (format == Format.CSV) {
                     csvWriter.writeRecord(table.getColumnNames());
                 }
