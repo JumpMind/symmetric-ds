@@ -42,7 +42,6 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.csv.CsvWriter;
@@ -139,7 +138,6 @@ public class DbExport {
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
         final Writer writer = new OutputStreamWriter(output);
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
-        final ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
         IDatabasePlatform target = new OracleDatabasePlatform(null, new DatabasePlatformSettings());
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -148,6 +146,14 @@ public class DbExport {
         writeComment(writer, "Catalog: " + (catalog != null ? catalog : ""));
         writeComment(writer, "Schema: " + (schema != null ? schema : ""));
         writeComment(writer, "Started on " + df.format(new Date()));
+        
+        if (format == Format.XML) {
+            Database db = new Database();
+            if (! noCreateInfo) {
+                db.addTables(tables);
+            }
+            new DatabaseIO().write(db, writer, "dbexport");
+        }
 
     	for (Table table : tables) {
             writeComment(writer, "Table: " + table.getName());
@@ -157,45 +163,62 @@ public class DbExport {
                 db.addTable(table);
                 if (format == Format.SQL) {
                     writer.write(target.getDdlBuilder().createTables(db, addDropTable));
-                } else if (format == Format.XML) {
-                    new DatabaseIO().write(db, output);
                 } else if (format == Format.CSV) {
                     csvWriter.writeRecord(table.getColumnNames());
                 }
             }
 
     		if (! noData) {
-                final Column[] columns = table.getColumns();
-                if (sql == null) {
-                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
-                }
-                final String insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
-                final String selectSql = sql;
-                
-                sqlTemplate.queryForObject(selectSql, new ISqlRowMapper<Object>() {
-                    public Object mapRow(Row row) {
-                        String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
-                        try {
-                            if (format == Format.CSV) {
-                                    csvWriter.writeRecord(values, true);
-                            } else if (format == Format.SQL) {
-                                writer.write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row, useVariableDates) + "\n");
-                            } else if (format == Format.XML){
-                                // TODO: write XML data                                
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    	return null;
-                    }
-                });
-	        }
+    		    writeData(writer, csvWriter, platform, table, sql);
+    		}
     	}
-    	
+
+        if (format == Format.XML) {
+            writer.write("</dbexport>\n");
+        }
         writeComment(writer, "Completed on " + df.format(new Date()));
         output.flush();
     	csvWriter.flush();
     	writer.flush();
+    }
+
+    protected void writeData(final Writer writer, final CsvWriter csvWriter, final IDatabasePlatform platform, Table table, String sql) throws IOException {
+        final Column[] columns = table.getColumns();
+        if (sql == null) {
+            sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
+        }
+        final String insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
+        final String selectSql = sql;
+        
+        if (format == Format.XML){
+            writer.write("<table_data name=\"" + table.getName() + "\">\n");
+        }
+        
+        platform.getSqlTemplate().queryForObject(selectSql, new ISqlRowMapper<Object>() {
+            public Object mapRow(Row row) {
+                String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
+                try {
+                    if (format == Format.CSV) {
+                            csvWriter.writeRecord(values, true);
+                    } else if (format == Format.SQL) {
+                        writer.write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row, useVariableDates) + "\n");
+                    } else if (format == Format.XML){
+                        writer.write("\t<row>\n");
+                        for (int i = 0; i < columns.length; i++) {
+                            writer.write("\t\t<field name=\"" + columns[i].getName() + "\">" + values[i] + "</field>\n");
+                        }
+                        writer.write("\t</row>\n");
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            }
+        });
+
+        if (format == Format.XML){
+            writer.write("</table_data>\n");
+        }    
     }
     
     protected void writeComment(Writer writer, String commentStr) throws IOException {
