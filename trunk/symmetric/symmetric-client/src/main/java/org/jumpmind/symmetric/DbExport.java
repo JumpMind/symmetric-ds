@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.sql.DataSource;
@@ -35,6 +36,7 @@ import javax.sql.DataSource;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.SortByForeignKeyComparator;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -138,6 +140,8 @@ public class DbExport {
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
         final Writer writer = new OutputStreamWriter(output);
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
+        
+        Arrays.sort(tables, new SortByForeignKeyComparator());
 
         IDatabasePlatform target = new OracleDatabasePlatform(null, new DatabasePlatformSettings());
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
