@@ -364,6 +364,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return list.toArray();
     }
 
+    // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders)
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates) {
         String[] values = new String[metaData.length];
         for (int i = 0; i < metaData.length; i++) {
@@ -399,6 +400,45 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         return values;
+    }
+
+    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates) {
+        String newSql = sql;
+        String quote = getDatabaseInfo().getValueQuoteToken();
+        String regex = "\\?";
+        for (int i = 0; i < metaData.length; i++) {
+            Column column = metaData[i];
+            String name = column.getName();
+            int type = column.getJdbcTypeCode();
+
+            if (row.get(name) != null) {
+                if (column.isOfTextType()) {
+                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
+                } else if (column.isOfNumericType()) {
+                    newSql = newSql.replaceFirst(regex, row.getString(name));
+                } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                    Date date = row.getDateTime(name);
+                    if (useVariableDates) {
+                        long diff = date.getTime() - System.currentTimeMillis();
+                        newSql = newSql.replaceFirst(regex, "${curdate" + (diff > 0 ? "+" : "-") + "}");
+                    } else if (type == Types.TIME) {
+                        newSql = newSql.replaceFirst(regex, "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                    } else {
+                        newSql = newSql.replaceFirst(regex, "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                    }
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (encoding == BinaryEncoding.NONE) {
+                        newSql = newSql.replaceFirst(regex, quote + row.getString(name));
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        newSql = newSql.replaceFirst(regex, quote + new String(Base64.encodeBase64(bytes)) + quote);
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        newSql = newSql.replaceFirst(regex, quote + new String(Hex.encodeHex(bytes)) + quote);
+                    }
+                }
+            }
+        }
+        return newSql + getDatabaseInfo().getSqlCommandDelimiter();
     }
 
     public Map<String, String> getSqlScriptReplacementTokens() {
