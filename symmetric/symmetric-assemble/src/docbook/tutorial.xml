@@ -105,7 +105,9 @@ db.password=secret]]></programlisting>
 registration.url=http://localhost:8080/sync/server]]></programlisting>
                 <tip>
                     <para>
-                       Note that the URL for a engine is the following format:  http://{hostname}:{port}/sync/{engine.name}.  The engine.name portion of the URL comes from a node's properties file. 
+                       Note that the URL for a engine is the following format:  
+                       <programlisting><![CDATA[http://{hostname}:{port}/sync/{engine.name}]]></programlisting>  
+                       The engine.name portion of the URL comes from a node's properties file. 
                     </para>
                 </tip>
                 <para> For the tutorial, the client database starts out empty, and the node is not registered. Registration is the
