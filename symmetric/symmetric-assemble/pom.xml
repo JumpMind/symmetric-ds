@@ -200,6 +200,12 @@
                                 </goals>
                                 <configuration>
                                     <preProcess>
+                                        <delete
+                                            file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
+                                        <delete
+                                            file="${basedir}/target/torque/sqldbmap.properties" />
+                                        <delete
+                                            file="${basedir}/target/torque/context.doc.properties" />                                    
                                         <copy todir="${docbook.build}">
                                             <fileset dir="${docbook.source}">
                                             </fileset>
@@ -297,12 +303,6 @@
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
-                                        <delete
-                                            file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
-                                        <delete
-                                            file="${basedir}/target/torque/sqldbmap.properties" />
-                                        <delete
-                                            file="${basedir}/target/torque/context.doc.properties" />
                                     </postProcess>
                                 </configuration>
                             </execution>
