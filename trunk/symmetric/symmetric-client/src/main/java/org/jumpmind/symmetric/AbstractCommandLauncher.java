@@ -22,12 +22,15 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Provider;
 import java.security.Security;
 import java.sql.Connection;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -36,6 +39,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Appender;
@@ -44,6 +48,8 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +61,8 @@ public abstract class AbstractCommandLauncher {
 	protected static final String OPTION_HELP = "help";
 	
     protected static final String OPTION_PROPERTIES_FILE = "properties";
+    
+    protected static final String OPTION_ENGINE = "engine";
 
     protected static final String OPTION_VERBOSE_CONSOLE = "verbose";
 
@@ -196,7 +204,44 @@ public abstract class AbstractCommandLauncher {
                 throw new SymmetricException("Could not find the properties file specified: %s",
                         line.getOptionValue(OPTION_PROPERTIES_FILE));
             }
+        } else if (line.hasOption(OPTION_ENGINE)) {
+            propertiesFile = findPropertiesFileForEngineWithName(line.getOptionValue(OPTION_ENGINE));
+            if (propertiesFile != null && !propertiesFile.exists()) {
+                throw new SymmetricException("Could not find the properties file for the engine specified: %s",
+                        line.getOptionValue(OPTION_ENGINE));
+            }            
         }
+    }
+    
+    public static String getEnginesDir() {
+        String enginesDir = System.getProperty(Constants.SYS_PROP_ENGINES_DIR, "../engines");
+        new File(enginesDir).mkdirs();
+        return enginesDir;
+    }
+    
+    public File findPropertiesFileForEngineWithName(String engineName) {
+        File enginesDir = new File(getEnginesDir());
+        File[] files = enginesDir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            if (file.getName().endsWith(".properties")) {
+                Properties properties = new Properties();
+                FileInputStream is = null;
+                try {
+                    is = new FileInputStream(file);
+                    properties.load(is);
+                    if (engineName.equals(properties.getProperty(ParameterConstants.ENGINE_NAME))) {
+                        return file;
+                    }
+                } catch (IOException ex) {
+                } finally {
+                    IOUtils.closeQuietly(is);
+                }
+
+            }
+        }
+        return null;
+
     }
     
     protected void configureCrypto(CommandLine line) throws Exception {
@@ -247,6 +292,7 @@ public abstract class AbstractCommandLauncher {
     protected void buildOptions(Options options) {
     	addCommonOption(options, "h", OPTION_HELP, false);
     	addCommonOption(options, "p", OPTION_PROPERTIES_FILE, true);
+    	addCommonOption(options, "e", OPTION_ENGINE, true);
     	addCommonOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
     	addCommonOption(options, null, OPTION_DEBUG, false);
     	addCommonOption(options, null, OPTION_NOCONSOLE, false);
