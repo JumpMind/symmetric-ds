@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
@@ -28,7 +29,7 @@
     </properties>
 
     <modules>
-        <module>../symmetric-util</module>    
+        <module>../symmetric-util</module>
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
         <module>../symmetric-jdbc</module>
@@ -69,24 +70,11 @@
                             <finalName>symmetric-client-${pom.version}</finalName>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>docbook</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attached</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/src/assembly/assembly-docbook.xml</descriptor>
-                            </descriptors>
-                            <finalName>docbook</finalName>
-                        </configuration>
-                    </execution>                    
                 </executions>
             </plugin>
-            <!-- Use this command to deploy the maven site (instead of site:deploy):
-                 mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload -Dwagon.url=dav:https://dav.codehaus.org/symmetricds/  -Dwagon.fromDir=target/site -Dwagon.serverId=dav.codehaus.org
-              -->
+            <!-- Use this command to deploy the maven site (instead of site:deploy): 
+                mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload -Dwagon.url=dav:https://dav.codehaus.org/symmetricds/ 
+                -Dwagon.fromDir=target/site -Dwagon.serverId=dav.codehaus.org -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -110,7 +98,7 @@
                         </exclusions>
                     </dependency>
                 </dependencies>
-            </plugin>         
+            </plugin>
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
                 <artifactId>torque-maven-plugin</artifactId>
@@ -182,6 +170,24 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docbook</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attached</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>${basedir}/src/assembly/assembly-docbook.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>docbook</finalName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>com.agilejava.docbkx</groupId>
                         <artifactId>docbkx-maven-plugin</artifactId>
                         <version>2.0.6</version>
@@ -209,7 +215,8 @@
                                     <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl
                                     </foCustomization>
                                     <postProcess>
-                                        <delete file="${docbook.target}/pdf/user-guide.fo" />
+                                        <delete
+                                            file="${docbook.target}/pdf/user-guide.fo" />
                                     </postProcess>
                                 </configuration>
                             </execution>
@@ -231,17 +238,22 @@
                                     </htmlCustomization>
                                     <chunkedOutput>false</chunkedOutput>
                                     <postProcess>
-                                        <copy todir="${docbook.target}/html-single">
-                                            <fileset dir="${docbook.build}/resources">
+                                        <copy
+                                            todir="${docbook.target}/html-single">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/html-single/images" flatten="true">
+                                        <copy
+                                            todir="${docbook.target}/html-single/images"
+                                            flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
@@ -267,23 +279,30 @@
                                     <chunkedOutput>true</chunkedOutput>
                                     <postProcess>
                                         <copy todir="${docbook.target}/html">
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/html/images" flatten="true">
+                                        <copy
+                                            todir="${docbook.target}/html/images"
+                                            flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
-                                        <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
-                                        <delete file="${basedir}/target/torque/sqldbmap.properties" />
-                                        <delete file="${basedir}/target/torque/context.doc.properties" />
+                                        <delete
+                                            file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
+                                        <delete
+                                            file="${basedir}/target/torque/sqldbmap.properties" />
+                                        <delete
+                                            file="${basedir}/target/torque/context.doc.properties" />
                                     </postProcess>
                                 </configuration>
                             </execution>
