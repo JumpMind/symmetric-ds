@@ -33,8 +33,8 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.AbstractCommandLauncher;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.slf4j.Logger;
@@ -84,12 +84,6 @@ public class SymmetricEngineHolder {
         return enginesStarting.size() > 0 || engines.size() > 0;
     }
 
-    public String getEnginesDir() {
-        String enginesDir = System.getProperty(Constants.SYS_PROP_ENGINES_DIR, "../engines");
-        new File(enginesDir).mkdirs();
-        return enginesDir;
-    }
-
     public synchronized void stop() {
         Set<String> engineNames = engines.keySet();
         for (String engineName : engineNames) {
@@ -100,7 +94,7 @@ public class SymmetricEngineHolder {
 
     public void start() {
         if (isMultiServerMode()) {
-            File enginesDir = new File(getEnginesDir());
+            File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
             File[] files = enginesDir.listFiles();
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -149,7 +143,7 @@ public class SymmetricEngineHolder {
             engines.remove(engineName);
         }
 
-        File enginesDir = new File(getEnginesDir());
+        File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
         File symmetricProperties = new File(enginesDir, engineName + ".properties");
         FileOutputStream fileOs = null;
         try {
@@ -202,7 +196,7 @@ public class SymmetricEngineHolder {
             engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, engineName);
             String engineExt = "";
             int engineNumber = 0;
-            while (new File(getEnginesDir(), engineName + engineExt + ".properties").exists()) {
+            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt + ".properties").exists()) {
                 engineNumber++;
                 engineExt = "-" + engineNumber;
             }

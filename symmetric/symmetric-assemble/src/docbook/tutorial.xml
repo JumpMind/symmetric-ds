@@ -2,10 +2,11 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Quick Start</title>
-    <para>Now that several of the features of SymmetricDS have been discussed, a quick working example of SymmetricDS is in order. 
-        This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between two running
-        instances of SymmetricDS. This example models a retail business that has a central office database (called "root") and
-        multiple retail store databases (called "client").  For the tutorial, we will have only one "client", as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>.
+    <para>Now that an overview of SymmetricDS has been discussed, a quick working example of SymmetricDS is in order. 
+        This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between a client
+        and server engine deployed in a single instance of SymmetricDS. This example models a retail business that has a 
+        central office database (called "server") and multiple retail store databases (called "client").  
+        For the tutorial, we will have only one "client", as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>.
         </para>
         
         <para>
@@ -18,33 +19,36 @@
                     </mediaobject>
                 </figure>
             </para>     
-         <para>
-        
-        The root SymmetricDS instance sends changes to the client for item data, such as
-        item number, description, and price. The client SymmetricDS sends changes to the root for sale transaction data, such as time
-        of sale and items sold. The sample configuration specifies synchronization with a pull method for the client to receive
-        data from root, and a push method for the root to receive data from client.</para>
+         <para>        
+        The server engine captures item data changes for the client, such as
+        item number, description, and price. The client engine captures sale transaction data 
+        changes for the server, such as time of sale and items sold. 
+        The sample configuration has the client always initiating communication with the server.  The client
+        will attach to the server on a periodic basis to pull data from the server.  The client will
+        also push captured changes for the server to the server when changes are available.</para>
     <para>This tutorial will walk you through:
       <procedure>
-      <step><para>Installing instances of SymmetricDS for the tutorial,</para></step>
-      <step><para>Creating separate databases for the root and client,</para></step>
-      <step><para>Creating sample tables for client and root and sample data for the root,</para></step>
-      <step><para>Starting SymmetricDS and registering the client with the root,</para></step>
+      <step><para>Installing multiple engines in a single installation of SymmetricDS,</para></step>
+      <step><para>Creating separate databases for the server and client,</para></step>
+      <step><para>Creating sample tables for client and server and sample data for the server,</para></step>
+      <step><para>Starting SymmetricDS and registering the client with the server,</para></step>
       <step><para>Sending an initial load to the client,</para></step>
       <step><para>Causing a data push and data pull operation, and</para></step>
       <step><para>Verifying information about the batches that were sent and received.</para></step>
       </procedure>
        </para>
-    
-     
+         
      <section id="tutorial-install">
         <title>Installing SymmetricDS</title>
-        <para> First, we will install the SymmetricDS software and configure it with your database connection information:</para>
+        <para> 
+        First, we will install the SymmetricDS software and configure it with your database 
+        connection information:        
+        </para>
         <procedure>
             <step>
                 <para>
                     Download the
-                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-2.x.x-server.zip</ulink>
+                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-3.x.x-server.zip</ulink>
                     file from
                     <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
                 </para>
@@ -52,17 +56,17 @@
             <step>
                 <para>
                     Unzip the file in any directory you choose. This will create a
-                    <filename class="directory">symmetric-ds-2.x.x-server</filename>
-                    subdirectory, which corresponds to the version you downloaded.
+                    <filename class="directory">symmetric-ds-3.x.x</filename>
+                    directory, which corresponds to the version you downloaded.
                 </para>
             </step>
             <step>
-                <para>Edit the database properties in the following property files for the root (central office) and client (store) nodes:</para>
+                <para>Copy the following properties files for the server (central office) and client (store) nodes into the engines directory of the SymmetricDS install and edit them to configure the database you want to use.</para>
                 <para>
                     <itemizedlist spacing="compact">
                         <listitem>
                             <para>
-                                <filename>samples/root.properties</filename>
+                                <filename>samples/server.properties</filename>
                             </para>
                         </listitem>
                         <listitem>
@@ -95,23 +99,28 @@ db.password=secret]]></programlisting>
                 <para>
                     Next, set the following property in the
                     <filename>client.properties</filename>
-                    file to specify where the root node can be contacted:
+                    file to specify where the server node can be contacted:
                 </para>
-                <programlisting><![CDATA[# The HTTP URL of the root node to contact for registration
-registration.url=http://localhost:8080/sync]]></programlisting>
+                <programlisting><![CDATA[# The HTTP URL of the server node to contact for registration
+registration.url=http://localhost:8080/sync/server]]></programlisting>
+                <tip>
+                    <para>
+                       Note that the URL for a engine is the following format:  http://{hostname}:{port}/sync/{engine.name}.  The engine.name portion of the URL comes from a node's properties file. 
+                    </para>
+                </tip>
                 <para> For the tutorial, the client database starts out empty, and the node is not registered. Registration is the
                     process where the node receives its configuration and stores it in its database. The configuration describes
                     which database tables to synchronize and to which nodes. When an unregistered node starts up, it will
                     register with the node specified by the registration URL. The registration node centrally controls nodes on
                     the network by allowing registration and returning configuration. In this tutorial, the registration node is
-                    the root node, which also participates in synchronization with other nodes.</para>
+                    the server node, which also participates in synchronization with other nodes.</para>
             </step>
         </procedure>
     </section>
     <section id="ch02-create-database">
         <title>Creating and Populating Your Databases</title>
         <important>
-            <para> You must first create the databases for your root and client nodes using the administration tools provided by
+            <para> You must first create the databases for your server and client nodes using the administration tools provided by
                 your database vendor. Make sure the name of the databases you create match the settings in the properties files.
             </para>
             <para>
@@ -122,7 +131,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </important>
         <para>
             First, create the sample tables in the
-            <emphasis>root</emphasis>
+            <emphasis>server</emphasis>
             node database, load the sample data, and load the sample configuration.
         </para>
         <procedure>
@@ -134,44 +143,37 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 </para>
             </step>
             <step>
-                <para>Create the sample tables in the root database by executing the following command:</para>
+                <para>Create the sample tables in the server database by executing the following command:</para>
                 <para>
-                    <command>../bin/sym -p root.properties --run-ddl create_sample.xml</command>
+                    <command>../bin/symadmin --engine server --run-ddl create_sample.xml</command>
                 </para>
                 <para> Note that the warning messages from the command are safe to ignore.</para>
             </step>
             <step>
-                <para>Next, create the SymmetricDS tables in the root node database. These tables will contain the configuration for
+                <para>Next, create the SymmetricDS tables in the server node database. These tables will contain the configuration for
                     synchronization. The following command uses the auto-creation feature to create all the necessary SymmetricDS
                     system tables.</para>
                 <para>
-                    <command>../bin/sym -p root.properties --auto-create</command>
+                    <command>../bin/symadmin --engine server --auto-create</command>
                 </para>
             </step>
             <step>
-                <para>Finally, load the sample data and configuration into the root node database by executing:</para>
+                <para>Finally, load the sample data and configuration into the server node database by executing:</para>
                 <para>
-                    <command>../bin/sym -p root.properties --run-sql insert_sample.sql</command>
+                    <command>../bin/symadmin --engine server --run-sql insert_sample.sql</command>
                 </para>
             </step>
         </procedure>
         <para>
-            We have now created the root database tables and populated them with sample data.  Next, we create the sample tables in the
+            We have now created the server database tables and populated them with sample data.  Next, we create the sample tables in the
             <emphasis>client</emphasis>
             node database to prepare it for receiving data.
         </para>
         <procedure>
             <step>
-                <para>
-                    Open a command prompt and navigate to the
-                    <filename class="directory">samples</filename>
-                    subdirectory of your SymmetricDS installation.
-                </para>
-            </step>
-            <step>
                 <para>Create the sample tables in the client database by executing:</para>
                 <para>
-                    <command> ../bin/sym -p client.properties --run-ddl create_sample.xml</command>
+                    <command> ../bin/symadmin --engine client --run-ddl create_sample.xml</command>
                 </para>
                 <para> Note that the warning messages from the command are safe to ignore.</para>
             </step>
@@ -183,16 +185,16 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </para>
         <procedure>
             <step>
-                <para> Find the item tables that sync from root to client: item and item_selling_price.</para>
+                <para> Find the item tables that sync from server to client: item and item_selling_price.</para>
             </step>
             <step>
-                <para> Find the sales tables that sync from client to root: sale_transaction and sale_return_line_item.</para>
+                <para> Find the sales tables that sync from client to server: sale_transaction and sale_return_line_item.</para>
             </step>
             <step>
                 <para> Find the SymmetricDS system tables, which have a prefix of "sym_".</para>
             </step>
              <step>
-                <para>Validate the root item tables have sample data.</para>
+                <para>Validate the server item tables have sample data.</para>
             </step>
         </procedure>
     </section>
@@ -202,28 +204,15 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         We will now start both SymmetricDS nodes and observe the logging output.</para>
         <procedure>
             <step>
+                <para>Start SymmetricDS by executing:</para>
                 <para>
-                    Open a command prompt and navigate to the
-                    <filename class="directory">samples</filename>
-                    subdirectory of your SymmetricDS installation.
+                    <command>../bin/sym --port 8080 --server</command>
                 </para>
-            </step>
-            <step>
-                <para>Start the root node server by executing:</para>
-                <para>
-                    <command>../bin/sym -p root.properties --port 8080 --server</command>
-                </para>
-                <para> The root node server starts up and creates all the triggers that were configured by the sample
+                <para> The server and client nodes both start up.  The server node creates all the triggers that were configured by the sample
                     configuration. It listens on port 8080 for synchronization and registration requests.</para>
-            </step>
-            <step>
-                <para>Start the client node server by executing:</para>
-                <para>
-                    <command>../bin/sym -p client.properties --port 9090 --server</command>
-                </para>
                 <para> The client node server starts up and uses the auto-creation feature to create the SymmetricDS system
-                    tables. It begins polling the root node in order to register. Since registration is not yet open, the client
-                    node receives an authorization failure (HTTP response of 403).</para>
+                    tables. It begins polling the server node in order to register. Since registration is not yet open, the client
+                    node receives an authorization failure (HTTP response of 403).</para>                    
             </step>
         </procedure>
         <tip>
@@ -236,20 +225,13 @@ registration.url=http://localhost:8080/sync]]></programlisting>
     <section id="ch02-register-node">
         <title>Registering a Node</title>
         <para> Next, we need to open registration for the client node so that it may receive its initial load of
-         data and so that it may receive and send data from and to the root node. 
-         There are several ways to do this.  We will use the administration feature on the root node.</para>
+         data and so that it may receive and send data from and to the server node. 
+         There are several ways to do this.  We will use the administration feature on the server node.</para>
         <procedure>
-            <step>
-                <para>
-                    Open a command prompt and navigate to the
-                    <filename class="directory">samples</filename>
-                    subdirectory of your SymmetricDS installation.
-                </para>
-            </step>
             <step>
                 <para>Open registration for the client node server by executing:</para>
                 <para>
-                    <command> ../bin/sym -p root.properties --open-registration "store,1"</command>
+                    <command> ../bin/symadmin --engine server --open-registration "store,1"</command>
                 </para>
                 <para>
                     The registration is now opened for a node group called "store" with an external identifier of "1". This
@@ -261,15 +243,15 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 </para>
             </step>
             <step>
-                <para> Watch the logging output of the client node to see it successfully register with the root node. The client
-                    is configured to attempt registration once per minute. Once registered, the root and client are enabled for
+                <para> Watch the logging output of the client node to see it successfully register with the server node. The client
+                    is configured to attempt registration once per minute. Once registered, the server and client are enabled for
                     synchronization!</para>
             </step>
         </procedure>
     </section>
     <section id="ch02-initial-load">
         <title>Sending an Initial Load</title>
-        <para>Next, we will send an initial load of data to our store (that is, the client node), again using the root node administration feature.</para>
+        <para>Next, we will send an initial load of data to our store (that is, the client node), again using the server node administration feature.</para>
         <procedure>
             <step>
                 <para>
@@ -281,15 +263,15 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             <step>
                 <para>Send an initial load of data to the client node server by executing:</para>
                 <para>
-                    <command>../bin/sym -p root.properties --reload-node 1</command>
+                    <command>../bin/sym --engine server --reload-node 1</command>
                 </para>
-                <para> With this command, the root node queues up an initial load for the client node that will be sent the next
+                <para> With this command, the server node queues up an initial load for the client node that will be sent the next
                     time the client performs its pull. The initial load includes data for each table that is configured for
                     synchronization.</para>
             </step>
             <step>
                 <para> Watch the logging output of both nodes to see the data transfer. The client is configured to pull data from
-                    the root every minute.</para>
+                    the server every minute.</para>
             </step>
         </procedure>
     </section>
@@ -300,7 +282,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </para>
         <procedure>
             <step>
-                <para>Open an interactive SQL session with the <emphasis>root</emphasis> database.</para>
+                <para>Open an interactive SQL session with the <emphasis>server</emphasis> database.</para>
             </step>
             <step>
                 <para>Add a new item for sale:</para>
@@ -315,7 +297,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
             <step>
                 <para> Watch the logging output of both nodes to see the data transfer. The client is configured to pull data from
-                    the root every minute.</para>
+                    the server every minute.</para>
             </step>
             <step>
                 <para> Verify that the new data arrives in the client database using another interactive SQL session.</para>
@@ -344,7 +326,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
             <step>
                 <para> Watch the logging output of both nodes to see the data transfer. The client is configured to push data to
-                    the root every minute.</para>
+                    the server every minute.</para>
             </step>
         </procedure>
     </section>
@@ -358,7 +340,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </para>
         <procedure>
             <step>
-                <para>Open an interactive SQL session with either the root or client database.</para>
+                <para>Open an interactive SQL session with either the server or client database.</para>
             </step>
             <step>
                 <para> Verify that the data change you made was captured:</para>
@@ -401,7 +383,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             runtime property.</para>
         <procedure>
             <step>
-                <para>Open an interactive SQL session with either the root or client database.</para>
+                <para>Open an interactive SQL session with either the server or client database.</para>
             </step>
             <step>
                 <para> Verify that the batch was acknowledged, using a batch_id from the previous section:</para>

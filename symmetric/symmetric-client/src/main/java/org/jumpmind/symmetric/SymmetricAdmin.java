@@ -75,7 +75,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
 
-    private static final String OPTION_CREATE_WAR = "create-war";
+    private static final String OPTION_CREATE_WAR = "create-war";    
 
     public SymmetricAdmin(String app, String argSyntax, String messageKeyPrefix) {
 		super(app, argSyntax, messageKeyPrefix);

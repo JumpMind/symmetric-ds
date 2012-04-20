@@ -1,8 +1,7 @@
 <chapter version="5.0" xml:id="introduction" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Introduction</title>
-    
+    <title>Introduction</title>  
         <para>This User Guide will introduce both basic and advanced concepts in the configuration
             of SymmetricDS. By the end of this chapter, you will have a better understanding of SymmetricDS' capabilities, and
             many of its basic concepts.</para>
@@ -36,56 +35,12 @@
                 and taking different actions based on the content or status of a synchronization.
             </para>
         </section>
-        <section id="background">
-            <title>Background</title>
-            <para>The idea of SymmetricDS was born from a real-world need. Several of the original developers were, several years
-                ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
-                conclusion that the software available for trickling back transactions to corporate headquarters 
-                (frequently known as the 'central office' or 'general office')
-                did not meet the
-                project needs. The list of project requirements made finding the ideal solution difficult:</para>
-            <itemizedlist>
-                <listitem>
-                    <para> Sending and receiving data with up to 2000 stores during peak holiday loads.</para>
-                </listitem>
-                <listitem>
-                    <para> Supporting one database platform at the store and a different one at the central office.</para>
-                </listitem>
-                <listitem>
-                    <para> Synchronizing some data in one direction, and other data in both directions.</para>
-                </listitem>
-
-                
-                <listitem>
-                    <para> Filtering out sensitive data and re-routing it to a protected database.</para>
-                </listitem>
-                <listitem>
-                    <para> Preparing the store database with an initial load of data from the central office.</para>
-                </listitem>
-            </itemizedlist>
-            <para> The team ultimately created a custom solution that met the requirements and led to a successful project. From
-                this work came the knowledge and experience that SymmetricDS benefits from today.</para>
-        </section>
         <section>
             <title>SymmetricDS Features</title>
             <para>At a high level, SymmetricDS comes with a number of features that you are likely to need or want when doing data
                 synchronization. A majority of these features were created as a direct result of real-world use of SymmetricDS in
                 production settings.</para>
        
-        <section id="notification">
-            <title>Notification Schemes</title>
-            <para>
-                After a change to the database is recorded, the SymmetricDS nodes interested in the change are notified. Change
-                notification is configured to perform either a
-                <emphasis>push</emphasis>
-                (trickle-back) or a
-                <emphasis>pull</emphasis>
-                (trickle-poll) of data. When several nodes target their changes to a central node, it is efficient to push the
-                changes instead of waiting for the central node to pull from each source node. If the network configuration protects
-                a node with a firewall, a pull configuration could allow the node to receive data changes that might otherwise be
-                blocked using push. The frequency of the change notification is configurable and defaults to once per minute.
-            </para>
-        </section>
         <section id="bi-sync">
             <title>Two-Way Table Synchronization</title>
             <para> In practice, much of the data in a typical synchronization requires synchronization in just one direction.
@@ -107,13 +62,30 @@
                 processed independently so inventory can get through despite the large amount of item data.</para>  Channels are discussed
                 in more detail in <xref linkend="choosing-channels"/>.
         </section>
-        <section id="transactions">
-            <title>Transaction Awareness</title>
-            <para> Many databases provide a unique transaction identifier associated with the rows that are committed together as a transaction.
-                SymmetricDS stores the transaction identifier, along with the data that changed, so it can play back the transaction exactly
-                as it occurred originally. This means the target database maintains the same transactional integrity as its source. Support for
-                transaction identification for supported databases is documented in the appendix of this guide.</para>
+        <section id="notification">
+            <title>Change Notification</title>
+            <para>
+                After a change to the database is recorded, the SymmetricDS nodes interested in the change are notified. Change
+                notification is configured to perform either a
+                <emphasis>push</emphasis>
+                (trickle-back) or a
+                <emphasis>pull</emphasis>
+                (trickle-poll) of data. When several nodes target their changes to a central node, it is efficient to push the
+                changes instead of waiting for the central node to pull from each source node. If the network configuration protects
+                a node with a firewall, a pull configuration could allow the node to receive data changes that might otherwise be
+                blocked using push. The frequency of the change notification is configurable and defaults to once per minute.
+            </para>
         </section>
+        <section id="transports">
+            <title>HTTP(S) Transport</title>
+            <para>
+                By default, SymmetricDS uses web-based HTTP or HTTPS in a style called Representation State Transfer (REST).  It is
+                lightweight and easy to manage. A series of filters are also provided to enforce authentication and to restrict
+                the number of simultaneous synchronization streams. The
+                <literal>ITransportManager</literal>
+                interface allows other transports to be implemented. 
+            </para>
+        </section>        
         <section id="plugins">
             <title>Data Filtering and Rerouting</title>
             <para>
@@ -126,6 +98,14 @@
                             routers are possible by providing a class implementing <literal>IDataRouter</literal>. 
                         </para>
                     </listitem>
+                     <listitem>
+                        <para>
+                            In addition to synchronization, SymmetricDS is also capable of performing fairly complex transformations (see <xref linkend="transform-data" xrefstyle="select: label"/>) of
+                            data as the synchronization data is loaded into a target database.  The transformations can be used to merge source data,
+                            make multiple copies of source data across multiple target tables, set defaults in the target tables, etc.  The types of transformation
+                            can also be extended to create even more custom transformations. 
+                        </para>
+                    </listitem>
                     <listitem>
                         <para>
                             As data changes are loaded in the target database, a class implementing
@@ -135,28 +115,17 @@
                             filter can also prevent data from reaching the database altogether, effectively replacing the default
                             data loading process.
                         </para>
-                    </listitem>
-                     <listitem>
-                        <para>
-                            In addition to synchronization, SymmetricDS is also capable of performing fairly complex transformations (see <xref linkend="transform-data" xrefstyle="select: label"/>) of
-                            data as the synchronization data is loaded into a target database.  The transformations can be used to merge source data,
-                            make multiple copies of source data across multiple target tables, set defaults in the target tables, etc.  The types of transformation
-                            can also be extended to create even more custom transformations. 
-                        </para>
-                    </listitem>
+                    </listitem>                    
                 </itemizedlist>
             </para>
         </section>
-        <section id="transports">
-            <title>HTTP(S) Transport</title>
-            <para>
-                By default, SymmetricDS uses web-based HTTP or HTTPS in a style called Representation State Transfer (REST).  It is
-                lightweight and easy to manage. A series of filters are also provided to enforce authentication and to restrict
-                the number of simultaneous synchronization streams. The
-                <literal>ITransportManager</literal>
-                interface allows other transports to be implemented. 
-            </para>
-        </section>
+        <section id="transactions">
+            <title>Transaction Awareness</title>
+            <para> Many databases provide a unique transaction identifier associated with the rows that are committed together as a transaction.
+                SymmetricDS stores the transaction identifier, along with the data that changed, so it can play back the transaction exactly
+                as it occurred originally. This means the target database maintains the same transactional integrity as its source. Support for
+                transaction identification for supported databases is documented in the appendix of this guide.</para>
+        </section>        
         <section id="jmx">
             <title>Remote Management</title>
             <para> Administration functions are exposed through Java Management Extensions (JMX) and can be accessed from the
@@ -166,9 +135,8 @@
             <para> SymmetricDS also provides functionality to send SQL events through the same synchronization mechanism that is
                 used to send data. The data payload can be any SQL statement. The event is processed and acknowledged just like
                 any other event type.</para>
-        </section>
-    
-     </section>
+        </section>    
+     </section>     
     <section id="requirements">
         <title>System Requirements</title>
         <para> SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or Java SE Development Kit (JDK)
@@ -211,6 +179,66 @@
         <para>
             See <xref linkend="databases"/>,          
             for compatibility notes and other details for your specific database.
-        </para>
+        </para>        
     </section>
+        <section id="background">
+            <title>Background</title>
+            <para>The idea of SymmetricDS was born from a real-world need. Several of the original developers were, several years
+                ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
+                conclusion that the software available for trickling back transactions to corporate headquarters 
+                (frequently known as the 'central office' or 'general office')
+                did not meet the
+                project needs. The list of project requirements made finding the ideal solution difficult:</para>
+            <itemizedlist>
+                <listitem>
+                    <para> Sending and receiving data with up to 2000 stores during peak holiday loads.</para>
+                </listitem>
+                <listitem>
+                    <para> Supporting one database platform at the store and a different one at the central office.</para>
+                </listitem>
+                <listitem>
+                    <para> Synchronizing some data in one direction, and other data in both directions.</para>
+                </listitem>                
+                <listitem>
+                    <para> Filtering out sensitive data and re-routing it to a protected database.</para>
+                </listitem>
+                <listitem>
+                    <para> Preparing the store database with an initial load of data from the central office.</para>
+                </listitem>
+            </itemizedlist>
+            <para> The team ultimately created a custom solution that met the requirements and led to a successful project. From
+                this work came the knowledge and experience that SymmetricDS benefits from today.</para>
+        </section>    
+        <section>
+           <title>Why Database Triggers?</title>
+           <para>
+             There are several industry recognized techniques to capture changing data for replication, synchronization and integration in a relational database.
+           </para>
+           <itemizedlist>
+           <listitem>
+             <para> 
+             <emphasis>Lazy data capture</emphasis> queries changed data from a source system using some SQL condition (like a time stamp column).    
+             </para>
+           </listitem>
+           <listitem>
+             <para> 
+             <emphasis>Trigger-based data capture</emphasis> installs database triggers to capture changes.
+             </para>
+           </listitem>
+           <listitem>
+             <para> 
+             <emphasis>Log-based data capture</emphasis> reads data changes from proprietary database recovery logs.
+             </para>
+           </listitem>
+           </itemizedlist>
+             <para>            
+             All three of these techniques have advantages and disadvantages, and all three are on the road map for SymmetricDS. At present time, SymmetricDS supports trigger-based data capture and basic lazy data capture. These two techniques were implemented first for a variety of reasons, not the least of which is that the majority of use cases that SymmetricDS targets can be solved using trigger-based and conditional replication in a way that allows for more database platforms to be supported using industry standard technologies. This fact allowed our developers' valuable time and energy to be invested in designing a product that is easy to install, configure and manage versus spending time reverse engineering proprietary and not well documented database log files.
+             </para>
+             <para> 
+             Trigger-based data capture does introduce a measurable amount of overhead on database operations. The amount of overhead can vary greatly depending on the processing power and configuration of the database platform, and the usage of the database by applications. With nonstop advances in hardware and database technology, trigger-based data capture has become feasible for use cases that involve high data throughput or require scaling out.
+             </para>
+             <para> 
+             Trigger-based data capture is easier to implement and support than log-based solutions. It uses well known database concepts and is very accessible to software and database developers and database administrators. It can usually be installed, configured, and managed by application development teams or database administrators and does not require deployment on the database server itself.
+             </para>           
+        </section>    
 </chapter>
