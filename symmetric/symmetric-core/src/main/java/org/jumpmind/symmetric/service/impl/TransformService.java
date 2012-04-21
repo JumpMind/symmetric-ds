@@ -147,7 +147,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     .getSourceSchemaName(), transformTable.getSourceTableName(), transformTable
                     .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
-                    transformTable.isUpdateFirst(), transformTable.getDeleteAction().toString(),
+                    transformTable.isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction().toString(),
                     transformTable.getTransformOrder(), transformTable.getTransformId()) == 0) {
                 transaction.prepareAndExecute(getSql("insertTransformTableSql"), transformTable
                         .getNodeGroupLink().getSourceNodeGroupId(), transformTable
@@ -156,7 +156,7 @@ public class TransformService extends AbstractService implements ITransformServi
                         transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                         transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
                         transformTable.getTransformPoint().toString(), transformTable
-                                .isUpdateFirst(), transformTable.getDeleteAction().toString(),
+                                .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction().toString(),
                         transformTable.getTransformOrder(), transformTable.getTransformId());
             }
             deleteTransformColumns(transaction, transformTable.getTransformId());
@@ -194,31 +194,16 @@ public class TransformService extends AbstractService implements ITransformServi
 
     protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
         if (transaction.prepareAndExecute(getSql("updateTransformColumnSql"),
-                transformColumn.getSourceColumnName(), transformColumn.isPk(),
+                transformColumn.getSourceColumnName(), transformColumn.isPk() ? 1 : 0,
                 transformColumn.getTransformType(), transformColumn.getTransformExpression(),
                 transformColumn.getTransformOrder(), transformColumn.getTransformId(),
                 transformColumn.getIncludeOn().toDbValue(), transformColumn.getTargetColumnName()) == 0) {
             transaction.prepareAndExecute(getSql("insertTransformColumnSql"),
                     transformColumn.getTransformId(), transformColumn.getIncludeOn().toDbValue(),
                     transformColumn.getTargetColumnName(), transformColumn.getSourceColumnName(),
-                    transformColumn.isPk(), transformColumn.getTransformType(),
+                    transformColumn.isPk() ? 1 : 0, transformColumn.getTransformType(),
                     transformColumn.getTransformExpression(), transformColumn.getTransformOrder());
         }
-    }
-
-    public void deleteTransformColumn(String transformTableId, Boolean includeOn,
-            String targetColumnName) {
-
-        String includeOnAsChar = null;
-        if (includeOn) {
-            includeOnAsChar = "Y";
-        } else {
-            includeOnAsChar = "N";
-        }
-
-        sqlTemplate.update(getSql("deleteTransformColumnSql"), (Object) transformTableId,
-                includeOnAsChar, targetColumnName);
-        refreshCache();
     }
 
     class TransformTableMapper implements ISqlRowMapper<TransformTableNodeGroupLink> {
