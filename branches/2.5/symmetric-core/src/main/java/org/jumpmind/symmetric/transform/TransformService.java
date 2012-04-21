@@ -140,7 +140,7 @@ public class TransformService extends AbstractService implements ITransformServi
                 transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                 transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                 transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
-                transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst(),
+                transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst() ? 1 : 0,
                 transformTable.getDeleteAction().toString(), transformTable.getTransformOrder(),
                 transformTable.getTransformId()) == 0) {
             jdbcTemplate.update(getSql("insertTransformTableSql"),
@@ -149,7 +149,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                     transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                     transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
-                    transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst(),
+                    transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst() ? 1 : 0,
                     transformTable.getDeleteAction().toString(),
                     transformTable.getTransformOrder(), transformTable.getTransformId());
         }
@@ -175,31 +175,16 @@ public class TransformService extends AbstractService implements ITransformServi
 
     public void saveTransformColumn(TransformColumn transformColumn) {
         if (jdbcTemplate.update(getSql("updateTransformColumnSql"),
-                transformColumn.getSourceColumnName(), transformColumn.isPk(),
+                transformColumn.getSourceColumnName(), transformColumn.isPk() ? 1 : 0,
                 transformColumn.getTransformType(), transformColumn.getTransformExpression(),
                 transformColumn.getTransformOrder(), transformColumn.getTransformId(),
                 transformColumn.getIncludeOn().toDbValue(), transformColumn.getTargetColumnName()) == 0) {
             jdbcTemplate.update(getSql("insertTransformColumnSql"),
                     transformColumn.getTransformId(), transformColumn.getIncludeOn().toDbValue(),
                     transformColumn.getTargetColumnName(), transformColumn.getSourceColumnName(),
-                    transformColumn.isPk(), transformColumn.getTransformType(),
+                    transformColumn.isPk()  ? 1 : 0, transformColumn.getTransformType(),
                     transformColumn.getTransformExpression(), transformColumn.getTransformOrder());
         }
-    }
-
-    public void deleteTransformColumn(String transformTableId, Boolean includeOn,
-            String targetColumnName) {
-
-        String includeOnAsChar = null;
-        // TODO: is this a "Y" or "N" or "1" or "0"
-        if (includeOn)
-            includeOnAsChar = "Y";
-        else
-            includeOnAsChar = "N";
-
-        jdbcTemplate.update(getSql("deleteTransformColumnSql"), transformTableId, includeOnAsChar,
-                targetColumnName);
-        refreshCache();
     }
 
     public Map<String, IColumnTransform<?>> getColumnTransforms() {
