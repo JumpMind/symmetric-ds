@@ -50,6 +50,10 @@ public abstract class AbstractTransformer {
                 
                 if (dmlType == DmlType.DELETE) {
                     sourceValues = oldSourceValues;
+                    
+                    if (sourceValues.size() == 0) {
+                        sourceValues = sourceKeyValues;
+                    }
                 }
                 
                 if (log.isDebugEnabled()) {
