@@ -144,6 +144,10 @@ public class TransformWriter implements IDataWriter {
 
             if (eventType == DataEventType.DELETE) {
                 sourceValues = oldSourceValues;
+                
+                if (sourceValues.size() == 0) {
+                    sourceValues = sourceKeyValues;
+                }
             }
 
             if (log.isDebugEnabled()) {
