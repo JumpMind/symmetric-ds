@@ -15,8 +15,8 @@ import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -81,8 +81,8 @@ public abstract class AbstractIntegrationTest {
                 ISymmetricEngine engine = TestSetupUtil.prepareRoot();
                 engine.destroy();
 
-                System.setProperty(Constants.SYS_PROP_ENGINES_DIR, engineDir.getAbsolutePath());
-                System.setProperty(Constants.SYS_PROP_WEB_DIR, "src/main/deploy/web");
+                System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
+                System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJoin(false);
                 server.start(51413);

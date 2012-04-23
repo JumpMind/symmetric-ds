@@ -48,9 +48,8 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,7 +213,7 @@ public abstract class AbstractCommandLauncher {
     }
     
     public static String getEnginesDir() {
-        String enginesDir = System.getProperty(Constants.SYS_PROP_ENGINES_DIR, "../engines");
+        String enginesDir = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, "../engines");
         new File(enginesDir).mkdirs();
         return enginesDir;
     }
@@ -246,12 +245,12 @@ public abstract class AbstractCommandLauncher {
     
     protected void configureCrypto(CommandLine line) throws Exception {
         if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
-            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, 
+            System.setProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD, 
             		line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
         }
 
         if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
-            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
+            System.setProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE,
                     line.getOptionValue(OPTION_KEYSTORE_TYPE));
         }
 

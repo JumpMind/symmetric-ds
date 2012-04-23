@@ -45,7 +45,6 @@ import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -65,13 +64,13 @@ public class SymmetricWebServer {
     protected static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
-            Constants.SYS_PROP_WEB_DIR, "../web");
+            SystemConstants.SYSPROP_WEB_DIR, "../web");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
-            Constants.SYS_PROP_DEFAULT_HTTP_PORT, "31415");
+            SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(
-            Constants.SYS_PROP_DEFAULT_HTTPS_PORT, "31417");
+            SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
 
     public static final int DEFAULT_MAX_IDLE_TIME = 7200000;
 
@@ -87,9 +86,6 @@ public class SymmetricWebServer {
     private WebAppContext webapp;
 
     protected boolean join = true;
-
-    protected boolean createJmxServer = Boolean.parseBoolean(System.getProperty(
-            Constants.SYS_PROP_CREATE_JMX_SERVER, "true"));
 
     protected String webHome = "/";
 
@@ -174,7 +170,7 @@ public class SymmetricWebServer {
     public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
 
         // indicate to the app that we are in standalone mode
-        System.setProperty(Constants.SYS_PROP_STANDALONE_WEB, "true");
+        System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
 
         server = new Server();
 
@@ -200,10 +196,8 @@ public class SymmetricWebServer {
 
         server.start();
 
-        if (createJmxServer) {
-            int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
-            registerHttpJmxAdaptor(httpJmxPort);
-        }
+        int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
+        registerHttpJmxAdaptor(httpJmxPort);
 
         if (join) {
             log.info("Joining the web server main thread");
@@ -280,8 +274,8 @@ public class SymmetricWebServer {
 
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
-        String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
-        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE);
+        String keyStoreFile = System.getProperty(SystemConstants.SYSPROP_KEYSTORE);
+        String keyStoreType = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = null;
@@ -301,7 +295,7 @@ public class SymmetricWebServer {
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
             String keyStorePassword = System
-                    .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+                    .getProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword
                     : SecurityConstants.KEYSTORE_PASSWORD;
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
@@ -320,12 +314,12 @@ public class SymmetricWebServer {
     }
 
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
-        if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true)) {
             log.info("Starting JMX HTTP console on port {}", jmxPort);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            if (!AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED,
+            if (!AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_LOCALHOST_ENABLED,
                     true)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
             } else if (StringUtils.isNotBlank(host)) {
@@ -348,7 +342,7 @@ public class SymmetricWebServer {
     }
 
     protected void removeHttpJmxAdaptor() {
-        if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true)) {
             try {
                 MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
@@ -361,9 +355,7 @@ public class SymmetricWebServer {
 
     public void stop() throws Exception {
         if (server != null) {
-            if (createJmxServer) {
-                removeHttpJmxAdaptor();
-            }
+            removeHttpJmxAdaptor();
             server.stop();
         }
     }
@@ -410,10 +402,6 @@ public class SymmetricWebServer {
 
     public void setPropertiesFile(String propertiesFile) {
         this.propertiesFile = propertiesFile;
-    }
-
-    public void setCreateJmxServer(boolean createJmxServer) {
-        this.createJmxServer = createJmxServer;
     }
 
     public void setHost(String host) {
