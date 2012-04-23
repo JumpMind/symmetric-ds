@@ -70,6 +70,14 @@
                 file. SymmetricDS can synchronize any table that is accessible by the connection represented by the database
                 connection string, given that the database user has been assigned the appropriate database permissions.
             </para>
+                <figure id="figure-overview-1">
+                    <title>Simple Configuration</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/overview-1.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>            
             <para> A SymmetricDS node is also assigned an external id and a node group id. The external id is a meaningful,
                 user-assigned identifier that is used by SymmetricDS to understand which data is destined for a given node.
                 The node group id is used to identify groupings or tiers of nodes. It defines where the node fits into the
