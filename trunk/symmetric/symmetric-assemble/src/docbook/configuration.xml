@@ -972,7 +972,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id="transform-data">
         <title>Transforming Data</title>
         <para>
-        New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data by way of
+        New as of SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data by way of
         configuration (previously, for most cases a custom data loader would need to have been written).  This transformation can take
         place on a source node or on a target node, as the data is being loaded or extracted.
         With this new feature you can, for example:
