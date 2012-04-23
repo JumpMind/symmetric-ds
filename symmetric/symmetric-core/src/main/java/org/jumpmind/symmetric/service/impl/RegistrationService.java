@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -50,6 +51,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -76,14 +78,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
 
     private IStatisticManager statisticManager;
+    
+    private ITriggerRouterService triggerRouterService;
 
     public RegistrationService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IDataExtractorService dataExtractorService, IDataService dataService,
+            IDataExtractorService dataExtractorService, ITriggerRouterService triggerRouterService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
             IStatisticManager statisticManager) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
+        this.triggerRouterService = triggerRouterService;
         this.dataExtractorService = dataExtractorService;
         this.dataService = dataService;
         this.dataLoaderService = dataLoaderService;
@@ -316,7 +321,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
             nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
             for (Node node : nodes) {
                 log.info("Enabling an initial load to {}", node.getNodeId());
-                nodeService.setInitialLoadEnabled(node.getNodeId(), true);
+                List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
+                        .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(),
+                                node.getNodeGroupId()));
+                for (TriggerRouter trigger : triggerRouters) {
+                    dataService.insertReloadEvent(node, trigger);
+                }
                 queuedLoad = true;
             }
             
