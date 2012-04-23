@@ -45,9 +45,7 @@ final public class Constants {
     
     public static final String SYS_PROP_DEFAULT_HTTP_PORT = "symmetric.default.http.port";
     
-    public static final String SYS_PROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";
-    
-    public static final String SYS_PROP_CREATE_JMX_SERVER = "symmetric.default.create.jmx.server";
+    public static final String SYS_PROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";    
 
     public static final String PLEASE_SET_ME = "please set me";
     
