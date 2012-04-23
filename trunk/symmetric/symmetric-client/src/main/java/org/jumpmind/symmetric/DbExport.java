@@ -66,6 +66,10 @@ public class DbExport {
 	
 	private boolean noCreateInfo;
 	
+	private boolean noIndices;
+	
+	private boolean noForeignKeys;
+	
 	private boolean noData;
 	
 	private boolean ignoreMissingTables;
@@ -120,6 +124,7 @@ public class DbExport {
         for (String tableName : tableNames) {
             Table table = platform.readTableFromDatabase(catalog, schema, tableName);
             if (table != null) {
+                
                 tableList.add(table);
             } else if (! ignoreMissingTables){
                 throw new RuntimeException("Cannot find table " + tableName + " in catalog " + catalog +
@@ -153,21 +158,15 @@ public class DbExport {
         writeComment(writer, "Started on " + df.format(new Date()));
         
         if (format == Format.XML) {
-            Database db = new Database();
-            if (! noCreateInfo) {
-                db.addTables(tables);
-            }
-            new DatabaseIO().write(db, writer, "dbexport");
+            new DatabaseIO().write(getDatabase(tables), writer, "dbexport");
         }
 
     	for (Table table : tables) {
             writeComment(writer, "Table: " + table.getName());
             
             if (! noCreateInfo) {
-                Database db = new Database();
-                db.addTable(table);
                 if (format == Format.SQL) {
-                    writer.write(target.createTables(db, addDropTable));
+                    writer.write(target.createTables(getDatabase(table), addDropTable));
                 } else if (format == Format.CSV) {
                     csvWriter.writeRecord(table.getColumnNames());
                 }
@@ -237,6 +236,31 @@ public class DbExport {
             }
             writer.flush();
         }
+    }
+
+    protected Database getDatabase(Table table) {
+        return getDatabase(new Table[] { table });
+    }
+
+    protected Database getDatabase(Table[] tables) {
+        Database db = new Database();
+        try {
+            if (! noCreateInfo) {
+                for (Table table : tables) {
+                    Table newTable = (Table) table.clone();
+                    if (noIndices) {
+                        newTable.removeAllIndices();
+                    }
+                    if (noForeignKeys) {
+                        newTable.removeAllForeignKeys();
+                    }
+                    db.addTable(newTable);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return db;
     }
 
     public Format getFormat() {
@@ -317,5 +341,21 @@ public class DbExport {
 
     public void setUseVariableForDates(boolean useVariableDates) {
         this.useVariableDates = useVariableDates;
+    }
+
+    public boolean isNoIndices() {
+        return noIndices;
+    }
+
+    public void setNoIndices(boolean noIndices) {
+        this.noIndices = noIndices;
+    }
+
+    public boolean isNoForeignKeys() {
+        return noForeignKeys;
+    }
+
+    public void setNoForeignKeys(boolean noForeignKeys) {
+        this.noForeignKeys = noForeignKeys;
     }
 }
