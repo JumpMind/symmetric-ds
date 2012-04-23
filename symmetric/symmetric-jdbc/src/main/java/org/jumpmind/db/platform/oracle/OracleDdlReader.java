@@ -154,20 +154,18 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
             if (column.getScale() == 0) {
-                if (column.getSizeAsInt() <= 5) {
+                if (column.getSizeAsInt() == 5) {
                     column.setTypeCode(Types.SMALLINT);
-                } else if (column.getSizeAsInt() <= 22) {
+                } else if (column.getSizeAsInt() == 22) {
                     column.setTypeCode(Types.INTEGER);
-                } else {
+                } else if (column.getSizeAsInt() == 38){
                     column.setTypeCode(Types.BIGINT);
                 }
-            } else {
-                if (column.getScale() <= -127 || column.getScale() >= 127) {
-                    if (column.getSizeAsInt() <= 63) {
-                        column.setTypeCode(Types.REAL);
-                    } else {
-                        column.setTypeCode(Types.DOUBLE);
-                    }
+            } else if (column.getScale() <= -127 || column.getScale() >= 127) {
+                if (column.getSizeAsInt() <= 63) {
+                    column.setTypeCode(Types.REAL);
+                } else {
+                    column.setTypeCode(Types.DOUBLE);
                 }
             }
         } else if (column.getTypeCode() == Types.FLOAT) {
