@@ -56,7 +56,8 @@
         </para>
     </section>
     <section id="definition">
-        <title>How Does It Work?</title>
+        <title>Overview</title>
+        <para>Follwing is an overview of how SymmetricDS works.</para>
         <section>
             <title>A Node is Born</title>
             <para> SymmetricDS is a Java-based application that hosts an engine that acts as an agent for data
