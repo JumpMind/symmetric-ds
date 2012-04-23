@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -50,6 +51,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -80,6 +82,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
     
     private IStatisticManager statisticManager;
+    
+    private ITriggerRouterService triggerRouterService;
 
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
@@ -313,9 +317,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
             List<Node> nodes = new ArrayList<Node>();
             nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
             for (Node node : nodes) {
-                nodeService.setInitialLoadEnabled(node.getNodeId(), true);
+                List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
+                        .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(),
+                                node.getNodeGroupId()));
+                for (TriggerRouter trigger : triggerRouters) {
+                    dataService.insertReloadEvent(node, trigger);
+                }
             }
         }
     }
@@ -401,6 +410,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
         this.dataLoaderService = dataLoaderService;
+    }
+    
+    public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
+        this.triggerRouterService = triggerRouterService;
     }
 
     public void setTransportManager(ITransportManager transportManager) {
