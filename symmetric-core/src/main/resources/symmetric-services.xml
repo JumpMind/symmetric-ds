@@ -188,6 +188,7 @@
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="transportManager" ref="transportManager" />
         <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="dataService" ref="dataService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="randomTimeSlot">
