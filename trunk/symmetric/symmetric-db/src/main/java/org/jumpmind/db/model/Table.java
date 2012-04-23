@@ -103,6 +103,14 @@ public class Table implements Serializable, Cloneable {
         columns.clear();
     }
 
+    public void removeAllIndices() {
+        indices.clear();
+    }
+
+    public void removeAllForeignKeys() {
+        foreignKeys.clear();
+    }
+
     /**
      * Returns the catalog of this table as read from the database.
      * 
