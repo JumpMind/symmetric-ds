@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.common;
 /**
  * These are properties that can be set only as Java System properties using
  * -D settings.
- *
- * 
  */
 public class SystemConstants {
     
