@@ -153,27 +153,22 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
-            switch (column.getSizeAsInt()) {
-                case 5:
-                    if (column.getScale() == 0) {
-                        column.setTypeCode(Types.SMALLINT);
-                    }
-                    break;
-                case 18:
-                    column.setTypeCode(Types.REAL);
-                    break;
-                case 22:
-                    if (column.getScale() == 0) {
-                        column.setTypeCode(Types.INTEGER);
-                    }
-                    break;
-                case 38:
-                    if (column.getScale() == 0) {
-                        column.setTypeCode(Types.BIGINT);
+            if (column.getScale() == 0) {
+                if (column.getSizeAsInt() <= 5) {
+                    column.setTypeCode(Types.SMALLINT);
+                } else if (column.getSizeAsInt() <= 22) {
+                    column.setTypeCode(Types.INTEGER);
+                } else {
+                    column.setTypeCode(Types.BIGINT);
+                }
+            } else {
+                if (column.getScale() <= -127 || column.getScale() >= 127) {
+                    if (column.getSizeAsInt() <= 63) {
+                        column.setTypeCode(Types.REAL);
                     } else {
                         column.setTypeCode(Types.DOUBLE);
                     }
-                    break;
+                }
             }
         } else if (column.getTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
