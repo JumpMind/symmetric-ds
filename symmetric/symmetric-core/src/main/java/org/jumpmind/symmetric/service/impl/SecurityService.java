@@ -39,6 +39,7 @@ import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +103,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected SecretKey getSecretKey() throws Exception {
-        String password = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+        String password = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
@@ -165,14 +166,14 @@ public class SecurityService implements ISecurityService {
 
     protected KeyStore getKeyStore(String password) throws Exception {
         KeyStore ks = KeyStore.getInstance(SecurityConstants.KEYSTORE_TYPE);
-        FileInputStream is = new FileInputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
+        FileInputStream is = new FileInputStream(System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
         ks.load(is, password.toCharArray());
         is.close();
         return ks;
     }
 
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
-        FileOutputStream os = new FileOutputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
+        FileOutputStream os = new FileOutputStream(System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();
     }

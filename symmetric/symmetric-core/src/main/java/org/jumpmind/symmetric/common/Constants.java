@@ -37,16 +37,6 @@ final public class Constants {
     
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
     
-    public static final String SYS_PROP_STANDALONE_WEB = "symmetric.standalone.web";
-        
-    public static final String SYS_PROP_ENGINES_DIR = "symmetric.engines.dir";
-    
-    public static final String SYS_PROP_WEB_DIR = "symmetric.default.web.dir";
-    
-    public static final String SYS_PROP_DEFAULT_HTTP_PORT = "symmetric.default.http.port";
-    
-    public static final String SYS_PROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";    
-
     public static final String PLEASE_SET_ME = "please set me";
     
     public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
