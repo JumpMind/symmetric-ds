@@ -386,4 +386,16 @@
             does not require deployment on the database server itself.
         </para>
     </section>
+    <section>
+        <title>Support</title>
+        <para>SymmetricDS is backed by JumpMind, Inc.</para>
+        <para>SymmetricDS is, and always will be, open source, which means free community support is available
+            online, through the forums and the issue tracker. In a production environment, we have found that clients demand
+            fast, more experienced help from the original architects and engineers — people who have the knowledge and
+            experience to design, tune, troubleshoot, and shape future versions of the product.
+        </para>
+        <para> To meet this demand, JumpMind provides Support Subscriptions designed to provide your organization with
+            expert, dependable support from development to mission critical production support.
+        </para>
+    </section>
 </chapter>
