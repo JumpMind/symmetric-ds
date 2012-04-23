@@ -38,7 +38,11 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_ADD_DROP_TABLE = "add-drop-table";
     
     private static final String OPTION_NO_CREATE_INFO = "no-create-info";
-    
+
+    private static final String OPTION_NO_INDICES = "no-indices";
+
+    private static final String OPTION_NO_FOREIGN_KEYS = "no-foreign-keys";
+
     private static final String OPTION_NO_DATA = "no-data";
 
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
@@ -68,6 +72,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COMPATIBLE, true);
         addOption(options, null, OPTION_ADD_DROP_TABLE, false);
         addOption(options, null, OPTION_NO_CREATE_INFO, false);
+        addOption(options, null, OPTION_NO_INDICES, false);
+        addOption(options, null, OPTION_NO_FOREIGN_KEYS, false);
         addOption(options, null, OPTION_NO_DATA, false);
         addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
         addOption(options, null, OPTION_SQL, true);
@@ -89,6 +95,12 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_NO_CREATE_INFO)) {
             dbExport.setNoCreateInfo(true);
+        }
+        if (line.hasOption(OPTION_NO_INDICES)) {
+            dbExport.setNoIndices(true);
+        }
+        if (line.hasOption(OPTION_NO_FOREIGN_KEYS)) {
+            dbExport.setNoForeignKeys(true);
         }
         if (line.hasOption(OPTION_NO_DATA)) {
             dbExport.setNoData(true);
