@@ -60,7 +60,7 @@ public class DbExport {
 		
 	private Format format = Format.SQL;
 	
-	private Compatible compatible = Compatible.ORACLE;
+	private Compatible compatible;
 	
 	private boolean addDropTable;
 	
@@ -86,10 +86,12 @@ public class DbExport {
 
     public DbExport(IDatabasePlatform platform) {
         this.platform = platform;
+        compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 
     public DbExport(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new DatabasePlatformSettings());
+        compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 
     public String exportTables() throws IOException {
