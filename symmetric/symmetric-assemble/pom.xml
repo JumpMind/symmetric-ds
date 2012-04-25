@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0-alpha.2</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>assemble</name>
 
     <licenses>
@@ -17,7 +18,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.0.0-alpha.2</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
@@ -199,9 +200,12 @@
                                 </goals>
                                 <configuration>
                                     <preProcess>
-                                        <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
-                                        <delete file="${basedir}/target/torque/sqldbmap.properties" />
-                                        <delete file="${basedir}/target/torque/context.doc.properties" />                                    
+                                        <delete
+                                            file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
+                                        <delete
+                                            file="${basedir}/target/torque/sqldbmap.properties" />
+                                        <delete
+                                            file="${basedir}/target/torque/context.doc.properties" />                                    
                                         <copy todir="${docbook.build}">
                                             <fileset dir="${docbook.source}">
                                             </fileset>
@@ -217,7 +221,8 @@
                                     <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl
                                     </foCustomization>
                                     <postProcess>
-                                        <delete file="${docbook.target}/pdf/user-guide.fo" />
+                                        <delete
+                                            file="${docbook.target}/pdf/user-guide.fo" />
                                     </postProcess>
                                 </configuration>
                             </execution>
@@ -239,17 +244,22 @@
                                     </htmlCustomization>
                                     <chunkedOutput>false</chunkedOutput>
                                     <postProcess>
-                                        <copy todir="${docbook.target}/html-single">
-                                            <fileset dir="${docbook.build}/resources">
+                                        <copy
+                                            todir="${docbook.target}/html-single">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/html-single/images" flatten="true">
+                                        <copy
+                                            todir="${docbook.target}/html-single/images"
+                                            flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
@@ -275,16 +285,20 @@
                                     <chunkedOutput>true</chunkedOutput>
                                     <postProcess>
                                         <copy todir="${docbook.target}/html">
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.build}/resources">
+                                            <fileset
+                                                dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/html/images" flatten="true">
+                                        <copy
+                                            todir="${docbook.target}/html/images"
+                                            flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
