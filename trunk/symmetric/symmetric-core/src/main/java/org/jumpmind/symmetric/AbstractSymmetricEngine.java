@@ -154,7 +154,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     abstract protected IDatabasePlatform createDatabasePlatform(TypedProperties properties);
 
-    private boolean registerEngine = true;
+    protected boolean registerEngine = true;
 
     protected AbstractSymmetricEngine(boolean registerEngine) {
         this.registerEngine = registerEngine;
