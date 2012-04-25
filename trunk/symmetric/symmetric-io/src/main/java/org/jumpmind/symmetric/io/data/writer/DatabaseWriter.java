@@ -460,9 +460,8 @@ public class DatabaseWriter implements IDataWriter {
                                 pks = targetTable.getPrimaryKeyColumns();
                                 for (Column column : pks) {
                                     // make sure all of the PK keys are in the
-                                    // list
-                                    // only once
-                                    // and are always at the end of the list
+                                    // list only once and are always at the end
+                                    // of the list
                                     lookupColumns.remove(column);
                                     lookupColumns.add(column);
                                 }
