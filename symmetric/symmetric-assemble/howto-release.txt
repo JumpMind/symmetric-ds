@@ -8,6 +8,6 @@ Run this from the root project:
 The password is the password for svn.  The -Darguments is the command line arguments for the final build 
 that is done from the newly created and checked out tag.
 
-Update to sourceforge.  Update various news sites (like freecode, facebook and jumpmind blog)   
+Upload checkout/symmetric-assemble/target/symmetric*server.zip to SourceForge.  Update various news sites (like freecode, facebook and jumpmind blog)   
    
    
