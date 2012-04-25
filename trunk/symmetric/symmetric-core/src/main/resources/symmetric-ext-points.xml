@@ -5,6 +5,6 @@
     <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
     <import resource="classpath*:/conf/*-extensions.xml" />
     <import resource="file:../conf/*-extensions.xml" />
-    <import resource="classpath:/symmetric-console-extensions.xml" /> 
+    <import resource="classpath*:/symmetric-console-extensions.xml" /> 
 
 </beans>
