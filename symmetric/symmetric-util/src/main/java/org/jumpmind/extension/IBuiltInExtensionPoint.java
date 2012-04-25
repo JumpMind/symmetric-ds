@@ -24,6 +24,6 @@ package org.jumpmind.extension;
  * is part of the default system.  Used mainly to exclude 
  * unnecessary logging.
  */
-public interface IBuiltInExtensionPoint {
+public interface IBuiltInExtensionPoint extends IExtensionPoint {
 
 }

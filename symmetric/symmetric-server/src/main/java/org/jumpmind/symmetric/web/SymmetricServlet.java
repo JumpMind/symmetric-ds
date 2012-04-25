@@ -66,7 +66,6 @@ public class SymmetricServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
-        String method = req.getMethod();
         ServerSymmetricEngine engine = findEngine(req);
         IUriHandler handler = findMatchingHandler(engine, req);
         if (handler != null) {
@@ -99,11 +98,7 @@ public class SymmetricServlet extends HttpServlet {
                     "No handlers were found to handle the request {} from the host {} with an ip address of {}.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
-            if (method.equals(WebConstants.METHOD_GET)) {
-                res.sendRedirect("/");
-            } else {
-                ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);
-            }
+            ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);
         }
     }
 

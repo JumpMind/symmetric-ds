@@ -35,7 +35,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -51,7 +51,7 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
-public class NodeManagementService implements IExtensionPoint, ISymmetricEngineAware {
+public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetricEngineAware {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 

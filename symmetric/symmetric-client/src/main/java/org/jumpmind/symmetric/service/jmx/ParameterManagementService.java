@@ -21,7 +21,7 @@
 
 package org.jumpmind.symmetric.service.jmx;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -34,7 +34,7 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for node parameters")
-public class ParameterManagementService implements IExtensionPoint, ISymmetricEngineAware {
+public class ParameterManagementService implements IBuiltInExtensionPoint, ISymmetricEngineAware {
 
     private IParameterService parameterService;
 
