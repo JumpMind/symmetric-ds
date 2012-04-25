@@ -1,0 +1,72 @@
+TODO = *
+DONE = +
+
+* Go through every class and fix javadoc, remove unused methods, follow conventions, and fix generics/warnings
+    
+* Purge stats
+* Delete from sym_data_gap instead of marking gaps as Ok.
+* Support wildcards in source_table_name 
+
+* Get rid of IOException in service apis in favor of IoException
+* Can BatchInfo go away?  
+* Use HttpClient?
+* Add table copy utility
+* Clean up service tests    
+* Purge OK records instead of purging them at a later date
+* Test batch inserts for router service
+* Remove all references to data_ref
+* Change the default server mode to multiserver
+* SqlMap create constants for columns and table names
+* SqlMap, TriggerTemplate format better
+
+* Test timezone columns.  Do other databases other than oracle and postgres have timezone columns?
+* Test batch insert performance during routing (esp on oracle)
+* Test to make sure that autocreate for all databases doesn't recreate symmetricds artifacts every time it is run (DB2 might be having an issue right now)
+* Test with Greenplum
+
+Performance Improvement Opportunities
+* Pluggable data loaders
+* Make push/pull/routing of channels asynchronous
+* Sync based on updated column values (timestamp or flag)
+* Transaction Log Parsing (vs. triggers)  
+* Optimize triggers (don't capture old data.  option to capture only primary keys)
+* Routing optimizations - allow a channel to always sync to everybody.  Update sym_outgoing_batch to have a PK of batch_id, node_id.
+* Web Sockets protocol
+* HttpClient (pool connections)
+
+Documentation
+* Change getting started to instruct user to update properties in the engines directory (for multiserver mode)
+* Update documentation for extension points
+
+3.0 Change Notes:
+* Use SLF4J API exclusively. Log4j is used under the hood.
+* The db.metadata.ignore.case property is no long available.  All configured database names will be case sensitive
+* dont.include.keys.in.update.statement is not longer supported.  if old_data is not provided then pks will not be in the update
+* db.spring.bean.name is no longer supported
+* db.tx.timeout.seconds is no longer supported
+* db.default.schema is no longer supported
+* db.jndi.name is no longer supported. jndi datasources are no longer supported
+* auto.upgrade is no longer supported
+* datareload.batch.insert.transactional is no longer available
+* routing.data.reader.type is no longer available.  data_ref has been removed
+* web.base.servlet.path is no longer needed.
+* The following parameters have been removed in favor of conflict resolution
+  * dataloader.allow.missing.delete
+  * dataloader.enable.fallback.insert
+  * dataloader.enable.fallback.update
+* The following property is not longer needed: dataloader.enable.fallback.savepoint
+* Removed support for db.force.delimited.identifier.mode.on & db.force.delimited.identifier.mode.off
+* dataloader will now load each batch as it arrives
+* IDatabaseWriterFilter replaces IDataLoaderFilter
+* IDatabaseWriterFilter replaces IBatchListener
+* No longer stop purge from running if there wasn't an initial load
+* Extensions no longer have services injected into them.  If they need acccess to services, they should implement ISymmetricEngineAware
+* Node concurrency manager no longer allows the same node to make a second request while it already has a reservation
+* Added stage management job (that purges staged files)
+* SymmetricDS tables are now created in the default case of the database
+* Now supports mixed case tables on Firebird.
+* Got rid of the isAutoRegister() method from IExtensionPoint
+* data loaders are pluggable
+* There is no longer a data extractor ext point
+* routing.wait.for.data.timeout.seconds new property
+* new dbdump utility
