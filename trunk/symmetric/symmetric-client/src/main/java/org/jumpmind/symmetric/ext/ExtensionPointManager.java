@@ -84,6 +84,9 @@ public class ExtensionPointManager implements IExtensionPointManager {
                 extensions.putAll(((ListableBeanFactory) springContext.getParentBeanFactory())
                         .getBeansOfType(IExtensionPoint.class));
             }
+            
+            log.info("Found {} extension points that will be registered", extensions.size());
+            
             for (String beanName : extensions.keySet()) {
                 IExtensionPoint ext = extensions.get(beanName);
                 if (ext instanceof ISymmetricEngineAware) {

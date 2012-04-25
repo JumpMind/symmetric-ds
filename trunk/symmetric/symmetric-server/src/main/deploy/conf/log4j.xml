@@ -27,20 +27,12 @@
 
     <category name="org.jumpmind">
         <priority value="INFO" />
-    </category>
-    
-    <category name="org.jumpmind.symmetric.ddlutils">
-        <priority value="WARN" />
-    </category>    
-    
-    <category name="org.jumpmind.symmetric.job.HeartbeatJob">
-        <priority value="INFO" />
-    </category>    
+    </category>     
 
     <!-- Disable the not found override properties file warnings to avoid confusion -->
-    <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">
+    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
         <priority value="ERROR" />
-    </category>
+    </category>    
 
     <category name="org.jumpmind.symmetric.service.impl.ParameterService">
         <priority value="ERROR" />
@@ -51,10 +43,6 @@
     </category>
 
     <category name="org.springframework">
-        <priority value="ERROR" />
-    </category>
-
-    <category name="org.jumpmind.symmetric.ddl.platform.derby">
         <priority value="ERROR" />
     </category>
 
