@@ -63,7 +63,6 @@ public class EnvironmentSpecificProperties extends TypedProperties {
         throw new NotImplementedException();
     }
 
-    @Override
     public synchronized void load(Reader reader) throws IOException {
         throw new NotImplementedException();
     }
