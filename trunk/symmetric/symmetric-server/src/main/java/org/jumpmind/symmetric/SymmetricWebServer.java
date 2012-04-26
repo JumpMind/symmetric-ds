@@ -41,6 +41,7 @@ import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
@@ -181,7 +182,9 @@ public class SymmetricWebServer {
         webapp.setParentLoaderPriority(true);
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
-        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime / 1000);
+        SessionManager sm = webapp.getSessionHandler().getSessionManager();
+        sm.setMaxInactiveInterval(maxIdleTime / 1000);
+        sm.setSessionCookie(sm.getSessionCookie() + port);
         if (propertiesFile != null) {
             webapp.getServletContext().setInitParameter(
                     WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
