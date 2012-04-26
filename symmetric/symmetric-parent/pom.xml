@@ -712,7 +712,8 @@
             <dependency>
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
-                <version>${version.hsqldb}</version>
+                <classifier>jdk5</classifier>                
+                <version>${version.hsqldb}</version>                
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>
