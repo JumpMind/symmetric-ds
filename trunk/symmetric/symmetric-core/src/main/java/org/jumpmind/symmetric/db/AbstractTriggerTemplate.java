@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.Version;
@@ -592,7 +593,7 @@ abstract public class AbstractTriggerTemplate {
                         templateToUse = stringColumnTemplate;
                         isLob = true;
                         break;
-                    case Types.SQLXML:
+                    case ColumnTypes.SQLXML:
                         templateToUse = xmlColumnTemplate;
                         break;
                     case Types.ARRAY:
