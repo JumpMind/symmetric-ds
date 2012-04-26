@@ -407,7 +407,7 @@ public class DataService extends AbstractService implements IDataService {
 
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
             for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
-                    .listIterator(); triggerHistoryIterator.hasPrevious();) {
+                    .listIterator(triggerHistories.size()); triggerHistoryIterator.hasPrevious();) {
                 TriggerHistory triggerHistory = triggerHistoryIterator.previous();
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
