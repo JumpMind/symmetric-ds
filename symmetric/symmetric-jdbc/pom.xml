@@ -70,6 +70,7 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
+            <classifier>jdk5</classifier>
             <optional>true</optional>
         </dependency>
         <dependency>
