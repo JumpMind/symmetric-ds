@@ -21,6 +21,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
+import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,14 +62,15 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.UPDATE,
@@ -96,14 +98,14 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
         data = new CsvData(DataEventType.INSERT,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.INSERT,
@@ -130,14 +132,14 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[8] = "46";
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[8] = "48";
         data = new CsvData(DataEventType.UPDATE,
@@ -166,7 +168,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         long before = countRows(TEST_TABLE);
 
-        String[] updateShouldNotBeApplied = Arrays.copyOf(originalValues, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[8] = "1";
         CsvData update = new CsvData(DataEventType.UPDATE,
@@ -211,11 +213,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] oldData = Arrays.copyOf(originalValues, originalValues.length);
+        String[] oldData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         oldData[2] = "original value";
         oldData = massageExpectectedResultsForDialect(oldData);
 
-        String[] newData = Arrays.copyOf(originalValues, originalValues.length);
+        String[] newData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         newData[2] = "new value";
         newData = massageExpectectedResultsForDialect(newData);
 
