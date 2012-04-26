@@ -42,6 +42,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
@@ -542,7 +543,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
                 || type == Types.VARBINARY || type == Types.LONGVARBINARY
-                || type == Types.LONGNVARCHAR ||
+                || type == ColumnTypes.LONGNVARCHAR ||
                 // SQL-Server ntext binary type
                 type == -10;
     }

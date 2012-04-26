@@ -156,12 +156,11 @@ public abstract class TypeMap
         _typeNameToTypeCode.put("BOOLEANINT",  new Integer(Types.TINYINT));
         _typeNameToTypeCode.put("BOOLEANCHAR", new Integer(Types.CHAR));
         
-        registerJdbcType(2009, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
-
-        registerJdbcType(Types.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.NVARCHAR, NVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.LONGNVARCHAR, LONGNVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(ColumnTypes.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(ColumnTypes.NVARCHAR, NVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(ColumnTypes.LONGNVARCHAR, LONGNVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
     }
 
     /**
