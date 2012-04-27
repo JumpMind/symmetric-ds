@@ -2,7 +2,7 @@
 #
 # Run commandline support through SymmetricAdmin
 #
-
+ 
 PRGDIR=`dirname "$0"`
 if [ "$PRGDIR" = "" ]
 then
