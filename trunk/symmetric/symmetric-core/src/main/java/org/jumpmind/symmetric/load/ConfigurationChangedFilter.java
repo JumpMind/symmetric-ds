@@ -27,8 +27,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -76,14 +75,14 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     @Override
     public void afterWrite(
             DataContext context, Table table, CsvData data) {
-        recordSyncNeeded(context, table);
+        recordSyncNeeded(context, table, data);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
     }
 
     private void recordSyncNeeded(
-            DataContext context, Table table) {
-        if (isSyncTriggersNeeded(table)) {
+            DataContext context, Table table, CsvData data) {
+        if (isSyncTriggersNeeded(table) || data.getDataEventType() == DataEventType.CREATE) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
         }
     }
