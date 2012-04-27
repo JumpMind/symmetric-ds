@@ -24,7 +24,10 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -64,6 +67,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     private IClusterService clusterService;
 
+    private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
+
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
@@ -74,6 +79,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         this.transportManager = transportManager;
         this.nodeService = nodeService;
         this.clusterService = clusterService;
+    }
+
+    public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
+        return new HashMap<String, Date>(startTimesOfNodesBeingPushedTo);
     }
 
     synchronized public RemoteNodeStatuses pushData() {
@@ -89,19 +98,25 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                log.debug("Push requested for {}", node);
-                                RemoteNodeStatus status = pushToNode(node, identity,
-                                        identitySecurity);
-                                statuses.add(status);
-                                if (status.getBatchesProcessed() > 0) {
-                                    log.info(
-                                            "Pushed data to {}. {} data and {} batches were processed.",
-                                            new Object[] { node, status.getDataProcessed(),
-                                                    status.getBatchesProcessed() });
-                                } else if (status.failed()) {
-                                    log.warn("There was an error while pushing data to the server");
+                                try {
+                                    startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
+                                            new Date());
+                                    log.debug("Push requested for {}", node);
+                                    RemoteNodeStatus status = pushToNode(node, identity,
+                                            identitySecurity);
+                                    statuses.add(status);
+                                    if (status.getBatchesProcessed() > 0) {
+                                        log.info(
+                                                "Pushed data to {}. {} data and {} batches were processed.",
+                                                new Object[] { node, status.getDataProcessed(),
+                                                        status.getBatchesProcessed() });
+                                    } else if (status.failed()) {
+                                        log.warn("There was an error while pushing data to the server");
+                                    }
+                                    log.debug("Push completed for {}", node);
+                                } finally {
+                                    startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
                                 }
-                                log.debug("Push completed for {}", node);
                             }
                         } else {
                             log.error(

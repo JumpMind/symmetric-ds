@@ -19,6 +19,7 @@
  * under the License.  */
 package org.jumpmind.symmetric.transport;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
@@ -66,5 +67,9 @@ public interface IConcurrentConnectionManager {
     public String[] getWhiteList();
 
     public void removeFromWhiteList(String nodeId);
+    
+    public Map<String, Date> getPullReservationsByNodeId();
+    
+    public Map<String, Date> getPushReservationsByNodeId();
 
 }
