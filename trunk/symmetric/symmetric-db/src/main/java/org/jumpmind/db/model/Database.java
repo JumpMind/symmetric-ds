@@ -26,8 +26,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -37,6 +39,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * objects stored in the tables.
  */
 public class Database implements Serializable, Cloneable {
+
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3160443396757573868L;
 
@@ -53,6 +56,68 @@ public class Database implements Serializable, Cloneable {
     private ArrayList<Table> tables = new ArrayList<Table>();
 
     private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();
+
+    public static Table[] sortByForeignKeys(Table... tables) {
+        if (tables != null) {
+            List<Table> list = new ArrayList<Table>(tables.length);
+            for (Table table : tables) {
+                list.add(table);
+            }
+            list = sortByForeignKeys(list);
+            tables = list.toArray(new Table[list.size()]);
+        }
+        return tables;
+    }
+
+    public static List<Table> sortByForeignKeys(List<Table> tables) {
+        List<Table> unsorted = new ArrayList<Table>(tables);
+        List<Table> sorted = new ArrayList<Table>(unsorted.size());
+        int index = 0;
+        boolean sortedAtLeastOne = false;
+        while (unsorted.size() > 0) {
+            Table unsortedTable = unsorted.get(index);
+            for (int i = 0; i < sorted.size() && !sorted.contains(unsortedTable); i++) {
+                Table sortedTable = sorted.get(i);
+                ForeignKey[] sortedFks = sortedTable.getForeignKeys();
+                if (sortedFks != null) {
+                    for (ForeignKey sortedFk : sortedFks) {
+                        String fkTableName = sortedFk.getForeignTableName();
+                        if (StringUtils.equals(fkTableName, unsortedTable.getName())) {
+                            sorted.add(i, unsortedTable);
+                            unsorted.remove(unsortedTable);
+                            sortedAtLeastOne = true;
+                            break;
+                        }
+                    }
+                }
+
+                ForeignKey[] unsortedFks = unsortedTable.getForeignKeys();
+                if (unsortedFks != null) {
+                    for (ForeignKey unsortedFk : unsortedFks) {
+                        String fkTableName = unsortedFk.getForeignTableName();
+                        if (StringUtils.equals(fkTableName, sortedTable.getName())) {
+                            sorted.add(i + 1, unsortedTable);
+                            unsorted.remove(unsortedTable);
+                            sortedAtLeastOne = true;
+                            break;
+                        }
+                    }
+                }
+
+            }
+
+            index++;
+            if (index >= unsorted.size()) {
+                if (!sortedAtLeastOne) {
+                    sorted.add(unsorted.remove(0));
+                }
+                index = 0;
+                sortedAtLeastOne = false;
+            }
+        }
+        return sorted;
+
+    }
 
     /**
      * Adds all tables from the other database to this database. Note that the
@@ -468,7 +533,7 @@ public class Database implements Serializable, Cloneable {
     public void resetTableIndexCache() {
         tableIndexCache.clear();
     }
-    
+
     /**
      * {@inheritDoc}
      */

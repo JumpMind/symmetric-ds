@@ -28,7 +28,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.sql.DataSource;
@@ -36,7 +35,6 @@ import javax.sql.DataSource;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.SortByForeignKeyComparator;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.DdlBuilderFactory;
@@ -149,7 +147,7 @@ public class DbExport {
         final Writer writer = new OutputStreamWriter(output);
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
         
-        Arrays.sort(tables, new SortByForeignKeyComparator());
+        tables = Database.sortByForeignKeys(tables);
 
         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible.toString().toLowerCase());
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
