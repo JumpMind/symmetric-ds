@@ -24,7 +24,10 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -55,6 +58,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     private IClusterService clusterService;
     
+    private Map<String, Date> startTimesOfNodesBeingPulled = new HashMap<String, Date>();
+    
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService) {
@@ -63,6 +68,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.dataLoaderService = dataLoaderService;
         this.registrationService = registrationService;
         this.clusterService = clusterService;
+    }
+    
+    public Map<String, Date> getStartTimesOfNodesBeingPulled() {
+        return new HashMap<String, Date>(startTimesOfNodesBeingPulled);
     }
 
     synchronized public RemoteNodeStatuses pullData() {
@@ -76,9 +85,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
                     List<Node> nodes = nodeService.findNodesToPull();
                     if (nodes != null && nodes.size() > 0) {
-                        for (Node node : nodes) {
+                        for (Node node : nodes) {                                  
                             RemoteNodeStatus status = statuses.add(node);
                             try {
+                                startTimesOfNodesBeingPulled.put(node.getNodeId(), new Date());
                                 log.debug("Pull requested for {}", node.toString());
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
@@ -113,6 +123,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             } catch (IOException ex) {
                                 log.error(ex.getMessage(),ex);
                                 fireOffline(ex, node, status);
+                            } finally {
+                                startTimesOfNodesBeingPulled.remove(node.getNodeId());
                             }
                         }
                     }

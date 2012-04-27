@@ -16,9 +16,11 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.transport;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @see IConcurrentConnectionManager
  */
 public class ConcurrentConnectionManager implements IConcurrentConnectionManager {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ConcurrentConnectionManager.class);
 
     protected IParameterService parameterService;
@@ -45,7 +47,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
 
-    protected Set<String> whiteList = new HashSet<String>();        
+    protected Set<String> whiteList = new HashSet<String>();
 
     public ConcurrentConnectionManager(IParameterService parameterService,
             IStatisticManager statisticManager) {
@@ -64,7 +66,8 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         stats.lastConnectionTimeMs = startMs;
     }
 
-    private synchronized NodeConnectionStatistics getNodeConnectionStatistics(String nodeId, String poolId) {
+    private synchronized NodeConnectionStatistics getNodeConnectionStatistics(String nodeId,
+            String poolId) {
         Map<String, NodeConnectionStatistics> statsMap = nodeConnectionStatistics.get(poolId);
         if (statsMap == null) {
             statsMap = new HashMap<String, NodeConnectionStatistics>();
@@ -82,7 +85,8 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         Map<String, Reservation> reservations = getReservationMap(poolId);
         Reservation reservation = reservations.remove(nodeId);
         if (reservation != null) {
-            logConnectedTimePeriod(nodeId, reservation.createTime, System.currentTimeMillis(), poolId);
+            logConnectedTimePeriod(nodeId, reservation.createTime, System.currentTimeMillis(),
+                    poolId);
             return true;
         } else {
             return false;
@@ -121,12 +125,40 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                                 + timeout : Long.MAX_VALUE, reservationRequest));
                 return true;
             } else {
-                log.warn("Node {} requested a {} connection, but was rejected because it already has one", nodeId, poolId);
+                log.warn(
+                        "Node {} requested a {} connection, but was rejected because it already has one",
+                        nodeId, poolId);
                 return false;
             }
         } else {
             return false;
         }
+    }
+
+    public Map<String, Date> getPullReservationsByNodeId() {
+        return getReservationsByNodeId("pull");
+    }
+    
+    public Map<String, Date> getPushReservationsByNodeId() {
+        return getReservationsByNodeId("push");
+    }
+    
+    protected Map<String, Date> getReservationsByNodeId(String urlPath) {
+        Map<String, Date> byNodeId = new HashMap<String, Date>();
+        Set<String> poolIds = activeReservationsByNodeByPool.keySet();
+        for (String poolId : poolIds) {
+            if (poolId.endsWith(urlPath)) {
+                Map<String, Reservation> reservations = activeReservationsByNodeByPool.get(poolId);
+                Set<String> nodeIds = reservations.keySet();
+                for (String nodeId : nodeIds) {
+                      Reservation reservation = reservations.get(nodeId);
+                      if (reservation != null && reservation.getType() == ReservationType.HARD) {                          
+                          byNodeId.put(nodeId, new Date(reservation.getCreateTime()));
+                      }
+                }
+            }
+        }
+        return byNodeId;
     }
 
     protected void removeTimedOutReservations(Map<String, Reservation> reservations) {
@@ -137,9 +169,9 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                 Reservation reservation = reservations.get(nodeId);
                 if (reservation.timeToLiveInMs < currentTime) {
                     reservations.remove(nodeId);
-                }                
+                }
             }
-        }   
+        }
     }
 
     private Map<String, Reservation> getReservationMap(String poolId) {
@@ -151,7 +183,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return reservations;
     }
 
-    protected static class Reservation {
+    public static class Reservation {
         String nodeId;
         long timeToLiveInMs;
         long createTime = System.currentTimeMillis();
@@ -189,7 +221,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         public long getCreateTime() {
             return createTime;
         }
-        
+
         public ReservationType getType() {
             return type;
         }
