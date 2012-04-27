@@ -27,7 +27,6 @@
     </build>
 
     <modules>
-        <module>symmetric-parent</module>
         <module>symmetric-assemble</module>
     </modules>
 
