@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.SortByForeignKeyComparator;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -481,6 +481,8 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
         }
+        
+        final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
 
         Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
             public int compare(TriggerHistory o1, TriggerHistory o2) {
@@ -504,7 +506,8 @@ public class DataService extends AbstractService implements IDataService {
                         o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
                         o2.getSourceSchemaName(), o2.getSourceTableName(), false);
-                return new SortByForeignKeyComparator().compare(table1, table2);
+                                
+                return new Integer(sortedTables.indexOf(table1)).compareTo(new Integer(sortedTables.indexOf(table2)));
             };
         };
 
@@ -512,6 +515,19 @@ public class DataService extends AbstractService implements IDataService {
 
         return triggerRoutersByHistoryId;
 
+    }
+    
+    protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+        List<Table> tables = new ArrayList<Table>(histories.size());
+        for (TriggerHistory triggerHistory : histories) {
+            Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
+                    false);
+            if (table != null) {
+                tables.add(table);
+            }
+        }
+        return Database.sortByForeignKeys(tables);
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {
