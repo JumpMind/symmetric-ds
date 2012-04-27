@@ -6,7 +6,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
+    
+    static private final Logger log = LoggerFactory.getLogger(JdbcSqlReadCursor.class);
 
     protected Connection c;
 
@@ -56,10 +61,14 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         try {
             if (rs.next()) {
                 Row row = getMapForRow();
-                return mapper.mapRow(row);
-            } else {
-                return null;
-            }
+                T value = mapper.mapRow(row);
+                if (value != null) {
+                    return value;
+                } else {
+                    log.info("The row mapper returned null for a non null row.  Aborting reading the rest of the result set.");
+                }
+            } 
+            return null;
         } catch (SQLException ex) {
             throw sqlTemplate.translate(ex);
         }
