@@ -222,7 +222,7 @@ public class ParameterService implements IParameterService {
         sqlTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
                 properties.setProperty(row.getString("param_key"), row.getString("param_value"));
-                return null;
+                return row;
             }
         }, externalId, nodeGroupId);
         return properties;
