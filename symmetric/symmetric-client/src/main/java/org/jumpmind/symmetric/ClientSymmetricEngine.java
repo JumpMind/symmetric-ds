@@ -189,8 +189,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         long timeToLiveInMs = parameterService
                 .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS);
-        String directory = parameterService.getString("java.io.tmpdir",
-                System.getProperty("java.io.tmpdir"));
+        String directory = parameterService.getTempDirectory();
         return new StagingManager(memoryThresholdInBytes, timeToLiveInMs, directory);
     }
 

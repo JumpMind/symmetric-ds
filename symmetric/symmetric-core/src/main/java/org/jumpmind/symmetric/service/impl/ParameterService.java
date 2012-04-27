@@ -80,7 +80,7 @@ public class ParameterService implements IParameterService {
                 AbstractService.createSqlReplacementTokens(tablePrefix, platform.getDatabaseInfo().getDelimiterToken()));
         this.sqlTemplate = platform.getSqlTemplate();
 
-    }
+    }       
 
     public BigDecimal getDecimal(String key, BigDecimal defaultVal) {
         String val = getString(key);
@@ -152,6 +152,11 @@ public class ParameterService implements IParameterService {
         }
 
         return StringUtils.isBlank(value) ? defaultVal : value;
+    }
+    
+    public String getTempDirectory() {
+        return getString("java.io.tmpdir",
+                System.getProperty("java.io.tmpdir"));
     }
 
     /**

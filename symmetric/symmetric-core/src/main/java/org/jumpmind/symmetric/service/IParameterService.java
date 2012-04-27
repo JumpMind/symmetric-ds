@@ -102,4 +102,6 @@ public interface IParameterService {
     
     public String getEngineName();
     
+    public String getTempDirectory();
+    
 }
