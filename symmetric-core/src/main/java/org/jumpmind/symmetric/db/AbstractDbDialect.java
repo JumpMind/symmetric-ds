@@ -157,6 +157,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected String[] primaryKeyViolationSqlStates;
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
+    
+    protected IChangeDataCaptureTableModifier changeDataCaptureTableModfier;
 
     protected AbstractDbDialect() {
     }
@@ -453,6 +455,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                                 typeCode = Types.VARCHAR;
                             }
                             column.setTypeCode(typeCode);
+                        }
+                        
+                        if (changeDataCaptureTableModfier != null) {
+                            changeDataCaptureTableModfier.modify(table);
                         }
                     }
                     return table;
@@ -1443,5 +1449,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public JdbcTemplate getJdbcTemplate() {
 		return jdbcTemplate;
 	}
+    
+    public void setChangeDataCaptureTableModfier(
+            IChangeDataCaptureTableModifier changeDataCaptureTableModfier) {
+        this.changeDataCaptureTableModfier = changeDataCaptureTableModfier;
+    }
     
 }

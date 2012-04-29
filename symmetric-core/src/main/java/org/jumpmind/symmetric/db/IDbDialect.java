@@ -337,4 +337,6 @@ public interface IDbDialect {
     
     public JdbcTemplate getJdbcTemplate();
     
+    public void setChangeDataCaptureTableModfier(IChangeDataCaptureTableModifier changeDataCaptureModifier);
+    
 }

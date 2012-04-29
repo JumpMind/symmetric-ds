@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.db.IChangeDataCaptureTableModifier;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
@@ -205,6 +206,12 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
             installed = true;
             extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFilter.class, true));
             dataLoaderService.addDataLoaderFilter((IDataLoaderFilter) ext);
+        }
+        
+        if (ext instanceof IChangeDataCaptureTableModifier) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IChangeDataCaptureTableModifier.class, true));
+            dbDialect.setChangeDataCaptureTableModfier((IChangeDataCaptureTableModifier)ext);
         }
 
         if (ext instanceof IColumnFilter) {
