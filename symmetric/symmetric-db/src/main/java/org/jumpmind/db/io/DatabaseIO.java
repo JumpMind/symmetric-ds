@@ -311,7 +311,7 @@ public class DatabaseIO {
      */
 
     public void write(Database model, Writer output) throws DdlException {
-        write(model, output);
+        write(model, output, null);
     }
 
     public void write(Database model, Writer output, String rootElementName) throws DdlException {
