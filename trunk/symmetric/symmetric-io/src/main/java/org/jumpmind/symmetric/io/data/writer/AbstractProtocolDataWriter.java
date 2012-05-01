@@ -104,13 +104,17 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
                         data.getCsvData(CsvData.PK_DATA));
                 break;
-
+                
             case DELETE:
                 oldData = data.getCsvData(CsvData.OLD_DATA);
                 if (StringUtils.isNotBlank(oldData)) {
                     println(CsvConstants.OLD, oldData);
                 }
                 println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
+                break;
+
+            case CREATE:
+                println(CsvConstants.CREATE, data.getCsvData(CsvData.ROW_DATA));
                 break;
 
             case BSH:
