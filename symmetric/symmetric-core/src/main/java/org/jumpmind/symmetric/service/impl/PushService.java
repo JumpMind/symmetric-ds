@@ -107,7 +107,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                     statuses.add(status);
                                     if (status.getBatchesProcessed() > 0) {
                                         log.info(
-                                                "Pushed data to {}. {} data and {} batches were processed.",
+                                                "Pushed data to {}. {} data and {} batches were processed",
                                                 new Object[] { node, status.getDataProcessed(),
                                                         status.getBatchesProcessed() });
                                     } else if (status.failed()) {
@@ -120,7 +120,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                             }
                         } else {
                             log.error(
-                                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
+                                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
                                     identity.getNodeId());
                         }
                     }

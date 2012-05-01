@@ -63,5 +63,7 @@ public interface IJob {
     public void setCronExpression(String cronExpression);
     
     public void setTimeBetweenRunsInMs(long timeBetweenRunsInMs);    
+    
+    public boolean invoke(boolean force);
 
 }
