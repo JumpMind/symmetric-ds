@@ -48,6 +48,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();    
 
     public final static String KEY = "symconfig";
 
@@ -138,6 +141,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
             if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
+            }
+            
+            if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
+                routingContext.getContextCache().put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
             }
 
             if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
@@ -246,6 +253,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             log.info("About to refresh the cache of transformation because new configuration came through the data router");
             transformService.resetCache();
+        }
+        
+        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            log.info("About to refresh the cache of parameters because new configuration came through the data router");
+            parameterService.rereadParameters();
         }
     }
 
