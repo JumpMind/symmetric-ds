@@ -93,10 +93,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
                                         || status.getBatchesProcessed() > 0) {
-                                    log.info("Pull data received from {}.  {} rows and {} batches were processed.", new Object[] { node.toString(), status.getDataProcessed(),
+                                    log.info("Pull data received from {}.  {} rows and {} batches were processed", new Object[] { node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed() });
                                 } else {
-                                    log.debug("Pull data received from {}.  {} rows and {} batches were processed.", new Object[] {node.toString(), status.getDataProcessed(),
+                                    log.debug("Pull data received from {}.  {} rows and {} batches were processed", new Object[] {node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed()});
                                 }
                             } catch (ConnectException ex) {
