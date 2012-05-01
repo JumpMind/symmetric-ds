@@ -586,7 +586,7 @@ public class DatabaseWriter implements IDataWriter {
             xml =  data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: ", xml);
             StringReader reader = new StringReader(xml);
-            Database db = (Database) new DatabaseIO().read(reader);
+            Database db = (Database) new DatabaseIO().read(reader, false);
             platform.alterTables(false, db.getTables());
             platform.resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
