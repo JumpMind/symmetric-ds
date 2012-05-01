@@ -67,6 +67,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null) {
             column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
+            column.setDefaultValue(null);
         }
         return column;
     }
