@@ -91,6 +91,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
+        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         switch (data.getDataEventType()) {
             case INSERT:
                 println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));

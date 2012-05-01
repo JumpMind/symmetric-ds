@@ -383,6 +383,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     if (byteCount > 0) {
                         currentBatch.setByteCount(byteCount);
+                        statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(),
+                                byteCount);
+                        statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
+                                currentBatch.getExtractCount());
                     }
 
                     if (currentBatch.getStatus() != Status.OK) {
@@ -400,6 +404,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         nodeService.findIdentityNodeId(), targetTransport.open());
                             }
                             new DataProcessor(dataReader, dataWriter).process();
+                            Statistics stats = dataWriter.getStatistics().values().iterator()
+                                    .next();
+                            statisticManager.incrementDataSent(currentBatch.getChannelId(),
+                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                            statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
+                                    stats.get(DataWriterStatisticConstants.BYTECOUNT));
+
                         }
 
                         // If time has passed, then re-query the batch to double
