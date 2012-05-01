@@ -27,6 +27,7 @@ import java.util.Map;
  * This manager provides an API record statistics
  */
 public interface IStatisticManager {    
+    
     public void flush();
     
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount);
