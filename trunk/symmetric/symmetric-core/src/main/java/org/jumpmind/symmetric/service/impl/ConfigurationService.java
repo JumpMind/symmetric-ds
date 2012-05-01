@@ -305,7 +305,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             String channelId = row.getString("channel_id");
                             Date extractTime = row.getDateTime("last_extract_time");
                             nodeChannelsMap.get(channelId).setLastExtractTime(extractTime);
-                            return null;
+                            return nodeChannelsMap;
                         };
                     }, nodeId);
 
