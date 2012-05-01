@@ -231,4 +231,8 @@ public class CsvData {
             return new HashMap<String, String>(0);
         }
     }
+    
+    public boolean requiresTable() {
+        return dataEventType != null && dataEventType != DataEventType.CREATE;
+    }
 }

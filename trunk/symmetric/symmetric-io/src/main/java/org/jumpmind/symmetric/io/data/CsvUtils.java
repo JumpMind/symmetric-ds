@@ -28,18 +28,18 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class CsvUtils {
 
     static final Logger log = LoggerFactory.getLogger(CsvUtils.class);
 
     public static final String DELIMITER = ", ";
-    
+
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public static CsvReader getCsvReader(Reader reader) {
@@ -52,7 +52,8 @@ public class CsvUtils {
     public static String[] tokenizeCsvData(String csvData) {
         String[] tokens = null;
         if (csvData != null) {
-            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(csvData.getBytes()));
+            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(
+                    csvData.getBytes()));
             CsvReader csvReader = getCsvReader(reader);
             try {
                 if (csvReader.readRecord()) {
@@ -76,11 +77,11 @@ public class CsvUtils {
         }
         return out.toString();
     }
-    
+
     public static String escapeCsvData(String[] data) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         for (String s : data) {
             try {
                 writer.write(s);
@@ -91,31 +92,40 @@ public class CsvUtils {
         return out.toString();
     }
 
-    public static int write(Writer writer, String... data) throws IOException {
-        StringBuilder buffer = new StringBuilder();
-        for (String string : data) {
-            buffer.append(string);
-        }
+    public static int write(Writer writer, String... data) {
+        try {
+            StringBuilder buffer = new StringBuilder();
+            for (String string : data) {
+                buffer.append(string);
+            }
 
-        writer.write(buffer.toString());
-        if (log.isDebugEnabled()) {
-            log.debug(buffer.toString());
+            writer.write(buffer.toString());
+            if (log.isDebugEnabled()) {
+                log.debug(buffer.toString());
+            }
+            return buffer.length();
+        } catch (IOException ex) {
+            throw new IoException(ex);
         }
-        return buffer.length();
     }
 
-    public static void writeSql(String sql, Writer writer) throws IOException {
+    public static void writeSql(String sql, Writer writer) {
         write(writer, CsvConstants.SQL, DELIMITER, sql);
         writeLineFeed(writer);
     }
-    
-    public static void writeBsh(String script, Writer writer) throws IOException {
+
+    public static void writeBsh(String script, Writer writer) {
         write(writer, CsvConstants.BSH, DELIMITER, script);
-        writeLineFeed(writer);    
+        writeLineFeed(writer);
     }
-    
-    public static void writeLineFeed(Writer writer) throws IOException {
-        writer.write(LINE_SEPARATOR);
+
+    public static void writeLineFeed(Writer writer) {
+        try {
+            writer.write(LINE_SEPARATOR);
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
+
     }
 
 }

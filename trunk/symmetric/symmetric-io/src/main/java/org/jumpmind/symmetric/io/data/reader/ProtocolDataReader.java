@@ -34,8 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProtocolDataReader implements IDataReader {
-    
-    public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName() + ".lineNumber";
+
+    public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName()
+            + ".lineNumber";
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -90,7 +91,7 @@ public class ProtocolDataReader implements IDataReader {
             throw new IoException(ex);
         }
     }
-    
+
     public IStagedResource getStagedResource() {
         return stagedResource;
     }
@@ -138,9 +139,11 @@ public class ProtocolDataReader implements IDataReader {
                 } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
                     this.channelId = tokens[1];
                 } else if (tokens[0].equals(CsvConstants.SCHEMA)) {
-                    schemaName = StringUtils.isBlank(tokens[1]) ? null : tokens[1];
+                    schemaName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null
+                            : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.CATALOG)) {
-                    catalogName = StringUtils.isBlank(tokens[1]) ? null : tokens[1];
+                    catalogName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null
+                            : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
                     table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName,
@@ -181,8 +184,8 @@ public class ProtocolDataReader implements IDataReader {
                     data.setDataEventType(DataEventType.UPDATE);
                     data.putParsedData(CsvData.ROW_DATA,
                             CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
-                    data.putParsedData(CsvData.PK_DATA,
-                            CollectionUtils.copyOfRange(tokens, table.getColumnCount() + 1, tokens.length));
+                    data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
+                            table.getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
@@ -195,17 +198,17 @@ public class ProtocolDataReader implements IDataReader {
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.SQL);
-                    data.putCsvData(CsvData.ROW_DATA, tokens[1]);
+                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
                     return data;
                 } else if (tokens[0].equals(CsvConstants.BSH)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.BSH);
-                    data.putCsvData(CsvData.ROW_DATA, tokens[1]);
+                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
                     return data;
                 } else if (tokens[0].equals(CsvConstants.CREATE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.CREATE);
-                    data.putCsvData(CsvData.ROW_DATA, tokens[1]);
+                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
                     return data;
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
@@ -277,11 +280,11 @@ public class ProtocolDataReader implements IDataReader {
         if (csvReader != null) {
             csvReader.close();
         }
-        
+
         if (stagedResource != null) {
             stagedResource.close();
         }
-                
+
     }
 
     public Map<Batch, Statistics> getStatistics() {

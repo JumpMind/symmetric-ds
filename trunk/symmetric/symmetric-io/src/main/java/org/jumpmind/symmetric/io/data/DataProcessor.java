@@ -152,7 +152,7 @@ public class DataProcessor {
             batch.incrementDataReadMillis(batch.endTimer(STAT_READ_DATA));
             if (currentData != null) {
                 dataRow++;
-                if (processTable) {
+                if (processTable || !currentData.requiresTable()) {
                     try {
                         batch.startTimer(STAT_WRITE_DATA);
                         batch.incrementLineCount();
