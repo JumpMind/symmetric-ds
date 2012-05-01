@@ -2,8 +2,15 @@ package org.jumpmind.symmetric.db.mssql;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     
@@ -155,6 +162,19 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 
     }
 
+    @Override
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table table,
+            String defaultCatalog, String defaultSchema, String ddl) {
+        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+                defaultCatalog, defaultSchema, ddl);
+        Column[] columns = table.getPrimaryKeyColumns();
+        ddl = FormatUtils.replace("declareOldKeyVariables",
+                buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = FormatUtils.replace("declareNewKeyVariables",
+                buildKeyVariablesDeclare(columns, "new"), ddl);
+        return ddl;
+    }
     
     @Override
     protected boolean requiresEmptyLobTemplateForDeletes() {

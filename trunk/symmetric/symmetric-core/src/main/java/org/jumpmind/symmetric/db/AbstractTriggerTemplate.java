@@ -361,12 +361,7 @@ abstract public class AbstractTriggerTemplate {
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
                         : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
                         : table.getColumns()), ddl);
-
-        ddl = FormatUtils.replace("declareOldKeyVariables",
-                buildKeyVariablesDeclare(columns, "old"), ddl);
-        ddl = FormatUtils.replace("declareNewKeyVariables",
-                buildKeyVariablesDeclare(columns, "new"), ddl);
-
+        
         String builtString = buildColumnNameString(oldTriggerValue, columns);
         ddl = FormatUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","
                 + builtString : "", ddl);

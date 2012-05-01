@@ -2,8 +2,15 @@ package org.jumpmind.symmetric.db.sybase;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.util.FormatUtils;
 
 public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -134,6 +141,20 @@ public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                end                                                                                                                                                                    " );
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+    }
+    
+    @Override
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table table,
+            String defaultCatalog, String defaultSchema, String ddl) {
+        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+                defaultCatalog, defaultSchema, ddl);
+        Column[] columns = table.getPrimaryKeyColumns();
+        ddl = FormatUtils.replace("declareOldKeyVariables",
+                buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = FormatUtils.replace("declareNewKeyVariables",
+                buildKeyVariablesDeclare(columns, "new"), ddl);
+        return ddl;
     }
 
 }
