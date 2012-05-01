@@ -14,7 +14,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
@@ -550,7 +549,7 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean script(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String script = data.getCsvData(CsvData.ROW_DATA);
+            String script =  data.getParsedData(CsvData.ROW_DATA)[0];
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("SOURCE_NODE_ID", batch.getNodeId());
             ISqlTemplate template = platform.getSqlTemplate();
@@ -581,23 +580,20 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected boolean create(CsvData data) {
+        String xml = null;
         try {
-            try {
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-                String xml = data.getCsvData(CsvData.ROW_DATA);
-                if (log.isDebugEnabled()) {
-                    log.debug("About to create table using the following definition: ", xml);
-                }
-                StringReader reader = new StringReader(xml);
-                Database db = (Database) new DatabaseIO().read(reader);
-                platform.alterTables(false, db.getTables());
-                platform.resetCachedTableModel();
-                statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
-                return true;
-            } catch (Exception e) {
-                throw new ModelException(e);
-            }
-
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            xml =  data.getParsedData(CsvData.ROW_DATA)[0];
+            log.info("About to create table using the following definition: ", xml);
+            StringReader reader = new StringReader(xml);
+            Database db = (Database) new DatabaseIO().read(reader);
+            platform.alterTables(false, db.getTables());
+            platform.resetCachedTableModel();
+            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
+            return true;
+        } catch (RuntimeException ex) {
+            log.error("Failed to alter table using the following xml: {}", xml);
+            throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
@@ -607,7 +603,7 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean sql(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String sql = data.getCsvData(CsvData.ROW_DATA);
+            String sql = data.getParsedData(CsvData.ROW_DATA)[0];
             transaction.prepare(sql);
             log.info("About to run: {}", sql);
             long count = transaction.prepareAndExecute(sql);

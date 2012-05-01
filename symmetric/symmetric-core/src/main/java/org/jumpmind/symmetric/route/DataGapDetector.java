@@ -120,14 +120,28 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                         .getTime() + transactionViewClockSyncThresholdInMs)) {
                             if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                     dataGap.getEndId() + 1) == 0) {
-                                log.info("Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database.",
-                                        dataGap.getStartId(), dataGap.getEndId());
+                                if (dataGap.getStartId() == dataGap.getEndId()) {
+                                    log.info(
+                                            "Found a gap in data_id at {}.  Skipping it because there are no pending transactions in the database",
+                                            dataGap.getStartId());
+                                } else {
+                                    log.info(
+                                            "Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database",
+                                            dataGap.getStartId(), dataGap.getEndId());
+                                }
                                 dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
                         }
                     } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
-                        log.info("Found a gap in data_id from {} to {}.  Skipping it because the gap expired.", dataGap.getStartId(),
-                                dataGap.getEndId());
+                        if (dataGap.getStartId() == dataGap.getEndId()) {
+                            log.info(
+                                    "Found a gap in data_id at {}.  Skipping it because the gap expired",
+                                    dataGap.getStartId());
+                        } else {
+                            log.info(
+                                    "Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
+                                    dataGap.getStartId(), dataGap.getEndId());
+                        }
                         dataService.updateDataGap(dataGap, DataGap.Status.SK);
                     }
                 } else {
