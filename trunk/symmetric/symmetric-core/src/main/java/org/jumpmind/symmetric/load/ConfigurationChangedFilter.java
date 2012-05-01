@@ -55,6 +55,9 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
@@ -78,6 +81,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         recordSyncNeeded(context, table, data);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
+        recordParametersFlushNeeded(context, table);
     }
 
     private void recordSyncNeeded(
@@ -87,6 +91,13 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         }
     }
 
+    private void recordParametersFlushNeeded(
+            DataContext context, Table table) {
+        if (isParameterFlushNeeded(table)) {
+            context.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, true);
+        }
+    }
+    
     private void recordChannelFlushNeeded(
             DataContext context, Table table) {
         if (isChannelFlushNeeded(table)) {
@@ -110,6 +121,10 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     private boolean isChannelFlushNeeded(Table table) {
         return matchesTable(table, TableConstants.SYM_CHANNEL);
+    }
+    
+    private boolean isParameterFlushNeeded(Table table) {
+        return matchesTable(table, TableConstants.SYM_PARAMETER);
     }
 
     private boolean isTransformFlushNeeded(Table table) {
@@ -143,6 +158,12 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             transformService.resetCache();
+        }
+        
+        if (context.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            log.info("About to refresh the cache of parameters because new configuration came through the data loader");
+            parameterService.rereadParameters();
         }
     }
 
