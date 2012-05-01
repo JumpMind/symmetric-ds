@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
+import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.model.TypeMap;
@@ -365,10 +366,12 @@ public class SqlTemplate {
                         : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
                         : table.getColumns()), ddl);
 
-        ddl = AppUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
-                ddl);
-        ddl = AppUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
-                ddl);
+        if (dialect instanceof MsSqlDbDialect || dialect instanceof SybaseDbDialect) {
+            ddl = AppUtils.replace("declareOldKeyVariables",
+                    buildKeyVariablesDeclare(columns, "old"), ddl);
+            ddl = AppUtils.replace("declareNewKeyVariables",
+                    buildKeyVariablesDeclare(columns, "new"), ddl);
+        }
 
         String builtString = buildColumnNameString(oldTriggerValue, columns);
         ddl = AppUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","
