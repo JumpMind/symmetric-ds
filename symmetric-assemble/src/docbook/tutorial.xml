@@ -1,0 +1,416 @@
+<chapter version="5.0" xml:id="tutorial" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Hands-on Tutorial</title>
+    <para>Now that several of the features of SymmetricDS have been discussed, a quick working example of SymmetricDS is in order. 
+        This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between two running
+        instances of SymmetricDS. This example models a retail business that has a central office database (called "root") and
+        multiple retail store databases (called "client").  For the tutorial, we will have only one "client", as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>.
+        </para>
+        
+        <para>
+                <figure id="figure-tutorial">
+                    <title>Simplified Two Tiered Retail Store Tutorial Example</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/tutorial-arch.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </para>     
+         <para>
+        
+        The root SymmetricDS instance sends changes to the client for item data, such as
+        item number, description, and price. The client SymmetricDS sends changes to the root for sale transaction data, such as time
+        of sale and items sold. The sample configuration specifies synchronization with a pull method for the client to receive
+        data from root, and a push method for the root to receive data from client.</para>
+    <para>This tutorial will walk you through:
+      <procedure>
+      <step><para>Installing instances of SymmetricDS for the tutorial,</para></step>
+      <step><para>Creating separate databases for the root and client,</para></step>
+      <step><para>Creating sample tables for client and root and sample data for the root,</para></step>
+      <step><para>Starting SymmetricDS and registering the client with the root,</para></step>
+      <step><para>Sending an initial load to the client,</para></step>
+      <step><para>Causing a data push and data pull operation, and</para></step>
+      <step><para>Verifying information about the batches that were sent and received.</para></step>
+      </procedure>
+       </para>
+    
+     
+     <section id="tutorial-install">
+        <title>Installing SymmetricDS</title>
+        <para> First, we will install the SymmetricDS software and configure it with your database connection information:</para>
+        <procedure>
+            <step>
+                <para>
+                    Download the
+                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-2.x.x-server.zip</ulink>
+                    file from
+                    <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
+                </para>
+            </step>
+            <step>
+                <para>
+                    Unzip the file in any directory you choose. This will create a
+                    <filename class="directory">symmetric-ds-2.x.x-server</filename>
+                    subdirectory, which corresponds to the version you downloaded.
+                </para>
+            </step>
+            <step>
+                <para>Edit the database properties in the following property files for the root (central office) and client (store) nodes:</para>
+                <para>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>
+                                <filename>samples/root.properties</filename>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <filename>samples/client.properties</filename>
+                            </para>
+                        </listitem>
+                    </itemizedlist>
+                </para>
+            </step>
+            <step>
+                <para>
+                    Set the following properties in
+                    <emphasis>both</emphasis>
+                    files to specify how to connect to the database:
+                </para>
+                <programlisting><![CDATA[# The class name for the JDBC Driver
+db.driver=com.mysql.jdbc.Driver
+
+# The JDBC URL used to connect to the database
+db.url=jdbc:mysql://localhost/sample
+
+# The user to login as who can create and update tables
+db.user=symmetric
+
+# The password for the user to login as
+db.password=secret]]></programlisting>
+            </step>
+            <step>
+                <para>
+                    Next, set the following property in the
+                    <filename>client.properties</filename>
+                    file to specify where the root node can be contacted:
+                </para>
+                <programlisting><![CDATA[# The HTTP URL of the root node to contact for registration
+registration.url=http://localhost:8080/sync]]></programlisting>
+                <para> For the tutorial, the client database starts out empty, and the node is not registered. Registration is the
+                    process where the node receives its configuration and stores it in its database. The configuration describes
+                    which database tables to synchronize and to which nodes. When an unregistered node starts up, it will
+                    register with the node specified by the registration URL. The registration node centrally controls nodes on
+                    the network by allowing registration and returning configuration. In this tutorial, the registration node is
+                    the root node, which also participates in synchronization with other nodes.</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-create-database">
+        <title>Creating and Populating Your Databases</title>
+        <important>
+            <para> You must first create the databases for your root and client nodes using the administration tools provided by
+                your database vendor. Make sure the name of the databases you create match the settings in the properties files.
+            </para>
+            <para>
+                See
+                 <xref linkend="databases" />,
+                for compatibility with your specific database.
+            </para>
+        </important>
+        <para>
+            First, create the sample tables in the
+            <emphasis>root</emphasis>
+            node database, load the sample data, and load the sample configuration.
+        </para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Create the sample tables in the root database by executing the following command:</para>
+                <para>
+                    <command>../bin/sym -p root.properties --run-ddl create_sample.xml</command>
+                </para>
+                <para> Note that the warning messages from the command are safe to ignore.</para>
+            </step>
+            <step>
+                <para>Next, create the SymmetricDS tables in the root node database. These tables will contain the configuration for
+                    synchronization. The following command uses the auto-creation feature to create all the necessary SymmetricDS
+                    system tables.</para>
+                <para>
+                    <command>../bin/sym -p root.properties --auto-create</command>
+                </para>
+            </step>
+            <step>
+                <para>Finally, load the sample data and configuration into the root node database by executing:</para>
+                <para>
+                    <command>../bin/sym -p root.properties --run-sql insert_sample.sql</command>
+                </para>
+            </step>
+        </procedure>
+        <para>
+            We have now created the root database tables and populated them with sample data.  Next, we create the sample tables in the
+            <emphasis>client</emphasis>
+            node database to prepare it for receiving data.
+        </para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Create the sample tables in the client database by executing:</para>
+                <para>
+                    <command> ../bin/sym -p client.properties --run-ddl create_sample.xml</command>
+                </para>
+                <para> Note that the warning messages from the command are safe to ignore.</para>
+            </step>
+        </procedure>
+        <para>
+            Please verify
+            <emphasis>both</emphasis>
+            databases by logging in and listing the tables.
+        </para>
+        <procedure>
+            <step>
+                <para> Find the item tables that sync from root to client: item and item_selling_price.</para>
+            </step>
+            <step>
+                <para> Find the sales tables that sync from client to root: sale_transaction and sale_return_line_item.</para>
+            </step>
+            <step>
+                <para> Find the SymmetricDS system tables, which have a prefix of "sym_".</para>
+            </step>
+             <step>
+                <para>Validate the root item tables have sample data.</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-start-server">
+        <title>Starting SymmetricDS</title>
+        <para> Database setup and configuration for the tutorial is now complete.  Time to put SymmetricDS into action.
+        We will now start both SymmetricDS nodes and observe the logging output.</para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Start the root node server by executing:</para>
+                <para>
+                    <command>../bin/sym -p root.properties --port 8080 --server</command>
+                </para>
+                <para> The root node server starts up and creates all the triggers that were configured by the sample
+                    configuration. It listens on port 8080 for synchronization and registration requests.</para>
+            </step>
+            <step>
+                <para>Start the client node server by executing:</para>
+                <para>
+                    <command>../bin/sym -p client.properties --port 9090 --server</command>
+                </para>
+                <para> The client node server starts up and uses the auto-creation feature to create the SymmetricDS system
+                    tables. It begins polling the root node in order to register. Since registration is not yet open, the client
+                    node receives an authorization failure (HTTP response of 403).</para>
+            </step>
+        </procedure>
+        <tip>
+            <title>Tip</title>
+            <para> If you want to change the port number used by SymmetricDS, you need to also set the sync.url runtime property to
+                match. The default value is:</para>
+            <programlisting><![CDATA[sync.url=http://localhost:8080/sync]]></programlisting>
+        </tip>
+    </section>
+    <section id="ch02-register-node">
+        <title>Registering a Node</title>
+        <para> Next, we need to open registration for the client node so that it may receive its initial load of
+         data and so that it may receive and send data from and to the root node. 
+         There are several ways to do this.  We will use the administration feature on the root node.</para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Open registration for the client node server by executing:</para>
+                <para>
+                    <command> ../bin/sym -p root.properties --open-registration "store,1"</command>
+                </para>
+                <para>
+                    The registration is now opened for a node group called "store" with an external identifier of "1". This
+                    information matches the settings in
+                    <filename>client.properties</filename>
+                    for the client node. Each node is assigned to a node group and is given an external ID that makes sense for the
+                    application. In this tutorial, we have retail stores that run SymmetricDS, so we named our node group "store" and
+                    we used numeric identifiers starting with "1".  More information about node groups will be covered in the next chapter.
+                </para>
+            </step>
+            <step>
+                <para> Watch the logging output of the client node to see it successfully register with the root node. The client
+                    is configured to attempt registration once per minute. Once registered, the root and client are enabled for
+                    synchronization!</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-initial-load">
+        <title>Sending an Initial Load</title>
+        <para>Next, we will send an initial load of data to our store (that is, the client node), again using the root node administration feature.</para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Send an initial load of data to the client node server by executing:</para>
+                <para>
+                    <command>../bin/sym -p root.properties --reload-node 1</command>
+                </para>
+                <para> With this command, the root node queues up an initial load for the client node that will be sent the next
+                    time the client performs its pull. The initial load includes data for each table that is configured for
+                    synchronization.</para>
+            </step>
+            <step>
+                <para> Watch the logging output of both nodes to see the data transfer. The client is configured to pull data from
+                    the root every minute.</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-pull">
+        <title>Pulling Data</title>
+        <para>Next, we will make a change to the item data in the central office (we'll add a new item), and observe the data being pulled down to
+        the store.
+        </para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with the <emphasis>root</emphasis> database.</para>
+            </step>
+            <step>
+                <para>Add a new item for sale:</para>
+                <para>
+                    <command> insert into item_selling_price (price_id, price) values (55, 0.65);</command>
+                </para>
+                <para>
+                    <command> insert into item (item_id, price_id, name) values (110000055, 55, 'Soft Drink');</command>
+                </para>
+                <para> Once the statements are committed, the data change is captured by SymmetricDS and queued for the client node to pull.
+                </para>
+            </step>
+            <step>
+                <para> Watch the logging output of both nodes to see the data transfer. The client is configured to pull data from
+                    the root every minute.</para>
+            </step>
+            <step>
+                <para> Verify that the new data arrives in the client database using another interactive SQL session.</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-push">
+        <title>Pushing Data</title>
+        <para>We will now simulate a sale at the store and observe how SymmetricDS pushes the sale transaction to the central office.</para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with the <emphasis>client</emphasis> database.</para>
+            </step>
+            <step>
+                <para>Add a new sale to the client database:</para>
+                <para>
+                    <command> insert into sale_transaction (tran_id, store, workstation, day, seq) values (1000, '1', '3',
+                        '2007-11-01', 100);</command>
+                </para>
+                <para>
+                    <command> insert into sale_return_line_item (tran_id, item_id, price, quantity) values (1000, 110000055, 0.65,
+                        1);</command>
+                </para>
+                <para> Once the statements are committed, the data change is captured and queued for the client node to push.
+                </para>
+            </step>
+            <step>
+                <para> Watch the logging output of both nodes to see the data transfer. The client is configured to push data to
+                    the root every minute.</para>
+            </step>
+        </procedure>
+    </section>
+    <section id="ch02-verify-outgoing">
+        <title>Verifying Outgoing Batches</title>
+        <para>Now that we have pushed and pulled data, we will demonstrate how you can obtain information about what data has been batched and sent.
+         A batch is used for tracking and sending data changes to nodes. The sending node creates a batch and the receiving
+            node acknowledges it. A batch in error is retried during synchronization attempts, but only after data changes in
+            other channels are allowed to be sent. Channels are categories assigned to tables for the purpose of independent
+            synchronization and control. Batches for a channel are not created when a batch in the channel is in error status.
+        </para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with either the root or client database.</para>
+            </step>
+            <step>
+                <para> Verify that the data change you made was captured:</para>
+                <para>
+                    <command> select * from sym_data order by data_id desc;</command>
+                </para>
+                <para> Each row represents a row of data that was changed. The event_type is "I" for insert, "U" for update", or
+                    "D" for delete. For insert and update, the captured data values are listed in row_data. For update and delete,
+                    the primary key values are listed in pk_data.</para>
+            </step>
+            <step>
+                <para> Verify that the data change was routed to a node, using the data_id from the previous step:</para>
+                <para>
+                    <command> select * from sym_data_event where data_id = ?;</command>
+                </para>
+                <para> When the batched flag is set, the data change is assigned to a batch using a batch_id that is used to track
+                    and synchronize the data. Batches are created and assigned during a push or pull synchronization.</para>
+            </step>
+            <step>
+                <para> Verify that the data change was batched, sent, and acknowledged, using the batch_id from the previous step:
+                </para>
+                <para>
+                    <command> select * from sym_outgoing_batch where batch_id = ?;</command>
+                </para>
+                <para> A batch represents a collection of changes to be sent to a node. The batch is created during a push or pull
+                    synchronization, when the status is set to "NE" for new. The receiving node acknowledges the batch with a
+                    status of "OK" for success or "ER" for error.</para>
+            </step>
+        </procedure>
+        <para>
+        Understanding these three tables, along with a fourth table discussed in the next section, is key to diagnosing any synchronizaiton issues you might encounter.
+        As you work with SymmetricDS, either when experimenting or starting to use SymmetricDS on your own data, spend time monitoring these tables to
+        better understand how SymmetricDS works.
+        </para>
+    </section>
+    <section id="ch02-verify-incoming">
+        <title>Verifying Incoming Batches</title>
+        <para> The receiving node keeps track of the batches it acknowledges and records statistics about loading the data.
+            Duplicate batches are skipped by default, but this behavior can be changed with the <literal>incoming.batches.skip.duplicates</literal>
+            runtime property.</para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with either the root or client database.</para>
+            </step>
+            <step>
+                <para> Verify that the batch was acknowledged, using a batch_id from the previous section:</para>
+                <para>
+                    <command> select * from sym_incoming_batch where batch_id = ?;</command>
+                </para>
+                <para> A batch represents a collection of changes loaded by the node. The sending node that created the batch is
+                    recorded. The status is either "OK" for success or "ER" for error.</para>
+            </step>
+        </procedure>
+    </section>
+</chapter>

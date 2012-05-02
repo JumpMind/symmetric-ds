@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd"
+	default-lazy-init="true">
+
+	<bean id="db2zSeriesDialect"
+		class="org.jumpmind.symmetric.db.db2.Db2zSeriesDbDialect"
+		scope="prototype">
+		<property name="primaryKeyViolationCodes" value="-803"/>
+		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+		<property name="defaultSchema" value="$[sym.db.default.schema]" />
+		<property name="userName" value="$[sym.db.user]" />
+		<property name="parameterService" ref="parameterService" />
+		<property name="streamingResultsFetchSize"
+			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
+		<property name="sqlTemplate">
+			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
+				<property name="functionInstalledSql">
+					<value>
+						<![CDATA[select count(*) from sysibm.sysfunctions where name = '$(functionName)']]>
+					</value>
+				</property>
+				<property name="stringColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' when length($(tableAlias)."$(columnName)") = 0 then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ]]>
+					</value>
+				</property>
+				<property name="clobColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ]]>
+					</value>
+				</property>
+				<property name="blobColumnTemplate">
+					<value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) end]]>
+					</value>
+				</property>
+				<property name="numberColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char($(tableAlias)."$(columnName)")) || '"' end ]]>
+					</value>
+				</property>
+				<property name="datetimeColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)||' '||substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)||'.'||STRIP(char(microsecond($(tableAlias)."$(columnName)"))) || '"' end ]]>
+					</value>
+				</property>
+                <property name="dateColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)|| '"' end ]]>
+                    </value>
+                </property>
+                <property name="timeColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)|| '"' end ]]>
+                    </value>
+                </property>
+				<property name="triggerConcatCharacter" value="||" />
+				<property name="newTriggerValue" value="new" />
+				<property name="oldTriggerValue" value="old" />
+				<property name="sqlTemplates">
+					<map>
+						<entry key="insertTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER INSERT ON $(schemaName)$(tableName) 
+                                REFERENCING NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL
+                                    WHEN ($(syncOnInsertCondition))
+                                        BEGIN ATOMIC
+                                            INSERT into $(defaultSchema)$(prefixName)_data 
+                                                (table_name, event_type, trigger_hist_id, row_data, create_time)
+                                            VALUES('$(targetTableName)', 'I', $(triggerHistoryId),
+                                                $(columns),
+                                                CURRENT_TIMESTAMP);
+                                            INSERT into $(defaultSchema)$(prefixName)_data_event
+                                                (node_id, data_id, channel_id, transaction_id)
+                                            SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
+                                                $(txIdExpression) from $(prefixName)_node c
+                                                where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
+                                        END;
+                                ]]>
+							</value>
+						</entry>
+						<entry key="updateTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(triggerName)
+                                AFTER UPDATE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL 
+                                WHEN ($(syncOnUpdateCondition))
+                                    BEGIN ATOMIC    
+                                        INSERT into $(defaultSchema)$(prefixName)_data 
+                                            (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
+                                        VALUES('$(targetTableName)', 'U', $(triggerHistoryId),
+                                            $(oldKeys),
+                                            $(columns),
+                                            $(oldColumns),
+                                            CURRENT_TIMESTAMP);
+                                        INSERT into $(defaultSchema)$(prefixName)_data_event
+                                            (node_id, data_id, channel_id, transaction_id)
+                                        SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
+                                            $(txIdExpression) from $(prefixName)_node c
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
+                                END;
+                                ]]>
+							</value>
+						</entry>
+						<entry key="deleteTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER DELETE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD
+                                FOR EACH ROW MODE DB2SQL 
+                                WHEN ($(syncOnDeleteCondition)) 
+                                    BEGIN ATOMIC
+                                        INSERT into $(defaultSchema)$(prefixName)_data 
+                                            (table_name, event_type, trigger_hist_id, pk_data, create_time)
+                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),
+                                            $(oldKeys),
+                                            CURRENT_TIMESTAMP);
+                                        INSERT into $(defaultSchema)$(prefixName)_data_event
+                                            (node_id, data_id, channel_id, transaction_id)
+                                        SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
+                                            $(txIdExpression) from $(prefixName)_node c
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
+                                END;
+                                ]]>
+							</value>
+						</entry>
+						<entry key="initialLoadSqlTemplate">
+							<value>
+								<![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+							</value>
+						</entry>
+					</map>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+</beans>
