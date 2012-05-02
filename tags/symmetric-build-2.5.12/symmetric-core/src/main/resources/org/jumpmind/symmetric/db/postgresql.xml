@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="postgresqlDialect" class="org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect"
+        scope="prototype">
+        <property name="primaryKeyViolationSqlStates" value="23505"/>
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
+                
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from information_schema.routines 
+                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)']]>
+                    </value>
+                </property>               
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="triggers_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$
+                                DECLARE
+                                  triggerDisabled INTEGER;
+                                BEGIN
+                                  select current_setting('symmetric.triggers_disabled') into triggerDisabled;
+                                  return triggerDisabled;
+                                EXCEPTION WHEN OTHERS THEN
+                                  return 0;
+                                END;
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="node_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$
+                                DECLARE
+                                  nodeId VARCHAR(50);
+                                BEGIN
+                                  select current_setting('symmetric.node_disabled') into nodeId;
+                                  return nodeId;
+                                EXCEPTION WHEN OTHERS THEN
+                                  return '';
+                                END;
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="largeobject">
+                            <value>
+                                <![CDATA[                                 
+                                CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$
+                                DECLARE
+                                  encodedBlob text;
+                                  encodedBlobPage text;
+                                BEGIN
+                                  encodedBlob := '';
+                                  FOR encodedBlobPage IN SELECT encode(data, 'escape')
+                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP
+                                    encodedBlob := encodedBlob || encodedBlobPage;
+                                  END LOOP;
+                                  RETURN encode(decode(encodedBlob, 'escape'), 'base64');
+                                EXCEPTION WHEN OTHERS THEN
+                                  RETURN '';
+                                END
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="arrayColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                    </value>
+                </property>                
+                <property name="xmlColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="clobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || encode($(tableAlias)."$(columnName)", 'base64') || '"' end ]]>
+                    </value>
+                </property>
+                <property name="wrappedBlobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias)."$(columnName)") || '"' end ]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" then '"1"' else '"0"' end]]>
+                    </value>
+                </property>
+                <property name="dateColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS') || '"' end ]]>
+                    </value>
+                </property>                
+                <property name="datetimeColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.US') || '"' end ]]>
+                    </value>
+                </property>
+                <property name="datetimeWithTimezoneTemplate" >
+                    <value>
+                        <![CDATA[ 
+                          case when $(tableAlias)."$(columnName)" is null then '' else
+                             case
+                             when extract(timezone_hour from $(tableAlias)."$(columnName)") < -9 then
+                               '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.US ')||
+                               lpad(cast(extract(timezone_hour from $(tableAlias)."$(columnName)") as varchar),3,'0')||':'||
+                               lpad(cast(extract(timezone_minute from $(tableAlias)."$(columnName)") as varchar), 2, '0') || '"'
+                             when extract(timezone_hour from $(tableAlias)."$(columnName)") >= 0 then
+                               '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||
+                               lpad(cast(extract(timezone_hour from $(tableAlias)."$(columnName)") as varchar),2,'0')||':'||
+                               lpad(cast(extract(timezone_minute from $(tableAlias)."$(columnName)") as varchar), 2, '0') || '"'
+                             else
+                               '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.US ')||
+                               lpad(cast(extract(timezone_hour from $(tableAlias)."$(columnName)") as varchar),2,'0')||':'||
+                               lpad(cast(extract(timezone_minute from $(tableAlias)."$(columnName)") as varchar), 2, '0') || '"'
+                             end 
+                          end ]]>
+                    </value>
+                </property>                
+                <property name="otherColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar) || '"' end ]]>
+                    </value>
+                </property>                
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>    
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$
+                                begin
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultSchema)$(prefixName)_data
+                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'I',
+                                      $(triggerHistoryId),
+                                      $(columns),
+                                      '$(channelName)', 
+                                      $(txIdExpression), 
+                                      $(defaultSchema)$(prefixName)_node_disabled(),
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                  return null;
+                                end;
+                                $function$ language plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="insertPostTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after insert on $(schemaName)$(tableName)
+                                for each row execute procedure $(schemaName)f$(triggerName)();
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$
+                                begin
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultSchema)$(prefixName)_data
+                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'U',
+                                      $(triggerHistoryId),
+                                      $(oldKeys),
+                                      $(columns),
+                                      $(oldColumns),
+                                      '$(channelName)', 
+                                      $(txIdExpression), 
+                                      $(defaultSchema)$(prefixName)_node_disabled(),
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                  return null;
+                                end;
+                                $function$ language plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updatePostTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after update on $(schemaName)$(tableName)
+                                for each row execute procedure $(schemaName)f$(triggerName)();
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$
+                                begin
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultSchema)$(prefixName)_data
+                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'D',
+                                      $(triggerHistoryId),
+                                      $(oldKeys),                                      
+                                      $(oldColumns),
+                                      '$(channelName)', 
+                                      $(txIdExpression), 
+                                      $(defaultSchema)$(prefixName)_node_disabled(),
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                  return null;
+                                end;
+                                $function$ language plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deletePostTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after delete on $(schemaName)$(tableName)
+                                for each row execute procedure $(schemaName)f$(triggerName)();
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>
