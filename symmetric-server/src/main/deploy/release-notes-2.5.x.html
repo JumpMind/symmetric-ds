@@ -1,10 +1,31 @@
 <html>
 <body>                
 
+<h1>Version 2.5.12</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-610'>SYMMETRICDS-610</a>] -         A delete transform on the load side does not have access to columns if transform has occurred on the extract side because old data is not filled in
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-611'>SYMMETRICDS-611</a>] -         auto.reload.reverse causes other nodes to auto reload.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-612'>SYMMETRICDS-612</a>] -         Postgres DATE field leaves an extra &#39;.&#39; at the end of captured data in version 8.5 which causes a parse exception during the data load
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-615'>SYMMETRICDS-615</a>] -         When a timestamp with time zone column is part of a primary key or part of a table w.out a primary key, then the trigger fails to create.
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-606'>SYMMETRICDS-606</a>] -         Add -D system property org.jumpmind.symmetric.ddl.use.table.seq that forces postgres to NOT use sequences for SymmetricDS tables that have auto increment columns
+</li>
+</ul>
+                
 <h1>
 Version 2.5.11
 </h1>
-
             
 <h2>        Bug
 </h2>
