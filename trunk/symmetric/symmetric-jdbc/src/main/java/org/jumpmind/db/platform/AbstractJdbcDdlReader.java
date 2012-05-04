@@ -79,7 +79,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     /* The platform that this model reader belongs to. */
     private IDatabasePlatform platform;
-    
+
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -439,17 +439,18 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     public Database readTables(final String catalog, final String schema, final String[] tableTypes) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return postprocessModelFromDatabase(sqlTemplate.execute(new IConnectionCallback<Database>() {
-            public Database execute(Connection connection) throws SQLException {
-                Database db = new Database();
-                db.setName(Table.getQualifiedTablePrefix(catalog, schema));
-                db.addTables(readTables(connection, catalog, schema, tableTypes));
-                db.initialize();
-                return db;
-            }
-        }));
+        return postprocessModelFromDatabase(sqlTemplate
+                .execute(new IConnectionCallback<Database>() {
+                    public Database execute(Connection connection) throws SQLException {
+                        Database db = new Database();
+                        db.setName(Table.getQualifiedTablePrefix(catalog, schema));
+                        db.addTables(readTables(connection, catalog, schema, tableTypes));
+                        db.initialize();
+                        return db;
+                    }
+                }));
     }
-    
+
     /*
      * Allows the platform to postprocess the model just read from the database.
      * 
@@ -547,10 +548,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }));
 
     }
-    
-    public Table readTable(final String catalog, final String schema, final String tableName, final String sql) {
+
+    public Table readTable(final String catalog, final String schema, final String tableName,
+            final String sql) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return postprocessTableFromDatabase(sqlTemplate.execute( new IConnectionCallback<Table>() {
+        return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
             public Table execute(Connection connection) throws SQLException {
                 Statement st = connection.createStatement();
                 ResultSet rs = st.executeQuery(sql);
@@ -601,7 +603,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         return table;
     }
-
 
     protected void close(ResultSet rs) {
         if (rs != null) {
@@ -730,8 +731,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
             String name = fk.getReference(columnIdx).getLocalColumnName();
-            Column localColumn = table
-                    .findColumn(name, getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn());
+            Column localColumn = table.findColumn(name, getPlatform().getDdlBuilder()
+                    .isDelimitedIdentifierModeOn());
 
             if (mustBeUnique && !localColumn.isPrimaryKey()) {
                 mustBeUnique = false;
@@ -870,7 +871,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if (defaultValue != null) {
             column.setDefaultValue(defaultValue.trim());
         }
-        
+
         Integer jdbcType = mapUnknownJdbcTypeForColumn(values);
         if (jdbcType != null) {
             column.setTypeCode(jdbcType);
@@ -1145,6 +1146,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             Statement stmt = null;
             try {
                 stmt = conn.createStatement();
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                            "Running the following query to get metadata about whether a column is an auto increment column: \n{}",
+                            query);
+                }
                 ResultSet rs = stmt.executeQuery(query.toString());
                 ResultSetMetaData rsMetaData = rs.getMetaData();
 
@@ -1269,8 +1275,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     while (found && columnData.next()) {
                         values = readColumns(columnData, getColumnsForColumn());
 
-                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform().getDdlBuilder()
-                                .isDelimitedIdentifierModeOn()) == null) {
+                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
+                                .getDdlBuilder().isDelimitedIdentifierModeOn()) == null) {
                             found = false;
                         }
                     }
@@ -1283,5 +1289,5 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             close(columnData);
             close(tableData);
         }
-    }   
+    }
 }
