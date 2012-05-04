@@ -1106,8 +1106,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </listitem>
                 <listitem>
                     Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
-                    and then adds (or subtracts) the value from the existing value in the target column.  For example, if the source column changed from a 2 to a 4, and the target
-                    column is currently 10, the effect of the transform will be to change the target column to a value of 12 ( 10+(4-2) => 12 ).
+                    and then adds the change to the existing value in the target column.  That is, target = target + multiplier (source_new - source_old), where multiplier
+                    is a constant found in the transform_expression (default is 1 if not specified). For example, if the source column changed from a 2 to a 4, the target
+                    column is currently 10, and the multiplier is 3, the effect of the transform will be to change the target column to a value of 16 ( 10+3*(4-2) => 16 ).  Note that,
+                    in the case of deletes, the new column value is considered 0 for the purposes of the calculation. 
                 </listitem>
                 <listitem>
                     Substring Transform ('substr'):  This transformation computes a substring of the source column data and uses the substring as the target column value.  The transform_expression can
