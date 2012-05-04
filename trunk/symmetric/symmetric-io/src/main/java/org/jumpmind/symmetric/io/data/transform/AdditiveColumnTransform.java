@@ -42,49 +42,63 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
     public String transform(IDatabasePlatform platform, DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
-        if (StringUtils.isNotBlank(newValue)) {
-            BigDecimal numericValue = new BigDecimal(newValue);
-            Table table = platform.getTableFromCache(data.getCatalogName(), data.getSchemaName(),
-                    data.getTableName(), false);
-            if (table != null) {
-                if (StringUtils.isNotBlank(oldValue)) {
-                    numericValue = numericValue.subtract(new BigDecimal(oldValue));
-                    newValue = numericValue.toString();
-                }
-                
-                String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-                        .getDatabaseInfo().getDelimiterToken() : "";
-                StringBuilder sql = new StringBuilder(String.format("update %s set %s=%s+%s where ",
-                        getFullyQualifiedTableName(platform, data.getSchemaName(), data.getCatalogName(), data.getTableName()), 
-                        quote + column.getTargetColumnName() + quote,
-                        quote + column.getTargetColumnName() + quote,
-                        newValue));
-
-                String[] keyNames = data.getKeyNames();
-                Column[] columns = new Column[keyNames.length];
-                for (int i = 0; i < keyNames.length; i++) {
-                    if (i > 0) {
-                        sql.append("and ");
-                    }
-                    columns[i] = table.getColumnWithName(keyNames[i]);
-                    if (columns[i] == null) {
-                        throw new NullPointerException("Could not find a column named: " + keyNames[i] + " on the target table: " + table.getName());
-                    }
-                    sql.append(quote);
-                    sql.append(keyNames[i]);
-                    sql.append(quote);
-                    sql.append("=? ");
-                }
-
-                if (0 < platform.getSqlTemplate().update(
-                        sql.toString(),
-                        platform.getObjectValues(context.getBatch().getBinaryEncoding(),
-                                data.getKeyValues(), columns))) {
-                    throw new IgnoreColumnException();
-                }
-
-            }
+        
+        BigDecimal multiplier = new BigDecimal(1.00);
+        
+        if (StringUtils.isNotBlank(column.getTransformExpression())) {
+            multiplier = new BigDecimal(column.getTransformExpression());            
         }
+        
+        BigDecimal delta = new BigDecimal(newValue);
+        
+        Table table = platform.getTableFromCache(data.getCatalogName(), data.getSchemaName(),
+                data.getTableName(), false);
+        if (table != null) {
+            if (!StringUtils.isNotBlank(newValue)) {
+                newValue="0.00";
+            }
+            
+            if (!StringUtils.isNotBlank(oldValue)) {
+                oldValue="0.00";
+            }
+            
+            delta = delta.subtract(new BigDecimal(oldValue));
+            delta = delta.multiply(multiplier);
+            newValue = delta.toString();
+            
+            String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+                    .getDatabaseInfo().getDelimiterToken() : "";
+            StringBuilder sql = new StringBuilder(String.format("update %s set %s=%s+(%s) where ",
+                    getFullyQualifiedTableName(platform, data.getSchemaName(), data.getCatalogName(), data.getTableName()), 
+                    quote + column.getTargetColumnName() + quote,
+                    quote + column.getTargetColumnName() + quote,
+                    newValue));
+
+            String[] keyNames = data.getKeyNames();
+            Column[] columns = new Column[keyNames.length];
+            for (int i = 0; i < keyNames.length; i++) {
+                if (i > 0) {
+                    sql.append("and ");
+                }
+                columns[i] = table.getColumnWithName(keyNames[i]);
+                if (columns[i] == null) {
+                    throw new NullPointerException("Could not find a column named: " + keyNames[i] + " on the target table: " + table.getName());
+                }
+                sql.append(quote);
+                sql.append(keyNames[i]);
+                sql.append(quote);
+                sql.append("=? ");
+            }
+
+            if (0 < platform.getSqlTemplate().update(
+                    sql.toString(),
+                    platform.getObjectValues(context.getBatch().getBinaryEncoding(),
+                            data.getKeyValues(), columns))) {
+                throw new IgnoreColumnException();
+            }
+
+        }
+        
         return newValue;
     }
 
