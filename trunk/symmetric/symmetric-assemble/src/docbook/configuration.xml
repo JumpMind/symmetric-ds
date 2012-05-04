@@ -1120,7 +1120,11 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     Multiplier Transform ('multiply'):  This transformation allows for the creation of multiple rows in the target table based on the transform_expression.  This transform type
                     can only be used on a primary key column.  The transform_expression is a SQL statement that returns the list to be used to create the multiple targets.
                 </listitem>
-              
+                 <listitem>
+                    Lookup Transform ('lookup'):  This transformation determines the target column value by using a query, contained in transform_expression to lookup the
+                    value in another table.  The query must return a single row, and the first column of the query is used as the value.  Your query references source column names by prefixing with a 
+                    colon (e.g., :MY_COLUMN).
+                </listitem>
                 <listitem>
                     Shell Script Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
                     Some variables are provided to the script: <code>COLUMN_NAME</code> is a variable for a source column in the row, where the variable name is the column name in uppercase; 
