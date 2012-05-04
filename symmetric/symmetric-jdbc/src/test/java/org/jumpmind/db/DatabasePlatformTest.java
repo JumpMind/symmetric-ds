@@ -7,7 +7,9 @@ import org.apache.log4j.Logger;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,14 +28,14 @@ public class DatabasePlatformTest extends AbstractDbTest {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
     }
 
-    //@Before
+    @Before
     public void turnOnDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         originalLevel = logger.getLevel();
         logger.setLevel(Level.TRACE);
     }
 
-    //@After
+    @After
     public void turnOffDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         logger.setLevel(originalLevel);
