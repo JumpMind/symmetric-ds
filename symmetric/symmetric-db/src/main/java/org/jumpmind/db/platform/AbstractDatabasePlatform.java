@@ -154,7 +154,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         String createSql = ddlBuilder.createTables(targetDatabase, false);
 
         if (log.isDebugEnabled()) {
-            log.debug("Generated create sql: \n", createSql);
+            log.debug("Generated create sql: \n{}", createSql);
         }
 
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
@@ -245,6 +245,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     table = ddlReader.readTable(catalogName, schemaName, tableName);
                 }
             }
+        }
+        
+        if (table != null && log.isDebugEnabled()) {
+            log.debug("Just read table: \n{}", table.toVerboseString());
         }
         return table;
     }
