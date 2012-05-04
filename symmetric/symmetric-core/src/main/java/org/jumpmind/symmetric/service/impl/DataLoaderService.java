@@ -279,7 +279,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 error = ex;
             }
             if (sendAck != HttpURLConnection.HTTP_OK) {
-                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1, error != null ? error.getMessage() : "");
+                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1,
+                        error != null ? error.getMessage() : "");
                 if (i < numberOfStatusSendRetries - 1) {
                     AppUtils.sleep(parameterService
                             .getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
@@ -376,9 +377,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
         if (sourceNodeId != null) {
+            Node sourceNode = nodeService.findNode(sourceNodeId);
+            if (sourceNode != null) {
+                link = new NodeGroupLink(sourceNode.getNodeGroupId(),
+                        parameterService.getNodeGroupId());
+            }
+
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                    new NodeGroupLink(sourceNodeId, nodeService.findIdentityNodeId()),
-                    TransformPoint.LOAD, true);
+                    link, TransformPoint.LOAD, true);
             transforms = transformsList != null ? transformsList
                     .toArray(new TransformTable[transformsList.size()]) : null;
 
@@ -389,12 +395,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     resolvedDatas.add(new ResolvedData(incomingError.getFailedRowNumber(),
                             incomingError.getResolveData(), incomingError.isResolveIgnore()));
                 }
-            }
-
-            Node sourceNode = nodeService.findNode(sourceNodeId);
-            if (sourceNode != null) {
-                link = new NodeGroupLink(sourceNode.getNodeGroupId(),
-                        parameterService.getNodeGroupId());
             }
 
         }
@@ -672,8 +672,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Batch batch = context.getBatch();
             this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
                     .getWriter().getStatistics().get(batch), true);
-            statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(), this.currentBatch.getStatementCount());
-            statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(), this.currentBatch.getByteCount());
+            statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
+                    this.currentBatch.getStatementCount());
+            statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
+                    this.currentBatch.getByteCount());
             Status oldStatus = this.currentBatch.getStatus();
             try {
                 this.currentBatch.setStatus(Status.OK);
@@ -701,8 +703,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (context.getWriter() != null) {
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
-                    statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(), this.currentBatch.getStatementCount());
-                    statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(), this.currentBatch.getByteCount());
+                    statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
+                            this.currentBatch.getStatementCount());
+                    statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
+                            this.currentBatch.getByteCount());
                     statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 } else {
                     log.error("An error caused a batch to fail without attempting to load data", ex);
