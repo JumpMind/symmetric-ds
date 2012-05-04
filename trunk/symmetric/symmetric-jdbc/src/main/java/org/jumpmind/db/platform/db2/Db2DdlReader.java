@@ -77,6 +77,10 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             // DB2 does not return the auto-increment status via the database
             // metadata
             String sql = "SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME=? AND IDENTITY=?";
+            if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
+                sql = sql + " AND TABSCHEMA=?";
+            }
+
             PreparedStatement pstmt = null;
             ResultSet rs = null;
             try {
@@ -84,7 +88,6 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                 pstmt.setString(1, table.getName());
                 pstmt.setString(2, "Y");
                 if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
-                    sql = sql + " AND TABSCHEMA=?";
                     pstmt.setString(3, metaData.getSchemaPattern());
                 }
 
