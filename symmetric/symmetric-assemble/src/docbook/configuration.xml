@@ -1101,8 +1101,9 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     Constant Transform ('const'):  This transformation type allows you to map a constant value to the given target column.  The constant itself is placed in transform_expression.   
                 </listitem>
                 <listitem>
-                    Variable Transform ('variable'):  This transformation type allows you to map a built-in variable to the given target column.  The variable name is placed in transform_expression.
-                    The following variables are available: <code>system_date</code> is the current system date, and <code>system_timestamp</code> is the current system date and time.
+                    Variable Transform ('variable'):  This transformation type allows you to map a built-in dynamic variable to the given target column.  The variable name is placed in transform_expression.
+                    The following variables are available: <code>system_date</code> is the current system date, <code>system_timestamp</code> is the current system date and time, and <code>source_node_id</code> is
+                    the node id of the source.
                 </listitem>
                 <listitem>
                     Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
@@ -1132,10 +1133,6 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     <code>oldValue</code> is the old value of the source column for an updated row;
                     <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
                 </listitem> 
-                 <listitem>
-                    Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.  The transform_expression's'
-                    currently supported are:  system_timestamp.
-                 </listitem>                        
                  <listitem>
                     Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
                  </listitem>
