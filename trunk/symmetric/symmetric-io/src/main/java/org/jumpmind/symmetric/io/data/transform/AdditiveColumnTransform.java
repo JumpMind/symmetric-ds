@@ -49,19 +49,17 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
             multiplier = new BigDecimal(column.getTransformExpression());            
         }
         
-        BigDecimal delta = new BigDecimal(newValue);
-        
         Table table = platform.getTableFromCache(data.getCatalogName(), data.getSchemaName(),
                 data.getTableName(), false);
         if (table != null) {
             if (!StringUtils.isNotBlank(newValue)) {
                 newValue="0.00";
             }
-            
             if (!StringUtils.isNotBlank(oldValue)) {
                 oldValue="0.00";
             }
             
+            BigDecimal delta = new BigDecimal(newValue);
             delta = delta.subtract(new BigDecimal(oldValue));
             delta = delta.multiply(multiplier);
             newValue = delta.toString();
@@ -101,5 +99,4 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
         
         return newValue;
     }
-
 }
