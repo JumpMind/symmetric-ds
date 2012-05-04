@@ -20,6 +20,7 @@ package org.jumpmind.db.platform.db2;
  */
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -35,6 +37,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 /*
  * Reads a database model from a Db2 UDB database.
@@ -71,9 +74,35 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
-            // Db2 does not return the auto-increment status via the database
+            // DB2 does not return the auto-increment status via the database
             // metadata
-            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
+            String sql = "SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME=? AND IDENTITY=?";
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            try {
+                pstmt = connection.prepareStatement(sql);
+                pstmt.setString(1, table.getName());
+                pstmt.setString(2, "Y");
+                if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
+                    sql = sql + " AND TABSCHEMA=?";
+                    pstmt.setString(3, metaData.getSchemaPattern());
+                }
+
+                rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    String columnName = rs.getString(1);
+                    Column column = table.getColumnWithName(columnName);
+                    if (column != null) {
+                        column.setAutoIncrement(true);
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found identity column {} on {}", columnName, table.getName());
+                    }
+                }
+            } finally {
+                JdbcSqlTemplate.close(rs);
+                JdbcSqlTemplate.close(pstmt);
+            }
         }
         return table;
     }
@@ -105,7 +134,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                     column.setDefaultValue(newDefault.toString());
                 }
             } else if (column.getTypeCode() == Types.TIMESTAMP) {
-                
+
                 Matcher matcher = db2TimestampPattern.matcher(column.getDefaultValue());
 
                 // Db2 returns "YYYY-MM-DD-HH24.MI.SS.FF"
