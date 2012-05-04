@@ -1155,6 +1155,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 ResultSetMetaData rsMetaData = rs.getMetaData();
 
                 for (int idx = 0; idx < columnsToCheck.length; idx++) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(columnsToCheck[idx] + " is auto increment? " + rsMetaData.isAutoIncrement(idx + 1));
+                    }
                     if (rsMetaData.isAutoIncrement(idx + 1)) {
                         columnsToCheck[idx].setAutoIncrement(true);
                     }
