@@ -14,5 +14,11 @@
         <column name="bigInt_value" type="BIGINT" />
         <column name="decimal_value" type="DECIMAL" />
     </table>
+    
+    <table name="TEST_UPPERCASE_TABLE">
+        <column name="id" type="INTEGER" required="true"
+            autoIncrement="true" primaryKey="true" />
+        <column name="text" type="VARCHAR" size="1000" />
+    </table>    
 
 </database>
