@@ -18,7 +18,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  target_table_name,                                          " + 
 "  transform_point,                                            " + 
 "  transform_order,                                            " + 
-"  update_first, delete_action                                 " + 
+"  update_first, delete_action, column_policy                  " + 
 "  from                                                        " + 
 "  $(transform_table) order by transform_order           " + 
 "  asc                                                         " );
@@ -59,7 +59,8 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  transform_point=?,         " + 
 "  update_first=?,            " + 
 "  delete_action=?,           " + 
-"  transform_order=?          " + 
+"  transform_order=?,         " + 
+"  column_policy=?            " +
 "  where                      " + 
 "  transform_id=?             " );
 
@@ -84,8 +85,8 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  source_schema_name, source_table_name,                              " + 
 "  target_catalog_name, target_schema_name, target_table_name,         " + 
 "  transform_point, update_first, delete_action, transform_order,      " + 
-"  transform_id)                                                       " + 
-"  values(?,?,?,?,?,?,?,?,?,?,?,?,?)                                   " );
+"  column_policy, transform_id)                                        " + 
+"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                 " );
 
         putSql("insertTransformColumnSql" ,"" + 
 "insert into $(transform_column)              " + 

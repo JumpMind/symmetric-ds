@@ -11,6 +11,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
@@ -148,7 +149,8 @@ public class TransformService extends AbstractService implements ITransformServi
                     .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
                     transformTable.isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction().toString(),
-                    transformTable.getTransformOrder(), transformTable.getTransformId()) == 0) {
+                    transformTable.getTransformOrder(), transformTable.getColumnPolicy().toString(), 
+                    transformTable.getTransformId()) == 0) {
                 transaction.prepareAndExecute(getSql("insertTransformTableSql"), transformTable
                         .getNodeGroupLink().getSourceNodeGroupId(), transformTable
                         .getNodeGroupLink().getTargetNodeGroupId(), transformTable
@@ -157,7 +159,8 @@ public class TransformService extends AbstractService implements ITransformServi
                         transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
                         transformTable.getTransformPoint().toString(), transformTable
                                 .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction().toString(),
-                        transformTable.getTransformOrder(), transformTable.getTransformId());
+                        transformTable.getTransformOrder(), transformTable.getColumnPolicy().toString(),
+                        transformTable.getTransformId());
             }
             deleteTransformColumns(transaction, transformTable.getTransformId());
             List<TransformColumn> columns = transformTable.getTransformColumns();
@@ -229,6 +232,7 @@ public class TransformService extends AbstractService implements ITransformServi
             }
             table.setTransformOrder(rs.getInt("transform_order"));
             table.setUpdateFirst(rs.getBoolean("update_first"));
+            table.setColumnPolicy(ColumnPolicy.valueOf(rs.getString("column_policy")));
             table.setDeleteAction(DeleteAction.valueOf(rs.getString("delete_action")));
             return table;
         }

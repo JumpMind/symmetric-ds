@@ -2,10 +2,12 @@ package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 
-public class TransformTable {
+public class TransformTable implements Cloneable {
 
     protected String transformId;
     protected String sourceCatalogName;
@@ -18,6 +20,7 @@ public class TransformTable {
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
+    protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
 
@@ -183,6 +186,14 @@ public class TransformTable {
         return updateFirst;
     }
 
+    public ColumnPolicy getColumnPolicy() {
+        return columnPolicy;
+    }
+
+    public void setColumnPolicy(ColumnPolicy columnPolicy) {
+        this.columnPolicy = columnPolicy;
+    }
+
     @Override
     public int hashCode() {
         if (transformId != null) {
@@ -211,6 +222,80 @@ public class TransformTable {
             return transformId;
         } else {
             return super.toString();
+        }
+    }
+
+    public TransformTable enhanceWithImpliedColumns(Map<String, String> sourceKeyValues,
+            Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
+        TransformTable copiedVersion;
+        try {
+            copiedVersion = (TransformTable) this.clone();
+            if (transformColumns != null) {
+                copiedVersion.transformColumns = new ArrayList<TransformColumn>(transformColumns);
+            } else {
+                copiedVersion.transformColumns = new ArrayList<TransformColumn>();
+            }
+            if (primaryKeyColumns != null) {
+                copiedVersion.primaryKeyColumns = new ArrayList<TransformColumn>(primaryKeyColumns);
+            } else {
+                copiedVersion.primaryKeyColumns = new ArrayList<TransformColumn>();
+            }
+
+            if (columnPolicy == ColumnPolicy.IMPLIED) {
+                for (String column : sourceKeyValues.keySet()) {
+                    boolean add = true;
+                    if (primaryKeyColumns != null) {
+                        for (TransformColumn xCol : primaryKeyColumns) {
+                            if (StringUtils.isNotBlank(xCol.getSourceColumnName())
+                                    && xCol.getSourceColumnName().equals(column)) {
+                                add = false;
+                            }
+                            if (StringUtils.isNotBlank(xCol.getTargetColumnName())
+                                    && xCol.getTargetColumnName().equals(column)) {
+                                add = false;
+                            }
+                        }
+                    }
+
+                    if (add) {
+                        TransformColumn newCol = new TransformColumn();
+                        newCol.setTransformId(transformId);
+                        newCol.setPk(true);
+                        newCol.setTransformType(CopyColumnTransform.NAME);
+                        newCol.setSourceColumnName(column);
+                        newCol.setTargetColumnName(column);
+                        copiedVersion.primaryKeyColumns.add(newCol);
+                        copiedVersion.transformColumns.add(newCol);
+                    }
+                }
+
+                for (String column : sourceValues.keySet()) {
+                    boolean add = true;
+                    for (TransformColumn xCol : copiedVersion.transformColumns) {
+                        if (StringUtils.isNotBlank(xCol.getSourceColumnName())
+                                && xCol.getSourceColumnName().equals(column)) {
+                            add = false;
+                        }
+                        if (StringUtils.isNotBlank(xCol.getTargetColumnName())
+                                && xCol.getTargetColumnName().equals(column)) {
+                            add = false;
+                        }
+                    }
+
+                    if (add) {
+                        TransformColumn newCol = new TransformColumn();
+                        newCol.setTransformId(transformId);
+                        newCol.setTransformType(CopyColumnTransform.NAME);
+                        newCol.setSourceColumnName(column);
+                        newCol.setTargetColumnName(column);
+                        copiedVersion.transformColumns.add(newCol);
+                    }
+                }
+            }
+
+            return copiedVersion;
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

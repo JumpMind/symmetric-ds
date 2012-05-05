@@ -412,10 +412,11 @@
         <column name="source_table_name" type="VARCHAR" size="128" required="true"  description="The name of the source table that will be transformed." />
         <column name="target_catalog_name" type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name" type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
-        <column name="target_table_name" type="VARCHAR" size="128" description="Optional name for a target table.  Use this if the target table name is different than the source." />
+        <column name="target_table_name" type="VARCHAR" size="128" description="Optional name for a target table.  Use this if the target table name is different than the source." />                
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
-        <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row." />
+        <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
+        <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />        
     </table>
     
     <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation ">
