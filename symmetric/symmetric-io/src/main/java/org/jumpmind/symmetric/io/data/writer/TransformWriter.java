@@ -61,7 +61,7 @@ public class TransformWriter implements IDataWriter {
     public static void addColumnTransform(IColumnTransform<?> columnTransform) {
         columnTransforms.put(columnTransform.getName(), columnTransform);
     }
-    
+
     public static Map<String, IColumnTransform<?>> getColumnTransforms() {
         return columnTransforms;
     }
@@ -77,7 +77,7 @@ public class TransformWriter implements IDataWriter {
         this.transformsBySourceTable = toMap(transforms);
         this.targetWriter = targetWriter;
     }
-    
+
     public void setTargetWriter(IDataWriter targetWriter) {
         this.targetWriter = targetWriter;
     }
@@ -144,7 +144,7 @@ public class TransformWriter implements IDataWriter {
 
             if (eventType == DataEventType.DELETE) {
                 sourceValues = oldSourceValues;
-                
+
                 if (sourceValues.size() == 0) {
                     sourceValues = sourceKeyValues;
                 }
@@ -158,7 +158,8 @@ public class TransformWriter implements IDataWriter {
             }
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
-            for (TransformTable transformation : activeTransforms) {
+            for (TransformTable transformation : activeTransforms) {                
+                transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues, oldSourceValues, sourceValues);
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
                         sourceKeyValues, oldSourceValues, sourceValues));
             }
@@ -238,6 +239,11 @@ public class TransformWriter implements IDataWriter {
                             data.put(transformColumn, value, false);
                         } catch (IgnoreColumnException e) {
                             // Do nothing. We are ignoring the column
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                        "A transform indicated we should ignore the target column {}",
+                                        transformColumn.getTargetColumnName());
+                            }
                         }
                     }
                 } else {
@@ -246,7 +252,8 @@ public class TransformWriter implements IDataWriter {
                 }
             }
 
-            // perform a transformation if there are columns defined for transformation
+            // perform a transformation if there are columns defined for
+            // transformation
             if (data.getColumnNames().length > 0) {
                 if (data.getTargetDmlType() != DataEventType.DELETE) {
                     if (data.getTargetDmlType() == DataEventType.INSERT
