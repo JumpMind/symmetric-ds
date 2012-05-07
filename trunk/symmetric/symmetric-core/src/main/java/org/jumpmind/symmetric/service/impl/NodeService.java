@@ -253,6 +253,9 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNode(Node node) {
+        if (!node.isSyncEnabled()) {
+            new Exception().printStackTrace();
+        }
         boolean updated = sqlTemplate.update(
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),

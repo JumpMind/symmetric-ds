@@ -415,7 +415,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IDataLoaderFactory factory = null;
         if (channel != null) {
             dataLoaderType = channel.getDataLoaderType();
-        } else {
+        } else if (!channelId.equals(Constants.CHANNEL_CONFIG)) {
             log.warn(
                     "Could not locate the channel with the id of '{}'.  Using the 'default' data loader.",
                     channelId);

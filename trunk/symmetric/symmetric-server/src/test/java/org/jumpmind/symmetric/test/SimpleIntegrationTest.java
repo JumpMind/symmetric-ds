@@ -84,12 +84,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         INodeService rootNodeService = rootEngine.getNodeService();
         rootEngine.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        Assert.assertTrue("The registration for the client should be opened now.", rootNodeService
+        Assert.assertTrue("The registration for the client should be opened now", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClient().start();
         clientPull();
-        Assert.assertTrue("The client did not register.", getClient().isRegistered());
-        Assert.assertFalse("The registration for the client should be closed now.", rootNodeService
+        Assert.assertTrue("The client did not register", getClient().isRegistered());
+        Assert.assertFalse("The registration for the client should be closed now", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         IStatisticManager statMgr = getClient().getStatisticManager();
         statMgr.flush();
