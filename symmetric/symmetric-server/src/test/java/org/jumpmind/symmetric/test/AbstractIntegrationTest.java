@@ -143,7 +143,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected void logTestRunning() {
-        logger.info("Running " + new Exception().getStackTrace()[1].getMethodName() + ". ");
+        logger.info("Running " + new Exception().getStackTrace()[1].getMethodName());
     }
 
     protected void logTestComplete() {
