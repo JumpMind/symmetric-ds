@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -9,9 +11,13 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
+    static final Logger log = LoggerFactory.getLogger(AdditiveColumnTransform.class);
+    
     public static final String NAME = "additive";
     
     public String getName() {
@@ -51,7 +57,17 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
         
         Table table = platform.getTableFromCache(data.getCatalogName(), data.getSchemaName(),
                 data.getTableName(), false);
-        if (table != null) {
+        if (table == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Could not find the target table {}" , data.getFullyQualifiedTableName());
+            }
+            throw new IgnoreColumnException();
+        } else if (table.getColumnWithName(column.getTargetColumnName()) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Could not find the target column {}" , column.getTargetColumnName());
+            }
+            throw new IgnoreColumnException();
+        } else {
             if (!StringUtils.isNotBlank(newValue)) {
                 newValue="0.00";
             }
@@ -73,29 +89,35 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                     newValue));
 
             String[] keyNames = data.getKeyNames();
-            Column[] columns = new Column[keyNames.length];
+            List<Column> columns = new ArrayList<Column>();
+            List<String> keyNamesList = new ArrayList<String>();
+            boolean addedFirstKey = false;
             for (int i = 0; i < keyNames.length; i++) {
-                if (i > 0) {
-                    sql.append("and ");
+                Column targetCol = table.getColumnWithName(keyNames[i]);
+                if (targetCol != null) {
+                    columns.add(targetCol);
+                    keyNamesList.add(keyNames[i]);
+                    if (addedFirstKey) {
+                        sql.append("and ");
+                    } else {
+                        addedFirstKey = true;
+                    }
+                    sql.append(quote);
+                    sql.append(keyNames[i]);
+                    sql.append(quote);
+                    sql.append("=? ");
                 }
-                columns[i] = table.getColumnWithName(keyNames[i]);
-                if (columns[i] == null) {
-                    throw new NullPointerException("Could not find a column named: " + keyNames[i] + " on the target table: " + table.getName());
-                }
-                sql.append(quote);
-                sql.append(keyNames[i]);
-                sql.append(quote);
-                sql.append("=? ");
             }
 
             if (0 < platform.getSqlTemplate().update(
                     sql.toString(),
                     platform.getObjectValues(context.getBatch().getBinaryEncoding(),
-                            data.getKeyValues(), columns))) {
+                            keyNamesList.toArray(new String[keyNamesList.size()]),
+                            columns.toArray(new Column[columns.size()])))) {
                 throw new IgnoreColumnException();
             }
 
-        }
+        } 
         
         return newValue;
     }
