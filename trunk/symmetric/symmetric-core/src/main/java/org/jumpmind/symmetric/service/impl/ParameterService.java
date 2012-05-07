@@ -62,7 +62,7 @@ public class ParameterService implements IParameterService {
 
     private Properties systemProperties;
 
-    private boolean initialized = false;
+    private boolean databaseHashBeenInitialized = false;
 
     private String tablePrefix;
 
@@ -208,11 +208,10 @@ public class ParameterService implements IParameterService {
             properties.putAll(rereadDatabaseParameters(
                     p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            initialized = true;
+            databaseHashBeenInitialized = true;
             return properties;
         } catch (SqlException ex) {
-            if (initialized) {
-                log.warn("Could not read database parameters.  We will try again later");
+            if (databaseHashBeenInitialized) {
                 throw ex;
             } else {
                 return new TypedProperties();
@@ -241,10 +240,14 @@ public class ParameterService implements IParameterService {
     private TypedProperties getParameters() {
         if (parameters == null
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < (System
-                        .currentTimeMillis() - cacheTimeoutInMs))) {            
-            parameters = rereadApplicationParameters();
-            lastTimeParameterWereCached = System.currentTimeMillis();
-            cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
+                        .currentTimeMillis() - cacheTimeoutInMs))) {
+            try {
+                parameters = rereadApplicationParameters();
+                lastTimeParameterWereCached = System.currentTimeMillis();
+                cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
+            } catch (SqlException ex) {
+                log.error("Could not read database parameters.  We will try again later");
+            }
         }
         return parameters;
     }

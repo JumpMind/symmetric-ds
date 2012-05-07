@@ -347,7 +347,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             List<NodeChannel> channels = getNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
-                    log.info("Auto-configuring {} channel.", defaultChannel.getChannelId());
+                    log.info("Auto-configuring {} channel", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
                     log.debug("No need to create channel {}.  It already exists", defaultChannel.getChannelId());
