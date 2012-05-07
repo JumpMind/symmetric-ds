@@ -330,5 +330,9 @@ public class ParameterService implements IParameterService {
     public String getEngineName() {
         return getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
     }
+    
+    public void setDatabaseHashBeenInitialized(boolean databaseHashBeenInitialized) {
+        this.databaseHashBeenInitialized = databaseHashBeenInitialized;
+    }
 
 }

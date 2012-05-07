@@ -20,6 +20,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +77,7 @@ abstract public class TestSetupUtil {
             
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT),
                     platform.getSqlTemplate(), false).execute(true);
+            ((ParameterService)engine.getParameterService()).setDatabaseHashBeenInitialized(false);
 
             fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
             url = getResource(fileName);

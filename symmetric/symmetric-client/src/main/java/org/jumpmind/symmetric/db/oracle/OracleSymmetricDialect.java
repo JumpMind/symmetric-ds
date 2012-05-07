@@ -204,7 +204,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         if (!trigger.isUseCaptureLobs()) {
-            return "var_row_data != var_old_data";
+            return "var_old_data is null or var_row_data != var_old_data";
         } else {
             return "dbms_lob.compare(nvl(var_row_data,'Null'),nvl(var_old_data,'Null')) != 0 ";
         }
