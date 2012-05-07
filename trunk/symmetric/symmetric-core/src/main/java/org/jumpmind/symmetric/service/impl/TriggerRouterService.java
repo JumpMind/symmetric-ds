@@ -267,6 +267,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnUpdate(syncChanges);
         trigger.setSyncOnIncomingBatch(true);
         trigger.setSourceTableName(tableName);
+        trigger.setUseCaptureOldData(false);
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
@@ -701,6 +702,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                         trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                         trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
+                        trigger.isUseCaptureOldData() ? 1 : 0,
                         trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                         trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                         trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
@@ -708,7 +710,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
                         trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
@@ -721,6 +723,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.isSyncOnDelete() ? 1 : 0,
                             trigger.isSyncOnIncomingBatch() ? 1 : 0,
                             trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
+                            trigger.isUseCaptureOldData() ? 1 : 0,
                             trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                             trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
@@ -730,6 +733,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                            Types.SMALLINT,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
@@ -1226,6 +1230,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
             trigger.setUseStreamLobs(rs.getBoolean("use_stream_lobs"));
             trigger.setUseCaptureLobs(rs.getBoolean("use_capture_lobs"));
+            trigger.setUseCaptureOldData(rs.getBoolean("use_capture_old_data"));
             trigger.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trigger.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trigger.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));

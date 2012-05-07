@@ -332,9 +332,9 @@ abstract public class AbstractTriggerTemplate {
                         "virtualOldNewTable",
                         buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, table.getColumns()), ddl);
         ddl = FormatUtils.replace(
-                "oldColumns",
+                "oldColumns", trigger.isUseCaptureOldData() ?
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
-                        dml, true, channel, trigger).toString(), ddl);
+                        dml, true, channel, trigger).toString() : "null", ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
