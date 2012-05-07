@@ -70,6 +70,8 @@ public class Trigger implements Serializable {
     private boolean useStreamLobs = false;
     
     private boolean useCaptureLobs = false;
+    
+    private boolean useCaptureOldData = true;
 
     private String nameForInsertTrigger;
 
@@ -393,6 +395,14 @@ public class Trigger implements Serializable {
         return useCaptureLobs;
     }
     
+    public void setUseCaptureOldData(boolean useCaptureOldData) {
+        this.useCaptureOldData = useCaptureOldData;
+    }
+    
+    public boolean isUseCaptureOldData() {
+        return useCaptureOldData;
+    }
+    
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
@@ -417,6 +427,7 @@ public class Trigger implements Serializable {
         hashedValue += syncOnIncomingBatch ? "syncOnIncomingBatch".hashCode() : 0;
         hashedValue += useStreamLobs ? "useStreamLobs".hashCode() : 0;
         hashedValue += useCaptureLobs ? "useCaptureLobs".hashCode() : 0;
+        hashedValue += useCaptureOldData ? "useCaptureOldData".hashCode() : 0;
 
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();
