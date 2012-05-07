@@ -49,6 +49,7 @@ Documentation
 * auto.upgrade is no longer supported
 * datareload.batch.insert.transactional is no longer available
 * routing.data.reader.type is no longer available.  data_ref has been removed
+* changed job.purge.max.num.data.events.to.delete.in.tx to job.purge.max.num.data.event.batches.to.delete.in.tx
 * web.base.servlet.path is no longer needed.
 * The following parameters have been removed in favor of conflict resolution
   * dataloader.allow.missing.delete
