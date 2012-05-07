@@ -173,6 +173,6 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
-        return "var_row_data != var_old_data";
+        return "var_old_data is null or var_row_data != var_old_data";
     }
 }

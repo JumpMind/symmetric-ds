@@ -9,8 +9,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DatabasePlatformTest extends AbstractDbTest {
@@ -23,12 +21,12 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
     protected Level originalLevel;
 
-    @BeforeClass
+    //@BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
     }
 
-    @Before
+    //@Before
     public void turnOnDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         originalLevel = logger.getLevel();

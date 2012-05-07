@@ -117,7 +117,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
-        return "var_row_data != var_old_data";
+        return "var_old_data is null or var_row_data != var_old_data";
     }
 
 }
