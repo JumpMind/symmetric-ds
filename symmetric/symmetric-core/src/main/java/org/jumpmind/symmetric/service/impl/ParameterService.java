@@ -33,6 +33,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -55,14 +56,14 @@ public class ParameterService implements IParameterService {
 
     private long cacheTimeoutInMs = 0;
 
-    private Date lastTimeParameterWereCached;
+    private long lastTimeParameterWereCached;
 
     private IParameterFilter parameterFilter;
 
     private Properties systemProperties;
 
     private boolean initialized = false;
-    
+
     private String tablePrefix;
 
     private ITypedPropertiesFactory factory;
@@ -76,11 +77,11 @@ public class ParameterService implements IParameterService {
         this.systemProperties = (Properties) System.getProperties().clone();
         this.tablePrefix = tablePrefix;
         this.factory = factory;
-        this.sql = new ParameterServiceSqlMap(null,
-                AbstractService.createSqlReplacementTokens(tablePrefix, platform.getDatabaseInfo().getDelimiterToken()));
+        this.sql = new ParameterServiceSqlMap(null, AbstractService.createSqlReplacementTokens(
+                tablePrefix, platform.getDatabaseInfo().getDelimiterToken()));
         this.sqlTemplate = platform.getSqlTemplate();
 
-    }       
+    }
 
     public BigDecimal getDecimal(String key, BigDecimal defaultVal) {
         String val = getString(key);
@@ -153,10 +154,9 @@ public class ParameterService implements IParameterService {
 
         return StringUtils.isBlank(value) ? defaultVal : value;
     }
-    
+
     public String getTempDirectory() {
-        return getString("java.io.tmpdir",
-                System.getProperty("java.io.tmpdir"));
+        return getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
     }
 
     /**
@@ -170,8 +170,8 @@ public class ParameterService implements IParameterService {
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] {
-                paramValue, externalId, nodeGroupId, key });
+        int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue,
+                externalId, nodeGroupId, key });
 
         if (count == 0) {
             sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
@@ -195,7 +195,7 @@ public class ParameterService implements IParameterService {
     }
 
     public synchronized void rereadParameters() {
-        this.parameters = null;
+        lastTimeParameterWereCached = 0;
         getParameters();
     }
 
@@ -208,12 +208,15 @@ public class ParameterService implements IParameterService {
             properties.putAll(rereadDatabaseParameters(
                     p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
+            initialized = true;
             return properties;
-        } catch (Exception ex) {
+        } catch (SqlException ex) {
             if (initialized) {
                 log.warn("Could not read database parameters.  We will try again later");
+                throw ex;
+            } else {
+                return new TypedProperties();
             }
-            return new TypedProperties();
         }
     }
 
@@ -232,17 +235,15 @@ public class ParameterService implements IParameterService {
         TypedProperties p = this.factory.reload();
         p.putAll(systemProperties);
         p.putAll(rereadDatabaseParameters(p));
-        initialized = true;
         return p;
     }
 
     private TypedProperties getParameters() {
         if (parameters == null
-                || lastTimeParameterWereCached == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
-                        .currentTimeMillis() - cacheTimeoutInMs))) {
-            lastTimeParameterWereCached = new Date();
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < (System
+                        .currentTimeMillis() - cacheTimeoutInMs))) {            
             parameters = rereadApplicationParameters();
+            lastTimeParameterWereCached = System.currentTimeMillis();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
         }
         return parameters;
@@ -253,7 +254,7 @@ public class ParameterService implements IParameterService {
     }
 
     public Date getLastTimeParameterWereCached() {
-        return lastTimeParameterWereCached;
+        return new Date(lastTimeParameterWereCached);
     }
 
     public void setParameterFilter(IParameterFilter parameterFilter) {
@@ -310,7 +311,7 @@ public class ParameterService implements IParameterService {
         replacementValues.put("externalId", getExternalId());
         replacementValues.put("nodeGroupId", getNodeGroupId());
         return replacementValues;
-    }    
+    }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
         public DatabaseParameter mapRow(Row row) {
@@ -322,7 +323,7 @@ public class ParameterService implements IParameterService {
     public String getTablePrefix() {
         return this.tablePrefix;
     }
-    
+
     public String getEngineName() {
         return getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
     }
