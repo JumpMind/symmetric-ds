@@ -118,10 +118,10 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("updateTriggerSql",
                 ""
-                        + "update $(trigger)                                                                                                         "
-                        + "  set source_catalog_name=?,source_schema_name=?,source_table_name=?,                                                           "
-                        + "  channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                              "
-                        + "  sync_on_incoming_batch=?,use_stream_lobs=?,use_capture_lobs=?,use_capture_old_data,name_for_update_trigger=?,name_for_insert_trigger=?,            "
+                        + "update $(trigger)                                                                                                                                "
+                        + "  set source_catalog_name=?,source_schema_name=?,source_table_name=?,                                                                            "
+                        + "  channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                                               "
+                        + "  sync_on_incoming_batch=?,use_stream_lobs=?,use_capture_lobs=?,use_capture_old_data=?,name_for_update_trigger=?,name_for_insert_trigger=?,        "
                         + "  name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,                                              "
                         + "  sync_on_delete_condition=?,tx_id_expression=?,excluded_column_names=?,last_update_by=?,last_update_time=?,external_select=?   "
                         + "  where trigger_id=?                                                                                                            ");
