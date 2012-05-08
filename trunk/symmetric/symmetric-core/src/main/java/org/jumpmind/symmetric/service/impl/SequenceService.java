@@ -30,7 +30,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
         try {
             create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1,
-                    Long.MAX_VALUE, "system", false));
+                    9999999999l, "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
                     TableConstants.SYM_OUTGOING_BATCH);
