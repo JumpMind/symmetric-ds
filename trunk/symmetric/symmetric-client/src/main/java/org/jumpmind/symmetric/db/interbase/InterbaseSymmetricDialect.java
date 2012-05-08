@@ -109,8 +109,6 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     @Override
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case OUTGOING_BATCH:
-            return "SYM_OUTGOING_BATCH_BATCH_ID";
         case DATA:
             return "SYM_DATA_DATA_ID";
         case TRIGGER_HIST:

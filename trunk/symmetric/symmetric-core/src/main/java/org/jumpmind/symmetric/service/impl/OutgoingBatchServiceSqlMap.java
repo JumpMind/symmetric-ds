@@ -21,7 +21,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("insertOutgoingBatchSql" ,"" + 
 "insert into $(outgoing_batch)                                                                                                                " + 
 "  (batch_id, node_id, channel_id, status, load_flag, reload_event_count, other_event_count, last_update_hostname, last_update_time, create_time)   " + 
-"  values (null, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)                                                                         " );
+"  values (?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)                                                                         " );
 
         putSql("updateOutgoingBatchSql" ,"" + 
 "update $(outgoing_batch) set status=?, load_flag=?, error_flag=?,                                          " + 

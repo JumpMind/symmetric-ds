@@ -13,6 +13,20 @@ public class Sequence {
     private String lastUpdateBy;
     private Date lastUpdateTime;
     private boolean cycle;
+    
+    public Sequence() {
+    }
+
+    public Sequence(String sequenceName, long currentValue, int incrementBy, long minValue,
+            long maxValue, String lastUpdateBy, boolean cycle) {
+        this.sequenceName = sequenceName;
+        this.currentValue = currentValue;
+        this.incrementBy = incrementBy;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+        this.lastUpdateBy = lastUpdateBy;
+        this.cycle = cycle;
+    }
 
     public String getSequenceName() {
         return sequenceName;

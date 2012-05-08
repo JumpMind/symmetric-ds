@@ -109,8 +109,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
 
         Thread.sleep(1000);
 
-        getConfigurationService().autoConfigDatabase(true);
-
         service.syncTriggers();
 
         Assert.assertEquals(

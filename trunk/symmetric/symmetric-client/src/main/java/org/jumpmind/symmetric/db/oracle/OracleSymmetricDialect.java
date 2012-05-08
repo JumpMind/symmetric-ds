@@ -107,8 +107,6 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case OUTGOING_BATCH:
-            return "SEQ_SYM_OUTGOIN_BATCH_BATCH_ID";
         case DATA:
             return "SEQ_SYM_DATA_DATA_ID";
         case TRIGGER_HIST:

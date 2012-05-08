@@ -20,10 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.File;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,26 +27,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseIO;
-import org.jumpmind.db.model.Database;
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -328,20 +316,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return NodeGroupLinkAction.fromCode(code);
     }
 
-    public void autoConfigDatabase(boolean force) {
-        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            log.info("Initializing SymmetricDS database");
-            symmetricDialect.initTablesAndFunctions();
-            autoConfigChannels();
-            autoConfigRegistrationServer();
-            parameterService.rereadParameters();
-            log.info("Done initializing SymmetricDS database");
-        } else {
-            log.info("SymmetricDS is not configured to auto-create the database");
-        }
-    }
-
-    protected void autoConfigChannels() {
+    public void initDefaultChannels() {
         if (defaultChannels != null) {
             reloadChannels();
             List<NodeChannel> channels = getNodeChannels(false);
@@ -355,113 +330,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
             reloadChannels();
         }
-    }
-
-    protected void autoConfigRegistrationServer() {
-        Node node = nodeService.findIdentity();
-
-        if (node == null) {
-            buildTablesFromDdlUtilXmlIfProvided();
-            loadFromScriptIfProvided();
-        }
-
-        node = nodeService.findIdentity();
-
-        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
-                && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
-            log.info("Inserting rows for node, security, identity and group for registration server");
-            String nodeGroupId = parameterService.getNodeGroupId();
-            String nodeId = parameterService.getExternalId();
-            try {
-                nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
-            } catch (UniqueKeyException ex) {
-                log.warn("Not inserting node row for {} because it already exists", nodeId);
-            }
-            nodeService.insertNodeIdentity(nodeId);
-            node = nodeService.findIdentity();
-            node.setSyncUrl(parameterService.getSyncUrl());
-            node.setSyncEnabled(true);
-            node.setHeartbeatTime(new Date());
-            nodeService.updateNode(node);
-            nodeService.insertNodeGroup(node.getNodeGroupId(), null);
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
-            nodeSecurity.setInitialLoadTime(new Date());
-            nodeSecurity.setRegistrationTime(new Date());
-            nodeSecurity.setInitialLoadEnabled(false);
-            nodeSecurity.setRegistrationEnabled(false);
-            nodeService.updateNodeSecurity(nodeSecurity);
-        }
-    }
-
-    private boolean buildTablesFromDdlUtilXmlIfProvided() {
-        boolean loaded = false;
-        String xml = parameterService
-                .getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML);
-        if (!StringUtils.isBlank(xml)) {
-            File file = new File(xml);
-            URL fileUrl = null;
-            if (file.isFile()) {
-                try {
-                    fileUrl = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                fileUrl = getClass().getResource(xml);
-            }
-
-            if (fileUrl != null) {
-                try {
-                    log.info("Building database schema from: {}", xml);
-                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
-                            .openStream()));
-                    IDatabasePlatform platform = symmetricDialect.getPlatform();
-                    platform.createDatabase(database, true, true);
-                    loaded = true;
-                } catch (Exception e) {
-                    log.error(e.getMessage(),e);
-                }
-            }
-        }
-        return loaded;
-    }
-
-    /**
-     * Give the end user the option to provide a script that will load a
-     * registration server with an initial SymmetricDS setup.
-     * 
-     * Look first on the file system, then in the classpath for the SQL file.
-     * 
-     * @return true if the script was executed
-     */
-    private boolean loadFromScriptIfProvided() {
-        boolean loaded = false;
-        String sqlScript = parameterService
-                .getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT);
-        if (!StringUtils.isBlank(sqlScript)) {
-            File file = new File(sqlScript);
-            URL fileUrl = null;
-            if (file.isFile()) {
-                try {
-                    fileUrl = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                fileUrl = getClass().getResource(sqlScript);
-                if (fileUrl == null) {
-                    fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
-                }
-            }
-
-            if (fileUrl != null) {
-                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true,
-                        SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
-                                .getSqlScriptReplacementTokens()).execute();
-                loaded = true;
-            }
-        }
-        return loaded;
     }
 
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId,

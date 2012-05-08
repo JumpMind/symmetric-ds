@@ -59,7 +59,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                 createSqlReplacementTokens()));
     }
 
-    public void initLockTable() {
+    public void init() {
         initLockTable(ROUTE);
         initLockTable(PULL);
         initLockTable(PUSH);
