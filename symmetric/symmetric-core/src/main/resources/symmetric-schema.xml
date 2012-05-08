@@ -474,7 +474,7 @@
         <column name="current_value" type="BIGINT" required="true" default="0" description="The current value of the sequence."/>
         <column name="increment_by" type="INTEGER" required="true" default="1" description="Specify the interval between sequence numbers. This integer value can be any positive or negative integer, but it cannot be 0."/>
         <column name="min_value" type="BIGINT" required="true" default="1" description="Specify the minimum value of the sequence."/>                        
-        <column name="max_value" type="BIGINT" required="true" default="9223372036854775807" description="Specify the maximum value the sequence can generate."/>
+        <column name="max_value" type="BIGINT" required="true" default="9999999999" description="Specify the maximum value the sequence can generate."/>
         <column name="cycle" type="BOOLEANINT" size="1" default="0" description="Indicate whether the sequence should automatically cycle once a boundary is hit." />        
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
