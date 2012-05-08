@@ -135,7 +135,7 @@ public class Oracle8Builder extends SqlBuilder
     {
         print("CREATE SEQUENCE ");
         printIdentifier(getConstraintName("seq", table, column.getName(), null));
-        print(" CACHE 1000 ORDER ");
+        print(" CACHE 1000 ORDER");
         printEndOfStatement();
     }
 
