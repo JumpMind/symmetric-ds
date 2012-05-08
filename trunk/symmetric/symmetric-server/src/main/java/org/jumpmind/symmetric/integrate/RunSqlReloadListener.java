@@ -1,13 +1,14 @@
 package org.jumpmind.symmetric.integrate;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IDataService;
 
-public class RunSqlReloadListener implements IReloadListener {
+public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAware {
 
-    private IDataService dataService;
+    private ISymmetricEngine engine;
 
     private String sqlToRunAtTargetBeforeReload;
 
@@ -15,18 +16,14 @@ public class RunSqlReloadListener implements IReloadListener {
 
     public void afterReload(Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetAfterReload)) {
-            dataService.insertSqlEvent(node, sqlToRunAtTargetAfterReload, true);
+            engine.getDataService().insertSqlEvent(node, sqlToRunAtTargetAfterReload, true);
         }
     }
 
     public void beforeReload(Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetBeforeReload)) {
-            dataService.insertSqlEvent(node, sqlToRunAtTargetBeforeReload, true);
+            engine.getDataService().insertSqlEvent(node, sqlToRunAtTargetBeforeReload, true);
         }
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
     }
 
     public void setSqlToRunAtTargetAfterReload(String sqlToRunAfterReload) {
@@ -35,6 +32,10 @@ public class RunSqlReloadListener implements IReloadListener {
 
     public void setSqlToRunAtTargetBeforeReload(String sqlToRunBeforeReload) {
         this.sqlToRunAtTargetBeforeReload = sqlToRunBeforeReload;
+    }
+
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+       this.engine=engine;        
     }
 
 }
