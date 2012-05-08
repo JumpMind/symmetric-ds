@@ -26,6 +26,8 @@ drop table sym_registration_redirect;
 drop table sym_registration_request;
 drop table sym_conflict_setting;
 drop table sym_data;
+drop table sym_incoming_error;
+drop table sym_sequence;
 
 -- test tables for version backwards compatibility
 drop table sym_trigger_old;

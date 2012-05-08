@@ -420,7 +420,7 @@
         <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />        
     </table>
     
-    <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation ">
+    <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation.">
         <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
         <column name="include_on" type="CHAR" size="1" required="true" default="*" primaryKey="true" description="Indicates whether this mapping is included during an insert (I), update (U), delete (D) operation at the target based on the dml type at the source.  A value of * represents the fact that you want to map the column for all operations."/>
         <column name="target_column_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="Name of the target column." />
@@ -468,5 +468,17 @@
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />
     </table>
+    
+    <table name="sequence" description="A table that supports application level sequence numbering.">
+        <column name="sequence_name" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific sequence." />
+        <column name="current_value" type="BIGINT" required="true" default="0" description="The current value of the sequence."/>
+        <column name="increment_by" type="INTEGER" required="true" default="1" description="Specify the interval between sequence numbers. This integer value can be any positive or negative integer, but it cannot be 0."/>
+        <column name="min_value" type="BIGINT" required="true" default="1" description="Specify the minimum value of the sequence."/>                        
+        <column name="max_value" type="BIGINT" required="true" default="9223372036854775807" description="Specify the maximum value the sequence can generate."/>
+        <column name="cycle" type="BOOLEANINT" size="1" default="0" description="Indicate whether the sequence should automatically cycle once a boundary is hit." />        
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />        
+    </table>    
         
 </database>

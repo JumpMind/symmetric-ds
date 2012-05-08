@@ -27,6 +27,8 @@ abstract public class AbstractSqlMap implements ISqlMap {
         if (replacementTokens != null) {
             sql = FormatUtils.replaceTokens(sql, this.replacementTokens, true);
         }
+        
+        sql = sql.replaceAll("\\s+", " ");
 
         this.sql.put(key, this.platform != null ? this.platform.scrubSql(sql) : sql);
     }
