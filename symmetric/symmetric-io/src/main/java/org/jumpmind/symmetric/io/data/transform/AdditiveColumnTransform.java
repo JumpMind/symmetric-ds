@@ -69,10 +69,10 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
             throw new IgnoreColumnException();
         } else {
             if (!StringUtils.isNotBlank(newValue)) {
-                newValue="0.00";
+                newValue="0";
             }
             if (!StringUtils.isNotBlank(oldValue)) {
-                oldValue="0.00";
+                oldValue="0";
             }
             
             BigDecimal delta = new BigDecimal(newValue);
