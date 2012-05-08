@@ -27,7 +27,13 @@
 
     <category name="org.jumpmind">
         <priority value="INFO" />
-    </category>     
+    </category>
+    
+    <!-- To print out SQL 
+    <category name="org.jumpmind.db.sql">
+        <priority value="DEBUG" />
+    </category>    
+     -->         
 
     <!-- Disable the not found override properties file warnings to avoid confusion -->
     <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">

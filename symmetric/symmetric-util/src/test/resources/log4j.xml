@@ -8,11 +8,17 @@
             <param name="ConversionPattern" value="%d %-5p [%c{1}] [%t] %m%n" />
         </layout>
     </appender>
-
+    
     <category name="org.jumpmind">
         <priority value="INFO" />
     </category>
     
+    <!-- To print out SQL 
+    <category name="org.jumpmind.db.sql">
+        <priority value="DEBUG" />
+    </category>    
+     -->
+     
     <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver">
         <priority value="DEBUG" />
     </category>    
