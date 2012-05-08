@@ -1,18 +1,33 @@
 package org.jumpmind.db.sql;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class AbstractSqlTemplate implements ISqlTemplate {
+
+    protected final static Logger log = LoggerFactory.getLogger(AbstractSqlTemplate.class
+            .getPackage().getName());
 
     protected boolean dateOverrideToTimestamp;
 
     protected String identifierQuoteString;
+
+    protected void logSql(String sql, Object[] args) {
+        if (log.isDebugEnabled()) {
+            log.debug(sql);
+            if (args != null && args.length > 0) {
+                log.debug("sql args: {}", Arrays.toString(args));
+            }
+        }
+    }
 
     public <T> T queryForObject(String sql, ISqlRowMapper<T> mapper, Object... args) {
         List<T> list = query(sql, mapper, args);
@@ -22,18 +37,18 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             return null;
         }
     }
-    
-    public String queryForString(String sql, Object... args) {        
+
+    public String queryForString(String sql, Object... args) {
         return queryForObject(sql, String.class, args);
     }
-    
-    public int queryForInt(String sql, Map<String,Object> params) {
+
+    public int queryForInt(String sql, Map<String, Object> params) {
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
         String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, params);
-        Object[] args = NamedParameterUtils.buildValueArray(parsedSql, params);        
+        Object[] args = NamedParameterUtils.buildValueArray(parsedSql, params);
         return queryForInt(newSql, args);
     }
-    
+
     public int queryForInt(String sql, Object... args) {
         Integer number = queryForObject(sql, Integer.class, args);
         if (number != null) {
@@ -51,9 +66,9 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             return 0l;
         }
     }
-    
-    public Map<String, Object> queryForMap(String sql, final String keyColumn, final String valueColumn,
-            Object... args) {
+
+    public Map<String, Object> queryForMap(String sql, final String keyColumn,
+            final String valueColumn, Object... args) {
         final Map<String, Object> map = new HashMap<String, Object>();
         query(sql, new ISqlRowMapper<Object>() {
             public Object mapRow(Row rs) {
@@ -63,7 +78,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         }, args);
         return map;
     }
-    
+
     public <T> Map<String, T> queryForMap(final String sql, final ISqlRowMapper<T> mapper,
             final String keyColumn, Object... args) {
         final Map<String, T> result = new HashMap<String, T>();
@@ -100,24 +115,24 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         }
         return map;
     }
-    
+
     public <T> List<T> query(String sql, int maxRowsToFetch, ISqlRowMapper<T> mapper,
-            Object... params) {     
+            Object... params) {
         return query(sql, maxRowsToFetch, mapper, params, null);
     }
-    
+
     public <T> List<T> query(String sql, int maxRowsToFetch, ISqlRowMapper<T> mapper,
             Map<String, Object> namedParams) {
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
         String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
-        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);        
+        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);
         return query(newSql, maxRowsToFetch, mapper, params, null);
     }
-    
+
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
         String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
-        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);        
+        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);
         return query(newSql, mapper, params, null);
     }
 
@@ -128,7 +143,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             }
         }, args, types);
     }
-    
+
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
         return query(sql, -1, mapper, args, types);
     }
@@ -267,6 +282,5 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             return new SqlException(message, ex);
         }
     }
-
 
 }

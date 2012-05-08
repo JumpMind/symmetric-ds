@@ -77,11 +77,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
-            Object[] values, int[] types) {
-        return new JdbcSqlReadCursor<T>(this, mapper, sql, values, types);
+            Object[] args, int[] types) {
+        logSql(sql, args);
+        return new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
     }
 
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
+        logSql(sql, args);
         return execute(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {
                 T result = null;
@@ -105,6 +107,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public byte[] queryForBlob(final String sql, final Object... args) {
+        logSql(sql, args);
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
                 byte[] result = null;
@@ -128,6 +131,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public String queryForClob(final String sql, final Object... args) {
+        logSql(sql, args);
         return execute(new IConnectionCallback<String>() {
             public String execute(Connection con) throws SQLException {
                 String result = null;
@@ -151,6 +155,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
+        logSql(sql, args);
         return execute(new IConnectionCallback<Map<String, Object>>() {
             public Map<String, Object> execute(Connection con) throws SQLException {
                 Map<String, Object> result = null;
@@ -213,10 +218,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return new JdbcSqlTransaction(this);
     }
 
-    public int update(final String sql, final Object[] values, final int[] types) {
+    public int update(final String sql, final Object[] args, final int[] types) {
+        logSql(sql, args);
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
-                if (values == null) {
+                if (args == null) {
                     Statement stmt = null;
                     try {
                         stmt = con.createStatement();
@@ -230,9 +236,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
-                            JdbcUtils.setValues(ps, values, types, getLobHandler());
+                            JdbcUtils.setValues(ps, args, types, getLobHandler());
                         } else {
-                            JdbcUtils.setValues(ps, values);
+                            JdbcUtils.setValues(ps, args);
                         }
                         return ps.executeUpdate();
                     } finally {
@@ -259,6 +265,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     stmt = con.createStatement();
                     int statementCount = 0;
                     for (String statement : sql) {
+                        logSql(statement, null);
                         try {
                             boolean hasResults = stmt.execute(statement);
                             updateCount += stmt.getUpdateCount();
