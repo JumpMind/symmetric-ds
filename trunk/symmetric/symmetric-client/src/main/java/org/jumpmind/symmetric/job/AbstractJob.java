@@ -64,10 +64,6 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     private boolean started;
 
-    private long timeBetweenRunsInMs = -1;
-
-    private String cronExpression;
-
     private boolean hasNotRegisteredMessageBeenLogged = false;
 
     private ThreadPoolTaskScheduler taskScheduler;
@@ -87,9 +83,6 @@ abstract public class AbstractJob implements Runnable, IJob {
         this.jobName = jobName;
         this.requiresRegistration = requiresRegistration;
         this.autoStartConfigured = autoStartRequired;
-        this.cronExpression = engine.getParameterService().getString(jobName + ".cron", null);
-        this.timeBetweenRunsInMs = engine.getParameterService().getInt(jobName + ".period.time.ms",
-                -1);
         IParameterService parameterService = engine.getParameterService();
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
                 parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
@@ -101,17 +94,19 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     public void start() {
         if (this.scheduledJob == null) {
-            log.info("Starting {}", jobName);
+            String cronExpression = engine.getParameterService().getString(jobName + ".cron", null);
+            int timeBetweenRunsInMs = engine.getParameterService().getInt(
+                    jobName + ".period.time.ms", -1);
             if (!StringUtils.isBlank(cronExpression)) {
+                log.info("Starting {} with cron expression: {}", jobName, cronExpression);
                 this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
                 started = true;
             } else {
-
                 int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
-                if (this.timeBetweenRunsInMs > 0) {
+                log.info("Starting {} on periodic schedule: every {}ms", jobName, timeBetweenRunsInMs);
+                if (timeBetweenRunsInMs > 0) {
                     this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
-                            new Date(System.currentTimeMillis() + startDelay),
-                            this.timeBetweenRunsInMs);
+                            new Date(System.currentTimeMillis() + startDelay), timeBetweenRunsInMs);
                     started = true;
                 } else {
                     log.error("Failed to schedule this job, {}", jobName);
@@ -275,22 +270,14 @@ abstract public class AbstractJob implements Runnable, IJob {
         }
     }
 
-    public void setCronExpression(String cronExpression) {
-        this.cronExpression = cronExpression;
-    }
-
     @ManagedAttribute(description = "If set, this is the cron expression that governs when the job will run")
     public String getCronExpression() {
-        return cronExpression;
-    }
-
-    public void setTimeBetweenRunsInMs(long timeBetweenRunsInMs) {
-        this.timeBetweenRunsInMs = timeBetweenRunsInMs;
+        return engine.getParameterService().getString(jobName + ".cron", null);
     }
 
     @ManagedAttribute(description = "If the cron expression isn't set.  This is the amount of time that will pass before the periodic job runs again.")
     public long getTimeBetweenRunsInMs() {
-        return timeBetweenRunsInMs;
+        return engine.getParameterService().getInt(jobName + ".period.time.ms", -1);
     }
 
 }

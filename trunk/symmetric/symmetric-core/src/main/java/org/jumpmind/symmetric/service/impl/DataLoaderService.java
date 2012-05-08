@@ -41,9 +41,9 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -83,9 +83,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -130,23 +128,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private long lastConflictCacheResetTimeInMs = 0;
 
-    public DataLoaderService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
-            IConfigurationService configurationService, ITransportManager transportManager,
-            IStatisticManager statisticManager, INodeService nodeService,
-            ITransformService transformService, ITriggerRouterService triggerRouterService,
-            IStagingManager stagingManager) {
-        super(parameterService, symmetricDialect);
-        this.incomingBatchService = incomingBatchService;
-        this.configurationService = configurationService;
-        this.transportManager = transportManager;
-        this.statisticManager = statisticManager;
-        this.nodeService = nodeService;
-        this.transformService = transformService;
-        this.stagingManager = stagingManager;
+    public DataLoaderService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.incomingBatchService = engine.getIncomingBatchService();
+        this.configurationService = engine.getConfigurationService();
+        this.transportManager = engine.getTransportManager();
+        this.statisticManager = engine.getStatisticManager();
+        this.nodeService = engine.getNodeService();
+        this.transformService = engine.getTransformService();
+        this.stagingManager = engine.getStagingManager();
         this.filters = new ArrayList<IDatabaseWriterFilter>();
-        this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
-                triggerRouterService, transformService));
+        this.filters.add(new ConfigurationChangedFilter(engine));
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
     }
