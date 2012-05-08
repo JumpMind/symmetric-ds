@@ -187,6 +187,8 @@ final public class ParameterConstants {
     
     public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
     
+    public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
