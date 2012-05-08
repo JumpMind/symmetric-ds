@@ -137,6 +137,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
         ddl.append("CREATE SEQUENCE ");
         printIdentifier(getConstraintName(PREFIX_SEQUENCE, table, column.getName(), null), ddl);
+        ddl.append(" CACHE 1000 ORDER ");
         printEndOfStatement(ddl);
     }
 
