@@ -26,17 +26,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITransformService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
 
@@ -48,36 +45,24 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    
+
     final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();    
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
 
-    protected IConfigurationService configurationService;
-
-    protected INodeService nodeService;
-
-    protected ITriggerRouterService triggerRouterService;
-
-    protected IParameterService parameterService;
-
-    protected ITransformService transformService;
+    protected ISymmetricEngine engine;
 
     protected String tablePrefix;
 
     public ConfigurationChangedDataRouter() {
     }
 
-    public ConfigurationChangedDataRouter(IConfigurationService configurationService,
-            INodeService nodeService, ITriggerRouterService triggerRouterService,
-            IParameterService parameterService, ITransformService transformService) {
-        this.configurationService = configurationService;
-        this.nodeService = nodeService;
-        this.triggerRouterService = triggerRouterService;
-        this.parameterService = parameterService;
-        this.tablePrefix = parameterService.getTablePrefix();
-        this.transformService = transformService;
+    public ConfigurationChangedDataRouter(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
@@ -142,9 +127,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
             }
-            
+
             if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
+
+                if (dataMetaData.getData().getRowData().contains("job.")) {
+                    routingContext.getContextCache().put(CTX_KEY_RESTART_JOBMANAGER_NEEDED,
+                            Boolean.TRUE);
+                }
             }
 
             if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
@@ -157,7 +147,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     }
 
     protected Node findIdentity() {
-        return nodeService.findIdentity();
+        return engine.getNodeService().findIdentity();
     }
 
     @SuppressWarnings("unchecked")
@@ -165,7 +155,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         List<NodeGroupLink> list = (List<NodeGroupLink>) routingContext.getContextCache().get(
                 NodeGroupLink.class.getName());
         if (list == null) {
-            list = configurationService.getNodeGroupLinks();
+            list = engine.getConfigurationService().getNodeGroupLinks();
             routingContext.getContextCache().put(NodeGroupLink.class.getName(), list);
         }
         return list;
@@ -175,7 +165,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         NetworkedNode root = (NetworkedNode) routingContext.getContextCache().get(
                 NetworkedNode.class.getName());
         if (root == null) {
-            root = nodeService.getRootNetworkedNode();
+            root = engine.getNodeService().getRootNetworkedNode();
             routingContext.getContextCache().put(NetworkedNode.class.getName(), root);
         }
         return root;
@@ -240,25 +230,39 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
+
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data router");
-            configurationService.reloadChannels();
+            engine.getConfigurationService().reloadChannels();
         }
+
         if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers because new configuration came through the data router");
-            triggerRouterService.syncTriggers();
+            engine.getTriggerRouterService().syncTriggers();
         }
+
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             log.info("About to refresh the cache of transformation because new configuration came through the data router");
-            transformService.resetCache();
+            engine.getTransformService().resetCache();
         }
-        
+
+        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
+                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            IJobManager jobManager = engine.getJobManager();
+            if (jobManager != null) {
+                log.info("About to restart jobs because new configuration come through the data router");
+                jobManager.stopJobs();
+                jobManager.startJobs();
+            }
+
+        }
+
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             log.info("About to refresh the cache of parameters because new configuration came through the data router");
-            parameterService.rereadParameters();
+            engine.getParameterService().rereadParameters();
         }
     }
 

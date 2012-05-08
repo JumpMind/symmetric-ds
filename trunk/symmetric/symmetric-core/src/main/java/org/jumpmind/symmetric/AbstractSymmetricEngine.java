@@ -257,9 +257,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected IRouterService buildRouterService() {
-        return new RouterService(parameterService, symmetricDialect, clusterService, dataService,
-                configurationService, triggerRouterService, outgoingBatchService, nodeService,
-                statisticManager, transformService);
+        return new RouterService(this);
     }
 
     protected static ISecurityService createSecurityService(TypedProperties properties) {
