@@ -12,4 +12,6 @@ public interface ISequenceService {
 
     public Sequence get(String name);
     
+    public void init();
+    
 }

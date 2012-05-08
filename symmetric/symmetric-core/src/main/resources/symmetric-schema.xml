@@ -321,8 +321,8 @@
     </table>
     
     <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
-        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="A unique id for the batch." />
-        <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
+        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
+        <column name="node_id" type="VARCHAR" size="50" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be currently routing (RE), newly created and ready for replication (NE), being queried from the database (QE), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK) or error (ER)." />
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />               

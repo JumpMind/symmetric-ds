@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.Lock;
  */
 public interface IClusterService {
 
-    public void initLockTable();
+    public void init();
     
     public void initLockTable(final String action);
 

@@ -86,7 +86,7 @@ public interface IConfigurationService {
 
     public void reloadChannels();
     
-    public void autoConfigDatabase(boolean force);
+    public void initDefaultChannels();
 
     /**
      * Returns two sets of channel names, one for suspended channels and one for

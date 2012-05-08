@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -22,16 +23,30 @@ public class SequenceService extends AbstractService implements ISequenceService
                 createSqlReplacementTokens()));
     }
 
+    public void init() {
+        long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
+        if (maxBatchId < 1) {
+            maxBatchId = 1;
+        }
+        try {
+            create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1,
+                    Long.MAX_VALUE, "system", false));
+        } catch (UniqueKeyException ex) {
+            log.debug("Failed to create sequence {}.  Must be initialized already.",
+                    TableConstants.SYM_OUTGOING_BATCH);
+        }
+    }
+
     public long nextVal(String name) {
         long sequenceTimeoutInMs = parameterService.getLong(ParameterConstants.SEQUENCE_TIMEOUT_MS,
                 5000);
         long ts = System.currentTimeMillis();
-        while (System.currentTimeMillis() - sequenceTimeoutInMs > ts) {
+        do {
             long nextVal = tryToGetNextVal(name);
             if (nextVal > 0) {
                 return nextVal;
             }
-        }
+        }  while (System.currentTimeMillis() - sequenceTimeoutInMs < ts);
 
         throw new IllegalStateException(String.format(
                 "Timed out after %d ms trying to get the next val for %s",

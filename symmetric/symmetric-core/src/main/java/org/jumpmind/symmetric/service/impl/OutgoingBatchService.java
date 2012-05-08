@@ -35,8 +35,8 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
@@ -59,13 +60,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
+    
+    private ISequenceService sequenceService;
 
     public OutgoingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IConfigurationService configurationService) {
+            IConfigurationService configurationService, ISequenceService sequenceService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
+        this.sequenceService = sequenceService;
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -138,13 +142,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        long batchId = transaction.insertWithGeneratedKey(getSql("insertOutgoingBatchSql"),
-                symmetricDialect.getSequenceKeyName(SequenceIdentifier.OUTGOING_BATCH),
-                symmetricDialect.getSequenceName(SequenceIdentifier.OUTGOING_BATCH), outgoingBatch
-                        .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus()
-                        .name(), outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
-                        .getReloadEventCount(), outgoingBatch.getOtherEventCount(), outgoingBatch
-                        .getLastUpdatedHostName());
+        long batchId = sequenceService.nextVal(TableConstants.SYM_OUTGOING_BATCH);
+        transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
+                .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
+                outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(),
+                outgoingBatch.getOtherEventCount(), outgoingBatch.getLastUpdatedHostName());
         outgoingBatch.setBatchId(batchId);
     }
 

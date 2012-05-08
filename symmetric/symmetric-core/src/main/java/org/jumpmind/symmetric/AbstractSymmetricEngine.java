@@ -1,5 +1,9 @@
 package org.jumpmind.symmetric;
 
+import java.io.File;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,9 +12,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -23,6 +31,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -42,6 +51,7 @@ import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -62,6 +72,7 @@ import org.jumpmind.symmetric.service.impl.PushService;
 import org.jumpmind.symmetric.service.impl.RegistrationService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.service.impl.SecurityService;
+import org.jumpmind.symmetric.service.impl.SequenceService;
 import org.jumpmind.symmetric.service.impl.StatisticService;
 import org.jumpmind.symmetric.service.impl.TransformService;
 import org.jumpmind.symmetric.service.impl.TriggerRouterService;
@@ -143,6 +154,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IPullService pullService;
 
     protected IJobManager jobManager;
+    
+    protected ISequenceService sequenceService;
 
     protected IExtensionPointManager extensionPointManger;
 
@@ -192,7 +205,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
-                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
+                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));                
 
         MDC.put("engineName", this.parameterService.getEngineName());
 
@@ -203,6 +216,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         this.bandwidthService = new BandwidthService(parameterService);
         this.symmetricDialect = createSymmetricDialect();
+        this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
         this.nodeService = new NodeService(parameterService, symmetricDialect);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
@@ -219,7 +233,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
-                nodeService, configurationService);
+                nodeService, configurationService, sequenceService);
         this.dataService = new DataService(parameterService, symmetricDialect, deploymentType,
                 triggerRouterService, nodeService, purgeService, configurationService,
                 outgoingBatchService, statisticManager);
@@ -301,9 +315,128 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void setupDatabase(boolean force) {
-        configurationService.autoConfigDatabase(force);
-        clusterService.initLockTable();
+        log.info("Initializing SymmetricDS database");
+        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
+            symmetricDialect.initTablesAndFunctions();
+        } else {
+            log.info("SymmetricDS is not configured to auto-create the database");
+        }
+        configurationService.initDefaultChannels();
+        clusterService.init();
+        sequenceService.init();
+        autoConfigRegistrationServer();
+        parameterService.rereadParameters();
+        log.info("Done initializing SymmetricDS database");
     }
+    
+    protected void autoConfigRegistrationServer() {
+        Node node = nodeService.findIdentity();
+
+        if (node == null) {
+            buildTablesFromDdlUtilXmlIfProvided();
+            loadFromScriptIfProvided();
+        }
+
+        node = nodeService.findIdentity();
+
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
+                && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
+            log.info("Inserting rows for node, security, identity and group for registration server");
+            String nodeGroupId = parameterService.getNodeGroupId();
+            String nodeId = parameterService.getExternalId();
+            try {
+                nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
+            } catch (UniqueKeyException ex) {
+                log.warn("Not inserting node row for {} because it already exists", nodeId);
+            }
+            nodeService.insertNodeIdentity(nodeId);
+            node = nodeService.findIdentity();
+            node.setSyncUrl(parameterService.getSyncUrl());
+            node.setSyncEnabled(true);
+            node.setHeartbeatTime(new Date());
+            nodeService.updateNode(node);
+            nodeService.insertNodeGroup(node.getNodeGroupId(), null);
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
+            nodeSecurity.setInitialLoadTime(new Date());
+            nodeSecurity.setRegistrationTime(new Date());
+            nodeSecurity.setInitialLoadEnabled(false);
+            nodeSecurity.setRegistrationEnabled(false);
+            nodeService.updateNodeSecurity(nodeSecurity);
+        }
+    }
+
+    protected boolean buildTablesFromDdlUtilXmlIfProvided() {
+        boolean loaded = false;
+        String xml = parameterService
+                .getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML);
+        if (!StringUtils.isBlank(xml)) {
+            File file = new File(xml);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(xml);
+            }
+
+            if (fileUrl != null) {
+                try {
+                    log.info("Building database schema from: {}", xml);
+                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
+                            .openStream()));
+                    IDatabasePlatform platform = symmetricDialect.getPlatform();
+                    platform.createDatabase(database, true, true);
+                    loaded = true;
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
+                }
+            }
+        }
+        return loaded;
+    }
+
+    /**
+     * Give the end user the option to provide a script that will load a
+     * registration server with an initial SymmetricDS setup.
+     * 
+     * Look first on the file system, then in the classpath for the SQL file.
+     * 
+     * @return true if the script was executed
+     */
+    protected boolean loadFromScriptIfProvided() {
+        boolean loaded = false;
+        String sqlScript = parameterService
+                .getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT);
+        if (!StringUtils.isBlank(sqlScript)) {
+            File file = new File(sqlScript);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(sqlScript);
+                if (fileUrl == null) {
+                    fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
+                }
+            }
+
+            if (fileUrl != null) {
+                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true,
+                        SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
+                                .getSqlScriptReplacementTokens()).execute();
+                loaded = true;
+            }
+        }
+        return loaded;
+    }
+
+    
 
     public synchronized boolean start() {
         return start(true);
@@ -625,6 +758,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IStagingManager getStagingManager() {
         return stagingManager;
+    }
+    
+    public ISequenceService getSequenceService() {
+        return sequenceService;
     }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
