@@ -56,8 +56,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     protected ISymmetricEngine engine;
 
-    protected String tablePrefix;
-
     public ConfigurationChangedDataRouter() {
     }
 
@@ -269,14 +267,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {
         boolean matches = false;
         if (dataMetaData.getTable().getName()
-                .equalsIgnoreCase(TableConstants.getTableName(tablePrefix, tableName))) {
+                .equalsIgnoreCase(TableConstants.getTableName(engine != null ? engine.getTablePrefix() : "sym", tableName))) {
             matches = true;
         }
         return matches;
-    }
-
-    public void setTablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
     }
 
 }
