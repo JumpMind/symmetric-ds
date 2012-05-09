@@ -78,6 +78,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
+    private Map<String, Boolean> defaultRouterOnlyLastState = new HashMap<String, Boolean>();
+
     transient ExecutorService readThread = null;
 
     private ISymmetricEngine engine;
@@ -197,9 +199,16 @@ public class RouterService extends AbstractService implements IRouterService {
         Node sourceNode = engine.getNodeService().findIdentity();
         final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
         int dataCount = 0;
+        Map<String, List<TriggerRouter>> triggerRouters = engine.getTriggerRouterService()
+                .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
+
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
-                dataCount += routeDataForChannel(nodeChannel, sourceNode);
+                dataCount += routeDataForChannel(
+                        nodeChannel,
+                        sourceNode,
+                        containsOnlyDefaultRouters(nodeChannel.getChannelId(),
+                                triggerRouters.get(nodeChannel.getChannelId())));
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Not routing the {} channel.  It is either disabled or suspended.",
@@ -210,13 +219,43 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode) {
+    protected boolean containsOnlyDefaultRouters(String channelId,
+            List<TriggerRouter> triggerRouters) {
+        Boolean onlyDefaults = true;
+        if (triggerRouters != null) {
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                IDataRouter router = routers.get(triggerRouter.getRouter().getRouterType());
+                if (router != null && !(router instanceof DefaultDataRouter)) {
+                    onlyDefaults = false;
+                }
+            }
+        }
+
+        if (!onlyDefaults.equals(defaultRouterOnlyLastState.get(channelId))) {
+            if (onlyDefaults) {
+                log.info(
+                        "The '{}' channel is in batch reuse mode",
+                        channelId);
+            } else {
+                log.info(
+                        "The '{}' channel is NOT in batch reuse mode",
+                        channelId);
+            }
+            defaultRouterOnlyLastState.put(channelId, onlyDefaults);
+        }
+        return onlyDefaults;
+    }
+
+    protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode,
+            boolean containsOnlyDefaultRouters) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
+
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
+            context.setDefaultRoutersOnly(containsOnlyDefaultRouters);
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
@@ -461,23 +500,37 @@ public class RouterService extends AbstractService implements IRouterService {
             nodeIds.add(Constants.UNROUTED_NODE_ID);
         }
         long ts = System.currentTimeMillis();
+        long batchIdToReuse = -1;
+        boolean dataEventAdded = false;
         for (String nodeId : nodeIds) {
-            Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
-            OutgoingBatch batch = batches.get(nodeId);
-            if (batch == null) {
-                batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(),
-                        Status.RT);
-                engine.getOutgoingBatchService().insertOutgoingBatch(batch);
-                context.getBatchesByNodes().put(nodeId, batch);
-            }
-            batch.incrementEventCount(dataMetaData.getData().getDataEventType());
-            batch.incrementDataEventCount();
-            numberOfDataEventsInserted++;
-            context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                    triggerRouter.getRouter().getRouterId());
-            if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
-                    batch, dataMetaData, context)) {
-                context.setNeedsCommitted(true);
+            if (nodeId != null) {
+                Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
+                OutgoingBatch batch = batches.get(nodeId);
+                if (batch == null) {
+                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(),
+                            Status.RT);
+                    batch.setBatchId(batchIdToReuse);
+                    engine.getOutgoingBatchService().insertOutgoingBatch(batch);
+                    context.getBatchesByNodes().put(nodeId, batch);
+
+                    // if in reuse mode, then share the batch id
+                    if (context.isDefaultRoutersOnly()) {
+                        batchIdToReuse = batch.getBatchId();
+                    }
+                }
+                batch.incrementEventCount(dataMetaData.getData().getDataEventType());
+                batch.incrementDataEventCount();
+                numberOfDataEventsInserted++;
+                if (!context.isDefaultRoutersOnly()
+                        || (context.isDefaultRoutersOnly() && !dataEventAdded)) {
+                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
+                            triggerRouter.getRouter().getRouterId());
+                    dataEventAdded = true;
+                }
+                if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
+                        batch, dataMetaData, context)) {
+                    context.setNeedsCommitted(true);
+                }
             }
         }
         context.incrementStat(System.currentTimeMillis() - ts,

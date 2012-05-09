@@ -54,7 +54,7 @@ public class OutgoingBatch implements Serializable {
         }
     }
 
-    private long batchId;
+    private long batchId = -1;
 
     private String nodeId;
 
