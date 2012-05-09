@@ -70,8 +70,6 @@ public class NodeService extends AbstractService implements INodeService {
 
     private NodeHost nodeHostForCurrentNode = null;
 
-    private long offlineNodeDetectionMinutes;
-
     private List<IOfflineServerListener> offlineServerListeners;
 
     public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
@@ -303,7 +301,7 @@ public class NodeService extends AbstractService implements INodeService {
                 && ((nodeSecurity.getNodePassword() != null
                         && !nodeSecurity.getNodePassword().equals("") && nodeSecurity
                         .getNodePassword().equals(password)) || nodeSecurity
-                        .isRegistrationEnabled())) {
+                            .isRegistrationEnabled())) {
             return true;
         }
         return false;
@@ -497,10 +495,12 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void checkForOfflineNodes() {
+        long offlineNodeDetectionMinutes = parameterService
+                .getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES);
         // Only check for offline nodes if there is a listener and the
         // offline detection period is a positive value. The default value
         // of -1 disables the feature.
-        if (offlineServerListeners != null && getOfflineNodeDetectionMinutes() > 0) {
+        if (offlineServerListeners != null && offlineNodeDetectionMinutes > 0) {
 
             List<Node> list = findOfflineNodes();
             if (list.size() > 0) {
@@ -510,7 +510,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public List<Node> findOfflineNodes() {
-        return findOfflineNodes(getOfflineNodeDetectionMinutes());
+        return findOfflineNodes(parameterService
+                .getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES));
     }
 
     public List<Node> findOfflineNodes(long minutesOffline) {
@@ -544,14 +545,6 @@ public class NodeService extends AbstractService implements INodeService {
         }
 
         return offlineNodeList;
-    }
-
-    public long getOfflineNodeDetectionMinutes() {
-        return offlineNodeDetectionMinutes;
-    }
-
-    public void setOfflineNodeDetectionMinutes(long offlineNodeDetectionMinutes) {
-        this.offlineNodeDetectionMinutes = offlineNodeDetectionMinutes;
     }
 
     public void setOfflineServerListeners(List<IOfflineServerListener> listeners) {
