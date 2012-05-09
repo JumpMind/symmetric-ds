@@ -158,17 +158,20 @@ public class TransformWriter implements IDataWriter {
             }
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
-            for (TransformTable transformation : activeTransforms) {                
-                transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues, oldSourceValues, sourceValues);
+            for (TransformTable transformation : activeTransforms) {
+                transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues,
+                        oldSourceValues, sourceValues);
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
                         sourceKeyValues, oldSourceValues, sourceValues));
             }
 
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
                 Table table = transformedData.buildTargetTable();
-                this.targetWriter.start(table);
-                this.targetWriter.write(transformedData.buildTargetCsvData());
-                this.targetWriter.end(table);
+                CsvData csvData = transformedData.buildTargetCsvData();
+                if (this.targetWriter.start(table) || !csvData.requiresTable()) {
+                    this.targetWriter.write(csvData);
+                    this.targetWriter.end(table);
+                }
             }
 
         } else {
