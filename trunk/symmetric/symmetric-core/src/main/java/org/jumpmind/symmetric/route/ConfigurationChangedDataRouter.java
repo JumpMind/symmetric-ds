@@ -248,7 +248,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             engine.getTransformService().resetCache();
         }
 
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
+        if (routingContext.getContextCache().get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null
                 && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             IJobManager jobManager = engine.getJobManager();
             if (jobManager != null) {
