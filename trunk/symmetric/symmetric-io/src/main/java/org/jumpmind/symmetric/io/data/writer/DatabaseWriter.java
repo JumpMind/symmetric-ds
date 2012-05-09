@@ -333,7 +333,7 @@ public class DatabaseWriter implements IDataWriter {
         String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
         String[] sourceColumnNames = sourceTable.getColumnNames();
         String[] targetColumnNames = targetTable.getColumnNames();
-        for (int i = 0, t = 0; i < sourceColumnNames.length; i++) {
+        for (int i = 0, t = 0; i < sourceColumnNames.length && t < targetColumnNames.length; i++) {
             if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
                 targetValues[t] = originalValues[i];
                 t++;
