@@ -182,7 +182,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
         Timestamp existingTs = writer.getTransaction().queryForObject(sql, Timestamp.class,
                 objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(table, CsvData.ROW_DATA);
+        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
         Timestamp loadingTs = Timestamp.valueOf(newData.get(columnName));
         return loadingTs.after(existingTs);
     }
@@ -197,7 +197,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
         Long existingVersion = writer.getTransaction()
                 .queryForObject(sql, Long.class, objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(table, CsvData.ROW_DATA);
+        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
         Long loadingVersion = Long.valueOf(newData.get(columnName));
         return loadingVersion > existingVersion;
     }

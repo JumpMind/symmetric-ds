@@ -205,7 +205,7 @@ public class CsvData {
     }
 
     public String[] getPkData(Table table, String key) {
-        Map<String, String> data = toColumnNameValuePairs(table, key);
+        Map<String, String> data = toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), key);
         String[] keyNames = table.getPrimaryKeyColumnNames();
         if (keyNames != null && data.size() > 0) {
             String[] keyValues = new String[keyNames.length];
@@ -218,9 +218,8 @@ public class CsvData {
         }
     }
 
-    public Map<String, String> toColumnNameValuePairs(Table table, String key) {
+    public Map<String, String> toColumnNameValuePairs(String[] keyNames, String key) {
         String[] values = getParsedData(key);
-        String[] keyNames = table.getColumnNames();
         if (values != null && keyNames != null && values.length >= keyNames.length) {
             Map<String, String> map = new LinkedCaseInsensitiveMap<String>(keyNames.length);
             for (int i = 0; i < keyNames.length; i++) {

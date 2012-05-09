@@ -662,9 +662,9 @@ public class DatabaseWriter implements IDataWriter {
             }
 
             Map<String, String> keyData = data
-                    .toColumnNameValuePairs(targetTable, CsvData.OLD_DATA);
+                    .toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.OLD_DATA);
             if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(targetTable, CsvData.ROW_DATA);
+                keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
             }
 
             if (keyData != null && keyData.size() > 0) {
