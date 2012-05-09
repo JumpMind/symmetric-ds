@@ -248,7 +248,6 @@ public class ConfigurationChangedDataRouterTest {
                 return root;
             }
         };
-        router.setTablePrefix("sym");
         return router;
     }
 }
