@@ -6,8 +6,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -67,6 +69,8 @@ public class DatabaseWriter implements IDataWriter {
 
     protected IDatabaseWriterConflictResolver conflictResolver;
 
+    protected Set<String> missingTables = new HashSet<String>();
+
     public DatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
     }
@@ -102,8 +106,11 @@ public class DatabaseWriter implements IDataWriter {
             this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
             return true;
         } else {
-            log.warn("Did not find the {} table in the target database",
-                    sourceTable.getFullyQualifiedTableName());
+            String qualifiedName = sourceTable.getFullyQualifiedTableName();
+            if (!missingTables.contains(qualifiedName)) {
+                log.warn("Did not find the {} table in the target database", qualifiedName);
+                missingTables.add(qualifiedName);
+            }
             return false;
         }
     }
@@ -549,7 +556,7 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean script(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String script =  data.getParsedData(CsvData.ROW_DATA)[0];
+            String script = data.getParsedData(CsvData.ROW_DATA)[0];
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("SOURCE_NODE_ID", batch.getNodeId());
             ISqlTemplate template = platform.getSqlTemplate();
@@ -583,7 +590,7 @@ public class DatabaseWriter implements IDataWriter {
         String xml = null;
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            xml =  data.getParsedData(CsvData.ROW_DATA)[0];
+            xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: ", xml);
             StringReader reader = new StringReader(xml);
             Database db = (Database) new DatabaseIO().read(reader, false);
