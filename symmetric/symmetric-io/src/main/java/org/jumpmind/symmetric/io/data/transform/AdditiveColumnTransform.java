@@ -90,13 +90,13 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
 
             String[] keyNames = data.getKeyNames();
             List<Column> columns = new ArrayList<Column>();
-            List<String> keyNamesList = new ArrayList<String>();
+            List<String> keyValuesList = new ArrayList<String>();
             boolean addedFirstKey = false;
             for (int i = 0; i < keyNames.length; i++) {
                 Column targetCol = table.getColumnWithName(keyNames[i]);
                 if (targetCol != null) {
                     columns.add(targetCol);
-                    keyNamesList.add(keyNames[i]);
+                    keyValuesList.add(sourceValues.get(keyNames[i]));
                     if (addedFirstKey) {
                         sql.append("and ");
                     } else {
@@ -109,11 +109,13 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                 }
             }
 
-            log.debug("SQL: "+sql);
+            if (log.isDebugEnabled()) {
+                log.debug("SQL: "+sql);
+            }
             if (0 < platform.getSqlTemplate().update(
                     sql.toString(),
                     platform.getObjectValues(context.getBatch().getBinaryEncoding(),
-                            keyNamesList.toArray(new String[keyNamesList.size()]),
+                            keyValuesList.toArray(new String[keyValuesList.size()]),
                             columns.toArray(new Column[columns.size()])))) {
                 throw new IgnoreColumnException();
             }

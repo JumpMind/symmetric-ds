@@ -131,15 +131,18 @@ public class TransformWriter implements IDataWriter {
     public void write(CsvData data) {
         DataEventType eventType = data.getDataEventType();
         if (activeTransforms != null && activeTransforms.size() > 0 && isTransformable(eventType)) {
-            Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable,
+            Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
-            Map<String, String> oldSourceValues = data.toColumnNameValuePairs(this.sourceTable,
+            Map<String, String> oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.OLD_DATA);
-            Map<String, String> sourceKeyValues = oldSourceValues.size() > 0 ? oldSourceValues
-                    : sourceValues;
-
-            if (data.contains(CsvData.PK_DATA) && oldSourceValues.size() == 0) {
-                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable, CsvData.PK_DATA);
+            Map<String, String> sourceKeyValues = null;
+            
+            if (data.contains(CsvData.PK_DATA)) {
+                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            } else if (oldSourceValues.size() > 0) {
+                sourceKeyValues = oldSourceValues;
+            } else {
+                sourceKeyValues = sourceValues;
             }
 
             if (eventType == DataEventType.DELETE) {
