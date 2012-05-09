@@ -47,11 +47,6 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_trigger_hist alter column trigger_hist_id restart with " + triggerHistId);
             log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_trigger_hist");
-            long outgoingBatchId = platform.getSqlTemplate().queryForLong("select max(batch_id) from "
-                    + parameterService.getTablePrefix() + "_outgoing_batch") + 1;
-            platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
-                    + "_outgoing_batch alter column batch_id restart with " + outgoingBatchId);
-            log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_outgoing_batch");
             long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix()
                     + "_data") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
