@@ -165,7 +165,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected boolean executeOptions(CommandLine line) throws Exception {
+    protected boolean executeWithOptions(CommandLine line) throws Exception {
         
         if (line.getArgs().length == 0) {
             System.out.println("Error: no subcommand was given.  Use '" + app + " help' for a list of subcommands.\n");

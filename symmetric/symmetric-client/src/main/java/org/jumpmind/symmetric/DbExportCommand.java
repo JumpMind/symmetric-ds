@@ -81,7 +81,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     }
     
     @Override
-    protected boolean executeOptions(CommandLine line) throws Exception {
+    protected boolean executeWithOptions(CommandLine line) throws Exception {
         DbExport dbExport = new DbExport(getDatabasePlatform());
 
         if (line.hasOption(OPTION_FORMAT)) {
