@@ -69,7 +69,7 @@ public class BshDataRouter extends AbstractDataRouter {
             log.error("Error in data router.  Routing to nobody.", e);
             return Collections.emptySet();
         }
-    }
+    }    
 
     protected Interpreter getInterpreter(SimpleRouterContext context) {
         Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
@@ -81,6 +81,7 @@ public class BshDataRouter extends AbstractDataRouter {
     }
 
     protected Set<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
+        targetNodes.remove(null);
         if (targetNodes.size() > 0) {
             return targetNodes;
         } else if (value instanceof Set<?>) {

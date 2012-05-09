@@ -60,6 +60,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long lastDataIdProcessed;
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
+    private boolean defaultRoutersOnly = false;
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -169,6 +170,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
     
     public ISqlTransaction getSqlTransaction() {
         return sqlTransaction;
+    }
+    
+    public void setDefaultRoutersOnly(boolean defaultRoutersOnly) {
+        this.defaultRoutersOnly = defaultRoutersOnly;
+    }
+    
+    public boolean isDefaultRoutersOnly() {
+        return defaultRoutersOnly;
     }
     
 }

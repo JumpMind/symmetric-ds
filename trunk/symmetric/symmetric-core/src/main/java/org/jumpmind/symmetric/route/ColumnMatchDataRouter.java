@@ -147,6 +147,10 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         } else {
             log.warn("There were no columns to match for the data_id of {}", dataMetaData.getData().getDataId());
         }
+        
+        if(nodeIds != null) {
+            nodeIds.remove(null);
+        }
 
         return nodeIds;
 

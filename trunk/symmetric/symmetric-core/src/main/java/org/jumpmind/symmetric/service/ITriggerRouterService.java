@@ -55,7 +55,7 @@ public interface ITriggerRouterService {
      */
     public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
     
-    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
+    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId);
 
     /**
      * Returns a map of trigger routers keyed by trigger id.
