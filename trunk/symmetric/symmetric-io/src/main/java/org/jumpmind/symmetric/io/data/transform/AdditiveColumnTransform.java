@@ -109,6 +109,7 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                 }
             }
 
+            log.debug("SQL: "+sql);
             if (0 < platform.getSqlTemplate().update(
                     sql.toString(),
                     platform.getObjectValues(context.getBatch().getBinaryEncoding(),
