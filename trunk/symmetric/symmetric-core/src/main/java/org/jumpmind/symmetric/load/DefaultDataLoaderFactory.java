@@ -16,8 +16,12 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultDataLoaderFactory implements IDataLoaderFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultDataLoaderFactory.class);
 
     private IParameterService parameterService;
 
@@ -54,6 +58,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
+        boolean multipleDefaultSettingsFound = false;
         if (conflictSettings != null) {
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
@@ -62,9 +67,18 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {
+                    if (settings.getDefaultConflictSetting() != null) {
+                        multipleDefaultSettingsFound = true;
+                    }
                     settings.setDefaultConflictSetting(conflictSetting);
                 }
             }
+        }
+
+        if (multipleDefaultSettingsFound) {
+            log.warn(
+                    "There were multiple default conflict settings found.  Using '{}' as the default",
+                    settings.getDefaultConflictSetting().getConflictId());
         }
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
