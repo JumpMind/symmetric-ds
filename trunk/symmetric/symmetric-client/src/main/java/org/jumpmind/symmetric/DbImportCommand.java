@@ -68,7 +68,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     }
     
     @Override
-    protected boolean executeOptions(CommandLine line) throws Exception {
+    protected boolean executeWithOptions(CommandLine line) throws Exception {
         DbImport dbImport = new DbImport(getDatabasePlatform());
 
         if (line.hasOption(OPTION_FORMAT)) {

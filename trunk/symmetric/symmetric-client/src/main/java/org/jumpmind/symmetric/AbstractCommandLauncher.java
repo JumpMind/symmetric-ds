@@ -116,10 +116,10 @@ public abstract class AbstractCommandLauncher {
             if (line.hasOption(OPTION_HELP)) {
                 printHelp(options);
                 System.exit(2);
-            } else if (!executeOptions(line)) {
-            	printUsage(options);
-                System.exit(3);
-            }
+            } 
+            
+            executeWithOptions(line);
+            
         } catch (ParseException e) {
         	System.err.println(e.getMessage());
             printUsage(options);
@@ -320,6 +320,6 @@ public abstract class AbstractCommandLauncher {
         options.addOption(opt, null, hasArg, Message.get(COMMON_MESSAGE_KEY_PREFIX + opt));
     }
 
-    protected abstract boolean executeOptions(CommandLine line) throws Exception;
+    protected abstract boolean executeWithOptions(CommandLine line) throws Exception;
     
 }

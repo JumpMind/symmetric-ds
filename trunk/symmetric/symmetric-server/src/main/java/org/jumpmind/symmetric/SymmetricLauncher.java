@@ -34,7 +34,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
 
     private static final String OPTION_PORT_SERVER = "port";
-    
+
     private static final String OPTION_HOST_SERVER = "host";
 
     private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
@@ -54,21 +54,21 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
 
     public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
-		super(app, argSyntax, messageKeyPrefix);
-	}
+        super(app, argSyntax, messageKeyPrefix);
+    }
 
     public static void main(String... args) throws Exception {
         new SymmetricLauncher("sym", "", "Launcher.Option.").execute(args);
     }
 
     protected void printHelp(Options options) {
-    	System.out.println(app + " version " + Version.version());
-    	System.out.println("Launch the SymmetricDS engine as a standalone client or server.\n");
-    	super.printHelp(options);
+        System.out.println(app + " version " + Version.version());
+        System.out.println("Launch the SymmetricDS engine as a standalone client or server.\n");
+        super.printHelp(options);
     }
 
     protected void buildOptions(Options options) {
-    	super.buildOptions(options);
+        super.buildOptions(options);
         buildCryptoOptions(options);
         addOption(options, "S", OPTION_START_SERVER, false);
         addOption(options, "C", OPTION_START_CLIENT, false);
@@ -82,7 +82,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
     }
 
-    protected boolean executeOptions(CommandLine line) throws Exception {
+    protected boolean executeWithOptions(CommandLine line) throws Exception {
 
         String host = null;
         int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
@@ -97,7 +97,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_HOST_SERVER)) {
             host = line.getOptionValue(OPTION_HOST_SERVER);
         }
-        
+
         if (line.hasOption(OPTION_PORT_SERVER)) {
             port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
         }
@@ -123,22 +123,19 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             return true;
         }
 
-        if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
-                || line.hasOption(OPTION_START_MIXED_SERVER)) {
-        	SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime,
-                    propertiesFile != null ? propertiesFile.getCanonicalPath() : null, true, noNio, noDirectBuffer);
-            webServer.setHost(host);
-            if (line.hasOption(OPTION_START_SERVER)) {
-                webServer.start(port);
-            } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                webServer.startSecure(securePort);
-            } else {
-                webServer.startMixed(port, securePort);
-            }
-            return true;
+        SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
+                maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
+                true, noNio, noDirectBuffer);
+        webServer.setHost(host);
+        if (line.hasOption(OPTION_START_MIXED_SERVER)) {
+            webServer.startMixed(port, securePort);
+        } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
+            webServer.startSecure(securePort);
+        } else {
+            webServer.start(port);
         }
+        return true;
 
-        return false;
     }
 
     protected String chooseWebDir(CommandLine line, String webDir) {
