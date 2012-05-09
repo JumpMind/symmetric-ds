@@ -11,6 +11,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +73,8 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                 log.debug("Old, new, transform expression as received: "+oldValue+", "+newValue+", "+column.getTransformExpression());
             }
             
-            if (!StringUtils.isNotBlank(newValue)) {
+            if (!StringUtils.isNotBlank(newValue) || 
+                    data.getSourceDmlType() == DataEventType.DELETE) {
                 newValue="0";
             }
             if (!StringUtils.isNotBlank(oldValue)) {
