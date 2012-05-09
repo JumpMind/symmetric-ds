@@ -68,6 +68,10 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
             }
             throw new IgnoreColumnException();
         } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Old and new as received: "+oldValue+", "+newValue);
+            }
+            
             if (!StringUtils.isNotBlank(newValue)) {
                 newValue="0";
             }
