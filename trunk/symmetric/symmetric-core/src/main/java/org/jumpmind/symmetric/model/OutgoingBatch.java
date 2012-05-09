@@ -428,5 +428,10 @@ public class OutgoingBatch implements Serializable {
     public long totalEventCount() {
         return insertEventCount + updateEventCount + deleteEventCount + otherEventCount;
     }
+    
+    @Override
+    public String toString() {
+        return getNodeBatchId();
+    }
 
 }

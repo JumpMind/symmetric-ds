@@ -329,9 +329,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void exportBatch(CommandLine line, List<String> args) throws Exception {
         IDataExtractorService dataExtractorService = getSymmetricEngine().getDataExtractorService();
+        String nodeId = popArg(args, "Node ID");
         String batchId = popArg(args, "Batch ID");
         OutputStreamWriter writer = getWriter(args);
-        dataExtractorService.extractBatchRange(writer, Long.valueOf(batchId), Long.valueOf(batchId));
+        dataExtractorService.extractBatchRange(writer, nodeId, Long.valueOf(batchId), Long.valueOf(batchId));
         writer.close();
     }
 

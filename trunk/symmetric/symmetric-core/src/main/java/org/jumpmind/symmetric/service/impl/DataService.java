@@ -905,15 +905,15 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public List<Number> listDataIds(long batchId) {
+    public List<Number> listDataIds(long batchId, String nodeId) {
         return sqlTemplate.query(getSql("selectEventDataIdsSql", " order by d.data_id asc"),
-                new NumberMapper(), batchId);
+                new NumberMapper(), batchId, nodeId);
     }
 
-    public List<Data> listData(long batchId, long startDataId, String channelId,
+    public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId,
             final int maxRowsToRetrieve) {
         return sqlTemplate.query(getDataSelectSql(batchId, startDataId, channelId),
-                maxRowsToRetrieve, this.dataMapper, batchId, startDataId);
+                maxRowsToRetrieve, this.dataMapper, batchId, nodeId, startDataId);
     }
 
     public Data mapData(Row row) {
@@ -923,7 +923,7 @@ public class DataService extends AbstractService implements IDataService {
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
         return sqlTemplate.queryForCursor(
                 getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()), dataMapper,
-                new Object[] { batch.getBatchId() }, new int[] { Types.NUMERIC });
+                new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { Types.NUMERIC });
     }
 
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {

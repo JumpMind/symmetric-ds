@@ -38,7 +38,7 @@ public interface IOutgoingBatchService {
 
     public void updateAbandonedRoutingBatches();
 
-    public OutgoingBatch findOutgoingBatch(long batchId);
+    public OutgoingBatch findOutgoingBatch(long batchId, String nodeId);
 
     public OutgoingBatches getOutgoingBatches(Node node, boolean includeDisabledChannels);
 

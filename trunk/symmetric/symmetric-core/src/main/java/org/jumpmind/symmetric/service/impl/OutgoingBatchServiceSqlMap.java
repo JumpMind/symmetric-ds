@@ -38,7 +38,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1   " );
 
         putSql("findOutgoingBatchSql" ,"" + 
-"where batch_id=?   " );
+"where batch_id=? and node_id=?  " );
 
         putSql("selectOutgoingBatchSql" ,"" + 
 "where node_id = ? and status in (?, ?, ?, ?, ?) order by batch_id asc   " );
