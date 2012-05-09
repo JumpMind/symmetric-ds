@@ -154,10 +154,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setBatchId(batchId);
     }
 
-    public OutgoingBatch findOutgoingBatch(long batchId) {
+    public OutgoingBatch findOutgoingBatch(long batchId, String nodeId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
-                new OutgoingBatchMapper(true, false), new Object[] { batchId },
+                new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
                 new int[] { Types.NUMERIC });
         if (list != null && list.size() > 0) {
             return list.get(0);

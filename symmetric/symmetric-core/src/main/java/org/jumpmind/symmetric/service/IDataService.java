@@ -123,9 +123,9 @@ public interface IDataService {
 
     public Data mapData(Row row);
     
-    public List<Number> listDataIds(long batchId);
+    public List<Number> listDataIds(long batchId, String nodeId);
     
-    public List<Data> listData(long batchId, long startDataId, String channelId, int maxRowsToRetrieve);
+    public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId, int maxRowsToRetrieve);
     
     public void insertDataGap(DataGap gap);
     

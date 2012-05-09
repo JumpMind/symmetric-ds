@@ -350,9 +350,6 @@
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
-        <index name="idx_ob_batch_id">
-            <index-column name="batch_id" />
-        </index>
         <index name="idx_ob_node_status">
             <index-column name="node_id" />
             <index-column name="status" />

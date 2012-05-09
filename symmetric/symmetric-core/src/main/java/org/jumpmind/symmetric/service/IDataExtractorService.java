@@ -42,6 +42,6 @@ public interface IDataExtractorService {
      */
     public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport);
 
-    public boolean extractBatchRange(Writer writer, long startBatchId, long endBatchId);
+    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
 
 }

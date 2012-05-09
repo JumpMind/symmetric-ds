@@ -48,19 +48,26 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
         String path = req.getPathInfo();
         if (!StringUtils.isBlank(path)) {
             int batchIdStartIndex = path.lastIndexOf("/") + 1;
-            String batchId = path.substring(batchIdStartIndex);
-            if (!write(batchId, res.getOutputStream())) {
-                ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
+            String nodeIdBatchId = path.substring(batchIdStartIndex);
+            if (nodeIdBatchId.contains("-")) {
+                String[] array = nodeIdBatchId.split("-");
+                String nodeId = array[0];
+                String batchId = array[1];
+                if (!write(batchId, nodeId, res.getOutputStream())) {
+                    ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
+                } else {
+                    res.flushBuffer();
+                }
             } else {
-                res.flushBuffer();
+                ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
             }
         } else {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
-    public boolean write(String batchId, OutputStream os) throws IOException {
-        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, "UTF-8"),
+    public boolean write(String batchId, String nodeId, OutputStream os) throws IOException {
+        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, "UTF-8"), nodeId,
                 Long.valueOf(batchId), Long.valueOf(batchId));
     }
 

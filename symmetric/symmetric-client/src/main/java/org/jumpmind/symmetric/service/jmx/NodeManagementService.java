@@ -334,13 +334,14 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
 
     @ManagedOperation(description = "Write a range of batches to a file in SymmetricDS Data Format.")
     @ManagedOperationParameters({
+             @ManagedOperationParameter(name = "nodeId", description = "The node id for the batches which will be written"),
             @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
             @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
             @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
-    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
+    public void writeBatchRangeToFile(String nodeId, String startBatchId, String endBatchId, String fileName)
             throws Exception {
         Writer writer = new FileWriter(new File(fileName));
-        engine.getDataExtractorService().extractBatchRange(writer, Long.valueOf(startBatchId),
+        engine.getDataExtractorService().extractBatchRange(writer, nodeId, Long.valueOf(startBatchId),
                 Long.valueOf(endBatchId));
         IOUtils.closeQuietly(writer);
     }

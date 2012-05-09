@@ -340,7 +340,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 // that the status has not changed
                 if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                     currentBatch = outgoingBatchService
-                            .findOutgoingBatch(currentBatch.getBatchId());
+                            .findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
                 }
 
                 if (currentBatch.getStatus() != Status.OK) {
@@ -374,7 +374,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     // check that the status has not changed
                     if (System.currentTimeMillis() - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                         currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
-                                .getBatchId());
+                                .getBatchId(), currentBatch.getNodeId());
                     }
 
                     if (extractTimeInMs > 0) {
@@ -418,7 +418,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (System.currentTimeMillis()
                                 - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                             currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
-                                    .getBatchId());
+                                    .getBatchId(), currentBatch.getNodeId());
                         }
 
                         if (currentBatch.getStatus() != Status.OK) {
@@ -469,10 +469,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    public boolean extractBatchRange(Writer writer, long startBatchId, long endBatchId) {
+    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId) {
         boolean foundBatch = false;
         for (long batchId = startBatchId; batchId <= endBatchId; batchId++) {
-            OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId);
+            OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             Node targetNode = nodeService.findNode(batch.getNodeId());
             IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
                     new SelectFromSymDataSource(batch, targetNode));
