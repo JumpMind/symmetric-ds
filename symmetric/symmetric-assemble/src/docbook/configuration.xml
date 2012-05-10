@@ -857,10 +857,14 @@ values
             An efficient way to select a subset of data from a table for an initial load is to provide an
             <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.            
             This clause, if present, is applied as a <literal>where</literal> clause to the SQL used to select the data to be loaded.
-            The clause may use "t" as an alias for the table being loaded, if needed.
-            If an <literal>initial_load_select</literal> clause is provided, data will <emphasis>not</emphasis> be passed through the 
-            configured router during initial load.  In cases where routing is done using a feature like <xref linkend="configuration-subselect-router">Subselect Router</xref>,
-            an <literal>initial_load_select</literal> clause matching the subselect's criteria would be a more efficient approach.   
+            The clause may use "t" as an alias for the table being loaded, if needed.  The <literal>$(externalId)</literal>
+            token can be used for subsetting the data in the where clause.
+        </para>
+        <para>
+            In cases where routing is done using a feature like <xref linkend="configuration-subselect-router">Subselect Router</xref>,
+            an <literal>initial_load_select</literal> clause matching the subselect's criteria would be a more efficient approach.  
+            Some routers will check to see if the <literal>initial_load_select</literal> clause is provided, and they will <emphasis>not</emphasis> execute  
+            assuming that the more optimal path is using the <literal>initial_load_select</literal> statement.               
         </para>
         <para>
         One example of the use of an initial load select would be if you wished to only load data created more recently than the start of year 2011.  Say, for example,
