@@ -656,7 +656,7 @@ public class DatabaseWriter implements IDataWriter {
             if (allPks) {
                 String[] keyDataAsArray = data.getParsedData(CsvData.PK_DATA);
                 if (keyDataAsArray != null
-                        && keyDataAsArray.length <= targetTable.getPrimaryKeyColumnCount()) {
+                        && keyDataAsArray.length == targetTable.getPrimaryKeyColumnCount()) {
                     return keyDataAsArray;
                 }
             }
