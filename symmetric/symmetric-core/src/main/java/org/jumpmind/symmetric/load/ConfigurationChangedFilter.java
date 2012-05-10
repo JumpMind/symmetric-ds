@@ -56,6 +56,9 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_CONFLICTS_NEEDED = "FlushConflicts."
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
@@ -73,6 +76,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         recordTransformFlushNeeded(context, table);
         recordParametersFlushNeeded(context, table);
         recordJobManagerRestartNeeded(context, table, data);
+        recordConflictFlushNeeded(context, table);
     }
 
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
@@ -84,6 +88,12 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     private void recordJobManagerRestartNeeded(DataContext context, Table table, CsvData data) {
         if (isJobManagerRestartNeeded(table, data)) {
             context.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, true);
+        }
+    }
+    
+    private void recordConflictFlushNeeded(DataContext context, Table table) {
+        if (isConflictFlushNeeded(table)) {
+            context.put(CTX_KEY_FLUSH_CONFLICTS_NEEDED, true);
         }
     }
 
@@ -114,6 +124,10 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     private boolean isChannelFlushNeeded(Table table) {
         return matchesTable(table, TableConstants.SYM_CHANNEL);
+    }
+    
+    private boolean isConflictFlushNeeded(Table table) {
+        return matchesTable(table, TableConstants.SYM_CONFLICT);
     }
 
     private boolean isParameterFlushNeeded(Table table) {
@@ -147,26 +161,29 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             log.info("Channels flushed because new channels came through the data loader");
             engine.getConfigurationService().reloadChannels();
         }
+        
         if (context.get(CTX_KEY_RESYNC_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers because new configuration came through the data loader");
             engine.getTriggerRouterService().syncTriggers();
         }
-        if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+        
+        if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             engine.getTransformService().resetCache();
         }
 
-        if (context.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+        if (context.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
+            log.info("About to refresh the cache of conflict settings because new configuration came through the data loader");
+            engine.getDataLoaderService().reloadConflictNodeGroupLinks();
+        }
+
+        if (context.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null) {
             log.info("About to refresh the cache of parameters because new configuration came through the data loader");
             parameterService.rereadParameters();
         }
 
-        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
             IJobManager jobManager = engine.getJobManager();
             if (jobManager != null) {
                 log.info("About to restart jobs because a new schedule came through the data loader");

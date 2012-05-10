@@ -33,7 +33,7 @@ public class IncomingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        LD("Loading"), OK("Ok"), ER("Error");
+        LD("Loading"), OK("Ok"), ER("Error"), IG("Ignore");
 
         private String description;
 
@@ -79,7 +79,7 @@ public class IncomingBatch implements Serializable {
 
     private long failedRowNumber;
     
-    private long failedLineNumber;
+    private long failedLineNumber;    
 
     private String sqlState;
 

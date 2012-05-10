@@ -124,7 +124,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
-    private Map<NodeGroupLink, List<ConflictSettingNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictSettingNodeGroupLink>>();
+    private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
 
     private long lastConflictCacheResetTimeInMs = 0;
 
@@ -432,27 +432,31 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return factory;
     }
 
-    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks() {
-        List<ConflictSettingNodeGroupLink> list = new ArrayList<DataLoaderService.ConflictSettingNodeGroupLink>();
+    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks() {
+        List<ConflictNodeGroupLink> list = new ArrayList<DataLoaderService.ConflictNodeGroupLink>();
         list = sqlTemplate.query(getSql("selectConflictSettingsSql"),
                 new ConflictSettingsNodeGroupLinkMapper());
         return list;
     }
+    
+    public void reloadConflictNodeGroupLinks() {
+        synchronized (this) {
+            conflictSettingsCache.clear();
+            lastConflictCacheResetTimeInMs = System.currentTimeMillis();
+        }
+    }
 
-    public List<ConflictSettingNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link,
+    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link,
             boolean refreshCache) {
         if (link != null) {
             long cacheTime = parameterService
                     .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
             if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime
                     || refreshCache) {
-                synchronized (this) {
-                    conflictSettingsCache.clear();
-                    lastConflictCacheResetTimeInMs = System.currentTimeMillis();
-                }
+                reloadConflictNodeGroupLinks();
             }
 
-            List<ConflictSettingNodeGroupLink> list = conflictSettingsCache.get(link);
+            List<ConflictNodeGroupLink> list = conflictSettingsCache.get(link);
             if (list == null) {
                 list = sqlTemplate.query(
                         getSql("selectConflictSettingsSql",
@@ -466,15 +470,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             return list;
         } else {
-            return new ArrayList<DataLoaderService.ConflictSettingNodeGroupLink>(0);
+            return new ArrayList<DataLoaderService.ConflictNodeGroupLink>(0);
         }
     }
 
-    public void delete(ConflictSettingNodeGroupLink settings) {
+    public void delete(ConflictNodeGroupLink settings) {
         sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
     }
 
-    public void save(ConflictSettingNodeGroupLink setting) {
+    public void save(ConflictNodeGroupLink setting) {
         this.lastConflictCacheResetTimeInMs = 0;
         if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
@@ -530,9 +534,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     class ConflictSettingsNodeGroupLinkMapper implements
-            ISqlRowMapper<ConflictSettingNodeGroupLink> {
-        public ConflictSettingNodeGroupLink mapRow(Row rs) {
-            ConflictSettingNodeGroupLink setting = new ConflictSettingNodeGroupLink();
+            ISqlRowMapper<ConflictNodeGroupLink> {
+        public ConflictNodeGroupLink mapRow(Row rs) {
+            ConflictNodeGroupLink setting = new ConflictNodeGroupLink();
             setting.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
                     .getString("target_node_group_id")));
             setting.setTargetChannelId(rs.getString("target_channel_id"));
@@ -702,7 +706,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 } else {
                     log.error("An error caused a batch to fail without attempting to load data", ex);
-                    ex.printStackTrace();
                 }
 
                 enableSyncTriggers(context);
@@ -772,7 +775,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public static class ConflictSettingNodeGroupLink extends Conflict {
+    public static class ConflictNodeGroupLink extends Conflict {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
 
