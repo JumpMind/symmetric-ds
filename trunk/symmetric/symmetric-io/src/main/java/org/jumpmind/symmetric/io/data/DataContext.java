@@ -1,6 +1,9 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.util.Context;
 
 public class DataContext extends Context {
@@ -10,9 +13,9 @@ public class DataContext extends Context {
     protected IDataReader reader;
 
     protected Batch batch;
-    
+
     protected Table table;
-    
+
     protected CsvData data;
 
     public DataContext(Batch batch) {
@@ -33,7 +36,7 @@ public class DataContext extends Context {
     public IDataWriter getWriter() {
         return writer;
     }
-    
+
     protected void setWriter(IDataWriter writer) {
         this.writer = writer;
     }
@@ -45,21 +48,34 @@ public class DataContext extends Context {
     public Batch getBatch() {
         return batch;
     }
-    
+
     public void setData(CsvData data) {
         this.data = data;
     }
-    
+
     public CsvData getData() {
         return data;
     }
-    
+
     public void setTable(Table table) {
         this.table = table;
     }
-    
+
     public Table getTable() {
         return table;
+    }
+
+    public ISqlTransaction findTransaction() {
+        ISqlTransaction transaction = null;
+        if (writer instanceof TransformWriter) {
+            IDataWriter targetWriter = ((TransformWriter) writer).getTargetWriter();
+            if (targetWriter instanceof DatabaseWriter) {
+                transaction = ((DatabaseWriter) targetWriter).getTransaction();
+            }
+        } else if (writer instanceof DatabaseWriter) {
+            transaction = ((DatabaseWriter) writer).getTransaction();
+        }
+        return transaction;
     }
 
 }
