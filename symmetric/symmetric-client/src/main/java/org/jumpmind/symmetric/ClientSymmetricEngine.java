@@ -198,8 +198,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         while (!success) {
             Connection c = null;
             try {
-                c = this.dataSource.getConnection();
-                success = true;
+                synchronized (ClientSymmetricEngine.class) {
+                    c = this.dataSource.getConnection();
+                    success = true;
+                }
             } catch (Exception ex) {
                 log.error(
                         "Could not get a connection to the database: {}.  Waiting for 10 seconds before trying to connect to the database again.",
