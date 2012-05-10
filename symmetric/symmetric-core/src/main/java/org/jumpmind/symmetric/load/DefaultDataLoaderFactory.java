@@ -6,7 +6,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
@@ -33,14 +35,32 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         return "default";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, IDatabasePlatform platform,
+    public IDataWriter getDataWriter(final String sourceNodeId, final ISymmetricDialect symmetricDialect,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        DatabaseWriter writer = new DatabaseWriter(platform,
-                new DefaultTransformWriterConflictResolver(transformWriter),
+        DatabaseWriter writer = new DatabaseWriter(symmetricDialect.getPlatform(),
+                new DefaultTransformWriterConflictResolver(transformWriter) {
+                    @Override
+                    protected void beforeResolutionAttempt() {
+                        DatabaseWriter writer = (DatabaseWriter) transformWriter.getTargetWriter();
+                        ISqlTransaction transaction = writer.getTransaction();
+                        if (transaction != null) {
+                            symmetricDialect.enableSyncTriggers(transaction);
+                        }
+                    }
+
+                    @Override
+                    protected void afterResolutionAttempt() {
+                        DatabaseWriter writer = (DatabaseWriter) transformWriter.getTargetWriter();
+                        ISqlTransaction transaction = writer.getTransaction();
+                        if (transaction != null) {
+                            symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
+                        }
+                    }
+                },
                 buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));
         return writer;
-    }
+    }    
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return true;

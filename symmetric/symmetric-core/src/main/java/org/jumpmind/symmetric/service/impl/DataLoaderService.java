@@ -57,7 +57,6 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
@@ -394,7 +393,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
                 transforms);
 
-        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, platform,
+        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, symmetricDialect,
                 transformWriter, filters, getConflictSettingsNodeGroupLinks(link, false),
                 resolvedDatas);
         transformWriter.setTargetWriter(targetWriter);
@@ -524,7 +523,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         sqlTemplate.update(getSql("updateIncomingErrorSql"), incomingError.getResolveData(),
                 incomingError.isResolveIgnore(), incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber());
-    }
+    }   
 
     /**
      * Used for unit tests
@@ -650,18 +649,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            symmetricDialect.disableSyncTriggers(findTransaction(context), batch.getNodeId());
-        }
-
-        protected ISqlTransaction findTransaction(DataContext context) {
-            if (context.getWriter() instanceof TransformWriter) {
-                IDataWriter targetWriter = ((TransformWriter) context.getWriter())
-                        .getTargetWriter();
-                if (targetWriter instanceof DatabaseWriter) {
-                    return ((DatabaseWriter) targetWriter).getTransaction();
-                }
-            }
-            return null;
+            symmetricDialect.disableSyncTriggers(context.findTransaction(), batch.getNodeId());
         }
 
         public void batchSuccessful(DataContext context) {
@@ -684,7 +672,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         protected void enableSyncTriggers(DataContext context) {
             try {
-                ISqlTransaction transaction = findTransaction(context);
+                ISqlTransaction transaction = context.findTransaction();
                 if (transaction != null) {
                     symmetricDialect.enableSyncTriggers(transaction);
                 }

@@ -30,7 +30,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
 
         logConflictHappened(conflict, data, writer, resolvedData, lineNumber);
-        
+
         switch (originalEventType) {
             case INSERT:
                 switch (conflict.getResolveType()) {
@@ -42,11 +42,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 conflict, writer, data))
                                 || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflict, writer, data))) {
-                            try {
-                                performFallbackToUpdate(writer, data, false);
-                            } catch (RuntimeException ex) {
-                                throw ex;
-                            }
+                            performFallbackToUpdate(writer, data, false);
                         } else {
                             if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();
@@ -96,7 +92,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
                         writer.getStatistics().get(writer.getBatch())
-                        .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                                .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         break;
                     case IGNORE:
                         ignore(writer, conflict);
@@ -120,6 +116,12 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             default:
                 break;
         }
+    }
+
+    protected void beforeResolutionAttempt() {
+    }
+
+    protected void afterResolutionAttempt() {
     }
 
     protected void logConflictHappened(Conflict conflict, CsvData data, DatabaseWriter writer,
@@ -182,7 +184,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
         Timestamp existingTs = writer.getTransaction().queryForObject(sql, Timestamp.class,
                 objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
+                CsvData.ROW_DATA);
         Timestamp loadingTs = Timestamp.valueOf(newData.get(columnName));
         return loadingTs.after(existingTs);
     }
@@ -197,29 +200,40 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
         Long existingVersion = writer.getTransaction()
                 .queryForObject(sql, Long.class, objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
+                CsvData.ROW_DATA);
         Long loadingVersion = Long.valueOf(newData.get(columnName));
         return loadingVersion > existingVersion;
     }
 
     protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data,
             boolean fallbackChanges) {
-        LoadStatus loadStatus = writer.update(data, fallbackChanges, false);
-        if (loadStatus != LoadStatus.SUCCESS) {
-            throw new ConflictException(data, writer.getTargetTable(), true);
-        } else {
-            writer.getStatistics().get(writer.getBatch())
-                    .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
+        try {
+            beforeResolutionAttempt();
+            LoadStatus loadStatus = writer.update(data, fallbackChanges, false);
+            if (loadStatus != LoadStatus.SUCCESS) {
+                throw new ConflictException(data, writer.getTargetTable(), true);
+            } else {
+                writer.getStatistics().get(writer.getBatch())
+                        .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
+            }
+        } finally {
+            afterResolutionAttempt();
         }
     }
 
     protected void performFallbackToInsert(DatabaseWriter writer, CsvData csvData) {
-        LoadStatus loadStatus = writer.insert(csvData);
-        if (loadStatus != LoadStatus.SUCCESS) {
-            throw new ConflictException(csvData, writer.getTargetTable(), true);
-        } else {
-            writer.getStatistics().get(writer.getBatch())
-                    .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
+        try {
+            beforeResolutionAttempt();
+            LoadStatus loadStatus = writer.insert(csvData);
+            if (loadStatus != LoadStatus.SUCCESS) {
+                throw new ConflictException(csvData, writer.getTargetTable(), true);
+            } else {
+                writer.getStatistics().get(writer.getBatch())
+                        .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
+            }
+        } finally {
+            afterResolutionAttempt();
         }
     }
 
