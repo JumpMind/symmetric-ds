@@ -76,7 +76,8 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         TriggerRouter trigger = dataMetaData.getTriggerRouter();
         String subSelect = trigger.getRouter().getRouterExpression();
         Set<String> nodeIds = null;
-        if (!StringUtils.isBlank(subSelect)) {
+        if (!StringUtils.isBlank(subSelect) && 
+                !(initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect()))) {
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
             sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
                     .getTargetNodeGroupId());
