@@ -344,7 +344,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } else if (ex instanceof RegistrationNotOpenException) {
             log.warn("Registration attempt failed.  Registration was not open for the node");
         } else if (ex instanceof ConnectionRejectedException) {
-            log.warn("The server was too busy to accept the connection");
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof AuthenticationException) {
             log.warn("Could not authenticate with node");

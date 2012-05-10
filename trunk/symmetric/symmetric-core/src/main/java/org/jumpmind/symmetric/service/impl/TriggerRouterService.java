@@ -581,7 +581,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 list.add(tr);
                 return tr;
             };
-        }, nodeGroupId);
+        }, nodeGroupId, nodeGroupId);
         return retMap;
     }
 

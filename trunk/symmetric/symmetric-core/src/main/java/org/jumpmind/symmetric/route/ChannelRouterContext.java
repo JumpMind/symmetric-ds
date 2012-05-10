@@ -60,7 +60,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long lastDataIdProcessed;
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
-    private boolean defaultRoutersOnly = false;
+    private boolean eligibleForOptimalBatching = false;
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -172,12 +172,12 @@ public class ChannelRouterContext extends SimpleRouterContext {
         return sqlTransaction;
     }
     
-    public void setDefaultRoutersOnly(boolean defaultRoutersOnly) {
-        this.defaultRoutersOnly = defaultRoutersOnly;
+    public void setEligibleForOptimalBatching(boolean defaultRoutersOnly) {
+        this.eligibleForOptimalBatching = defaultRoutersOnly;
     }
     
-    public boolean isDefaultRoutersOnly() {
-        return defaultRoutersOnly;
+    public boolean isEligibleForOptimalBatching() {
+        return eligibleForOptimalBatching;
     }
     
 }
