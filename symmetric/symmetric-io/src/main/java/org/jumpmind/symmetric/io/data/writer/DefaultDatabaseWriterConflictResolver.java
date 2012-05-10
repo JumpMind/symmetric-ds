@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterConflictResolver {
 
-    protected Logger log = LoggerFactory.getLogger(getClass());
+    protected Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
 
     public void needsResolved(DatabaseWriter writer, CsvData data, LoadStatus loadStatus) {
         DataEventType originalEventType = data.getDataEventType();
@@ -63,7 +63,17 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case UPDATE:
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
-                        performFallbackToInsert(writer, data);
+                        if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
+                            // we already tried to update using the pk
+                            performFallbackToInsert(writer, data);
+                        } else {
+                            try {
+                                performFallbackToUpdate(writer, data,
+                                        conflict.isResolveChangesOnly());
+                            } catch (ConflictException ex) {
+                                performFallbackToInsert(writer, data);
+                            }
+                        }
                         break;
                     case NEWER_WINS:
                         if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
@@ -91,8 +101,14 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case DELETE:
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
-                        writer.getStatistics().get(writer.getBatch())
-                                .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        LoadStatus status = LoadStatus.CONFLICT;
+                        if (conflict.getDetectType() != DetectConflict.USE_PK_DATA) {
+                            status = writer.delete(data, false);
+                        }
+                        if (status == LoadStatus.CONFLICT) {
+                            writer.getStatistics().get(writer.getBatch())
+                                    .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        }
                         break;
                     case IGNORE:
                         ignore(writer, conflict);

@@ -49,6 +49,10 @@ public class DatabaseWriter implements IDataWriter {
 
     protected DmlStatement currentDmlStatement;
 
+    protected boolean lastUseConflictDetection = false;
+
+    protected boolean lastApplyChangesOnly = false;
+
     protected Table sourceTable;
 
     protected Table targetTable;
@@ -200,10 +204,13 @@ public class DatabaseWriter implements IDataWriter {
         uncommittedCount = 0;
     }
 
-    protected boolean requireNewStatement(DmlType currentType, CsvData data) {
+    protected boolean requireNewStatement(DmlType currentType, CsvData data,
+            boolean applyChangesOnly, boolean useConflictDetection) {
         boolean requiresNew = currentDmlStatement == null || lastData == null
                 || currentDmlStatement.getDmlType() != currentType
-                || lastData.getDataEventType() != data.getDataEventType();
+                || lastData.getDataEventType() != data.getDataEventType()
+                || lastApplyChangesOnly != applyChangesOnly
+                || lastUseConflictDetection != useConflictDetection;
         if (!requiresNew && data.getDataEventType() == DataEventType.UPDATE) {
             String currentChanges = Arrays.toString(data.getChangedDataIndicators());
             String lastChanges = Arrays.toString(lastData.getChangedDataIndicators());
@@ -303,8 +310,11 @@ public class DatabaseWriter implements IDataWriter {
     protected LoadStatus insert(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            if (requireNewStatement(DmlType.INSERT, data)) {
+            if (requireNewStatement(DmlType.INSERT, data, false, true)) {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
+                if (log.isDebugEnabled()) {
+                    log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                }
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
@@ -345,7 +355,7 @@ public class DatabaseWriter implements IDataWriter {
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            if (requireNewStatement(DmlType.DELETE, data)) {
+            if (requireNewStatement(DmlType.DELETE, data, false, useConflictDetection)) {
                 Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
                 Column[] lookupKeys = null;
                 if (!useConflictDetection) {
@@ -387,6 +397,9 @@ public class DatabaseWriter implements IDataWriter {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                         lookupKeys, null);
+                if (log.isDebugEnabled()) {
+                    log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                }
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
@@ -427,7 +440,9 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
             if (changedColumnNameList.size() > 0) {
-                if (requireNewStatement(DmlType.UPDATE, data)) {
+                if (requireNewStatement(DmlType.UPDATE, data, applyChangesOnly, useConflictDetection)) {
+                    lastApplyChangesOnly = applyChangesOnly;
+                    lastUseConflictDetection = useConflictDetection;
                     Column[] lookupKeys = null;
                     if (!useConflictDetection) {
                         lookupKeys = targetTable.getPrimaryKeyColumns();
@@ -485,6 +500,9 @@ public class DatabaseWriter implements IDataWriter {
                                     targetTable.getSchema(), targetTable.getName(), lookupKeys,
                                     changedColumnMetaList.toArray(new Column[changedColumnMetaList
                                             .size()]));
+                    if (log.isDebugEnabled()) {
+                        log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                    }
                     transaction.prepare(this.currentDmlStatement.getSql());
 
                 }
@@ -661,10 +679,11 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
 
-            Map<String, String> keyData = data
-                    .toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.OLD_DATA);
+            Map<String, String> keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
+                    CsvData.OLD_DATA);
             if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+                keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
+                        CsvData.ROW_DATA);
             }
 
             if (keyData != null && keyData.size() > 0) {
@@ -704,6 +723,9 @@ public class DatabaseWriter implements IDataWriter {
     protected int execute(CsvData data, String[] values) {
         Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData());
+        if (log.isDebugEnabled()) {
+            log.debug("Submitting data {}", Arrays.toString(objectValues));
+        }
         return transaction.addRow(data, objectValues, this.currentDmlStatement.getTypes());
     }
 

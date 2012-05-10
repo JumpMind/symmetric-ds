@@ -199,6 +199,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Node sourceNode = engine.getNodeService().findIdentity();
         final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
         int dataCount = 0;
+
         Map<String, List<TriggerRouter>> triggerRouters = engine.getTriggerRouterService()
                 .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
 
@@ -207,7 +208,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 dataCount += routeDataForChannel(
                         nodeChannel,
                         sourceNode,
-                        containsOnlyDefaultRouters(nodeChannel.getChannelId(),
+                        isEligibleForOptimalBatching(nodeChannel.getChannelId(),
                                 triggerRouters.get(nodeChannel.getChannelId())));
             } else {
                 if (log.isDebugEnabled()) {
@@ -219,35 +220,34 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean containsOnlyDefaultRouters(String channelId,
+    protected boolean isEligibleForOptimalBatching(String channelId,
             List<TriggerRouter> triggerRouters) {
-        Boolean onlyDefaults = true;
+        Boolean eligible = true;
+        String nodeGroupId = parameterService.getNodeGroupId();
         if (triggerRouters != null) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                IDataRouter router = routers.get(triggerRouter.getRouter().getRouterType());
-                if (router != null && !(router instanceof DefaultDataRouter)) {
-                    onlyDefaults = false;
+                IDataRouter dataRouter = routers.get(triggerRouter.getRouter().getRouterType());
+                if (dataRouter != null
+                        && (!(dataRouter instanceof DefaultDataRouter) || triggerRouter.getRouter()
+                                .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId))) {
+                    eligible = false;
                 }
             }
         }
 
-        if (!onlyDefaults.equals(defaultRouterOnlyLastState.get(channelId))) {
-            if (onlyDefaults) {
-                log.info(
-                        "The '{}' channel is in batch reuse mode",
-                        channelId);
+        if (!eligible.equals(defaultRouterOnlyLastState.get(channelId))) {
+            if (eligible) {
+                log.info("The '{}' channel is in batch reuse mode", channelId);
             } else {
-                log.info(
-                        "The '{}' channel is NOT in batch reuse mode",
-                        channelId);
+                log.info("The '{}' channel is NOT in batch reuse mode", channelId);
             }
-            defaultRouterOnlyLastState.put(channelId, onlyDefaults);
+            defaultRouterOnlyLastState.put(channelId, eligible);
         }
-        return onlyDefaults;
+        return eligible;
     }
 
     protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode,
-            boolean containsOnlyDefaultRouters) {
+            boolean eligbleForOptimalBatching) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -255,7 +255,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
-            context.setDefaultRoutersOnly(containsOnlyDefaultRouters);
+            context.setEligibleForOptimalBatching(eligbleForOptimalBatching);
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
@@ -514,15 +514,15 @@ public class RouterService extends AbstractService implements IRouterService {
                     context.getBatchesByNodes().put(nodeId, batch);
 
                     // if in reuse mode, then share the batch id
-                    if (context.isDefaultRoutersOnly()) {
+                    if (context.isEligibleForOptimalBatching()) {
                         batchIdToReuse = batch.getBatchId();
                     }
                 }
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataEventCount();
                 numberOfDataEventsInserted++;
-                if (!context.isDefaultRoutersOnly()
-                        || (context.isDefaultRoutersOnly() && !dataEventAdded)) {
+                if (!context.isEligibleForOptimalBatching()
+                        || (context.isEligibleForOptimalBatching() && !dataEventAdded)) {
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                             triggerRouter.getRouter().getRouterId());
                     dataEventAdded = true;
