@@ -83,6 +83,8 @@ public class OutgoingBatch implements Serializable {
     private long extractCount;
 
     private long loadCount;
+    
+    private long ignoreCount;
 
     private long dataEventCount;
 
@@ -423,6 +425,14 @@ public class OutgoingBatch implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+    
+    public void setIgnoreCount(long ignoreCount) {
+        this.ignoreCount = ignoreCount;
+    }
+    
+    public long getIgnoreCount() {
+        return ignoreCount;
     }
 
     public long totalEventCount() {
