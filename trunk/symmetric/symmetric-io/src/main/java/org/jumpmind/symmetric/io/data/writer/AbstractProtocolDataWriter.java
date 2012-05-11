@@ -34,10 +34,11 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     protected List<IProtocolDataWriterListener> listeners;
-    
+
     protected String sourceNodeId;
 
-    public AbstractProtocolDataWriter(String sourceNodeId, List<IProtocolDataWriterListener> listeners) {
+    public AbstractProtocolDataWriter(String sourceNodeId,
+            List<IProtocolDataWriterListener> listeners) {
         this.listeners = listeners;
         this.sourceNodeId = sourceNodeId;
     }
@@ -73,59 +74,68 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }
         println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
+        if (batch.isIgnored()) {
+            println(CsvConstants.IGNORE);
+        }
     }
 
     public boolean start(Table table) {
-        this.table = table;
-        String catalogName = table.getCatalog();
-        println(CsvConstants.CATALOG, StringUtils.isNotBlank(catalogName) ? catalogName : "");
-        String schemaName = table.getSchema();
-        println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
-        println(CsvConstants.TABLE, table.getName());
-        if (!processedTables.contains(table)) {
-            println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
-            println(CsvConstants.COLUMNS, table.getColumns());
+        if (!batch.isIgnored()) {
+            this.table = table;
+            String catalogName = table.getCatalog();
+            println(CsvConstants.CATALOG, StringUtils.isNotBlank(catalogName) ? catalogName : "");
+            String schemaName = table.getSchema();
+            println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
+            println(CsvConstants.TABLE, table.getName());
+            if (!processedTables.contains(table)) {
+                println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
+                println(CsvConstants.COLUMNS, table.getColumns());
+            }
+            this.processedTables.add(table);
+            return true;
+        } else {
+            return false;
         }
-        this.processedTables.add(table);
-        return true;
     }
 
     public void write(CsvData data) {
-        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-        switch (data.getDataEventType()) {
-            case INSERT:
-                println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
-                break;
+        if (!batch.isIgnored()) {
+            statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+            switch (data.getDataEventType()) {
+                case INSERT:
+                    println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
+                    break;
 
-            case UPDATE:
-                String oldData = data.getCsvData(CsvData.OLD_DATA);
-                if (StringUtils.isNotBlank(oldData)) {
-                    println(CsvConstants.OLD, oldData);
-                }
-                println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
-                        data.getCsvData(CsvData.PK_DATA));
-                break;
-                
-            case DELETE:
-                oldData = data.getCsvData(CsvData.OLD_DATA);
-                if (StringUtils.isNotBlank(oldData)) {
-                    println(CsvConstants.OLD, oldData);
-                }
-                println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
-                break;
+                case UPDATE:
+                    String oldData = data.getCsvData(CsvData.OLD_DATA);
+                    if (StringUtils.isNotBlank(oldData)) {
+                        println(CsvConstants.OLD, oldData);
+                    }
+                    println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
+                            data.getCsvData(CsvData.PK_DATA));
+                    break;
 
-            case CREATE:
-                println(CsvConstants.CREATE, data.getCsvData(CsvData.ROW_DATA));
-                break;
+                case DELETE:
+                    oldData = data.getCsvData(CsvData.OLD_DATA);
+                    if (StringUtils.isNotBlank(oldData)) {
+                        println(CsvConstants.OLD, oldData);
+                    }
+                    println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
+                    break;
 
-            case BSH:
-                println(CsvConstants.BSH, data.getCsvData(CsvData.ROW_DATA));
-                break;
+                case CREATE:
+                    println(CsvConstants.CREATE, data.getCsvData(CsvData.ROW_DATA));
+                    break;
 
-            case SQL:
-                println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
-                break;
+                case BSH:
+                    println(CsvConstants.BSH, data.getCsvData(CsvData.ROW_DATA));
+                    break;
+
+                case SQL:
+                    println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
+                    break;
+            }
         }
     }
 

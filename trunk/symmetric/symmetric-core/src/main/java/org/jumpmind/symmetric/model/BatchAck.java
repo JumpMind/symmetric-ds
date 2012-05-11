@@ -24,9 +24,9 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 
 /**
- * 
+ * Status of a batch acknowledgement
  */
-public class BatchInfo  implements Serializable {
+public class BatchAck  implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
@@ -51,15 +51,17 @@ public class BatchInfo  implements Serializable {
     private String sqlState;
 
     private int sqlCode;
+    
+    private boolean ignored = false;
 
     private String sqlMessage;
 
-    public BatchInfo(long batchId) {
+    public BatchAck(long batchId) {
         this.batchId = batchId;
         isOk = true;
     }
 
-    public BatchInfo(long batchId, long errorLineNumber) {
+    public BatchAck(long batchId, long errorLineNumber) {
         this.batchId = batchId;
         isOk = false;
         errorLine = errorLineNumber;
@@ -151,6 +153,14 @@ public class BatchInfo  implements Serializable {
 
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
+    }
+    
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
+    }
+    
+    public boolean isIgnored() {
+        return ignored;
     }
 
 }

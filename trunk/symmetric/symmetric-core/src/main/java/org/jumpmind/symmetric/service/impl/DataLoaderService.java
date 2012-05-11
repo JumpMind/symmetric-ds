@@ -68,7 +68,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -318,7 +318,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
             for (IncomingBatch incomingBatch : batchesProcessed) {
-                if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION
+                if (incomingBatch.getBatchId() != BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("Failed to update batch {}.  Zero rows returned.",
                             incomingBatch.getBatchId());
@@ -392,9 +392,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
                 transforms);
 
-        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, symmetricDialect,
-                transformWriter, filters, getConflictSettingsNodeGroupLinks(link, false),
-                resolvedDatas);
+        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
+                symmetricDialect, transformWriter, filters,
+                getConflictSettingsNodeGroupLinks(link, false), resolvedDatas);
         transformWriter.setTargetWriter(targetWriter);
         return transformWriter;
     }
@@ -436,7 +436,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 new ConflictSettingsNodeGroupLinkMapper());
         return list;
     }
-    
+
     public void reloadConflictNodeGroupLinks() {
         synchronized (this) {
             conflictSettingsCache.clear();
@@ -522,7 +522,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         sqlTemplate.update(getSql("updateIncomingErrorSql"), incomingError.getResolveData(),
                 incomingError.isResolveIgnore(), incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber());
-    }   
+    }
 
     /**
      * Used for unit tests
@@ -531,8 +531,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.transportManager = transportManager;
     }
 
-    class ConflictSettingsNodeGroupLinkMapper implements
-            ISqlRowMapper<ConflictNodeGroupLink> {
+    class ConflictSettingsNodeGroupLinkMapper implements ISqlRowMapper<ConflictNodeGroupLink> {
         public ConflictNodeGroupLink mapRow(Row rs) {
             ConflictNodeGroupLink setting = new ConflictNodeGroupLink();
             setting.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
@@ -601,6 +600,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (listener.currentBatch != null) {
                 listener.currentBatch.setNetworkMillis(System.currentTimeMillis()
                         - batchStartsToArriveTimeInMs);
+                if (batch.isIgnored()) {
+                    listener.currentBatch.incrementIgnoreCount();
+                }
             }
 
             try {
@@ -749,7 +751,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.error("Failed to record status of batch {} because {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getNodeBatchId(), e.getMessage());
-                e.printStackTrace();
             }
         }
 

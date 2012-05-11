@@ -210,6 +210,10 @@ public class ProtocolDataReader implements IDataReader {
                     data.setDataEventType(DataEventType.CREATE);
                     data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
                     return data;
+                } else if (tokens[0].equals(CsvConstants.IGNORE)) {
+                    if (batch != null) {
+                        batch.setIgnored(true);
+                    }
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
                 }
