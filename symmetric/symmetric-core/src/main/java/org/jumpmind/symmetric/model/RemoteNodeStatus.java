@@ -89,9 +89,9 @@ public class RemoteNodeStatus implements Serializable {
         }
     }
 
-    public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchInfo> batches) {
+    public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchAck> batches) {
         if (batches != null) {
-            for (BatchInfo batch : batches) {
+            for (BatchAck batch : batches) {
                 if (!batch.isOk()) {
                     status = Status.DATA_ERROR;
                 }

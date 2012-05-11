@@ -239,10 +239,6 @@ public class OutgoingBatch implements Serializable {
         this.status = Status.valueOf(status);
     }
 
-    public BatchInfo getBatchInfo() {
-        return new BatchInfo(this.batchId);
-    }
-
     public long getRouterMillis() {
         return routerMillis;
     }
@@ -433,6 +429,10 @@ public class OutgoingBatch implements Serializable {
     
     public long getIgnoreCount() {
         return ignoreCount;
+    }
+    
+    public void incrementIgnoreCount() {
+        ignoreCount++;
     }
 
     public long totalEventCount() {

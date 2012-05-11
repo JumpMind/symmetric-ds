@@ -19,6 +19,7 @@ public class Batch {
     protected long lineCount;
     protected long dataReadMillis;
     protected long dataWriteMillis;
+    protected boolean ignored = false;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
 
@@ -109,6 +110,14 @@ public class Batch {
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
+    }
+    
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
+    }
+    
+    public boolean isIgnored() {
+        return ignored;
     }
     
 }

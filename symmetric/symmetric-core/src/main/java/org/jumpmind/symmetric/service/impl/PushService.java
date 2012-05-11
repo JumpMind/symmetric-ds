@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -163,10 +163,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     log.error("Did not receive an acknowledgement for the batches sent");
                 }
 
-                List<BatchInfo> batches = transportManager.readAcknowledgement(ackString,
+                List<BatchAck> batches = transportManager.readAcknowledgement(ackString,
                         ackExtendedString);
 
-                for (BatchInfo batchInfo : batches) {
+                for (BatchAck batchInfo : batches) {
                     log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
                             (batchInfo.isOk() ? "OK" : "error"));
                     acknowledgeService.ack(batchInfo);

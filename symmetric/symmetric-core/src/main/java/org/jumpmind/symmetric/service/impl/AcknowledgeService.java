@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -62,7 +62,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 createSqlReplacementTokens()));
     }
 
-    public void ack(final BatchInfo batch) {
+    public void ack(final BatchAck batch) {
 
         if (batchEventListeners != null) {
             for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
@@ -70,7 +70,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             }
         }
 
-        if (batch.getBatchId() == BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION) {
+        if (batch.getBatchId() == BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION) {
             if (batch.isOk()) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
@@ -90,6 +90,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatch.setErrorFlag(false);
                     log.warn("Batch {} was already set to OK.  Not updating to {}.",
                             batch.getBatchId(), status.name());
+                }
+                if (batch.isIgnored()) {
+                    outgoingBatch.incrementIgnoreCount();
                 }
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());

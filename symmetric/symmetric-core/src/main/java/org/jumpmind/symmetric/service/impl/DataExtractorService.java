@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
@@ -55,7 +56,7 @@ import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -143,7 +144,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * failure.
      */
     public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) {
-        Batch batch = new Batch(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
+        Batch batch = new Batch(BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
                 symmetricDialect.getBinaryEncoding(), node.getNodeId());
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
@@ -250,7 +251,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         // Finally, update the ignored outgoing batches such that they
         // will be skipped in the future.
         for (OutgoingBatch batch : ignoredBatches) {
-            batch.setStatus(OutgoingBatch.Status.IG);
+            batch.setStatus(OutgoingBatch.Status.OK);
+            batch.incrementIgnoreCount();
             if (log.isDebugEnabled()) {
                 log.debug("Batch {} is being ignored", batch.getBatchId());
             }
@@ -305,137 +307,42 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void extract(Node targetNode, IOutgoingTransport targetTransport,
             List<OutgoingBatch> activeBatches) {
-        Node identity = nodeService.findIdentity();
         long batchesSelectedAtMs = System.currentTimeMillis();
-        boolean streamToFileEnabled = parameterService
-                .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
-
-        TransformWriter transformExtractWriter = null;
-
-        if (streamToFileEnabled) {
-            transformExtractWriter = createTransformDataWriter(identity, targetNode,
-                    new StagingDataWriter(nodeService.findIdentityNodeId(),
-                            Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
-        } else {
-            transformExtractWriter = createTransformDataWriter(
-                    identity,
-                    targetNode,
-                    new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport.open()));
-        }
-
-        final long maxBytesToSync = parameterService
-                .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
-        long bytesSentCount = 0;
-        int batchesSentCount = 0;
-
         OutgoingBatch currentBatch = null;
-
         try {
+            
             IDataWriter dataWriter = null;
+            long bytesSentCount = 0;
+            int batchesSentCount = 0;
+            long maxBytesToSync = parameterService
+                    .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
 
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
 
-                // If time has passed, then re-query the batch to double check
-                // that the status has not changed
-                if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {
-                    currentBatch = outgoingBatchService
-                            .findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
+                currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
+
+                currentBatch = extractOutgoingBatch(targetNode, targetTransport, currentBatch);
+
+                if (dataWriter == null) {
+                    dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                            targetTransport.open());
                 }
 
+                currentBatch = sendOutgoingBatch(currentBatch, dataWriter);
+
                 if (currentBatch.getStatus() != Status.OK) {
-                    long extractTimeInMs = 0l;
-                    long byteCount = 0l;
-                    IStagedResource previouslyExtracted = stagingManager.find(
-                            Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
-                            currentBatch.getBatchId());
-                    if (previouslyExtracted != null && previouslyExtracted.exists()) {
+                    currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
+                    changeBatchStatus(Status.LD, currentBatch);
+
+                    bytesSentCount += currentBatch.getByteCount();
+                    batchesSentCount++;
+
+                    if (bytesSentCount >= maxBytesToSync) {
                         log.info(
-                                "We have already extracted batch {}.  Using the existing extraction: {}",
-                                currentBatch.getBatchId(), previouslyExtracted);
-                    } else {
-                        currentBatch.setStatus(OutgoingBatch.Status.QY);
-                        currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
-                        outgoingBatchService.updateOutgoingBatch(currentBatch);
-
-                        long ts = System.currentTimeMillis();
-
-                        IDataReader dataReader = new ExtractDataReader(
-                                symmetricDialect.getPlatform(), new SelectFromSymDataSource(
-                                        currentBatch, targetNode));
-                        new DataProcessor(dataReader, transformExtractWriter).process();
-                        extractTimeInMs = System.currentTimeMillis() - ts;
-                        Statistics stats = transformExtractWriter.getTargetWriter().getStatistics()
-                                .values().iterator().next();
-                        byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
-                    }
-
-                    // If time has passed, then re-query the batch to double
-                    // check that the status has not changed
-                    if (System.currentTimeMillis() - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
-                        currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
-                                .getBatchId(), currentBatch.getNodeId());
-                    }
-
-                    if (extractTimeInMs > 0) {
-                        currentBatch.setExtractMillis(extractTimeInMs);
-                    }
-
-                    if (byteCount > 0) {
-                        currentBatch.setByteCount(byteCount);
-                        statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(),
-                                byteCount);
-                        statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
-                                currentBatch.getExtractCount());
-                    }
-
-                    if (currentBatch.getStatus() != Status.OK) {
-                        currentBatch.setStatus(OutgoingBatch.Status.SE);
-                        currentBatch.setSentCount(currentBatch.getSentCount() + 1);
-                        outgoingBatchService.updateOutgoingBatch(currentBatch);
-
-                        IStagedResource extractedBatch = stagingManager.find(
-                                Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
-                                currentBatch.getBatchId());
-                        if (extractedBatch != null) {
-                            IDataReader dataReader = new ProtocolDataReader(extractedBatch);
-                            if (dataWriter == null) {
-                                dataWriter = new ProtocolDataWriter(
-                                        nodeService.findIdentityNodeId(), targetTransport.open());
-                            }
-                            new DataProcessor(dataReader, dataWriter).process();
-                            Statistics stats = dataWriter.getStatistics().values().iterator()
-                                    .next();
-                            statisticManager.incrementDataSent(currentBatch.getChannelId(),
-                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
-                            statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
-                                    stats.get(DataWriterStatisticConstants.BYTECOUNT));
-
-                        }
-
-                        // If time has passed, then re-query the batch to double
-                        // check that the status has not changed
-                        if (System.currentTimeMillis()
-                                - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
-                            currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
-                                    .getBatchId(), currentBatch.getNodeId());
-                        }
-
-                        if (currentBatch.getStatus() != Status.OK) {
-                            currentBatch.setStatus(OutgoingBatch.Status.LD);
-                            currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
-                            outgoingBatchService.updateOutgoingBatch(currentBatch);
-
-                            bytesSentCount += currentBatch.getByteCount();
-                            batchesSentCount++;
-
-                            if (bytesSentCount >= maxBytesToSync) {
-                                log.info(
-                                        "Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
-                                        batchesSentCount, bytesSentCount);
-                                break;
-                            }
-                        }
+                                "Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
+                                batchesSentCount, bytesSentCount);
+                        break;
                     }
                 }
             }
@@ -452,7 +359,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch.setSqlMessage(e.getMessage());
                 }
                 currentBatch.revertStatsOnError();
-                currentBatch.setStatus(OutgoingBatch.Status.ER);
+                if (currentBatch.getStatus() != Status.IG) {
+                    currentBatch.setStatus(Status.ER);
+                }
                 currentBatch.setErrorFlag(true);
                 outgoingBatchService.updateOutgoingBatch(currentBatch);
             } else {
@@ -469,7 +378,137 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId) {
+    final protected void changeBatchStatus(Status status, OutgoingBatch currentBatch) {
+        if (currentBatch.getStatus() != Status.IG) {
+            currentBatch.setStatus(status);
+        }
+        outgoingBatchService.updateOutgoingBatch(currentBatch);
+    }
+
+    /**
+     * If time has passed, then re-query the batch to double check that the
+     * status has not changed
+     */
+    final protected OutgoingBatch requeryIfEnoughTimeHasPassed(long ts, OutgoingBatch currentBatch) {
+        if (System.currentTimeMillis() - ts > MS_PASSED_BEFORE_BATCH_REQUERIED) {
+            currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch.getBatchId(),
+                    currentBatch.getNodeId());
+        }
+        return currentBatch;
+    }
+
+    protected OutgoingBatch extractOutgoingBatch(Node targetNode,
+            IOutgoingTransport targetTransport, OutgoingBatch currentBatch) {
+        if (currentBatch.getStatus() != Status.OK) {
+            Node identity = nodeService.findIdentity();
+
+            boolean streamToFileEnabled = parameterService
+                    .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+
+            TransformWriter transformExtractWriter = null;
+            if (streamToFileEnabled) {
+                transformExtractWriter = createTransformDataWriter(identity, targetNode,
+                        new StagingDataWriter(nodeService.findIdentityNodeId(),
+                                Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
+            } else {
+                transformExtractWriter = createTransformDataWriter(
+                        identity,
+                        targetNode,
+                        new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport
+                                .open()));
+            }
+
+            long ts = System.currentTimeMillis();
+            long extractTimeInMs = 0l;
+            long byteCount = 0l;
+
+            if (currentBatch.getStatus() == Status.IG) {
+                Batch batch = new Batch(currentBatch.getBatchId(), currentBatch.getChannelId(),
+                        symmetricDialect.getBinaryEncoding(), currentBatch.getNodeId());
+                batch.setIgnored(true);
+                try {
+                    transformExtractWriter.open(new DataContext(batch));
+                    transformExtractWriter.start(batch);
+                    transformExtractWriter.end(batch, false);
+                } finally {
+                    transformExtractWriter.close();
+                }
+            } else {
+                IStagedResource previouslyExtracted = stagingManager.find(
+                        Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                        currentBatch.getBatchId());
+
+                if (previouslyExtracted != null && previouslyExtracted.exists()) {
+
+                    log.info(
+                            "We have already extracted batch {}.  Using the existing extraction: {}",
+                            currentBatch.getBatchId(), previouslyExtracted);
+                } else {
+                    currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                    changeBatchStatus(Status.QY, currentBatch);
+
+                    IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
+                            new SelectFromSymDataSource(currentBatch, targetNode));
+                    new DataProcessor(dataReader, transformExtractWriter).process();
+                    extractTimeInMs = System.currentTimeMillis() - ts;
+                    Statistics stats = transformExtractWriter.getTargetWriter().getStatistics()
+                            .values().iterator().next();
+                    byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                }
+            }
+
+            currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
+
+            if (extractTimeInMs > 0) {
+                currentBatch.setExtractMillis(extractTimeInMs);
+            }
+
+            if (byteCount > 0) {
+                currentBatch.setByteCount(byteCount);
+                statisticManager
+                        .incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
+                statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
+                        currentBatch.getExtractCount());
+            }
+
+        }
+
+        return currentBatch;
+    }
+
+    protected OutgoingBatch sendOutgoingBatch(OutgoingBatch currentBatch, IDataWriter dataWriter) {
+        if (currentBatch.getStatus() != Status.OK) {
+
+            currentBatch.setSentCount(currentBatch.getSentCount() + 1);
+            changeBatchStatus(Status.SE, currentBatch);
+
+            long ts = System.currentTimeMillis();
+
+            IStagedResource extractedBatch = stagingManager.find(
+                    Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                    currentBatch.getBatchId());
+            if (extractedBatch != null) {
+                IDataReader dataReader = new ProtocolDataReader(extractedBatch);
+
+                new DataProcessor(dataReader, dataWriter).process();
+                Statistics stats = dataWriter.getStatistics().values().iterator().next();
+                statisticManager.incrementDataSent(currentBatch.getChannelId(),
+                        stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
+                        stats.get(DataWriterStatisticConstants.BYTECOUNT));
+
+            }
+
+            currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
+
+        }
+
+        return currentBatch;
+
+    }
+
+    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId,
+            long endBatchId) {
         boolean foundBatch = false;
         for (long batchId = startBatchId; batchId <= endBatchId; batchId++) {
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);

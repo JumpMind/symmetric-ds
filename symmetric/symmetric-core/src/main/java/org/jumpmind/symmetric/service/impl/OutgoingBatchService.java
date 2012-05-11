@@ -112,6 +112,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 outgoingBatch.getUpdateEventCount(),
                                 outgoingBatch.getDeleteEventCount(),
                                 outgoingBatch.getOtherEventCount(),
+                                outgoingBatch.getIgnoreCount(),
                                 outgoingBatch.getRouterMillis(), outgoingBatch.getNetworkMillis(),
                                 outgoingBatch.getFilterMillis(), outgoingBatch.getLoadMillis(),
                                 outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
@@ -121,7 +122,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 outgoingBatch.getLastUpdatedHostName(),
                                 outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                         new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.BIGINT,
-                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                                 Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                                 Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                                 Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
@@ -245,7 +246,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels, true),
                 new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
-                        OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name() }, null);
+                        OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(), OutgoingBatch.Status.IG.name() }, null);
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -393,6 +394,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 batch.setUpdateEventCount(rs.getLong("update_event_count"));
                 batch.setDeleteEventCount(rs.getLong("delete_event_count"));
                 batch.setOtherEventCount(rs.getLong("other_event_count"));
+                batch.setIgnoreCount(rs.getLong("ignore_count"));
                 batch.setRouterMillis(rs.getLong("router_millis"));
                 batch.setNetworkMillis(rs.getLong("network_millis"));
                 batch.setFilterMillis(rs.getLong("filter_millis"));

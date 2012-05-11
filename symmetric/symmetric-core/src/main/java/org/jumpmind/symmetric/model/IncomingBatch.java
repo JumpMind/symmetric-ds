@@ -326,6 +326,10 @@ public class IncomingBatch implements Serializable {
         this.ignoreCount = ignoreCount;
     }
     
+    public void incrementIgnoreCount() {
+        this.ignoreCount++;
+    }
+    
     public long getIgnoreCount() {
         return ignoreCount;
     }

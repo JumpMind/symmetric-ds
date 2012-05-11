@@ -59,4 +59,6 @@ final public class CsvConstants {
     public static final String CREATE = "create";
 
     public static final String CHANNEL = "channel";
+    
+    public static final String IGNORE = "ignore";
 }

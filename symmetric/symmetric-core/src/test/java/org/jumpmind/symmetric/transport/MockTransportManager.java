@@ -27,7 +27,7 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 
@@ -85,15 +85,15 @@ public class MockTransportManager implements ITransportManager {
         return incomingTransport;
     }
 
-    public List<BatchInfo> readAcknowledgement(String parameterString) throws IOException {
+    public List<BatchAck> readAcknowledgement(String parameterString) throws IOException {
         return null;
     }
 
-    public List<BatchInfo> readAcknowledgement(Map<String, Object> parameters) {
+    public List<BatchAck> readAcknowledgement(Map<String, Object> parameters) {
         return null;
     }
 
-    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
+    public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return null;
     }
 

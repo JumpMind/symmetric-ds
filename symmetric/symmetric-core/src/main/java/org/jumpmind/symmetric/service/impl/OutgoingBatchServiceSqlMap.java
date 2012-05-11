@@ -27,7 +27,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "update $(outgoing_batch) set status=?, load_flag=?, error_flag=?,                                          " + 
 "  byte_count=?, extract_count=?, sent_count=?, load_count=?, data_event_count=?,                                 " + 
 "  reload_event_count=?, insert_event_count=?, update_event_count=?, delete_event_count=?, other_event_count=?,   " + 
-"  router_millis=?, network_millis=?, filter_millis=?,                                                            " + 
+"  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            " + 
 "  load_millis=?, extract_millis=?, sql_state=?, sql_code=?, sql_message=?,                                       " + 
 "  failed_data_id=?, last_update_hostname=?, last_update_time=? where batch_id=? and node_id=?                    " );
 
@@ -41,7 +41,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "where batch_id=? and node_id=?  " );
 
         putSql("selectOutgoingBatchSql" ,"" + 
-"where node_id = ? and status in (?, ?, ?, ?, ?) order by batch_id asc   " );
+"where node_id = ? and status in (?, ?, ?, ?, ?, ?) order by batch_id asc   " );
 
         putSql("selectOutgoingBatchRangeSql" ,"" + 
 "where batch_id between ? and ? order by batch_id   " );
@@ -50,7 +50,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "select node_id, channel_id, status,                                                                              " + 
 "  byte_count, extract_count, sent_count, load_count, data_event_count,                                           " + 
 "  reload_event_count, insert_event_count, update_event_count, delete_event_count, other_event_count,             " + 
-"  router_millis, network_millis, filter_millis, load_millis, extract_millis, sql_state, sql_code, sql_message,   " + 
+"  ignore_count, router_millis, network_millis, filter_millis, load_millis, extract_millis, sql_state, sql_code,  " +
+"  sql_message,   " + 
 "  failed_data_id, last_update_hostname, last_update_time, create_time, batch_id, load_flag, error_flag from      " + 
 "  $(outgoing_batch)                                                                                        " );
 

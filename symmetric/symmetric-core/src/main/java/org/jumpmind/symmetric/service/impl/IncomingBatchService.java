@@ -161,6 +161,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     okayToProcess = true;
                     existingBatch.setStatus(Status.LD);
                     log.warn("Retrying batch {}", batch.getNodeBatchId());
+                } else if (existingBatch.getStatus() == Status.IG) {
+                    okayToProcess = false;
+                    batch.setStatus(Status.OK);
+                    batch.incrementIgnoreCount();
+                    log.warn("Ignoring batch {}", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
                     batch.setStatus(existingBatch.getStatus());

@@ -29,15 +29,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 
 public class AckUriHandler extends AbstractUriHandler {
 
-    private static final Comparator<BatchInfo> BATCH_ID_COMPARATOR = new Comparator<BatchInfo>() {
-        public int compare(BatchInfo batchInfo1, BatchInfo batchInfo2) {
+    private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
+        public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
             Long batchId1 = batchInfo1.getBatchId();
             Long batchId2 = batchInfo1.getBatchId();
             return batchId1.compareTo(batchId2);
@@ -58,14 +58,14 @@ public class AckUriHandler extends AbstractUriHandler {
             log.debug("Reading ack: {}", req.getParameterMap());
         }
         @SuppressWarnings("unchecked")
-        List<BatchInfo> batches = AbstractTransportManager.readAcknowledgement(req
+        List<BatchAck> batches = AbstractTransportManager.readAcknowledgement(req
                 .getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
         ack(batches);
     }
 
-    protected void ack(List<BatchInfo> batches) throws IOException {
-        for (BatchInfo batchInfo : batches) {
+    protected void ack(List<BatchAck> batches) throws IOException {
+        for (BatchAck batchInfo : batches) {
             acknowledgeService.ack(batchInfo);
         }
     }

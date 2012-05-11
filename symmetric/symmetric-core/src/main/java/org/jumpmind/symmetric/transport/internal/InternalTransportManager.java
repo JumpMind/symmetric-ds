@@ -36,7 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
@@ -117,8 +117,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
                 String ackData = getAcknowledgementData(local.getNodeId(), list);
-                List<BatchInfo> batches = readAcknowledgement(ackData);                
-                for (BatchInfo batchInfo : batches) {
+                List<BatchAck> batches = readAcknowledgement(ackData);                
+                for (BatchAck batchInfo : batches) {
                     remoteEngine.getAcknowledgeService().ack(batchInfo);
                 }
             }
