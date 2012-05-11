@@ -150,7 +150,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
-                outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(),
+                outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(),
                 outgoingBatch.getOtherEventCount(), outgoingBatch.getLastUpdatedHostName());
         outgoingBatch.setBatchId(batchId);
     }
@@ -410,6 +410,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 batch.setBatchId(rs.getLong("batch_id"));
                 batch.setLoadFlag(rs.getBoolean("load_flag"));
                 batch.setErrorFlag(rs.getBoolean("error_flag"));
+                batch.setCommonFlag(rs.getBoolean("common_flag"));
                 return batch;
             } else {
                 return null;

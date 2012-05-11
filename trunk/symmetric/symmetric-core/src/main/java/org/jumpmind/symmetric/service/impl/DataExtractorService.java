@@ -145,7 +145,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) {
         Batch batch = new Batch(BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
-                symmetricDialect.getBinaryEncoding(), node.getNodeId());
+                symmetricDialect.getBinaryEncoding(), node.getNodeId(), false);
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
                 node.getNodeGroupId());
@@ -310,7 +310,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         long batchesSelectedAtMs = System.currentTimeMillis();
         OutgoingBatch currentBatch = null;
         try {
-            
+
             IDataWriter dataWriter = null;
             long bytesSentCount = 0;
             int batchesSentCount = 0;
@@ -424,7 +424,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (currentBatch.getStatus() == Status.IG) {
                 Batch batch = new Batch(currentBatch.getBatchId(), currentBatch.getChannelId(),
-                        symmetricDialect.getBinaryEncoding(), currentBatch.getNodeId());
+                        symmetricDialect.getBinaryEncoding(), currentBatch.getNodeId(),
+                        currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
                     transformExtractWriter.open(new DataContext(batch));
@@ -435,7 +436,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             } else {
                 IStagedResource previouslyExtracted = stagingManager.find(
-                        Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                        Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
                         currentBatch.getBatchId());
 
                 if (previouslyExtracted != null && previouslyExtracted.exists()) {
@@ -475,6 +476,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return currentBatch;
     }
+    
+    
 
     protected OutgoingBatch sendOutgoingBatch(OutgoingBatch currentBatch, IDataWriter dataWriter) {
         if (currentBatch.getStatus() != Status.OK) {
@@ -485,7 +488,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
 
             IStagedResource extractedBatch = stagingManager.find(
-                    Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                    Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
                     currentBatch.getBatchId());
             if (extractedBatch != null) {
                 IDataReader dataReader = new ProtocolDataReader(extractedBatch);
@@ -620,7 +623,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node targetNode) {
             this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
-                    symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId());
+                    symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId(),
+                    outgoingBatch.isCommonFlag());
             this.targetNode = targetNode;
         }
 

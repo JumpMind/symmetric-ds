@@ -20,6 +20,7 @@ public class Batch {
     protected long dataReadMillis;
     protected long dataWriteMillis;
     protected boolean ignored = false;
+    protected boolean common = false;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
 
@@ -28,11 +29,12 @@ public class Batch {
         this.batchId = batchId;
     }
     
-    public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String nodeId) {
+    public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String nodeId, boolean common) {
         this(batchId);
         this.channelId = channelId;
         this.nodeId = nodeId;
         this.binaryEncoding = binaryEncoding;
+        this.common = common;
     }
     
     public Batch() {
@@ -118,6 +120,22 @@ public class Batch {
     
     public boolean isIgnored() {
         return ignored;
+    }
+    
+    public void setCommon(boolean commonFlag) {
+        this.common = commonFlag;
+    }
+    
+    public boolean isCommon() {
+        return common;
+    }
+    
+    public String getStagedLocation() {
+        return getStagedLocation(common, nodeId);
+    }
+    
+    public static String getStagedLocation(boolean common, String nodeId) {
+        return common ? "common" : nodeId;
     }
     
 }

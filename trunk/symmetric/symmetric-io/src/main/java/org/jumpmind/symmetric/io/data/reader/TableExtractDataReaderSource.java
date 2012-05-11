@@ -40,7 +40,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         }
         this.whereClause = whereClause;
         this.streamLobs = streamLobs;
-        this.batch = new Batch(-1, "default", BinaryEncoding.BASE64, "localhost");
+        this.batch = new Batch(-1, "default", BinaryEncoding.BASE64, "localhost", false);
 
     }
 

@@ -44,9 +44,10 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     }
 
     protected IStagedResource getStagedResource(Batch batch) {
-        IStagedResource resource = stagingManager.find(category, batch.getNodeId(), batch.getBatchId());
+        String location = batch.getStagedLocation();
+        IStagedResource resource = stagingManager.find(category, location, batch.getBatchId());
         if (resource == null || resource.getState() == State.DONE) {
-            resource = stagingManager.create(category, batch.getNodeId(), batch.getBatchId());
+            resource = stagingManager.create(category, location, batch.getBatchId());
         }
         return resource;
     }
