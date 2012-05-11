@@ -32,6 +32,9 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.DataGap;
+import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -56,7 +59,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
-        setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
+        setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public long purgeOutgoing() {
@@ -93,7 +97,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 try {
                     log.info("The data gap purge process is about to run");
                     rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"),
-                            new Object[] { retentionCutoff.getTime() });
+                            new Object[] { retentionCutoff.getTime(), DataGap.Status.GP.name() });
                     log.info("Purged {} data gap rows", rowsPurged);
                 } finally {
                     clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
@@ -136,40 +140,30 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private long purgeOutgoingBatch(final Calendar time) {
         log.info("Getting range for outgoing batch");
         long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"),
-                new Object[] { time.getTime() });
+                new Object[] { time.getTime(), OutgoingBatch.Status.OK.name() });
         int maxNumOfBatchIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        int dataEventsPurgedCount = purgeByMinMax(minMax, MinMaxDeleteSql.DATA_EVENT, time.getTime(),
-                maxNumOfDataEventsToPurgeInTx);
+        int dataEventsPurgedCount = purgeByMinMax(minMax, MinMaxDeleteSql.DATA_EVENT,
+                time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(dataEventsPurgedCount);
         int outgoingbatchPurgedCount = purgeByMinMax(minMax, MinMaxDeleteSql.OUTGOING_BATCH,
                 time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         statisticManager.incrementPurgedBatchOutgoingRows(outgoingbatchPurgedCount);
-        long unroutedPurgedCount = purgeUnroutedDataEvents(time.getTime());
-        return dataEventsPurgedCount + outgoingbatchPurgedCount + unroutedPurgedCount;
+        return dataEventsPurgedCount + outgoingbatchPurgedCount;
     }
 
     private long purgeStrandedBatches() {
-        int updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatches"));
+        int updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatches"),
+                OutgoingBatch.Status.OK.name(), 1, OutgoingBatch.Status.OK.name());
         if (updateStrandedBatchesCount > 0) {
             log.info(
-                    "Set the status to OK for {} batches that no longer are associated with valid nodes",
-                    updateStrandedBatchesCount);
+                    "Set the status to {} for {} batches that no longer are associated with valid nodes",
+                    OutgoingBatch.Status.OK.name(), updateStrandedBatchesCount);
             statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
         }
         return updateStrandedBatchesCount;
-    }
-
-    private long purgeUnroutedDataEvents(Date time) {
-        int unroutedDataEventCount = sqlTemplate.update(getSql("deleteUnroutedDataEventSql"),
-                new Timestamp(time.getTime()));
-        if (unroutedDataEventCount > 0) {
-            statisticManager.incrementPurgedDataEventRows(unroutedDataEventCount);
-            log.info("Done purging {} of {} rows", unroutedDataEventCount, "unrouted data_event");
-        }
-        return unroutedDataEventCount;
     }
 
     private long purgeDataRows(final Calendar time) {
@@ -216,22 +210,24 @@ public class PurgeService extends AbstractService implements IPurgeService {
             Object[] args = null;
 
             switch (identifier) {
-            case DATA:
-                deleteSql = getSql("deleteDataSql");
-                args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId };
-                break;
-            case DATA_EVENT:
-                deleteSql = getSql("deleteDataEventSql");
-                args = new Object[] { minId, maxId, minId, maxId };
-                break;
-            case OUTGOING_BATCH:
-                deleteSql = getSql("deleteOutgoingBatchSql");
-                args = new Object[] { minId, maxId, minId, maxId };
-                break;
-            case STRANDED_DATA:
-                deleteSql = getSql("deleteStrandedData");
-                args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                break;
+                case DATA:
+                    deleteSql = getSql("deleteDataSql");
+                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId, OutgoingBatch.Status.OK.name() };
+                    break;
+                case DATA_EVENT:
+                    deleteSql = getSql("deleteDataEventSql");
+                    args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId,
+                            maxId };
+                    break;
+                case OUTGOING_BATCH:
+                    deleteSql = getSql("deleteOutgoingBatchSql");
+                    args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId, minId,
+                            maxId };
+                    break;
+                case STRANDED_DATA:
+                    deleteSql = getSql("deleteStrandedData");
+                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
+                    break;
             }
 
             totalCount += sqlTemplate.update(deleteSql, args);
@@ -273,22 +269,20 @@ public class PurgeService extends AbstractService implements IPurgeService {
         List<NodeBatchRange> nodeBatchRangeList = sqlTemplate.query(
                 getSql("selectIncomingBatchRangeSql"), new ISqlRowMapper<NodeBatchRange>() {
                     public NodeBatchRange mapRow(Row rs) {
-                        return new NodeBatchRange(rs.getString("node_id"), rs
-                                .getLong("min_id"), rs.getLong("max_id"));
+                        return new NodeBatchRange(rs.getString("node_id"), rs.getLong("min_id"), rs
+                                .getLong("max_id"));
                     }
-                }, time.getTime());
-        int incomingBatchesPurgedCount = purgeByNodeBatchRangeList(
-                getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
+                }, time.getTime(), IncomingBatch.Status.OK.name());
+        int incomingBatchesPurgedCount = purgeByNodeBatchRangeList(nodeBatchRangeList);
         statisticManager.incrementPurgedBatchIncomingRows(incomingBatchesPurgedCount);
         return incomingBatchesPurgedCount;
     }
 
-    private int purgeByNodeBatchRangeList(String deleteSql, List<NodeBatchRange> nodeBatchRangeList) {
+    private int purgeByNodeBatchRangeList(List<NodeBatchRange> nodeBatchRangeList) {
         long ts = System.currentTimeMillis();
         int totalCount = 0;
         int totalDeleteStmts = 0;
-        String tableName = deleteSql.trim().split("\\s")[2];
-        log.info("About to purge {}", tableName);
+        log.info("About to purge incoming batch");
 
         for (NodeBatchRange nodeBatchRange : nodeBatchRangeList) {
             int maxNumOfDataIdsToPurgeInTx = parameterService
@@ -302,19 +296,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 if (maxBatchId > purgeUpToBatchId) {
                     maxBatchId = purgeUpToBatchId;
                 }
-                totalCount += sqlTemplate.update(deleteSql, new Object[] { minBatchId, maxBatchId,
-                        nodeBatchRange.getNodeId() });
+                totalCount += sqlTemplate.update(getSql("deleteIncomingBatchSql"), new Object[] { minBatchId, maxBatchId,
+                        nodeBatchRange.getNodeId(), IncomingBatch.Status.OK.name() });
                 minBatchId = maxBatchId + 1;
             }
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("Purged {} of {} rows so far using {} statements", new Object[] {totalCount, tableName,
-                        totalDeleteStmts});
+                log.info("Purged {} incoming batch rows so far using {} statements", new Object[] {
+                        totalCount, totalDeleteStmts });
                 ts = System.currentTimeMillis();
             }
         }
-        log.info("Done purging {} of {} rows", totalCount, tableName);
+        log.info("Done purging {} incoming batch rows", totalCount);
         return totalCount;
     }
 
