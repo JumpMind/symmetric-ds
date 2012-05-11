@@ -221,15 +221,24 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected boolean isEligibleForOptimalBatching(String channelId,
-            List<TriggerRouter> triggerRouters) {
+            List<TriggerRouter> allTriggerRoutersForChannel) {
         Boolean eligible = true;
         String nodeGroupId = parameterService.getNodeGroupId();
-        if (triggerRouters != null) {
-            for (TriggerRouter triggerRouter : triggerRouters) {
+        if (allTriggerRoutersForChannel != null) {
+            for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
                 IDataRouter dataRouter = routers.get(triggerRouter.getRouter().getRouterType());
+                /*
+                 * If the data router is not a default data router or there will
+                 * be incoming data on the channel where sync_on_incoming_batch
+                 * is on, then we can not do 'optimal' routing. When
+                 * sync_on_incoming_batch is on, then we might not be sending
+                 * data to all nodes in a node_group. We can only do 'optimal'
+                 * routing if data is going to go to all nodes in a group.
+                 */
                 if (dataRouter != null
-                        && (!(dataRouter instanceof DefaultDataRouter) || triggerRouter.getRouter()
-                                .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId))) {
+                        && (!(dataRouter instanceof DefaultDataRouter) || (triggerRouter
+                                .getTrigger().isSyncOnIncomingBatch() && triggerRouter.getRouter()
+                                .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId)))) {
                     eligible = false;
                 }
             }
