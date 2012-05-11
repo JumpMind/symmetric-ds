@@ -51,7 +51,7 @@ public class XmlPublisherFilterTest {
 
     @Before
     public void setUp() {
-        context = new DataContext(new Batch(1111, "default", BinaryEncoding.BASE64, "54321"));
+        context = new DataContext(new Batch(1111, "default", BinaryEncoding.BASE64, "54321", false));
         table = Table.buildTable(TABLE_TEST, new String[] { "ID1", "ID2" }, new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
     }
 

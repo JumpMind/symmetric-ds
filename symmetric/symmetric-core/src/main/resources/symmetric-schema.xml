@@ -327,6 +327,7 @@
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be currently routing (RE), newly created and ready for replication (NE), being queried from the database (QE), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK) or error (ER)." />
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />               
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
+        <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
         <column name="ignore_count" type="BIGINT" required="true" default="0" description="The number of times a batch was ignored." />                
         <column name="byte_count" type="BIGINT" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
         <column name="extract_count" type="BIGINT"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />

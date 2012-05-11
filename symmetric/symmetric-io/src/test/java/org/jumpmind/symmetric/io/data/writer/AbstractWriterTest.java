@@ -104,7 +104,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         writer.open(context);
         try {
             for (TableCsvData tableCsvData : datas) {
-                Batch batch = new Batch(getNextBatchId(), "default", BinaryEncoding.BASE64, "00001");
+                Batch batch = new Batch(getNextBatchId(), "default", BinaryEncoding.BASE64, "00001", false);
                 try {
                     writer.start(batch);
                     if (writer.start(tableCsvData.table)) {

@@ -65,6 +65,8 @@ public class OutgoingBatch implements Serializable {
     private boolean loadFlag;
 
     private boolean errorFlag;
+    
+    private boolean commonFlag;
 
     private long routerMillis;
 
@@ -437,6 +439,18 @@ public class OutgoingBatch implements Serializable {
 
     public long totalEventCount() {
         return insertEventCount + updateEventCount + deleteEventCount + otherEventCount;
+    }
+    
+    public void setCommonFlag(boolean commonFlag) {
+        this.commonFlag = commonFlag;
+    }
+    
+    public boolean isCommonFlag() {
+        return commonFlag;
+    }
+    
+    public String getStagedLocation() {
+        return isCommonFlag() ? "common" : getNodeId();
     }
     
     @Override

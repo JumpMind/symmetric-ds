@@ -208,7 +208,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 dataCount += routeDataForChannel(
                         nodeChannel,
                         sourceNode,
-                        isEligibleForOptimalBatching(nodeChannel.getChannelId(),
+                        producesCommonBatches(nodeChannel.getChannelId(),
                                 triggerRouters.get(nodeChannel.getChannelId())));
             } else {
                 if (log.isDebugEnabled()) {
@@ -220,9 +220,9 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean isEligibleForOptimalBatching(String channelId,
+    protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
-        Boolean eligible = true;
+        Boolean producesCommonBatches = true;
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
             for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
@@ -239,24 +239,24 @@ public class RouterService extends AbstractService implements IRouterService {
                         && (!(dataRouter instanceof DefaultDataRouter) || (triggerRouter
                                 .getTrigger().isSyncOnIncomingBatch() && triggerRouter.getRouter()
                                 .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId)))) {
-                    eligible = false;
+                    producesCommonBatches = false;
                 }
             }
         }
 
-        if (!eligible.equals(defaultRouterOnlyLastState.get(channelId))) {
-            if (eligible) {
+        if (!producesCommonBatches.equals(defaultRouterOnlyLastState.get(channelId))) {
+            if (producesCommonBatches) {
                 log.info("The '{}' channel is in batch reuse mode", channelId);
             } else {
                 log.info("The '{}' channel is NOT in batch reuse mode", channelId);
             }
-            defaultRouterOnlyLastState.put(channelId, eligible);
+            defaultRouterOnlyLastState.put(channelId, producesCommonBatches);
         }
-        return eligible;
+        return producesCommonBatches;
     }
 
     protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode,
-            boolean eligbleForOptimalBatching) {
+            boolean produceCommonBatches) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -264,7 +264,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
-            context.setEligibleForOptimalBatching(eligbleForOptimalBatching);
+            context.setProduceCommonBatches(produceCommonBatches);
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
@@ -519,19 +519,20 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(),
                             Status.RT);
                     batch.setBatchId(batchIdToReuse);
+                    batch.setCommonFlag(context.isProduceCommonBatches());
                     engine.getOutgoingBatchService().insertOutgoingBatch(batch);
                     context.getBatchesByNodes().put(nodeId, batch);
 
                     // if in reuse mode, then share the batch id
-                    if (context.isEligibleForOptimalBatching()) {
+                    if (context.isProduceCommonBatches()) {
                         batchIdToReuse = batch.getBatchId();
                     }
                 }
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataEventCount();
                 numberOfDataEventsInserted++;
-                if (!context.isEligibleForOptimalBatching()
-                        || (context.isEligibleForOptimalBatching() && !dataEventAdded)) {
+                if (!context.isProduceCommonBatches()
+                        || (context.isProduceCommonBatches() && !dataEventAdded)) {
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                             triggerRouter.getRouter().getRouterId());
                     dataEventAdded = true;

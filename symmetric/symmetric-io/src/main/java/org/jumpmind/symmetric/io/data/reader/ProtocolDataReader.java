@@ -129,7 +129,7 @@ public class ProtocolDataReader implements IDataReader {
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
                     Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding,
-                            sourceNodeId);
+                            sourceNodeId, false);
                     statistics.put(batch, new DataReaderStatistics());
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
