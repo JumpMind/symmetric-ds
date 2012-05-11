@@ -246,9 +246,9 @@ public class RouterService extends AbstractService implements IRouterService {
 
         if (!producesCommonBatches.equals(defaultRouterOnlyLastState.get(channelId))) {
             if (producesCommonBatches) {
-                log.info("The '{}' channel is in batch reuse mode", channelId);
+                log.info("The '{}' channel is in common batch mode", channelId);
             } else {
-                log.info("The '{}' channel is NOT in batch reuse mode", channelId);
+                log.info("The '{}' channel is NOT in common batch mode", channelId);
             }
             defaultRouterOnlyLastState.put(channelId, producesCommonBatches);
         }
