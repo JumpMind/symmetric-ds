@@ -33,8 +33,6 @@ import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.http.security.Constraint;
-import org.eclipse.jetty.http.security.Password;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -45,6 +43,8 @@ import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
@@ -186,12 +186,12 @@ public class SymmetricWebServer {
         sm.setMaxInactiveInterval(maxIdleTime / 1000);
         sm.setSessionCookie(sm.getSessionCookie() + port);
         if (propertiesFile != null) {
-            webapp.getServletContext().setInitParameter(
+            webapp.getServletContext().getContextHandler().setInitParameter(
                     WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
-            webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
+            webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
                     Boolean.toString(false));            
         } else {
-            webapp.getServletContext().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
+            webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
                     Boolean.toString(true));
 
         }
@@ -254,7 +254,7 @@ public class SymmetricWebServer {
 
             Constraint constraint = new Constraint();
             constraint.setName(Constraint.__BASIC_AUTH);
-            ;
+            
             constraint.setRoles(new String[] { SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE });
             constraint.setAuthenticate(true);
 
