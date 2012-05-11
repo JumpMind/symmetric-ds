@@ -113,6 +113,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     case IGNORE:
                         ignore(writer, conflict);
                         break;
+                    case NEWER_WINS:
+                        // nothing to do ...
+                        break;
                     case MANUAL:
                     default:
                         if (resolvedData != null) {
@@ -123,6 +126,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                     throw new IgnoreBatchException();
                                 }
                             }
+                        } else {
+                            throw new ConflictException(data, writer.getTargetTable(), false);
                         }
                         break;
 
