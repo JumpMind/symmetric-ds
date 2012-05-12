@@ -2,10 +2,10 @@ package org.jumpmind.symmetric.io.stage;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +23,7 @@ public class StagingManager implements IStagingManager {
 
     protected long memoryThresholdInBytes;
 
-    protected Map<String, IStagedResource> resourceList = new HashMap<String, IStagedResource>();
+    protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
 
     public StagingManager(long memoryThresholdInBytes, long timeToLiveInMs, String directory) {
         this.timeToLiveInMs = timeToLiveInMs;

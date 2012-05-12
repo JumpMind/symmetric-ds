@@ -23,14 +23,9 @@ public class Batch {
     protected boolean common = false;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
-
-    public Batch(long batchId) {
-        this();
-        this.batchId = batchId;
-    }
     
     public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String nodeId, boolean common) {
-        this(batchId);
+        this.batchId = batchId;
         this.channelId = channelId;
         this.nodeId = nodeId;
         this.binaryEncoding = binaryEncoding;

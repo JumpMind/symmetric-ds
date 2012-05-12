@@ -159,7 +159,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
                 new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
-                new int[] { Types.NUMERIC });
+                new int[] { Types.NUMERIC, Types.VARCHAR });
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {

@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
@@ -450,7 +451,7 @@ public class OutgoingBatch implements Serializable {
     }
     
     public String getStagedLocation() {
-        return isCommonFlag() ? "common" : getNodeId();
+        return Batch.getStagedLocation(commonFlag, nodeId);
     }
     
     @Override
