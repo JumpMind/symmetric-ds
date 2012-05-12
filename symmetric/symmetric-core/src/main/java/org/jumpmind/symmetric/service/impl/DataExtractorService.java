@@ -344,7 +344,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     if (bytesSentCount >= maxBytesToSync) {
                         log.info(
-                                "Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
+                                "Reached one sync byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next sync",
                                 batchesSentCount, bytesSentCount);
                         break;
                     }
@@ -511,8 +511,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (previouslyExtracted != null && previouslyExtracted.exists()
                 && previouslyExtracted.getState() != State.CREATE) {
-            log.info("We have already extracted batch {}.  Using the existing extraction: {}",
-                    currentBatch.getBatchId(), previouslyExtracted);
+            if (log.isDebugEnabled()) {
+                log.debug("We have already extracted batch {}.  Using the existing extraction: {}",
+                        currentBatch.getBatchId(), previouslyExtracted);
+            }
             return true;
         } else {
             return false;

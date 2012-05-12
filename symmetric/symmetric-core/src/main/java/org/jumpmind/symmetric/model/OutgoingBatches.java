@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.model;
 
@@ -51,9 +52,9 @@ public class OutgoingBatches implements Serializable {
     }
 
     public boolean containsBatches() {
-        return batches != null && batches.size() > 0;    
+        return batches != null && batches.size() > 0;
     }
-    
+
     public Set<NodeChannel> getActiveChannels() {
         return activeChannels;
     }
@@ -92,7 +93,7 @@ public class OutgoingBatches implements Serializable {
         batches.removeAll(filtered);
         return filtered;
     }
-    
+
     public int countBatches(boolean includeOnlyErrors) {
         int count = 0;
         if (batches != null) {
@@ -118,7 +119,7 @@ public class OutgoingBatches implements Serializable {
         batches.removeAll(filtered);
         return filtered;
     }
-    
+
     public void removeNonLoadBatches() {
         for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
             OutgoingBatch b = iterator.next();
@@ -127,7 +128,7 @@ public class OutgoingBatches implements Serializable {
             }
         }
     }
-    
+
     public boolean containsLoadBatches() {
         for (OutgoingBatch b : batches) {
             if (b.isLoadFlag()) {
@@ -136,7 +137,7 @@ public class OutgoingBatches implements Serializable {
         }
         return false;
     }
-    
+
     public boolean containsBatchesInError() {
         for (OutgoingBatch b : batches) {
             if (b.isErrorFlag()) {
@@ -144,7 +145,7 @@ public class OutgoingBatches implements Serializable {
             }
         }
         return false;
-    }    
+    }
 
     public List<OutgoingBatch> getBatchesForChannel(Channel channel) {
         List<OutgoingBatch> batchList = new ArrayList<OutgoingBatch>();
@@ -182,13 +183,13 @@ public class OutgoingBatches implements Serializable {
             List<NodeGroupChannelWindow> windows) {
         List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
 
-        if (windows != null) {
-            if (batches != null && batches.size() > 0) {
-                if (inTimeWindow(windows, targetNode.getTimezoneOffset())) {
-                    for (OutgoingBatch outgoingBatch : batches) {
-                        if (channel.getChannelId().equals(outgoingBatch.getChannelId())) {
-                            keeping.add(outgoingBatch);
-                        }
+        if (batches != null && batches.size() > 0) {
+            if (inTimeWindow(windows, targetNode.getTimezoneOffset())) {
+                int maxBatchesToSend = channel.getMaxBatchToSend();
+                for (OutgoingBatch outgoingBatch : batches) {
+                    if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && maxBatchesToSend > 0) {
+                        keeping.add(outgoingBatch);
+                        maxBatchesToSend--;
                     }
                 }
             }
@@ -250,7 +251,8 @@ public class OutgoingBatches implements Serializable {
                 if (!isError1 && !isError2) {
                     return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (isError1 && isError2) {
-                    return errorChannels.get(b1.getChannelId()).compareTo(errorChannels.get(b2.getChannelId()));
+                    return errorChannels.get(b1.getChannelId()).compareTo(
+                            errorChannels.get(b2.getChannelId()));
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
@@ -263,7 +265,8 @@ public class OutgoingBatches implements Serializable {
             long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
             Date lastExtractedTime = nodeChannel.getLastExtractTime();
 
-            if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
+            if ((extractPeriodMillis < 1)
+                    || (lastExtractedTime == null)
                     || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
                 addActiveChannel(nodeChannel);
             }

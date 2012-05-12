@@ -186,6 +186,7 @@ public class SymmetricWebServer {
         sm.setMaxInactiveInterval(maxIdleTime / 1000);
         sm.setSessionCookie(sm.getSessionCookie() + port);
         webapp.getServletContext().getContextHandler().setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
+        webapp.getServletContext().getContextHandler().setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));        
         if (propertiesFile != null) {
             webapp.getServletContext().getContextHandler().setInitParameter(
                     WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);

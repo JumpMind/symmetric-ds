@@ -49,5 +49,7 @@ public interface IClusterService {
     public void aquireInfiniteLock(String action);
     
     public void clearInfiniteLock(String action);
+    
+    public boolean isInfiniteLocked(String action);
 
 }

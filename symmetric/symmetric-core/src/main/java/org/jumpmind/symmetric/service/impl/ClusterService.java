@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.util.AppUtils;
 public class ClusterService extends AbstractService implements IClusterService {
 
     protected String serverId = AppUtils.getServerId();
-        
+
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
         setSqlMap(new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
@@ -75,9 +75,10 @@ public class ClusterService extends AbstractService implements IClusterService {
         try {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
             log.debug("Inserted into the NODE_LOCK table for {}", action);
-
         } catch (UniqueKeyException ex) {
-            log.debug("Failed to insert to the NODE_LOCK table for {}.  Must be initialized already.", action);
+            log.debug(
+                    "Failed to insert to the NODE_LOCK table for {}.  Must be initialized already.",
+                    action);
         }
     }
 
@@ -105,7 +106,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         final Map<String, Lock> locks = new HashMap<String, Lock>();
         if (isClusteringEnabled()) {
             sqlTemplate.query(getSql("findLocksSql"), new ISqlRowMapper<Lock>() {
-                public Lock mapRow(Row rs) {                
+                public Lock mapRow(Row rs) {
                     Lock lock = new Lock();
                     lock.setLockAction(rs.getString("lock_action"));
                     lock.setLockingServerId(rs.getString("locking_server_id"));
@@ -141,10 +142,29 @@ public class ClusterService extends AbstractService implements IClusterService {
         return parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
     }
 
+    public boolean isInfiniteLocked(String action) {
+        Map<String, Lock> locks = findLocks();
+        Lock lock = locks.get(action);
+        if (lock != null && lock.getLockTime() != null && new Date().before(lock.getLockTime())
+                && Lock.STOPPED.equals(lock.getLockingServerId())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void aquireInfiniteLock(String action) {
         if (isClusteringEnabled()) {
+            int tries = 60;
             Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
-            lock(action, new Date(), futureTime, Lock.STOPPED);
+            while (tries > 0) {
+                if (!lock(action, new Date(), futureTime, Lock.STOPPED)) {
+                    AppUtils.sleep(1000);
+                    tries--;
+                } else {
+                    tries = 0;
+                }
+            }
         }
     }
 

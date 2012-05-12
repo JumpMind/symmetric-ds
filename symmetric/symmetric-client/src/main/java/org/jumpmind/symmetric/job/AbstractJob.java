@@ -93,7 +93,8 @@ abstract public class AbstractJob implements Runnable, IJob {
     }
 
     public void start() {
-        if (this.scheduledJob == null) {
+        if (this.scheduledJob == null && engine != null
+                && !engine.getClusterService().isInfiniteLocked(getClusterLockName())) {
             String cronExpression = engine.getParameterService().getString(jobName + ".cron", null);
             int timeBetweenRunsInMs = engine.getParameterService().getInt(
                     jobName + ".period.time.ms", -1);
@@ -103,7 +104,8 @@ abstract public class AbstractJob implements Runnable, IJob {
                 started = true;
             } else {
                 int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
-                log.info("Starting {} on periodic schedule: every {}ms", jobName, timeBetweenRunsInMs);
+                log.info("Starting {} on periodic schedule: every {}ms", jobName,
+                        timeBetweenRunsInMs);
                 if (timeBetweenRunsInMs > 0) {
                     this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
                             new Date(System.currentTimeMillis() + startDelay), timeBetweenRunsInMs);

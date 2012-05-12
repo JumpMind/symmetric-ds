@@ -90,21 +90,14 @@ abstract public class AbstractTransportManager {
     protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
         for (IncomingBatch batch : list) {
+            long batchId = batch.getBatchId();
             Object value = null;
             if (batch.getStatus() == Status.OK) {
                 value = WebConstants.ACK_BATCH_OK;
             } else {
                 value = batch.getFailedRowNumber();
             }
-            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
-        }
-
-        // For backwards compatibility with 1.3 and earlier, the first line is
-        // the original acknowledgment data and the second line contains more
-        // information
-        builder.append("\n");
-        for (IncomingBatch batch : list) {
-            long batchId = batch.getBatchId();
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);            
             append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
             append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
             append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
