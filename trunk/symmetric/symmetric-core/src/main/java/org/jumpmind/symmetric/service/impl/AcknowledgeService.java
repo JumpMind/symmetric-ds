@@ -125,8 +125,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
-                log.error("Could not find batch {} to acknowledge as {}", batch.getBatchId(),
-                        status.name());
+                log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
+                        status.name()});
             }
         }
     }

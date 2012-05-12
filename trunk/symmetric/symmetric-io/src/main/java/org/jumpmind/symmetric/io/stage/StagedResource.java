@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -32,9 +34,9 @@ public class StagedResource implements IStagedResource {
 
     private State state;
 
-    private BufferedReader reader;
+    private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
 
-    private BufferedWriter writer;
+    private Map<Thread, BufferedWriter> writers = new HashMap<Thread, BufferedWriter>();
 
     public StagedResource(long threshold, File directory, File file) {
         this.threshold = threshold;
@@ -47,7 +49,7 @@ public class StagedResource implements IStagedResource {
         if (file.exists()) {
             createTime = file.lastModified();
             String fileName = file.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".")+1, fileName.length());
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
             this.state = State.valueOf(extension.toUpperCase());
         } else {
             throw new IllegalStateException(String.format("The passed in file, %s, does not exist",
@@ -76,7 +78,7 @@ public class StagedResource implements IStagedResource {
     public void setState(State state) {
         if (file.exists()) {
             File newFile = buildFile(state);
-            if(newFile.exists()) {
+            if (newFile.exists()) {
                 FileUtils.deleteQuietly(newFile);
             }
             if (!file.renameTo(newFile)) {
@@ -91,47 +93,67 @@ public class StagedResource implements IStagedResource {
         } else if (memoryBuffer != null && state == State.DONE) {
             this.memoryBuffer.setLength(0);
             this.memoryBuffer = null;
-        } 
+        }
         this.state = state;
     }
 
     public BufferedReader getReader() {
+        Thread thread = Thread.currentThread();
+        BufferedReader reader = readers.get(thread);
         if (reader == null) {
             if (file.exists()) {
                 try {
-                    this.reader = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(file), "UTF-8"));
+                    reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
+                            "UTF-8"));
+                    readers.put(thread, reader);
                 } catch (IOException ex) {
                     throw new IoException(ex);
                 }
             } else if (memoryBuffer != null && memoryBuffer.length() > 0) {
-                this.reader = new BufferedReader(new StringReader(memoryBuffer.toString()));
+                reader = new BufferedReader(new StringReader(memoryBuffer.toString()));
+                readers.put(thread, reader);
             } else {
-                throw new IllegalStateException("There is no content to read.  Memory buffer was empty and " + file.getAbsolutePath() + " was not found.");
+                throw new IllegalStateException(
+                        "There is no content to read.  Memory buffer was empty and "
+                                + file.getAbsolutePath() + " was not found.");
             }
         }
         return reader;
     }
 
     public void close() {
-        IOUtils.closeQuietly(reader);
-        reader = null;
-        IOUtils.closeQuietly(writer);
-        writer = null;
+        Thread thread = Thread.currentThread();
+        BufferedReader reader = readers.get(thread);
+        if (reader != null) {
+            IOUtils.closeQuietly(reader);
+            readers.remove(thread);
+        }
+
+        BufferedWriter writer = writers.get(thread);
+        if (writer != null) {
+            IOUtils.closeQuietly(writer);
+            writers.remove(writer);
+        }
+
     }
 
     public BufferedWriter getWriter() {
+        Thread thread = Thread.currentThread();
+        BufferedWriter writer = writers.get(thread);
         if (writer == null) {
             if (file.exists()) {
                 throw new IllegalStateException(String.format(
-                        "Cannot create a writer because the file, %s, already exists", file.getAbsoluteFile()));
+                        "Cannot create a writer because the file, %s, already exists",
+                        file.getAbsoluteFile()));
             } else if (this.memoryBuffer != null) {
                 throw new IllegalStateException(
-                        "Cannot create a writer because the memory buffer has already been written to.");
+                        "Cannot create a writer because the memory buffer for " + path
+                                + " has already been written to: \n" + memoryBuffer);
             }
             this.memoryBuffer = new StringBuilder();
-            this.writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
+            writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
                     this.file));
+            writers.put(thread, writer);
         }
         return writer;
     }
@@ -172,10 +194,11 @@ public class StagedResource implements IStagedResource {
     public String getPath() {
         return path;
     }
-    
+
     @Override
     public String toString() {
-        return file.exists() ? file.getAbsolutePath() : String.format("%d bytes in memory",memoryBuffer.length()); 
+        return file.exists() ? file.getAbsolutePath() : String.format("%d bytes in memory",
+                memoryBuffer.length());
     }
 
 }

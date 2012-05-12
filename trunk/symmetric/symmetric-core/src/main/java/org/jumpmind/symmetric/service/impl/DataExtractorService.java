@@ -25,7 +25,10 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -55,6 +58,7 @@ import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -397,6 +401,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
     }
 
+    private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
+
     protected OutgoingBatch extractOutgoingBatch(Node targetNode,
             IOutgoingTransport targetTransport, OutgoingBatch currentBatch) {
         if (currentBatch.getStatus() != Status.OK) {
@@ -435,31 +441,52 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     transformExtractWriter.close();
                 }
             } else {
-                IStagedResource previouslyExtracted = stagingManager.find(
-                        Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
-                        currentBatch.getBatchId());
+                if (!isPreviouslyExtracted(currentBatch)) {
+                    int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
+                    Semaphore lock = null;
+                    try {
+                        synchronized (locks) {
+                            lock = locks.get(currentBatch.getBatchId());
+                            if (lock == null) {
+                                lock = new Semaphore(100);
+                                locks.put(currentBatch.getBatchId(), lock);
+                            }
+                            try {
+                                lock.acquire();
+                            } catch (InterruptedException e) {
+                                throw new org.jumpmind.exception.InterruptedException(e);
+                            }
+                        }
 
-                if (previouslyExtracted != null && previouslyExtracted.exists()) {
+                        synchronized (lock) {
+                            if (!isPreviouslyExtracted(currentBatch)) {
+                                currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                                changeBatchStatus(Status.QY, currentBatch);
 
-                    log.info(
-                            "We have already extracted batch {}.  Using the existing extraction: {}",
-                            currentBatch.getBatchId(), previouslyExtracted);
-                } else {
-                    currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
-                    changeBatchStatus(Status.QY, currentBatch);
-
-                    IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(currentBatch, targetNode));
-                    new DataProcessor(dataReader, transformExtractWriter).process();
-                    extractTimeInMs = System.currentTimeMillis() - ts;
-                    Statistics stats = transformExtractWriter.getTargetWriter().getStatistics()
-                            .values().iterator().next();
-                    byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                                IDataReader dataReader = new ExtractDataReader(
+                                        symmetricDialect.getPlatform(),
+                                        new SelectFromSymDataSource(currentBatch, targetNode));
+                                new DataProcessor(dataReader, transformExtractWriter).process();
+                                extractTimeInMs = System.currentTimeMillis() - ts;
+                                Statistics stats = transformExtractWriter.getTargetWriter()
+                                        .getStatistics().values().iterator().next();
+                                byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                            }
+                        }
+                    } finally {
+                        synchronized (locks) {
+                            lock.release();
+                            if (lock.availablePermits() == maxPermits) {
+                                locks.remove(lock);
+                            }
+                        }
+                    }
                 }
             }
 
             currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
 
+            // only update the current batch after we have possibly "re-queried"
             if (extractTimeInMs > 0) {
                 currentBatch.setExtractMillis(extractTimeInMs);
             }
@@ -476,8 +503,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return currentBatch;
     }
-    
-    
+
+    protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch) {
+        IStagedResource previouslyExtracted = stagingManager.find(
+                Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
+                currentBatch.getBatchId());
+
+        if (previouslyExtracted != null && previouslyExtracted.exists()
+                && previouslyExtracted.getState() != State.CREATE) {
+            log.info("We have already extracted batch {}.  Using the existing extraction: {}",
+                    currentBatch.getBatchId(), previouslyExtracted);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     protected OutgoingBatch sendOutgoingBatch(OutgoingBatch currentBatch, IDataWriter dataWriter) {
         if (currentBatch.getStatus() != Status.OK) {

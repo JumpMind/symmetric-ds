@@ -198,17 +198,17 @@ public class ProtocolDataReader implements IDataReader {
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.SQL);
-                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
+                    data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
                 } else if (tokens[0].equals(CsvConstants.BSH)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.BSH);
-                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
+                    data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
                 } else if (tokens[0].equals(CsvConstants.CREATE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.CREATE);
-                    data.putParsedData(CsvData.ROW_DATA, new String[] {tokens[1]});
+                    data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
                 } else if (tokens[0].equals(CsvConstants.IGNORE)) {
                     if (batch != null) {
