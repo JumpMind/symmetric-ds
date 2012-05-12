@@ -149,7 +149,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         for (String poolId : poolIds) {
             if (poolId.endsWith(urlPath)) {
                 Map<String, Reservation> reservations = activeReservationsByNodeByPool.get(poolId);
-                Set<String> nodeIds = reservations.keySet();
+                Set<String> nodeIds = new HashSet<String>(reservations.keySet());
                 for (String nodeId : nodeIds) {
                       Reservation reservation = reservations.get(nodeId);
                       if (reservation != null && reservation.getType() == ReservationType.HARD) {                          
