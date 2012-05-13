@@ -233,7 +233,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);        
+        testChannel.setMaxBatchToSend(10000);        
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel, true);
 
@@ -446,7 +446,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchToSend(10000);
         testChannel.setMaxBatchSize(10000);
         testChannel.setBatchAlgorithm("default");
         getConfigurationService().saveChannel(testChannel, true);
@@ -546,7 +546,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchToSend(10000);
         final int MAX_BATCH_SIZE = 100;
         testChannel.setMaxBatchSize(MAX_BATCH_SIZE);
         testChannel.setBatchAlgorithm("nontransactional");
@@ -577,7 +577,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     public void testColumnMatchSubtableRoutingToNode1() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchToSend(10000);
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel, true);
 
@@ -783,7 +783,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     public void testSyncOnColumnChange() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchToSend(10000);
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel, true);
 
