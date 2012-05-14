@@ -127,12 +127,15 @@
 </beans>]]></programlisting>
             </para>
         </section>
-        <section id="extensions-dataloader-factor">
+        <section id="extensions-dataloader-factory">
             <title>IDataLoaderFactory</title>
             <para>
-            Implement this extension point to provide different implementations of the <code>org.jumpmind.symmetric.io.data.IDataWriter</code> that 
-            are used by the SymmetricDS data loader.  Data loaders are configured for a channel.  After this extension point is registered it can 
-            be activated for a channel by indicating the data loader name in the <code>data_loader_type</code> column.
+            Implement this extension point to provide a different implementation of the <code>org.jumpmind.symmetric.io.data.IDataWriter</code> that 
+            is used by the SymmetricDS data loader.  Data loaders are configured for a channel.  After this extension point is registered it can 
+            be activated for a <xref linkend="table_channel" xrefstyle="table"/> by indicating the data loader name in the <code>data_loader_type</code> column.
+            </para>
+            <para>
+            One possible use of this extension point is to route data to a NOSQL data sink.
             </para>
         </section>             
         <section id="extensions-acknowledge-event-listener">
@@ -160,6 +163,16 @@
              To use this extension point configure the sync_url for a node with the
              protocol of ext://beanName. The beanName is the name you give the extension
              point in the extension xml file.
+            </para>
+        </section>        
+        <section id="extensions-column-transforms">
+            <title>IColumnTransform</title>
+            <para>
+             This extension point allows custom column transformations to be created.  There are a handful of 
+             out-of-the-box implementations.  If any of these do not meet the column transformation needs of 
+             the application, then a custom transform can be created and registered.  It can be activated
+             by referencing the column transform's name <code>transform_type</code> column of 
+             <xref linkend="table_transform_column" xrefstyle="table"/>
             </para>
         </section>        
         <section id="extensions-node-id-generator">
