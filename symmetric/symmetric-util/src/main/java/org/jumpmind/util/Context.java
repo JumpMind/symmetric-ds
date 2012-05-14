@@ -2,6 +2,7 @@ package org.jumpmind.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Context {
 
@@ -17,6 +18,10 @@ public class Context {
     
     public Object remove(String key) {
         return context.remove(key);
+    }
+    
+    public Set<String> keySet() {
+        return context.keySet();
     }
     
 }

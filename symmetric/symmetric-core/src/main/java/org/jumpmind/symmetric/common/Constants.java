@@ -28,6 +28,10 @@ final public class Constants {
 
     private Constants() {
     }
+    
+    public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
+    
+    public static final String DATA_CONTEXT_SOURCE_NODE = "sourceNode";
         
     public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
 

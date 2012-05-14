@@ -153,7 +153,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public List<IncomingBatch> loadDataBatch(String batchData) throws IOException {
         InternalIncomingTransport transport = new InternalIncomingTransport(new BufferedReader(
                 new StringReader(batchData)));
-        return loadDataFromTransport(nodeService.findIdentityNodeId(), transport);
+        return loadDataFromTransport(nodeService.findIdentity(), transport);
     }
 
     /**
@@ -193,7 +193,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
             }
 
-            List<IncomingBatch> list = loadDataFromTransport(remote.getNodeId(), transport);
+            List<IncomingBatch> list = loadDataFromTransport(remote, transport);
             if (list.size() > 0) {
                 status.updateIncomingStatus(list);
                 local = nodeService.findIdentity();
@@ -230,9 +230,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * stream. This is used for a "push" request with a response of an
      * acknowledgment.
      */
-    public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out)
+    public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out)
             throws IOException {
-        List<IncomingBatch> list = loadDataFromTransport(sourceNodeId,
+        List<IncomingBatch> list = loadDataFromTransport(sourceNode,
                 new InternalIncomingTransport(in));
         Node local = nodeService.findIdentity();
         NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
@@ -291,29 +291,33 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * is used for a pull request that responds with data, and the
      * acknowledgment is sent later.
      */
-    protected List<IncomingBatch> loadDataFromTransport(final String sourceNodeId,
+    protected List<IncomingBatch> loadDataFromTransport(final Node sourceNode,
             IIncomingTransport transport) throws IOException {
         final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
         try {
 
+            DataContext ctx = new DataContext();
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, nodeService.findIdentity());
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 IDataReader dataReader = new ProtocolDataReader(transport.open());
-                IDataWriter dataWriter = new StagingDataWriter(sourceNodeId,
+                IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
-                        new LoadIntoDatabaseOnArrivalListener(sourceNodeId, listener));
-                new DataProcessor(dataReader, dataWriter).process();
+                        new LoadIntoDatabaseOnArrivalListener(sourceNode.getNodeId(), listener));
+                new DataProcessor(dataReader, dataWriter).process(ctx);
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 DataProcessor processor = new DataProcessor(
                         new ProtocolDataReader(transport.open()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
-                        return buildDataWriter(sourceNodeId, batch.getChannelId(),
+                        return buildDataWriter(sourceNode.getNodeId(), batch.getChannelId(),
                                 batch.getBatchId());
                     }
                 };
-                processor.process();
+                processor.process(ctx);
             }
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
@@ -592,11 +596,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             this.listener = listener;
         }
 
-        public void start(Batch batch) {
+        public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
         }
 
-        public void end(Batch batch, IStagedResource resource) {
+        public void end(DataContext ctx, Batch batch, IStagedResource resource) {
             if (listener.currentBatch != null) {
                 listener.currentBatch.setNetworkMillis(System.currentTimeMillis()
                         - batchStartsToArriveTimeInMs);
@@ -615,7 +619,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     }
                 };
 
-                processor.process();
+                processor.process(ctx);
             } finally {
                 resource.setState(State.DONE);
             }

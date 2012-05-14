@@ -40,7 +40,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
 
     @Override
     protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener) {
-        listener.end(batch, getStagedResource(batch));
+        listener.end(context, batch, getStagedResource(batch));
     }
 
     protected IStagedResource getStagedResource(Batch batch) {

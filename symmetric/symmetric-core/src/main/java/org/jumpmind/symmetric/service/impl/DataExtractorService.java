@@ -147,16 +147,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) {
+    public void extractConfigurationStandalone(Node targetNode, Writer writer, String... tablesToExclude) {        
+        Node sourceNode = nodeService.findIdentity();
+        
         Batch batch = new Batch(BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
-                symmetricDialect.getBinaryEncoding(), node.getNodeId(), false);
+                symmetricDialect.getBinaryEncoding(), targetNode.getNodeId(), false);
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
-                node.getNodeGroupId());
+                targetNode.getNodeGroupId());
 
         List<TriggerRouter> triggerRouters = triggerRouterService
-                .buildTriggerRoutersForSymmetricTables(StringUtils.isBlank(node
-                        .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),
+                .buildTriggerRoutersForSymmetricTables(StringUtils.isBlank(targetNode
+                        .getSymmetricVersion()) ? Version.version() : targetNode.getSymmetricVersion(),
                         nodeGroupLink, tablesToExclude);
 
         List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
@@ -177,7 +179,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             }
 
-            StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(node,
+            StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(targetNode,
                     triggerRouter));
             addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(),
                     sql);
@@ -201,9 +203,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (!triggerRouter.getTrigger().getSourceTableName()
                     .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 initialLoadEvents
-                        .add(new SelectFromTableEvent(node, triggerRouter, triggerHistory));
+                        .add(new SelectFromTableEvent(targetNode, triggerRouter, triggerHistory));
             } else {
-                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT,
+                Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT,
                         triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
                                 .getTrigger().getChannelId(), null, null);
                 initialLoadEvents.add(new SelectFromTableEvent(data));
@@ -217,10 +219,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                 writer);
         DataProcessor processor = new DataProcessor(dataReader, dataWriter);
-        processor.process();
+        DataContext ctx = new DataContext();
+        ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+        ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+        processor.process(ctx);
 
         if (triggerRouters.size() == 0) {
-            log.error("{} attempted registration, but was sent an empty configuration", node);
+            log.error("{} attempted registration, but was sent an empty configuration", targetNode);
         }
 
     }
@@ -333,7 +338,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             targetTransport.open());
                 }
 
-                currentBatch = sendOutgoingBatch(currentBatch, dataWriter);
+                currentBatch = sendOutgoingBatch(targetNode, currentBatch, dataWriter);
 
                 if (currentBatch.getStatus() != Status.OK) {
                     currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
@@ -406,19 +411,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected OutgoingBatch extractOutgoingBatch(Node targetNode,
             IOutgoingTransport targetTransport, OutgoingBatch currentBatch) {
         if (currentBatch.getStatus() != Status.OK) {
-            Node identity = nodeService.findIdentity();
+            Node sourceNode = nodeService.findIdentity();
 
             boolean streamToFileEnabled = parameterService
                     .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
 
             TransformWriter transformExtractWriter = null;
             if (streamToFileEnabled) {
-                transformExtractWriter = createTransformDataWriter(identity, targetNode,
+                transformExtractWriter = createTransformDataWriter(sourceNode, targetNode,
                         new StagingDataWriter(nodeService.findIdentityNodeId(),
                                 Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
             } else {
                 transformExtractWriter = createTransformDataWriter(
-                        identity,
+                        sourceNode,
                         targetNode,
                         new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport
                                 .open()));
@@ -434,7 +439,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
-                    transformExtractWriter.open(new DataContext(batch));
+                    DataContext ctx = new DataContext(batch);
+                    ctx.put("targetNode", targetNode);
+                    ctx.put("sourceNode", sourceNode);
+                    transformExtractWriter.open(ctx);
                     transformExtractWriter.start(batch);
                     transformExtractWriter.end(batch, false);
                 } finally {
@@ -466,7 +474,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 IDataReader dataReader = new ExtractDataReader(
                                         symmetricDialect.getPlatform(),
                                         new SelectFromSymDataSource(currentBatch, targetNode));
-                                new DataProcessor(dataReader, transformExtractWriter).process();
+                                DataContext ctx = new DataContext();
+                                ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+                                new DataProcessor(dataReader, transformExtractWriter).process(ctx);
                                 extractTimeInMs = System.currentTimeMillis() - ts;
                                 Statistics stats = transformExtractWriter.getTargetWriter()
                                         .getStatistics().values().iterator().next();
@@ -521,7 +532,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected OutgoingBatch sendOutgoingBatch(OutgoingBatch currentBatch, IDataWriter dataWriter) {
+    protected OutgoingBatch sendOutgoingBatch(Node targetNode, OutgoingBatch currentBatch, IDataWriter dataWriter) {
         if (currentBatch.getStatus() != Status.OK) {
 
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
@@ -535,7 +546,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (extractedBatch != null) {
                 IDataReader dataReader = new ProtocolDataReader(extractedBatch);
 
-                new DataProcessor(dataReader, dataWriter).process();
+                DataContext ctx = new DataContext();
+                ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
+                new DataProcessor(dataReader, dataWriter).process(ctx);
                 Statistics stats = dataWriter.getStatistics().values().iterator().next();
                 statisticManager.incrementDataSent(currentBatch.getChannelId(),
                         stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
@@ -560,9 +574,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Node targetNode = nodeService.findNode(batch.getNodeId());
             IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
                     new SelectFromSymDataSource(batch, targetNode));
+            DataContext ctx = new DataContext();
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
             new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
                     targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer)))
-                    .process();
+                    .process(ctx);
             foundBatch = true;
 
         }

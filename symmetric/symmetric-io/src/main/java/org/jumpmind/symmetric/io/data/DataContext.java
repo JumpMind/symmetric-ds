@@ -36,6 +36,10 @@ public class DataContext extends Context {
     public IDataWriter getWriter() {
         return writer;
     }
+    
+    public void setReader(IDataReader reader) {
+        this.reader = reader;
+    }
 
     protected void setWriter(IDataWriter writer) {
         this.writer = writer;

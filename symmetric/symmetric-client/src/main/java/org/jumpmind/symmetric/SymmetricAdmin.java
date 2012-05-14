@@ -344,7 +344,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else {
             in = new FileInputStream(args.get(0));
         }
-        service.loadDataFromPush("", in, System.out);
+        service.loadDataFromPush(getSymmetricEngine().getNodeService().findIdentity(), in, System.out);
         System.out.flush();
         in.close();
     }

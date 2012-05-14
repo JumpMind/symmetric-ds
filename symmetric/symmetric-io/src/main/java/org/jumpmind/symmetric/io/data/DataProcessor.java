@@ -50,9 +50,9 @@ public class DataProcessor {
         return this.defaultDataWriter;
     }
 
-    public void process() {
+    public void process(DataContext context) {
         try {
-            DataContext context = new DataContext(dataReader);
+            context.setReader(dataReader);
             dataReader.open(context);
             do {
                 currentBatch = dataReader.nextBatch();

@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
@@ -67,6 +68,12 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
             }
+            
+            Set<String> keys = context.keySet();
+            for (String key : keys) {
+                interpreter.set(key, context.get(key));
+            }            
+            
             Object result = interpreter.eval(column.getTransformExpression());
             if (result != null) {
                 return result.toString();

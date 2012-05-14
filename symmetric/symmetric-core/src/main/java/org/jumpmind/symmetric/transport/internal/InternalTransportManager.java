@@ -79,18 +79,18 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(final Node remote,
-        Node local, String securityToken, String registrationUrl) throws IOException {
+    public IOutgoingWithResponseTransport getPushTransport(final Node targetNode,
+        Node sourceNode, String securityToken, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(remote.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
+        runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
-                engine.getDataLoaderService().loadDataFromPush(remote.getNodeId(), pushIs, respOs);
+                engine.getDataLoaderService().loadDataFromPush(targetNode, pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
