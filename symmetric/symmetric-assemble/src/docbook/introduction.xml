@@ -70,14 +70,14 @@
                 file. SymmetricDS can synchronize any table that is accessible by the connection represented by the database
                 connection string, given that the database user has been assigned the appropriate database permissions.
             </para>
-                <figure id="figure-overview-1">
-                    <title>Simple Configuration</title>
-                    <mediaobject>
-                        <imageobject>
-                            <imagedata fileref="images/overview-1.gif" format="GIF" />
-                        </imageobject>
-                    </mediaobject>
-                </figure>            
+            <figure id="figure-overview-1">
+                <title>Simple Configuration</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/overview-1.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
             <para> A SymmetricDS node is also assigned an external id and a node group id. The external id is a meaningful,
                 user-assigned identifier that is used by SymmetricDS to understand which data is destined for a given node.
                 The node group id is used to identify groupings or tiers of nodes. It defines where the node fits into the
@@ -397,13 +397,51 @@
     <section>
         <title>Support</title>
         <para>SymmetricDS is backed by JumpMind, Inc.</para>
-        <para>SymmetricDS is, and always will be, open source, which means free community support is available
-            online, through the forums and the issue tracker. In a production environment, we have found that clients demand
-            fast, more experienced help from the original architects and engineers — people who have the knowledge and
-            experience to design, tune, troubleshoot, and shape future versions of the product.
+        <para>SymmetricDS is, and always will be, open source, which means free community support is available online,
+            through the forums and the issue tracker. In a production environment, we have found that clients demand fast,
+            more experienced help from the original architects and engineers — people who have the knowledge and experience
+            to design, tune, troubleshoot, and shape future versions of the product.
         </para>
         <para> To meet this demand, JumpMind provides Support Subscriptions designed to provide your organization with
             expert, dependable support from development to mission critical production support.
+        </para>
+    </section>
+    <section>
+        <title>Whats New in SymmetricDS 3</title>
+        <para> SymmetricDS 3 builds upon the existing SymmetricDS 2.x software base and incorporates a number of
+            architectural changes and performance improvements. If you are brand new to SymmetricDS, you can safely skip this
+            section. If you have used SymmetricDS 2.x in the past, this section summarizes the key differences you will
+            encounter when moving to SymmetricDS 3.
+        </para>
+        <para>
+            One optimization in SymmetricDS 3 is a change to the routing process to reuse batch ids if the scenario allows
+            for it. SymmetricDS will automatically reuse batches if the default router is being used and there are NO inbound
+            routers that have sync_on_incoming_batch turned on. If the same data is being sent to all nodes then a great deal
+            of processing, during both routing and extraction, can be avoided. This is especially useful when data is being
+            delivered to thousands of nodes. As a result of this change, the primary key of
+            <xref linkend="table_outgoing_batch" xrefstyle="table" />
+            has changed. This means that during an upgrade the table will be rebuilt.
+        </para>
+        <para> Unlike SymmetricDS 2.x, SymmetricDS 3 loads batches as soon as they have been delivered to a target node. In
+            2.x all batches for a synchronization run were delivered, then data was loaded. When errors occurred early on and
+            there were several big batches or hundreds of batches to deliver, this was inefficient.
+        </para>
+        <para> The 2.x series allowed multiple nodes to be hosted in one standalone SymmetricDS instance. This feature
+            (called multiServerMode) was off by default. In SymmetricDS 3 this feature is now the preferred mode of
+            operation. It formalizes where properties file are configured and allows multiple nodes to be hosted on one JVM
+            which saves on system resources.
+        </para>
+        <para> SymmetricDS 3 introduces a long anticipated feature: Conflict Detection and Resolution. Please read more about
+            it and give it a spin!
+        </para>
+        <para> Transformations are now friendlier. They allow columns to be implied. This means that when configuring
+            transformations, not all of the columns have to be specified which makes transformations much more maintainable.
+        </para>
+        <para> The data loader is now pluggable by channel. This will allow more efficient data loaders to be built if
+            necessary. It will also make it easier to load data into non-relational data stores.
+        </para>
+        <para> Several properties and extension points have been deprecated. Please see the appendix for a list of deprecated
+            features.
         </para>
     </section>
 </chapter>
