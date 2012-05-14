@@ -127,6 +127,14 @@
 </beans>]]></programlisting>
             </para>
         </section>
+        <section id="extensions-dataloader-factor">
+            <title>IDataLoaderFactory</title>
+            <para>
+            Implement this extension point to provide different implementations of the <code>org.jumpmind.symmetric.io.data.IDataWriter</code> that 
+            is used by the SymmetricDS data loader.  Data loaders are configured for a channel.  After this extension point is registered it can 
+            be activated for a channel by indicating the data loader name in the <code>data_loader_type</code> column.
+            </para>
+        </section>             
         <section id="extensions-acknowledge-event-listener">
             <title>IAcknowledgeEventListener</title>
             <para>
