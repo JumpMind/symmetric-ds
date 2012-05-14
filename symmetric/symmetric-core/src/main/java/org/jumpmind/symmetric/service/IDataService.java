@@ -65,6 +65,9 @@ public interface IDataService {
 
     public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
     
+    public void insertReloadEvent(ISqlTransaction transaction, final Node targetNode,
+            final TriggerRouter triggerRouter, final String overrideInitialLoadSelect);
+    
     public void sendScript(String nodeId, String script, boolean isLoad);
 
     /**

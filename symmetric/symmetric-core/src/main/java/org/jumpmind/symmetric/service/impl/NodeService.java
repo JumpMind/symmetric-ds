@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -387,11 +388,23 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return nodeLeaf.getRoot();
     }
-
+    
     public boolean updateNodeSecurity(NodeSecurity security) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            boolean updated = updateNodeSecurity(transaction, security);
+            transaction.commit();
+            return updated;
+        } finally {
+            close(transaction);
+        }
+    }
+
+    public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
         flushNodeAuthorizedCache();
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        return sqlTemplate.update(getSql("updateNodeSecuritySql"),
+        return transaction.prepareAndExecute(getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                         security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
@@ -399,8 +412,8 @@ public class NodeService extends AbstractService implements INodeService {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
     }
-
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+    
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
         NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
         if (nodeSecurity != null) {
             nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
@@ -409,9 +422,21 @@ public class NodeService extends AbstractService implements INodeService {
             } else {
                 nodeSecurity.setInitialLoadTime(new Date());
             }
-            return updateNodeSecurity(nodeSecurity);
+            return updateNodeSecurity(transaction, nodeSecurity);
         }
-        return false;
+        return false;        
+    }
+
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
+            transaction.commit();
+            return updated;
+        } finally {
+            close(transaction);
+        }
     }
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {

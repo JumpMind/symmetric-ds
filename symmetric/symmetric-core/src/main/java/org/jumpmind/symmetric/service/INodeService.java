@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
@@ -121,8 +122,12 @@ public interface INodeService {
     public void insertNodeGroup(String groupId, String description);
 
     public boolean updateNodeSecurity(NodeSecurity security);
+    
+    public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security);
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
+    
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
 
     public INodeIdGenerator getNodeIdGenerator();
 

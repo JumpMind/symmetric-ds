@@ -20,12 +20,9 @@
 
 package org.jumpmind.symmetric.transport;
 
-import java.io.IOException;
+import org.jumpmind.exception.IoException;
 
-/**
- * 
- */
-public class AuthenticationException extends IOException {
+public class AuthenticationException extends IoException {
 
     private static final long serialVersionUID = -6322765147037755510L;
 

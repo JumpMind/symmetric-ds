@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -78,14 +79,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
 
     private IStatisticManager statisticManager;
-    
+
     private ITriggerRouterService triggerRouterService;
 
     public RegistrationService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IDataExtractorService dataExtractorService, ITriggerRouterService triggerRouterService, IDataService dataService,
-            IDataLoaderService dataLoaderService, ITransportManager transportManager,
-            IStatisticManager statisticManager) {
+            IDataExtractorService dataExtractorService, ITriggerRouterService triggerRouterService,
+            IDataService dataService, IDataLoaderService dataLoaderService,
+            ITransportManager transportManager, IStatisticManager statisticManager) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.triggerRouterService = triggerRouterService;
@@ -194,15 +195,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         return requests;
     }
-    
+
     public boolean deleteRegistrationRequest(RegistrationRequest request) {
         String externalId = request.getExternalId() == null ? "" : request.getExternalId();
         String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
-        return 0 < sqlTemplate.update(
-                getSql("deleteRegistrationRequestSql"),
-                new Object[] { nodeGroupId,
-                    externalId, request.getIpAddress(), request.getHostName(),
-                    RegistrationStatus.RQ.name()});        
+        return 0 < sqlTemplate.update(getSql("deleteRegistrationRequestSql"), new Object[] {
+                nodeGroupId, externalId, request.getIpAddress(), request.getHostName(),
+                RegistrationStatus.RQ.name() });
     }
 
     public void saveRegisgtrationRequest(RegistrationRequest request) {
@@ -298,7 +297,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 } else {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     registered = false;
-                } 
+                }
             }
 
             if (!registered && maxNumberOfAttempts != 0) {
@@ -312,29 +311,42 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
         }
     }
-    
+
     protected void sendInitialLoadFromRegisteredNode() {
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+            boolean transactional = parameterService
+                    .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
             boolean queuedLoad = false;
             List<Node> nodes = new ArrayList<Node>();
             nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));            
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
             for (Node node : nodes) {
-                log.info("Enabling an initial load to {}", node.getNodeId());
-                List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
-                        .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(),
-                                node.getNodeGroupId()));
-                for (TriggerRouter trigger : triggerRouters) {
-                    dataService.insertReloadEvent(node, trigger);
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    log.info("Enabling an initial load to {}", node.getNodeId());
+                    List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
+                            triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(
+                                    parameterService.getNodeGroupId(), node.getNodeGroupId()));
+                    for (TriggerRouter trigger : triggerRouters) {
+                        dataService.insertReloadEvent(node, trigger);
+                        if (!transactional) {
+                            transaction.commit();
+                        }
+                    }
+                    transaction.commit();
+                    queuedLoad = true;
+                } finally {
+                    close(transaction);
                 }
-                queuedLoad = true;
             }
-            
+
             if (!queuedLoad) {
-                log.info("{} was enabled but no nodes were linked to load", ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
+                log.info("{} was enabled but no nodes were linked to load",
+                        ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
             }
         }
-    }    
+    }
 
     /**
      * @see IRegistrationService#reOpenRegistration(String)

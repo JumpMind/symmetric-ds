@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.load;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 
@@ -29,8 +30,8 @@ import org.jumpmind.symmetric.model.Node;
  */
 public interface IReloadListener extends IExtensionPoint {
 
-    public void beforeReload(Node node);
+    public void beforeReload(ISqlTransaction transaction, Node node);
 
-    public void afterReload(Node node);
+    public void afterReload(ISqlTransaction transaction , Node node);
 
 }

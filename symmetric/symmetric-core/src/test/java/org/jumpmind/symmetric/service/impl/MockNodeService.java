@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -161,8 +162,17 @@ public class MockNodeService implements INodeService {
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         return false;
     }
+    
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
+            boolean initialLoadEnabled) {
+        return false;
+    }
 
     public boolean updateNode(Node node) {
+        return false;
+    }
+    
+    public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
         return false;
     }
 
