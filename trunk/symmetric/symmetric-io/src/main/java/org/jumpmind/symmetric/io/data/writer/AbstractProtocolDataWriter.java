@@ -56,7 +56,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
         if (listeners != null) {
             for (IProtocolDataWriterListener listener : listeners) {
-                listener.start(batch);
+                listener.start(context, batch);
             }
         }
 

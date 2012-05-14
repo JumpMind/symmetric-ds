@@ -78,9 +78,10 @@ public class AuthenticationInterceptor implements IInterceptor {
 
     protected AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
-        if (nodeService.findNode(nodeId) == null) {
+        Node node = nodeService.findNode(nodeId);
+        if (node == null) {
             retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
-        } else if (!syncEnabled(nodeId)) {
+        } else if (!syncEnabled(node)) {
             retVal = AuthenticationStatus.SYNC_DISABLED;
         } else if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
             retVal = AuthenticationStatus.FORBIDDEN;
@@ -88,9 +89,8 @@ public class AuthenticationInterceptor implements IInterceptor {
         return retVal;
     }
 
-    protected boolean syncEnabled(String nodeId) {
+    protected boolean syncEnabled(Node node) {
         boolean syncEnabled = false;
-        Node node = nodeService.findNode(nodeId);
         if (node != null) {
             syncEnabled = node.isSyncEnabled();
         }

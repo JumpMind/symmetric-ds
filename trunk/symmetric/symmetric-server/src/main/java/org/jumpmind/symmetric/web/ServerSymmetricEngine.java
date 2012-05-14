@@ -34,7 +34,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 configurationService, dataExtractorService, registrationService, statisticManager,
                 concurrencyInterceptor, authInterceptor));
         this.uriHandlers.add(new PushUriHandler(parameterService, dataLoaderService,
-                statisticManager, concurrencyInterceptor, authInterceptor));
+                statisticManager, nodeService, concurrencyInterceptor, authInterceptor));
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 concurrencyInterceptor));
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {

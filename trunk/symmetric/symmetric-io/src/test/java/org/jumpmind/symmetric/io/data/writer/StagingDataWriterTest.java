@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -58,7 +59,7 @@ public class StagingDataWriterTest {
         ProtocolDataReader reader = new ProtocolDataReader(origCsv);
         StagingDataWriter writer = new StagingDataWriter("aaa", "test", stagingManager, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer);
-        processor.process();
+        processor.process(new DataContext());
 
         Assert.assertEquals(1, batchesWritten.size());
         Assert.assertEquals(origCsv, batchesWritten.get(0));
@@ -77,10 +78,10 @@ public class StagingDataWriterTest {
     }
 
     class BatchListener implements IProtocolDataWriterListener {
-        public void start(Batch batch) {
+        public void start(DataContext ctx, Batch batch) {
         }
 
-        public void end(Batch batch, IStagedResource resource) {
+        public void end(DataContext ctx, Batch batch, IStagedResource resource) {
             try {
                 BufferedReader reader = resource.getReader();
                 batchesWritten.add(IOUtils.toString(reader));

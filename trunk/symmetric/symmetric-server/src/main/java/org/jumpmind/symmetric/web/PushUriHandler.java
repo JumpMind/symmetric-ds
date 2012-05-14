@@ -29,7 +29,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
@@ -42,12 +44,15 @@ public class PushUriHandler extends AbstractUriHandler {
 
     private IStatisticManager statisticManager;
     
+    private INodeService nodeService;
+    
     public PushUriHandler(IParameterService parameterService, IDataLoaderService dataLoaderService,
-            IStatisticManager statisticManager,
+            IStatisticManager statisticManager, INodeService nodeService,
             IInterceptor... interceptors) {
         super("/push/*", parameterService, interceptors);
         this.dataLoaderService = dataLoaderService;
         this.statisticManager = statisticManager;
+        this.nodeService = nodeService;
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
@@ -70,7 +75,8 @@ public class PushUriHandler extends AbstractUriHandler {
     protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
-            dataLoaderService.loadDataFromPush(sourceNodeId, inputStream, outputStream);
+            Node sourceNode = nodeService.findNode(sourceNodeId);
+            dataLoaderService.loadDataFromPush(sourceNode, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);

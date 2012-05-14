@@ -43,9 +43,9 @@ public interface IDataLoaderService {
 
     public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException;
 
-    public void loadDataFromPull(Node remote, RemoteNodeStatus status) throws IOException;
+    public void loadDataFromPull(Node sourceNode, RemoteNodeStatus status) throws IOException;
 
-    public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out) throws IOException;
+    public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out) throws IOException;
     
     public void addDataLoaderFactory(IDataLoaderFactory factory);
     

@@ -1147,7 +1147,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     Some variables are provided to the script: <code>COLUMN_NAME</code> is a variable for a source column in the row, where the variable name is the column name in uppercase; 
                     <code>currentValue</code> is the value of the current source column;
                     <code>oldValue</code> is the old value of the source column for an updated row;
-                    <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
+                    <code>sqlTemplate</code> is a <code>org.jumpmind.db.sql.ISqlTemplate</code> object for querying or updating the database;
+                    <code>channelId</code> is a reference to the channel on which the transformation is happening;
+                    <code>sourceNode</code> is a <code>org.jumpmind.symmetric.model.Node</code> object that represents the node from where the data came;
+                    <code>targetNode</code> is a <code>org.jumpmind.symmetric.model.Node</code> object that represents the node where the data is being loaded.
                 </listitem> 
                  <listitem>
                     Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
