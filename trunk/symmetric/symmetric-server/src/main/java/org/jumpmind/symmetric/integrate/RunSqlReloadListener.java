@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.integrate;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.load.IReloadListener;
@@ -14,13 +15,13 @@ public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAw
 
     private String sqlToRunAtTargetAfterReload;
 
-    public void afterReload(Node node) {
+    public void afterReload(ISqlTransaction transaction, Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetAfterReload)) {
             engine.getDataService().insertSqlEvent(node, sqlToRunAtTargetAfterReload, true);
         }
     }
 
-    public void beforeReload(Node node) {
+    public void beforeReload(ISqlTransaction transaction, Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetBeforeReload)) {
             engine.getDataService().insertSqlEvent(node, sqlToRunAtTargetBeforeReload, true);
         }
