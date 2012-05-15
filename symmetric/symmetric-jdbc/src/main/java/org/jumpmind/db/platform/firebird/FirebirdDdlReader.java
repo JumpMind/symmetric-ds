@@ -81,7 +81,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                         getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map<String,Object> values = readColumns(columnData, getColumnsForColumn());
+                    Map<String,Object> values = readMetaData(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
@@ -91,7 +91,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map<String,Object> values = readColumns(columnData, getColumnsForColumn());
+                    Map<String,Object> values = readMetaData(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
@@ -176,7 +176,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
                 while (pkData.next()) {
-                    Map values = readColumns(pkData, getColumnsForPK());
+                    Map values = readMetaData(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -185,7 +185,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             } else {
                 pkData = metaData.getPrimaryKeys(tableName);
                 while (pkData.next()) {
-                    Map values = readColumns(pkData, getColumnsForPK());
+                    Map values = readMetaData(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -213,7 +213,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map values = readColumns(fkData, getColumnsForFK());
+                    Map values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -222,7 +222,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             } else {
                 fkData = metaData.getForeignKeys(tableName);
                 while (fkData.next()) {
-                    Map values = readColumns(fkData, getColumnsForFK());
+                    Map values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -260,7 +260,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             indexData = stmt.executeQuery();
 
             while (indexData.next()) {
-                Map values = readColumns(indexData, getColumnsForIndex());
+                Map values = readMetaData(indexData, getColumnsForIndex());
 
                 // we have to reverse the meaning of the unique flag
                 values.put("NON_UNIQUE",
@@ -370,7 +370,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             String schema = null;
 
             while (!found && tableData.next()) {
-                Map values = readColumns(tableData, getColumnsForTable());
+                Map values = readMetaData(tableData, getColumnsForTable());
                 String tableName = (String) values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0)) {
@@ -389,7 +389,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                     }
 
                     while (found && columnData.next()) {
-                        values = readColumns(columnData, getColumnsForColumn());
+                        values = readMetaData(columnData, getColumnsForColumn());
 
                         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()
                                 && !tableName.equals(values.get("TABLE_NAME"))) {

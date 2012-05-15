@@ -114,7 +114,7 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output) throws IOException {
-        Database database = platform.readDatabase(catalog, schema, null);
+        Database database = platform.readDatabase(catalog, schema, new String[] {"TABLE"});
         exportTables(output, database.getTables());
     }
 
@@ -198,7 +198,7 @@ public class DbExport {
             writer.write("<table_data name=\"" + table.getName() + "\">\n");
         }
         
-        platform.getSqlTemplate().queryForObject(selectSql, new ISqlRowMapper<Object>() {
+        platform.getSqlTemplate().query(selectSql, new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
                 String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
                 try {
@@ -216,7 +216,7 @@ public class DbExport {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                return null;
+                return Boolean.TRUE;
             }
         });
 

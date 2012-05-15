@@ -497,7 +497,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             List<Table> tables = new ArrayList<Table>();
 
             while (tableData.next()) {
-                Map<String, Object> values = readColumns(tableData, getColumnsForTable());
+                Map<String, Object> values = readMetaData(tableData, getColumnsForTable());
                 Table table = readTable(connection, metaData, values);
 
                 if (table != null) {
@@ -536,7 +536,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     tableData = metaData.getTables(getTableNamePattern(table));
                     if (tableData != null && tableData.next()) {
-                        Map<String, Object> values = readColumns(tableData, initColumnsForTable());
+                        Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                         return readTable(connection, metaData, values);
                     } else {
                         return null;
@@ -645,12 +645,26 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         Table table = null;
 
         if ((tableName != null) && (tableName.length() > 0)) {
+            String type = (String) values.get("TABLE_TYPE");
+            String[] unsupportedTableTypes = getUnsupportedTableTypes();
+            for (String unsupportedTableType : unsupportedTableTypes) {
+                if (StringUtils.isNotBlank(type) && type.equals(unsupportedTableType)) {
+                    return null;
+                }
+            }
+            
             table = new Table();
-
             table.setName(tableName);
-            table.setType((String) values.get("TABLE_TYPE"));
-            table.setCatalog((String) values.get("TABLE_CAT"));
-            table.setSchema((String) values.get("TABLE_SCHEM"));
+            table.setType(type);
+            
+            String catalog = (String) values.get("TABLE_CAT");
+            table.setCatalog(catalog);
+            metaData.setCatalog(catalog);
+            
+            String schema = (String) values.get("TABLE_SCHEM");
+            table.setSchema(schema);
+            metaData.setSchemaPattern(schema);
+            
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
@@ -668,6 +682,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
         }
         return table;
+    }
+    
+    protected String[] getUnsupportedTableTypes() {
+        return new String[0];
     }
 
     /*
@@ -839,7 +857,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             List<Column> columns = new ArrayList<Column>();
 
             while (columnData.next()) {
-                Map<String, Object> values = readColumns(columnData, getColumnsForColumn());
+                Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
 
                 columns.add(readColumn(metaData, values));
             }
@@ -923,7 +941,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         try {
             pkData = metaData.getPrimaryKeys(getTableNamePattern(tableName));
             while (pkData.next()) {
-                Map<String, Object> values = readColumns(pkData, getColumnsForPK());
+                Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                 pks.add(readPrimaryKeyName(metaData, values));
             }
@@ -967,7 +985,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             fkData = metaData.getForeignKeys(tableName);
 
             while (fkData.next()) {
-                Map<String, Object> values = readColumns(fkData, getColumnsForFK());
+                Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
 
                 readForeignKey(metaData, values, fks);
             }
@@ -1026,7 +1044,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
 
             while (indexData.next()) {
-                Map<String, Object> values = readColumns(indexData, getColumnsForIndex());
+                Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
 
                 readIndex(metaData, values, indices);
             }
@@ -1090,7 +1108,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The read values keyed by the column name
      */
-    protected Map<String, Object> readColumns(ResultSet resultSet,
+    protected Map<String, Object> readMetaData(ResultSet resultSet,
             List<MetaDataColumnDescriptor> columnDescriptors) throws SQLException {
         HashMap<String, Object> values = new HashMap<String, Object>();
         for (Iterator<MetaDataColumnDescriptor> it = columnDescriptors.iterator(); it.hasNext();) {
@@ -1267,7 +1285,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             String schema = null;
 
             while (!found && tableData.next()) {
-                Map<String, Object> values = readColumns(tableData, getColumnsForTable());
+                Map<String, Object> values = readMetaData(tableData, getColumnsForTable());
                 String tableName = (String) values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0)) {
@@ -1276,7 +1294,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     found = true;
 
                     while (found && columnData.next()) {
-                        values = readColumns(columnData, getColumnsForColumn());
+                        values = readMetaData(columnData, getColumnsForColumn());
 
                         if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
                                 .getDdlBuilder().isDelimitedIdentifierModeOn()) == null) {

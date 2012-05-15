@@ -323,11 +323,11 @@ public class Database implements Serializable, Cloneable {
             if ((curTable.getName() == null) || (curTable.getName().length() == 0)) {
                 throw new ModelException("The table nr. " + tableIdx + " has no name");
             }
-            if (namesOfProcessedTables.contains(curTable.getName())) {
+            if (namesOfProcessedTables.contains(curTable.getFullyQualifiedTableName())) {
                 throw new ModelException("There are multiple tables with the name "
                         + curTable.getName());
             }
-            namesOfProcessedTables.add(curTable.getName());
+            namesOfProcessedTables.add(curTable.getFullyQualifiedTableName());
 
             namesOfProcessedColumns.clear();
             namesOfProcessedFks.clear();
