@@ -61,7 +61,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
-        return true;
+        return false;
     }
     
     @Override

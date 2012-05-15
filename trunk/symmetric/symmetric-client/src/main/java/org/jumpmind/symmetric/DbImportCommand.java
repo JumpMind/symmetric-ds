@@ -53,7 +53,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
-        return true;
+        return false;
     }
     
     @Override
