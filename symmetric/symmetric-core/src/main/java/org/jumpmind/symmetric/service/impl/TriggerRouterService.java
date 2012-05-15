@@ -702,15 +702,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                         trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                         trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
-                        trigger.isUseCaptureOldData() ? 1 : 0,
-                        trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
-                        trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
-                        trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
-                        trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
-                        trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                        trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                        trigger.isUseCaptureOldData() ? 1 : 0, trigger.getNameForUpdateTrigger(),
+                        trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
+                        trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
+                        trigger.getSyncOnDeleteCondition(), trigger.getTxIdExpression(),
+                        trigger.getExcludedColumnNames(), trigger.getLastUpdateBy(),
+                        trigger.getLastUpdateTime(), trigger.getExternalSelect(),
+                        trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
@@ -733,11 +733,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                            Types.SMALLINT,
+                            Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -842,11 +841,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                     new String[] { "TABLE" });
             Table[] tableArray = database.getTables();
-            for (Table table : tableArray) {
-                if (FormatUtils.isWildCardMatch(table.getName(), trigger.getSourceTableName())
-                        && !containsExactMatchForSourceTableName(table.getName(), triggers)
-                        && !table.getName().toLowerCase().startsWith(tablePrefix)) {
-                    tables.add(table);
+
+            String[] wildcardTokens = trigger.getSourceTableName().split(",");
+            for (String wildcardToken : wildcardTokens) {
+                for (Table table : tableArray) {
+                    if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken)
+                            && !containsExactMatchForSourceTableName(table.getName(), triggers)
+                            && !table.getName().toLowerCase().startsWith(tablePrefix)) {
+                        tables.add(table);
+                    } else {
+                        tables.remove(table);
+                    }
                 }
             }
         } else {
@@ -892,10 +897,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 if (tables.size() > 0) {
                     for (Table table : tables) {
                         TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                                trigger.getTriggerId(),
+                                trigger.getSourceCatalogName(),
                                 trigger.getSourceSchemaName(),
-                                trigger.isSourceTableNameWildcarded() ? table.getName()
-                                        : trigger.getSourceTableName());
+                                trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
+                                        .getSourceTableName());
 
                         boolean forceRebuildOfTriggers = false;
                         if (latestHistoryBeforeRebuild == null) {
@@ -1089,7 +1095,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerName.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
     }
 
-    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, Table table) {
+    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
+            Table table) {
 
         String triggerName = null;
         switch (dml) {
@@ -1115,8 +1122,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId());
             if (trigger.isSourceTableNameWildcarded()) {
-              triggerSuffix2 = replaceCharsForTriggerName(table.getName());  
-            }             
+                triggerSuffix2 = replaceCharsForTriggerName(table.getName());
+            }
             String triggerSuffix3 = replaceCharsForTriggerName("_"
                     + parameterService.getNodeGroupId());
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2 + triggerSuffix3;

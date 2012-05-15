@@ -104,6 +104,11 @@ public final class FormatUtils {
     }
     
     public static boolean isWildCardMatch(String text, String pattern) {
+        boolean match = true;
+        if (pattern.startsWith("^")) {
+            match = !match;
+            pattern = pattern.substring(1);
+        }
         // Create the cards by splitting using a RegEx. If more speed
         // is desired, a simpler character based splitting can be done.
         String[] cards = pattern.split("\\" + WILDCARD);
@@ -114,14 +119,14 @@ public final class FormatUtils {
 
             // Card not detected in the text.
             if (idx == -1) {
-                return false;
+                return !match;
             }
 
             // Move ahead, towards the right of the text.
             text = text.substring(idx + card.length());
         }
 
-        return true;
+        return match;
     }   
 
 }
