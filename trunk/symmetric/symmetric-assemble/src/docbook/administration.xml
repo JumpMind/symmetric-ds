@@ -18,13 +18,19 @@
        error is resolved (or the data for the batch itself is changed).
        </para>
        
-        <section id="solving-synchronization-issues-analysis">
-        <title>Analyzing the Issue</title>
+       <para>
+       Analyzing and resolving issues can take place on the outgoing or incoming side.  The techniques for analysis are slightly different in 
+       the two cases, however, due to the fact that the node with outgoing batch data also has the data and data events associated with the batch in
+       the database.  On the incoming node, however, all that is available is the incoming batch header and data present in an incoming error table.
+       
+       </para>
+        <section id="solving-synchronization-issues-analysis-outgoing">
+        <title>Analyzing the Issue - Outgoing Batches</title>
        
        <para>
        The first step in analyzing the cause of a failed batch is to locate information about the data in the batch, starting with  
-       either <xref linkend="table_outgoing_batch" xrefstyle="table"/> or <xref linkend="table_incoming_batch" xrefstyle="table"/>.
-       We'll use outgoing batches for the examples below.  To locate batches in error, use:
+       <xref linkend="table_outgoing_batch" xrefstyle="table"/> 
+       To locate batches in error, use:
        <programlisting>select * from sym_outgoing_batch where error_flag=1;</programlisting>       
        Several useful pieces of information are available from this query:
        <itemizedlist>
@@ -86,8 +92,9 @@
        <para>
        More importantly, if you narrow your query to just the failed data id you can determine the exact data change that is causing the failure:       
        <programlisting>select * from sym_data where data_id in 
-        (select failed_data_id from sym_outgoing_batch where batch_id='XXXXX');</programlisting>
-       where XXXXXX is the batch that is failing.
+        (select failed_data_id from sym_outgoing_batch where batch_id='XXXXX'
+        and node_id='YYYYY');</programlisting>
+       where XXXXXX is the batch id and YYYYY is the node id of the batch that is failing.
        </para>
        <para>The queries above usually yield enough information to be able to determine why a
        particular batch is failing. Common reasons a batch might be failing include:
@@ -107,8 +114,76 @@
             </para>
                    
     </section>
-            <section id="solving-synchronization-issues-resolution">
-            <title>Resolving the Issue</title>
+    
+      <section id="solving-synchronization-issues-analysis-incoming">
+        <title>Analyzing the Issue - Incoming Batches</title>
+       
+       <para>
+        Analysis using an incoming batch is different than that of outgoing batches.  For incoming batches, you will rely on two tables, 
+        <xref linkend="table_incoming_batch" xrefstyle="table"/> and  <xref linkend="table_incoming_error" xrefstyle="table"/>.
+     
+       The first step in analyzing the cause of an incoming failed batch is to locate information about the batch, starting with  
+       <xref linkend="table_incoming_batch" xrefstyle="table"/> 
+        To locate batches in error, use:
+       <programlisting>select * from sym_incoming_batch where error_flag=1;</programlisting>       
+       Several useful pieces of information are available from this query:
+       <itemizedlist>
+       <listitem>
+       The batch number of the failed batch, available in column <literal>BATCH_ID</literal>.  Note that this is the batch number of the
+       outgoing batch on the outgoing node.
+       </listitem>       
+       <listitem>
+       The node the batch is being sent from, available in column <literal>NODE_ID</literal>.
+       </listitem>
+       <listitem>
+       The channel to which the batch belongs, available in column <literal>CHANNEL_ID</literal>. 
+       All subsequent batches on this channel from this node will be held until the error condition is resolved.
+       </listitem>
+       <listitem>
+        The data_id that was being processed when the batch failed, available in column <literal>FAILED_DATA_ID</literal>.
+       </listitem>       
+       <listitem>
+       Any SQL message, SQL State, and SQL Codes being returned during the synchronization attempt, available in columns <literal>SQL_MESSAGE</literal>,
+       <literal>SQL_STATE</literal>, and <literal>SQL_CODE</literal>, respectively.
+       </listitem>
+       </itemizedlist>
+       </para>
+       
+       <para>
+       For incoming batches, we do not have data and data event entries in the database we can query.
+       We do, however, have a table,  <xref linkend="table_incoming_error" xrefstyle="table"/>, which provides some information about the batch.
+        
+      
+       <programlisting>select * from sym_incoming_error 
+            where batch_id='XXXXXX' and node_id='YYYYY';</programlisting> 
+       where XXXXXX is the batch id and YYYYY is the node id of the failing batch.
+       
+       
+       </para>
+       
+         <para>
+       This query returns a wealth of information about each data change in a batch, including:
+       <itemizedlist>
+       <listitem>
+       The table involved in each data change, available in column <literal>TARGET_TABLE_NAME</literal>,</listitem>
+       <listitem>
+       The event type (Update [U], Insert [I], or Delete [D]), available in column <literal>EVENT_TYPE</literal>,
+       </listitem>
+       <listitem>
+       A comma separated list of the new data and (optionally) the old data, available in columns <literal>ROW_DATA</literal> and 
+       <literal>OLD_DATA</literal>, respectively,</listitem>
+        <listitem>
+       The column names of the table, available in column <literal>COLUMN_NAMES</literal>,</listitem>
+        <listitem>
+       The primary key column names of the table, available in column <literal>PK_COLUMN_NAMES</literal>,</listitem>
+       </itemizedlist>
+       </para>
+       
+       
+    </section>
+    
+    <section id="solving-synchronization-issues-resolution-outgoing">
+            <title>Resolving the Issue - Outgoing Batches</title>
             
             <para>
             Once you have decided upon the cause of the issue, you'll have to decide the best course of action to fix the issue.  If, for example,
@@ -149,6 +224,18 @@
             </itemizedlist>
             </para>
    </section>
+   
+    <section id="solving-synchronization-issues-resolution-incoming">
+            <title>Resolving the Issue - Incoming Batches</title>
+            
+            <para>
+            For batches in error, from the incoming side you'll also have to decide the best course of action to fix the issue.
+            With incoming batches, however, you can also take advantage of two columns in <xref linkend="table_incoming_error" xrefstyle="table"/> which are examined each time
+            batches are processed.  The first column, <literal>resolve_data</literal> if filled in will be used in place of <literal>row_data</literal>.
+            The second column, <literal>resolve_ignore</literal> if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
+            two columns used when a manual conflict resolution strategy is chosen, as discussed in <xref linkend="conflict-resolution-manual"/>.
+            </para>
+            </section>
    </section>
     <section id="changing-triggers">
         <title>Changing Triggers</title>
