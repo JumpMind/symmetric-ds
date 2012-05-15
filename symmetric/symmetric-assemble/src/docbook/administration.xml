@@ -233,7 +233,7 @@
             With incoming batches, however, you can also take advantage of two columns in <xref linkend="table_incoming_error" xrefstyle="table"/> which are examined each time
             batches are processed.  The first column, <literal>resolve_data</literal> if filled in will be used in place of <literal>row_data</literal>.
             The second column, <literal>resolve_ignore</literal> if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
-            two columns used when a manual conflict resolution strategy is chosen, as discussed in <xref linkend="conflict-resolution-manual"/>.
+            two columns used when a manual conflict resolution strategy is chosen, as discussed in <xref linkend="conflicts"/>.
             </para>
             </section>
    </section>
