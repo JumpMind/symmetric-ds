@@ -133,7 +133,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>MANUAL</command>
+                    <command id="conflict-resolution-manual">MANUAL</command>
                 </term>
                 <listitem>
                     <para>
