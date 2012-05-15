@@ -373,7 +373,7 @@
         <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
         <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
         <column name="database_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
-        <column name="failed_row_number" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="failed_row_number" type="BIGINT" required="true" default="0" description="This numbered data event that failed as read from the CSV." />
         <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />        
         <column name="byte_count" type="BIGINT" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
         <column name="statement_count" type="BIGINT" required="true" default="0" description="The number of statements run to load this batch." />
