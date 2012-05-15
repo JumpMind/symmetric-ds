@@ -120,7 +120,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                     }
                                 } else {
                                     log.warn(
-                                            "Cannot push to node '{}' in the group '{}'.  The sync url is blank.",
+                                            "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
                                             node.getNodeId(), node.getNodeGroupId());
                                 }
                             }

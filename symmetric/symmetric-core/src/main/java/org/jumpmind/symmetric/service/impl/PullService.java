@@ -136,7 +136,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 }
                             } else {
                                 log.warn(
-                                        "Cannot pull node '{}' in the group '{}'.  The sync url is blank.",
+                                        "Cannot pull node '{}' in the group '{}'.  The sync url is blank",
                                         node.getNodeId(), node.getNodeGroupId());
                             }
                         }
