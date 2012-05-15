@@ -5,7 +5,6 @@ DONE = +
     
 * Purge stats
 * Delete from sym_data_gap instead of marking gaps as Ok.
-* Support wildcards in source_table_name 
 
 * Get rid of IOException in service apis in favor of IoException
 * Can BatchInfo go away?  
