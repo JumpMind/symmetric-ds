@@ -118,24 +118,6 @@
         Note that a <emphasis>registration server node</emphasis> is defined as one whose <literal>registration.url</literal> is either (a) blank, or (b)
         identical to its <literal>sync.url</literal>.</para></important>
         <para>
-            When deploying to an application server, it is common for database connection pools
-            to be found in the Java naming directory (JNDI).  In this case, set the following property:
-        </para>
-        <variablelist>
-            <varlistentry>
-                <term>
-                    <command>db.jndi.name</command>
-                </term>
-                <listitem>
-                    <para>
-                        The name of the database connection pool to use, which is registered in the JNDI
-                        directory tree of the application server. It is recommended that this DataSource is
-                        NOT transactional, because SymmetricDS will handle its own transactions.
-                    </para>
-                </listitem>
-            </varlistentry>
-        </variablelist>
-        <para>
             For a deployment where the database connection pool should be created using a JDBC driver,
             set the following properties:
         </para>
@@ -387,6 +369,13 @@ values
             is associated with a <xref linkend="table_router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
         </para>
         <para>
+            The <literal>source_table_name</literal> may contain wildcard characters so that one <xref linkend="table_trigger" xrefstyle="table"/> table entry
+            can define synchronization for many tables.  System tables and any tables that start with the SymmetricDS table prefix will be excluded.  A list of 
+            wildcard tokens can also be supplied.  If there are multiple tokens they are deliminated with a comma.  A wildcard token can also start with a 
+            caret ('^') to indicate a negative match.  Tokens are always evalulated from left to right.  When a table match is made the table is either added to 
+            or removed from the list of tables.  If another trigger already exists for a table, then that table is ignored.
+        </para>
+        <para>
         When determining whether a data change has occurred or not, by defalt the triggers will
         record a change even if the data was updated to the same value(s) they were originally.
         For example, a data change will be captured if an update of one column in a row
@@ -397,7 +386,7 @@ values
         </para>
         <important>
         The property <literal>trigger.update.capture.changed.data.only.enabled</literal> 
-        is currently only supported in the MySQL and Oracle dialects.
+        is currently only supported in the MySQL, DB2 and Oracle dialects.
         </important>
         
         <para>
