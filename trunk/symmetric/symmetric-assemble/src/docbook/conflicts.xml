@@ -4,8 +4,8 @@
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Conflict Detection and Resolution</title>
     <para> Conflict detection and resolution is new as of SymmetricDS 3.0. Conflict detection is the act of determining if an
-        insert, update or delete is valid based on whether an incoming data change comes from a source system that was up to
-        date with the latest changes to the target row. Conflict resolution is the act of figuring out what to do when a
+        insert, update or delete is in "conflict" due to the target data row not being consistent with the data at the source prior to the insert/update/delete.
+        Conflict resolution is the act of figuring out what to do when a
         conflict is detected.
     </para>
     <para>
