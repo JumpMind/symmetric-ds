@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -57,9 +58,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     private IRegistrationService registrationService;
 
     private IClusterService clusterService;
-    
+
     private Map<String, Date> startTimesOfNodesBeingPulled = new HashMap<String, Date>();
-    
+
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService) {
@@ -69,7 +70,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.registrationService = registrationService;
         this.clusterService = clusterService;
     }
-    
+
     public Map<String, Date> getStartTimesOfNodesBeingPulled() {
         return new HashMap<String, Date>(startTimesOfNodesBeingPulled);
     }
@@ -85,46 +86,58 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
                     List<Node> nodes = nodeService.findNodesToPull();
                     if (nodes != null && nodes.size() > 0) {
-                        for (Node node : nodes) {                                  
-                            RemoteNodeStatus status = statuses.add(node);
-                            try {
-                                startTimesOfNodesBeingPulled.put(node.getNodeId(), new Date());
-                                log.debug("Pull requested for {}", node.toString());
-                                dataLoaderService.loadDataFromPull(node, status);
-                                if (status.getDataProcessed() > 0
-                                        || status.getBatchesProcessed() > 0) {
-                                    log.info("Pull data received from {}.  {} rows and {} batches were processed", new Object[] { node.toString(), status.getDataProcessed(),
-                                            status.getBatchesProcessed() });
-                                } else {
-                                    log.debug("Pull data received from {}.  {} rows and {} batches were processed", new Object[] {node.toString(), status.getDataProcessed(),
-                                            status.getBatchesProcessed()});
+                        for (Node node : nodes) {
+                            if (StringUtils.isNotBlank(node.getSyncUrl())) {
+                                RemoteNodeStatus status = statuses.add(node);
+                                try {
+                                    startTimesOfNodesBeingPulled.put(node.getNodeId(), new Date());
+                                    log.debug("Pull requested for {}", node.toString());
+                                    dataLoaderService.loadDataFromPull(node, status);
+                                    if (status.getDataProcessed() > 0
+                                            || status.getBatchesProcessed() > 0) {
+                                        log.info(
+                                                "Pull data received from {}.  {} rows and {} batches were processed",
+                                                new Object[] { node.toString(),
+                                                        status.getDataProcessed(),
+                                                        status.getBatchesProcessed() });
+                                    } else {
+                                        log.debug(
+                                                "Pull data received from {}.  {} rows and {} batches were processed",
+                                                new Object[] { node.toString(),
+                                                        status.getDataProcessed(),
+                                                        status.getBatchesProcessed() });
+                                    }
+                                } catch (ConnectException ex) {
+                                    log.warn(
+                                            "TransportFailedConnectionUnavailable",
+                                            (node.getSyncUrl() == null ? parameterService
+                                                    .getRegistrationUrl() : node.getSyncUrl()));
+                                    fireOffline(ex, node, status);
+                                } catch (ConnectionRejectedException ex) {
+                                    log.warn("The server was too busy to accept the connection");
+                                    fireOffline(ex, node, status);
+                                } catch (AuthenticationException ex) {
+                                    log.warn("Could not authenticate with node");
+                                    fireOffline(ex, node, status);
+                                } catch (SyncDisabledException ex) {
+                                    log.warn("Synchronization is disabled on the server node");
+                                    fireOffline(ex, node, status);
+                                } catch (SocketException ex) {
+                                    log.warn("{}", ex.getMessage());
+                                    fireOffline(ex, node, status);
+                                } catch (TransportException ex) {
+                                    log.warn("{}", ex.getMessage());
+                                    fireOffline(ex, node, status);
+                                } catch (IOException ex) {
+                                    log.error(ex.getMessage(), ex);
+                                    fireOffline(ex, node, status);
+                                } finally {
+                                    startTimesOfNodesBeingPulled.remove(node.getNodeId());
                                 }
-                            } catch (ConnectException ex) {
+                            } else {
                                 log.warn(
-                                        "TransportFailedConnectionUnavailable",
-                                        (node.getSyncUrl() == null ? parameterService
-                                                .getRegistrationUrl() : node.getSyncUrl()));
-                                fireOffline(ex, node, status);
-                            } catch (ConnectionRejectedException ex) {
-                                log.warn("The server was too busy to accept the connection");
-                                fireOffline(ex, node, status);
-                            } catch (AuthenticationException ex) {
-                                log.warn("Could not authenticate with node");
-                                fireOffline(ex, node, status);
-                            } catch (SyncDisabledException ex) {
-                                log.warn("Synchronization is disabled on the server node");
-                                fireOffline(ex, node, status);
-                            } catch (SocketException ex) {
-                                log.warn("{}", ex.getMessage());
-                                fireOffline(ex, node, status);
-                            } catch (TransportException ex) {
-                                log.warn("{}", ex.getMessage());
-                                fireOffline(ex, node, status);
-                            } catch (IOException ex) {
-                                log.error(ex.getMessage(),ex);
-                                fireOffline(ex, node, status);
-                            } finally {
-                                startTimesOfNodesBeingPulled.remove(node.getNodeId());
+                                        "Cannot pull node '{}' in the group '{}'.  The sync url is blank.",
+                                        node.getNodeId(), node.getNodeGroupId());
                             }
                         }
                     }
