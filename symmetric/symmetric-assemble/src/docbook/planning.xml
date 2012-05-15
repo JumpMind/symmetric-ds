@@ -345,9 +345,10 @@
       <para>
        As a final step to planning an implementation, consider for a moment cases in which the same data may be modified at nearly the same time at more than one node.  
        For example, can data representing a customer be modified at both a central office and a store location?  
-       Conflict detection is the act of determining if an insert, update or delete is valid based on whether an incoming data change comes from a source system that was up 
-       SymmetricDS can be configured to detect such conflicts and
-       can also be configured to control how such conflicts might be resolved. For example, a conflict can be "detected"
+       Conflict detection is the act of determining if an
+        insert, update or delete is in "conflict" due to the target data row not being consistent with the data at the source prior to the insert/update/delete.
+        Conflict resolution is the act of figuring out what to do when a
+        conflict is detected.  Both detection and resolution behaviour can be configured and customized in a number of ways. For example, a conflict can be "detected"
        based solely on a single column which has been modified to a different value, or a row can be considered in conflict if any data in the row has been changed from what 
        was expected, even if the column that has been changed was still expected.  There are also numerous ways to resolve the conflict, such as referencing a timestamp column and
        choosing whichever edit was "most recent" or perhaps causing the conflict to cause the channel to go into error until a manual resolution takes place.  A set of
