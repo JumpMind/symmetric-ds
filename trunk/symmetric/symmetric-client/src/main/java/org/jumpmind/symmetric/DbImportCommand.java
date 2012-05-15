@@ -51,6 +51,16 @@ public class DbImportCommand extends AbstractCommandLauncher {
         new DbImportCommand().execute(args);
     }
     
+    @Override
+    protected boolean printHelpIfNoOptionsAreProvided() {
+        return true;
+    }
+    
+    @Override
+    protected boolean requiresPropertiesFile() {
+        return true;
+    }
+    
     protected void printHelp(Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Import data from file to database tables.\n");

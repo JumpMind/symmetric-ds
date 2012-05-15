@@ -96,6 +96,10 @@ public abstract class AbstractCommandLauncher {
     	this.argSyntax = argSyntax;
     	this.messageKeyPrefix = messageKeyPrefix;
     }
+    
+    abstract protected boolean printHelpIfNoOptionsAreProvided();
+    
+    abstract protected boolean requiresPropertiesFile();
 
     public void execute(String args[]) {
         PosixParser parser = new PosixParser();
@@ -103,6 +107,14 @@ public abstract class AbstractCommandLauncher {
         buildOptions(options);
         try {
             CommandLine line = parser.parse(options, args);
+            
+            if (line.hasOption(OPTION_HELP)
+                    || (line.getArgList().size() == 0 && 
+                    printHelpIfNoOptionsAreProvided())) {
+                printHelp(options);
+                System.exit(2);
+            }
+            
             configureLogging(line);
             configurePropertiesFile(line);
 
@@ -112,11 +124,6 @@ public abstract class AbstractCommandLauncher {
                             ArrayUtils.toString(option.getValues()) });
                 }
             }
-
-            if (line.hasOption(OPTION_HELP)) {
-                printHelp(options);
-                System.exit(2);
-            } 
             
             executeWithOptions(line);
             
@@ -195,7 +202,7 @@ public abstract class AbstractCommandLauncher {
         }
     }
 
-    protected void configurePropertiesFile(CommandLine line) {
+    protected void configurePropertiesFile(CommandLine line) throws ParseException {
         if (line.hasOption(OPTION_PROPERTIES_FILE)) {
         	String propertiesFilename = line.getOptionValue(OPTION_PROPERTIES_FILE);
             propertiesFile = new File(propertiesFilename);
@@ -209,6 +216,8 @@ public abstract class AbstractCommandLauncher {
                 throw new SymmetricException("Could not find the properties file for the engine specified: %s",
                         line.getOptionValue(OPTION_ENGINE));
             }            
+        } else if (requiresPropertiesFile()) {
+            throw new ParseException(String.format("You must specify either --%s or --%s", OPTION_ENGINE, OPTION_PROPERTIES_FILE));
         }
     }
     

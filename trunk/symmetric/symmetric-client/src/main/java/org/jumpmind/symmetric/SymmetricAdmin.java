@@ -117,15 +117,26 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     public SymmetricAdmin(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
     }
-
+    
     public static void main(String[] args) throws Exception {
         new SymmetricAdmin("symadmin", "<subcommand> [options] [args]", "SymAdmin.Option.").execute(args);
+    }
+    
+    @Override
+    protected boolean printHelpIfNoOptionsAreProvided() {
+        return true;
+    }
+    
+    @Override
+    protected boolean requiresPropertiesFile() {
+        return true;
     }
 
     protected void printHelp(Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Perform administration tasks with SymmetricDS.\n");
-        System.out.println("Usage: symadmin <subcommand> [options] [args]");
+        System.out.println("Usage: symadmin <subcommand> --engine [engine.name] [options] [args]");
+        System.out.println("       symadmin <subcommand> --properties [properties file] [options] [args]");
         System.out.println("Type 'symadmin help <subcommand>' for help on a specific subcommand.\n");
         System.out.println("Available subcommands:");
         PrintWriter pw = new PrintWriter(System.out);

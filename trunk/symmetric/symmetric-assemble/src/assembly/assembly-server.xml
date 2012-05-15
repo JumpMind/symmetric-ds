@@ -19,6 +19,9 @@
             <outputDirectory>/</outputDirectory>
             <excludes>
                 <exclude>bin/sym</exclude>
+                <exclude>bin/symadmin</exclude>
+                <exclude>bin/dbexport</exclude>
+                <exclude>bin/dbimport</exclude>
                 <exclude>bin/sym_service</exclude>
                 <exclude>bin/sym_service.initd</exclude>
             </excludes>
@@ -34,6 +37,21 @@
             <outputDirectory>/bin</outputDirectory>
             <fileMode>774</fileMode>
         </file>
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/symadmin</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>774</fileMode>
+        </file>
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/dbexport</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>774</fileMode>
+        </file>
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/dbimport</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>774</fileMode>
+        </file>                        
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
             <outputDirectory>/bin</outputDirectory>

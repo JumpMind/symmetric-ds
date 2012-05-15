@@ -59,6 +59,16 @@ public class DbExportCommand extends AbstractCommandLauncher {
         new DbExportCommand().execute(args);
     }
     
+    @Override
+    protected boolean printHelpIfNoOptionsAreProvided() {
+        return true;
+    }
+    
+    @Override
+    protected boolean requiresPropertiesFile() {
+        return true;
+    }
+    
     protected void printHelp(Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Export the structure and data from database tables to file.\n");
