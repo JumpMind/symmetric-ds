@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 public class DataGapRouteReader implements IDataToRouteReader {
 
     protected final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
-    
+
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
     protected List<DataGap> dataGaps;
@@ -110,7 +110,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
             String lastTransactionId = null;
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
             boolean nontransactional = context.getChannel().getBatchAlgorithm()
-                    .equals("nontransactional") || !symmetricDialect.supportsTransactionId();
+                    .equals("nontransactional")
+                    || !symmetricDialect.supportsTransactionId();
 
             cursor = prepareCursor();
 
@@ -180,15 +181,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
     }
 
-    public Data take() {
+    public Data take() throws InterruptedException {
         Data data = null;
-        try {
-            int timeout = parameterService.getInt(
-                    ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
-            data = dataQueue.poll(timeout, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            log.warn(e.getMessage(), e);
-        }
+        int timeout = parameterService.getInt(
+                ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
+        data = dataQueue.poll(timeout, TimeUnit.SECONDS);
 
         if (data == null) {
             throw new SymmetricException("The read of the data to route queue has timed out");
@@ -211,7 +208,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
 
-        int numberOfArgs = 1 + 2*(numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
+        int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
                 : dataGaps.size());
         Object[] args = new Object[numberOfArgs];
         int[] types = new int[numberOfArgs];
@@ -308,11 +305,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
         long executeTimeInMs = System.currentTimeMillis() - ts;
         context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("Selected data to route in {} ms for {}", executeTimeInMs, context.getChannel()
-                    .getChannelId());
+            log.warn("Selected data to route in {} ms for {}", executeTimeInMs, context
+                    .getChannel().getChannelId());
         } else if (log.isDebugEnabled()) {
-            log.debug("Selected data to route in {} ms for {}", executeTimeInMs, context.getChannel()
-                    .getChannelId());
+            log.debug("Selected data to route in {} ms for {}", executeTimeInMs, context
+                    .getChannel().getChannelId());
         }
         return rs;
     }

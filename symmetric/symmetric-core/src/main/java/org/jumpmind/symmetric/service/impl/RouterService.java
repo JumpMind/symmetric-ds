@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -267,6 +266,12 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setProduceCommonBatches(produceCommonBatches);
             dataCount = selectDataAndRoute(context);
             return dataCount;
+        } catch (InterruptedException ex) {
+            log.warn("The routing process was interrupted.  Rolling back changes");
+            if (context != null) {
+                context.rollback();
+            }
+            return 0;            
         } catch (Exception ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -312,7 +317,7 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
-    protected void completeBatchesAndCommit(ChannelRouterContext context) throws SQLException {
+    protected void completeBatchesAndCommit(ChannelRouterContext context) {
         Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
@@ -397,7 +402,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(ChannelRouterContext context) throws SQLException {
+    protected int selectDataAndRoute(ChannelRouterContext context) throws InterruptedException {
         IDataToRouteReader reader = startReading(context);
         Data data = null;
         int totalDataCount = 0;
@@ -459,7 +464,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected int routeData(Data data, ChannelRouterContext context) throws SQLException {
+    protected int routeData(Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         context.recordTransactionBoundaryEncountered(data);
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
