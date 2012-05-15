@@ -196,7 +196,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             try {
                 pkData = metaData.getPrimaryKeys(table.getName());
                 while (pkData.next()) {
-                    Map<String, Object> values = readColumns(pkData, getColumnsForPK());
+                    Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                     pkNames.add((String) values.get("PK_NAME"));
                 }

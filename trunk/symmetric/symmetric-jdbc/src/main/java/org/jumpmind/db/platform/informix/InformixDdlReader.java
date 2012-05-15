@@ -72,7 +72,7 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
 
         Map indices = new ListOrderedMap();
         while (rs.next()) {
-            Map values = readColumns(rs, getColumnsForIndex());
+            Map values = readMetaData(rs, getColumnsForIndex());
             readIndex(metaData, values, indices);
         }
 

@@ -418,7 +418,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
-                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
+                    try {
+                    String value = row.getString(name);
+                    value = value.replace("\\", "\\\\");
+                    value = value.replace("$", "\\$");
+                    value = value.replace("'", "''");
+                    newSql = newSql.replaceFirst(regex, quote + value + quote);
+                    } catch (RuntimeException ex) {
+                        log.error("Failed to replace ? in {" + sql + "} with " + name + "=" + row.getString(name));
+                        throw ex;
+                    }
                 } else if (column.isOfNumericType()) {
                     newSql = newSql.replaceFirst(regex, row.getString(name));
                 } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {

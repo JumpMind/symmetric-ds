@@ -96,7 +96,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                         getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map<String, Object> values = readColumns(columnData, getColumnsForColumn());
+                    Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
@@ -106,7 +106,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map<String, Object> values = readColumns(columnData, getColumnsForColumn());
+                    Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
 
                     columns.add(readColumn(metaData, values));
                 }
@@ -262,7 +262,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
                 while (pkData.next()) {
-                    Map<String, Object> values = readColumns(pkData, getColumnsForPK());
+                    Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -271,7 +271,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             } else {
                 pkData = metaData.getPrimaryKeys(tableName);
                 while (pkData.next()) {
-                    Map<String, Object> values = readColumns(pkData, getColumnsForPK());
+                    Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                     pks.add(readPrimaryKeyName(metaData, values));
                 }
@@ -297,7 +297,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map<String,Object> values = readColumns(fkData, getColumnsForFK());
+                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -306,7 +306,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             } else {
                 fkData = metaData.getForeignKeys(tableName);
                 while (fkData.next()) {
-                    Map values = readColumns(fkData, getColumnsForFK());
+                    Map values = readMetaData(fkData, getColumnsForFK());
 
                     readForeignKey(metaData, values, fks);
                 }
@@ -407,7 +407,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             String schema = null;
 
             while (!found && tableData.next()) {
-                Map values = readColumns(tableData, getColumnsForTable());
+                Map values = readMetaData(tableData, getColumnsForTable());
                 String tableName = (String) values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0)) {
@@ -426,7 +426,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                     }
 
                     while (found && columnData.next()) {
-                        values = readColumns(columnData, getColumnsForColumn());
+                        values = readMetaData(columnData, getColumnsForColumn());
 
                         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()
                                 && !tableName.equals(values.get("TABLE_NAME"))) {
