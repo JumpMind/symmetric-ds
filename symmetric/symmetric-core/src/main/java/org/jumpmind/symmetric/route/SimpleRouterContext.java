@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SimpleRouterContext extends Context {
-    
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected NodeChannel channel;
@@ -43,18 +43,18 @@ public class SimpleRouterContext extends Context {
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
 
-    public SimpleRouterContext() {     
+    public SimpleRouterContext() {
     }
-    
+
     public SimpleRouterContext(String nodeId, NodeChannel channel) {
         this.nodeId = nodeId;
         this.channel = channel;
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return null;
-    }    
-    
+    }
+
     public long getBatchId() {
         return -1;
     }
@@ -98,18 +98,19 @@ public class SimpleRouterContext extends Context {
 
     synchronized public void logStats(Logger log, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
-        Set<String> keys = new TreeSet<String>(stats.keySet());
-        StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());
-        for (String key : keys) {
-            statsPrintout.append(", " + key + "=" + stats.get(key));
-        }
-        
-        if (infoLevel) {
-            log.info("Routing {}", statsPrintout);
-        } else {
-            log.debug("Routing {}", statsPrintout);
-        }
+        if ((infoLevel && log.isInfoEnabled()) || log.isDebugEnabled()) {
+            Set<String> keys = new TreeSet<String>(stats.keySet());
+            StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());
+            for (String key : keys) {
+                statsPrintout.append(", " + key + "=" + stats.get(key));
+            }
 
+            if (infoLevel) {
+                log.info("Routing {}", statsPrintout);
+            } else {
+                log.debug("Routing {}", statsPrintout);
+            }
+        }
     }
 
     synchronized public void transferStats(SimpleRouterContext ctx) {
