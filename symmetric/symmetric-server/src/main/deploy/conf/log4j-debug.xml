@@ -9,13 +9,13 @@
         <param name="MaxBackupIndex" value="3" />
         <param name="Append" value="true" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d %-5p [%c{2}] [%t] %m%n" />
+            <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
     </appender>
 
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%c{1} - %m%n" />
+            <param name="ConversionPattern" value="[%X{engineName}] - %c{1} - %m%n" />
         </layout>
     </appender>
 

@@ -358,8 +358,11 @@ insert into sym_data (
         The <literal>log4j.xml</literal> file has hints as to what logging can be enabled for useful, finer-grained logging.
         </para>
         <para>
-        SymmetricDS proxies all of its logging through <ulink url="http://commons.apache.org/logging/">Commons Logging</ulink>.  When deploying to an application server, if Log4J is not 
-        being leveraged, then the general rules for for Commons Logging apply.
+        There is a command line option to turn on preconfigured debugging levels.  When the <literal>--debug</literal> option is used the <literal>conf/debug-log4j.xml</literal> is used instead of log4j.xml. 
+        </para>        
+        <para>
+        SymmetricDS proxies all of its logging through <ulink url="http://www.slf4j.org/">SLF4J</ulink>.  When deploying to an application server or if Log4J is not 
+        being leveraged, then the general rules for for SLF4J logging apply.
         </para>
     </section> 
     
@@ -385,16 +388,7 @@ insert into sym_data (
                     <para>Node - administrative operations </para>
                 </listitem>
                 <listitem>
-                    <para>Incoming - statistics about incoming batches </para>
-                </listitem>
-                <listitem>
-                    <para>Outgoing - statistics about outgoing batches </para>
-                </listitem>
-                <listitem>
                     <para>Parameters - access to properties set through the parameter service </para>
-                </listitem>
-                <listitem>
-                    <para>Notifications - setting thresholds and receiving notifications </para>
                 </listitem>
             </itemizedlist>
           

@@ -25,6 +25,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Launch the SymmetricDS engine as a standalone client or server.
@@ -58,6 +59,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     }
 
     public static void main(String... args) throws Exception {
+        MDC.put("engineName", "startup");
         new SymmetricLauncher("sym", "", "Launcher.Option.").execute(args);
     }
     

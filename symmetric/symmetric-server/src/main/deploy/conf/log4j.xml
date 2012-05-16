@@ -15,7 +15,7 @@
 
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%c{1} - %m%n" />
+            <param name="ConversionPattern" value="[%X{engineName}] - %c{1} - %m%n" />
         </layout>
     </appender>
     
