@@ -406,8 +406,7 @@ insert into sym_data (
         property to false.
         </para>
         <para>
-        SymmetricDS creates these temporary files in the directory specified by the <literal>java.io.tmpdir</literal> Java System property.  When  
-        SymmmetricDS starts up, stranded temporary files are aways cleaned up.  Files will only be stranded if the SymmetricDS engine is force killed.
+        SymmetricDS creates these temporary files in the directory specified by the <literal>java.io.tmpdir</literal> Java System property.  
         </para>
         <para>
         The location of the temporary directory may be changed by setting the Java System property passed into the Java program at startup.  For example,
