@@ -34,10 +34,15 @@
     <category name="org.jumpmind.symmetric">
         <priority value="DEBUG" />
     </category>        
-
-    <category name="org.jumpmind.symmetric.ddl.platform.derby">
-        <priority value="ERROR" />
+    
+    <category name="org.jumpmind.symmetric.io.data.writer">
+        <priority value="DEBUG" />
     </category>
+     
+    <!-- Disable the not found override properties file warnings to avoid confusion -->
+    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
+        <priority value="ERROR" />
+    </category>    
 
     <category name="org.jumpmind.symmetric.job.HeartbeatJob">
         <priority value="INFO" />
