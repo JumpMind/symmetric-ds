@@ -414,34 +414,40 @@
             encounter when moving to SymmetricDS 3.
         </para>
         <para>
-            One optimization in SymmetricDS 3 is a change to the routing process to reuse batch ids if the scenario allows
-            for it. SymmetricDS will automatically reuse batches if the default router is being used and there are NO inbound
-            routers that have sync_on_incoming_batch turned on. If the same data is being sent to all nodes then a great deal
-            of processing, during both routing and extraction, can be avoided. This is especially useful when data is being
-            delivered to thousands of nodes. As a result of this change, the primary key of
+            One optimization that effects both routing and data extraction is a change to the routing process to reuse
+            batches across nodes if all of the data in the batches is going to be the same. SymmetricDS will automatically
+            reuse batches if the default router is being used and there are NO inbound routers that have
+            sync_on_incoming_batch turned on. If the same data is being sent to all nodes then a great deal of processing,
+            during both routing and extraction, can be avoided. This is especially useful when data is being delivered to
+            thousands of nodes. As a result of this change, the primary key of
             <xref linkend="table_outgoing_batch" xrefstyle="table" />
             has changed. This means that during an upgrade the table will be rebuilt.
         </para>
-        <para> Unlike SymmetricDS 2.x, SymmetricDS 3 loads batches as soon as they have been delivered to a target node. In
-            2.x all batches for a synchronization run were delivered, then data was loaded. When errors occurred early on and
-            there were several big batches or hundreds of batches to deliver, this was inefficient.
+        <para> Another optimization that effects data transport is the change to load batches as soon as they have been
+            delivered to a target node. In 2.x all batches for a synchronization run were delivered, and then data was loaded.
+            When errors occurred early on and there were several big batches or hundreds of batches to deliver, this was
+            inefficient because all the batches were transported before the loading started.
         </para>
         <para> The 2.x series allowed multiple nodes to be hosted in one standalone SymmetricDS instance. This feature
             (called multiServerMode) was off by default. In SymmetricDS 3 this feature is now the preferred mode of
             operation. It formalizes where properties file are configured and allows multiple nodes to be hosted on one JVM
             which saves on system resources.
         </para>
-        <para> SymmetricDS 3 introduces a long anticipated feature: Conflict Detection and Resolution. Please read more about
-            it and give it a spin!
+        <para>
+            SymmetricDS 3 introduces a long anticipated feature: Conflict Detection and Resolution. Please see
+            <xref linkend="defining-conflicts" />
+            for more information.
         </para>
         <para> Transformations are now friendlier. They allow columns to be implied. This means that when configuring
             transformations, not all of the columns have to be specified which makes transformations much more maintainable.
         </para>
-        <para> The data loader is now pluggable by channel. This will allow more efficient data loaders to be built if
-            necessary. It will also make it easier to load data into non-relational data stores.
+        <para> An architectural change to the data loader subsystem allows the data loader to now be pluggable by channel. This will allow more efficient data loaders to be built if
+            necessary. It will also make it straight forward to load data into non-relational data stores.
         </para>
-        <para> Several properties and extension points have been deprecated. Please see the appendix for a list of deprecated
-            features.
+        <para>
+            Several properties and extension points have been deprecated or renamed. Please see
+            <xref linkend="upgrading" />
+            for a list of deprecated features.
         </para>
     </section>
 </chapter>

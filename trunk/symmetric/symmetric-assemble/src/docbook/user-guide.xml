@@ -69,5 +69,6 @@
     <xi:include href="databases.xml" />
     <xi:include href="data-format.xml" />
     <xi:include href="version-numbering.xml" />
+    <xi:include href="upgrade.xml" />
 
 </book>
