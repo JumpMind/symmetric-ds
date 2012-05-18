@@ -818,6 +818,39 @@ public class Table implements Serializable, Cloneable {
 
         return result.toString();
     }
+    
+    public String getFullyQualifiedTableName(String quoteString) {
+        return getFullyQualifiedTableName(catalog, schema, name, quoteString);
+    }
+
+    public static String getFullyQualifiedTableName(String catalogName, String schemaName,
+            String tableName, String quoteString) {
+        if (quoteString == null) {
+            quoteString = "";
+        }
+        return getQualifiedTablePrefix(catalogName, schemaName, quoteString) + quoteString
+                + tableName + quoteString;
+    }
+
+    public static String getQualifiedTablePrefix(String catalogName, String schemaName,
+            String quoteString) {
+        if (quoteString == null) {
+            quoteString = "";
+        }
+        String fullyQualified = "";
+        if (!StringUtils.isBlank(schemaName)) {
+            fullyQualified = quoteString + schemaName + quoteString + "." + fullyQualified;
+        }
+        if (!StringUtils.isBlank(catalogName)) {
+            fullyQualified = quoteString + catalogName + quoteString + "." + fullyQualified;
+        }
+        return fullyQualified;
+    }
+
+    public String getQualifiedTablePrefix(String quoteString) {
+        return getQualifiedTablePrefix(catalog, schema, quoteString);
+    }
+    
 
     public String getFullyQualifiedTableName() {
         return getFullyQualifiedTableName(name, schema, catalog);
