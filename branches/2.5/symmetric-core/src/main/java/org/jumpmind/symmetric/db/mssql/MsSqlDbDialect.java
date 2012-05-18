@@ -108,14 +108,16 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public void allowIdentityInserts(JdbcTemplate template, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
-            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName() + " ON");
+            String quote = getIdentifierQuoteString();
+            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName(quote) + " ON");
         }
     }
 
     @Override
     public void revertAllowIdentityInserts(JdbcTemplate template, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
-            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName() + " OFF");
+            String quote = getIdentifierQuoteString();
+            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName(quote) + " OFF");
         }
     }
 
