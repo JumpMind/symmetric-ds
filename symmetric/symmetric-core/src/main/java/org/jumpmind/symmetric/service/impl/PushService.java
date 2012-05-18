@@ -98,7 +98,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getSyncUrl()) 
+                                if (StringUtils.isNotBlank(node.getSyncUrl())
+                                        && StringUtils.isNotBlank(node.getNodeId())
                                         && !node.getNodeId().equals(identity.getNodeId())) {
                                     try {
                                         startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
