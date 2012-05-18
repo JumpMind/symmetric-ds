@@ -301,6 +301,13 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
     HANDLER plpgsql_call_handler
     VALIDATOR plpgsql_validator;]]></programlisting>
         </para>
+        <para>
+        If you want SymmetricDS to install into a schema other than public you should alter the database user to set the default schema.
+<programlisting><![CDATA[
+        alter user {user name} set search_path to {schema name};
+]]></programlisting>
+        
+        </para>
     </section>
     <section id="ap02-sql-server">
         <title>MS SQL Server</title>
