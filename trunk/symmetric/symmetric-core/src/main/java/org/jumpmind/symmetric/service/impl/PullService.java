@@ -87,7 +87,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     List<Node> nodes = nodeService.findNodesToPull();
                     if (nodes != null && nodes.size() > 0) {
                         for (Node node : nodes) {
-                            if (StringUtils.isNotBlank(node.getSyncUrl()) && 
+                            if (StringUtils.isNotBlank(node.getSyncUrl())
+                                    && StringUtils.isNotBlank(node.getNodeId())
+                                    && 
                                     !node.getNodeId().equals(identity.getNodeId())) {
                                 RemoteNodeStatus status = statuses.add(node);
                                 try {
