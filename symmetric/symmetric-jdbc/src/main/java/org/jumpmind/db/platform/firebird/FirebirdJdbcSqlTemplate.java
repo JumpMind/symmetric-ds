@@ -2,13 +2,13 @@ package org.jumpmind.db.platform.firebird;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class FirebirdJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    public FirebirdJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
+    public FirebirdJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
         primaryKeyViolationCodes = new int [] {335544665};

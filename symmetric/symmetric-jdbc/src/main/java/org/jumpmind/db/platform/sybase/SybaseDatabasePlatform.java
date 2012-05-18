@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for Sybase.
@@ -48,7 +48,7 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public SybaseDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public SybaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
 
         ddlReader = new SybaseDdlReader(this);

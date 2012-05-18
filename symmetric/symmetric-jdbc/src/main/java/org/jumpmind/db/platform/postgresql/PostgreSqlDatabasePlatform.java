@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -51,13 +51,13 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public PostgreSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public PostgreSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
         ddlReader = new PostgreSqlDdlReader(this);
         ddlBuilder = new PostgreSqlDdlBuilder();
     }   
     
-    protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
+    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {        
         // Query timeout needs to be zero for postrgres because the jdbc driver does
         // not support a timeout setting of of other than zero.
         settings.setQueryTimeout(0);

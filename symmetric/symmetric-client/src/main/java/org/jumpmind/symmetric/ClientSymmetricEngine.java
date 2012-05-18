@@ -10,9 +10,9 @@ import java.util.Properties;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
@@ -162,8 +162,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 createDatabasePlatformSettings(properties));
     }
 
-    protected DatabasePlatformSettings createDatabasePlatformSettings(TypedProperties properties) {
-        DatabasePlatformSettings settings = new DatabasePlatformSettings();
+    protected SqlTemplateSettings createDatabasePlatformSettings(TypedProperties properties) {
+        SqlTemplateSettings settings = new SqlTemplateSettings();
         settings.setFetchSize(properties.getInt(ParameterConstants.DB_FETCH_SIZE, 1000));
         settings.setQueryTimeout(properties.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS, 300));
         settings.setBatchSize(properties.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE, 100));

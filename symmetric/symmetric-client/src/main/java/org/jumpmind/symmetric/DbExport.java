@@ -36,12 +36,12 @@ import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -88,7 +88,7 @@ public class DbExport {
     }
 
     public DbExport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new DatabasePlatformSettings());
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new SqlTemplateSettings());
         compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 

@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for Derby.
@@ -43,7 +43,7 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new Derby platform instance.
      */
-    public DerbyDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public DerbyDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);        
         ddlReader = new DerbyDdlReader(this);
         ddlBuilder = new DerbyDdlBuilder();

@@ -1,15 +1,15 @@
-package org.jumpmind.db.platform;
+package org.jumpmind.db.sql;
 
-public class DatabasePlatformSettings {
+public class SqlTemplateSettings {
 
     protected int fetchSize = 1000;
     protected int queryTimeout;
     protected int batchSize = 100;
     
-    public DatabasePlatformSettings() {     
+    public SqlTemplateSettings() {     
     }
         
-    public DatabasePlatformSettings(int fetchSize, int queryTimeout, int batchSize) {
+    public SqlTemplateSettings(int fetchSize, int queryTimeout, int batchSize) {
         this.fetchSize = fetchSize;
         this.queryTimeout = queryTimeout;
         this.batchSize = batchSize;

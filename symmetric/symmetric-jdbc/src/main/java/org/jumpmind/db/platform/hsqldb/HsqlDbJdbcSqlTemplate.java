@@ -2,13 +2,13 @@ package org.jumpmind.db.platform.hsqldb;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class HsqlDbJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    public HsqlDbJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
+    public HsqlDbJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
         primaryKeyViolationSqlStates = new String[] {"23505"};        

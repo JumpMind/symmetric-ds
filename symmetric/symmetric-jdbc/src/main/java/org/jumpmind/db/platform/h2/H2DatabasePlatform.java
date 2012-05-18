@@ -24,8 +24,8 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the H2 database.
@@ -41,7 +41,7 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     /*
      * Creates a new instance of the H2 platform.
      */
-    public H2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public H2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new H2DdlReader(this);
         ddlBuilder = new H2DdlBuilder();

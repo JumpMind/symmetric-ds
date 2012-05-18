@@ -107,7 +107,8 @@ public class DatabaseWriter implements IDataWriter {
         this.sourceTable = table;
         this.targetTable = lookupTableAtTarget(table);
         if (this.targetTable != null || hasFilterThatHandlesMissingTable(table)) {
-            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
+            String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable, quote);
             return true;
         } else {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
@@ -730,7 +731,8 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void end(Table table) {
-        this.transaction.allowInsertIntoAutoIncrementColumns(false, this.targetTable);
+        String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+        this.transaction.allowInsertIntoAutoIncrementColumns(false, this.targetTable, quote);
     }
 
     public void end(Batch batch, boolean inError) {

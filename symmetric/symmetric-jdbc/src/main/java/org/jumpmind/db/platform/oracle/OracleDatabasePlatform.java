@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.JdbcUtils;
@@ -54,7 +54,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public OracleDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public OracleDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new OracleDdlReader(this);
         ddlBuilder = new OracleDdlBuilder();

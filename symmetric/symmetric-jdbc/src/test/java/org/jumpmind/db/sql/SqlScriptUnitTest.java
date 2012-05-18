@@ -24,7 +24,6 @@ import java.sql.DriverManager;
 
 import junit.framework.Assert;
 
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.junit.Test;
@@ -36,7 +35,7 @@ public class SqlScriptUnitTest {
     @Test
     public void testSimpleSqlScript() throws Exception {
         SingleConnectionDataSource ds = getDataSource();
-        IDatabasePlatform platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds, new DatabasePlatformSettings());
+        IDatabasePlatform platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds, new SqlTemplateSettings());
         SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);

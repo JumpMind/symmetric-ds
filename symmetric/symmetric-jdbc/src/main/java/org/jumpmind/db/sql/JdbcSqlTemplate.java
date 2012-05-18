@@ -19,7 +19,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected boolean requiresAutoCommitFalseToSetFetchSize = false;
 
-    protected DatabasePlatformSettings settings;
+    protected SqlTemplateSettings settings;
 
     protected LobHandler lobHandler;
 
@@ -49,7 +48,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected String[] foreignKeyViolationSqlStates;
 
-    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
+    public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             LobHandler lobHandler) {
         this.dataSource = dataSource;
         this.settings = settings;
@@ -64,11 +63,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return requiresAutoCommitFalseToSetFetchSize;
     }
 
-    public void setSettings(DatabasePlatformSettings settings) {
+    public void setSettings(SqlTemplateSettings settings) {
         this.settings = settings;
     }
 
-    public DatabasePlatformSettings getSettings() {
+    public SqlTemplateSettings getSettings() {
         return settings;
     }
 

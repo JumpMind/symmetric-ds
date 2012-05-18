@@ -8,8 +8,8 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
@@ -19,7 +19,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public InformixDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public InformixDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
 
         ddlReader = new InformixDdlReader(this);

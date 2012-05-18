@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for MySQL.
@@ -43,7 +43,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MySqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public MySqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
         ddlReader = new MySqlDdlReader(this);
         ddlBuilder = new MySqlDdlBuilder();
@@ -58,7 +58,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      * According to the documentation (and experience) the jdbc driver for mysql
      * requires the fetch size to be as follows.
      */
-    protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
+    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {        
         settings.setFetchSize(Integer.MIN_VALUE);
         return settings;
     }

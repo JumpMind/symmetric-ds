@@ -2,6 +2,7 @@ package org.jumpmind.db.platform;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 
@@ -11,9 +12,9 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
 
     protected ISqlTemplate sqlTemplate;
     
-    protected DatabasePlatformSettings settings;
+    protected SqlTemplateSettings settings;
     
-    public AbstractJdbcDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public AbstractJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         this.dataSource = dataSource;
         this.settings = settings;
         createSqlTemplate();

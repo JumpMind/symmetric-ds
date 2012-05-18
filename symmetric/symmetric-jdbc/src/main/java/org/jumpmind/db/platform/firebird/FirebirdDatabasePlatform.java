@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the Firebird database.
@@ -40,7 +40,7 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new Firebird platform instance.
      */
-    public FirebirdDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public FirebirdDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new FirebirdDdlReader(this);
         ddlBuilder = new FirebirdDdlBuilder();

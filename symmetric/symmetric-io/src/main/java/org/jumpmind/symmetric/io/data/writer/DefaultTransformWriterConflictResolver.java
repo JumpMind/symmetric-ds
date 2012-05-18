@@ -28,14 +28,15 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                         || newlyTransformedData.isGeneratedIdentityNeeded()) {
                     Table table = newlyTransformedData.buildTargetTable();
                     CsvData newData = newlyTransformedData.buildTargetCsvData();
+                    String quote = writer.getPlatform().getDatabaseInfo().getDelimiterToken();
                     if (newlyTransformedData.isGeneratedIdentityNeeded()) {
                         if (log.isDebugEnabled()) {
                             log.debug("Enabling generation of identity for {}",
                                     newlyTransformedData.getTableName());
                         }
-                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(false, table);
+                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(false, table, quote);
                     } else if (table.hasAutoIncrementColumn()) {
-                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(true, table);
+                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(true, table, quote);
                     }
 
                     writer.start(table);
