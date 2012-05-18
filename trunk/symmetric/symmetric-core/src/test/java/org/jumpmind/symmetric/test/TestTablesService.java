@@ -156,13 +156,14 @@ public class TestTablesService extends AbstractService {
     public void insertIntoTestTriggerTable(Object[] values) {
         Table testTriggerTable = platform
                 .getTableFromCache(null, null, "test_triggers_table", true);
+        String quote = getSymmetricDialect().getPlatform().getDatabaseInfo().getDelimiterToken();
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
-        try {
-            transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable);
+        try {            
+            transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable, quote);
             transaction.prepareAndExecute(getSql("insertIntoTestTriggersTableSql"), values);
             transaction.commit();
         } finally {
-            transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable);
+            transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable, quote);
             transaction.close();
         }
     }

@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the Interbase database.
@@ -39,7 +39,7 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public InterbaseDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public InterbaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new InterbaseDdlReader(this);
         ddlBuilder = new InterbaseDdlBuilder();

@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the Microsoft SQL Server database.
@@ -40,7 +40,7 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MsSqlDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public MsSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new MsSqlDdlReader(this);
         ddlBuilder = new MsSqlDdlBuilder();

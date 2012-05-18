@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the HsqlDb database.
@@ -39,7 +39,7 @@ public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new instance of the Hsqldb platform.
      */
-    public HsqlDb2DatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+    public HsqlDb2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new HsqlDb2DdlReader(this);
         ddlBuilder = new HsqlDb2DdlBuilder();

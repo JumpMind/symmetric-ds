@@ -45,6 +45,7 @@ import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SqlException;
 
 /*
@@ -113,7 +114,7 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings)
             throws DdlException {
         
         // connects to the database and uses actual metadata info to get db name
@@ -123,7 +124,7 @@ public class JdbcDatabasePlatformFactory {
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
         
         try {
-            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, DatabasePlatformSettings.class);
+            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, SqlTemplateSettings.class);
             return construtor.newInstance(dataSource, settings);
         } catch (Exception e) {
             throw new DdlException("Could not create a platform of type " + nameVersion[0], e);

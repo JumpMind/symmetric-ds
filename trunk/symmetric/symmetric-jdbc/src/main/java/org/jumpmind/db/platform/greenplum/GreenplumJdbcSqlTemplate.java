@@ -8,14 +8,14 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.postgresql.PostgreSqlJdbcSqlTemplate;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {
 
-    public GreenplumJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
+    public GreenplumJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
     }

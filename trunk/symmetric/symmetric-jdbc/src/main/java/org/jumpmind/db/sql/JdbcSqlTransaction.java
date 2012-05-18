@@ -307,7 +307,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return connection;
     }
 
-    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
+    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote) {
     }
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
