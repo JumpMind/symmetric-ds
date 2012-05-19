@@ -98,32 +98,34 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getSyncUrl())
-                                        && StringUtils.isNotBlank(node.getNodeId())
-                                        && !node.getNodeId().equals(identity.getNodeId())) {
-                                    try {
-                                        startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
-                                                new Date());
-                                        log.debug("Push requested for {}", node);
-                                        RemoteNodeStatus status = pushToNode(node, identity,
-                                                identitySecurity);
-                                        statuses.add(status);
-                                        if (status.getBatchesProcessed() > 0) {
-                                            log.info(
-                                                    "Pushed data to {}. {} data and {} batches were processed",
-                                                    new Object[] { node, status.getDataProcessed(),
-                                                            status.getBatchesProcessed() });
-                                        } else if (status.failed()) {
-                                            log.warn("There was an error while pushing data to the server");
+                                if (StringUtils.isNotBlank(node.getSyncUrl())) {
+                                    if (StringUtils.isNotBlank(node.getNodeId())
+                                            && !node.getNodeId().equals(identity.getNodeId())) {
+                                        try {
+                                            startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
+                                                    new Date());
+                                            log.debug("Push requested for {}", node);
+                                            RemoteNodeStatus status = pushToNode(node, identity,
+                                                    identitySecurity);
+                                            statuses.add(status);
+                                            if (status.getBatchesProcessed() > 0) {
+                                                log.info(
+                                                        "Pushed data to {}. {} data and {} batches were processed",
+                                                        new Object[] { node,
+                                                                status.getDataProcessed(),
+                                                                status.getBatchesProcessed() });
+                                            } else if (status.failed()) {
+                                                log.warn("There was an error while pushing data to the server");
+                                            }
+                                            log.debug("Push completed for {}", node);
+                                        } finally {
+                                            startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
                                         }
-                                        log.debug("Push completed for {}", node);
-                                    } finally {
-                                        startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
+                                    } else {
+                                        log.warn(
+                                                "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
+                                                node.getNodeId(), node.getNodeGroupId());
                                     }
-                                } else {
-                                    log.warn(
-                                            "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
-                                            node.getNodeId(), node.getNodeGroupId());
                                 }
                             }
                         } else {
