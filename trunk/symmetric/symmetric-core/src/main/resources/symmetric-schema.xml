@@ -450,7 +450,11 @@
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
-        <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />        
+        <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />
+        <foreign-key foreignTable="node_group_link" name="fk_tt_2_grp_lnk">
+            <reference local="source_node_group_id" foreign="source_node_group_id" />
+            <reference local="target_node_group_id" foreign="target_node_group_id" />            
+        </foreign-key>                
     </table>
     
     <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation.">
@@ -480,6 +484,10 @@
         <column name="create_time"          type="TIMESTAMP" required="true"  description="The date and time when this entry was created." />
         <column name="last_update_by"       type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time"     type="TIMESTAMP" required="true"  description="The date and time when a user last updated this entry." />
+        <foreign-key foreignTable="node_group_link" name="fk_cf_2_grp_lnk">
+            <reference local="source_node_group_id" foreign="source_node_group_id" />
+            <reference local="target_node_group_id" foreign="target_node_group_id" />            
+        </foreign-key>        
     </table>
 
     <table name="incoming_error" description="The captured data change that is in error for a batch.  The user can tell the system what to do by updating the resolve columns.  Entries in data_error are created when an incoming batch encounters an error.">
