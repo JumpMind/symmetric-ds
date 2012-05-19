@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -102,7 +101,7 @@ abstract public class AbstractService implements IService {
     protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
             String quotedIdentifier) {
         Map<String, String> map = new HashMap<String, String>();
-        Set<String> tables = TableConstants.getTablesWithoutPrefix();
+        List<String> tables = TableConstants.getTablesWithoutPrefix();
         for (String table : tables) {
             map.put(table, String.format("%s%s%s", tablePrefix,
                     StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
