@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.common;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -62,37 +62,37 @@ public class TableConstants {
     public static final String SYM_INCOMING_ERROR = "incoming_error";
     public static final String SYM_SEQUENCE = "sequence";
 
-    private static Set<String> tablesWithPrefix;
+    private static List<String> tablesWithPrefix;
 
-    private static Set<String> configTablesWithPrefix;
+    private static List<String> configTablesWithPrefix;
 
-    private static Set<String> tablesWithoutPrefix;
+    private static List<String> tablesWithoutPrefix;
 
     public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };
 
-    public static final Set<String> getTables(String tablePrefix) {
+    public static final List<String> getTables(String tablePrefix) {
         if (tablesWithPrefix == null) {
             tablesWithPrefix = populateAllTables(tablePrefix);
         }
         return tablesWithPrefix;
     }
 
-    public static final Set<String> getConfigTables(String tablePrefix) {
+    public static final List<String> getConfigTables(String tablePrefix) {
         if (configTablesWithPrefix == null) {
             configTablesWithPrefix = populateConfigTables(tablePrefix);
         }
         return configTablesWithPrefix;
     }
 
-    public static final Set<String> getTablesWithoutPrefix() {
+    public static final List<String> getTablesWithoutPrefix() {
         if (tablesWithoutPrefix == null) {
             tablesWithoutPrefix = populateAllTables("");
         }
         return tablesWithoutPrefix;
     }
 
-    protected static Set<String> populateConfigTables(String tablePrefix) {
-        HashSet<String> configTables = new HashSet<String>();
+    protected static List<String> populateConfigTables(String tablePrefix) {
+        List<String> configTables = new ArrayList<String>();
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_LINK));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE));
@@ -112,8 +112,8 @@ public class TableConstants {
         return configTables;
     }
 
-    protected static Set<String> populateAllTables(String tablePrefix) {
-        HashSet<String> tables = new HashSet<String>();
+    protected static List<String> populateAllTables(String tablePrefix) {
+        List<String> tables = new ArrayList<String>();
         tables.add(getTableName(tablePrefix, SYM_TRIGGER));
         tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER));
         tables.add(getTableName(tablePrefix, SYM_ROUTER));
@@ -148,8 +148,8 @@ public class TableConstants {
         return tables;
     }
 
-    public static final Set<String> getTablesThatDoNotSync(String tablePrefix) {
-        Set<String> tables = new HashSet<String>(2);
+    public static final List<String> getTablesThatDoNotSync(String tablePrefix) {
+        List<String> tables = new ArrayList<String>(2);
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
         return tables;

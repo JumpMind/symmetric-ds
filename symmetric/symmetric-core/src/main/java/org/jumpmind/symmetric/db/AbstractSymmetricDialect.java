@@ -33,6 +33,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -162,7 +163,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    
     abstract public BinaryEncoding getBinaryEncoding();
 
     abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema,
@@ -249,8 +249,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
-        String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel, tablePrefix,
-                table, defaultCatalog, defaultSchema);
+        String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel,
+                tablePrefix, table, defaultCatalog, defaultSchema);
 
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table);
@@ -308,8 +308,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
             Channel channel, String tablePrefix, Table table) {
-        return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
-                platform.getDefaultCatalog(), platform.getDefaultSchema());
+        return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
+                table, platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
     public String getCreateSymmetricDDL() {
@@ -504,6 +504,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             String keyName = tablePrefix + key.getName();
             keyName = storesUpperCaseIdentifiers ? keyName.toUpperCase() : keyName.toLowerCase();
             key.setName(keyName);
+
+            Reference[] refs = key.getReferences();
+            for (Reference reference : refs) {
+                reference.setForeignColumnName(storesUpperCaseIdentifiers ? reference
+                        .getForeignColumnName().toUpperCase() : reference.getForeignColumnName()
+                        .toLowerCase());
+                reference.setLocalColumnName(storesUpperCaseIdentifiers ? reference
+                        .getLocalColumnName().toUpperCase() : reference.getLocalColumnName()
+                        .toLowerCase());
+            }
         }
     }
 
@@ -635,8 +645,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void truncateTable(String tableName) {
-        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform.getDatabaseInfo()
-                .getDelimiterToken() : "";
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+                .getDatabaseInfo().getDelimiterToken() : "";
         boolean success = false;
         int tryCount = 5;
         while (!success && tryCount > 0) {

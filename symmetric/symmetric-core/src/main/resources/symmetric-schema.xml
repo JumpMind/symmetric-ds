@@ -29,10 +29,16 @@
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
         <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node started the initial load." />
         <column name="created_at_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
+        <foreign-key foreignTable="node" name="fk_sec_2_node">
+            <reference local="node_id" foreign="node_id" />
+        </foreign-key>
     </table>
 
     <table name="node_identity" description="After registration, this table will have one row representing the identity of the node. For a root node, the row is entered by the user.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <foreign-key foreignTable="node" name="fk_ident_2_node">
+            <reference local="node_id" foreign="node_id" />
+        </foreign-key>        
     </table>
     
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
@@ -44,6 +50,12 @@
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
         <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull) " />
+        <foreign-key foreignTable="node_group" name="fk_lnk_2_grp_src">
+            <reference local="source_node_group_id" foreign="node_group_id" />
+        </foreign-key>
+        <foreign-key foreignTable="node_group" name="fk_lnk_2_grp_tgt">
+            <reference local="target_node_group_id" foreign="node_group_id" />
+        </foreign-key>                        
     </table>
     
     <table name="node_host" description="Representation of an physical workstation or server that is hosting the SymmetricDS software. In a clustered environment there may be more than one entry per node in this table.">
@@ -65,6 +77,9 @@
         <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
         <column name="last_restart_time" type="TIMESTAMP" required="true"  description="Timestamp when this instance was last restarted." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <foreign-key foreignTable="node" name="fk_host_2_node">
+            <reference local="node_id" foreign="node_id" />
+        </foreign-key>            
     </table>   
     
     <table name="node_host_channel_stats" description="">
@@ -160,9 +175,12 @@
         <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is suspended, which prevents its Data Events from being batched." />
         <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is ignored, which marks its Data Events as if they were actually processed." />
         <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
+        <foreign-key foreignTable="channel" name="fk_ctl_2_chnl">
+            <reference local="channel_id" foreign="channel_id" />
+        </foreign-key>            
     </table>
     
-    <table name="node_group_channel_window" description="An optional window of time for which a node group and channel will be active. ">
+    <table name="node_group_channel_window" description="An optional window of time for which a node group and channel will extract and send data.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_group_id that this window applies to."/>
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The channel_id that this window applies to."/>
         <column name="start_time" type="TIME" required="true" primaryKey="true"  description="The start time for the active window."/>
@@ -195,6 +213,9 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="channel" name="fk_trg_2_chnl">
+            <reference local="channel_id" foreign="channel_id" />
+        </foreign-key>         
     </table>
     
     <table name="router" description="Configure a type of router from one node group to another.  Note that routers are mapped to triggers through trigger_routers.">
@@ -212,6 +233,10 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="node_group_link" name="fk_rt_2_grp_lnk">
+            <reference local="source_node_group_id" foreign="source_node_group_id" />
+            <reference local="target_node_group_id" foreign="target_node_group_id" />            
+        </foreign-key>
     </table>
 
     <table name="trigger_router" description="Map a trigger to a router.">
@@ -223,6 +248,12 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="trigger" name="fk_tr_2_trg">
+            <reference local="trigger_id" foreign="trigger_id" />
+        </foreign-key>    
+        <foreign-key foreignTable="router" name="fk_tr_2_rtr">
+            <reference local="router_id" foreign="router_id" />
+        </foreign-key>                    
     </table>
     
     <table name="parameter" description="Provides a way to manage most SymmetricDS settings in the database.">
