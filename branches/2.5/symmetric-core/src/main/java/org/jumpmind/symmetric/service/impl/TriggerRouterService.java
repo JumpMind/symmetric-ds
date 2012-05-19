@@ -697,6 +697,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             synchronized (this) {
                 try {
                     log.info("TriggersSynchronizing");
+                    
+                    // make sure tables are refreshed before synchronizing
+                    dbDialect.resetCachedTableModel();
+                    
                     // make sure channels are read from the database
                     configurationService.reloadChannels();
                     List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
