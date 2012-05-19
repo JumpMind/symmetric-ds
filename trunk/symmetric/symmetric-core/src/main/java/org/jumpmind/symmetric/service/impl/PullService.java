@@ -91,55 +91,57 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         List<Node> nodes = nodeService.findNodesToPull();
                         if (nodes != null && nodes.size() > 0) {
                             for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getSyncUrl())
-                                        && StringUtils.isNotBlank(node.getNodeId())
-                                        && !node.getNodeId().equals(identity.getNodeId())) {
-                                    RemoteNodeStatus status = statuses.add(node);
-                                    try {
-                                        startTimesOfNodesBeingPulled.put(node.getNodeId(),
-                                                new Date());
-                                        log.debug("Pull requested for {}", node.toString());
-                                        dataLoaderService.loadDataFromPull(node, status);
-                                        if (status.getDataProcessed() > 0
-                                                || status.getBatchesProcessed() > 0) {
-                                            log.info(
-                                                    "Pull data received from {}.  {} rows and {} batches were processed",
-                                                    new Object[] { node.toString(),
-                                                            status.getDataProcessed(),
-                                                            status.getBatchesProcessed() });
-                                        } else {
-                                            log.debug(
-                                                    "Pull data received from {}.  {} rows and {} batches were processed",
-                                                    new Object[] { node.toString(),
-                                                            status.getDataProcessed(),
-                                                            status.getBatchesProcessed() });
+                                if (StringUtils.isNotBlank(node.getSyncUrl())) {
+                                    if (StringUtils.isNotBlank(node.getNodeId())
+                                            && !node.getNodeId().equals(identity.getNodeId())) {
+                                        RemoteNodeStatus status = statuses.add(node);
+                                        try {
+                                            startTimesOfNodesBeingPulled.put(node.getNodeId(),
+                                                    new Date());
+                                            log.debug("Pull requested for {}", node.toString());
+                                            dataLoaderService.loadDataFromPull(node, status);
+                                            if (status.getDataProcessed() > 0
+                                                    || status.getBatchesProcessed() > 0) {
+                                                log.info(
+                                                        "Pull data received from {}.  {} rows and {} batches were processed",
+                                                        new Object[] { node.toString(),
+                                                                status.getDataProcessed(),
+                                                                status.getBatchesProcessed() });
+                                            } else {
+                                                log.debug(
+                                                        "Pull data received from {}.  {} rows and {} batches were processed",
+                                                        new Object[] { node.toString(),
+                                                                status.getDataProcessed(),
+                                                                status.getBatchesProcessed() });
+                                            }
+                                        } catch (ConnectException ex) {
+                                            log.warn(
+                                                    "TransportFailedConnectionUnavailable",
+                                                    (node.getSyncUrl() == null ? parameterService
+                                                            .getRegistrationUrl() : node
+                                                            .getSyncUrl()));
+                                            fireOffline(ex, node, status);
+                                        } catch (ConnectionRejectedException ex) {
+                                            log.warn("The server was too busy to accept the connection");
+                                            fireOffline(ex, node, status);
+                                        } catch (AuthenticationException ex) {
+                                            log.warn("Could not authenticate with node");
+                                            fireOffline(ex, node, status);
+                                        } catch (SyncDisabledException ex) {
+                                            log.warn("Synchronization is disabled on the server node");
+                                            fireOffline(ex, node, status);
+                                        } catch (SocketException ex) {
+                                            log.warn("{}", ex.getMessage());
+                                            fireOffline(ex, node, status);
+                                        } catch (TransportException ex) {
+                                            log.warn("{}", ex.getMessage());
+                                            fireOffline(ex, node, status);
+                                        } catch (IOException ex) {
+                                            log.error(ex.getMessage(), ex);
+                                            fireOffline(ex, node, status);
+                                        } finally {
+                                            startTimesOfNodesBeingPulled.remove(node.getNodeId());
                                         }
-                                    } catch (ConnectException ex) {
-                                        log.warn(
-                                                "TransportFailedConnectionUnavailable",
-                                                (node.getSyncUrl() == null ? parameterService
-                                                        .getRegistrationUrl() : node.getSyncUrl()));
-                                        fireOffline(ex, node, status);
-                                    } catch (ConnectionRejectedException ex) {
-                                        log.warn("The server was too busy to accept the connection");
-                                        fireOffline(ex, node, status);
-                                    } catch (AuthenticationException ex) {
-                                        log.warn("Could not authenticate with node");
-                                        fireOffline(ex, node, status);
-                                    } catch (SyncDisabledException ex) {
-                                        log.warn("Synchronization is disabled on the server node");
-                                        fireOffline(ex, node, status);
-                                    } catch (SocketException ex) {
-                                        log.warn("{}", ex.getMessage());
-                                        fireOffline(ex, node, status);
-                                    } catch (TransportException ex) {
-                                        log.warn("{}", ex.getMessage());
-                                        fireOffline(ex, node, status);
-                                    } catch (IOException ex) {
-                                        log.error(ex.getMessage(), ex);
-                                        fireOffline(ex, node, status);
-                                    } finally {
-                                        startTimesOfNodesBeingPulled.remove(node.getNodeId());
                                     }
                                 } else {
                                     log.warn(
