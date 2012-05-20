@@ -91,9 +91,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         List<Node> nodes = nodeService.findNodesToPull();
                         if (nodes != null && nodes.size() > 0) {
                             for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getSyncUrl())) {
-                                    if (StringUtils.isNotBlank(node.getNodeId())
-                                            && !node.getNodeId().equals(identity.getNodeId())) {
+                                if (StringUtils.isNotBlank(node.getNodeId())
+                                        && !node.getNodeId().equals(identity.getNodeId())) {
+                                    if (StringUtils.isNotBlank(node.getSyncUrl())) {
                                         RemoteNodeStatus status = statuses.add(node);
                                         try {
                                             startTimesOfNodesBeingPulled.put(node.getNodeId(),
@@ -142,11 +142,11 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                         } finally {
                                             startTimesOfNodesBeingPulled.remove(node.getNodeId());
                                         }
+                                    } else {
+                                        log.warn(
+                                                "Cannot pull node '{}' in the group '{}'.  The sync url is blank",
+                                                node.getNodeId(), node.getNodeGroupId());
                                     }
-                                } else {
-                                    log.warn(
-                                            "Cannot pull node '{}' in the group '{}'.  The sync url is blank",
-                                            node.getNodeId(), node.getNodeGroupId());
                                 }
                             }
                         }
