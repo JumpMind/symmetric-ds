@@ -135,7 +135,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void initTablesAndFunctions() {
         initTablesAndFunctionsForSpecificDialect();
-        createTablesIfNecessary();
+        createOrAlterTablesIfNecessary();
         createRequiredFunctions();
         platform.resetCachedTableModel();
     }
@@ -383,7 +383,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     /*
      * @return true if SQL was executed.
      */
-    protected boolean createTablesIfNecessary() {
+    public boolean createOrAlterTablesIfNecessary() {
 
         Database modelFromXml = readSymmetricSchemaFromXml();
 

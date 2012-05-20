@@ -12,6 +12,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -964,7 +965,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                                 + cquote + "Mixed_Case_Id" + cquote + " = 1"));
     }
 
-    @Test//(timeout = 120000)
+    @Test(timeout = 120000)
     public void testSyncShellCommand() throws Exception {
         logTestRunning();
         IDataService rootDataService = getServer().getDataService();
@@ -977,6 +978,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_CLIENT_NODE, false);
         Assert.assertEquals(0, batches.countBatches(true));
         Assert.assertTrue("Expected the testFlag static variable to have been set to true", testFlag);
+    }
+    
+    @Test
+    public void testAutoConfigureTablesAfterAlreadyCreated() {
+        testAutoConfigureTablesAfterAlreadyCreated(getServer());
+        testAutoConfigureTablesAfterAlreadyCreated(getClient());
+    }
+    
+    
+    protected void testAutoConfigureTablesAfterAlreadyCreated(ISymmetricEngine engine) {
+        ISymmetricDialect dialect = engine.getSymmetricDialect();
+        Assert.assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());
     }
 
     // @Test(timeout = 120000)
