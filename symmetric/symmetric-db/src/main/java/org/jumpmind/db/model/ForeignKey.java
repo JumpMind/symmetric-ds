@@ -313,8 +313,15 @@ public class ForeignKey implements Cloneable {
                     && (otherFk.name.length() > 0)) {
                 builder.append(name, otherFk.name);
             }
-            return builder.append(foreignTableName, otherFk.foreignTableName)
-                    .append(references, otherFk.references).isEquals();
+            builder.append(foreignTableName, otherFk.foreignTableName);
+            
+            builder.append(references.size(), otherFk.references.size());
+            for (int i = 0; i < references.size() && i < otherFk.references.size(); i++) {
+                builder.append(references.get(i), otherFk.references.get(i));
+            }
+            
+            return builder.isEquals();
+                
         } else {
             return false;
         }

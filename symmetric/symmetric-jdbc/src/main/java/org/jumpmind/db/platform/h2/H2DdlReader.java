@@ -85,8 +85,9 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         String name = index.getName();
-        return name != null && name.startsWith("CONSTRAINT_INDEX_");
+        return name != null && name.startsWith(fk.getName());
     }
+        
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
