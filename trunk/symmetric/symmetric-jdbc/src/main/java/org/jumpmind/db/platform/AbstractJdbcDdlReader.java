@@ -760,7 +760,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
             IIndex index = table.getIndex(indexIdx);
-
             if ((mustBeUnique == index.isUnique()) && matches(index, columnNames)
                     && isInternalForeignKeyIndex(connection, metaData, table, fk, index)) {
                 fk.setAutoIndexPresent(true);
