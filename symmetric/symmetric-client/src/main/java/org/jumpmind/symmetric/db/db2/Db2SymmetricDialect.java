@@ -39,8 +39,8 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         this.triggerTemplate = new Db2TriggerTemplate(this);
     }
 
-    protected boolean createTablesIfNecessary() {
-        boolean tablesCreated = super.createTablesIfNecessary();
+    public boolean createOrAlterTablesIfNecessary() {
+        boolean tablesCreated = super.createOrAlterTablesIfNecessary();
         if (tablesCreated) {
             long triggerHistId = platform.getSqlTemplate().queryForLong("select max(trigger_hist_id) from "
                     + parameterService.getTablePrefix() + "_trigger_hist") + 1;
