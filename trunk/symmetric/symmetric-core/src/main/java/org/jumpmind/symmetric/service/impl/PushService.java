@@ -98,9 +98,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getSyncUrl())) {
-                                    if (StringUtils.isNotBlank(node.getNodeId())
-                                            && !node.getNodeId().equals(identity.getNodeId())) {
+                                if (StringUtils.isNotBlank(node.getNodeId())
+                                        && !node.getNodeId().equals(identity.getNodeId())) {
+
+                                    if (StringUtils.isNotBlank(node.getSyncUrl())) {
                                         try {
                                             startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
                                                     new Date());
@@ -121,12 +122,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                         } finally {
                                             startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
                                         }
-                                    } else {
-                                        log.warn(
-                                                "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
-                                                node.getNodeId(), node.getNodeGroupId());
                                     }
+                                } else {
+                                    log.warn(
+                                            "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
+                                            node.getNodeId(), node.getNodeGroupId());
                                 }
+
                             }
                         } else {
                             log.error(
