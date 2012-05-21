@@ -71,14 +71,14 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         // BIGINT will be mapped back to BIGINT by the model reader
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.FLOAT);
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "INT");
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
