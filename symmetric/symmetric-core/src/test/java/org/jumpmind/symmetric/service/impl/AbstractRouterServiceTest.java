@@ -446,7 +446,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
                 false);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 530, batches.getBatches()
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 510, batches.getBatches()
                 .size());
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches
                 .getBatches().get(0).getDataEventCount());
