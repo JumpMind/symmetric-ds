@@ -44,7 +44,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
     public MySqlDdlBuilder() {
-
+        
+        databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setDefaultValuesForLongTypesSupported(false);
