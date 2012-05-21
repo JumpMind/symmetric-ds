@@ -337,7 +337,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getCreateTableXML(TriggerRouter triggerRouter) {
         Table table = getTable(triggerRouter.getTrigger(), true);
-        table.setName(triggerRouter.getTargetTable());
+        String targetTableName = triggerRouter.getRouter().getTargetTableName();
+        if (StringUtils.isNotBlank(targetTableName)) {
+            table.setName(targetTableName);
+        }
         Database db = new Database();
         setDatabaseName(triggerRouter, db);
         db.addTable(table);
