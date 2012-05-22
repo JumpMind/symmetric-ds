@@ -65,7 +65,7 @@ public class Node implements Serializable {
      */
     private String databaseVersion;
 
-    private boolean syncEnabled;
+    private boolean syncEnabled = true;
 
     private String timezoneOffset;
 

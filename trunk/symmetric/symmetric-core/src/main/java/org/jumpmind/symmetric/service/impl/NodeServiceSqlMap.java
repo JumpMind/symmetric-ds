@@ -30,7 +30,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 + "  (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)   ");
 
         putSql("insertNodeSql",
-                "insert into $(node) (node_id, node_group_id, external_id, created_at_node_id, timezone_offset, heartbeat_time, sync_enabled) values (?, ?, ?, ?, ?, current_timestamp, 1)   ");
+                "insert into $(node) (node_group_id, external_id, database_type, database_version, schema_version, symmetric_version, sync_url," +
+                "heartbeat_time, sync_enabled, timezone_offset, batch_to_send_count, batch_in_error_count, created_at_node_id, " +
+                "deployment_type, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeSql",
                 "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "

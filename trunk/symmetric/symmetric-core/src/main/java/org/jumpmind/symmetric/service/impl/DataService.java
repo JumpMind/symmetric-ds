@@ -946,7 +946,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
 
-                nodeService.updateNode(me);
+                nodeService.save(me);
                 nodeService.updateNodeHostForCurrentNode();
                 log.info("Done updating my node info.");
 

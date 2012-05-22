@@ -239,22 +239,30 @@ public class NodeService extends AbstractService implements INodeService {
         cachedNodeIdentity = null;
     }
 
-    public void insertNode(String nodeId, String nodeGroupdId, String externalId,
-            String createdAtNodeId) {
-        sqlTemplate.update(getSql("insertNodeSql"), new Object[] { nodeId, nodeGroupdId,
-                externalId, createdAtNodeId, AppUtils.getTimezoneOffset() });
-    }
-
     public void insertNodeGroup(String groupId, String description) {
         if (sqlTemplate.queryForInt(getSql("doesNodeGroupExistSql"), groupId) == 0) {
             sqlTemplate.update(getSql("insertNodeGroupSql"), description, groupId);
         }
     }
+    
+    public void save(Node node) {
+        if (!updateNode(node)) {
+            sqlTemplate.update(
+                    getSql("insertNodeSql"),
+                    new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
+                            node.getDatabaseVersion(), node.getSchemaVersion(),
+                            node.getSymmetricVersion(), node.getSyncUrl(), node.getHeartbeatTime(),
+                            node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(),
+                            node.getBatchToSendCount(), node.getBatchInErrorCount(),
+                            node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
+                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR });
+        }
+    }
 
     public boolean updateNode(Node node) {
-        if (!node.isSyncEnabled()) {
-            new Exception().printStackTrace();
-        }
         boolean updated = sqlTemplate.update(
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),

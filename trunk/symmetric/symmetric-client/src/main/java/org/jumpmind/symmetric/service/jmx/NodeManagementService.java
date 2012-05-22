@@ -258,7 +258,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         Node node = engine.getNodeService().findNode(nodeId);
         if (node != null) {
             node.setSyncEnabled(syncEnabled);
-            engine.getNodeService().updateNode(node);
+            engine.getNodeService().save(node);
             return true;
         } else {
             return false;

@@ -99,9 +99,9 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-    public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
+    public void save(Node node) {
     }
-
+    
     public void updateNodeHostForCurrentNode() {
     }
     

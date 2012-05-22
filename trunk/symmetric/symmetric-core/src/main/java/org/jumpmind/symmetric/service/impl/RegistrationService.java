@@ -100,15 +100,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 createSqlReplacementTokens()));
     }
 
-    public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration)
+    public boolean registerNode(Node preRegisteredNode, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
-        return registerNode(node, null, null, out, isRequestedRegistration);
+        return registerNode(preRegisteredNode, null, null, out, isRequestedRegistration);
     }
 
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
-    public boolean registerNode(Node node, String remoteHost, String remoteAddress,
+    public boolean registerNode(Node preRegisteredNode, String remoteHost, String remoteAddress,
             OutputStream out, boolean isRequestedRegistration) throws IOException {
         if (!nodeService.isRegistrationServer()) {
             // registration is not allowed until this node has an identity and
@@ -117,57 +117,58 @@ public class RegistrationService extends AbstractService implements IRegistratio
             NodeSecurity security = identity == null ? null : nodeService.findNodeSecurity(identity
                     .getNodeId());
             if (security == null || security.getInitialLoadTime() == null) {
-                saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RQ,
+                saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode, RegistrationStatus.RQ,
                         remoteHost, remoteAddress));
                 log.warn("Registration is not allowed until this node has an initial load");
                 return false;
             }
         }
 
-        String redirectUrl = getRedirectionUrlFor(node.getExternalId());
+        String redirectUrl = getRedirectionUrlFor(preRegisteredNode.getExternalId());
         if (redirectUrl != null) {
-            log.info("Redirecting {} to {} for registration.", node.getExternalId(), redirectUrl);
-            saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RR,
+            log.info("Redirecting {} to {} for registration.", preRegisteredNode.getExternalId(), redirectUrl);
+            saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode, RegistrationStatus.RR,
                     remoteHost, remoteAddress));
             throw new RegistrationRedirectException(redirectUrl);
         }
 
-        String nodeId = StringUtils.isBlank(node.getNodeId()) ? nodeService.getNodeIdGenerator()
-                .selectNodeId(nodeService, node) : node.getNodeId();
-        Node targetNode = nodeService.findNode(nodeId);
+        String nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdGenerator()
+                .selectNodeId(nodeService, preRegisteredNode) : preRegisteredNode.getNodeId();
+        Node registeredNode = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-        if ((targetNode == null || security == null || !security.isRegistrationEnabled())
+        if ((registeredNode == null || security == null || !security.isRegistrationEnabled())
                 && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
-            openRegistration(node);
-            nodeId = StringUtils.isBlank(node.getNodeId()) ? nodeService.getNodeIdGenerator()
-                    .selectNodeId(nodeService, node) : node.getNodeId();
+            openRegistration(preRegisteredNode);
+            nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdGenerator()
+                    .selectNodeId(nodeService, preRegisteredNode) : preRegisteredNode.getNodeId();
             security = nodeService.findNodeSecurity(nodeId);
-        } else if (targetNode == null || security == null || !security.isRegistrationEnabled()) {
-            saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RQ,
+            registeredNode = nodeService.findNode(nodeId);
+        } else if (registeredNode == null || security == null || !security.isRegistrationEnabled()) {
+            saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode, RegistrationStatus.RQ,
                     remoteHost, remoteAddress));
             return false;
         }
-
-        node.setNodeId(nodeId);
-
-        sqlTemplate.update(getSql("registerNodeSql"),
-                new Object[] { node.getSyncUrl(), node.getSchemaVersion(), node.getDatabaseType(),
-                        node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR });
+        
+        registeredNode.setSyncEnabled(true);
+        registeredNode.setSymmetricVersion(preRegisteredNode.getSymmetricVersion());
+        registeredNode.setSyncUrl(preRegisteredNode.getSyncUrl());
+        registeredNode.setDatabaseType(preRegisteredNode.getDatabaseType());
+        registeredNode.setDatabaseVersion(preRegisteredNode.getDatabaseVersion());
+        
+        nodeService.save(registeredNode);
 
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once or if the client is really
             // re-registering
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
-                dataService.reloadNode(node.getNodeId());
+                dataService.reloadNode(preRegisteredNode.getNodeId());
             }
         }
 
-        dataExtractorService.extractConfigurationStandalone(node, out);
+        dataExtractorService.extractConfigurationStandalone(registeredNode, out);
 
-        saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.OK, remoteHost,
+        saveRegisgtrationRequest(new RegistrationRequest(registeredNode, RegistrationStatus.OK, remoteHost,
                 remoteAddress));
 
         statisticManager.incrementNodesRegistered(1);
@@ -389,14 +390,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
             String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
+                node.setNodeId(nodeId);
+                node.setSyncEnabled(false);
+                node.setCreatedAtNodeId(me.getNodeId());
+                nodeService.save(node);
+
                 // make sure there isn't a node security row lying around w/out
                 // a node row
-                nodeService.deleteNodeSecurity(nodeId);
+                nodeService.deleteNodeSecurity(nodeId);                                
                 String password = nodeService.getNodeIdGenerator().generatePassword(nodeService,
                         node);
                 password = filterPasswordOnSaveIfNeeded(password);
-                nodeService.insertNode(nodeId, node.getNodeGroupId(), node.getExternalId(),
-                        me.getNodeId());
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, me.getNodeId() });
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
