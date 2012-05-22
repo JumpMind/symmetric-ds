@@ -390,7 +390,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             getRegistrationService().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, nodeId);
             Node node = getNodeService().findNode(nodeId);
             node.setSyncEnabled(true);
-            getNodeService().updateNode(node);
+            getNodeService().save(node);
         }
         logger.info(String.format("Done inserting %s nodes", NODES_TO_INSERT));
 

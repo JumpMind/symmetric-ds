@@ -16,11 +16,6 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                         + "  $(node_security) s on c.node_id = s.node_id where s.registration_enabled =   "
                         + "  1 and c.node_group_id = ? and c.external_id = ?                                    ");
 
-        putSql("registerNodeSql",
-                ""
-                        + "update $(node) set sync_enabled = 1, heartbeat_time = current_timestamp, sync_url = ?, schema_version = ?,   "
-                        + "  database_type = ?, database_version = ?, symmetric_version = ? where node_id = ?                                 ");
-
         putSql("registerNodeSecuritySql",
                 ""
                         + "update $(node_security) set registration_enabled = 0, registration_time =   "

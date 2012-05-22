@@ -51,11 +51,17 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
                     @Override
                     protected void afterResolutionAttempt() {
-                        DatabaseWriter writer = (DatabaseWriter) transformWriter.getTargetWriter();
-                        ISqlTransaction transaction = writer.getTransaction();
-                        if (transaction != null) {
-                            symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
-                        }
+                        // We cannot re-disable sync triggers because subsequent updates to the 
+                        // same row that was in conflict will probably not be in conflict, but they
+                        // should be "pinged" back to the updating 
+                        // DatabaseWriter writer = (DatabaseWriter)
+                        // transformWriter.getTargetWriter();
+                        // ISqlTransaction transaction =
+                        // writer.getTransaction();
+                        // if (transaction != null) {
+                        // symmetricDialect.disableSyncTriggers(transaction,
+                        // sourceNodeId);
+                        // }
                     }
                 },
                 buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));

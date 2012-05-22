@@ -110,10 +110,7 @@ public interface INodeService {
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
-    public void insertNode(String nodeId, String nodeGroupdId, String externalId,
-            String createdAtNodeId);
-
-    public boolean updateNode(Node node);
+    public void save(Node node);
 
     public void updateNodeHostForCurrentNode();
 

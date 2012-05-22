@@ -18,7 +18,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -342,19 +341,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("Inserting rows for node, security, identity and group for registration server");
-            String nodeGroupId = parameterService.getNodeGroupId();
             String nodeId = parameterService.getExternalId();
-            try {
-                nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
-            } catch (UniqueKeyException ex) {
-                log.warn("Not inserting node row for {} because it already exists", nodeId);
-            }
+            nodeService.save(new Node(parameterService, symmetricDialect));
             nodeService.insertNodeIdentity(nodeId);
             node = nodeService.findIdentity();
-            node.setSyncUrl(parameterService.getSyncUrl());
-            node.setSyncEnabled(true);
-            node.setHeartbeatTime(new Date());
-            nodeService.updateNode(node);
             nodeService.insertNodeGroup(node.getNodeGroupId(), null);
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
             nodeSecurity.setInitialLoadTime(new Date());

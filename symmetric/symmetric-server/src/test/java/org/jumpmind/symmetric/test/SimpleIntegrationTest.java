@@ -118,6 +118,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
 
         getServer().reloadNode(nodeId);
+        
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         Assert.assertFalse(rootOutgoingBatchService.isInitialLoadComplete(nodeId));
 
