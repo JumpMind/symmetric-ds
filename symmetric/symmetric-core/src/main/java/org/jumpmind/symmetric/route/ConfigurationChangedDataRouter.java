@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -102,12 +103,23 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
 
-            // don't route node security to it's own node. that node will get
-            // node security
-            // via registration and it will be updated by initial load
-            if (!initialLoad && nodeIds != null
-                    && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                nodeIds.remove(nodeIdInQuestion);
+            if (!initialLoad && nodeIds != null) {
+                /*
+                 * don't route node security to it's own node. that node will
+                 * get node security via registration and it will be updated by
+                 * initial load
+                 */
+                if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+
+                    nodeIds.remove(nodeIdInQuestion);
+                }
+                /*
+                 * don't route insert events for a node to itself. they will be
+                 * loaded during
+                 */
+                if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
+                    nodeIds.remove(nodeIdInQuestion);
+                }
             }
         } else {
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
@@ -247,6 +259,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
 
+        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
+                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            log.info("About to refresh the cache of parameters because new configuration came through the data router");
+            engine.getParameterService().rereadParameters();
+        }
+
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data router");
             engine.getConfigurationService().reloadChannels();
@@ -283,11 +301,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
         }
 
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
-                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("About to refresh the cache of parameters because new configuration came through the data router");
-            engine.getParameterService().rereadParameters();
-        }
     }
 
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {
