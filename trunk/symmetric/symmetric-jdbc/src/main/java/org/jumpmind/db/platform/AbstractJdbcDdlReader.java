@@ -889,9 +889,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             column.setDefaultValue(defaultValue.trim());
         }
 
-        Integer jdbcType = mapUnknownJdbcTypeForColumn(values);
-        if (jdbcType != null) {
-            column.setTypeCode(jdbcType);
+        Integer mappedType = mapUnknownJdbcTypeForColumn(values);
+        if (mappedType != null) {
+            column.setTypeCode(mappedType);
         } else {
             column.setTypeCode((Integer) values.get("DATA_TYPE"));
         }
