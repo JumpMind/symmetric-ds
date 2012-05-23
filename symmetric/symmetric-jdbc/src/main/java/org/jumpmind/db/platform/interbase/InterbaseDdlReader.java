@@ -147,7 +147,8 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                         .isDelimitedIdentifierModeOn());
 
                 if (column != null) {
-                    String defaultValue = rs.getString(2);
+                    Object defaultObject = rs.getObject(2);
+                    String defaultValue = defaultObject != null ? defaultObject.toString() : null;
 
                     if (!rs.wasNull() && (defaultValue != null)) {
                         defaultValue = defaultValue.trim();
