@@ -1,3 +1,2 @@
 drop generator gen_sym_trigger_trigger_hist_id;
 drop generator gen_sym_data_data_id;
-drop generator gen_sym_outgoing_batch_batch_id;
