@@ -25,22 +25,6 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException {
-        Table table = super.readTable(connection, metaData, values);
-        if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
-        }
-        return table;
-    }
-
-    @Override
-    protected void determineAutoIncrementFromResultSetMetaData(Connection connection, Table table,
-            Column[] columnsToCheck) throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(connection, table, columnsToCheck, ":");
-    }
-
-    @Override
     public Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         String sql = "select rtrim(dbinfo('dbname')) as TABLE_CAT, st.owner as TABLE_SCHEM, st.tabname as TABLE_NAME, "
@@ -80,6 +64,16 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
         rs.close();
         ps.close();
         return indices.values();
+    }
+    
+    @Override
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
+        Column column = super.readColumn(metaData, values);
+        if ("SERIAL".equalsIgnoreCase(column.getJdbcTypeName()) || "BIGSERIAL".equalsIgnoreCase(column.getJdbcTypeName())) {
+            column.setAutoIncrement(true);
+        }
+        return column;
     }
 
     @Override
