@@ -10,7 +10,7 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
         
-        putSql("clearLocksOnRestartSql", "update $(node_communication) set lock_time=null where locking_server_id=?");
+        putSql("clearLocksOnRestartSql", "update $(node_communication) set lock_time=null where locking_server_id=? and lock_time is not null");
 
         putSql("selectNodeCommunicationSql",
                 "select * from $(node_communication) where communication_type=? order by last_lock_time");

@@ -144,5 +144,21 @@ public class NodeCommunication implements Serializable {
     public boolean isLocked() {
         return lockTime != null;
     }
+    
+    public long getAverageSuccessPeriod() {
+        if (totalSuccessCount > 0 && totalSuccessMillis > 0) {
+            return totalSuccessMillis/totalSuccessCount;
+        } else {
+            return 0l;
+        }
+    }
+    
+    public long getAverageFailurePeriod() {
+        if (totalFailCount > 0 && totalFailMillis > 0) {
+            return totalFailMillis/totalFailCount;
+        } else {
+            return 0l;
+        }
+    }    
 
 }
