@@ -33,14 +33,18 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
+import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
@@ -55,7 +59,8 @@ import org.jumpmind.symmetric.transport.TransportException;
 /**
  * @see IPushService
  */
-public class PushService extends AbstractOfflineDetectorService implements IPushService {
+public class PushService extends AbstractOfflineDetectorService implements IPushService,
+        INodeCommunicationExecutor {
 
     private IDataExtractorService dataExtractorService;
 
@@ -67,18 +72,21 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     private IClusterService clusterService;
 
+    private INodeCommunicationService nodeCommunicationService;
+
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService) {
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService) {
         super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
         this.transportManager = transportManager;
         this.nodeService = nodeService;
         this.clusterService = clusterService;
+        this.nodeCommunicationService = nodeCommunicationService;
     }
 
     public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
@@ -94,46 +102,21 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 try {
                     NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
                             .getNodeId());
-                    List<Node> nodes = nodeService.findNodesToPushTo();
-                    if (nodes != null && nodes.size() > 0) {
-                        if (identitySecurity != null) {
-                            for (Node node : nodes) {
-                                if (StringUtils.isNotBlank(node.getNodeId())
-                                        && !node.getNodeId().equals(identity.getNodeId())) {
-
-                                    if (StringUtils.isNotBlank(node.getSyncUrl())) {
-                                        try {
-                                            startTimesOfNodesBeingPushedTo.put(node.getNodeId(),
-                                                    new Date());
-                                            log.debug("Push requested for {}", node);
-                                            RemoteNodeStatus status = pushToNode(node, identity,
-                                                    identitySecurity);
-                                            statuses.add(status);
-                                            if (status.getBatchesProcessed() > 0) {
-                                                log.info(
-                                                        "Pushed data to {}. {} data and {} batches were processed",
-                                                        new Object[] { node,
-                                                                status.getDataProcessed(),
-                                                                status.getBatchesProcessed() });
-                                            } else if (status.failed()) {
-                                                log.warn("There was an error while pushing data to the server");
-                                            }
-                                            log.debug("Push completed for {}", node);
-                                        } finally {
-                                            startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
-                                        }
-                                    } else {
-                                        log.warn(
-                                                "Cannot push to node '{}' in the group '{}'.  The sync url is blank",
-                                                node.getNodeId(), node.getNodeGroupId());
-                                    }
-                                }
+                    if (identitySecurity != null) {
+                        List<NodeCommunication> nodes = nodeCommunicationService
+                                .list(CommunicationType.PUSH);
+                        int availableThreads = nodeCommunicationService
+                                .getAvailableThreads(CommunicationType.PUSH);
+                        for (NodeCommunication nodeCommunication : nodes) {
+                            if (availableThreads > 0 && !nodeCommunication.isLocked()) {
+                                nodeCommunicationService.execute(nodeCommunication, statuses, this);
+                                availableThreads--;
                             }
-                        } else {
-                            log.error(
-                                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                                    identity.getNodeId());
                         }
+                    } else {
+                        log.error(
+                                "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
+                                identity.getNodeId());
                     }
                 } finally {
                     clusterService.unlock(ClusterConstants.PUSH);
@@ -145,8 +128,35 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         return statuses;
     }
 
-    private RemoteNodeStatus pushToNode(Node remote, Node identity, NodeSecurity identitySecurity) {
-        RemoteNodeStatus status = new RemoteNodeStatus(remote.getNodeId());
+    public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        Node node = nodeCommunication.getNode();
+        if (StringUtils.isNotBlank(node.getSyncUrl())) {
+            try {
+                startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
+                log.debug("Push requested for {}", node);
+                pushToNode(node, status);
+                if (status.getBatchesProcessed() > 0) {
+                    log.info(
+                            "Pushed data to {}. {} data and {} batches were processed",
+                            new Object[] { node, status.getDataProcessed(),
+                                    status.getBatchesProcessed() });
+                } else if (status.failed()) {
+                    log.warn("There was an error while pushing data to the server");
+                }
+                log.debug("Push completed for {}", node);
+            } finally {
+                startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
+            }
+        } else {
+            log.warn("Cannot push to node '{}' in the group '{}'.  The sync url is blank",
+                    node.getNodeId(), node.getNodeGroupId());
+        }
+
+    }
+
+    private void pushToNode(Node remote, RemoteNodeStatus status) {
+        Node identity = nodeService.findIdentity(false);
+        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
         IOutgoingWithResponseTransport transport = null;
         try {
             transport = transportManager.getPushTransport(remote, identity,
@@ -218,7 +228,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             } catch (Exception e) {
             }
         }
-        return status;
     }
 
 }

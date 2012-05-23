@@ -53,7 +53,11 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
     protected void writeColumn(Table table, Column column, StringBuilder ddl) {
         if (column.isAutoIncrement()) {
             printIdentifier(getColumnName(column), ddl);
-            ddl.append(" SERIAL");
+            if (column.getJdbcTypeCode() == Types.BIGINT) {
+                ddl.append(" BIGSERIAL");
+            } else {
+                ddl.append(" SERIAL");
+            }
         } else {
             super.writeColumn(table, column, ddl);
         }

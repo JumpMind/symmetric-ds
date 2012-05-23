@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -62,6 +63,7 @@ import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
+import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
 import org.jumpmind.symmetric.service.impl.ParameterService;
@@ -159,6 +161,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IExtensionPointManager extensionPointManger;
 
     protected IStagingManager stagingManager;
+    
+    protected INodeCommunicationService nodeCommunicationService;
 
     protected Date lastRestartTime = null;
 
@@ -247,12 +251,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataExtractorService, triggerRouterService, dataService, dataLoaderService,
                 transportManager, statisticManager);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
-                outgoingBatchService, registrationService, stagingManager);
+                outgoingBatchService, registrationService, stagingManager);        
+        this.nodeCommunicationService = buildNodeCommunicationService();
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService);
+                clusterService, nodeCommunicationService);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
-                dataLoaderService, registrationService, clusterService);
+                dataLoaderService, registrationService, clusterService, nodeCommunicationService);
         this.jobManager = createJobManager();
 
         this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(
@@ -271,6 +276,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected IRouterService buildRouterService() {
         return new RouterService(this);
+    }
+    
+    protected INodeCommunicationService buildNodeCommunicationService() {
+        return new NodeCommunicationService(nodeService, parameterService, symmetricDialect);
     }
 
     protected static ISecurityService createSecurityService(TypedProperties properties) {
@@ -485,6 +494,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             jobManager.stopJobs();
         }
         routerService.stop();
+        nodeCommunicationService.stop();
         started = false;
         starting = false;
     }
@@ -754,6 +764,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public ISequenceService getSequenceService() {
         return sequenceService;
+    }
+    
+    public INodeCommunicationService getNodeCommunicationService() {
+        return nodeCommunicationService;
     }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {

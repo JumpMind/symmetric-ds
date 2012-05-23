@@ -36,16 +36,13 @@ public class HeartbeatJob extends AbstractJob {
     }
 
     @Override
-    public long doJob() throws Exception {
+    public void doJob() throws Exception {
         if (engine.getClusterService().lock(getClusterLockName())) {
             try {
                 engine.getDataService().heartbeat(false);
-                return -1l;
             } finally {
                 engine.getClusterService().unlock(getClusterLockName());
             }
-        } else {
-            return -1l;
         }
     }
 

@@ -24,16 +24,9 @@ public class StageManagementJob extends AbstractJob {
     }
 
     @Override
-    long doJob() throws Exception {
+    void doJob() throws Exception {
         if (stagingManager != null) {
-            long cleanupCount = stagingManager.clean();
-
-            // TODO it would be a nice feature to be able to import from an
-            // upload/import directory any files that are dropped there.
-
-            return cleanupCount;
-        } else {
-            return 0;
+            stagingManager.clean();
         }
     }
 

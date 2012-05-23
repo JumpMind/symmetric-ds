@@ -21,9 +21,6 @@
 
 package org.jumpmind.symmetric.service;
 
-import java.util.Date;
-import java.util.Map;
-
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
@@ -33,9 +30,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
  * {@link Node}s that are configured to {@link NodeGroupLinkAction#W}
  */
 public interface IPullService extends IOfflineDetectorService {
-    
+
     public RemoteNodeStatuses pullData();
-    
-    public Map<String, Date> getStartTimesOfNodesBeingPulled();
-    
+
 }

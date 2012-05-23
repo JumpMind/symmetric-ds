@@ -35,8 +35,8 @@ public class OutgoingPurgeJob extends AbstractJob {
                 engine, taskScheduler);
     }
     @Override
-    public long doJob() throws Exception {
-        return engine.getPurgeService().purgeOutgoing();        
+    public void doJob() throws Exception {
+        engine.getPurgeService().purgeOutgoing();        
     }
     
     public String getClusterLockName() {

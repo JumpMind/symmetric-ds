@@ -36,8 +36,8 @@ public class DataGapPurgeJob extends AbstractJob {
     }
 
     @Override
-    public long doJob() throws Exception {
-        return engine.getPurgeService().purgeDataGaps();
+    public void doJob() throws Exception {
+        engine.getPurgeService().purgeDataGaps();
     }
 
     public String getClusterLockName() {

@@ -119,8 +119,8 @@ public class ParameterService implements IParameterService {
 
     public int getInt(String key, int defaultVal) {
         String val = getString(key);
-        if (val != null) {
-            return Integer.parseInt(val);
+        if (StringUtils.isNotBlank(val)) {
+            return Integer.parseInt(val.trim());
         }
         return defaultVal;
     }
