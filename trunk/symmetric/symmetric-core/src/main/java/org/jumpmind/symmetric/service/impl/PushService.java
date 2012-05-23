@@ -133,17 +133,28 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
-                log.debug("Push requested for {}", node);
-                pushToNode(node, status);
-                if (status.getBatchesProcessed() > 0) {
-                    log.info(
-                            "Pushed data to {}. {} data and {} batches were processed",
-                            new Object[] { node, status.getDataProcessed(),
-                                    status.getBatchesProcessed() });
-                } else if (status.failed()) {
-                    log.warn("There was an error while pushing data to the server");
-                }
-                log.debug("Push completed for {}", node);
+                long reloadBatchesProcessed = 0;
+                int pushCount = 0;
+                do {
+                    if (pushCount > 0) {
+                        log.info(
+                                "Pushing to {} again because the last push contained reload batches",
+                                node);
+                    }
+                    reloadBatchesProcessed = status.getReloadBatchesProcessed();
+                    log.debug("Push requested for {}", node);
+                    pushToNode(node, status);
+                    if (status.getBatchesProcessed() > 0) {
+                        log.info(
+                                "Pushed data to {}. {} data and {} batches were processed",
+                                new Object[] { node, status.getDataProcessed(),
+                                        status.getBatchesProcessed() });
+                    } else if (status.failed()) {
+                        log.warn("There was an error while pushing data to the server");
+                    }
+                    log.debug("Push completed for {}", node);
+                    pushCount++;
+                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed);
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
             }
@@ -196,8 +207,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 status.updateOutgoingStatus(extractedBatches, batches);
             }
         } catch (ConnectException ex) {
-            log.warn("", (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl()
-                    : remote.getSyncUrl()));
+            log.warn(
+                    "Failed to connect to {}",
+                    (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remote
+                            .getSyncUrl()));
             fireOffline(ex, remote, status);
         } catch (ConnectionRejectedException ex) {
             log.warn("The server was too busy to accept the connection");
