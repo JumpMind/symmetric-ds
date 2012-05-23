@@ -120,7 +120,7 @@ public abstract class AbstractIntegrationTest {
         boolean pulled = false;
         while (!pulled && tries < 10) {
             RemoteNodeStatuses statuses = getClient().pull();
-            statuses.waitForComplete(10000);
+            statuses.waitForComplete(20000);
             pulled = statuses.wasDataProcessed();
             AppUtils.sleep(100);
             tries++;

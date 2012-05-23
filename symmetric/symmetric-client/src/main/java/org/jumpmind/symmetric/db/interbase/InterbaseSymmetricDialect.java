@@ -169,6 +169,8 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         for (String name : names) {
             count += platform.getSqlTemplate().update("drop trigger " + name);
         }
-        log.info("Remove {} triggers", count);
+        if (count > 0) {
+            log.info("Remove {} triggers", count);
+        }
     }
 }
