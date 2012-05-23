@@ -89,12 +89,12 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if ((column.getTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
+        if ((column.getMappedTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
-            column.setTypeCode(Types.BIGINT);
+            column.setMappedTypeCode(Types.BIGINT);
         } else if (column.getDefaultValue() != null) {
-            if (column.getTypeCode() == Types.TIMESTAMP) {
+            if (column.getMappedTypeCode() == Types.TIMESTAMP) {
                 // Sybase maintains the default values for DATE/TIME jdbc types,
                 // so we have to
                 // migrate the default value to TIMESTAMP
@@ -112,7 +112,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
                 if (timestamp != null) {
                     column.setDefaultValue(timestamp.toString());
                 }
-            } else if (TypeMap.isTextType(column.getTypeCode())) {
+            } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
             }
         }

@@ -261,10 +261,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
                     Types.SMALLINT).toString();
         }
         // Oracle does not accept ISO formats, so we have to convert an ISO spec
@@ -272,15 +272,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // But these are the only formats that we make sure work, every other
         // format has to be database-dependent
         // and thus the user has to ensure that it is correct
-        else if (column.getTypeCode() == Types.DATE) {
+        else if (column.getMappedTypeCode() == Types.DATE) {
             if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2}",column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD')";
             }
-        } else if (column.getTypeCode() == Types.TIME) {
+        } else if (column.getMappedTypeCode() == Types.TIME) {
             if (Pattern.matches("\\d{2}:\\d{2}:\\d{2}", column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'HH24:MI:SS')";
             }
-        } else if (column.getTypeCode() == Types.TIMESTAMP) {
+        } else if (column.getMappedTypeCode() == Types.TIMESTAMP) {
             if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}[\\.\\d{1,8}]?", column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD HH24:MI:SS')";
             }

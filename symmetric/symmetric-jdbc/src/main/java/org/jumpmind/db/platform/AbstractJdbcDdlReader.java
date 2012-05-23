@@ -566,9 +566,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     table.setName(tableName);
                     for (int i = 1; i <= rsm.getColumnCount(); i++) {
                         Column column = new Column(rsm.getColumnName(i));
-                        column.setTypeCode(rsm.getColumnType(i));
+                        column.setMappedTypeCode(rsm.getColumnType(i));
                         column.setJdbcTypeCode(rsm.getColumnType(i));
-                        column.setJdbcTypeName(column.getType());
+                        column.setJdbcTypeName(column.getMappedType());
                         column.setRequired(rsm.isNullable(i) == 0);
                         column.setScale(rsm.getScale(i));
                         column.setPrecisionRadix(rsm.getPrecision(i));
@@ -589,8 +589,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
                 Column column = table.getColumn(columnIdx);
 
-                if (TypeMap.isTextType(column.getTypeCode())
-                        || TypeMap.isDateTimeType(column.getTypeCode())) {
+                if (TypeMap.isTextType(column.getMappedTypeCode())
+                        || TypeMap.isDateTimeType(column.getMappedTypeCode())) {
                     String defaultValue = column.getDefaultValue();
 
                     if ((defaultValue != null) && (defaultValue.length() >= 2)
@@ -891,9 +891,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         Integer mappedType = mapUnknownJdbcTypeForColumn(values);
         if (mappedType != null) {
-            column.setTypeCode(mappedType);
+            column.setMappedTypeCode(mappedType);
         } else {
-            column.setTypeCode((Integer) values.get("DATA_TYPE"));
+            column.setMappedTypeCode((Integer) values.get("DATA_TYPE"));
         }
 
         column.setJdbcTypeCode((Integer) values.get("DATA_TYPE"));
@@ -904,7 +904,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
 
         if (size == null) {
-            size = (String) _defaultSizes.get(new Integer(column.getTypeCode()));
+            size = (String) _defaultSizes.get(new Integer(column.getMappedTypeCode()));
         }
         // we're setting the size after the precision and radix in case
         // the database prefers to return them in the size value

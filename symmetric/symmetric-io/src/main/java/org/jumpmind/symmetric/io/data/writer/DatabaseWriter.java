@@ -653,7 +653,7 @@ public class DatabaseWriter implements IDataWriter {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
-                    || (platform.isLob(column.getTypeCode()) && StringUtils
+                    || (platform.isLob(column.getMappedTypeCode()) && StringUtils
                             .isBlank(oldData[columnIndex]));
         } else {
             // This is in support of creating update statements that don't use
@@ -786,10 +786,10 @@ public class DatabaseWriter implements IDataWriter {
 
                 Column[] columns = table.getColumns();
                 for (Column column : columns) {
-                    int typeCode = column.getTypeCode();
+                    int typeCode = column.getMappedTypeCode();
                     if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
                             && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                        column.setTypeCode(Types.VARCHAR);
+                        column.setMappedTypeCode(Types.VARCHAR);
                     }
 
                     if (setAllColumnsAsPrimaryKey) {

@@ -116,7 +116,7 @@ public class DmlStatement {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                list.add(columns[i].getTypeCode());
+                list.add(columns[i].getMappedTypeCode());
             }
         }
         int[] types = new int[list.size()];

@@ -113,7 +113,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
             // LONGVARCHAR columns always report changes
             if (change instanceof ColumnSizeChange) {
                 ColumnSizeChange sizeChange = (ColumnSizeChange) change;
-                if (sizeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                if (sizeChange.getChangedColumn().getMappedTypeCode() == Types.VARCHAR
                         && sizeChange.getNewSize() == 0) {
                     changeIt.remove();
                 }
@@ -122,7 +122,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
             // LONGVARCHAR columns always report changes
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
-                if (dataTypeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                if (dataTypeChange.getChangedColumn().getMappedTypeCode() == Types.VARCHAR
                         && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
                     changeIt.remove();
                 }

@@ -310,7 +310,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
             try {
                 if (column != null) {
-                    int type = column.getTypeCode();
+                    int type = column.getMappedTypeCode();
                     if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
                             .equals(""))) && column.isRequired() && column.isOfTextType()) {
                         objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
@@ -360,7 +360,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
             } catch (Exception ex) {
                 log.error("Could not convert a value of {} for column {} of type {}", new Object[] {
-                        value, column.getName(), column.getType() });
+                        value, column.getName(), column.getMappedType() });
                 log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex);
             }
@@ -517,7 +517,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         List<Column> lobColumns = new ArrayList<Column>(1);
         Column[] allColumns = table.getColumns();
         for (Column column : allColumns) {
-            if (isLob(column.getTypeCode())) {
+            if (isLob(column.getMappedTypeCode())) {
                 lobColumns.add(column);
             }
         }

@@ -64,12 +64,12 @@ public class Column implements Cloneable, Serializable {
     /**
      * The mapped JDBC type code
      */
-    private int typeCode;
+    private int mappedTypeCode;
 
     /**
      * The mapped JDBC type
-     * */
-    private String type;
+     */
+    private String mappedType;
 
     /** The size of the column for JDBC types that require/support this. */
     private String size;
@@ -231,8 +231,8 @@ public class Column implements Cloneable, Serializable {
      * 
      * @return The type code
      */
-    public int getTypeCode() {
-        return typeCode;
+    public int getMappedTypeCode() {
+        return mappedTypeCode;
     }
 
     /**
@@ -242,12 +242,12 @@ public class Column implements Cloneable, Serializable {
      * @param typeCode
      *            The type code
      */
-    public void setTypeCode(int typeCode) {
-        this.type = TypeMap.getJdbcTypeName(typeCode);
-        if (this.type == null) {
+    public void setMappedTypeCode(int typeCode) {
+        this.mappedType = TypeMap.getJdbcTypeName(typeCode);
+        if (this.mappedType == null) {
             throw new ModelException("Unknown JDBC type code " + typeCode);
         }
-        this.typeCode = typeCode;
+        this.mappedTypeCode = typeCode;
     }
 
     /**
@@ -255,8 +255,8 @@ public class Column implements Cloneable, Serializable {
      * 
      * @return The type
      */
-    public String getType() {
-        return type;
+    public String getMappedType() {
+        return mappedType;
     }
 
     /**
@@ -265,16 +265,16 @@ public class Column implements Cloneable, Serializable {
      * @param type
      *            The type
      */
-    public void setType(String type) {
+    public void setMappedType(String type) {
         Integer typeCode = TypeMap.getJdbcTypeCode(type);
 
         if (typeCode == null) {
             throw new ModelException("Unknown JDBC type " + type);
         } else {
-            this.typeCode = typeCode.intValue();
+            this.mappedTypeCode = typeCode.intValue();
             // we get the corresponding string value from the TypeMap in order
             // to detect extension types which we don't want in the model
-            this.type = TypeMap.getJdbcTypeName(typeCode);
+            this.mappedType = TypeMap.getJdbcTypeName(typeCode);
         }
     }
 
@@ -284,7 +284,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is of a numeric type
      */
     public boolean isOfNumericType() {
-        return TypeMap.isNumericType(getTypeCode());
+        return TypeMap.isNumericType(getMappedTypeCode());
     }
 
     /**
@@ -293,7 +293,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is of a text type
      */
     public boolean isOfTextType() {
-        return TypeMap.isTextType(getTypeCode());
+        return TypeMap.isTextType(getMappedTypeCode());
     }
 
     /**
@@ -302,7 +302,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is of a binary type
      */
     public boolean isOfBinaryType() {
-        return TypeMap.isBinaryType(getTypeCode());
+        return TypeMap.isBinaryType(getMappedTypeCode());
     }
 
     /**
@@ -311,7 +311,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is of a special type
      */
     public boolean isOfSpecialType() {
-        return TypeMap.isSpecialType(getTypeCode());
+        return TypeMap.isSpecialType(getMappedTypeCode());
     }
 
     /**
@@ -433,7 +433,7 @@ public class Column implements Cloneable, Serializable {
     public Object getParsedDefaultValue() {
         if ((defaultValue != null) && (defaultValue.length() > 0)) {
             try {
-                switch (typeCode) {
+                switch (mappedTypeCode) {
                     case Types.TINYINT:
                     case Types.SMALLINT:
                         return new Short(defaultValue);
@@ -459,7 +459,7 @@ public class Column implements Cloneable, Serializable {
                         return FormatUtils.toBoolean(defaultValue);
                     default:
                         if (PlatformUtils.supportsJava14JdbcTypes()
-                                && (typeCode == PlatformUtils.determineBooleanTypeCode())) {
+                                && (mappedTypeCode == PlatformUtils.determineBooleanTypeCode())) {
                             return FormatUtils.toBoolean(defaultValue);
                         }
                         break;
@@ -496,8 +496,8 @@ public class Column implements Cloneable, Serializable {
         result.primaryKey = primaryKey;
         result.required = required;
         result.autoIncrement = autoIncrement;
-        result.typeCode = typeCode;
-        result.type = type;
+        result.mappedTypeCode = mappedTypeCode;
+        result.mappedType = mappedType;
         result.size = size;
         result.defaultValue = defaultValue;
         result.scale = scale;
@@ -520,16 +520,16 @@ public class Column implements Cloneable, Serializable {
             comparator.append(primaryKey, other.primaryKey);
             comparator.append(required, other.required);
             comparator.append(autoIncrement, other.autoIncrement);
-            comparator.append(typeCode, other.typeCode);
+            comparator.append(mappedTypeCode, other.mappedTypeCode);
             comparator.append(getParsedDefaultValue(), other.getParsedDefaultValue());
 
             // comparing the size makes only sense for types where it is
             // relevant
-            if ((typeCode == Types.NUMERIC) || (typeCode == Types.DECIMAL)) {
+            if ((mappedTypeCode == Types.NUMERIC) || (mappedTypeCode == Types.DECIMAL)) {
                 comparator.append(size, other.size);
                 comparator.append(scale, other.scale);
-            } else if ((typeCode == Types.CHAR) || (typeCode == Types.VARCHAR)
-                    || (typeCode == Types.BINARY) || (typeCode == Types.VARBINARY)) {
+            } else if ((mappedTypeCode == Types.CHAR) || (mappedTypeCode == Types.VARCHAR)
+                    || (mappedTypeCode == Types.BINARY) || (mappedTypeCode == Types.VARBINARY)) {
                 comparator.append(size, other.size);
             }
 
@@ -549,11 +549,11 @@ public class Column implements Cloneable, Serializable {
         builder.append(primaryKey);
         builder.append(required);
         builder.append(autoIncrement);
-        builder.append(typeCode);
-        builder.append(type);
+        builder.append(mappedTypeCode);
+        builder.append(mappedType);
         builder.append(scale);
         builder.append(getParsedDefaultValue());
-        if (!TypeMap.isNumericType(typeCode)) {
+        if (!TypeMap.isNumericType(mappedTypeCode)) {
             builder.append(size);
         }
 
@@ -569,7 +569,7 @@ public class Column implements Cloneable, Serializable {
         result.append("Column [name=");
         result.append(getName());
         result.append("; type=");
-        result.append(getType());
+        result.append(getMappedType());
         result.append("]");
 
         return result.toString();
@@ -588,9 +588,9 @@ public class Column implements Cloneable, Serializable {
         result.append("; javaName=");
         result.append(getJavaName());
         result.append("; type=");
-        result.append(getType());
+        result.append(getMappedType());
         result.append("; typeCode=");
-        result.append(getTypeCode());
+        result.append(getMappedTypeCode());
         result.append("; size=");
         result.append(getSize());
         result.append("; required=");

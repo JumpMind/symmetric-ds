@@ -111,9 +111,9 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if (column.getTypeCode() == Types.FLOAT) {
-            column.setTypeCode(Types.REAL);
-        } else if (TypeMap.isTextType(column.getTypeCode())) {
+        if (column.getMappedTypeCode() == Types.FLOAT) {
+            column.setMappedTypeCode(Types.REAL);
+        } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
         return column;

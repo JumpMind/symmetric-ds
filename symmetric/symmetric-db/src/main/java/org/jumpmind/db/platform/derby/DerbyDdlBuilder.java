@@ -75,10 +75,10 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
                     Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);
@@ -115,7 +115,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
             // Derby currently has the limitation that it cannot convert numeric
             // values
             // to VARCHAR, though it can convert them to CHAR
-            if (TypeMap.isNumericType(sourceColumn.getTypeCode())
+            if (TypeMap.isNumericType(sourceColumn.getMappedTypeCode())
                     && "VARCHAR".equalsIgnoreCase(targetNativeType)) {
                 targetNativeType = "CHAR";
             }

@@ -265,9 +265,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 .getTableFromCache("test_customer", false);
         // Test null large object
         serverTestService.updateCustomer(300, "notes", null, table.getColumnWithName("notes")
-                .getTypeCode());
+                .getMappedTypeCode());
         serverTestService.updateCustomer(300, "icon", null, table.getColumnWithName("icon")
-                .getTypeCode());
+                .getMappedTypeCode());
 
         clientPull();
 

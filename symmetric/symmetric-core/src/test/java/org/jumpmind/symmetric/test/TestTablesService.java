@@ -100,7 +100,7 @@ public class TestTablesService extends AbstractService {
 
     public void insertCustomer(Customer customer) {
         int blobType = symmetricDialect.getPlatform().getTableFromCache("test_customer", false)
-                .getColumn(11).getTypeCode();
+                .getColumn(11).getMappedTypeCode();
         sqlTemplate.update(getSql("insertCustomerSql"),
                 new Object[] { customer.getCustomerId(), customer.getName(),
                         customer.isActive() ? "1" : "0", customer.getAddress(), customer.getCity(),

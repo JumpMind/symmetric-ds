@@ -116,7 +116,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
 
         if (column.getDefaultValue() != null) {
-            if (column.getTypeCode() == Types.TIME) {
+            if (column.getMappedTypeCode() == Types.TIME) {
                 Matcher matcher = db2TimePattern.matcher(column.getDefaultValue());
 
                 // Db2 returns "HH24.MI.SS"
@@ -136,7 +136,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 
                     column.setDefaultValue(newDefault.toString());
                 }
-            } else if (column.getTypeCode() == Types.TIMESTAMP) {
+            } else if (column.getMappedTypeCode() == Types.TIMESTAMP) {
 
                 Matcher matcher = db2TimestampPattern.matcher(column.getDefaultValue());
 
@@ -164,7 +164,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 
                     column.setDefaultValue(newDefault.toString());
                 }
-            } else if (TypeMap.isTextType(column.getTypeCode())) {
+            } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
             }
         }

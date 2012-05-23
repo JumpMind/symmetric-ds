@@ -82,10 +82,10 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
                     Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);
@@ -123,13 +123,13 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
 
             // DB2 has the limitation that it cannot convert numeric values
             // to VARCHAR, though it can convert them to CHAR
-            if (TypeMap.isNumericType(sourceColumn.getTypeCode())
+            if (TypeMap.isNumericType(sourceColumn.getMappedTypeCode())
                     && "VARCHAR".equalsIgnoreCase(targetNativeType)) {
                 Object sizeSpec = targetColumn.getSize();
 
                 if (sizeSpec == null) {
                     sizeSpec = databaseInfo
-                            .getDefaultSize(targetColumn.getTypeCode());
+                            .getDefaultSize(targetColumn.getMappedTypeCode());
                 }
                 type = "CHAR(" + sizeSpec.toString() + ")";
             }

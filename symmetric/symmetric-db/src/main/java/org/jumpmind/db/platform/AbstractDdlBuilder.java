@@ -1401,7 +1401,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         StringBuffer result = new StringBuffer();
 
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
-        switch (column.getTypeCode()) {
+        switch (column.getMappedTypeCode()) {
             case Types.DATE:
                 result.append(databaseInfo.getValueQuoteToken());
                 if (!(value instanceof String) && (getValueDateFormat() != null)) {
@@ -1635,7 +1635,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" ");
             writeColumnNotNullableStmt(ddl);
         } else if (databaseInfo.isNullAsDefaultValueRequired()
-                && databaseInfo.hasNullDefault(column.getTypeCode())) {
+                && databaseInfo.hasNullDefault(column.getMappedTypeCode())) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
         }
@@ -1680,14 +1680,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Object sizeSpec = column.getSize();
 
         if (sizeSpec == null) {
-            sizeSpec = databaseInfo.getDefaultSize(column.getTypeCode());
+            sizeSpec = databaseInfo.getDefaultSize(column.getMappedTypeCode());
         }
         if (sizeSpec != null) {
-            if (databaseInfo.hasSize(column.getTypeCode())) {
+            if (databaseInfo.hasSize(column.getMappedTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(sizeSpec.toString());
                 sqlType.append(")");
-            } else if (databaseInfo.hasPrecisionAndScale(column.getTypeCode())) {
+            } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(column.getSizeAsInt());
                 sqlType.append(",");
@@ -1709,9 +1709,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The native type
      */
     protected String getNativeType(Column column) {
-        String nativeType = (String) databaseInfo.getNativeType(column.getTypeCode());
+        String nativeType = (String) databaseInfo.getNativeType(column.getMappedTypeCode());
 
-        return nativeType == null ? column.getType() : nativeType;
+        return nativeType == null ? column.getMappedType() : nativeType;
     }
 
     /**
@@ -1786,13 +1786,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         if (parsedDefault != null) {
             if (!databaseInfo.isDefaultValuesForLongTypesSupported()
-                    && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
+                    && ((column.getMappedTypeCode() == Types.LONGVARBINARY) || (column.getMappedTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
             }
             // we write empty default value strings only if the type is not a
             // numeric or date/time type
-            if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
+            if (isValidDefaultValue(column.getDefaultValue(), column.getMappedTypeCode())) {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
@@ -1806,7 +1806,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Prints the default value of the column.
      */
     protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
-        printDefaultValue(getNativeDefaultValue(column), column.getTypeCode(), ddl);
+        printDefaultValue(getNativeDefaultValue(column), column.getMappedTypeCode(), ddl);
     }
 
     /**
@@ -1884,15 +1884,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         String desiredDefault = desiredColumn.getDefaultValue();
         String currentDefault = currentColumn.getDefaultValue();
         boolean defaultsEqual = (desiredDefault == null) || desiredDefault.equals(currentDefault);
-        boolean sizeMatters = databaseInfo.hasSize(currentColumn.getTypeCode())
+        boolean sizeMatters = databaseInfo.hasSize(currentColumn.getMappedTypeCode())
                 && (desiredColumn.getSize() != null);
 
         // We're comparing the jdbc type that corresponds to the native type for
         // the
         // desired type, in order to avoid repeated altering of a perfectly
         // valid column
-        if ((databaseInfo.getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
-                .getTypeCode())
+        if ((databaseInfo.getTargetJdbcType(desiredColumn.getMappedTypeCode()) != currentColumn
+                .getMappedTypeCode())
                 || (desiredColumn.isRequired() != currentColumn.isRequired())
                 || (sizeMatters && !StringUtils.equals(desiredColumn.getSize(),
                         currentColumn.getSize())) || !defaultsEqual) {

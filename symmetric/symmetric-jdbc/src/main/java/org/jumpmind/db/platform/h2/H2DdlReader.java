@@ -60,7 +60,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         if (values.get("NUMERIC_SCALE") != null) {
             column.setScale((Integer) values.get("NUMERIC_SCALE"));
         }
-        if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
+        if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
 

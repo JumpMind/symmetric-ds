@@ -128,10 +128,10 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected String getNativeDefaultValue(Column column) {
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
                     Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);
@@ -492,8 +492,8 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
                 delimitedIdentifierModeOn);
 
         ddl.append(" DEFAULT ");
-        if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode())) {
-            printDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode(), ddl);
+        if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode())) {
+            printDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode(), ddl);
         } else {
             ddl.append("NULL");
         }

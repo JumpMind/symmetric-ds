@@ -157,7 +157,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
             }
 
-            if (column.getTypeCode() == Types.TIMESTAMP) {
+            if (column.getMappedTypeCode() == Types.TIMESTAMP) {
                 // Sql Server maintains the default values for DATE/TIME jdbc
                 // types, so we have to
                 // migrate the default value to TIMESTAMP
@@ -175,22 +175,22 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 if (timestamp != null) {
                     defaultValue = timestamp.toString();
                 }
-            } else if (column.getTypeCode() == Types.DECIMAL) {
+            } else if (column.getMappedTypeCode() == Types.DECIMAL) {
                 // For some reason, Sql Server 2005 always returns DECIMAL
                 // default values with a dot
                 // even if the scale is 0, so we remove the dot
                 if ((column.getScale() == 0) && defaultValue.endsWith(".")) {
                     defaultValue = defaultValue.substring(0, defaultValue.length() - 1);
                 }
-            } else if (TypeMap.isTextType(column.getTypeCode())) {
+            } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 defaultValue = unescape(defaultValue, "'", "''");
             }
 
             column.setDefaultValue(defaultValue);
         }
-        if ((column.getTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
+        if ((column.getMappedTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
-            column.setTypeCode(Types.BIGINT);
+            column.setMappedTypeCode(Types.BIGINT);
         }
 
         return column;

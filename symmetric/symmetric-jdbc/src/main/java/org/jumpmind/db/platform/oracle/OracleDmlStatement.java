@@ -17,7 +17,7 @@ public class OracleDmlStatement extends DmlStatement {
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getTypeCode() == -101) {
+                if (columns[i].getMappedTypeCode() == -101) {
                     sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(",");
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
                     sql.append("SYM_WKT2GEOM(?)").append(",");   
@@ -36,7 +36,7 @@ public class OracleDmlStatement extends DmlStatement {
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getTypeCode() == -101) {
+                if (columns[i].getMappedTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(separator);
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {

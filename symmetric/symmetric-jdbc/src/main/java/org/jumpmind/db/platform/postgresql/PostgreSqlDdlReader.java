@@ -105,10 +105,10 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 // Since we cannot currently use the Blob/Clob interface with
                 // BYTEA, we instead
                 // map them to LONGVARBINARY/LONGVARCHAR
-                if (column.getTypeCode() == Types.BINARY) {
-                    column.setTypeCode(Types.LONGVARBINARY);
-                } else if (column.getTypeCode() == Types.VARCHAR) {
-                    column.setTypeCode(Types.LONGVARCHAR);
+                if (column.getMappedTypeCode() == Types.BINARY) {
+                    column.setMappedTypeCode(Types.LONGVARBINARY);
+                } else if (column.getMappedTypeCode() == Types.VARCHAR) {
+                    column.setMappedTypeCode(Types.LONGVARCHAR);
                 }
             }
             // fix issue DDLUTILS-165 as postgresql-8.2-504-jdbc3.jar seems to
@@ -116,10 +116,10 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             // on columns defined as TEXT.
             else if (column.getSizeAsInt() == Integer.MAX_VALUE) {
                 column.setSize(null);
-                if (column.getTypeCode() == Types.VARCHAR) {
-                    column.setTypeCode(Types.LONGVARCHAR);
-                } else if (column.getTypeCode() == Types.BINARY) {
-                    column.setTypeCode(Types.LONGVARBINARY);
+                if (column.getMappedTypeCode() == Types.VARCHAR) {
+                    column.setMappedTypeCode(Types.LONGVARCHAR);
+                } else if (column.getMappedTypeCode() == Types.BINARY) {
+                    column.setMappedTypeCode(Types.LONGVARBINARY);
                 }
             }
         }
@@ -138,7 +138,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 // PostgreSQL returns default values in the forms
                 // "-9000000000000000000::bigint" or
                 // "'some value'::character varying" or "'2000-01-01'::date"
-                switch (column.getTypeCode()) {
+                switch (column.getMappedTypeCode()) {
                 case Types.INTEGER:
                 case Types.BIGINT:
                 case Types.DECIMAL:
@@ -154,7 +154,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     defaultValue = extractDelimitedDefaultValue(defaultValue);
                     break;
                 }
-                if (TypeMap.isTextType(column.getTypeCode())) {
+                if (TypeMap.isTextType(column.getMappedTypeCode())) {
                     // We assume escaping via double quote (see also the
                     // backslash_quote setting:
                     // http://www.postgresql.org/docs/7.4/interactive/runtime-config.html#RUNTIME-CONFIG-COMPATIBLE)

@@ -346,14 +346,14 @@ public class Database implements Serializable, Cloneable {
                 }
                 namesOfProcessedColumns.add(column.getName());
 
-                if ((column.getType() == null) || (column.getType().length() == 0)) {
+                if ((column.getMappedType() == null) || (column.getMappedType().length() == 0)) {
                     throw new ModelException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has no type");
                 }
-                if ((column.getTypeCode() == Types.OTHER)
-                        && !"OTHER".equalsIgnoreCase(column.getType())) {
+                if ((column.getMappedTypeCode() == Types.OTHER)
+                        && !"OTHER".equalsIgnoreCase(column.getMappedType())) {
                     throw new ModelException("The column nr. " + idx + " in table "
-                            + curTable.getName() + " has an unknown type " + column.getType());
+                            + curTable.getName() + " has an unknown type " + column.getMappedType());
                 }
                 namesOfProcessedColumns.add(column.getName());
             }
