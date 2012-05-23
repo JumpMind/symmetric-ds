@@ -165,12 +165,9 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     @Override
     public void cleanupTriggers() {
         List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
-        int count = 0;
         for (String name : names) {
-            count += platform.getSqlTemplate().update("drop trigger " + name);
-        }
-        if (count > 0) {
-            log.info("Remove {} triggers", count);
+            platform.getSqlTemplate().update("drop trigger " + name);
+            log.info("droped {}", name);
         }
     }
 }
