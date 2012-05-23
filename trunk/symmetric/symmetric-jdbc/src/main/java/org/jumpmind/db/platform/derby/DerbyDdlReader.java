@@ -55,7 +55,7 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
                     || defaultValue.startsWith("AUTOINCREMENT:")) {
                 column.setDefaultValue(null);
                 column.setAutoIncrement(true);
-            } else if (TypeMap.isTextType(column.getTypeCode())) {
+            } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(defaultValue, "'", "''"));
             }
         }

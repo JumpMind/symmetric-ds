@@ -160,7 +160,7 @@ public class DatabaseIO {
                                 } else if (attributeName.equalsIgnoreCase("required")) {
                                     column.setRequired(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("type")) {
-                                    column.setType(attributeValue);
+                                    column.setMappedType(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("size")) {
                                     column.setSize(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("default")) {
@@ -337,8 +337,8 @@ public class DatabaseIO {
 	    			if (column.isRequired()) {
 	    				output.write(" required=\"" + column.isRequired() + "\"");
 	    			}
-	    			if (column.getType() != null) {
-	    				output.write(" type=\"" + column.getType() + "\"");
+	    			if (column.getMappedType() != null) {
+	    				output.write(" type=\"" + column.getMappedType() + "\"");
 	    			}
 	    			if (column.getSize() != null) {
 	    				output.write(" size=\"" + column.getSize() + "\"");

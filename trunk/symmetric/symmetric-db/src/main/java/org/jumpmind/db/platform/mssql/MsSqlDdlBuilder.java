@@ -171,7 +171,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
 
         StringBuffer result = new StringBuffer();
 
-        switch (column.getTypeCode()) {
+        switch (column.getMappedTypeCode()) {
         case Types.REAL:
         case Types.NUMERIC:
         case Types.FLOAT:
@@ -214,10 +214,10 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getNativeDefaultValue(Column column) {
         // Sql Server wants BIT default values as 0 or 1
-        if ((column.getTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == PlatformUtils
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
                     Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);

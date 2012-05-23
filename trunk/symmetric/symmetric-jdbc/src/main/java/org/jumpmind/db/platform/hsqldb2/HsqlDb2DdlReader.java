@@ -48,7 +48,7 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
+        if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
 

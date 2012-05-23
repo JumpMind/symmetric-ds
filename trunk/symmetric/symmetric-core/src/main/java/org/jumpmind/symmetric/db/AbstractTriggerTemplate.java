@@ -506,7 +506,7 @@ abstract public class AbstractTriggerTemplate {
         StringBuilder b = new StringBuilder("'");
         for (Column column : columnsMinusLobs) {
             b.append("\"").append(column.getName()).append("\"=");
-            switch (column.getTypeCode()) {
+            switch (column.getMappedTypeCode()) {
                 case Types.BIT:
                 case Types.TINYINT:
                 case Types.SMALLINT:
@@ -568,7 +568,7 @@ abstract public class AbstractTriggerTemplate {
             Column column = columns[i];
             if (column != null) {
                 String templateToUse = null;
-                switch (column.getTypeCode()) {
+                switch (column.getMappedTypeCode()) {
                     case Types.TINYINT:
                     case Types.SMALLINT:
                     case Types.INTEGER:
@@ -650,7 +650,7 @@ abstract public class AbstractTriggerTemplate {
                                     && StringUtils.isNotBlank(geometryColumnTemplate)) {
                                 templateToUse = geometryColumnTemplate;
                                 break;
-                            } else if (column.getType().equals(TypeMap.TIMESTAMPTZ)
+                            } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
                                     && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
                                 templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
                                 break;
@@ -664,7 +664,7 @@ abstract public class AbstractTriggerTemplate {
                         }  
                         
                         throw new NotImplementedException(column.getName() + " is of type "
-                                + column.getType() + " with JDBC type of "
+                                + column.getMappedType() + " with JDBC type of "
                                 + column.getJdbcTypeName());
                 }
 
@@ -741,7 +741,7 @@ abstract public class AbstractTriggerTemplate {
         String text = "";
         for (int i = 0; i < columns.length; i++) {
             text += "declare @" + prefix + "pk" + i + " ";
-            switch (columns[i].getTypeCode()) {
+            switch (columns[i].getMappedTypeCode()) {
                 case Types.TINYINT:
                 case Types.SMALLINT:
                 case Types.INTEGER:
@@ -795,7 +795,7 @@ abstract public class AbstractTriggerTemplate {
                         break;
                     }
                     throw new NotImplementedException(columns[i] + " is of type "
-                            + columns[i].getType());
+                            + columns[i].getMappedType());
             }
         }
 

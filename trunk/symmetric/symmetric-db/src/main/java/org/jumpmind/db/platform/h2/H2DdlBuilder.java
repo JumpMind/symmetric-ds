@@ -111,13 +111,13 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
 
         if (parsedDefault != null) {
             if (!databaseInfo.isDefaultValuesForLongTypesSupported()
-                    && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
+                    && ((column.getMappedTypeCode() == Types.LONGVARBINARY) || (column.getMappedTypeCode() == Types.LONGVARCHAR))) {
                 throw new ModelException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
             }
             // we write empty default value strings only if the type is not a
             // numeric or date/time type
-            if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
+            if (isValidDefaultValue(column.getDefaultValue(), column.getMappedTypeCode())) {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }

@@ -303,24 +303,24 @@ public class ModelComparator {
             Table targetTable, Column targetColumn) {
         ArrayList<TableChange> changes = new ArrayList<TableChange>();
 
-        if (targetColumn.getTypeCode() != sourceColumn.getTypeCode()
-                && platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
-                        .getTypeCode()) {
+        if (targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
+                && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
+                        .getMappedTypeCode()) {
             log.debug(
                     "The {} column on the {} table changed type codes from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.getTypeCode(), targetColumn.getTypeCode() });
+                            sourceColumn.getMappedTypeCode(), targetColumn.getMappedTypeCode() });
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
-                    .getTypeCode()));
+                    .getMappedTypeCode()));
         }
 
-        boolean sizeMatters = platformInfo.hasSize(targetColumn.getTypeCode());
-        boolean scaleMatters = platformInfo.hasPrecisionAndScale(targetColumn.getTypeCode());
+        boolean sizeMatters = platformInfo.hasSize(targetColumn.getMappedTypeCode());
+        boolean scaleMatters = platformInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
             Integer defaultSize = platformInfo.getDefaultSize(platformInfo
-                    .getTargetJdbcType(targetColumn.getTypeCode()));
+                    .getTargetJdbcType(targetColumn.getMappedTypeCode()));
             if (defaultSize != null) {
                 targetSize = defaultSize.toString();
             } else {

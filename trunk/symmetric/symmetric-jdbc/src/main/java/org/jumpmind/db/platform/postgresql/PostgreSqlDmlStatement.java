@@ -90,7 +90,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getTypeCode() == -101) {
+                if (columns[i].getMappedTypeCode() == -101) {
                     sql.append("cast(? as timestamp with time zone)").append(",");
                 } else {
                     sql.append("?").append(",");
@@ -107,7 +107,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getTypeCode() == -101) {
+                if (columns[i].getMappedTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = cast(? as timestamp with time zone)").append(separator);
                 } else {

@@ -77,6 +77,6 @@ public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnC
         Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
         Column column = table.findColumn(_column.getName(), caseSensitive);
 
-        column.setTypeCode(_newTypeCode);
+        column.setMappedTypeCode(_newTypeCode);
     }
 }

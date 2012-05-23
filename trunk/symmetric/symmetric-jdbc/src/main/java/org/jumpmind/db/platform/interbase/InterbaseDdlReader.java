@@ -71,10 +71,10 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.getTypeCode() == Types.VARCHAR) {
+        if (column.getMappedTypeCode() == Types.VARCHAR) {
             int size = Integer.parseInt(column.getSize());
             if (size >= InterbaseDdlBuilder.SWITCH_TO_LONGVARCHAR_SIZE) {
-                column.setTypeCode(Types.LONGVARCHAR);
+                column.setMappedTypeCode(Types.LONGVARCHAR);
             }
         }
         return column;
@@ -172,7 +172,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
                     // CLOBs are returned by the driver as VARCHAR
                     if (!rs.wasNull() && (dbType == 261) && (blobSubType == 1)) {
-                        column.setTypeCode(Types.CLOB);
+                        column.setMappedTypeCode(Types.CLOB);
                     }
                 }
             }
@@ -235,15 +235,15 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         Column[] columns = table.getColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            if (columns[idx].getTypeCode() == Types.FLOAT) {
-                columns[idx].setTypeCode(Types.REAL);
-            } else if ((columns[idx].getTypeCode() == Types.NUMERIC)
-                    || (columns[idx].getTypeCode() == Types.DECIMAL)) {
-                if ((columns[idx].getTypeCode() == Types.NUMERIC)
+            if (columns[idx].getMappedTypeCode() == Types.FLOAT) {
+                columns[idx].setMappedTypeCode(Types.REAL);
+            } else if ((columns[idx].getMappedTypeCode() == Types.NUMERIC)
+                    || (columns[idx].getMappedTypeCode() == Types.DECIMAL)) {
+                if ((columns[idx].getMappedTypeCode() == Types.NUMERIC)
                         && (columns[idx].getSizeAsInt() == 18) && (columns[idx].getScale() == 0)) {
-                    columns[idx].setTypeCode(Types.BIGINT);
+                    columns[idx].setMappedTypeCode(Types.BIGINT);
                 }
-            } else if (TypeMap.isTextType(columns[idx].getTypeCode())) {
+            } else if (TypeMap.isTextType(columns[idx].getMappedTypeCode())) {
                 columns[idx].setDefaultValue(unescape(columns[idx].getDefaultValue(), "'", "''"));
             }
         }

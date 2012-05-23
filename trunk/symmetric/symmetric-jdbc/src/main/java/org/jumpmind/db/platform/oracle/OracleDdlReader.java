@@ -154,39 +154,39 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.getTypeCode() == Types.DECIMAL) {
+        if (column.getMappedTypeCode() == Types.DECIMAL) {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
             if (column.getScale() == 0) {
                 if (column.getSizeAsInt() == 5) {
-                    column.setTypeCode(Types.SMALLINT);
+                    column.setMappedTypeCode(Types.SMALLINT);
                 } else if (column.getSizeAsInt() == 22) {
-                    column.setTypeCode(Types.INTEGER);
+                    column.setMappedTypeCode(Types.INTEGER);
                 } else if (column.getSizeAsInt() == 38){
-                    column.setTypeCode(Types.BIGINT);
+                    column.setMappedTypeCode(Types.BIGINT);
                 }
             } else if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() <= 63) {
-                    column.setTypeCode(Types.REAL);
+                    column.setMappedTypeCode(Types.REAL);
                 } else {
-                    column.setTypeCode(Types.DOUBLE);
+                    column.setMappedTypeCode(Types.DOUBLE);
                 }
             }
-        } else if (column.getTypeCode() == Types.FLOAT) {
+        } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
             // FLOAT but with
             // different sizes (63 for REAL, 126 for FLOAT/DOUBLE PRECISION)
             switch (column.getSizeAsInt()) {
                 case 63:
-                    column.setTypeCode(Types.REAL);
+                    column.setMappedTypeCode(Types.REAL);
                     break;
                 case 126:
-                    column.setTypeCode(Types.DOUBLE);
+                    column.setMappedTypeCode(Types.DOUBLE);
                     break;
             }
-        } else if ((column.getTypeCode() == Types.DATE)
-                || (column.getTypeCode() == Types.TIMESTAMP)) {
+        } else if ((column.getMappedTypeCode() == Types.DATE)
+                || (column.getMappedTypeCode() == Types.TIMESTAMP)) {
             // we also reverse the ISO-format adaptation, and adjust the default
             // value to timestamp
             if (column.getDefaultValue() != null) {
@@ -215,7 +215,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     column.setDefaultValue(timestamp.toString());
                 }
             }
-        } else if (TypeMap.isTextType(column.getTypeCode())) {
+        } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
         return column;

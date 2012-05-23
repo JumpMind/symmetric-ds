@@ -1052,7 +1052,7 @@ public class Table implements Serializable, Cloneable {
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
                 result = PRIME * result + column.getName().hashCode();
-                result = PRIME * result + column.getType().hashCode();
+                result = PRIME * result + column.getMappedType().hashCode();
                 result = PRIME * result + column.getSizeAsInt();
             }
         }
