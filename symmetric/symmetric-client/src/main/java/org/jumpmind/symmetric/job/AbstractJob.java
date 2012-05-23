@@ -58,8 +58,6 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     private long totalExecutionTimeInMs;
 
-    private long lastExecutionProcessCount = 0;
-
     private long numberOfRuns;
 
     private boolean started;
@@ -155,14 +153,13 @@ abstract public class AbstractJob implements Runnable, IJob {
                             synchronized (this) {
                                 ran = true;
                                 long startTime = System.currentTimeMillis();
-                                long processCount = 0;
                                 try {
                                     if (!requiresRegistration
                                             || (requiresRegistration && engine
                                                     .getRegistrationService()
                                                     .isRegisteredWithServer())) {
                                         hasNotRegisteredMessageBeenLogged = false;
-                                        processCount = doJob();
+                                        doJob();
                                     } else {
                                         if (!hasNotRegisteredMessageBeenLogged) {
                                             log.warn(
@@ -173,14 +170,12 @@ abstract public class AbstractJob implements Runnable, IJob {
                                     }
                                 } finally {
                                     lastFinishTime = new Date();
-                                    lastExecutionProcessCount = processCount;
                                     long endTime = System.currentTimeMillis();
                                     lastExecutionTimeInMs = endTime - startTime;
                                     totalExecutionTimeInMs += lastExecutionTimeInMs;
-                                    if (lastExecutionProcessCount > 0
-                                            || lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                                    if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
                                         engine.getStatisticManager().addJobStats(jobName,
-                                                startTime, endTime, lastExecutionProcessCount);
+                                                startTime, endTime, 0);
                                     }
                                     numberOfRuns++;
                                     running = false;
@@ -207,7 +202,7 @@ abstract public class AbstractJob implements Runnable, IJob {
         invoke(false);
     }
 
-    abstract long doJob() throws Exception;
+    abstract void doJob() throws Exception;
 
     @ManagedOperation(description = "Pause this job")
     public void pause() {
@@ -236,11 +231,6 @@ abstract public class AbstractJob implements Runnable, IJob {
     @ManagedMetric(description = "The amount of time this job spent in execution during it's last run")
     public long getLastExecutionTimeInMs() {
         return lastExecutionTimeInMs;
-    }
-
-    @ManagedMetric(description = "The count of elements this job processed during it's last run")
-    public long getLastExecutionProcessCount() {
-        return lastExecutionProcessCount;
     }
 
     @ManagedAttribute(description = "The last time this job completed execution")

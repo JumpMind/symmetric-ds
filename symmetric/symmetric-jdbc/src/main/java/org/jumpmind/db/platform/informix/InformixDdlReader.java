@@ -64,7 +64,8 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
                 + "where st.tabname like ? "
                 + "and (sc.colno = si.part1 or sc.colno = si.part2 or sc.colno = si.part3 or  "
                 + "sc.colno = si.part4 or sc.colno = si.part5 or sc.colno = si.part6 or  "
-                + "sc.colno = si.part7 or sc.colno = si.part8)";
+                + "sc.colno = si.part7 or sc.colno = si.part8) and " 
+                + "si.idxname not in (select idxname from sysconstraints where constrtype in ('R'))";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, tableName);
 

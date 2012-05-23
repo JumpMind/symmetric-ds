@@ -20,7 +20,6 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -35,20 +34,8 @@ public class PullJob extends AbstractJob {
     }
     
     @Override
-    public long doJob() throws Exception {
-        RemoteNodeStatuses statuses = engine.getPullService().pullData();
-
-        // Re-pull immediately if we are in the middle of an initial load
-        // so that the initial load completes as quickly as possible.
-        // only process
-        while (engine.getNodeService().isDataLoadStarted() &&
-                !statuses.errorOccurred() && 
-                statuses.wasBatchProcessed()) {
-            log.info("Immediate pull requested while in reload mode");
-            statuses = engine.getPullService().pullData();
-        }
-        
-        return statuses.getDataProcessedCount();
+    public void doJob() throws Exception {
+        engine.getPullService().pullData();
     }
     
     public String getClusterLockName() {

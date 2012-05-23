@@ -11,6 +11,7 @@ drop table sym_trigger_router;
 drop table sym_node_security;
 drop table sym_node_identity;
 drop table sym_lock;
+drop table sym_node_communication;
 drop table sym_node_host;
 drop table sym_node;
 drop table sym_node_group_link;

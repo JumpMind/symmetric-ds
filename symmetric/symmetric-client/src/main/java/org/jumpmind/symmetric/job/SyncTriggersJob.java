@@ -36,9 +36,8 @@ public class SyncTriggersJob extends AbstractJob {
     }
 
     @Override
-    public long doJob() throws Exception {
+    public void doJob() throws Exception {
         engine.getTriggerRouterService().syncTriggers();
-        return -1l;
     }
 
     public String getClusterLockName() {

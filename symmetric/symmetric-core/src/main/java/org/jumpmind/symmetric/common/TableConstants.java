@@ -50,6 +50,7 @@ public class TableConstants {
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_SECURITY = "node_security";
     public static final String SYM_NODE_IDENTITY = "node_identity";
+    public static final String SYM_NODE_COMMUNICATION = "node_communication";
     public static final String SYM_NODE_GROUP_LINK = "node_group_link";
     public static final String SYM_NODE_HOST_STATS = "node_host_stats";
     public static final String SYM_NODE_HOST_JOB_STATS = "node_host_job_stats";
@@ -145,6 +146,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_CONFLICT));
         tables.add(getTableName(tablePrefix, SYM_INCOMING_ERROR));
         tables.add(getTableName(tablePrefix, SYM_SEQUENCE));
+        tables.add(getTableName(tablePrefix, SYM_NODE_COMMUNICATION));
         return tables;
     }
 

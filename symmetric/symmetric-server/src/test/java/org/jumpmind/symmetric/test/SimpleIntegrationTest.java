@@ -213,7 +213,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         serverTestService.updateCustomer(100, "zip", NEW_ZIP, Types.NUMERIC);
         serverTestService.updateCustomer(100, "name", NEW_NAME, Types.VARCHAR);
 
-        boolean didPullData = getClient().pull().wasDataProcessed();
+        boolean didPullData = clientPull();
 
         Assert.assertTrue(didPullData);
 

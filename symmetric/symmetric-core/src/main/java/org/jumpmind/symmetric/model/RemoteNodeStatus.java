@@ -39,6 +39,7 @@ public class RemoteNodeStatus implements Serializable {
     private Status status;
     private long dataProcessed;
     private long batchesProcessed;
+    private boolean complete = false;
 
     public RemoteNodeStatus(String nodeId) {
         this.status = Status.NO_DATA;
@@ -108,6 +109,14 @@ public class RemoteNodeStatus implements Serializable {
         if (status != Status.DATA_ERROR && dataProcessed > 0) {
             status = Status.DATA_PROCESSED;
         }
+    }
+    
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+    }
+    
+    public boolean isComplete() {
+        return complete;
     }
 
 }

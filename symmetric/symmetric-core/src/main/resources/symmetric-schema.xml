@@ -41,6 +41,21 @@
         </foreign-key>        
     </table>
     
+    <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <column name="communication_type" type="VARCHAR" size="10"  required="true" primaryKey="true" description="The type of communication that is taking place with this node.  Valid values are: PULL, PUSH"/>
+        <column name="lock_time" type="TIMESTAMP" description="The timestamp when this node was locked" />
+        <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a pull lock for the node.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
+        <column name="last_lock_time" type="TIMESTAMP" description="The timestamp when this node was last locked" />
+        <column name="last_lock_millis" type="BIGINT"  default="0" description="" />
+        <column name="success_count" type="BIGINT" default="0" description="" />
+        <column name="fail_count" type="BIGINT"  default="0" description="" />
+        <column name="total_success_count" type="BIGINT"  default="0" description="" />        
+        <column name="total_fail_count" type="BIGINT"  default="0" description="" />
+        <column name="total_success_millis" type="BIGINT"  default="0" description="" />
+        <column name="total_fail_millis" type="BIGINT"  default="0" description="" />        
+    </table>    
+    
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
         <column name="description" type="VARCHAR" size="255" description="A description of this node group."/>

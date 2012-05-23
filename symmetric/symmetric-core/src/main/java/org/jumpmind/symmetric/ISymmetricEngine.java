@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -247,6 +248,8 @@ public interface ISymmetricEngine {
     public ITransformService getTransformService();
     
     public ITransportManager getTransportManager();
+    
+    public INodeCommunicationService getNodeCommunicationService();
     
     public String getTablePrefix();
     

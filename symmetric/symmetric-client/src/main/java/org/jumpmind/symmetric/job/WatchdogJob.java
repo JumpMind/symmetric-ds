@@ -37,7 +37,7 @@ public class WatchdogJob extends AbstractJob {
     }
 
     @Override
-    public long doJob() throws Exception {
+    public void doJob() throws Exception {
         if (engine.getClusterService().lock(ClusterConstants.WATCHDOG)) {
             synchronized (this) {
                 try {
@@ -47,7 +47,6 @@ public class WatchdogJob extends AbstractJob {
                 }
             }
         }
-        return -1l;
     }
 
     public String getClusterLockName() {

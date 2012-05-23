@@ -51,7 +51,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class ClusterService extends AbstractService implements IClusterService {
 
-    protected String serverId = AppUtils.getServerId();
+    private String serverId = AppUtils.getServerId();
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);

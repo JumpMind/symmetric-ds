@@ -36,9 +36,8 @@ public class StatisticFlushJob extends AbstractJob {
     }
 
     @Override
-    public long doJob() throws Exception {
+    public void doJob() throws Exception {
         engine.getStatisticManager().flush();
-        return -1l;
     }
     
     public String getClusterLockName() {
