@@ -35,14 +35,14 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             case INSERT:
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
-                        performFallbackToUpdate(writer, data, conflict.isResolveChangesOnly());
+                        performFallbackToUpdate(writer, data, conflict);
                         break;
                     case NEWER_WINS:
                         if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
                                 conflict, writer, data))
                                 || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflict, writer, data))) {
-                            performFallbackToUpdate(writer, data, false);
+                            performFallbackToUpdate(writer, data, conflict);
                         } else {
                             if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();
@@ -65,13 +65,12 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     case FALLBACK:
                         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
                             // we already tried to update using the pk
-                            performFallbackToInsert(writer, data);
+                            performFallbackToInsert(writer, data, conflict);
                         } else {
                             try {
-                                performFallbackToUpdate(writer, data,
-                                        conflict.isResolveChangesOnly());
+                                performFallbackToUpdate(writer, data, conflict);
                             } catch (ConflictException ex) {
-                                performFallbackToInsert(writer, data);
+                                performFallbackToInsert(writer, data, conflict);
                             }
                         }
                         break;
@@ -80,7 +79,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 conflict, writer, data))
                                 || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflict, writer, data))) {
-                            performFallbackToUpdate(writer, data, conflict.isResolveChangesOnly());
+                            performFallbackToUpdate(writer, data, conflict);
                         } else {
                             if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();
@@ -139,10 +138,10 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         }
     }
 
-    protected void beforeResolutionAttempt() {
+    protected void beforeResolutionAttempt(Conflict conflict) {
     }
 
-    protected void afterResolutionAttempt() {
+    protected void afterResolutionAttempt(Conflict conflict) {
     }
 
     protected void logConflictHappened(Conflict conflict, CsvData data, DatabaseWriter writer,
@@ -185,9 +184,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             if (!resolvedData.isIgnoreRow()) {
                 data.putCsvData(CsvData.ROW_DATA, resolvedData.getResolvedData());
                 try {
-                    performFallbackToUpdate(writer, data, conflict.isResolveChangesOnly());
+                    performFallbackToUpdate(writer, data, conflict);
                 } catch (ConflictException ex) {
-                    performFallbackToInsert(writer, data);
+                    performFallbackToInsert(writer, data, conflict);
                 }
             }
         } else {
@@ -195,8 +194,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         }
     }
 
-    protected boolean isTimestampNewer(Conflict conflictSetting, DatabaseWriter writer, CsvData data) {
-        String columnName = conflictSetting.getDetectExpression();
+    protected boolean isTimestampNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {
+        String columnName = conflict.getDetectExpression();
         Table table = writer.getTargetTable();
         String[] pkData = data.getPkData(table);
         Object[] objectValues = writer.getPlatform().getObjectValues(
@@ -211,8 +210,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         return loadingTs.after(existingTs);
     }
 
-    protected boolean isVersionNewer(Conflict conflictSetting, DatabaseWriter writer, CsvData data) {
-        String columnName = conflictSetting.getDetectExpression();
+    protected boolean isVersionNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {
+        String columnName = conflict.getDetectExpression();
         Table table = writer.getTargetTable();
         String[] pkData = data.getPkData(table);
         Object[] objectValues = writer.getPlatform().getObjectValues(
@@ -227,11 +226,10 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         return loadingVersion > existingVersion;
     }
 
-    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data,
-            boolean fallbackChanges) {
+    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict) {
         try {
-            beforeResolutionAttempt();
-            LoadStatus loadStatus = writer.update(data, fallbackChanges, false);
+            beforeResolutionAttempt(conflict);
+            LoadStatus loadStatus = writer.update(data, conflict.isResolveChangesOnly(), false);
             if (loadStatus != LoadStatus.SUCCESS) {
                 throw new ConflictException(data, writer.getTargetTable(), true);
             } else {
@@ -239,13 +237,13 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
             }
         } finally {
-            afterResolutionAttempt();
+            afterResolutionAttempt(conflict);
         }
     }
 
-    protected void performFallbackToInsert(DatabaseWriter writer, CsvData csvData) {
+    protected void performFallbackToInsert(DatabaseWriter writer, CsvData csvData, Conflict conflict) {
         try {
-            beforeResolutionAttempt();
+            beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.insert(csvData);
             if (loadStatus != LoadStatus.SUCCESS) {
                 throw new ConflictException(csvData, writer.getTargetTable(), true);
@@ -254,7 +252,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                         .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
             }
         } finally {
-            afterResolutionAttempt();
+            afterResolutionAttempt(conflict);
         }
     }
 

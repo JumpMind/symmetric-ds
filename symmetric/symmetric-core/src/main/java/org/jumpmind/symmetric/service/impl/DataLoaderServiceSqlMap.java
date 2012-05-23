@@ -15,7 +15,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
           "update $(conflict) set                                                                        " +
           "source_node_group_id=?, target_node_group_id=?,                                               " +
           "target_channel_id=?, target_catalog_name=?, target_schema_name=?, target_table_name=?,        " +
-          "detect_type=?, resolve_type=?, resolve_changes_only=?,                                        " +
+          "detect_type=?, resolve_type=?, ping_back=?, resolve_changes_only=?,                           " +
           "resolve_row_only=?, detect_expression=?,                                                      " +
           "last_update_by=?, last_update_time=current_timestamp where conflict_id=?                      ");
         
@@ -23,10 +23,10 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
           "insert into $(conflict) (                                                                      " +
           "source_node_group_id, target_node_group_id,                                                    " +
           "target_channel_id, target_catalog_name, target_schema_name, target_table_name,                 " +
-          "detect_type, resolve_type,                                                                     " +
+          "detect_type, resolve_type, ping_back,                                                          " +
           "resolve_changes_only, resolve_row_only, detect_expression,                                     " +
           "create_time, last_update_by, last_update_time, conflict_id)                                    " +
-          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
         
         putSql("deleteConflictSettingsSql", "delete from $(conflict) where conflict_id=?");
         
@@ -34,7 +34,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
                 "select " +
                 "source_node_group_id, target_node_group_id,                                              " +
                 "target_channel_id, target_catalog_name, target_schema_name, target_table_name,           " +
-                "detect_type, resolve_type,                                                               " +
+                "detect_type, resolve_type, ping_back,                                                    " +
                 "resolve_changes_only, resolve_row_only, detect_expression,                               " +
                 "create_time, last_update_by, last_update_time, conflict_id from $(conflict)              ");
 

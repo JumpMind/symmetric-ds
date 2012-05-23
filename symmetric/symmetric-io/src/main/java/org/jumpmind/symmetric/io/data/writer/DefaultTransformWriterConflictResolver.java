@@ -16,7 +16,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
     }
 
     @Override
-    protected void performFallbackToInsert(DatabaseWriter writer, CsvData data) {
+    protected void performFallbackToInsert(DatabaseWriter writer, CsvData data, Conflict conflict) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
         if (transformedData != null) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
@@ -45,12 +45,12 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 }
             }
         } else {
-            super.performFallbackToInsert(writer, data);
+            super.performFallbackToInsert(writer, data, conflict);
         }
     }
 
     @Override
-    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, boolean fallbackChanges) {
+    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
         if (transformedData != null) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
@@ -66,7 +66,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 }
             }
         } else {
-            super.performFallbackToUpdate(writer, data, fallbackChanges);
+            super.performFallbackToUpdate(writer, data, conflict);
         }
     }
 

@@ -17,6 +17,10 @@ public class Conflict implements Serializable {
     public enum ResolveConflict {
         NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
+    
+    public enum PingBack {
+        OFF, SINGLE_ROW, REMAINING_ROWS
+    }
 
     private String conflictId;
     private String targetChannelId;
@@ -31,6 +35,7 @@ public class Conflict implements Serializable {
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";
     private Date lastUpdateTime = new Date();
+    private PingBack pingBack = PingBack.OFF;
 
     public String toQualifiedTableName() {
         if (StringUtils.isNotBlank(targetTableName)) {
@@ -143,6 +148,14 @@ public class Conflict implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+    
+    public void setPingBack(PingBack pingBack) {
+        this.pingBack = pingBack;
+    }
+   
+    public PingBack getPingBack() {
+        return pingBack;
     }
 
 }

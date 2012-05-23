@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -232,8 +233,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out)
             throws IOException {
-        List<IncomingBatch> list = loadDataFromTransport(sourceNode,
-                new InternalIncomingTransport(in));
+        List<IncomingBatch> list = loadDataFromTransport(sourceNode, new InternalIncomingTransport(
+                in));
         Node local = nodeService.findIdentity();
         NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
         transportManager.writeAcknowledgement(out, list, local,
@@ -486,17 +487,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
                 .getTargetChannelId(), setting.getTargetCatalogName(), setting
                 .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectType()
-                .name(), setting.getResolveType().name(), setting.isResolveChangesOnly() ? 1 : 0,
-                setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(), setting
-                        .getLastUpdateBy(), setting.getConflictId()) == 0) {
+                .name(), setting.getResolveType().name(), setting.getPingBack().name(), setting
+                .isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0, setting
+                .getDetectExpression(), setting.getLastUpdateBy(), setting.getConflictId()) == 0) {
             sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
                     .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
                     setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
                             .getTargetSchemaName(), setting.getTargetTableName(), setting
                             .getDetectType().name(), setting.getResolveType().name(), setting
-                            .isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0,
-                    setting.getDetectExpression(), setting.getLastUpdateBy(), setting
-                            .getConflictId());
+                            .getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0, setting
+                            .isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(), setting
+                            .getLastUpdateBy(), setting.getConflictId());
         }
     }
 
@@ -538,8 +539,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     class ConflictSettingsNodeGroupLinkMapper implements ISqlRowMapper<ConflictNodeGroupLink> {
         public ConflictNodeGroupLink mapRow(Row rs) {
             ConflictNodeGroupLink setting = new ConflictNodeGroupLink();
-            setting.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
-                    .getString("target_node_group_id")));
+            setting.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
             setting.setTargetChannelId(rs.getString("target_channel_id"));
             setting.setTargetCatalogName(rs.getString("target_catalog_name"));
             setting.setTargetSchemaName(rs.getString("target_schema_name"));
@@ -547,6 +548,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             setting.setDetectType(DetectConflict.valueOf(rs.getString("detect_type").toUpperCase()));
             setting.setResolveType(ResolveConflict.valueOf(rs.getString("resolve_type")
                     .toUpperCase()));
+            setting.setPingBack(PingBack.valueOf(rs.getString("ping_back")));
             setting.setResolveChangesOnly(rs.getBoolean("resolve_changes_only"));
             setting.setResolveRowOnly(rs.getBoolean("resolve_row_only"));
             setting.setDetectExpression(rs.getString("detect_expression"));

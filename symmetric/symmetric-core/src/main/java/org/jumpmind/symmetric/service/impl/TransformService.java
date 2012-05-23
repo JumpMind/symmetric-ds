@@ -18,6 +18,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
 
@@ -26,11 +27,14 @@ public class TransformService extends AbstractService implements ITransformServi
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> transformsCacheByNodeGroupLinkByTransformPoint;
 
     private long lastCacheTimeInMs;
+    
+    private IConfigurationService configurationService;
 
-    public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+    public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect, IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
+        this.configurationService = configurationService;
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
+                createSqlReplacementTokens()));        
     }
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
@@ -210,11 +214,12 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     class TransformTableMapper implements ISqlRowMapper<TransformTableNodeGroupLink> {
+        
         public TransformTableNodeGroupLink mapRow(Row rs) {
             TransformTableNodeGroupLink table = new TransformTableNodeGroupLink();
             table.setTransformId(rs.getString("transform_id"));
-            table.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
-                    .getString("target_node_group_id")));
+            table.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
             table.setSourceCatalogName(rs.getString("source_catalog_name"));
             table.setSourceSchemaName(rs.getString("source_schema_name"));
             table.setSourceTableName(rs.getString("source_table_name"));
