@@ -164,9 +164,9 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Collection readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName)
+    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
-        List pks = new ArrayList();
+        List<String> pks = new ArrayList<String>();
         ResultSet pkData = null;
 
         try {
@@ -176,7 +176,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
                 while (pkData.next()) {
-                    Map values = readMetaData(pkData, getColumnsForPK());
+                    Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -185,7 +185,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             } else {
                 pkData = metaData.getPrimaryKeys(tableName);
                 while (pkData.next()) {
-                    Map values = readMetaData(pkData, getColumnsForPK());
+                    Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -203,6 +203,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
+        @SuppressWarnings("unchecked")
         Map<String, ForeignKey> fks = new ListOrderedMap();
         ResultSet fkData = null;
 
@@ -213,7 +214,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map values = readMetaData(fkData, getColumnsForFK());
+                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -222,7 +223,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             } else {
                 fkData = metaData.getForeignKeys(tableName);
                 while (fkData.next()) {
-                    Map values = readMetaData(fkData, getColumnsForFK());
+                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -238,12 +239,13 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Collection readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
+    protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         // Jaybird is not able to read indices when delimited identifiers are
         // turned on,
         // so we gather the data manually using Firebird's system tables
-        Map indices = new ListOrderedMap();
+        @SuppressWarnings("unchecked")
+        Map<String, IIndex> indices = new ListOrderedMap();
         StringBuilder query = new StringBuilder();
 
         query.append("SELECT a.RDB$INDEX_NAME INDEX_NAME, b.RDB$RELATION_NAME TABLE_NAME, b.RDB$UNIQUE_FLAG NON_UNIQUE,");
@@ -260,7 +262,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             indexData = stmt.executeQuery();
 
             while (indexData.next()) {
-                Map values = readMetaData(indexData, getColumnsForIndex());
+                Map<String,Object> values = readMetaData(indexData, getColumnsForIndex());
 
                 // we have to reverse the meaning of the unique flag
                 values.put("NON_UNIQUE",
@@ -370,7 +372,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             String schema = null;
 
             while (!found && tableData.next()) {
-                Map values = readMetaData(tableData, getColumnsForTable());
+                Map<String,Object> values = readMetaData(tableData, getColumnsForTable());
                 String tableName = (String) values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0)) {

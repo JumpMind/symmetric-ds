@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.interbase;
  * under the License.
  */
 
-import java.io.IOException;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -43,7 +40,6 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.SqlException;
 
 /*
  * The Jdbc Model Reader for Interbase.
@@ -134,15 +130,14 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         StringBuffer query = new StringBuffer();
 
         query.append("SELECT a.RDB$FIELD_NAME, a.RDB$DEFAULT_SOURCE, b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE,");
-        query.append(" b.RDB$FIELD_TYPE, b.RDB$FIELD_SUB_TYPE FROM RDB$RELATION_FIELDS a, RDB$FIELDS b        ");
-        query.append(" WHERE a.RDB$RELATION_NAME=? AND a.RDB$FIELD_SOURCE=b.RDB$FIELD_NAME                    ");
+        query.append(" b.RDB$FIELD_TYPE, b.RDB$FIELD_SUB_TYPE FROM RDB$RELATION_FIELDS a, RDB$FIELDS b");
+        query.append(" WHERE a.RDB$RELATION_NAME=? AND a.RDB$FIELD_SOURCE=b.RDB$FIELD_NAME");
 
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
 
         try {
-            prepStmt.setString(1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? table.getName()
-                            : table.getName().toUpperCase());
+            prepStmt.setString(1, getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? table.getName()
+                    : table.getName().toUpperCase());
 
             ResultSet rs = prepStmt.executeQuery();
 
@@ -152,15 +147,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                         .isDelimitedIdentifierModeOn());
 
                 if (column != null) {
-                    Blob blob = rs.getBlob(2);
-                    String defaultValue;
-                    try {
-                        defaultValue = IOUtils.toString(blob.getBinaryStream());
-                    } catch (IOException e) {
-                        throw new SqlException(e);
-                    } finally {
-                        blob.free();
-                    }
+                    String defaultValue = rs.getString(2);
 
                     if (!rs.wasNull() && (defaultValue != null)) {
                         defaultValue = defaultValue.trim();
@@ -296,11 +283,55 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         }
         return pks;
     }
+    
+    @Override
+    protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
+            String tableName) throws SQLException {
+        // Jaybird is not able to read indices when delimited identifiers are
+        // turned on,
+        // so we gather the data manually using Firebird's system tables
+        @SuppressWarnings("unchecked")
+        Map<String, IIndex> indices = new ListOrderedMap();
+        StringBuilder query = new StringBuilder();
+
+        query.append("SELECT a.RDB$INDEX_NAME, b.RDB$RELATION_NAME, b.RDB$UNIQUE_FLAG,    ");
+        query.append(" a.RDB$FIELD_POSITION, a.RDB$FIELD_NAME                             ");
+        query.append(" FROM RDB$INDEX_SEGMENTS a, RDB$INDICES b                           ");
+        query.append(" WHERE a.RDB$INDEX_NAME=b.RDB$INDEX_NAME AND b.RDB$RELATION_NAME = ?");
+
+        PreparedStatement stmt = connection.prepareStatement(query.toString());
+        ResultSet indexData = null;
+
+        stmt.setString(1,
+                getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName.toUpperCase());
+
+        try {
+            indexData = stmt.executeQuery();
+
+            while (indexData.next()) {
+                Map<String,Object> values = new HashMap<String, Object>();
+                values.put("INDEX_NAME", indexData.getString(1).trim());
+                values.put("TABLE_NAME", indexData.getString(2).trim());
+                values.put("NON_UNIQUE", !indexData.getBoolean(3));
+                values.put("ORDINAL_POSITION", indexData.getShort(4));
+                values.put("COLUMN_NAME", indexData.getString(5).trim());
+                values.put("INDEX_TYPE", 3);
+                readIndex(metaData, values, indices);
+            }
+        } finally {
+            if (indexData != null) {
+                indexData.close();
+            }
+        }
+        return indices.values();
+    }
+    
 
     @Override
-    protected Collection<ForeignKey> readForeignKeys(Connection connection,
-            DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
-        Map fks = new ListOrderedMap();
+    protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
+            String tableName) throws SQLException {
+        @SuppressWarnings("unchecked")
+        Map<String,ForeignKey> fks = new ListOrderedMap();
         ResultSet fkData = null;
 
         try {
@@ -310,7 +341,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
+                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -319,7 +350,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             } else {
                 fkData = metaData.getForeignKeys(tableName);
                 while (fkData.next()) {
-                    Map values = readMetaData(fkData, getColumnsForFK());
+                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
 
                     readForeignKey(metaData, values, fks);
                 }
@@ -344,9 +375,10 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         PreparedStatement stmt = connection.prepareStatement(query.toString());
 
         try {
-            stmt.setString(1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
-                            : tableName.toUpperCase());
+            stmt.setString(
+                    1,
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
+                            .toUpperCase());
             stmt.setString(2, "PRIMARY KEY");
             stmt.setString(3, indexName);
 
@@ -374,9 +406,10 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         PreparedStatement stmt = connection.prepareStatement(query.toString());
 
         try {
-            stmt.setString(1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
-                            : tableName.toUpperCase());
+            stmt.setString(
+                    1,
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
+                            .toUpperCase());
             stmt.setString(2, "FOREIGN KEY");
             stmt.setString(3, fkName);
             stmt.setString(4, indexName);
@@ -418,7 +451,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             String schema = null;
 
             while (!found && tableData.next()) {
-                Map values = readMetaData(tableData, getColumnsForTable());
+                Map<String,Object> values = readMetaData(tableData, getColumnsForTable());
                 String tableName = (String) values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0)) {
@@ -444,8 +477,8 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                             continue;
                         }
 
-                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
-                                .getDdlBuilder().isDelimitedIdentifierModeOn()) == null) {
+                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform().getDdlBuilder()
+                                .isDelimitedIdentifierModeOn()) == null) {
                             found = false;
                         }
                     }
@@ -462,5 +495,10 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 tableData.close();
             }
         }
+    }
+    
+    @Override
+    protected String getTableNamePattern(String tableName) {
+        return String.format("\"%s\"", tableName);
     }
 }
