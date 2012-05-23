@@ -17,6 +17,7 @@ import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResol
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,38 +36,38 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         return "default";
     }
 
-    public IDataWriter getDataWriter(final String sourceNodeId, final ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+    public IDataWriter getDataWriter(final String sourceNodeId,
+            final ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            List<IDatabaseWriterFilter> filters, List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedData) {
         DatabaseWriter writer = new DatabaseWriter(symmetricDialect.getPlatform(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
-                    protected void beforeResolutionAttempt() {
-                        DatabaseWriter writer = (DatabaseWriter) transformWriter.getTargetWriter();
-                        ISqlTransaction transaction = writer.getTransaction();
-                        if (transaction != null) {
-                            symmetricDialect.enableSyncTriggers(transaction);
+                    protected void beforeResolutionAttempt(Conflict conflict) {
+                        if (conflict.getPingBack() != PingBack.OFF) {
+                            DatabaseWriter writer = (DatabaseWriter) transformWriter
+                                    .getTargetWriter();
+                            ISqlTransaction transaction = writer.getTransaction();
+                            if (transaction != null) {
+                                symmetricDialect.enableSyncTriggers(transaction);
+                            }
                         }
                     }
 
                     @Override
-                    protected void afterResolutionAttempt() {
-                        // We cannot re-disable sync triggers because subsequent updates to the 
-                        // same row that was in conflict will probably not be in conflict, but they
-                        // should be "pinged" back to the updating 
-                        // DatabaseWriter writer = (DatabaseWriter)
-                        // transformWriter.getTargetWriter();
-                        // ISqlTransaction transaction =
-                        // writer.getTransaction();
-                        // if (transaction != null) {
-                        // symmetricDialect.disableSyncTriggers(transaction,
-                        // sourceNodeId);
-                        // }
+                    protected void afterResolutionAttempt(Conflict conflict) {
+                        if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
+                            DatabaseWriter writer = (DatabaseWriter) transformWriter
+                                    .getTargetWriter();
+                            ISqlTransaction transaction = writer.getTransaction();
+                            if (transaction != null) {
+                                symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
+                            }
+                        }
                     }
-                },
-                buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));
+                }, buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));
         return writer;
-    }    
+    }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return true;

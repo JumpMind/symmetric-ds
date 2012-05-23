@@ -232,7 +232,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager);
-        this.transformService = new TransformService(parameterService, symmetricDialect);
+        this.transformService = new TransformService(parameterService, symmetricDialect, configurationService);
         this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
