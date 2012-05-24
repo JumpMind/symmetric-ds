@@ -293,15 +293,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 resultsListener.sqlErrored(statement, translate(statement, ex),
                                         statementCount);
                             }
-                            if (!failOnError) {
-                                if (statement.toLowerCase().startsWith("drop")) {
-                                    log.debug("{}.  Failed to execute: {}.", ex.getMessage(),
-                                            statement);
-                                } else {
-                                    log.warn("{}.  Failed to execute: {}.", ex.getMessage(),
-                                            statement);
-                                }
+                            
+                            if (statement.toLowerCase().startsWith("drop")) {
+                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(),
+                                        statement);
                             } else {
+                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(),
+                                        statement);
+                            }
+
+                            if (failOnError) {
                                 throw ex;
                             }
                         }
