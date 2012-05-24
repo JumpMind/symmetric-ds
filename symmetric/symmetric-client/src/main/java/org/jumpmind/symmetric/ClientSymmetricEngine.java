@@ -14,6 +14,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.util.ConnectionPool;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -107,7 +108,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(TypedProperties properties,
             ISecurityService securityService) {
-        BasicDataSource dataSource = new BasicDataSource();
+        ConnectionPool dataSource = new ConnectionPool();
         dataSource.setDriverClassName(properties.get(ParameterConstants.DB_POOL_DRIVER, null));
         dataSource.setUrl(properties.get(ParameterConstants.DB_POOL_URL, null));
         String user = properties.get(ParameterConstants.DB_POOL_USER, "");

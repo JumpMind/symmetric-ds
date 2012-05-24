@@ -3,14 +3,12 @@ package org.jumpmind.symmetric.test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlScript;
@@ -41,12 +39,12 @@ abstract public class TestSetupUtil {
     protected static ISymmetricEngine prepareRoot() {
         return prepareRoot(null);
     }
-    
+
     protected static ISymmetricEngine prepareRoot(String sql) {
         removeEmbededdedDatabases();
         EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
-                getResource(DbTestUtils.DB_TEST_PROPERTIES), getResource("/symmetric-test.properties") },
-                "test.root", new String[] { "root" });
+                getResource(DbTestUtils.DB_TEST_PROPERTIES),
+                getResource("/symmetric-test.properties") }, "test.root", new String[] { "root" });
         if (StringUtils.isNotBlank(sql)) {
             properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sql);
         }
@@ -55,63 +53,49 @@ abstract public class TestSetupUtil {
         return engine;
     }
 
-    protected static void dropAndCreateDatabaseTables(String databaseType, ISymmetricEngine engine) {
-        try {
-            ISymmetricDialect dialect = engine.getSymmetricDialect();
-            IDatabasePlatform platform = dialect.getPlatform();
-            IDdlBuilder builder = platform.getDdlBuilder();
-            
-            dialect.cleanupTriggers();
+    public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
 
-            String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
-            URL url = getResource(fileName);
-            if (url != null) {
-                new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-            }
-            
-            Database db2drop = platform.readDatabase(platform.getDefaultCatalog(), platform.getDefaultSchema(), new String[] {"TABLE"});
-            String sql = builder.dropTables(db2drop);
-            new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-            
-            Database testDb = getTestDatabase(platform);                        
-            
-            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT),
-                    platform.getSqlTemplate(), false).execute(true);
-            ((ParameterService)engine.getParameterService()).setDatabaseHashBeenInitialized(false);
+        
+        ISymmetricDialect dialect = engine.getSymmetricDialect();
 
-            fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
-            url = getResource(fileName);
-            if (url != null) {
-                new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-            }
+        final AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
+                .getPlatform();
 
-            dialect.purge();
+        IDdlBuilder builder = platform.getDdlBuilder();
 
-            platform.createDatabase(testDb, false, true);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
+        URL url = getResource(fileName);
+        if (url != null) {
+            new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
         }
+
+        Database db2drop = platform.readDatabase(platform.getDefaultCatalog(),
+                platform.getDefaultSchema(), new String[] { "TABLE" });
+        
+        String sql = builder.dropTables(db2drop);                
+        
+        SqlScript dropScript = new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false);
+        dropScript.execute(true);
+
+        new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), platform.getSqlTemplate(),
+                false).execute(true);
+        ((ParameterService) engine.getParameterService()).setDatabaseHashBeenInitialized(false);
+
+        fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
+        url = getResource(fileName);
+        if (url != null) {
+            new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
+        }
+
+        dialect.purge();
+
+        return platform;
     }
 
-    protected static Database getTestDatabase(IDatabasePlatform platform) throws IOException {
-        return platform.readDatabaseFromXml("/test-schema.xml", true);
-    }
-
-    protected static boolean isConnectionValid(Properties properties) throws Exception {
-        try {
-            Class.forName(properties.getProperty("db.driver"));
-            Connection c = DriverManager.getConnection(properties.getProperty("db.url"),
-                    properties.getProperty("db.user"), properties.getProperty("db.password"));
-            c.close();
-            return true;
-        } catch (Exception ex) {
-            logger.error(
-                    "Could not connect to the test database using the url: "
-                            + properties.getProperty("db.url") + " and classpath: "
-                            + System.getProperty("java.class.path"), ex);
-            return false;
-        }
+    public static void dropAndCreateDatabaseTables(String databaseType, ISymmetricEngine engine) {
+        IDatabasePlatform platform = dropDatabaseTables(databaseType, engine);
+        Database testDb = platform.readDatabaseFromXml("/test-schema.xml", true);
+        platform.createDatabase(testDb, false, true);
     }
 
     protected static void removeEmbededdedDatabases() {
