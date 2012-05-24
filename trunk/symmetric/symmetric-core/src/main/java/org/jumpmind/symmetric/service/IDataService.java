@@ -86,6 +86,8 @@ public interface IDataService {
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
 
     public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, boolean isLoad);
+    
+    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad);
 
     public void insertSqlEvent(Node targetNode, Trigger trigger, String sql, boolean isLoad);
 
