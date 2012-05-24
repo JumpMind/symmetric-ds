@@ -227,12 +227,20 @@ public class DataService extends AbstractService implements IDataService {
         }
         return history;
     }
-
+    
     public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad) {
         TriggerHistory history = findTriggerHistoryForGenericSync();
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, Constants.CHANNEL_CONFIG, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
+                Constants.UNKNOWN_ROUTER_ID, isLoad);
+    }
+
+    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad) {
+        TriggerHistory history = findTriggerHistoryForGenericSync();
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, history, Constants.CHANNEL_CONFIG, null, null);
+        insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
 
