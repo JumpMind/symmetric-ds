@@ -55,6 +55,8 @@ abstract public class TestSetupUtil {
 
     public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
         
+        engine.stop();
+        
         ISymmetricDialect dialect = engine.getSymmetricDialect();
 
         final AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
@@ -63,6 +65,8 @@ abstract public class TestSetupUtil {
         dialect.cleanupTriggers();
 
         IDdlBuilder builder = platform.getDdlBuilder();
+        
+        platform.resetDataSource();
 
         String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
         URL url = getResource(fileName);
@@ -75,7 +79,9 @@ abstract public class TestSetupUtil {
         
         String sql = builder.dropTables(db2drop);                
         
-        SqlScript dropScript = new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false);
+        platform.resetDataSource();
+        
+        SqlScript dropScript = new SqlScript(sql, platform.getSqlTemplate(), false);
         dropScript.execute(true);
 
         new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), platform.getSqlTemplate(),

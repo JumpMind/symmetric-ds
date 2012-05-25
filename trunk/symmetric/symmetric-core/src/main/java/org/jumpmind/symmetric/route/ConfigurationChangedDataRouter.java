@@ -259,46 +259,49 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
 
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
-                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("About to refresh the cache of parameters because new configuration came through the data router");
-            engine.getParameterService().rereadParameters();
-        }
-
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
-            log.info("Channels flushed because new channels came through the data router");
-            engine.getConfigurationService().reloadChannels();
-        }
-
-        if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
-                && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("About to syncTriggers because new configuration came through the data router");
-            engine.getTriggerRouterService().syncTriggers();
-        }
-
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
-            log.info("About to refresh the cache of transformation because new configuration came through the data router");
-            engine.getTransformService().resetCache();
-        }
-
-        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
-            log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
-            engine.getDataLoaderService().reloadConflictNodeGroupLinks();
-        }
-        
-        if (routingContext.getContextCache().get(CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED) != null) {
-            log.info("About to reset the thread pools used to communicate with nodes because the thread pool definition changed");
-            engine.getNodeCommunicationService().stop();
-        }
-
-        if (routingContext.getContextCache().get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
-            IJobManager jobManager = engine.getJobManager();
-            if (jobManager != null) {
-                log.info("About to restart jobs because new configuration come through the data router");
-                jobManager.stopJobs();
-                jobManager.startJobs();
+        if (engine.getParameterService().is(ParameterConstants.AUTO_REFRESH_AFTER_CONFIG_CHANGED,
+                true)) {
+            if (routingContext.getContextCache().get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
+                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+                log.info("About to refresh the cache of parameters because new configuration came through the data router");
+                engine.getParameterService().rereadParameters();
             }
 
+            if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
+                log.info("Channels flushed because new channels came through the data router");
+                engine.getConfigurationService().reloadChannels();
+            }
+
+            if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
+                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                log.info("About to syncTriggers because new configuration came through the data router");
+                engine.getTriggerRouterService().syncTriggers();
+            }
+
+            if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
+                log.info("About to refresh the cache of transformation because new configuration came through the data router");
+                engine.getTransformService().resetCache();
+            }
+
+            if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
+                log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
+                engine.getDataLoaderService().reloadConflictNodeGroupLinks();
+            }
+
+            if (routingContext.getContextCache().get(CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED) != null) {
+                log.info("About to reset the thread pools used to communicate with nodes because the thread pool definition changed");
+                engine.getNodeCommunicationService().stop();
+            }
+
+            if (routingContext.getContextCache().get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
+                IJobManager jobManager = engine.getJobManager();
+                if (jobManager != null) {
+                    log.info("About to restart jobs because new configuration come through the data router");
+                    jobManager.stopJobs();
+                    jobManager.startJobs();
+                }
+
+            }
         }
 
     }
