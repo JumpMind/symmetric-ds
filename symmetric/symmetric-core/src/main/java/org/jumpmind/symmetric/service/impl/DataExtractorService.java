@@ -669,6 +669,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     class SelectFromSymDataSource implements IExtractDataReaderSource {
 
         private Batch batch;
+        
+        private OutgoingBatch outgoingBatch;
 
         private Table currentTable;
 
@@ -681,6 +683,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private Node targetNode;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node targetNode) {
+            this.outgoingBatch = outgoingBatch;
             this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
                     symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId(),
                     outgoingBatch.isCommonFlag());
@@ -726,7 +729,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 triggerId, routerId);
                         SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
                                 triggerRouter, triggerHistory);
-                        this.reloadSource = new SelectFromTableSource(batch, event);
+                        this.reloadSource = new SelectFromTableSource(outgoingBatch, batch, event);
                         data = (Data) this.reloadSource.next();
                         this.currentTable = this.reloadSource.getTable();
                         this.requiresLobSelectedFromSource = this.reloadSource
@@ -774,6 +777,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     class SelectFromTableSource implements IExtractDataReaderSource {
+        
+        private OutgoingBatch outgoingBatch;
 
         private Batch batch;
 
@@ -791,7 +796,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private TriggerRouter triggerRouter;
 
-        public SelectFromTableSource(Batch batch, SelectFromTableEvent event) {
+        public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch, SelectFromTableEvent event) {
+            this.outgoingBatch = outgoingBatch;
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
                     1);
             initialLoadEvents.add(event);
@@ -860,6 +866,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     closeCursor();
                     data = next();
                 }
+            }
+            
+            if (data != null && outgoingBatch != null) {
+                outgoingBatch.incrementDataEventCount();
+                outgoingBatch.incrementEventCount(data.getDataEventType());
             }
 
             return data;
