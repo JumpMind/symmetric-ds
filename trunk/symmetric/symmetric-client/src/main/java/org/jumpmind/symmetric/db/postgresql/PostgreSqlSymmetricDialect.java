@@ -56,9 +56,10 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     	
         if (transactionIdSupported()) {
-            log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;        	
+        } else {
+            log.warn("Capturing of transaction identifiers is not supported in this version of postgres");
         }
 
     	ISqlTransaction transaction = null;
