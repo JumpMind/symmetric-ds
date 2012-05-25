@@ -189,7 +189,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if (table.getName().endsWith("_")) {
             secondPart += "_";
         }
-        return getConstraintName("trg", table, secondPart, null);
+        return getConstraintName("TRG", table, secondPart, null);
     }
 
     /*

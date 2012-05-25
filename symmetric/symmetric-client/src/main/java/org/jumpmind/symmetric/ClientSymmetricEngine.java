@@ -96,8 +96,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     public synchronized void stop() {
-        this.springContext.stop();
-        this.springContext = null;
+        if (this.springContext != null) {
+            this.springContext.stop();
+            this.springContext = null;
+        }
         super.stop();
     }
 

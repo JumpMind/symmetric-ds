@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractServiceTest {
 
-    static private ISymmetricEngine engine;
+    static protected ISymmetricEngine engine;
 
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
