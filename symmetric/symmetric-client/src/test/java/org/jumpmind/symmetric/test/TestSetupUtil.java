@@ -54,12 +54,13 @@ abstract public class TestSetupUtil {
     }
 
     public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
-
         
         ISymmetricDialect dialect = engine.getSymmetricDialect();
 
         final AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
                 .getPlatform();
+        
+        dialect.cleanupTriggers();
 
         IDdlBuilder builder = platform.getDdlBuilder();
 

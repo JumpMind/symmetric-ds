@@ -1,1 +1,1 @@
-DROP TABLE "test_simple_table";
+DROP TABLE TEST_TRIGGERS_TABLE;

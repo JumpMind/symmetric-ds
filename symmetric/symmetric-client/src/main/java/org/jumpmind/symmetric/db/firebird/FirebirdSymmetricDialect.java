@@ -123,7 +123,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void cleanupTriggers() {
+    public void cleanupTriggers() {        
         List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
         int count = 0;
         for (String name : names) {
