@@ -80,7 +80,7 @@ abstract public class TestSetupUtil {
 
         new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), platform.getSqlTemplate(),
                 false).execute(true);
-        ((ParameterService) engine.getParameterService()).setDatabaseHashBeenInitialized(false);
+        ((ParameterService) engine.getParameterService()).setDatabaseHasBeenInitialized(false);
 
         fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
         url = getResource(fileName);

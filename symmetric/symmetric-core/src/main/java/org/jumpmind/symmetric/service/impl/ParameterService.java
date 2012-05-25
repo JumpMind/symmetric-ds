@@ -62,7 +62,7 @@ public class ParameterService implements IParameterService {
 
     private Properties systemProperties;
 
-    private boolean databaseHashBeenInitialized = false;
+    private boolean databaseHasBeenInitialized = false;
 
     private String tablePrefix;
 
@@ -208,10 +208,10 @@ public class ParameterService implements IParameterService {
             properties.putAll(rereadDatabaseParameters(
                     p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            databaseHashBeenInitialized = true;
+            databaseHasBeenInitialized = true;
             return properties;
         } catch (SqlException ex) {
-            if (databaseHashBeenInitialized) {
+            if (databaseHasBeenInitialized) {
                 throw ex;
             } else {
                 return new TypedProperties();
@@ -331,8 +331,8 @@ public class ParameterService implements IParameterService {
         return getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
     }
     
-    public void setDatabaseHashBeenInitialized(boolean databaseHashBeenInitialized) {
-        this.databaseHashBeenInitialized = databaseHashBeenInitialized;
+    public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
+        this.databaseHasBeenInitialized = databaseHasBeenInitialized;
     }
 
 }
