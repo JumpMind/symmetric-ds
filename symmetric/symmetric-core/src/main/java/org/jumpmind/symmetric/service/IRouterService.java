@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
  */
 public interface IRouterService extends IService {
 
-    public long routeData();
+    public long routeData(boolean force);
  
     public long getUnroutedDataCount();
     

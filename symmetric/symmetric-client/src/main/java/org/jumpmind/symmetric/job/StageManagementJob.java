@@ -24,7 +24,7 @@ public class StageManagementJob extends AbstractJob {
     }
 
     @Override
-    void doJob() throws Exception {
+    void doJob(boolean force) throws Exception {
         if (stagingManager != null) {
             stagingManager.clean();
         }

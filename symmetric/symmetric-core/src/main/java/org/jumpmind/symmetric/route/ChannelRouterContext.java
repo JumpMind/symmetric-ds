@@ -57,8 +57,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private ISqlTransaction sqlTransaction;
     private boolean needsCommitted = false;
     private long createdTimeInMs = System.currentTimeMillis();
-    private long lastDataIdProcessed;
-    private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
+    private Data lastDataProcessed;
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
 
@@ -109,7 +108,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         try {
             sqlTransaction.rollback();
         } catch (SqlException e) {
-            log.warn(e.getMessage(),e);
+            log.warn(e.getMessage(), e);
         } finally {
             clearState();
         }
@@ -119,7 +118,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         try {
             this.sqlTransaction.commit();
         } catch (Exception ex) {
-            log.warn(ex.getMessage(),ex);
+            log.warn(ex.getMessage(), ex);
         } finally {
             this.sqlTransaction.close();
         }
@@ -149,35 +148,24 @@ public class ChannelRouterContext extends SimpleRouterContext {
         return createdTimeInMs;
     }
 
-    public void setLastDataIdForTransactionId(Data data) {
-        if (data.getTransactionId() != null) {
-            this.transactionIdDataIds.put(data.getTransactionId(), data.getDataId());
-        }
-    }
-
-    public void recordTransactionBoundaryEncountered(Data data) {
-        Long dataId = transactionIdDataIds.get(data.getTransactionId());
-        setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
-    }
-
-    public void setLastDataIdProcessed(long lastDataIdProcessed) {
-        this.lastDataIdProcessed = lastDataIdProcessed;
-    }
-
-    public long getLastDataIdProcessed() {
-        return lastDataIdProcessed;
+    public void setLastDataProcessed(Data lastDataProcessed) {
+        this.lastDataProcessed = lastDataProcessed;
     }
     
+    public Data getLastDataProcessed() {
+        return lastDataProcessed;
+    }
+
     public ISqlTransaction getSqlTransaction() {
         return sqlTransaction;
     }
-    
+
     public void setProduceCommonBatches(boolean defaultRoutersOnly) {
         this.produceCommonBatches = defaultRoutersOnly;
     }
-    
+
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
     }
-    
+
 }

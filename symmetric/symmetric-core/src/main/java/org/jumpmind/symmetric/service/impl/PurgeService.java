@@ -63,44 +63,46 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 createSqlReplacementTokens()));
     }
 
-    public long purgeOutgoing() {
+    public long purgeOutgoing(boolean force) {
         long rowsPurged = 0;
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-        rowsPurged += purgeOutgoing(retentionCutoff);
+        rowsPurged += purgeOutgoing(retentionCutoff, force);
         return rowsPurged;
     }
 
-    public long purgeIncoming() {
+    public long purgeIncoming(boolean force) {
         long rowsPurged = 0;
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-        rowsPurged += purgeIncoming(retentionCutoff);
+        rowsPurged += purgeIncoming(retentionCutoff, force);
         return rowsPurged;
     }
 
-    public long purgeDataGaps() {
+    public long purgeDataGaps(boolean force) {
         long rowsPurged = 0;
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE, -parameterService
                 .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
-        rowsPurged += purgeDataGaps(retentionCutoff);
+        rowsPurged += purgeDataGaps(retentionCutoff, force);
         return rowsPurged;
     }
 
-    public long purgeDataGaps(Calendar retentionCutoff) {
+    public long purgeDataGaps(Calendar retentionCutoff, boolean force) {
         long rowsPurged = -1l;
         try {
-            if (clusterService.lock(ClusterConstants.PURGE_DATA_GAPS)) {
+            if (force || clusterService.lock(ClusterConstants.PURGE_DATA_GAPS)) {
                 try {
                     log.info("The data gap purge process is about to run");
                     rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"),
                             new Object[] { retentionCutoff.getTime(), DataGap.Status.GP.name() });
                     log.info("Purged {} data gap rows", rowsPurged);
                 } finally {
-                    clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
+                    }
                     log.info("The data gap purge process has completed");
                 }
 
@@ -113,10 +115,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return rowsPurged;
     }
 
-    public long purgeOutgoing(Calendar retentionCutoff) {
+    public long purgeOutgoing(Calendar retentionCutoff, boolean force) {
         long rowsPurged = 0;
         try {
-            if (clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
+            if (force || clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
                 try {
                     log.info("The outgoing purge process is about to run for data older than {}",
                             SimpleDateFormat.getDateTimeInstance()
@@ -125,7 +127,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeDataRows(retentionCutoff);
                     rowsPurged += purgeOutgoingBatch(retentionCutoff);
                 } finally {
-                    clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
+                    }
                     log.info("The outgoing purge process has completed");
                 }
             } else {
@@ -244,15 +248,17 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return totalCount;
     }
 
-    public long purgeIncoming(Calendar retentionCutoff) {
+    public long purgeIncoming(Calendar retentionCutoff, boolean force) {
         long purgedRowCount = 0;
         try {
-            if (clusterService.lock(ClusterConstants.PURGE_INCOMING)) {
+            if (force || clusterService.lock(ClusterConstants.PURGE_INCOMING)) {
                 try {
                     log.info("The incoming purge process is about to run");
                     purgedRowCount = purgeIncomingBatch(retentionCutoff);
                 } finally {
-                    clusterService.unlock(ClusterConstants.PURGE_INCOMING);
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.PURGE_INCOMING);
+                    }
                     log.info("The incoming purge process has completed");
                 }
             } else {

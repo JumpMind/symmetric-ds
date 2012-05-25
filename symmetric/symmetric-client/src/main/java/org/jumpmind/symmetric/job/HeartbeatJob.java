@@ -36,7 +36,7 @@ public class HeartbeatJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
+    public void doJob(boolean force) throws Exception {
         if (engine.getClusterService().lock(getClusterLockName())) {
             try {
                 engine.getDataService().heartbeat(false);

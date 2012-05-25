@@ -74,11 +74,11 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.dataLoaderService = dataLoaderService;
     }
 
-    synchronized public RemoteNodeStatuses pullData() {
+    synchronized public RemoteNodeStatuses pullData(boolean force) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
-            if (clusterService.lock(ClusterConstants.PULL)) {
+            if (force || clusterService.lock(ClusterConstants.PULL)) {
                 try {
                     // register if we haven't already been registered
                     registrationService.registerWithServer();
@@ -97,7 +97,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         }
                     }
                 } finally {
-                    clusterService.unlock(ClusterConstants.PULL);
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.PULL);
+                    }
                 }
             } else {
                 log.info("Did not run the pull process because the cluster service has it locked");

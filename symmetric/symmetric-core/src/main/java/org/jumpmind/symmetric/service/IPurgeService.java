@@ -30,17 +30,17 @@ import java.util.Calendar;
  */
 public interface IPurgeService {
     
-    public long purgeOutgoing();
+    public long purgeOutgoing(boolean force);
     
-    public long purgeIncoming();
+    public long purgeIncoming(boolean force);
     
-    public long purgeDataGaps();    
+    public long purgeDataGaps(boolean force);    
     
-    public long purgeDataGaps(Calendar retentionCutoff);
+    public long purgeDataGaps(Calendar retentionCutoff, boolean force);
     
-    public long purgeOutgoing(Calendar retentionCutoff);
+    public long purgeOutgoing(Calendar retentionCutoff, boolean force);
     
-    public long purgeIncoming(Calendar retentionCutoff);
+    public long purgeIncoming(Calendar retentionCutoff, boolean force);
 
     public void purgeAllIncomingEventsForNode(String nodeId);
     

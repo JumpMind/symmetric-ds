@@ -36,8 +36,8 @@ public class IncomingPurgeJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
-        engine.getPurgeService().purgeIncoming();  
+    public void doJob(boolean force) throws Exception {
+        engine.getPurgeService().purgeIncoming(force);  
     }
     
     public String getClusterLockName() {

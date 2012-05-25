@@ -31,6 +31,6 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
  */
 public interface IPullService extends IOfflineDetectorService {
 
-    public RemoteNodeStatuses pullData();
+    public RemoteNodeStatuses pullData(boolean force);
 
 }

@@ -328,13 +328,13 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         IPurgeService purgeService = getSymmetricEngine().getPurgeService();
         boolean all = args.contains("all") || args.size() == 0;
         if (args.contains("outgoing") || all) {
-            purgeService.purgeOutgoing();
+            purgeService.purgeOutgoing(true);
         }
         if (args.contains("incoming") || all) {
-            purgeService.purgeIncoming();
+            purgeService.purgeIncoming(true);
         }
         if (args.contains("data-gaps") || all) {
-            purgeService.purgeDataGaps();
+            purgeService.purgeDataGaps(true);
         }
     }
 
