@@ -285,7 +285,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         // make sure that data is routed before extracting if the route
         // job is not configured to start automatically
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
-            routerService.routeData();
+            routerService.routeData(true);
         }
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode, false);

@@ -159,7 +159,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                                                     .getRegistrationService()
                                                     .isRegisteredWithServer())) {
                                         hasNotRegisteredMessageBeenLogged = false;
-                                        doJob();
+                                        doJob(force);
                                     } else {
                                         if (!hasNotRegisteredMessageBeenLogged) {
                                             log.warn(
@@ -202,7 +202,7 @@ abstract public class AbstractJob implements Runnable, IJob {
         invoke(false);
     }
 
-    abstract void doJob() throws Exception;
+    abstract void doJob(boolean force) throws Exception;
 
     @ManagedOperation(description = "Pause this job")
     public void pause() {

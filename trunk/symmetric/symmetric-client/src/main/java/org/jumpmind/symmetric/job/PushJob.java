@@ -36,9 +36,9 @@ public class PushJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
+    public void doJob(boolean force) throws Exception {
         if (engine != null) {
-            engine.getPushService().pushData().getDataProcessedCount();
+            engine.getPushService().pushData(force).getDataProcessedCount();
         }
     }
 

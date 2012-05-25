@@ -279,7 +279,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             Data data = cursor.next();
             if (data != null) {
                 if (process(data)) {
-                    context.setLastDataIdForTransactionId(data);
                     peekAheadQueue.add(data);
                     dataCount++;
                     context.incrementStat(System.currentTimeMillis() - ts,

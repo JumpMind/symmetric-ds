@@ -229,6 +229,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                     boolean failed = false;
                     try {
                         executor.execute(nodeCommunication, status);
+                        failed = status.failed();
                     } catch (Throwable ex) {
                         failed = true;
                         log.error(String.format("Failed to execute %s for node %s",

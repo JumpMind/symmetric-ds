@@ -36,8 +36,8 @@ public class RouterJob extends AbstractJob {
     }
     
     @Override
-    void doJob() throws Exception {
-        engine.getRouterService().routeData();
+    void doJob(boolean force) throws Exception {
+        engine.getRouterService().routeData(force);
     }
 
     public String getClusterLockName() {

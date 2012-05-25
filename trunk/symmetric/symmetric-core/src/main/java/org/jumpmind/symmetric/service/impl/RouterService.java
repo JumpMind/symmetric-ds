@@ -133,9 +133,9 @@ public class RouterService extends AbstractService implements IRouterService {
     /**
      * This method will route data to specific nodes.
      */
-    synchronized public long routeData() {
+    synchronized public long routeData(boolean force) {
         long dataCount = -1l;
-        if (engine.getClusterService().lock(ClusterConstants.ROUTE)) {
+        if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
             try {
                 engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
                 insertInitialLoadEvents();
@@ -150,7 +150,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     log.info("Routed {} data events in {} ms", dataCount, ts);
                 }
             } finally {
-                engine.getClusterService().unlock(ClusterConstants.ROUTE);
+                if (!force) {
+                    engine.getClusterService().unlock(ClusterConstants.ROUTE);
+                }
             }
         }
         return dataCount;
@@ -260,7 +262,6 @@ public class RouterService extends AbstractService implements IRouterService {
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
-
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
             context.setProduceCommonBatches(produceCommonBatches);
@@ -271,7 +272,7 @@ public class RouterService extends AbstractService implements IRouterService {
             if (context != null) {
                 context.rollback();
             }
-            return 0;            
+            return 0;
         } catch (Exception ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -290,12 +291,13 @@ public class RouterService extends AbstractService implements IRouterService {
                     completeBatchesAndCommit(context);
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
-                    if (context.getLastDataIdProcessed() > 0) {
+                    Data lastDataProcessed = context.getLastDataProcessed();
+                    if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
                         String channelId = nodeChannel.getChannelId();
                         long queryTs = System.currentTimeMillis();
                         long dataLeftToRoute = sqlTemplate.queryForInt(
                                 getSql("selectUnroutedCountForChannelSql"), channelId,
-                                context.getLastDataIdProcessed());
+                                lastDataProcessed.getDataId());
                         queryTs = System.currentTimeMillis() - queryTs;
                         if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
                             log.warn("Unrouted query for channel {} took {} ms", channelId, queryTs);
@@ -405,6 +407,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected int selectDataAndRoute(ChannelRouterContext context) throws InterruptedException {
         IDataToRouteReader reader = startReading(context);
         Data data = null;
+        Data nextData = null;
         int totalDataCount = 0;
         int totalDataEventCount = 0;
         int statsDataCount = 0;
@@ -412,39 +415,53 @@ public class RouterService extends AbstractService implements IRouterService {
         final int maxNumberOfEventsBeforeFlush = parameterService
                 .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {
+            nextData = reader.take();
             do {
-                data = reader.take();
-                if (data != null) {
-                    context.setLastDataIdProcessed(data.getDataId());
-                    statsDataCount++;
-                    totalDataCount++;
-                    int dataEventsInserted = routeData(data, context);
-                    statsDataEventCount += dataEventsInserted;
-                    totalDataEventCount += dataEventsInserted;
-                    long insertTs = System.currentTimeMillis();
-                    try {
-                        if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size()
-                                || context.isNeedsCommitted()) {
-                            engine.getDataService().insertDataEvents(context.getSqlTransaction(),
-                                    context.getDataEventList());
-                            context.clearDataEventsList();
+                if (nextData != null) {
+                    data = nextData;
+                    nextData = reader.take();
+                    if (data != null) {
+                        boolean atTransactionBoundary = false;
+                        if (nextData != null) {
+                            String nextTxId = nextData.getTransactionId();
+                            atTransactionBoundary = nextTxId == null
+                                    || !nextTxId.equals(data.getTransactionId());
                         }
-                        if (context.isNeedsCommitted()) {
-                            completeBatchesAndCommit(context);
-                        }
-                    } finally {
-                        context.incrementStat(System.currentTimeMillis() - insertTs,
-                                ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
+                        context.setEncountedTransactionBoundary(atTransactionBoundary);
+                        statsDataCount++;
+                        totalDataCount++;
+                        int dataEventsInserted = routeData(data, context);
+                        statsDataEventCount += dataEventsInserted;
+                        totalDataEventCount += dataEventsInserted;
+                        long insertTs = System.currentTimeMillis();
+                        try {
+                            if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size()
+                                    || context.isNeedsCommitted()) {
+                                engine.getDataService().insertDataEvents(
+                                        context.getSqlTransaction(), context.getDataEventList());
+                                context.clearDataEventsList();
+                            }
+                            if (context.isNeedsCommitted()) {
+                                completeBatchesAndCommit(context);
+                            }
+                        } finally {
+                            context.incrementStat(System.currentTimeMillis() - insertTs,
+                                    ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
 
-                        if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
-                            engine.getStatisticManager().incrementDataRouted(
-                                    context.getChannel().getChannelId(), statsDataCount);
-                            statsDataCount = 0;
-                            engine.getStatisticManager().incrementDataEventInserted(
-                                    context.getChannel().getChannelId(), statsDataEventCount);
-                            statsDataEventCount = 0;
+                            if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
+                                engine.getStatisticManager().incrementDataRouted(
+                                        context.getChannel().getChannelId(), statsDataCount);
+                                statsDataCount = 0;
+                                engine.getStatisticManager().incrementDataEventInserted(
+                                        context.getChannel().getChannelId(), statsDataEventCount);
+                                statsDataEventCount = 0;
+                            }
                         }
+
+                        context.setLastDataProcessed(data);
                     }
+                } else {
+                    data = null;
                 }
             } while (data != null);
 
@@ -466,7 +483,6 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected int routeData(Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
-        context.recordTransactionBoundaryEncountered(data);
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
@@ -485,7 +501,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             ChannelRouterContext.STAT_DATA_ROUTER_MS);
 
                     if (nodeIds != null) {
-                        // never need to 
+                        // should never route to self
                         nodeIds.remove(engine.getNodeService().findIdentityNodeId());
                         if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null) {
                             nodeIds.remove(data.getSourceNodeId());

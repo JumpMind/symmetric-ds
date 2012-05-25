@@ -37,10 +37,11 @@ public interface IPushService extends IOfflineDetectorService {
     /**
      * Attempt to push data, if any has been captured, to nodes that the
      * captured data is targeted for.
+     * @param force TODO
      * 
      * @return RemoteNodeStatuses the status of the push attempt(s)
      */
-    public RemoteNodeStatuses pushData();
+    public RemoteNodeStatuses pushData(boolean force);
     
     public Map<String, Date> getStartTimesOfNodesBeingPushedTo();
 

@@ -93,12 +93,12 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         return new HashMap<String, Date>(startTimesOfNodesBeingPushedTo);
     }
 
-    synchronized public RemoteNodeStatuses pushData() {
+    synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
 
         Node identity = nodeService.findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {
-            if (clusterService.lock(ClusterConstants.PUSH)) {
+            if (force || clusterService.lock(ClusterConstants.PUSH)) {
                 try {
                     NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
                             .getNodeId());
@@ -119,7 +119,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 identity.getNodeId());
                     }
                 } finally {
-                    clusterService.unlock(ClusterConstants.PUSH);
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.PUSH);
+                    }
                 }
             } else {
                 log.info("Did not run the push process because the cluster service has it locked");
@@ -150,7 +152,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 new Object[] { node, status.getDataProcessed(),
                                         status.getBatchesProcessed() });
                     } else if (status.failed()) {
-                        log.warn("There was an error while pushing data to the server");
+                        log.warn("There was an error while pushing data to the server");                        
                     }
                     log.debug("Push completed for {}", node);
                     pushCount++;

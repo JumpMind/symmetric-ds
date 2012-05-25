@@ -34,8 +34,8 @@ public class PullJob extends AbstractJob {
     }
     
     @Override
-    public void doJob() throws Exception {
-        engine.getPullService().pullData();
+    public void doJob(boolean force) throws Exception {
+        engine.getPullService().pullData(force);
     }
     
     public String getClusterLockName() {

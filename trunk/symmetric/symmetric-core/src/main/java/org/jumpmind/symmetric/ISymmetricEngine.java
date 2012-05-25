@@ -104,7 +104,7 @@ public interface ISymmetricEngine {
     /**
      * Will perform a push the same way the {@link PushJob} would have.
      * 
-     * @see IPushService#pushData()
+     * @see IPushService#pushData(boolean)
      * @return {@link RemoteNodeStatuses} 
      */
     public RemoteNodeStatuses push();
@@ -126,7 +126,7 @@ public interface ISymmetricEngine {
     /**
      * Will perform a pull the same way the {@link PullJob} would have.
      * 
-     * @see IPullService#pullData()
+     * @see IPullService#pullData(boolean)
      * @return {@link RemoteNodeStatuses} 
      */
     public RemoteNodeStatuses pull();
@@ -140,7 +140,7 @@ public interface ISymmetricEngine {
      * This can be called to do a purge. It may be called only if the
      * {@link OutgoingPurgeJob} has not been enabled.
      * 
-     * @see IPurgeService#purgeOutgoing()
+     * @see IPurgeService#purgeOutgoing(boolean)
      */
     public void purge();
 

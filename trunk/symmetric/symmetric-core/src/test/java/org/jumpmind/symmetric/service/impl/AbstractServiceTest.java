@@ -222,9 +222,9 @@ public abstract class AbstractServiceTest {
 
     protected void routeAndCreateGaps() {
         // one to route unrouted data
-        getRouterService().routeData();
+        getRouterService().routeData(true);
         // one to create gaps
-        getRouterService().routeData();
+        getRouterService().routeData(true);
     }
 
     protected void resetGaps() {

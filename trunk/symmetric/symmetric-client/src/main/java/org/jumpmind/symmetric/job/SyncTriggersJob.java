@@ -36,7 +36,7 @@ public class SyncTriggersJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
+    public void doJob(boolean force) throws Exception {
         engine.getTriggerRouterService().syncTriggers();
     }
 

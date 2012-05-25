@@ -100,7 +100,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
 
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
-        engine.getPurgeService().purgeOutgoing();
+        engine.getPurgeService().purgeOutgoing(true);
     }
 
     @ManagedOperation(description = "Force the channel settings to be read from the database")

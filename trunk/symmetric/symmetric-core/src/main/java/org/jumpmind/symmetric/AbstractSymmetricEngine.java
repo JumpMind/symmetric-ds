@@ -519,7 +519,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public RemoteNodeStatuses push() {
         MDC.put("engineName", getEngineName());
-        return pushService.pushData();
+        return pushService.pushData(true);
     }
 
     public void syncTriggers() {
@@ -533,19 +533,19 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public RemoteNodeStatuses pull() {
         MDC.put("engineName", getEngineName());
-        return pullService.pullData();
+        return pullService.pullData(true);
     }
 
     public void route() {
         MDC.put("engineName", getEngineName());
-        routerService.routeData();
+        routerService.routeData(true);
     }
 
     public void purge() {
         MDC.put("engineName", getEngineName());
-        purgeService.purgeOutgoing();
-        purgeService.purgeIncoming();
-        purgeService.purgeDataGaps();
+        purgeService.purgeOutgoing(true);
+        purgeService.purgeIncoming(true);
+        purgeService.purgeDataGaps(true);
     }
 
     public boolean isConfigured() {
@@ -621,7 +621,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void heartbeat(boolean force) {
         MDC.put("engineName", getEngineName());
-        dataService.heartbeat(force);
+        dataService.heartbeat(true);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {
