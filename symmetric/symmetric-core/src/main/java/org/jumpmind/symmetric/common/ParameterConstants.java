@@ -160,6 +160,9 @@ final public class ParameterConstants {
     public final static String DB_POOL_MAX_WAIT = "db.pool.max.wait.millis";
     public final static String DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
     public final static String DB_POOL_VALIDATION_QUERY = "db.validation.query";
+    public final static String DB_POOL_TEST_ON_BORROW = "db.test.on.borrow";
+    public final static String DB_POOL_TEST_ON_RETURN = "db.test.on.return";
+    public final static String DB_POOL_TEST_WHILE_IDLE = "db.test.while.idle";
     public final static String DB_POOL_CONNECTION_PROPERTIES = "db.connection.properties";
     
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";

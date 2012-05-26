@@ -14,7 +14,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
-import org.jumpmind.db.util.ConnectionPool;
+import org.jumpmind.db.util.ResettableBasicDataSource;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -110,7 +110,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(TypedProperties properties,
             ISecurityService securityService) {
-        ConnectionPool dataSource = new ConnectionPool();
+        ResettableBasicDataSource dataSource = new ResettableBasicDataSource();
         dataSource.setDriverClassName(properties.get(ParameterConstants.DB_POOL_DRIVER, null));
         dataSource.setUrl(properties.get(ParameterConstants.DB_POOL_URL, null));
         String user = properties.get(ParameterConstants.DB_POOL_USER, "");
@@ -134,6 +134,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         dataSource.setNumTestsPerEvictionRun(10);
         dataSource.setValidationQuery(properties.get(ParameterConstants.DB_POOL_VALIDATION_QUERY,
                 null));
+        dataSource.setTestOnBorrow(properties.is(ParameterConstants.DB_POOL_TEST_ON_BORROW, true));
+        dataSource.setTestOnReturn(properties.is(ParameterConstants.DB_POOL_TEST_ON_RETURN, false));
+        dataSource.setTestWhileIdle(properties.is(ParameterConstants.DB_POOL_TEST_WHILE_IDLE, false));
 
         String connectionProperties = properties.get(
                 ParameterConstants.DB_POOL_CONNECTION_PROPERTIES, null);
