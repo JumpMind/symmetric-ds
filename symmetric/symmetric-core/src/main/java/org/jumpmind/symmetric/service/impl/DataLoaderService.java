@@ -41,8 +41,10 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -58,6 +60,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
@@ -363,7 +366,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
             throw (IOException) ex;
         } else {
-            log.error("Failed while parsing batch", ex);
+            if (!(ex instanceof ConflictException)) {
+                log.error("Failed while parsing batch", ex);
+            }
         }
     }
 
@@ -525,7 +530,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void updateIncomingError(IncomingError incomingError) {
         sqlTemplate.update(getSql("updateIncomingErrorSql"), incomingError.getResolveData(),
-                incomingError.isResolveIgnore(), incomingError.getBatchId(),
+                incomingError.isResolveIgnore() ? 1 : 0, incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber());
     }
 
@@ -706,19 +711,26 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 enableSyncTriggers(context);
                 statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
 
-                if (ex instanceof IOException || ex instanceof TransportException) {
+                if (ex instanceof IOException || ex instanceof TransportException
+                        || ex instanceof IoException) {
                     log.warn("Failed to load batch {} because: {}",
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
                     log.error("Failed to load batch {} because: {}", new Object[] {
                             this.currentBatch.getNodeBatchId(), ex.getMessage() });
-                    log.error(ex.getMessage(), ex);
+                    if (log.isDebugEnabled()) {
+                        log.debug(ex.getMessage(), ex);
+                    }
                     SQLException se = unwrapSqlException(ex);
                     if (se != null) {
                         this.currentBatch.setSqlState(se.getSQLState());
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
+                    } else if (ex instanceof ConflictException) {
+                        this.currentBatch.setSqlMessage(ex.getMessage());
+                        this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
+                        this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
                     } else {
                         this.currentBatch.setSqlMessage(ex.getMessage());
                     }
