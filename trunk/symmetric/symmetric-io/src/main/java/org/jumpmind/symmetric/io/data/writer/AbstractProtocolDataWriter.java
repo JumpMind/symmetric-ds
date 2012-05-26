@@ -74,9 +74,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }
         println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
-        if (batch.isIgnored()) {
-            println(CsvConstants.IGNORE);
-        }
     }
 
     public boolean start(Table table) {
@@ -143,6 +140,11 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     }
 
     final public void end(Batch batch, boolean inError) {
+        
+        if (batch.isIgnored()) {
+            println(CsvConstants.IGNORE);
+        }
+        
         if (!inError) {
             println(CsvConstants.COMMIT, Long.toString(batch.getBatchId()));
             endBatch(batch);

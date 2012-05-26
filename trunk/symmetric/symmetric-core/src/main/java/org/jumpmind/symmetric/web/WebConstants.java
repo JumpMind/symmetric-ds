@@ -59,6 +59,8 @@ public class WebConstants {
     public static final String ACK_DATABASE_MILLIS = "database-";
 
     public static final String ACK_BYTE_COUNT = "byteCount-";
+    
+    public static final String ACK_IGNORE_COUNT = "ignoreCount-";
 
     public static final String ACK_SQL_STATE = "sqlState-";
 

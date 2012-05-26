@@ -738,6 +738,9 @@ public class DatabaseWriter implements IDataWriter {
     public void end(Batch batch, boolean inError) {
         this.lastData = null;
         this.currentDmlStatement = null;
+        if (batch.isIgnored()) {
+            getStatistics().get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+        }
         if (!inError) {
             notifyFiltersBatchComplete();
             commit();

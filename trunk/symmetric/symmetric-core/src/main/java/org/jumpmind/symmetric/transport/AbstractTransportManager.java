@@ -103,6 +103,10 @@ abstract public class AbstractTransportManager {
             append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
             append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getDatabaseMillis());
             append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
+            
+            if (batch.getIgnoreCount() > 0) {
+              append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
+            }
 
             if (batch.getStatus() == Status.ER) {
                 append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
@@ -152,6 +156,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
         batchInfo.setDatabaseMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
+        batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
 
@@ -179,6 +184,10 @@ abstract public class AbstractTransportManager {
     private static long getParamAsNum(Map<String, ? extends  Object> parameters, String parameterName) {
         return NumberUtils.toLong(getParam(parameters, parameterName));
     }
+    
+    private static boolean getParamAsBoolean(Map<String, ? extends  Object> parameters, String parameterName) {
+        return getParamAsNum(parameters, parameterName) > 0;
+    }    
 
     private static String getParam(Map<String, ? extends  Object> parameters, String parameterName, String defaultValue) {
         String value = getParam(parameters, parameterName);
