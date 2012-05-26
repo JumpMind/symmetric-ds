@@ -4,9 +4,14 @@ import java.sql.SQLException;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-public class ConnectionPool extends BasicDataSource {
+/**
+ * A subclass of {@link BasicDataSource} which allows for a data source to be
+ * closed (all underlying connections are closed) and then allows new
+ * connections to be created.
+ */
+public class ResettableBasicDataSource extends BasicDataSource {
 
-    public ConnectionPool() {
+    public ResettableBasicDataSource() {
         setAccessToUnderlyingConnectionAllowed(true);
     }
 
