@@ -147,9 +147,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node targetNode, Writer writer, String... tablesToExclude) {        
+    public void extractConfigurationStandalone(Node targetNode, Writer writer,
+            String... tablesToExclude) {
         Node sourceNode = nodeService.findIdentity();
-        
+
         Batch batch = new Batch(BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
                 symmetricDialect.getBinaryEncoding(), targetNode.getNodeId(), false);
 
@@ -157,9 +158,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 targetNode.getNodeGroupId());
 
         List<TriggerRouter> triggerRouters = triggerRouterService
-                .buildTriggerRoutersForSymmetricTables(StringUtils.isBlank(targetNode
-                        .getSymmetricVersion()) ? Version.version() : targetNode.getSymmetricVersion(),
-                        nodeGroupLink, tablesToExclude);
+                .buildTriggerRoutersForSymmetricTables(
+                        StringUtils.isBlank(targetNode.getSymmetricVersion()) ? Version.version()
+                                : targetNode.getSymmetricVersion(), nodeGroupLink, tablesToExclude);
 
         List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                 triggerRouters.size() * 2);
@@ -202,8 +203,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (!triggerRouter.getTrigger().getSourceTableName()
                     .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                initialLoadEvents
-                        .add(new SelectFromTableEvent(targetNode, triggerRouter, triggerHistory));
+                initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter,
+                        triggerHistory));
             } else {
                 Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT,
                         triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
@@ -439,6 +440,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
+                    IStagedResource resource = stagingManager.find(
+                            Constants.STAGING_CATEGORY_OUTGOING, batch.getStagedLocation(),
+                            batch.getBatchId());
+                    if (resource != null) {
+                        resource.delete();
+                    }
                     DataContext ctx = new DataContext(batch);
                     ctx.put("targetNode", targetNode);
                     ctx.put("sourceNode", sourceNode);
@@ -532,7 +539,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected OutgoingBatch sendOutgoingBatch(Node targetNode, OutgoingBatch currentBatch, IDataWriter dataWriter) {
+    protected OutgoingBatch sendOutgoingBatch(Node targetNode, OutgoingBatch currentBatch,
+            IDataWriter dataWriter) {
         if (currentBatch.getStatus() != Status.OK) {
 
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
@@ -669,7 +677,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     class SelectFromSymDataSource implements IExtractDataReaderSource {
 
         private Batch batch;
-        
+
         private OutgoingBatch outgoingBatch;
 
         private Table currentTable;
@@ -777,7 +785,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     class SelectFromTableSource implements IExtractDataReaderSource {
-        
+
         private OutgoingBatch outgoingBatch;
 
         private Batch batch;
@@ -796,7 +804,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private TriggerRouter triggerRouter;
 
-        public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch, SelectFromTableEvent event) {
+        public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
+                SelectFromTableEvent event) {
             this.outgoingBatch = outgoingBatch;
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
                     1);
@@ -867,7 +876,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     data = next();
                 }
             }
-            
+
             if (data != null && outgoingBatch != null) {
                 outgoingBatch.incrementDataEventCount();
                 outgoingBatch.incrementEventCount(data.getDataEventType());
