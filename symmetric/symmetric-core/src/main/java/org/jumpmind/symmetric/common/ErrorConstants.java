@@ -17,18 +17,14 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.common;
 
-/**
- * 
- */
 final public class ErrorConstants {
 
     private ErrorConstants() {
     }
 
+    public static final String CONFLICT_STATE = "CONFLICT";
+    public static final int CONFLICT_CODE = -999;
 
-    final public static String METADATA_MISSING = "The table metadata was missing from the protocol.  Please turn on debug level logging to analyze the CSV data.";
 }
