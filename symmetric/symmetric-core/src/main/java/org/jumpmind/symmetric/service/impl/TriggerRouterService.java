@@ -755,6 +755,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     
                     // make sure channels are read from the database
                     configurationService.reloadChannels();
+                    
                     List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
                     inactivateTriggers(triggersForCurrentNode, sqlBuffer);
                     updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, genAlways);
@@ -899,7 +900,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 Set<Table> tables = getTablesForTrigger(trigger, triggers);
                 if (tables.size() > 0) {
-                    for (Table table : tables) {
+                    for (Table table : tables) {                        
+                        if (table.getPrimaryKeyColumnCount() == 0) {
+                            table = table.copy();
+                            table.makeAllColumnsPrimaryKeys();
+                        }
+                        
                         TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
                                 trigger.getTriggerId(),
                                 trigger.getSourceCatalogName(),

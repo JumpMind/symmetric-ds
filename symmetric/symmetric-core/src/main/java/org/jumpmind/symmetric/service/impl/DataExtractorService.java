@@ -651,10 +651,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         "Could not find the table, %s, to extract",
                         Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
             }
-            currentTable = currentTable.copy();
+            currentTable = currentTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(), true);
             currentTable.setCatalog(catalogName);
             currentTable.setSchema(schemaName);
-            currentTable.orderColumns(triggerHistory.getParsedColumnNames());
 
             Router router = triggerRouterService.getRouterById(routerId, false);
             if (router != null && setTargetTableName) {

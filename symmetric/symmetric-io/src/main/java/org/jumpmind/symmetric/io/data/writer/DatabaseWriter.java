@@ -394,6 +394,10 @@ public class DatabaseWriter implements IDataWriter {
                             break;
                     }
                 }
+                
+                if (lookupKeys == null || lookupKeys.length == 0) {
+                    lookupKeys = targetTable.getColumns();
+                }
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
@@ -441,7 +445,8 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
             if (changedColumnNameList.size() > 0) {
-                if (requireNewStatement(DmlType.UPDATE, data, applyChangesOnly, useConflictDetection)) {
+                if (requireNewStatement(DmlType.UPDATE, data, applyChangesOnly,
+                        useConflictDetection)) {
                     lastApplyChangesOnly = applyChangesOnly;
                     lastUseConflictDetection = useConflictDetection;
                     Column[] lookupKeys = null;
@@ -496,6 +501,11 @@ public class DatabaseWriter implements IDataWriter {
                                 break;
                         }
                     }
+                    
+                    if (lookupKeys == null || lookupKeys.length == 0) {
+                        lookupKeys = targetTable.getColumns();
+                    }
+                    
                     this.currentDmlStatement = platform
                             .createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(),
                                     targetTable.getSchema(), targetTable.getName(), lookupKeys,
@@ -773,11 +783,9 @@ public class DatabaseWriter implements IDataWriter {
             table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
                     sourceTable.getName(), false);
             if (table != null) {
-                table = table.copy();
-                table.reOrderColumns(sourceTable.getColumns(),
+                table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
+                        sourceTable.getPrimaryKeyColumnNames(),
                         this.writerSettings.isUsePrimaryKeysFromSource());
-
-                boolean setAllColumnsAsPrimaryKey = table.getPrimaryKeyColumnCount() == 0;
 
                 if (StringUtils.isBlank(sourceTable.getCatalog())) {
                     table.setCatalog(null);
@@ -793,10 +801,6 @@ public class DatabaseWriter implements IDataWriter {
                     if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
                             && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
                         column.setMappedTypeCode(Types.VARCHAR);
-                    }
-
-                    if (setAllColumnsAsPrimaryKey) {
-                        column.setPrimaryKey(true);
                     }
                 }
             }

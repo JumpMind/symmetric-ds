@@ -71,11 +71,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
-    
-    public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+
+    public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
+            .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
-    
+
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
     /* The default name for models read from the database, if no name as given. */
@@ -106,7 +107,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public AbstractDatabasePlatform() {
     }
-    
+
     public DatabaseInfo getDatabaseInfo() {
         return getDdlBuilder().getDatabaseInfo();
     }
@@ -246,7 +247,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
             }
         }
-        
+
         if (table != null && log.isDebugEnabled()) {
             log.debug("Just read table: \n{}", table.toVerboseString());
         }
@@ -303,74 +304,83 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData, boolean useVariableDates) {
-        List<Object> list = new ArrayList<Object>(values.length);
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            Object objectValue = value;
-            Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
-            try {
-                if (column != null) {
-                    int type = column.getMappedTypeCode();
-                    if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
-                            .equals(""))) && column.isRequired() && column.isOfTextType()) {
-                        objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                    }
-                    if (value != null) {
-                        if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
-                            objectValue = parseDate(type, value, useVariableDates);
-                        } else if (type == Types.CHAR) {
-                            String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && getDdlBuilder()
-                                    .getDatabaseInfo().isBlankCharColumnSpacePadded())
-                                    || (StringUtils.isNotBlank(charValue) && getDdlBuilder()
-                                            .getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
-                                objectValue = StringUtils.rightPad(value.toString(),
-                                        column.getSizeAsInt(), ' ');
-                            }
-                        } else if (type == Types.INTEGER || type == Types.SMALLINT
-                                || type == Types.BIT) {
-                            objectValue = Integer.valueOf(value);
-                        } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                                || type == Types.FLOAT || type == Types.DOUBLE) {
-                            // The number will have either one period or one
-                            // comma
-                            // for the decimal point, but we need a period
-                            objectValue = new BigDecimal(value.replace(',', '.'));
-                        } else if (type == Types.BOOLEAN) {
-                            objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                        } else if (type == Types.BLOB || type == Types.LONGVARBINARY
-                                || type == Types.BINARY || type == Types.VARBINARY ||
-                                // SQLServer ntext type
-                                type == -10) {
-                            if (encoding == BinaryEncoding.NONE) {
-                                objectValue = value.getBytes();
-                            } else if (encoding == BinaryEncoding.BASE64) {
-                                objectValue = Base64.decodeBase64(value.getBytes());
-                            } else if (encoding == BinaryEncoding.HEX) {
-                                objectValue = Hex.decodeHex(value.toCharArray());
-                            }
-                        } else if (type == Types.ARRAY) {
-                            objectValue = createArray(column, value);
+        if (values != null) {
+            List<Object> list = new ArrayList<Object>(values.length);
+            for (int i = 0; i < values.length; i++) {
+                String value = values[i];
+                Object objectValue = value;
+                Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
+                try {
+                    if (column != null) {
+                        int type = column.getMappedTypeCode();
+                        if ((value == null || (getDdlBuilder().getDatabaseInfo()
+                                .isEmptyStringNulled() && value.equals("")))
+                                && column.isRequired()
+                                && column.isOfTextType()) {
+                            objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                         }
+                        if (value != null) {
+                            if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                                objectValue = parseDate(type, value, useVariableDates);
+                            } else if (type == Types.CHAR) {
+                                String charValue = value.toString();
+                                if ((StringUtils.isBlank(charValue) && getDdlBuilder()
+                                        .getDatabaseInfo().isBlankCharColumnSpacePadded())
+                                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder()
+                                                .getDatabaseInfo()
+                                                .isNonBlankCharColumnSpacePadded())) {
+                                    objectValue = StringUtils.rightPad(value.toString(),
+                                            column.getSizeAsInt(), ' ');
+                                }
+                            } else if (type == Types.INTEGER || type == Types.SMALLINT
+                                    || type == Types.BIT) {
+                                objectValue = Integer.valueOf(value);
+                            } else if (type == Types.NUMERIC || type == Types.DECIMAL
+                                    || type == Types.FLOAT || type == Types.DOUBLE) {
+                                // The number will have either one period or one
+                                // comma
+                                // for the decimal point, but we need a period
+                                objectValue = new BigDecimal(value.replace(',', '.'));
+                            } else if (type == Types.BOOLEAN) {
+                                objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
+                            } else if (type == Types.BLOB || type == Types.LONGVARBINARY
+                                    || type == Types.BINARY || type == Types.VARBINARY ||
+                                    // SQLServer ntext type
+                                    type == -10) {
+                                if (encoding == BinaryEncoding.NONE) {
+                                    objectValue = value.getBytes();
+                                } else if (encoding == BinaryEncoding.BASE64) {
+                                    objectValue = Base64.decodeBase64(value.getBytes());
+                                } else if (encoding == BinaryEncoding.HEX) {
+                                    objectValue = Hex.decodeHex(value.toCharArray());
+                                }
+                            } else if (type == Types.ARRAY) {
+                                objectValue = createArray(column, value);
+                            }
+                        }
+                        if (objectValue instanceof String) {
+                            objectValue = cleanTextForTextBasedColumns((String) objectValue);
+                        }
+                        list.add(objectValue);
                     }
-                    if (objectValue instanceof String) {
-                        objectValue = cleanTextForTextBasedColumns((String) objectValue);
-                    }
-                    list.add(objectValue);
+                } catch (Exception ex) {
+                    log.error("Could not convert a value of {} for column {} of type {}",
+                            new Object[] { value, column.getName(), column.getMappedType() });
+                    log.error(ex.getMessage(), ex);
+                    throw new RuntimeException(ex);
                 }
-            } catch (Exception ex) {
-                log.error("Could not convert a value of {} for column {} of type {}", new Object[] {
-                        value, column.getName(), column.getMappedType() });
-                log.error(ex.getMessage(), ex);
-                throw new RuntimeException(ex);
             }
-        }
 
-        return list.toArray();
+            return list.toArray();
+        } else {
+            return null;
+        }
     }
 
-    // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders)
-    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates) {
+    // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
+    // Map<String, Object> columnValues, boolean genPlaceholders)
+    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row,
+            boolean useVariableDates) {
         String[] values = new String[metaData.length];
         for (int i = 0; i < metaData.length; i++) {
             Column column = metaData[i];
@@ -407,7 +417,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
 
-    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates) {
+    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row,
+            boolean useVariableDates) {
         String newSql = sql;
         String quote = getDatabaseInfo().getValueQuoteToken();
         String regex = "\\?";
@@ -419,13 +430,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
                     try {
-                    String value = row.getString(name);
-                    value = value.replace("\\", "\\\\");
-                    value = value.replace("$", "\\$");
-                    value = value.replace("'", "''");
-                    newSql = newSql.replaceFirst(regex, quote + value + quote);
+                        String value = row.getString(name);
+                        value = value.replace("\\", "\\\\");
+                        value = value.replace("$", "\\$");
+                        value = value.replace("'", "''");
+                        newSql = newSql.replaceFirst(regex, quote + value + quote);
                     } catch (RuntimeException ex) {
-                        log.error("Failed to replace ? in {" + sql + "} with " + name + "=" + row.getString(name));
+                        log.error("Failed to replace ? in {" + sql + "} with " + name + "="
+                                + row.getString(name));
                         throw ex;
                     }
                 } else if (column.isOfNumericType()) {
@@ -434,20 +446,25 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
                         long diff = date.getTime() - System.currentTimeMillis();
-                        newSql = newSql.replaceFirst(regex, "${curdate" + (diff > 0 ? "+" : "-") + "}");
+                        newSql = newSql.replaceFirst(regex, "${curdate" + (diff > 0 ? "+" : "-")
+                                + "}");
                     } else if (type == Types.TIME) {
-                        newSql = newSql.replaceFirst(regex, "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                        newSql = newSql.replaceFirst(regex,
+                                "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
                     } else {
-                        newSql = newSql.replaceFirst(regex, "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                        newSql = newSql.replaceFirst(regex,
+                                "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
                     }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (encoding == BinaryEncoding.NONE) {
                         newSql = newSql.replaceFirst(regex, quote + row.getString(name));
                     } else if (encoding == BinaryEncoding.BASE64) {
-                        newSql = newSql.replaceFirst(regex, quote + new String(Base64.encodeBase64(bytes)) + quote);
+                        newSql = newSql.replaceFirst(regex,
+                                quote + new String(Base64.encodeBase64(bytes)) + quote);
                     } else if (encoding == BinaryEncoding.HEX) {
-                        newSql = newSql.replaceFirst(regex, quote + new String(Hex.encodeHex(bytes)) + quote);
+                        newSql = newSql.replaceFirst(regex, quote
+                                + new String(Hex.encodeHex(bytes)) + quote);
                     }
                 }
             }
@@ -475,11 +492,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected String cleanTextForTextBasedColumns(String text) {
         return text;
     }
-    
+
     protected java.util.Date parseDate(int type, String value, boolean useVariableDates) {
         try {
-            boolean useTimestamp = (type == Types.TIMESTAMP) || (type == Types.DATE &&
-                    getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp());
+            boolean useTimestamp = (type == Types.TIMESTAMP)
+                    || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
+                            .isDateOverridesToTimestamp());
 
             if (useVariableDates && value.startsWith("${curdate")) {
                 long time = Long.parseLong(value.substring(10, value.length() - 1));

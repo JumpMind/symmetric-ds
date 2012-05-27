@@ -34,19 +34,27 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected boolean oldAutoCommitValue;
 
-    protected List<Object> markers = new ArrayList<Object>();    
-    
+    protected List<Object> markers = new ArrayList<Object>();
+
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
+        this.jdbcSqlTemplate = jdbcSqlTemplate;
+        this.init();
+    }
+
+    protected void init() {
+        if (this.connection != null) {
+            close();
+        }
         try {
-            this.jdbcSqlTemplate = jdbcSqlTemplate;
             this.connection = jdbcSqlTemplate.getDataSource().getConnection();
             this.oldAutoCommitValue = this.connection.getAutoCommit();
             this.connection.setAutoCommit(false);
             SqlUtils.addSqlTransaction(this);
         } catch (SQLException ex) {
-            JdbcSqlTemplate.close(connection);
+            close();
             throw jdbcSqlTemplate.translate(ex);
         }
+
     }
 
     public void setInBatchMode(boolean useBatching) {
@@ -74,6 +82,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public void rollback() {
         rollback(true);
+        init();
     }
 
     protected void rollback(boolean clearMarkers) {
@@ -97,7 +106,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             } catch (SQLException ex) {
                 // do nothing
             }
-            JdbcSqlTemplate.close(connection);            
+            JdbcSqlTemplate.close(connection);
             connection = null;
             SqlUtils.removeSqlTransaction(this);
         }
@@ -147,7 +156,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
         });
     }
-    
+
     public int execute(final String sql) {
         return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
@@ -167,7 +176,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
             }
         });
-    }    
+    }
 
     public int prepareAndExecute(final String sql, final Object[] args, final int[] types) {
         return executeCallback(new IConnectionCallback<Integer>() {
