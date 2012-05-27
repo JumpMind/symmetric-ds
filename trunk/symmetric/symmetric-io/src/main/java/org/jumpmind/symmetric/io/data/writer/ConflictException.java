@@ -15,7 +15,7 @@ public class ConflictException extends RuntimeException {
 
     public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed) {
         super(String.format(
-                "Detected conflict while executing %s on %s.  The primary data was: %s. %s", data
+                "Detected conflict while executing %s on %s.  The primary key data was: %s. %s", data
                         .getDataEventType().toString(), table.getFullyQualifiedTableName(), data
                         .toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.PK_DATA),
                 fallbackOperationFailed ? "Failed to fallback." : ""));
