@@ -719,8 +719,10 @@ public class Table implements Serializable, Cloneable {
         if (columns != null) {
             List<Column> selectedColumns = new ArrayList<Column>();
             for (Column column : columns) {
-                if (column.isPrimaryKey()) {
-                    selectedColumns.add(column);
+                if (column != null) {
+                    if (column.isPrimaryKey()) {
+                        selectedColumns.add(column);
+                    }
                 }
             }
             return selectedColumns.toArray(new Column[selectedColumns.size()]);
@@ -966,7 +968,9 @@ public class Table implements Serializable, Cloneable {
         Column[] orderedColumns = orderColumns(columnNames, this);
         this.columns.clear();
         for (Column column : orderedColumns) {
-            this.columns.add(column);
+            if (column != null) {
+                this.columns.add(column);
+            }
         }
     }
 
@@ -976,7 +980,7 @@ public class Table implements Serializable, Cloneable {
         for (int i = 0; i < columnNames.length; i++) {
             String name = columnNames[i];
             for (Column column : unorderedColumns) {
-                if (column.getName().equalsIgnoreCase(name)) {
+                if (column != null && column.getName().equalsIgnoreCase(name)) {
                     orderedColumns[i] = column;
                     break;
                 }
@@ -985,7 +989,6 @@ public class Table implements Serializable, Cloneable {
         return orderedColumns;
     }
 
-    @SuppressWarnings("unchecked")
     public Table copy() {
         try {
             Table result = (Table) super.clone();
@@ -993,9 +996,24 @@ public class Table implements Serializable, Cloneable {
             result.schema = schema;
             result.name = name;
             result.type = type;
-            result.columns = (ArrayList<Column>) columns.clone();
-            result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
-            result.indices = (ArrayList<IIndex>) indices.clone();
+            result.columns = new ArrayList<Column>(columns.size());
+            for (Column col : columns) {
+                if (col != null) {
+                    result.columns.add((Column) col.clone());
+                }
+            }
+            result.foreignKeys = new ArrayList<ForeignKey>(foreignKeys.size());
+            for (ForeignKey fk : foreignKeys) {
+                if (fk != null) {
+                    result.foreignKeys.add((ForeignKey) fk.clone());
+                }
+            }
+            result.indices = new ArrayList<IIndex>(indices.size());
+            for (IIndex i : indices) {
+                if (i != null) {
+                    result.indices.add((IIndex) i.clone());
+                }
+            }
             return result;
         } catch (CloneNotSupportedException ex) {
             throw new RuntimeException(ex);
@@ -1005,18 +1023,22 @@ public class Table implements Serializable, Cloneable {
     public Table copyAndFilterColumns(String[] orderedColumnNames, String[] pkColumnNames,
             boolean setPrimaryKeys) {
         Table table = copy();
-        orderColumns(orderedColumnNames);
+        table.orderColumns(orderedColumnNames);
 
-        if (setPrimaryKeys) {
-            for (Column column : columns) {
-                column.setPrimaryKey(false);
+        if (setPrimaryKeys && columns != null) {
+            for (Column column : table.columns) {
+                if (column != null) {
+                    column.setPrimaryKey(false);
+                }
             }
 
             if (pkColumnNames != null) {
-                for (Column column : columns) {
-                    for (String pkColumnName : pkColumnNames) {
-                        if (column.getName().equals(pkColumnName)) {
-                            column.setPrimaryKey(true);
+                for (Column column : table.columns) {
+                    if (column != null) {
+                        for (String pkColumnName : pkColumnNames) {
+                            if (column.getName().equalsIgnoreCase(pkColumnName)) {
+                                column.setPrimaryKey(true);
+                            }
                         }
                     }
                 }

@@ -394,7 +394,7 @@ public class DatabaseWriter implements IDataWriter {
                             break;
                     }
                 }
-                
+
                 if (lookupKeys == null || lookupKeys.length == 0) {
                     lookupKeys = targetTable.getColumns();
                 }
@@ -501,11 +501,11 @@ public class DatabaseWriter implements IDataWriter {
                                 break;
                         }
                     }
-                    
+
                     if (lookupKeys == null || lookupKeys.length == 0) {
                         lookupKeys = targetTable.getColumns();
                     }
-                    
+
                     this.currentDmlStatement = platform
                             .createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(),
                                     targetTable.getSchema(), targetTable.getName(), lookupKeys,
@@ -797,10 +797,12 @@ public class DatabaseWriter implements IDataWriter {
 
                 Column[] columns = table.getColumns();
                 for (Column column : columns) {
-                    int typeCode = column.getMappedTypeCode();
-                    if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
-                            && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                        column.setMappedTypeCode(Types.VARCHAR);
+                    if (column != null) {
+                        int typeCode = column.getMappedTypeCode();
+                        if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
+                                && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+                            column.setMappedTypeCode(Types.VARCHAR);
+                        }
                     }
                 }
             }
