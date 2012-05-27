@@ -98,7 +98,7 @@ public class Table implements Serializable, Cloneable {
         }
 
     }
-    
+
     public void removeAllColumns() {
         columns.clear();
     }
@@ -962,23 +962,6 @@ public class Table implements Serializable, Cloneable {
         }
     }
 
-    public void reOrderColumns(Column[] targetOrder, boolean copyPrimaryKeys) {
-        ArrayList<Column> orderedColumns = new ArrayList<Column>(targetOrder.length);
-        for (int i = 0; i < targetOrder.length; i++) {
-            String name = targetOrder[i].getName();
-            for (Column column : columns) {
-                if (column.getName().equalsIgnoreCase(name)) {
-                    orderedColumns.add(column);
-                    if (copyPrimaryKeys) {
-                        column.setPrimaryKey(targetOrder[i].isPrimaryKey());
-                    }
-                    break;
-                }
-            }
-        }
-        columns = orderedColumns;
-    }
-
     public void orderColumns(String[] columnNames) {
         Column[] orderedColumns = orderColumns(columnNames, this);
         this.columns.clear();
@@ -1019,6 +1002,36 @@ public class Table implements Serializable, Cloneable {
         }
     }
 
+    public Table copyAndFilterColumns(String[] orderedColumnNames, String[] pkColumnNames,
+            boolean setPrimaryKeys) {
+        Table table = copy();
+        orderColumns(orderedColumnNames);
+
+        if (setPrimaryKeys) {
+            for (Column column : columns) {
+                column.setPrimaryKey(false);
+            }
+
+            if (pkColumnNames != null) {
+                for (Column column : columns) {
+                    for (String pkColumnName : pkColumnNames) {
+                        if (column.getName().equals(pkColumnName)) {
+                            column.setPrimaryKey(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        return table;
+    }
+
+    public void makeAllColumnsPrimaryKeys() {
+        for (Column column : columns) {
+            column.setPrimaryKey(true);
+        }
+    }
+
     public String[] getColumnNames() {
         String[] columnNames = new String[columns.size()];
         int i = 0;
@@ -1037,7 +1050,7 @@ public class Table implements Serializable, Cloneable {
         }
         return columnNames;
     }
-    
+
     public int calculateTableHashcode() {
         final int PRIME = 31;
         int result = 1;
@@ -1046,7 +1059,7 @@ public class Table implements Serializable, Cloneable {
         result = PRIME * result + calculateHashcodeForColumns(PRIME, getPrimaryKeyColumns());
         return result;
     }
-    
+
     private static int calculateHashcodeForColumns(final int PRIME, Column[] cols) {
         int result = 1;
         if (cols != null && cols.length > 0) {
@@ -1058,7 +1071,6 @@ public class Table implements Serializable, Cloneable {
         }
         return result;
     }
-
 
     public static boolean areAllColumnsPrimaryKeys(Column[] columns) {
         boolean allPks = true;

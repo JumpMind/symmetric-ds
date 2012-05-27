@@ -97,12 +97,12 @@ public class DataProcessor {
                         }
                     } catch (Exception ex) {
                         try {
-                            if (listener != null) {
-                                listener.batchInError(context, ex);
-                            }
-                        } finally {
                             if (dataWriter != null && !endBatchCalled) {
                                 dataWriter.end(currentBatch, true);
+                            }
+                        } finally {
+                            if (listener != null) {
+                                listener.batchInError(context, ex);
                             }
                         }
                         rethrow(ex);

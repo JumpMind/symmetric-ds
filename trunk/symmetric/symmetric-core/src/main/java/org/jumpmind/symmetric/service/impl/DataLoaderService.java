@@ -40,6 +40,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -366,7 +367,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
             throw (IOException) ex;
         } else {
-            if (!(ex instanceof ConflictException)) {
+            if (!(ex instanceof ConflictException || ex instanceof SqlException)) {
                 log.error("Failed while parsing batch", ex);
             }
         }
