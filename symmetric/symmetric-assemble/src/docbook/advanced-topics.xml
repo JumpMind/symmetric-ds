@@ -526,15 +526,6 @@
                     the most work of the three options discussed thus far.
                 </para>
             </listitem>
-            <listitem>
-                <para>Grails Application</para>
-                <para>                
-                    A <ulink url="http://grails.org/plugin/symmetricds">Grails SymmetricDS plugin</ulink> is 
-                    provided at the default Grails plugin site.  This option ends up being a WAR deployment, but allows 
-                    for the use of the Grails SDK for configuring and building the deployment.  The plugin also
-                    provides Gorm (Hibernate) access to many of the core database tables.   
-                </para>
-            </listitem>            
         </itemizedlist>
         <para>
             The deployment model you choose depends on how much flexibility you need versus how easy you
