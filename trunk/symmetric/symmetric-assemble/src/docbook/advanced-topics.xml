@@ -29,9 +29,7 @@
             By default, only the columns that changed will be updated in the target system.
         </para>  
         <para>
-            More complex conflict resolution strategies can be accomplished by using the 
-            <literal>IDatabaseWriterFilter</literal> extension point which has access to both 
-            old and new data.
+            Conflict resolution strategies can be configured for specific links and/or sets of tables.
         </para>         
     </section>     
       
