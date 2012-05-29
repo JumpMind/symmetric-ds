@@ -1,365 +1,433 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="planning" xmlns="http://docbook.org/ns/docbook"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
-    xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="planning" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Planning</title>
     <para>
-    In the previous Chapter we presented a high level introduction to some basic concepts
-    in SymmetricDS, some of the high-level features, and a tutorial demonstrating a basic, working
-    example of SymmetricDS in action.
-    This chapter will focus on the key considerations and decisions one must make when planning a SymmetricDS implementation. 
-    As needed, basic concepts will be reviewed or introduced throughout this Chapter.  By the
-    end of the chapter you should be able to proceed forward and implement your planned design.  This Chapter
-    will intentionally avoid discussing the underlying database tables that capture the configuration resulting
-    from your analysis and design process.    
-    Implementation of your design, along with discussion of the tables backing each concept, is covered in <xref linkend="configuration" />.
+        In the previous Chapter we presented a high level introduction to some basic concepts in SymmetricDS, some of the
+        high-level features, and a tutorial demonstrating a basic, working example of SymmetricDS in action. This chapter
+        will focus on the key considerations and decisions one must make when planning a SymmetricDS implementation. As
+        needed, basic concepts will be reviewed or introduced throughout this Chapter. By the end of the chapter you should
+        be able to proceed forward and implement your planned design. This Chapter will intentionally avoid discussing the
+        underlying database tables that capture the configuration resulting from your analysis and design process.
+        Implementation of your design, along with discussion of the tables backing each concept, is covered in
+        <xref linkend="configuration" />
+        .
     </para>
-    <para>
-    When needed, we will rely on an example of a typical use of SymmetricDS in retail situations.  This
-                example retail deployment of SymmetricDS might include many point-of-sale workstations located at stores that may have 
-                intermittent network connection to a central location.  These workstations might have point-sale-software that uses a local
-                relational database.  The database is populated with items, prices and tax information from a centralized
-                database.  The point-of-sale software looks up item information from the local database and also saves 
-                sale information to the same database.   The persisted sales need to be propagated back to the centralized database.  
-               </para>
-    
-    
+    <para> When needed, we will rely on an example of a typical use of SymmetricDS in retail situations. This example retail
+        deployment of SymmetricDS might include many point-of-sale workstations located at stores that may have intermittent
+        network connection to a central location. These workstations might have point-sale-software that uses a local
+        relational database. The database is populated with items, prices and tax information from a centralized database.
+        The point-of-sale software looks up item information from the local database and also saves sale information to the
+        same database. The persisted sales need to be propagated back to the centralized database.
+    </para>
     <section id="identifying-nodes">
-    <title>Identifying Nodes</title>
-    <para>
-      A <emphasis>node</emphasis> is a single instance of SymmetricDS. It can be thought of as a proxy for a database 
-      which manages the synchronization of data to and/or from its database. 
-      For our example retail application, the following would be SymmetricDS nodes:
-                <itemizedlist>
-                    <listitem>Each point-of-sale workstation.</listitem>
-                    <listitem>The central office database server.</listitem>                   
-                </itemizedlist>
-      Each node of SymmetricDS can be either embedded in another application, run stand-alone, or even run in the background as a service.  
-      If desired, nodes can be clustered to help disperse load if they send and/or receive large volumes
-      of data to or from a large number of nodes.
-      </para>
-      <para>
-      Individual nodes are easy to identify when planning your implementation.  If a database
-      exists in your domain that needs to send or receive data, there needs to be a corresponding
-      SymmetricDS instance (a node) responsible for managing the synchronization for that database.
-      
-      </para>
-
-<!--  MDH : need to discuss node_id and external_id here - decide what they should be -->      
+        <title>Identifying Nodes</title>
+        <para>
+            A
+            <emphasis>node</emphasis>
+            is a single instance of SymmetricDS. It can be thought of as a proxy for a database which manages the
+            synchronization of data to and/or from its database. For our example retail application, the following would be
+            SymmetricDS nodes:
+            <itemizedlist>
+                <listitem>Each point-of-sale workstation.</listitem>
+                <listitem>The central office database server.</listitem>
+            </itemizedlist>
+            Each node of SymmetricDS can be either embedded in another application, run stand-alone, or even run in the
+            background as a service. If desired, nodes can be clustered to help disperse load if they send and/or receive
+            large volumes of data to or from a large number of nodes.
+        </para>
+        <para> Individual nodes are easy to identify when planning your implementation. If a database exists in your domain
+            that needs to send or receive data, there needs to be a corresponding SymmetricDS instance (a node) responsible
+            for managing the synchronization for that database.
+        </para>
+        <!-- MDH : need to discuss node_id and external_id here - decide what they should be -->
     </section>
     <section id="organizing-nodes">
-            <title>Organizing Nodes</title>
-            <para> Nodes in SymmetricDS are organized into an overall node network, with connections based on what data needs
-            to be synchronized where.  The exact organization of your nodes will be very specific to your synchronization goals.
-            As a starting point, lay out your nodes in diagram form and draw connections between nodes to represent cases in which 
-            data is to flow in some manner.  Think in terms of what data is needed at which node, what data is in common to more than one node, etc.
-            If it is helpful, you could also show data flow into and out of external systems.  As you will discover later,
-            SymmetricDS can publish data changes from a node as well using JMS.
-    </para>             
-                
-            <para>Our retail example, as shown in <xref linkend="figure-two-tier" xrefstyle="select: label"/>, represents a tree hierarchy with a single central office node connected
-            by lines to one or more children nodes (the POS workstations). Information flows from the central office node to an individual register
-            and vice versa, but never flows between registers. </para>
-            <para>
-                <figure id="figure-two-tier">
-                    <title>Two Tiered Retail Store Deployment Example</title>
-                    <mediaobject>
-                        <imageobject>
-                            <imagedata fileref="images/two-tier-arch.gif" format="GIF" />
-                        </imageobject>
-                    </mediaobject>
-                </figure>
-            </para>                
-            <para>More complex organization can also be used. Consider, for example, if the same retail example is expanded to include 
-              store <emphasis>servers</emphasis> in each
-              store to perform tasks such as opening the store for the day, reconciling registers, assigning employees, etc. 
-              One approach to this new configuration would be to create a three-tier hierarchy (see  <xref linkend="figure-three-tier-store-server" xrefstyle="select: label"/>).
-              The highest tier, the centralized database, 
-              connects with each store server's database. The store servers, in turn, communicate with the 
-              individual point-of-sale workstations at the store. In this way data from each register could be accumulated at
-              the store server, then sent on to the central office.  Similarly, data from the central office can be staged in the 
-              store server and then sent on to each register, filtering the register's data based on which register it is.</para>                        
-             <para>
-                <figure id="figure-three-tier-store-server">
-                    <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
-                    <mediaobject>
-                        <imageobject>
-                            <imagedata fileref="images/three-tier-arch.gif" format="GIF" />
-                        </imageobject>
-                    </mediaobject>
-                </figure>
-            </para>    
-        <para>One final example, show in <xref linkend="figure-three-tier-regional" xrefstyle="select: label"/>, again extending our original two-tier retail use case, would be to organize stores by "region" in the world.  
-        This three tier architecture would introduce new regional servers (and corresponding regional databases)
-        which would consolidate information specific to stores the regional server is responsible for.  The tiers in this case are
-        therefore the central office server, regional servers, and individual store registers.         
-        </para>
-          <para>
-                <figure id="figure-three-tier-regional">
-                    <title>Three Tiered, Regional Server, Retail Store Deployment Example</title>
-                    <mediaobject>
-                        <imageobject>
-                            <imagedata fileref="images/three-tier-regional-arch.gif" format="GIF" />
-                        </imageobject>
-                    </mediaobject>
-                </figure>
-            </para>    
-        <para>
-        These are just three common examples of how one might organize nodes in SymmetricDS.  While the examples above were for the retail industry, 
-        the organization, they could apply to a variety of application domains.
-        </para>
-        </section>
-        
-     <section id="grouping-nodes">
-       <title>Defining Node Groups</title>
-       <para>
-         Once the organization of your SymmetricDS nodes has been chosen, you will need to <emphasis>group</emphasis> your nodes
-         based on which nodes share common functionality.  This is accomplished in SymmetricDS through the concept of a 
-         <emphasis>Node Group</emphasis>.  Frequently, an individual tier in your network will represent one Node Group. 
-         Much of SymmetricDS' functionality is specified by Node Group and not an individual node. For example, when it comes 
-         time to decide where to route data captured by SymmetricDS, the routing is configured by <emphasis>Node Group</emphasis>. 
-        </para> 
-        <para>
-        For the examples above, we might define Node Groups of:
-                <itemizedlist>
-                    <listitem>"workstation", to represent each point-of-sale workstation</listitem>
-                    <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
-                    <listitem>"store" to represent the store server that interacts with store workstations and sends and
-                        receives data from a central office server.</listitem>
-                    <listitem>"region" to represent the a regional server that interacts with store workstations and sends and
-                        receives data from a central office server.</listitem>
-                </itemizedlist>
-                Considerable thought should be given to how you define the Node Groups.    Groups should be created for each set of nodes
-                that synchronize common tables in a similar manner.  Also, give your Node Groups
-                meaningful names, as they will appear in many, many places in your implementation of SymmetricDS.
-          </para>
-          <para>Note that there are other mechanisms in SymmetricDS to route to individual nodes 
-                or smaller subsets of nodes within a Node Group, so do not choose Node Groups based on needing only subsets of data at
-                specific nodes.
-                For example, although you could, you would not want to create a Node Group
-                for each store even though different tax rates need to be routed to each store.  
-                Each store needs to synchronize the same tables
-                to the same groups, so 'store' would be a good choice for a Node Group.
-          </para>
-     
-     </section>
-     
-      <section id="linking-nodes">
-       <title>Linking Nodes</title>
-       <para>
-            Now that Node Groups have been chosen, the next step in planning is to document the individual links between
-            Node Groups.  These <emphasis>Node Group Links</emphasis> establish a source Node Group, a target Node Group, and a
-            <emphasis>data event action</emphasis>, namely whether the data changes are <emphasis>pushed</emphasis> or <emphasis>pulled</emphasis>.
-               The push method causes the source Node Group to connect to the target, while a pull method
-            causes it to wait for the target to connect to it.
-        </para>
-        <para>For our retail store example, there are two Node Group Links defined.  
-        For the first link, the "store" Node Group pushes data to the "corp" central office Node Group.
-        The second defines a "corp"
-        to "store" link as a pull.  Thus, the store nodes will periodically pull data from the central office,
-        but when it comes time to send data to the central office a store node will do a push.
-        </para>
-     </section>
-     
-       
-     <section id="choosing-channels">
-      <title>Choosing Data Channels</title>
-        <para>When SymmetricDS captures data changes in the database, the changes are captured in the 
-        order in which they occur.  In addition, that order is preserved when synchronizing the 
-        data to other nodes.
-        Frequently, however, you will have cases where you have different "types" of data with
-        differing priorities.  Some data might, for example, need priority for synchronization despite
-        the normal order of events.   For example, in a retail environment, users may be waiting for
-        inventory documents to update while a promotional sale event updates a large number of items.
+        <title>Organizing Nodes</title>
+        <para> Nodes in SymmetricDS are organized into an overall node network, with connections based on what data needs to
+            be synchronized where. The exact organization of your nodes will be very specific to your synchronization goals.
+            As a starting point, lay out your nodes in diagram form and draw connections between nodes to represent cases in
+            which data is to flow in some manner. Think in terms of what data is needed at which node, what data is in common
+            to more than one node, etc. If it is helpful, you could also show data flow into and out of external systems. As
+            you will discover later, SymmetricDS can publish data changes from a node as well using JMS.
         </para>
         <para>
-           SymmetricDS supports this by allowing tables being synchronized to be grouped together into <emphasis>Channels</emphasis> of data.
-           A number of controls to the synchronization behavior of SymmetricDS are controlled at the Channel level.  For example,    
-            Channels provide a processing order when synchronizing, a limit on the
-            amount of data that will be batched together, and isolation from errors in other channels.  
-            By categorizing data into channels and assigning them to <xref linkend="table_trigger" xrefstyle="table"/>s, the user gains more control and visibility into
-            the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by Channels as well.
-            The frequency of synchronization can also be controlled at the channel level.
+            Our retail example, as shown in
+            <xref linkend="figure-two-tier" xrefstyle="select: label" />
+            , represents a tree hierarchy with a single central office node connected by lines to one or more children nodes
+            (the POS workstations). Information flows from the central office node to an individual register and vice versa,
+            but never flows between registers.
         </para>
- <!--  MDH "Batching" should probably be discussed here, as there's a decision to be made for each channel -->
         <para>
-          Choosing Channels is fairly straightforward and can be changed over time, if needed.  Think about the
-          differing "types" of data present in your application, the volume of data in the various types, etc.  What 
-          data is considered must-have and can't be delayed due to a high volume load of another type of data?  For example,
-          you might place employee-related data, such as clocking in or out, on one channel, but sales transactions on another.
-          We will define which tables belong to which channels in the next sections.          
+            <figure id="figure-two-tier">
+                <title>Two Tiered Retail Store Deployment Example</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/two-tier-arch.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
         </para>
-        
-        <important>
         <para>
-            Be sure that, when defining Channels, all tables related by foreign keys are included in the same channel.
+            More complex organization can also be used. Consider, for example, if the same retail example is expanded to
+            include store
+            <emphasis>servers</emphasis>
+            in each store to perform tasks such as opening the store for the day, reconciling registers, assigning employees,
+            etc. One approach to this new configuration would be to create a three-tier hierarchy (see
+            <xref linkend="figure-three-tier-store-server" xrefstyle="select: label" />
+            ). The highest tier, the centralized database, connects with each store server's database. The store servers, in
+            turn, communicate with the individual point-of-sale workstations at the store. In this way data from each
+            register could be accumulated at the store server, then sent on to the central office. Similarly, data from the
+            central office can be staged in the store server and then sent on to each register, filtering the register's data
+            based on which register it is.
         </para>
-    </important>    
-    </section>  
-       
-    <section id="defining-data-changes">
-      <title>Defining Data Changes to be Captured and Routed</title>
-      <para>
-      At this point, you have designed the node-related aspects of your implementation, namely choosing nodes, grouping the nodes based on functionality, defining which node groups
-      send and receive data to which others (and by what method).  You have defined data Channels based on the types and priority of data being synchronized.  The largest remaining
-      task prior to starting your implementation is to define and document what data changes are to be captured (by defining SymmetricDS <emphasis>Triggers</emphasis>), 
-      and to decide to which node(s) the data changes are to be <emphasis>routed</emphasis> to and under what conditions.  We will also, in this section, discuss the concept of
-      an <emphasis>initial load</emphasis> of data into a SymmetricDS node.        
-      </para>
-      <section id="defining-data-changes-triggers">
-       <title>Defining Triggers</title>
-      
-        <para> SymmetricDS uses <emphasis>database triggers</emphasis> to capture and record changes to be synchronized to other nodes. Based on the configuration you provide, SymmetricDS
-        creates the needed database triggers automatically for you.  There is a great deal of flexibility in terms of defining the exact conditions under which a data change is captured.
-        SymmetricDS triggers are defined in a table named <xref linkend="table_trigger" xrefstyle="table"/>.  Each trigger you define is for a particular table associated.  Each trigger can also specify:
-           <itemizedlist>
-                <listitem>whether to install a trigger for updates, inserts, and/or deletes</listitem>
-                <listitem>conditions on which an insert, update, and/or delete fires</listitem>
-                <listitem>a list of columns that should not be synchronized from this table</listitem>
-                <listitem>a SQL select statement that can be used to hold data needed for routing (known as External Data)</listitem>
-           </itemizedlist>
+        <para>
+            <figure id="figure-three-tier-store-server">
+                <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/three-tier-arch.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
         </para>
-       <para>
-       As you define your triggers, consider which data changes are relevant to your application and which ones ar not.  Consider under what special conditions
-       you might want to route data, as well.  For our retail example, we likely want to have triggers defined for updating, inserting, and deleting pricing information
-       in the central office so that the data can be routed down to the stores.  Similarly, we need triggers on sales transaction tables such that
-       sales information can be sent back to the central office.
-       </para>
-       </section>
-       
-       <section id="defining-data-changes-routers">
-          <title>Defining Routers</title>
-      
-         <para>The triggers that have been defined in the previous section only define <emphasis>when</emphasis> data changes are to be captured
-         for synchronization.  They do not define <emphasis>where</emphasis> the data changes are to be sent to.  Routers, plus a mapping between Triggers and Routers 
-         (<xref linkend="table_trigger_router" xrefstyle="table"/>),
-         define the process for determining which nodes receive the data changes.
-         </para>
-         
-         <para>Before we discuss Routers and Trigger Routers, we should probably take a break and discuss the process SymmetricDS uses to keep track
-         of the changes and routing.  As we stated, SymmetricDS relies on auto-created database triggers to capture and record relevant data changes into a table, 
-         the
-          <xref linkend="table_data" xrefstyle="table"/> table.  After the data is captured, a background process
-            chooses the nodes that the data will be synchronized to.  This is called <emphasis>routing</emphasis> and it is performed by the Routing Job.
-            Note that the Routing Job does not actually send any data.  It just organizes and records the decisions on where to send data in a "staging"
-            table called <xref linkend="table_data_event" xrefstyle="table"/> and <xref linkend="table_outgoing_batch" xrefstyle="table"/>.
+        <para>
+            One final example, show in
+            <xref linkend="figure-three-tier-regional" xrefstyle="select: label" />
+            , again extending our original two-tier retail use case, would be to organize stores by "region" in the world.
+            This three tier architecture would introduce new regional servers (and corresponding regional databases) which
+            would consolidate information specific to stores the regional server is responsible for. The tiers in this case
+            are therefore the central office server, regional servers, and individual store registers.
         </para>
-        <para> 
-            Now we are ready to discuss Routers.  The router itself is what defines the configuration of where to send a data change.  Each Router
-            you define can be associated with or assigned to any number of Triggers through a join table that defines the relationship.
-            Routers are defined the SymmetricDS table named <xref linkend="table_router" xrefstyle="table"/>.  For each router you define, you will need to specify:
+        <para>
+            <figure id="figure-three-tier-regional">
+                <title>Three Tiered, Regional Server, Retail Store Deployment Example</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/three-tier-regional-arch.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para> These are just three common examples of how one might organize nodes in SymmetricDS. While the examples above
+            were for the retail industry, the organization, they could apply to a variety of application domains.
+        </para>
+    </section>
+    <section id="grouping-nodes">
+        <title>Defining Node Groups</title>
+        <para>
+            Once the organization of your SymmetricDS nodes has been chosen, you will need to
+            <emphasis>group</emphasis>
+            your nodes based on which nodes share common functionality. This is accomplished in SymmetricDS through the
+            concept of a
+            <emphasis>Node Group</emphasis>
+            . Frequently, an individual tier in your network will represent one Node Group. Much of SymmetricDS'
+            functionality is specified by Node Group and not an individual node. For example, when it comes time to decide
+            where to route data captured by SymmetricDS, the routing is configured by
+            <emphasis>Node Group</emphasis>
+            .
+        </para>
+        <para>
+            For the examples above, we might define Node Groups of:
             <itemizedlist>
-                <listitem>the target table on the destination node to route the data</listitem>
-                <listitem>the source node group and target node group for the nodes to route the data to</listitem>
-                <listitem>a router <emphasis>type</emphasis> and router <emphasis>expression</emphasis></listitem>
-                <listitem>whether to route updates, inserts, and/or deletes</listitem>
-             </itemizedlist>
-             </para>
-             <para>
-             For now, do not worry about the specific routing types.  They will be covered later.  For your design simply make notes of the information needed
-             and decisions to determine the list of nodes to route to.  You will find later that there is incredible flexibility and functionality available in routers.
-             For example, you will find you can:
-             
-              <itemizedlist>
-                <listitem>send the changes to all nodes that belong to the target node group defined in the router.</listitem>
-                    <listitem>compare old or new column values to a constant value or the value of a node's identity.</listitem>
-                    <listitem>execute a SQL expression against the database to select nodes to
-                        route to. This SQL expression can be passed values of old and new column values.</listitem>
-                    <listitem>execute a Bean Shell expression in order to select nodes to route to.
-                        The Bean Shell expression can use the the old and new column values.</listitem>
-                    <listitem>publish data changes directly to a messaging solution instead
-                        of transmitting changes to registered nodes.  (This router must be configured manually in XML as an extension point.)</listitem>
-               </itemizedlist>
-             
+                <listitem>"workstation", to represent each point-of-sale workstation</listitem>
+                <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
+                <listitem>"store" to represent the store server that interacts with store workstations and sends and receives
+                    data from a central office server.
+                </listitem>
+                <listitem>"region" to represent the a regional server that interacts with store workstations and sends and
+                    receives data from a central office server.
+                </listitem>
+            </itemizedlist>
+            Considerable thought should be given to how you define the Node Groups. Groups should be created for each set of
+            nodes that synchronize common tables in a similar manner. Also, give your Node Groups meaningful names, as they
+            will appear in many, many places in your implementation of SymmetricDS.
+        </para>
+        <para>Note that there are other mechanisms in SymmetricDS to route to individual nodes or smaller subsets of nodes
+            within a Node Group, so do not choose Node Groups based on needing only subsets of data at specific nodes. For
+            example, although you could, you would not want to create a Node Group for each store even though different tax
+            rates need to be routed to each store. Each store needs to synchronize the same tables to the same groups, so
+            'store' would be a good choice for a Node Group.
+        </para>
+    </section>
+    <section id="linking-nodes">
+        <title>Linking Nodes</title>
+        <para>
+            Now that Node Groups have been chosen, the next step in planning is to document the individual links between Node
+            Groups. These
+            <emphasis>Node Group Links</emphasis>
+            establish a source Node Group, a target Node Group, and a
+            <emphasis>data event action</emphasis>
+            , namely whether the data changes are
+            <emphasis>pushed</emphasis>
+            or
+            <emphasis>pulled</emphasis>
+            . The push method causes the source Node Group to connect to the target, while a pull method causes it to wait
+            for the target to connect to it.
+        </para>
+        <para>For our retail store example, there are two Node Group Links defined. For the first link, the "store" Node
+            Group pushes data to the "corp" central office Node Group. The second defines a "corp" to "store" link as a pull.
+            Thus, the store nodes will periodically pull data from the central office, but when it comes time to send data to
+            the central office a store node will do a push.
+        </para>
+    </section>
+    <section id="choosing-channels">
+        <title>Choosing Data Channels</title>
+        <para>When SymmetricDS captures data changes in the database, the changes are captured in the order in which they
+            occur. In addition, that order is preserved when synchronizing the data to other nodes. Frequently, however, you
+            will have cases where you have different "types" of data with differing priorities. Some data might, for example,
+            need priority for synchronization despite the normal order of events. For example, in a retail environment, users
+            may be waiting for inventory documents to update while a promotional sale event updates a large number of items.
         </para>
         <para>
-        For each of your Triggers, decide which Router matches the behavior needed for that Trigger.  These Trigger Router combinations will be used to
-        define a mapping between your Triggers and Routers when you implement your design.
+            SymmetricDS supports this by allowing tables being synchronized to be grouped together into
+            <emphasis>Channels</emphasis>
+            of data. A number of controls to the synchronization behavior of SymmetricDS are controlled at the Channel level.
+            For example, Channels provide a processing order when synchronizing, a limit on the amount of data that will be
+            batched together, and isolation from errors in other channels. By categorizing data into channels and assigning
+            them to
+            <xref linkend="table_trigger" xrefstyle="table" />
+            s, the user gains more control and visibility into the flow of data. In addition, SymmetricDS allows for
+            synchronization to be enabled, suspended, or scheduled by Channels as well. The frequency of synchronization can
+            also be controlled at the channel level.
         </para>
-        </section>  
-             
-       
+        <!-- MDH "Batching" should probably be discussed here, as there's a decision to be made for each channel -->
+        <para> Choosing Channels is fairly straightforward and can be changed over time, if needed. Think about the differing
+            "types" of data present in your application, the volume of data in the various types, etc. What data is
+            considered must-have and can't be delayed due to a high volume load of another type of data? For example, you
+            might place employee-related data, such as clocking in or out, on one channel, but sales transactions on another.
+            We will define which tables belong to which channels in the next sections.
+        </para>
+        <important>
+            <para> Be sure that, when defining Channels, all tables related by foreign keys are included in the same channel.
+            </para>
+        </important>
+        <important>
+            <para> Avoid deadlocks!  If client database transactions include tables that update common rows along with different rows, then
+            concurrent synchronization can cause database deadlocks.  You can avoid this by using channels to segregate those tables
+            that cause the deadlocks.
+            </para>
+        </important>
+    </section>
+    <section id="defining-data-changes">
+        <title>Defining Data Changes to be Captured and Routed</title>
+        <para>
+            At this point, you have designed the node-related aspects of your implementation, namely choosing nodes, grouping
+            the nodes based on functionality, defining which node groups send and receive data to which others (and by what
+            method). You have defined data Channels based on the types and priority of data being synchronized. The largest
+            remaining task prior to starting your implementation is to define and document what data changes are to be
+            captured (by defining SymmetricDS
+            <emphasis>Triggers</emphasis>
+            ), and to decide to which node(s) the data changes are to be
+            <emphasis>routed</emphasis>
+            to and under what conditions. We will also, in this section, discuss the concept of an
+            <emphasis>initial load</emphasis>
+            of data into a SymmetricDS node.
+        </para>
+        <section id="defining-data-changes-triggers">
+            <title>Defining Triggers</title>
+            <para>
+                SymmetricDS uses
+                <emphasis>database triggers</emphasis>
+                to capture and record changes to be synchronized to other nodes. Based on the configuration you provide,
+                SymmetricDS creates the needed database triggers automatically for you. There is a great deal of flexibility
+                in terms of defining the exact conditions under which a data change is captured. SymmetricDS triggers are
+                defined in a table named
+                <xref linkend="table_trigger" xrefstyle="table" />
+                . Each trigger you define is for a particular table associated. Each trigger can also specify:
+                <itemizedlist>
+                    <listitem>whether to install a trigger for updates, inserts, and/or deletes</listitem>
+                    <listitem>conditions on which an insert, update, and/or delete fires</listitem>
+                    <listitem>a list of columns that should not be synchronized from this table</listitem>
+                    <listitem>a SQL select statement that can be used to hold data needed for routing (known as External
+                        Data)</listitem>
+                </itemizedlist>
+            </para>
+            <para> As you define your triggers, consider which data changes are relevant to your application and which ones
+                ar not. Consider under what special conditions you might want to route data, as well. For our retail example,
+                we likely want to have triggers defined for updating, inserting, and deleting pricing information in the
+                central office so that the data can be routed down to the stores. Similarly, we need triggers on sales
+                transaction tables such that sales information can be sent back to the central office.
+            </para>
+        </section>
+        <section id="defining-data-changes-routers">
+            <title>Defining Routers</title>
+            <para>
+                The triggers that have been defined in the previous section only define
+                <emphasis>when</emphasis>
+                data changes are to be captured for synchronization. They do not define
+                <emphasis>where</emphasis>
+                the data changes are to be sent to. Routers, plus a mapping between Triggers and Routers (
+                <xref linkend="table_trigger_router" xrefstyle="table" />
+                ), define the process for determining which nodes receive the data changes.
+            </para>
+            <para>
+                Before we discuss Routers and Trigger Routers, we should probably take a break and discuss the process
+                SymmetricDS uses to keep track of the changes and routing. As we stated, SymmetricDS relies on auto-created
+                database triggers to capture and record relevant data changes into a table, the
+                <xref linkend="table_data" xrefstyle="table" />
+                table. After the data is captured, a background process chooses the nodes that the data will be synchronized
+                to. This is called
+                <emphasis>routing</emphasis>
+                and it is performed by the Routing Job. Note that the Routing Job does not actually send any data. It just
+                organizes and records the decisions on where to send data in a "staging" table called
+                <xref linkend="table_data_event" xrefstyle="table" />
+                and
+                <xref linkend="table_outgoing_batch" xrefstyle="table" />
+                .
+            </para>
+            <para>
+                Now we are ready to discuss Routers. The router itself is what defines the configuration of where to send a
+                data change. Each Router you define can be associated with or assigned to any number of Triggers through a
+                join table that defines the relationship. Routers are defined the SymmetricDS table named
+                <xref linkend="table_router" xrefstyle="table" />
+                . For each router you define, you will need to specify:
+                <itemizedlist>
+                    <listitem>the target table on the destination node to route the data</listitem>
+                    <listitem>the source node group and target node group for the nodes to route the data to</listitem>
+                    <listitem>
+                        a router
+                        <emphasis>type</emphasis>
+                        and router
+                        <emphasis>expression</emphasis>
+                    </listitem>
+                    <listitem>whether to route updates, inserts, and/or deletes</listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                For now, do not worry about the specific routing types. They will be covered later. For your design simply
+                make notes of the information needed and decisions to determine the list of nodes to route to. You will find
+                later that there is incredible flexibility and functionality available in routers. For example, you will find
+                you can:
+                <itemizedlist>
+                    <listitem>send the changes to all nodes that belong to the target node group defined in the router.
+                    </listitem>
+                    <listitem>compare old or new column values to a constant value or the value of a node's identity.
+                    </listitem>
+                    <listitem>execute a SQL expression against the database to select nodes to route to. This SQL expression
+                        can be passed values of old and new column values.
+                    </listitem>
+                    <listitem>execute a Bean Shell expression in order to select nodes to route to. The Bean Shell expression
+                        can use the the old and new column values.
+                    </listitem>
+                    <listitem>publish data changes directly to a messaging solution instead of transmitting changes to
+                        registered nodes. (This router must be configured manually in XML as an extension point.)
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para> For each of your Triggers, decide which Router matches the behavior needed for that Trigger. These Trigger
+                Router combinations will be used to define a mapping between your Triggers and Routers when you implement
+                your design.
+            </para>
+        </section>
         <section id="defining-data-changes-trigger-routers">
-          <title>Mapping Triggers to Routers</title>
-          
-          <para>The mapping between Triggers and Routers, found in the table  <xref linkend="table_trigger_router" xrefstyle="table"/>, 
-          defines configuration specific to a particular Trigger and Router combination.</para>
-
+            <title>Mapping Triggers to Routers</title>
+            <para>
+                The mapping between Triggers and Routers, found in the table
+                <xref linkend="table_trigger_router" xrefstyle="table" />
+                , defines configuration specific to a particular Trigger and Router combination.
+            </para>
             <section id="defining-data-changes-trigger-routers-initial-load">
-              <title>Planning Initial Loads</title>             
-                  <para>SymmetricDS provides the ability to "load" or "seed" a node's database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
-                  data and is used to start off most synchronization scenarios.  The Trigger Router mapping defines how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
-                  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
-                  a store database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
-                  A part of your planning, be sure to consider which tables, if any, will need to be loaded initially. SymmetricDS can also perform
-                  an initial load on a table with just a subset of data.  Initial Loads are further discussed in <xref linkend="configuration-initial-load"/>.</para>
-           </section>    
-              
-           <section id="defining-data-changes-trigger-routers-ping-back">
-              <title>Circular References and "Ping Back"</title>             
-                  <para>
-                  When routing data, SymmetricDS by default checks each data change and will not route a data change back to a node if it originated the change to begin with.  This prevents the possibility
-                  of data changes resulting in an infinite loop of changes under certain circumstances.  You may find that, for some reason,
-                  you need SymmetricDS to go ahead and send the data back to the originating node - a "ping back".  As part of the planning process, consider whether you have a special case for needing ping back.  
-                  Ping Back control is further discussed in <xref linkend="configuration-trigger-router-ping-back"/>.
-                  </para>     
-          </section>               
-      </section>
-      <section id="planning-registration">
-          <title>Planning for Registering Nodes</title>
-          <para>
-          Our final step in planning an implementation of SymmetricDS involves deciding how a new node is connected to, or <emphasis>registered</emphasis> with a parent node for the first time.
-          </para>
-          <para>
-          The following are some options on ways you might register nodes:
-              <itemizedlist>
-                <listitem>The tutorial uses the command line utility to register each individual node.</listitem>
-                <listitem>A JMX interface provides the same interface that the command line utility does.  JMX can be invoked programatically or via a web console.</listitem>
-                <listitem>Both the utility and the JMX method register a node by inserting into two tables.  A script can be written to directly register nodes by directly inserting into the database.</listitem>
-                <listitem>SymmetricDS can be configured to auto register nodes.  This means that any node that asks for a registration will be given one.</listitem>                
-               </itemizedlist>
-          </para>
+                <title>Planning Initial Loads</title>
+                <para>
+                    SymmetricDS provides the ability to "load" or "seed" a node's database with specific sets of data from
+                    its parent node. This concept is known as an
+                    <emphasis>Initial Load</emphasis>
+                    of data and is used to start off most synchronization scenarios. The Trigger Router mapping defines how
+                    initial loads can occur, so now is a good time to plan how your
+                    <emphasis>Initial Loads</emphasis>
+                    will work. Using our retail example, consider a new store being opened. Initially, you would like to
+                    pre-populate a store database with all the item, pricing, and tax data for that specific store. This is
+                    achieved through an initial load. A part of your planning, be sure to consider which tables, if any, will
+                    need to be loaded initially. SymmetricDS can also perform an initial load on a table with just a subset
+                    of data. Initial Loads are further discussed in
+                    <xref linkend="configuration-initial-load" />
+                    .
+                </para>
+            </section>
+            <section id="defining-data-changes-trigger-routers-ping-back">
+                <title>Circular References and "Ping Back"</title>
+                <para>
+                    When routing data, SymmetricDS by default checks each data change and will not route a data change back
+                    to a node if it originated the change to begin with. This prevents the possibility of data changes
+                    resulting in an infinite loop of changes under certain circumstances. You may find that, for some reason,
+                    you need SymmetricDS to go ahead and send the data back to the originating node - a "ping back". As part
+                    of the planning process, consider whether you have a special case for needing ping back. Ping Back
+                    control is further discussed in
+                    <xref linkend="configuration-trigger-router-ping-back" />
+                    .
+                </para>
+            </section>
+        </section>
+        <section id="planning-registration">
+            <title>Planning for Registering Nodes</title>
+            <para>
+                Our final step in planning an implementation of SymmetricDS involves deciding how a new node is connected to,
+                or
+                <emphasis>registered</emphasis>
+                with a parent node for the first time.
+            </para>
+            <para>
+                The following are some options on ways you might register nodes:
+                <itemizedlist>
+                    <listitem>The tutorial uses the command line utility to register each individual node.</listitem>
+                    <listitem>A JMX interface provides the same interface that the command line utility does. JMX can be
+                        invoked programatically or via a web console.</listitem>
+                    <listitem>Both the utility and the JMX method register a node by inserting into two tables. A script can
+                        be written to directly register nodes by directly inserting into the database.</listitem>
+                    <listitem>SymmetricDS can be configured to auto register nodes. This means that any node that asks for a
+                        registration will be given one.</listitem>
+                </itemizedlist>
+            </para>
+        </section>
     </section>
-    </section>
-    
     <section id="defining-transformation">
-      <title>Planning Data Transformations</title>
-      <para>
-      SymmetricDS also provides the abilty to <emphasis>transform</emphasis> synchronized data instead of simply synchronizing it.  
-      Your application might, for example require
-      a particular column in your source data to be mapped to two different target tables with possibly different column names.  Or, you might
-      need to "merge" one or more columns of data from two indepdentent tables into one table on the target. Or, you may want to
-      set default column values on a target table based on a particular event on the source database. All of these operations, and many more,
-      can be accomplished using SymmetricDS' transformation capabilities.   
-      </para>
-      <para>
-      As you plan your SymmetricDS implementation, make notes of cases where a data transformation is needed.
-      Include details such as when the transformation might occur (is it only on an insert, or a delete?), which tables or columns play a part, etc.  
-      Complete details of all the transformation features, including how to configure a transformation, are discussed in <xref linkend="transform-data"/>.
-      </para>
-      </section>
-
+        <title>Planning Data Transformations</title>
+        <para>
+            SymmetricDS also provides the abilty to
+            <emphasis>transform</emphasis>
+            synchronized data instead of simply synchronizing it. Your application might, for example require a particular
+            column in your source data to be mapped to two different target tables with possibly different column names. Or,
+            you might need to "merge" one or more columns of data from two indepdentent tables into one table on the target.
+            Or, you may want to set default column values on a target table based on a particular event on the source
+            database. All of these operations, and many more, can be accomplished using SymmetricDS' transformation
+            capabilities.
+        </para>
+        <para>
+            As you plan your SymmetricDS implementation, make notes of cases where a data transformation is needed. Include
+            details such as when the transformation might occur (is it only on an insert, or a delete?), which tables or
+            columns play a part, etc. Complete details of all the transformation features, including how to configure a
+            transformation, are discussed in
+            <xref linkend="transform-data" />
+            .
+        </para>
+    </section>
     <section id="defining-conflicts">
-      <title>Planning Conflict Detection and Resolution</title>
-      <para>
-       As a final step to planning an implementation, consider for a moment cases in which the same data may be modified at nearly the same time at more than one node.  
-       For example, can data representing a customer be modified at both a central office and a store location?  
-       Conflict detection is the act of determining if an
-        insert, update or delete is in "conflict" due to the target data row not being consistent with the data at the source prior to the insert/update/delete.
-        Conflict resolution is the act of figuring out what to do when a
-        conflict is detected.  Both detection and resolution behaviour can be configured and customized in a number of ways. For example, a conflict can be "detected"
-       based solely on a single column which has been modified to a different value, or a row can be considered in conflict if any data in the row has been changed from what 
-       was expected, even if the column that has been changed was still expected.  There are also numerous ways to resolve the conflict, such as referencing a timestamp column and
-       choosing whichever edit was "most recent" or perhaps causing the conflict to cause the channel to go into error until a manual resolution takes place.  A set of
-       conflict detection / resolution rules is configured for a given node group link, but you can set the rules to be for a given channel or for a given table in a channel. 
-         </para>
-         <para>
-         For the purpose of planning your implementation, make a list of all tables that could have data being modified at more than one node at the same time.  For each table,
-         think through what should happen in each case if such an event occurs.  If the tables on a given channel all have the same set of conflict resolution and detection rules, then you might
-         be able to configure the rules for the channel instead of a series of table-level detections and resolutions.  Complete details on how to configure conflict resolution and detection,
-         along with all available options, are discussed further in <xref linkend="conflicts"/>.
-         </para>
-       </section>
- 
+        <title>Planning Conflict Detection and Resolution</title>
+        <para> As a final step to planning an implementation, consider for a moment cases in which the same data may be
+            modified at nearly the same time at more than one node. For example, can data representing a customer be modified
+            at both a central office and a store location? Conflict detection is the act of determining if an insert, update
+            or delete is in "conflict" due to the target data row not being consistent with the data at the source prior to
+            the insert/update/delete. Conflict resolution is the act of figuring out what to do when a conflict is detected.
+            Both detection and resolution behaviour can be configured and customized in a number of ways. For example, a
+            conflict can be "detected" based solely on a single column which has been modified to a different value, or a row
+            can be considered in conflict if any data in the row has been changed from what was expected, even if the column
+            that has been changed was still expected. There are also numerous ways to resolve the conflict, such as
+            referencing a timestamp column and choosing whichever edit was "most recent" or perhaps causing the conflict to
+            cause the channel to go into error until a manual resolution takes place. A set of conflict detection /
+            resolution rules is configured for a given node group link, but you can set the rules to be for a given channel
+            or for a given table in a channel.
+        </para>
+        <para>
+            For the purpose of planning your implementation, make a list of all tables that could have data being modified at
+            more than one node at the same time. For each table, think through what should happen in each case if such an
+            event occurs. If the tables on a given channel all have the same set of conflict resolution and detection rules,
+            then you might be able to configure the rules for the channel instead of a series of table-level detections and
+            resolutions. Complete details on how to configure conflict resolution and detection, along with all available
+            options, are discussed further in
+            <xref linkend="conflicts" />
+            .
+        </para>
+    </section>
 </chapter>
