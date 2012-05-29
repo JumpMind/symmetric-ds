@@ -136,6 +136,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     private boolean isJobManagerRestartNeeded(Table table, CsvData data) {
         return matchesTable(table, TableConstants.SYM_PARAMETER)
+                && data.getCsvData(CsvData.ROW_DATA) != null
                 && data.getCsvData(CsvData.ROW_DATA).contains("job.");
     }
 

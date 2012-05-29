@@ -151,15 +151,17 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
 
-                if (dataMetaData.getData().getRowData().contains("job.")) {
+                if (dataMetaData.getData().getRowData() != null
+                        && dataMetaData.getData().getRowData().contains("job.")) {
                     routingContext.getContextCache().put(CTX_KEY_RESTART_JOBMANAGER_NEEDED,
                             Boolean.TRUE);
                 }
 
-                if (dataMetaData.getData().getRowData()
-                        .contains(ParameterConstants.PULL_THREAD_COUNT_PER_SERVER)
+                if (dataMetaData.getData().getRowData() != null
+                        && (dataMetaData.getData().getRowData()
+                                .contains(ParameterConstants.PULL_THREAD_COUNT_PER_SERVER)
                         || dataMetaData.getData().getRowData()
-                                .contains(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER)) {
+                                .contains(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER))) {
                     routingContext.getContextCache().put(CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED,
                             Boolean.TRUE);
                 }
