@@ -68,6 +68,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeSecuritySql", "delete from $(node_security) where node_id = ?");
 
         putSql("deleteNodeSql", "delete from $(node) where node_id = ?");
+        
+        putSql("deleteNodeHostSql", "delete from $(node_host) where node_id = ?");
 
         putSql("findNodeIdentitySql", "inner join $(node_identity) i on c.node_id =   "
                 + "  i.node_id                                          ");

@@ -189,10 +189,7 @@
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The name of the channel_id that is being controlled." />
         <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is suspended, which prevents its Data Events from being batched." />
         <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is ignored, which marks its Data Events as if they were actually processed." />
-        <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
-        <foreign-key foreignTable="channel" name="fk_ctl_2_chnl">
-            <reference local="channel_id" foreign="channel_id" />
-        </foreign-key>            
+        <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />          
     </table>
     
     <table name="node_group_channel_window" description="An optional window of time for which a node group and channel will extract and send data.">

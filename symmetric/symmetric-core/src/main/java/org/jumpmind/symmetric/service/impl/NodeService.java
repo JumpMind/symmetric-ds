@@ -219,6 +219,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void deleteNode(String nodeId) {
+        sqlTemplate.update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
         sqlTemplate.update(getSql("deleteNodeSql"), new Object[] { nodeId });
     }
 
