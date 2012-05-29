@@ -57,8 +57,8 @@ public class XmlPublisherFilterTest {
 
     @Test
     public void testSimpleTransform() {
-        XmlPublisherDataLoaderFilter filter = new XmlPublisherDataLoaderFilter();
-        filter.setTimeStringGenerator(new XmlPublisherDataLoaderFilter.ITimeGenerator() {
+        XmlPublisherDatabaseWriterFilter filter = new XmlPublisherDatabaseWriterFilter();
+        filter.setTimeStringGenerator(new XmlPublisherDatabaseWriterFilter.ITimeGenerator() {
             public String getTime() {
                 return "test";
             }

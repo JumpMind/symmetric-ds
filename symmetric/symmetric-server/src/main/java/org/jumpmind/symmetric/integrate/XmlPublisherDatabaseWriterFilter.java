@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
- * This is an optional {@link IDatabaseWriterFilter} and {@link IBatchListener} that
+ * This is an optional {@link IDatabaseWriterFilter} that
  * is capable of translating table data to XML and publishing it for consumption
  * by the enterprise. It uses JDOM internally to create an XML representation of
  * SymmetricDS data.
@@ -61,7 +61,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  * &lt;/batch&gt;
  * </pre>
  */
-public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionPoint implements
+public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtensionPoint implements
         IPublisherFilter, INodeGroupExtensionPoint {
 
     protected boolean loadDataInTargetDatabase = true;

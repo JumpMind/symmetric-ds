@@ -391,7 +391,7 @@
             The following explains how to publish to JMS during synchronization to the target database. 
        </para>
        <para>     
-            The XmlPublisherDataLoaderFilter is a
+            The XmlPublisherDatabaseWriterFilter is a
             <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
             See <xref linkend="extensions"/> for information on how 
@@ -413,7 +413,7 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
  
     <bean id="configuration-publishingFilter" 
-      class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
         <property name="xmlTagNameToUseForGroup" value="sale"/>
         <property name="tableNamesToPublishAsGroup">
             <list>
@@ -440,7 +440,7 @@
 </beans>]]></programlisting>        
         </para>
         <para>
-          The publisher property on the XmlPublisherDataLoaderFilter takes an interface of type IPublisher.  The implementation
+          The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
           demonstrated here is an implementation that publishes to JMS using Spring's 
           <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
           Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
