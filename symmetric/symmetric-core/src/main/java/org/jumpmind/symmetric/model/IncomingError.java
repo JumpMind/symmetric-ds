@@ -44,8 +44,8 @@ public class IncomingError implements Serializable {
     private String targetSchemaName;
 
     private String targetTableName;
-    
-    private BinaryEncoding binaryEncoding;
+
+    private BinaryEncoding binaryEncoding = BinaryEncoding.HEX;
 
     private DataEventType eventType;
 
@@ -240,11 +240,13 @@ public class IncomingError implements Serializable {
             return null;
         }
     }
-    
+
     public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
-        this.binaryEncoding = binaryEncoding;
+        if (binaryEncoding != null) {
+            this.binaryEncoding = binaryEncoding;
+        }
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
