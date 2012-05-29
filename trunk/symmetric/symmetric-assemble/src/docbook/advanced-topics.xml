@@ -267,20 +267,18 @@
      </section>
      </section>
      <section id='controlling-synchronization'>
-        <title>Controlling Synchronization Frequency</title>
+        <title>Synchronization Frequency</title>
         <para>
         The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.   
         </para>    
         <para>
-        The Route Job determines which nodes
-        data will be sent to, as well as how much data will be batched together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
-        <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  Each time data is routed, the 
-        <xref linkend="table_data_ref" xrefstyle="table"/> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
-        unrouted data is optimal. 
+        The route job determines which nodes
+        data will be sent to, and batches it together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
+        <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  
         </para>
         <para>
         After data is routed, it awaits transport to the target nodes.  Transport can occur when a client node is configured to pull data or when the host node is configured to push data.  These
-        events are controlled by the <emphasis>Push</emphasis> and the <emphasis>Pull Jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to 
+        events are controlled by the <emphasis>push</emphasis> and the <emphasis>pull jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that data is pulled is controlled by the <literal>job.pull.period.time.ms</literal>.  When the <literal>start.push.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's 
         <xref linkend="table_data" xrefstyle="table"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
@@ -288,6 +286,13 @@
         always recorded, by channel, on the <xref linkend="table_node_channel_ctl" xrefstyle="table"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
         has not passed according to the last extract time, then the channel will be skipped for this run.  If the <literal>extract_period_millis</literal> is set to zero, data extraction will happen every time the jobs run.
         </para>
+        <para>
+        Both the push and pull jobs can be configured to push and pull from multiple nodes in parallel.  In order to take advantage of this the
+        <literal>pull.thread.per.server.count</literal> or <literal>push.thread.per.server.count</literal> should be adjusted (from their default value of 1) to the number
+        to the number of concurrent push/pulls you want to occur per period on each SymmetricDS instance.  Push and pull activity is recorded in the
+        <xref linkend="table_node_communication" xrefstyle="table"/> table.  This table is also used to lock push and pull activity across
+        multiple servers in a cluster.  
+        </para>        
         <para>
         SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the
         <xref linkend="table_node_group_channel_window" xrefstyle="table"/> 
