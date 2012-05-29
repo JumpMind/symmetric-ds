@@ -515,6 +515,7 @@
         <column name="target_schema_name" type="VARCHAR" size="50" description="The schema name for the table being loaded." />
         <column name="target_table_name" type="VARCHAR" size="50" required="true" description="The table name for the table being loaded." />
         <column name="event_type" type="CHAR" size="1" required="true" description="The type of event captured by this entry. For triggers, this is the change that occurred, which is 'I' for insert, 'U' for update, or 'D' for delete. Other events include: 'R' for reloading the entire table (or subset of the table) to the node; 'S' for running dynamic SQL at the node, which is used for adhoc administration." />
+        <column name="binary_encoding" type="VARCHAR" size="10" required="true" default="HEX" description="The type of encoding the source system used for encoding binary data." />
         <column name="column_names" type="LONGVARCHAR" required="true"  description="The column names defined on the table. The column names are stored in comma-separated values (CSV) format." />
         <column name="pk_column_names" type="LONGVARCHAR" required="true"  description="The primary key column names defined on the table. The column names are stored in comma-separated values (CSV) format." />
         <column name="row_data" type="LONGVARCHAR" description="The row data from the batch as captured from the source. The column values are stored in comma-separated values (CSV) format." />
