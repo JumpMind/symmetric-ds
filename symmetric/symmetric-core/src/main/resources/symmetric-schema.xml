@@ -47,13 +47,13 @@
         <column name="lock_time" type="TIMESTAMP" description="The timestamp when this node was locked" />
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a pull lock for the node.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="last_lock_time" type="TIMESTAMP" description="The timestamp when this node was last locked" />
-        <column name="last_lock_millis" type="BIGINT"  default="0" description="" />
-        <column name="success_count" type="BIGINT" default="0" description="" />
-        <column name="fail_count" type="BIGINT"  default="0" description="" />
-        <column name="total_success_count" type="BIGINT"  default="0" description="" />        
-        <column name="total_fail_count" type="BIGINT"  default="0" description="" />
-        <column name="total_success_millis" type="BIGINT"  default="0" description="" />
-        <column name="total_fail_millis" type="BIGINT"  default="0" description="" />        
+        <column name="last_lock_millis" type="BIGINT"  default="0" description="The amount of time the last communication took." />
+        <column name="success_count" type="BIGINT" default="0" description="The number of successive successful communication attempts." />
+        <column name="fail_count" type="BIGINT"  default="0" description="The number of successive failed communication attempts." />
+        <column name="total_success_count" type="BIGINT"  default="0" description="The total number of successful communication attempts with the node." />        
+        <column name="total_fail_count" type="BIGINT"  default="0" description="The total number of failed communication attempts with the node." />
+        <column name="total_success_millis" type="BIGINT"  default="0" description="The total amount of time spent during successful communication attempts with the node." />
+        <column name="total_fail_millis" type="BIGINT"  default="0" description="The total amount of time spent during failed communication attempts with the node." />        
     </table>    
     
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
@@ -101,20 +101,20 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The channel_id of the channel that data changes will flow through." />
-        <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />
-        <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />        
+        <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="The start time for the period which this row represents." />
+        <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the period which this row represents." />        
         <column name="data_routed" type="BIGINT" default="0" description="Indicate the number of data rows that have been routed during this period." />
-        <column name="data_unrouted" type="BIGINT" default="0" description="" />
+        <column name="data_unrouted" type="BIGINT" default="0" description="The amount of data that has not yet been routed at the time this stats row was recorded." />
         <column name="data_event_inserted" type="BIGINT" default="0" description="Indicate the number of data rows that have been routed during this period." />
-        <column name="data_extracted" type="BIGINT" default="0" description="" />
-        <column name="data_bytes_extracted" type="BIGINT" default="0" description="" />
-        <column name="data_extracted_errors" type="BIGINT" default="0" description="" />
-        <column name="data_bytes_sent" type="BIGINT" default="0" description="" />
-        <column name="data_sent" type="BIGINT" default="0" description="" />
-        <column name="data_sent_errors" type="BIGINT" default="0" description="" />
-        <column name="data_loaded" type="BIGINT" default="0" description="" />
-        <column name="data_bytes_loaded" type="BIGINT" default="0" description="" />
-        <column name="data_loaded_errors" type="BIGINT" default="0" description="" />
+        <column name="data_extracted" type="BIGINT" default="0" description="The number of data rows that were extracted during this time period." />
+        <column name="data_bytes_extracted" type="BIGINT" default="0" description="The number of bytes that were extracted during this time period." />
+        <column name="data_extracted_errors" type="BIGINT" default="0" description="The number of errors that occured during extraction during this time period." />
+        <column name="data_bytes_sent" type="BIGINT" default="0" description="The number of bytes that were sent during this time period." />
+        <column name="data_sent" type="BIGINT" default="0" description="The number of rows that were sent during this time period." />
+        <column name="data_sent_errors" type="BIGINT" default="0" description="The number of errors that occurred while sending during this time period." />
+        <column name="data_loaded" type="BIGINT" default="0" description="The number of rows that were loaded during this time period." />
+        <column name="data_bytes_loaded" type="BIGINT" default="0" description="The number of bytes that were loaded during this time period." />
+        <column name="data_loaded_errors" type="BIGINT" default="0" description="The number of errors that occurred while loading during this time period." />
         <index name="idx_nd_hst_chnl_sts">
             <index-column name="node_id"/>        
             <index-column name="start_time"/>
@@ -128,7 +128,7 @@
         <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true"
             description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
         <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true"
-            description="" />
+            description="The end time for the period which this row represents." />
         <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true"
             description="" />
         <column name="restarted" type="BIGINT" default="0" required="true"
@@ -158,10 +158,10 @@
      <table name="node_host_job_stats" description="">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
-        <column name="job_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="" />
-        <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />
-        <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />        
-        <column name="processed_count" type="BIGINT" default="0" description="" />
+        <column name="job_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="The name of the job." />
+        <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="The start time for the period which this row represents." />
+        <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the period which this row represents." />        
+        <column name="processed_count" type="BIGINT" default="0" description="The number of items that were processed during the job run." />
         <index name="idx_nd_hst_job">
             <index-column name="job_name"/>        
         </index>        
