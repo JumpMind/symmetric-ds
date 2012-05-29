@@ -939,7 +939,8 @@ abstract public class AbstractTriggerTemplate {
         if (functionInstalledSql != null) {
             String ddl = FormatUtils.replace("functionName", functionName, functionInstalledSql);
             ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = replaceDefaultSchema(ddl, defaultSchema);
+            // don't need quotes around this schema
+            ddl = FormatUtils.replace("defaultSchema", defaultSchema, ddl);
             return ddl;
         } else {
             return null;
