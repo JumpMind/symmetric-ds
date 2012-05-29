@@ -86,11 +86,27 @@ public class CsvUtils {
             try {
                 writer.write(s);
             } catch (IOException e) {
+                throw new IoException();
             }
         }
         writer.close();
         return out.toString();
     }
+    
+    public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        writer.setRecordDelimiter(recordDelimiter);
+        writer.setTextQualifier(textQualifier);
+        try {
+            writer.writeRecord(data);
+        } catch (IOException e) {
+            throw new IoException();
+        }
+        writer.close();
+        return out.toString();
+    }    
 
     public static int write(Writer writer, String... data) {
         try {
