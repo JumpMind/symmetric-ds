@@ -42,6 +42,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -521,8 +522,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber(),
                 incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
-                incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
-                incomingError.getEventType().getCode(), incomingError.getColumnNames(),
+                incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),                
+                incomingError.getEventType().getCode(), 
+                incomingError.getBinaryEncoding().name(),
+                incomingError.getColumnNames(),
                 incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
                 incomingError.getOldData(), incomingError.getResolveData(),
                 incomingError.getResolveData(), incomingError.getCreateTime(),
@@ -577,6 +580,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             incomingError.setTargetSchemaName(rs.getString("target_schema_name"));
             incomingError.setTargetTableName(rs.getString("target_table_name"));
             incomingError.setEventType(DataEventType.getEventType(rs.getString("event_type")));
+            incomingError.setBinaryEncoding(BinaryEncoding.valueOf(rs.getString("binary_encoding")));
             incomingError.setColumnNames(rs.getString("column_names"));
             incomingError.setPrimaryKeyColumnNames(rs.getString("pk_column_names"));
             incomingError.setRowData(rs.getString("row_data"));
@@ -753,6 +757,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getPrimaryKeyColumns()));
                             error.setCsvData(context.getData());
+                            error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
                             error.setFailedRowNumber(this.currentBatch.getFailedRowNumber());
@@ -767,9 +772,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 incomingBatchService.updateIncomingBatch(this.currentBatch);
             } catch (Exception e) {
-                log.error("Failed to record status of batch {} because {}",
+                log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
-                                .getBatch().getNodeBatchId(), e.getMessage());
+                                .getBatch().getNodeBatchId(), e);
             }
         }
 

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
@@ -43,6 +44,8 @@ public class IncomingError implements Serializable {
     private String targetSchemaName;
 
     private String targetTableName;
+    
+    private BinaryEncoding binaryEncoding;
 
     private DataEventType eventType;
 
@@ -51,9 +54,9 @@ public class IncomingError implements Serializable {
     private String primaryKeyColumnNames;
 
     private CsvData csvData = new CsvData();
-        
+
     private boolean resolveIgnore = false;
-    
+
     private Date createTime = new Date();
 
     private Date lastUpdateTime = new Date();
@@ -101,125 +104,149 @@ public class IncomingError implements Serializable {
     }
 
     /* getters and setters */
+
+    public long getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(long batchId) {
+        this.batchId = batchId;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public long getFailedRowNumber() {
+        return failedRowNumber;
+    }
+
+    public void setFailedRowNumber(long failedRowNumber) {
+        this.failedRowNumber = failedRowNumber;
+    }
+
+    public String getTargetCatalogName() {
+        return targetCatalogName;
+    }
+
+    public void setTargetCatalogName(String targetCatalogName) {
+        this.targetCatalogName = targetCatalogName;
+    }
+
+    public String getTargetSchemaName() {
+        return targetSchemaName;
+    }
+
+    public void setTargetSchemaName(String targetSchemaName) {
+        this.targetSchemaName = targetSchemaName;
+    }
+
+    public String getTargetTableName() {
+        return targetTableName;
+    }
+
+    public void setTargetTableName(String targetTableName) {
+        this.targetTableName = targetTableName;
+    }
+
+    public DataEventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(DataEventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public CsvData getCsvData() {
+        return csvData;
+    }
+
+    public void setCsvData(CsvData csvData) {
+        this.csvData = csvData;
+    }
+
+    public boolean isResolveIgnore() {
+        return resolveIgnore;
+    }
+
+    public void setResolveIgnore(boolean resolveIgnore) {
+        this.resolveIgnore = resolveIgnore;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
+    }
+
+    public void setLastUpdateBy(String lastUpdateBy) {
+        this.lastUpdateBy = lastUpdateBy;
+    }
+
+    public long getFailedLineNumber() {
+        return failedLineNumber;
+    }
+
+    public void setFailedLineNumber(long failedLineNumber) {
+        this.failedLineNumber = failedLineNumber;
+    }
+
+    public String getColumnNames() {
+        return columnNames;
+    }
+
+    public void setColumnNames(String columnNames) {
+        this.columnNames = columnNames;
+    }
+
+    public String getPrimaryKeyColumnNames() {
+        return primaryKeyColumnNames;
+    }
+
+    public void setPrimaryKeyColumnNames(String primaryKeyColumnNames) {
+        this.primaryKeyColumnNames = primaryKeyColumnNames;
+    }
+
+    public String[] getParsedColumnNames() {
+        if (columnNames != null) {
+            return columnNames.split(",");
+        } else {
+            return null;
+        }
+    }
+
+    public String[] getParsedPrimaryKeyColumnNames() {
+        if (primaryKeyColumnNames != null) {
+            return primaryKeyColumnNames.split(",");
+        } else {
+            return null;
+        }
+    }
     
-	public long getBatchId() {
-		return batchId;
-	}
-
-	public void setBatchId(long batchId) {
-		this.batchId = batchId;
-	}
-
-	public String getNodeId() {
-		return nodeId;
-	}
-
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public long getFailedRowNumber() {
-		return failedRowNumber;
-	}
-
-	public void setFailedRowNumber(long failedRowNumber) {
-		this.failedRowNumber = failedRowNumber;
-	}
-
-	public String getTargetCatalogName() {
-		return targetCatalogName;
-	}
-
-	public void setTargetCatalogName(String targetCatalogName) {
-		this.targetCatalogName = targetCatalogName;
-	}
-
-	public String getTargetSchemaName() {
-		return targetSchemaName;
-	}
-
-	public void setTargetSchemaName(String targetSchemaName) {
-		this.targetSchemaName = targetSchemaName;
-	}
-
-	public String getTargetTableName() {
-		return targetTableName;
-	}
-
-	public void setTargetTableName(String targetTableName) {
-		this.targetTableName = targetTableName;
-	}
-
-	public DataEventType getEventType() {
-		return eventType;
-	}
-
-	public void setEventType(DataEventType eventType) {
-		this.eventType = eventType;
-	}
-
-	public CsvData getCsvData() {
-		return csvData;
-	}
-
-	public void setCsvData(CsvData csvData) {
-		this.csvData = csvData;
-	}
-
-	public boolean isResolveIgnore() {
-		return resolveIgnore;
-	}
-
-	public void setResolveIgnore(boolean resolveIgnore) {
-		this.resolveIgnore = resolveIgnore;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public Date getLastUpdateTime() {
-		return lastUpdateTime;
-	}
-
-	public void setLastUpdateTime(Date lastUpdateTime) {
-		this.lastUpdateTime = lastUpdateTime;
-	}
-
-	public String getLastUpdateBy() {
-		return lastUpdateBy;
-	}
-
-	public void setLastUpdateBy(String lastUpdateBy) {
-		this.lastUpdateBy = lastUpdateBy;
-	}
-
-	public long getFailedLineNumber() {
-		return failedLineNumber;
-	}
-
-	public void setFailedLineNumber(long failedLineNumber) {
-		this.failedLineNumber = failedLineNumber;
-	}
-
-	public String getColumnNames() {
-		return columnNames;
-	}
-
-	public void setColumnNames(String columnNames) {
-		this.columnNames = columnNames;
-	}
-
-	public String getPrimaryKeyColumnNames() {
-		return primaryKeyColumnNames;
-	}
-
-	public void setPrimaryKeyColumnNames(String primaryKeyColumnNames) {
-		this.primaryKeyColumnNames = primaryKeyColumnNames;
-	}
+    public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
+        this.binaryEncoding = binaryEncoding;
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return binaryEncoding;
+    }
 
 }

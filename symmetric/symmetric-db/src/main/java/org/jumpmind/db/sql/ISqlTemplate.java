@@ -26,6 +26,8 @@ public interface ISqlTemplate {
     public String queryForString(String sql, Object... args);
 
     public long queryForLong(String sql, Object... args);
+    
+    public Row queryForRow(String sql, Object... args);
 
     public Map<String, Object> queryForMap(String sql, Object... params);
 

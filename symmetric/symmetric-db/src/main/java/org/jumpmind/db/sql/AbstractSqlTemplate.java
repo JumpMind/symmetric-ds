@@ -104,6 +104,14 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
         return query(sql, mapper, args, null);
     }
+    
+    public Row queryForRow(String sql, Object... args) {
+        return queryForObject(sql, new ISqlRowMapper<Row>() {
+            public Row mapRow(Row row) {
+                return row;
+            }
+        }, args);
+    }
 
     @SuppressWarnings("unchecked")
     public <T, W> Map<T, W> query(String sql, String keyCol, String valueCol, Object[] args,
