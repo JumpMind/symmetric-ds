@@ -21,11 +21,13 @@
 
 package org.jumpmind.symmetric.io.data.transform;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -60,8 +62,9 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         String lookupValue = null;
 
         if (StringUtils.isNotBlank(sql)) {
-            List<String> values = platform.getSqlTemplate().query(sql, lookupColumnRowMapper,
-                    sourceValues);
+            ISqlTransaction transaction = context.findTransaction();
+            List<String> values = transaction.query(sql, lookupColumnRowMapper,
+                    new HashMap<String, Object>(sourceValues));
             int rowCount = values.size();
 
             if (rowCount == 1) {

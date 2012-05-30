@@ -7,8 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
@@ -39,6 +41,15 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         this.jdbcSqlTemplate = jdbcSqlTemplate;
         this.init();
+    }
+
+    protected void logSql(String sql, Object[] args) {
+        if (log.isDebugEnabled()) {
+            log.debug(sql);
+            if (args != null && args.length > 0) {
+                log.debug("sql args: {}", Arrays.toString(args));
+            }
+        }
     }
 
     protected void init() {
@@ -153,6 +164,42 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     JdbcSqlTemplate.close(ps);
                 }
                 return result;
+            }
+        });
+    }
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {
+        ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
+        String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
+        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);
+        return query(newSql, mapper, params, null);
+    }
+
+    public <T> List<T> query(final String sql, final ISqlRowMapper<T> mapper, final Object[] args,
+            final int[] types) {
+        return executeCallback(new IConnectionCallback<List<T>>() {
+            public List<T> execute(Connection c) throws SQLException {
+                PreparedStatement st = null;
+                ResultSet rs = null;
+                try {
+                    st = c.prepareStatement(sql);
+                    st.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
+                    if (args != null) {
+                        JdbcUtils.setValues(st, args, types, jdbcSqlTemplate.getLobHandler());
+                    }
+                    st.setFetchSize(jdbcSqlTemplate.getSettings().getFetchSize());
+                    rs = st.executeQuery();
+                    List<T> list = new ArrayList<T>();
+                    while (rs.next()) {
+                        Row row = JdbcSqlReadCursor.getMapForRow(rs);
+                        T value = mapper.mapRow(row);
+                        list.add(value);
+                    }
+                    return list;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                    JdbcSqlTemplate.close(st);
+                }
             }
         });
     }

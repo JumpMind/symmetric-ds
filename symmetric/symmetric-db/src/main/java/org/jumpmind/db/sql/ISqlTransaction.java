@@ -1,6 +1,7 @@
 package org.jumpmind.db.sql;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.model.Table;
 
@@ -13,12 +14,16 @@ public interface ISqlTransaction {
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
     public int queryForInt(String sql, Object... args);
-    
-    public int execute(final String sql);
+
+    public int execute(String sql);
 
     public int prepareAndExecute(String sql, Object[] args, int[] types);
-    
+
     public int prepareAndExecute(String sql, Object... args);
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams);
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types);
 
     public void commit();
 
@@ -40,7 +45,9 @@ public interface ISqlTransaction {
     /**
      * Indicate that the current session is to allow updates to columns that
      * have been marked as auto increment. This is specific to SQL Server.
-     * @param quote TODO
+     * 
+     * @param quote
+     *            TODO
      */
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote);
 
