@@ -315,17 +315,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     
     protected void sendInitialLoadFromRegisteredNode() {
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-            List<Node> nodes = new ArrayList<Node>();
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
-            for (Node node : nodes) {
-                List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
-                        .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(),
-                                node.getNodeGroupId()));
-                for (TriggerRouter trigger : triggerRouters) {
-                    dataService.insertReloadEvent(node, trigger);
-                }
-            }
+        	dataService.insertReverseReloadEvents();
         }
     }
 
