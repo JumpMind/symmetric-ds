@@ -93,7 +93,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                     long lastDataId = -1;
                     while (rs.next()) {
                         long dataId = rs.getLong(1);
-                        if (lastDataId == -1 && dataGap.getStartId() < dataId) {
+                        if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
                             // there was a new gap at the start
                             dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
                         } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
@@ -106,7 +106,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
 
                     // if we found data in the gap
                     if (lastDataId != -1) {
-                        if (!lastGap && lastDataId < dataGap.getEndId()) {
+                        if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
                             dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap
                                     .getEndId()));
                         }
