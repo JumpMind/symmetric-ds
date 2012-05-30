@@ -22,7 +22,7 @@ abstract public class DbTestUtils {
         FileUtils.deleteDirectory(new File(String.format("target/%sdbs", name)));
         DataSourceProperties properties = new DataSourceProperties(String.format("test.%s", name),
                 DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), name);
-        return JdbcDatabasePlatformFactory.createNewPlatformInstance(properties.getDataSource(), new SqlTemplateSettings());
+        return JdbcDatabasePlatformFactory.createNewPlatformInstance(properties.getDataSource(), new SqlTemplateSettings(), true);
     }
 
 }

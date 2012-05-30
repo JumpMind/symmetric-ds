@@ -27,13 +27,22 @@ public interface IDdlBuilder {
     
     /*
      * Determines whether delimited identifiers are used or normal SQL92
-     * identifiers (which may only contain alphanumerical characters and the
+     * identifiers (which may only contain alpha numerical characters and the
      * underscore, must start with a letter and cannot be a reserved keyword).
      * Per default, delimited identifiers are not used
      * 
      * @return <code>true</code> if delimited identifiers are used
      */
-    public boolean isDelimitedIdentifierModeOn();
+    public boolean isDelimitedIdentifierModeOn();    
+    
+    /*
+     * Specifies whether delimited identifiers are used or normal SQL92
+     * identifiers.
+     * 
+     * @param delimitedIdentifierModeOn <code>true</code> if delimited
+     * identifiers shall be used
+     */
+    public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn);
     
     public DatabaseInfo getDatabaseInfo();
 

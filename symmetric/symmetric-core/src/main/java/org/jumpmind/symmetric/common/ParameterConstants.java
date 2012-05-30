@@ -169,6 +169,7 @@ final public class ParameterConstants {
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
+    public final static String DB_DELIMITED_IDENTIFIER_MODE = "db.delimited.identifier.mode";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
