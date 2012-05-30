@@ -60,7 +60,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             if (rs.next()) {
-                Row row = getMapForRow();
+                Row row = getMapForRow(rs);
                 T value = mapper.mapRow(row);
                 if (value != null) {
                     return value;
@@ -74,7 +74,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected Row getMapForRow() throws SQLException {
+    protected static Row getMapForRow(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         Row mapOfColValues = new Row(columnCount);

@@ -54,6 +54,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         this.settings = settings;
         this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
     }
+    
+    protected Connection getConnection() throws SQLException {
+        return this.dataSource.getConnection();
+    }
 
     public DataSource getDataSource() {
         return dataSource;
@@ -336,7 +340,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public <T> T execute(IConnectionCallback<T> callback) {
         Connection c = null;
         try {
-            c = dataSource.getConnection();
+            c = getConnection();
             return callback.execute(c);
         } catch (SQLException ex) {
             throw translate(ex);
