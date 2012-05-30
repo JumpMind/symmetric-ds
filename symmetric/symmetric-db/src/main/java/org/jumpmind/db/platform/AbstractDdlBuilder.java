@@ -2436,10 +2436,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * identifiers shall be used
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
-        if (!databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
-            throw new DdlException("Platform does not support delimited identifier");
+        if (databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
+            log.warn("Platform does not support delimited identifier.  Delimited identifiers will not be enabled.");
+        } else {
+            this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;    
         }
-        this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
+        
     }
     
     public DatabaseInfo getDatabaseInfo() {
