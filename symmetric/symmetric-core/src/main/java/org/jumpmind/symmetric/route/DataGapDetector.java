@@ -87,7 +87,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
             List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
             for (Number number : ids) {
                 long dataId = number.longValue();
-                if (lastDataId == -1 && dataGap.getStartId() < dataId) {
+                if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
                     // there was a new gap at the start
                     dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
                 } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
@@ -100,8 +100,8 @@ public class DataGapDetector implements IDataToRouteGapDetector {
 
             // if we found data in the gap
             if (lastDataId != -1) {
-                if (!lastGap && lastDataId < dataGap.getEndId()) {
-                    dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap.getEndId()));
+                if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
+                    dataService.insertDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId()));
                 }
                 dataService.updateDataGap(dataGap, DataGap.Status.OK);
 
