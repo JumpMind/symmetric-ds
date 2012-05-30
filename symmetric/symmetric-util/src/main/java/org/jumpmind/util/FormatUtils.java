@@ -1,6 +1,9 @@
 package org.jumpmind.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,5 +131,59 @@ public final class FormatUtils {
 
         return match;
     }   
+    
+    /**
+     * Word wrap a string where the line size for the first line is different than 
+     * the lines sizes for the other lines.
+     * 
+     * @param str
+     * @param firstLineSize
+     * @param nonFirstLineSize
+     * @return
+     */
+    public static String[] wordWrap(String str, int firstLineSize, int nonFirstLineSize) {
+        
+        String[] lines = wordWrap(str, firstLineSize);
+        
+        if (lines.length > 1 && firstLineSize != nonFirstLineSize) {
+            // More than one line.  Re-wrap the non-first lines with the non first line size
+            String notFirstLinesString = StringUtils.join(lines, " ", 1, lines.length);
+            String[] nonFirstLines = wordWrap(notFirstLinesString, nonFirstLineSize);
+            List<String> nonFirstLineCollection = Arrays.asList(nonFirstLines);
+            
+            ArrayList<String> allLines = new ArrayList<String>();
+            allLines.add(lines[0]);
+            allLines.addAll(nonFirstLineCollection);
+            
+            lines = allLines.toArray(lines);
+        }
+        
+        return lines;
+    }
+    
+    
+    public static String[] wordWrap(String str, int lineSize) {
+        if (str != null && str.length() > lineSize) {
+            Pattern regex = Pattern.compile("(\\S\\S{" + lineSize + ",}|.{1," + lineSize + "})(\\s+|$)");
+            List<String> list = new ArrayList<String>();
+            Matcher m = regex.matcher(str);
+            while (m.find()) {
+                String group = m.group();
+                // Preserve multiple newlines
+                String[] lines = StringUtils.splitPreserveAllTokens(group, '\n');
+
+                for (String line : lines) {
+                    // Trim whitespace from end since a space on the end can
+                    // push line wrap and cause an unintentional blank line.
+                    line = StringUtils.removeEnd(line, " ");
+                    list.add(line);
+                }               
+            }
+            return (String[]) list.toArray(new String[list.size()]);
+        } else {
+            return new String[] { str };
+        }
+    }
+    
 
 }
