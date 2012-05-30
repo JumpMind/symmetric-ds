@@ -317,6 +317,38 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public void insertReverseReloadEvents() {
+
+        if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
+            newTransactionTemplate.execute(new TransactionalInsertReverseReloadEventsDelegate());
+        } else {
+            new TransactionalInsertReverseReloadEventsDelegate().doInTransaction(null);
+        }
+    }
+
+    class TransactionalInsertReverseReloadEventsDelegate implements TransactionCallback<Object> {
+
+        public TransactionalInsertReverseReloadEventsDelegate() {
+        }
+
+        public Object doInTransaction(TransactionStatus status) {
+
+            List<Node> nodes = new ArrayList<Node>();
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
+            for (Node node : nodes) {
+                List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
+                        .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(),
+                                node.getNodeGroupId()));
+                for (TriggerRouter trigger : triggerRouters) {
+                    insertReloadEvent(node, trigger);
+                }
+            }
+            
+        	return null;
+        }
+    }
+    
     public void insertReloadEvents(Node targetNode) {
         
         // outgoing data events are pointless because we are reloading all data
