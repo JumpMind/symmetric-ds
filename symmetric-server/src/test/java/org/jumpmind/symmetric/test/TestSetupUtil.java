@@ -248,6 +248,14 @@ public class TestSetupUtil {
             if (url != null) {
                 new SqlScript(url, ds, false).execute(true);
             }            
+            
+            Database db2drop = platform.readModelFromDatabase("database", dialect.getDefaultCatalog(),
+                    dialect.getDefaultSchema(), new String[] { "TABLE" });
+            
+            String sql = platform.getDropTablesSql(db2drop, true);              
+                        
+            SqlScript dropScript = new SqlScript(sql, platform.getDataSource(), false);
+            dropScript.execute(true);            
                         
             Database testDb = getTestDatabase();
             new SqlScript(platform.getDropTablesSql(testDb, true), ds, false).execute(true);            
