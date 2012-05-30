@@ -39,8 +39,6 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
 
     protected final ILog log = LogFactory.getLog(getClass());
     
-    protected SimpleJdbcTemplate jdbcTemplate;
-
     public static final String NAME = "lookup";
     
     protected static final LookupColumnRowMapper lookupColumnRowMapper = new LookupColumnRowMapper();
@@ -60,6 +58,7 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         String lookupValue = null;
         
         if (StringUtils.isNotBlank(sql)) {
+            SimpleJdbcTemplate jdbcTemplate = new SimpleJdbcTemplate(context.getJdbcTemplate());
             List<String> values = jdbcTemplate.query(sql, lookupColumnRowMapper, sourceValues);
             int rowCount = values.size();
             
@@ -81,10 +80,6 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         public String mapRow(ResultSet rs, int rowNum) throws SQLException {
             return rs.getString(1);
         }
-    }
-    
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = new SimpleJdbcTemplate(jdbcTemplate);
     }
 
 }
