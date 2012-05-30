@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.load.StatementBuilder;
 
 public class PostgresSqlStatementBuilder extends StatementBuilder {
@@ -92,6 +93,12 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
             if (columns[i] != null) {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append("cast(? as timestamp with time zone)").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                    sql.append("cast(? as uuid)").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                    sql.append("cast(? as bit varying)").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append("cast(? as interval)").append(",");
                 } else {
                     sql.append("?").append(",");
                 }
@@ -110,6 +117,15 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = cast(? as timestamp with time zone)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = cast(? as uuid)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = cast(? as bit varying)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                          .append(" = cast(? as interval)").append(separator);                        
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
                             .append(separator);
