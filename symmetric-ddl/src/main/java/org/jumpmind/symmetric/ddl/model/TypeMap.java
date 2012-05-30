@@ -100,6 +100,10 @@ public abstract class TypeMap
     
     public static final String GEOMETRY = "GEOMETRY";
     
+    public static final String UUID = "UUID";
+        
+    public static final String VARBIT = "VARBIT";
+    
     public static final String INTERVAL = "INTERVAL";
 
     public static final String NCHAR = "NCHAR";
