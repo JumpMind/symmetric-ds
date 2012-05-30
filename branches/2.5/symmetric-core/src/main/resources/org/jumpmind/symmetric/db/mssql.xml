@@ -89,7 +89,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + cast($(tableAlias)."$(columnName)" as varchar) + '"') end]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + convert(varchar, $(tableAlias)."$(columnName)", 2) + '"') end]]>
                     </value>
                 </property>
                 <!-- TODO -->
