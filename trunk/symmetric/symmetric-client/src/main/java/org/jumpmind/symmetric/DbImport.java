@@ -64,7 +64,7 @@ public class DbImport {
     }
 
     public DbImport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null);
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
 
     public void importTables(String importData) throws IOException {

@@ -88,7 +88,7 @@ public class DbExport {
     }
 
     public DbExport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new SqlTemplateSettings());
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new SqlTemplateSettings(), true);
         compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 

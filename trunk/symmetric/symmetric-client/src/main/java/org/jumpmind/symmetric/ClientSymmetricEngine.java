@@ -164,11 +164,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
         createDataSource(properties);
         waitForAvailableDatabase();
+        boolean delimitedIdentifierMode = properties.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(this.dataSource,
-                createDatabasePlatformSettings(properties));
+                createSqlTemplateSettings(properties), delimitedIdentifierMode);
     }
 
-    protected SqlTemplateSettings createDatabasePlatformSettings(TypedProperties properties) {
+    protected SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {
         SqlTemplateSettings settings = new SqlTemplateSettings();
         settings.setFetchSize(properties.getInt(ParameterConstants.DB_FETCH_SIZE, 1000));
         settings.setQueryTimeout(properties.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS, 300));

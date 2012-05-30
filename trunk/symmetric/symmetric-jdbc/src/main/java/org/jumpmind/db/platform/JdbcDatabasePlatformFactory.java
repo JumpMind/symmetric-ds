@@ -114,7 +114,7 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode)
             throws DdlException {
         
         // connects to the database and uses actual metadata info to get db name
@@ -125,7 +125,9 @@ public class JdbcDatabasePlatformFactory {
         
         try {
             Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, SqlTemplateSettings.class);
-            return construtor.newInstance(dataSource, settings);
+            IDatabasePlatform platform = construtor.newInstance(dataSource, settings);
+            platform.getDdlBuilder().setDelimitedIdentifierModeOn(delimitedIdentifierMode);
+            return platform;
         } catch (Exception e) {
             throw new DdlException("Could not create a platform of type " + nameVersion[0], e);
         }

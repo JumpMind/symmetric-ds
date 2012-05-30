@@ -35,7 +35,7 @@ public class SqlScriptUnitTest {
     @Test
     public void testSimpleSqlScript() throws Exception {
         SingleConnectionDataSource ds = getDataSource();
-        IDatabasePlatform platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds, new SqlTemplateSettings());
+        IDatabasePlatform platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds, new SqlTemplateSettings(), true);
         SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);
