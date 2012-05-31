@@ -136,6 +136,8 @@ public interface IDataService {
     
     public void updateDataGap(DataGap gap, DataGap.Status status);
     
+    public void deleteDataGap(DataGap gap);
+    
     public long findMaxDataId();
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);

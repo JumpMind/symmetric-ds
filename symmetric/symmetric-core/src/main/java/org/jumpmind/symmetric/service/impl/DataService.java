@@ -227,7 +227,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         return history;
     }
-    
+
     public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad) {
         TriggerHistory history = findTriggerHistoryForGenericSync();
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
@@ -236,7 +236,8 @@ public class DataService extends AbstractService implements IDataService {
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
 
-    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad) {
+    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql,
+            boolean isLoad) {
         TriggerHistory history = findTriggerHistoryForGenericSync();
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, Constants.CHANNEL_CONFIG, null, null);
@@ -734,9 +735,9 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(String catalogName, String schemaName, String tableName) {
         return createData(catalogName, schemaName, tableName, null);
     }
-    
-    public Data createData(String catalogName, String schemaName,
-            String tableName, String whereClause) {
+
+    public Data createData(String catalogName, String schemaName, String tableName,
+            String whereClause) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
@@ -852,6 +853,13 @@ public class DataService extends AbstractService implements IDataService {
                 new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
                         gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
                         Types.NUMERIC });
+    }
+
+    public void deleteDataGap(DataGap gap) {
+        sqlTemplate.update(getSql("deleteDataGapSql"),
+                new Object[] { gap.getStartId(), gap.getEndId() }, new int[] { Types.NUMERIC,
+                        Types.NUMERIC });
+
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
