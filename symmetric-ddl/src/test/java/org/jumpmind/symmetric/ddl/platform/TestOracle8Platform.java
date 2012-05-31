@@ -102,8 +102,8 @@ public class TestOracle8Platform extends TestPlatformBase
             "DROP TRIGGER \"trg_constraints_COL_AUTO_INCR\";\n"+
             "DROP SEQUENCE \"seq_constraints_COL_AUTO_INCR\";\n"+
             "DROP TABLE \"constraints\" CASCADE CONSTRAINTS;\n"+
-            "CREATE SEQUENCE \"seq_constraints_L_PK_AUTO_INCR\";\n"+
-            "CREATE SEQUENCE \"seq_constraints_COL_AUTO_INCR\";\n"+
+            "CREATE SEQUENCE \"seq_constraints_L_PK_AUTO_INCR\" CACHE 1000 ORDER;\n"+
+            "CREATE SEQUENCE \"seq_constraints_COL_AUTO_INCR\" CACHE 1000 ORDER;\n"+
             "CREATE TABLE \"constraints\"\n"+
             "(\n"+
             "    \"COL_PK\"               VARCHAR2(32),\n"+
