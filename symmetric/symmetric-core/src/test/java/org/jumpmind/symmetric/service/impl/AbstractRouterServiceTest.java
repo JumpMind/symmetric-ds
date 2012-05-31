@@ -18,6 +18,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -1138,10 +1139,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
-            trigger.getRouter().getNodeGroupLink()
-                    .setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            trigger.getRouter().getNodeGroupLink()
-                    .setTargetNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+            trigger.getRouter().setNodeGroupLink(
+                    new NodeGroupLink(TestConstants.TEST_ROOT_NODE_GROUP,
+                            TestConstants.TEST_CLIENT_NODE_GROUP));
             if (tableName.equals(TEST_TABLE_2)) {
                 trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
             } else {

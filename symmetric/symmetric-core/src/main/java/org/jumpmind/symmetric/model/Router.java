@@ -123,9 +123,6 @@ public class Router implements Serializable {
     }
     
     public NodeGroupLink getNodeGroupLink() {
-        if (nodeGroupLink == null) {
-            nodeGroupLink = new NodeGroupLink();
-        }
         return nodeGroupLink;
     }
 
