@@ -329,6 +329,18 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("Done purging {} incoming batch rows", totalCount);
         return totalCount;
     }
+    
+    public void purgeStats() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE,
+                -parameterService.getInt(ParameterConstants.PURGE_STATS_RETENTION_MINUTES));
+        int purgedCount = sqlTemplate.update(getSql("purgeNodeHostChannelStatsSql"), retentionCutoff.getTime());
+        purgedCount += sqlTemplate.update(getSql("purgeNodeHostStatsSql"), retentionCutoff.getTime());
+        purgedCount += sqlTemplate.update(getSql("purgeNodeHostJobStatsSql"), retentionCutoff.getTime());
+        if (purgedCount > 0) {
+            log.info("{} stats rows were purged", purgedCount);
+        }
+    }
 
     class NodeBatchRange {
         private String nodeId;

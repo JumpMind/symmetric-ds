@@ -148,7 +148,9 @@
         <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the period which this row represents." />        
         <column name="processed_count" type="BIGINT" default="0" description="The number of items that were processed during the job run." />
         <index name="idx_nd_hst_job">
-            <index-column name="job_name"/>        
+            <index-column name="node_id"/>        
+            <index-column name="start_time"/>
+            <index-column name="end_time"/>      
         </index>        
     </table>
 
