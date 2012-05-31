@@ -60,6 +60,10 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("updateDataGapSql",
                 ""
                         + "update $(data_gap) set status=?, last_update_hostname=?, last_update_time=current_timestamp where start_id=? and end_id=?   ");
+        
+        putSql("deleteDataGapSql",
+                        "delete from $(data_gap) where start_id=? and end_id=?   ");
+        
 
         putSql("selectMaxDataIdSql", "" + "select max(data_id) from $(data)   ");
 
