@@ -96,8 +96,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
             if (force || clusterService.lock(ClusterConstants.PURGE_DATA_GAPS)) {
                 try {
                     log.info("The data gap purge process is about to run");
-                    rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"),
-                            new Object[] { retentionCutoff.getTime(), DataGap.Status.GP.name() });
+                    rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"), new Object[] {
+                            retentionCutoff.getTime(), DataGap.Status.GP.name() });
                     log.info("Purged {} data gap rows", rowsPurged);
                 } finally {
                     if (!force) {
@@ -216,7 +216,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
             switch (identifier) {
                 case DATA:
                     deleteSql = getSql("deleteDataSql");
-                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId, OutgoingBatch.Status.OK.name() };
+                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId,
+                            OutgoingBatch.Status.OK.name() };
                     break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
@@ -255,12 +256,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 try {
                     log.info("The incoming purge process is about to run");
                     purgedRowCount = purgeIncomingBatch(retentionCutoff);
+                    purgedRowCount += purgeIncomingError();
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);
                     }
                     log.info("The incoming purge process has completed");
                 }
+
             } else {
                 log.info("Could not get a lock to run an incoming purge");
             }
@@ -268,6 +271,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.error(ex.getMessage(), ex);
         }
         return purgedRowCount;
+    }
+
+    private long purgeIncomingError() {
+        log.info("Purging incoming error rows");
+        long rowCount = sqlTemplate.update("deleteIncomingErrorsSql");
+        log.info("Purged {} incoming error rows", rowCount);
+        return rowCount;
+
     }
 
     private long purgeIncomingBatch(final Calendar time) {
@@ -302,8 +313,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 if (maxBatchId > purgeUpToBatchId) {
                     maxBatchId = purgeUpToBatchId;
                 }
-                totalCount += sqlTemplate.update(getSql("deleteIncomingBatchSql"), new Object[] { minBatchId, maxBatchId,
-                        nodeBatchRange.getNodeId(), IncomingBatch.Status.OK.name() });
+                totalCount += sqlTemplate.update(getSql("deleteIncomingBatchSql"),
+                        new Object[] { minBatchId, maxBatchId, nodeBatchRange.getNodeId(),
+                                IncomingBatch.Status.OK.name() });
                 minBatchId = maxBatchId + 1;
             }
 
