@@ -14,7 +14,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         
         functionInstalledSql = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || REPLACE(REPLACE($(tableAlias).$(columnName), '\\', '\\\\'), '\"', '\\\"') || '\"' end";
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || REPLACE(REPLACE($(tableAlias).\"$(columnName)\", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
         xmlColumnTemplate = null;
         arrayColumnTemplate = null;
