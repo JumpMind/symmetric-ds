@@ -61,6 +61,8 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteIncomingBatchSql" ,
 "delete from $(incoming_batch) where batch_id between ? and ? and node_id = ? and status = ?" );
+        
+        putSql("deleteIncomingErrorsSql", "delete from $(incoming_error) where batch_id not in (select batch_id from $(incoming_batch))");
 
         putSql("deleteFromDataGapsSql" ,
 "delete from $(data_gap) where last_update_time < ? and status != ?" );
