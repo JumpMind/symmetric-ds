@@ -3,7 +3,7 @@
 set PRGDIR=%~dp0
 set HOMEDIR=%PRGDIR%..
 set CONFDIR=%HOMEDIR%\conf
-set CLASSPATH=.
+set CLASSPATH=%HOMEDIR%\patches
 
 for %%i in ("%HOMEDIR%\lib\*.jar") do call "%PRGDIR%cpappend.bat" %%i
 

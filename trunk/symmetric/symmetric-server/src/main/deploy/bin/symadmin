@@ -27,7 +27,7 @@ then
    RUNJAVA="$JAVA_HOME/bin/java"
 fi
 
-CLASSPATH=.
+CLASSPATH=../patches
 SEP=:
 
 if uname | grep -i cygwin > /dev/null
