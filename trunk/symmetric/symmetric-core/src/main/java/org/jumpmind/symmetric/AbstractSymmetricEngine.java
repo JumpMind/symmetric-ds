@@ -526,6 +526,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         triggerRouterService.syncTriggers();
     }
+    
+    public void forceTriggerRebuild() {
+        MDC.put("engineName", getEngineName());
+        triggerRouterService.syncTriggers(null, true);
+    }
 
     public NodeStatus getNodeStatus() {
         return nodeService.getNodeStatus();

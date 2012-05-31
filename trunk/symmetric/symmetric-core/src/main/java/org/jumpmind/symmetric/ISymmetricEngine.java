@@ -115,6 +115,13 @@ public interface ISymmetricEngine {
      * @see ITriggerRouterService#syncTriggers()
      */
     public void syncTriggers();
+    
+    /**
+     * Call this to force all triggers to be rebuilt
+     * 
+     * @see ITriggerRouterService#forceTriggerRebuild()
+     */
+    public void forceTriggerRebuild();
 
     /**
      * Get the current status of this node.
