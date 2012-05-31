@@ -71,6 +71,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
      * dual route data.
      */
     public void beforeRouting() {
+        boolean deleteImmediately = isDeleteFilledGapsImmediately();
         long ts = System.currentTimeMillis();
         final List<DataGap> gaps = removeAbandonedGaps(dataService.findDataGaps());
         long lastDataId = -1;
@@ -101,9 +102,15 @@ public class DataGapDetector implements IDataToRouteGapDetector {
             // if we found data in the gap
             if (lastDataId != -1) {
                 if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
-                    dataService.insertDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId()));
+                    dataService.insertDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap
+                            .getEndId()));
                 }
-                dataService.updateDataGap(dataGap, DataGap.Status.OK);
+
+                if (deleteImmediately) {
+                    dataService.deleteDataGap(dataGap);
+                } else {
+                    dataService.updateDataGap(dataGap, DataGap.Status.OK);
+                }
 
                 // if we did not find data in the gap and it was not the
                 // last gap
@@ -129,7 +136,12 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                             "Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database",
                                             dataGap.getStartId(), dataGap.getEndId());
                                 }
-                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
+
+                                if (deleteImmediately) {
+                                    dataService.deleteDataGap(dataGap);
+                                } else {
+                                    dataService.updateDataGap(dataGap, DataGap.Status.SK);
+                                }
                             }
                         }
                     } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
@@ -142,7 +154,11 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                     "Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
                                     dataGap.getStartId(), dataGap.getEndId());
                         }
-                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
+                        if (deleteImmediately) {
+                            dataService.deleteDataGap(dataGap);
+                        } else {
+                            dataService.updateDataGap(dataGap, DataGap.Status.SK);
+                        }
                     }
                 } else {
                     dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
@@ -169,18 +185,32 @@ public class DataGapDetector implements IDataToRouteGapDetector {
      * @param gaps
      */
     protected List<DataGap> removeAbandonedGaps(List<DataGap> gaps) {
+        boolean deleteImmediately = isDeleteFilledGapsImmediately();
         List<DataGap> finalList = new ArrayList<DataGap>(gaps);
         for (final DataGap dataGap1 : gaps) {
             for (final DataGap dataGap2 : gaps) {
                 if (!dataGap1.equals(dataGap2) && dataGap1.contains(dataGap2)) {
                     finalList.remove(dataGap2);
                     if (dataService != null) {
-                        dataService.updateDataGap(dataGap2, DataGap.Status.SK);
+                        if (deleteImmediately) {
+                            dataService.deleteDataGap(dataGap2);
+                        } else {
+                            dataService.updateDataGap(dataGap2, DataGap.Status.SK);
+                        }
                     }
                 }
             }
         }
         return finalList;
+    }
+
+    protected boolean isDeleteFilledGapsImmediately() {
+        if (parameterService != null) {
+            return parameterService.is(
+                    ParameterConstants.ROUTING_DELETE_FILLED_IN_GAPS_IMMEDIATELY, true);
+        } else {
+            return true;
+        }
     }
 
     protected boolean isDataGapExpired(long dataId) {
