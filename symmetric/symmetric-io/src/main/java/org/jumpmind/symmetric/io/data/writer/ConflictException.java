@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.Map;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 
@@ -14,14 +16,27 @@ public class ConflictException extends RuntimeException {
     protected boolean fallbackOperationFailed = false;
 
     public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed) {
-        super(String.format(
-                "Detected conflict while executing %s on %s.  The primary key data was: %s. %s", data
-                        .getDataEventType().toString(), table.getFullyQualifiedTableName(), data
-                        .toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.PK_DATA),
-                fallbackOperationFailed ? "Failed to fallback." : ""));
+        super(message(data, table, fallbackOperationFailed));
         this.data = data;
         this.table = table;
         this.fallbackOperationFailed = fallbackOperationFailed;
+    }
+
+    protected static String message(CsvData data, Table table, boolean fallbackOperationFailed) {
+        Map<String, String> pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(),
+                CsvData.PK_DATA);
+        if (pks == null || pks.size() == 0) {
+            pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.OLD_DATA);
+        }
+
+        if (pks == null || pks.size() == 0) {
+            pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.ROW_DATA);
+        }
+
+        return String.format(
+                "Detected conflict while executing %s on %s.  The primary key data was: %s. %s",
+                data.getDataEventType().toString(), table.getFullyQualifiedTableName(), pks,
+                fallbackOperationFailed ? "Failed to fallback." : "");
     }
 
     public CsvData getData() {
