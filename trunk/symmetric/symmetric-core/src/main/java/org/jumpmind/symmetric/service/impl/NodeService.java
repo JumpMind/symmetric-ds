@@ -208,7 +208,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
         } catch (UniqueKeyException ex) {
             log.error(
-                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
+                    "Could not find a node security row for '{}'",
                     nodeId);
             throw ex;
         }
