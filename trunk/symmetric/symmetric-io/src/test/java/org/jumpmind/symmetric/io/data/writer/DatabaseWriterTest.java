@@ -49,9 +49,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         ISqlTemplate template = platform.getSqlTemplate();
         template.update("delete from test_blob");
         template.update("insert into test_blob values(1,null,null)");
-        int rows = template.update("update test_blob set string_value=?", new Object[] {null});
-        Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);
-        
+        int rows = template.update("update test_blob set string_value=? where string_value=?", new Object[] {"test", null});
+        Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);        
     }
 
     @Test
