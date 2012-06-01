@@ -72,25 +72,41 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     }
 
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
+        String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
+                        .getSyncUrl();
+        if (isOffline(error)) {
+            log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, error.getMessage()});
+            status.setStatus(Status.OFFLINE);
+        } else if (isBusy(error)) {
+            log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});            
+            status.setStatus(Status.BUSY);
+        } else if (isNotAuthenticated(error)) {
+            log.info("{} at {} was not authorized", new Object[] {remoteNode, syncUrl});
+            status.setStatus(Status.NOT_AUTHORIZED);
+        } else if (isSyncDisabled(error)) {
+            log.info("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
+            status.setStatus(Status.SYNC_DISABLED);
+        } else if (isRegistrationRequired(error)) {
+            log.info("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
+            status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else {
+            log.warn("Could not communicate with {} at {} because of unexpected error", new Object[] {remoteNode, syncUrl}, error);
+            status.setStatus(Status.UNKNOWN_ERROR);
+        }
+
         if (offlineListeners != null) {
             for (IOfflineClientListener listener : offlineListeners) {
                 if (isOffline(error)) {
-                    status.setStatus(Status.OFFLINE);
                     listener.offline(remoteNode);
                 } else if (isBusy(error)) {
-                    status.setStatus(Status.BUSY);
                     listener.busy(remoteNode);
                 } else if (isNotAuthenticated(error)) {
-                    status.setStatus(Status.NOT_AUTHORIZED);
                     listener.notAuthenticated(remoteNode);
                 } else if (isSyncDisabled(error)) {
-                    status.setStatus(Status.SYNC_DISABLED);
                     listener.syncDisabled(remoteNode);
                 } else if (isRegistrationRequired(error)) {
-                    status.setStatus(Status.REGISTRATION_REQUIRED);
                     listener.registrationRequired(remoteNode);
                 } else {
-                    status.setStatus(Status.UNKNOWN_ERROR);
                     listener.unknownError(remoteNode, error);
                 }
             }
