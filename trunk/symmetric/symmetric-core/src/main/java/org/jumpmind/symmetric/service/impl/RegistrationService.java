@@ -359,15 +359,20 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
                     password, nodeId });
-            if (updateCount == 0) {
+            if (updateCount == 0 && nodeService.findNodeSecurity(nodeId) == null) {
                 // if the update count was 0, then we probably have a row in the
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, nodeService.findNode(nodeId).getNodeId() });
+                log.info("Registration was opened for {}", nodeId);
+            } else if (updateCount == 0) {
+                log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);
+            } else {
+                log.info("Registration was reopened for {}", nodeId);
             }
         } else {
-            log.warn("There was no row with a node id of {} to 'reopen' registration for.", nodeId);
+            log.warn("There was no row with a node id of {} to 'reopen' registration for", nodeId);
         }
     }
 

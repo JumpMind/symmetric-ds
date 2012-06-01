@@ -21,26 +21,23 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                         + "update $(node_security) set registration_enabled = 0, registration_time =   "
                         + "  current_timestamp where node_id = ?                                             ");
 
-        putSql("reopenRegistrationSql",
-                ""
-                        + "update $(node_security) set node_password = ?, registration_enabled = 1,   "
-                        + "  registration_time = null where node_id = ?                                     ");
+        putSql("reopenRegistrationSql", ""
+                + "update $(node_security) set node_password = ?, registration_enabled = 1,    "
+                + "  registration_time = null where node_id = ? and registration_enabled = 0  ");
 
         putSql("openRegistrationNodeSecuritySql", ""
                 + "insert into $(node_security) (node_id, node_password,       "
                 + "  registration_enabled, created_at_node_id) values (?, ?, 1, ?)   ");
 
-        putSql("getRegistrationRedirectUrlSql",
-                ""
-                        + "select sync_url from $(node) n inner join $(registration_redirect) r on n.node_id=r.registration_node_id where r.registrant_external_id=?   ");
+        putSql("getRegistrationRedirectUrlSql", ""
+                + "select sync_url from $(node) n inner join $(registration_redirect) r "
+                + "on n.node_id=r.registration_node_id where r.registrant_external_id=?   ");
 
-        putSql("insertRegistrationRedirectUrlSql",
-                ""
-                        + "insert into $(registration_redirect) (registration_node_id, registrant_external_id) values (?, ?)   ");
+        putSql("insertRegistrationRedirectUrlSql", "" + "insert into $(registration_redirect) "
+                + "(registration_node_id, registrant_external_id) values (?, ?)   ");
 
-        putSql("updateRegistrationRedirectUrlSql",
-                ""
-                        + "update $(registration_redirect) set registration_node_id=? where registrant_external_id=?   ");
+        putSql("updateRegistrationRedirectUrlSql", "" + "update $(registration_redirect) "
+                + "set registration_node_id=? where registrant_external_id=?   ");
 
         putSql("insertRegistrationRequestSql",
                 ""
