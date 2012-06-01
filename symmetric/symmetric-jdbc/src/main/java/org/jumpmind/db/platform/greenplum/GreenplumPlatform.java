@@ -19,6 +19,11 @@ public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
     }
     
     @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new GreenplumJdbcSqlTemplate(dataSource, settings, null);
+    }
+        
+    @Override
     public String getName() {
         return DatabaseNamesConstants.GREENPLUM;
     }
