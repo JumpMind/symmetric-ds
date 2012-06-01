@@ -22,8 +22,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
-import java.net.ConnectException;
-import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,11 +32,11 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -48,13 +46,8 @@ import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicati
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
-import org.jumpmind.symmetric.service.RegistrationRequiredException;
-import org.jumpmind.symmetric.transport.AuthenticationException;
-import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.jumpmind.symmetric.transport.SyncDisabledException;
-import org.jumpmind.symmetric.transport.TransportException;
 
 /**
  * @see IPushService
@@ -208,34 +201,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
                 status.updateOutgoingStatus(extractedBatches, batches);
             }
-        } catch (ConnectException ex) {
-            log.warn(
-                    "Failed to connect to {}",
-                    (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remote
-                            .getSyncUrl()));
-            fireOffline(ex, remote, status);
-        } catch (ConnectionRejectedException ex) {
-            log.warn("The server was too busy to accept the connection");
-            fireOffline(ex, remote, status);
-        } catch (SocketException ex) {
-            log.warn("{}", ex.getMessage());
-            fireOffline(ex, remote, status);
-        } catch (TransportException ex) {
-            log.warn("{}", ex.getMessage());
-            fireOffline(ex, remote, status);
-        } catch (AuthenticationException ex) {
-            log.warn("Could not authenticate with node");
-            fireOffline(ex, remote, status);
-        } catch (SyncDisabledException ex) {
-            log.warn("Synchronization is disabled on the server node");
-            fireOffline(ex, remote, status);
-        } catch (RegistrationRequiredException ex) {
-            log.warn("Registration has not been opened for this node");
-            fireOffline(ex, remote, status);
         } catch (Exception ex) {
-            // just report the error because we want to push to other nodes
-            // in our list
-            log.error(ex.getMessage(), ex);
             fireOffline(ex, remote, status);
         } finally {
             try {
