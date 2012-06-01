@@ -93,23 +93,26 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         if (identity != null && identity.isSyncEnabled()) {
             if (force || clusterService.lock(ClusterConstants.PUSH)) {
                 try {
-                    NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                            .getNodeId());
-                    if (identitySecurity != null) {
-                        List<NodeCommunication> nodes = nodeCommunicationService
-                                .list(CommunicationType.PUSH);
-                        int availableThreads = nodeCommunicationService
-                                .getAvailableThreads(CommunicationType.PUSH);
-                        for (NodeCommunication nodeCommunication : nodes) {
-                            if (availableThreads > 0 && !nodeCommunication.isLocked()) {
-                                nodeCommunicationService.execute(nodeCommunication, statuses, this);
-                                availableThreads--;
+                    List<NodeCommunication> nodes = nodeCommunicationService
+                            .list(CommunicationType.PUSH);
+                    if (nodes.size() > 0) {
+                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
+                                .getNodeId());
+                        if (identitySecurity != null) {
+                            int availableThreads = nodeCommunicationService
+                                    .getAvailableThreads(CommunicationType.PUSH);
+                            for (NodeCommunication nodeCommunication : nodes) {
+                                if (availableThreads > 0 && !nodeCommunication.isLocked()) {
+                                    nodeCommunicationService.execute(nodeCommunication, statuses,
+                                            this);
+                                    availableThreads--;
+                                }
                             }
+                        } else {
+                            log.error(
+                                    "Could not find a node security row for '{}'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
+                                    identity.getNodeId());
                         }
-                    } else {
-                        log.error(
-                                "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                                identity.getNodeId());
                     }
                 } finally {
                     if (!force) {
@@ -145,7 +148,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 new Object[] { node, status.getDataProcessed(),
                                         status.getBatchesProcessed() });
                     } else if (status.failed()) {
-                        log.warn("There was an error while pushing data to the server");                        
+                        log.warn("There was an error while pushing data to the server");
                     }
                     log.debug("Push completed for {}", node);
                     pushCount++;
