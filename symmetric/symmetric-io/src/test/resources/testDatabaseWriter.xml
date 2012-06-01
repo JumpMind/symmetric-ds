@@ -19,5 +19,11 @@
 		<column name="decimal_value" type="DECIMAL" size="10,2" />
 		<column name="double_value" type="DOUBLE" />
 	</table>
+    
+    <table name="test_blob">
+        <column name="id" type="INTEGER" required="true" primaryKey="true" />    
+        <column name="string_value" type="VARCHAR" size="50" />
+        <column name="blob_value" type="BLOB" />
+    </table>    
 
 </database>

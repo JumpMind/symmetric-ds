@@ -17,6 +17,7 @@ import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -41,6 +42,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void notExpectingError() {
         setErrorExpected(false);
         writerSettings.setDefaultConflictSetting(new Conflict());
+    }
+    
+    @Test
+    public void testNullInWhereClause() {
+        ISqlTemplate template = platform.getSqlTemplate();
+        template.update("delete from test_blob");
+        template.update("insert into test_blob values(1,null,null)");
+        int rows = template.update("update test_blob set string_value=?", new Object[] {null});
+        Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);
+        
     }
 
     @Test
