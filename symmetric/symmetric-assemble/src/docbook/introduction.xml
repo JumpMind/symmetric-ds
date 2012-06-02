@@ -57,7 +57,7 @@
     </section>
     <section id="definition">
         <title>Overview</title>
-        <para>Follwing is an overview of how SymmetricDS works.</para>
+        <para>The following is an overview of how SymmetricDS works.</para>
         <section>
             <title>A Node is Born</title>
             <para> SymmetricDS is a Java-based application that hosts a synchronization engine which acts as an agent for
@@ -103,7 +103,7 @@
             </para>
         </section>
         <section>
-            <title>Change Happens</title>
+            <title>Capturing Changes</title>
             <para>
                 Changes are captured at a SymmetricDS enabled database by database triggers that are installed automatically
                 by SymmetricDS based on configuration settings that you specify. The database triggers record data changes in
@@ -149,7 +149,7 @@
             </para>
         </section>
         <section>
-            <title>The Delivery</title>
+            <title>Change Delivery</title>
             <para>Data is delivered to remote nodes over HTTP or HTTPS. It can be delivered in one of two ways depending on
                 the type of transport link that is configured between node groups. A node group can be configured to push
                 changes to other nodes in a group or pull changes from other nodes in a group. Pushing is initiated from the
