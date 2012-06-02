@@ -154,6 +154,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         printHelpLine(pw, CMD_EXPORT_PROPERTIES);
         printHelpLine(pw, CMD_SEND_SQL);
         printHelpLine(pw, CMD_SEND_SCHEMA);
+        printHelpLine(pw, CMD_SEND_SCRIPT);
         pw.flush();
     }
     
