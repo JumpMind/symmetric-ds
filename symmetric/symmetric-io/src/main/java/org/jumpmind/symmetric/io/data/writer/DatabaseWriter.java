@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -401,16 +402,16 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
-            Map<String,String> lookupDataMap = null;
+            Map<String, String> lookupDataMap = null;
             if (requireNewStatement(DmlType.DELETE, data, false, useConflictDetection,
                     conflict.getDetectType())) {
-                Column[] lookupKeys = null;
+                List<Column> lookupKeys = null;
                 if (!useConflictDetection) {
-                    lookupKeys = targetTable.getPrimaryKeyColumns();
+                    lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
                 } else {
                     switch (conflict.getDetectType()) {
                         case USE_OLD_DATA:
-                            lookupKeys = targetTable.getColumns();
+                            lookupKeys = targetTable.getColumnsAsList();
                             break;
                         case USE_VERSION:
                         case USE_TIMESTAMP:
@@ -427,41 +428,51 @@ public class DatabaseWriter implements IDataWriter {
                             Column[] pks = targetTable.getPrimaryKeyColumns();
                             for (Column column : pks) {
                                 // make sure all of the PK keys are in the list
-                                // only
-                                // once and are always at the end of the list
+                                // only once and are always at the end of the
+                                // list
                                 lookupColumns.remove(column);
                                 lookupColumns.add(column);
                             }
-                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
+                            lookupKeys = lookupColumns;
                             break;
                         case USE_PK_DATA:
                         default:
-                            lookupKeys = targetTable.getPrimaryKeyColumns();
+                            lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
                             break;
                     }
                 }
 
-                if (lookupKeys == null || lookupKeys.length == 0) {
-                    lookupKeys = targetTable.getColumns();
+                if (lookupKeys == null || lookupKeys.size() == 0) {
+                    lookupKeys = targetTable.getColumnsAsList();
                 }
-                
+
+                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
+                    Iterator<Column> it = lookupKeys.iterator();
+                    while (it.hasNext()) {
+                        Column col = it.next();
+                        if (col.isOfBinaryType()) {
+                            it.remove();
+                        }
+                    }
+                }
+
                 lookupDataMap = getLookupDataMap(data);
-                
-                boolean[] nullKeyValues = new boolean[lookupKeys.length];                
-                for(int i = 0; i < lookupKeys.length; i++) {
-                    nullKeyValues[i] = lookupDataMap.get(lookupKeys[i].getName()) == null;
+
+                boolean[] nullKeyValues = new boolean[lookupKeys.size()];
+                for (int i = 0; i < lookupKeys.size(); i++) {
+                    nullKeyValues[i] = lookupDataMap.get(lookupKeys.get(i).getName()) == null;
                 }
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
-                        lookupKeys, null, nullKeyValues);
+                        lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues);
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                lookupDataMap = lookupDataMap == null ?  getLookupDataMap(data) : lookupDataMap;
+                lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
                 long count = execute(data, getLookupKeyData(lookupDataMap, currentDmlStatement));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
@@ -498,17 +509,17 @@ public class DatabaseWriter implements IDataWriter {
                     }
                 }
             }
-                        
+
             if (changedColumnNameList.size() > 0) {
-                Map<String,String> lookupDataMap = null;
+                Map<String, String> lookupDataMap = null;
                 Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
                 if (requireNewStatement(DmlType.UPDATE, data, applyChangesOnly,
                         useConflictDetection, conflict.getDetectType())) {
                     lastApplyChangesOnly = applyChangesOnly;
                     lastUseConflictDetection = useConflictDetection;
-                    Column[] lookupKeys = null;
+                    List<Column> lookupKeys = null;
                     if (!useConflictDetection) {
-                        lookupKeys = targetTable.getPrimaryKeyColumns();
+                        lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
                     } else {
                         switch (conflict.getDetectType()) {
                             case USE_CHANGED_DATA:
@@ -522,11 +533,10 @@ public class DatabaseWriter implements IDataWriter {
                                     lookupColumns.remove(column);
                                     lookupColumns.add(column);
                                 }
-                                lookupKeys = lookupColumns
-                                        .toArray(new Column[lookupColumns.size()]);
+                                lookupKeys = lookupColumns;
                                 break;
                             case USE_OLD_DATA:
-                                lookupKeys = targetTable.getColumns();
+                                lookupKeys = targetTable.getColumnsAsList();
                                 break;
                             case USE_VERSION:
                             case USE_TIMESTAMP:
@@ -548,31 +558,42 @@ public class DatabaseWriter implements IDataWriter {
                                     lookupColumns.remove(column);
                                     lookupColumns.add(column);
                                 }
-                                lookupKeys = lookupColumns
-                                        .toArray(new Column[lookupColumns.size()]);
+                                lookupKeys = lookupColumns;
                                 break;
                             case USE_PK_DATA:
                             default:
-                                lookupKeys = targetTable.getPrimaryKeyColumns();
+                                lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
                                 break;
                         }
                     }
 
-                    if (lookupKeys == null || lookupKeys.length == 0) {
-                        lookupKeys = targetTable.getColumns();
+                    if (lookupKeys == null || lookupKeys.size() == 0) {
+                        lookupKeys = targetTable.getColumnsAsList();
                     }
-                    
+
+                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
+                        Iterator<Column> it = lookupKeys.iterator();
+                        while (it.hasNext()) {
+                            Column col = it.next();
+                            if (col.isOfBinaryType()) {
+                                it.remove();
+                            }
+                        }
+                    }
+
                     lookupDataMap = getLookupDataMap(data);
-                    
-                    boolean[] nullKeyValues = new boolean[lookupKeys.length];                
-                    for(int i = 0; i < lookupKeys.length; i++) {
-                        nullKeyValues[i] = lookupDataMap.get(lookupKeys[i].getName()) == null;
+
+                    boolean[] nullKeyValues = new boolean[lookupKeys.size()];
+                    for (int i = 0; i < lookupKeys.size(); i++) {
+                        nullKeyValues[i] = lookupDataMap.get(lookupKeys.get(i).getName()) == null;
                     }
 
                     this.currentDmlStatement = platform.createDmlStatement(DmlType.UPDATE,
                             targetTable.getCatalog(), targetTable.getSchema(),
-                            targetTable.getName(), lookupKeys,
-                            changedColumnsList.toArray(new Column[changedColumnsList.size()]), nullKeyValues);
+                            targetTable.getName(),
+                            lookupKeys.toArray(new Column[lookupKeys.size()]),
+                            changedColumnsList.toArray(new Column[changedColumnsList.size()]),
+                            nullKeyValues);
                     if (log.isDebugEnabled()) {
                         log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                     }
@@ -583,8 +604,8 @@ public class DatabaseWriter implements IDataWriter {
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
-                String[] values = (String[]) ArrayUtils
-                        .addAll(columnValues, getLookupKeyData(lookupDataMap, currentDmlStatement));
+                String[] values = (String[]) ArrayUtils.addAll(columnValues,
+                        getLookupKeyData(lookupDataMap, currentDmlStatement));
 
                 try {
                     long count = execute(data, values);
@@ -742,11 +763,10 @@ public class DatabaseWriter implements IDataWriter {
         }
         return needsUpdated;
     }
-    
+
     protected Map<String, String> getLookupDataMap(CsvData data) {
         if (data.getDataEventType() == DataEventType.INSERT) {
-            return data.toColumnNameValuePairs(targetTable.getColumnNames(),
-                    CsvData.ROW_DATA);
+            return data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
         } else {
             Map<String, String> keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
                     CsvData.OLD_DATA);
@@ -758,7 +778,7 @@ public class DatabaseWriter implements IDataWriter {
                 keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
                         CsvData.ROW_DATA);
             }
-            return keyData;        
+            return keyData;
         }
     }
 
