@@ -59,7 +59,7 @@
        the batch is retried.
        </note>
        <note>The query above will also show you any recent batches that
-       were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="solving-synchronization-issues-resolution" /> for more details.
+       were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="solving-synchronization-issues-resolution-outgoing" /> for more details.
        </note>
        <para>
        To get a full picture of the batch, you can query for information representing the complete 

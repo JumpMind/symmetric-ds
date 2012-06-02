@@ -398,8 +398,7 @@
             As you plan your SymmetricDS implementation, make notes of cases where a data transformation is needed. Include
             details such as when the transformation might occur (is it only on an insert, or a delete?), which tables or
             columns play a part, etc. Complete details of all the transformation features, including how to configure a
-            transformation, are discussed in
-            <xref linkend="transform-data" />
+            transformation, are discussed in <xref linkend="transform-data" />.
             .
         </para>
     </section>
