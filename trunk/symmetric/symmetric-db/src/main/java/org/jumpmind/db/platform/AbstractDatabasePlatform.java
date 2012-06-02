@@ -116,14 +116,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table) {
         return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), table.getColumns());
+                table.getPrimaryKeyColumns(), table.getColumns(), null);
     }
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns) {
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
         return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp(), getDdlBuilder()
-                        .getDatabaseInfo().getDelimiterToken());
+                        .getDatabaseInfo().getDelimiterToken(), nullKeyValues);
     }
 
     public IDdlReader getDdlReader() {

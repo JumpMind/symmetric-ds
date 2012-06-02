@@ -17,8 +17,6 @@ import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -43,25 +41,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void notExpectingError() {
         setErrorExpected(false);
         writerSettings.setDefaultConflictSetting(new Conflict());
-    }
-
-    @Test
-    public void testBlobInWhereClause() {
-        ISqlTransaction template = platform.getSqlTemplate().startSqlTransaction();
-        try {
-            template.prepareAndExecute("delete from test_blob");
-            byte[] blob = new byte[] { 0x1, '\r', 0x2, '\n', 0x3 };
-            template.prepareAndExecute("insert into test_blob values(1,null,?)",
-                    new Object[] { blob });
-            template.commit();
-            int rows = template.prepareAndExecute(
-                    "update test_blob set string_value=? where blob_value=?", new Object[] {
-                            "test", blob });
-            template.commit();
-            Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);
-        } finally {
-            template.close();
-        }
     }
 
     @Test
@@ -268,6 +247,54 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         }
 
     }
+    
+    @Test
+    public void testUpdateDetectOldDataWithNullManual() {
+        Conflict setting = new Conflict();
+        setting.setConflictId("unit.test");
+        setting.setDetectType(DetectConflict.USE_OLD_DATA);
+        setting.setResolveRowOnly(false);
+        setting.setResolveChangesOnly(false);
+        setting.setResolveType(ResolveConflict.MANUAL);
+        writerSettings.setDefaultConflictSetting(setting);
+
+        String origId = getNextId();
+        String[] originalValues = massageExpectectedResultsForDialect(new String[] { origId,
+                null, "changed value", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" });
+
+        CsvData data = new CsvData(DataEventType.INSERT, originalValues);
+        writeData(data, originalValues);
+
+        String[] oldData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        oldData[2] = "original value";
+        oldData = massageExpectectedResultsForDialect(oldData);
+
+        String[] newData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        newData[2] = "new value";
+        newData = massageExpectectedResultsForDialect(newData);
+
+        CsvData update = new CsvData(DataEventType.UPDATE);
+        update.putParsedData(CsvData.ROW_DATA, newData);
+        update.putParsedData(CsvData.OLD_DATA, oldData);
+
+        try {
+            writeData(update);
+            Assert.fail("Should have received a conflict exception");
+        } catch (ConflictException ex) {
+            Statistics stats = lastDataWriterUsed.getStatistics().values().iterator().next();
+            long statementNumber = stats.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            ResolvedData resolvedData = new ResolvedData(statementNumber,
+                    update.getCsvData(CsvData.ROW_DATA), false);
+            writerSettings.setResolvedData(resolvedData);
+            writeData(update);
+            Map<String, Object> row = queryForRow(origId);
+            Assert.assertNotNull(row);
+            Assert.assertEquals(newData[2], row.get("string_required_value"));
+        }
+
+    }
+    
 
     @Test
     public void testUpdateDetectChangedDataIgnoreRow() {

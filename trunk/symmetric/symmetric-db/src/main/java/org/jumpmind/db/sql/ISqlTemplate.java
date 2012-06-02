@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.db.model.Table;
-
 /**
  * This interface insulates the application from the data connection technology.
  */
@@ -68,14 +66,6 @@ public interface ISqlTemplate {
     public int update(String sql, Object[] values, int[] types);
 
     public int update(String sql, Object... values);
-
-    public int update(Table table, Map<String, Object> params);
-
-    public int insert(Table table, Map<String, Object> params);
-
-    public int delete(Table table, Map<String, Object> params);
-
-    public void save(Table table, Map<String, Object> params);
 
     public void testConnection();
 

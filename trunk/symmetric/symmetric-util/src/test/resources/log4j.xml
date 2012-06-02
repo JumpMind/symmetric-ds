@@ -19,11 +19,10 @@
     </category>    
      -->
      
-     <!-- To print out data writer
+     <!-- To print out data writer     -->     
     <category name="org.jumpmind.symmetric.io.data.writer">
         <priority value="DEBUG" />
     </category>
-     -->     
           
     <category name="org.jumpmind.db.alter">
         <priority value="DEBUG" />

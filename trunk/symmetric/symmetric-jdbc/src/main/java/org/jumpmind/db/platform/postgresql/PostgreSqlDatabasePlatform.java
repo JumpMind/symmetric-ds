@@ -179,10 +179,10 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns) {
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
         return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getDatabaseInfo().isDateOverridesToTimestamp(),
-                getDatabaseInfo().getDelimiterToken());
+                getDatabaseInfo().getDelimiterToken(), nullKeyValues);
     }
     
 }
