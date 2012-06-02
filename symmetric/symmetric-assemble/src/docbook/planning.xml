@@ -342,8 +342,7 @@
                     achieved through an initial load. A part of your planning, be sure to consider which tables, if any, will
                     need to be loaded initially. SymmetricDS can also perform an initial load on a table with just a subset
                     of data. Initial Loads are further discussed in
-                    <xref linkend="configuration-initial-load" />
-                    .
+                    <xref linkend="configuration-initial-load" />.
                 </para>
             </section>
             <section id="defining-data-changes-trigger-routers-ping-back">
@@ -355,8 +354,7 @@
                     you need SymmetricDS to go ahead and send the data back to the originating node - a "ping back". As part
                     of the planning process, consider whether you have a special case for needing ping back. Ping Back
                     control is further discussed in
-                    <xref linkend="configuration-trigger-router-ping-back" />
-                    .
+                    <xref linkend="configuration-trigger-router-ping-back" />.
                 </para>
             </section>
         </section>
@@ -399,7 +397,6 @@
             details such as when the transformation might occur (is it only on an insert, or a delete?), which tables or
             columns play a part, etc. Complete details of all the transformation features, including how to configure a
             transformation, are discussed in <xref linkend="transform-data" />.
-            .
         </para>
     </section>
     <section id="defining-conflicts">
@@ -423,10 +420,8 @@
             more than one node at the same time. For each table, think through what should happen in each case if such an
             event occurs. If the tables on a given channel all have the same set of conflict resolution and detection rules,
             then you might be able to configure the rules for the channel instead of a series of table-level detections and
-            resolutions. Complete details on how to configure conflict resolution and detection, along with all available
-            options, are discussed further in
-            <xref linkend="conflicts" />
-            .
+            resolutions. Complete details on how to configure conflict resolution and detection are discussed further in
+            <xref linkend="conflicts" />.
         </para>
     </section>
 </chapter>
