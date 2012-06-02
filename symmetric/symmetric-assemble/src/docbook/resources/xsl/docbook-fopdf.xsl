@@ -140,7 +140,7 @@
             </xsl:if>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="$sequence='blank'">
+           <xsl:when test="$sequence='blank'">
                 <xsl:if test="$position = 'center'">
                     <xsl:value-of select="$Version" />
                 </xsl:if>
@@ -155,7 +155,10 @@
                         <fo:page-number />
                     </xsl:when>
                     <xsl:when test="$position='center'">
-                        <xsl:value-of select="$Version" />
+                      <xsl:value-of select="$Version" />
+                    </xsl:when>
+                    <xsl:when test="$sequence = 'first' and $position='right'">
+                        <fo:page-number />
                     </xsl:when>
                 </xsl:choose>
             </xsl:when>
@@ -207,9 +210,9 @@
     
     <!-- Paper type, no headers on blank pages, no double sided printing-->
     <xsl:param name="paper.type">USletter</xsl:param>
-    <xsl:param name="double.sided">0</xsl:param>
+    <xsl:param name="double.sided">1</xsl:param>
     <xsl:param name="headers.on.blank.pages">0</xsl:param>
-    <xsl:param name="footers.on.blank.pages">0</xsl:param>
+    <xsl:param name="footers.on.blank.pages">1</xsl:param>
 
     <!-- Space between paper border and content (chaotic stuff, don't touch)-->
     <xsl:param name="page.margin.top">5mm</xsl:param>
@@ -277,7 +280,7 @@
                          Labels
     ###################################################-->   
 
-    <!-- Label Chapters and Sections (numbering)-->
+    <!-- Labels and Sections (numbering)-->
     <xsl:param name="chapter.autolabel">1</xsl:param>
     <xsl:param name="section.autolabel" select="1"/>
     <xsl:param name="section.label.includes.component.label" select="1"/>

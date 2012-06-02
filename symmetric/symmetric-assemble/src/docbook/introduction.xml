@@ -51,8 +51,7 @@
         </itemizedlist>
         <para>
             See
-            <xref linkend="databases" />
-            , for compatibility notes and other details for your specific database.
+            <xref linkend="databases" /> , for compatibility notes and other details for your specific database.
         </para>
     </section>
     <section id="definition">
@@ -455,8 +454,7 @@
         </para>
         <para>
             SymmetricDS 3 introduces a long anticipated feature: Conflict Detection and Resolution. Please see
-            <xref linkend="defining-conflicts" />
-            for more information.
+            <xref linkend="defining-conflicts" /> for more information.
         </para>
         <para> Transformations are now friendlier. They allow columns to be implied. This means that when configuring
             transformations, not all of the columns have to be specified which makes transformations much more maintainable.
@@ -467,8 +465,7 @@
         </para>
         <para>
             Several properties and extension points have been deprecated or renamed. Please see
-            <xref linkend="upgrading" />
-            for a list of deprecated features.
+            <xref linkend="upgrading" /> for a list of deprecated features.
         </para>
     </section>
 </chapter>
