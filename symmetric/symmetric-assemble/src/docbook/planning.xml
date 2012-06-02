@@ -421,7 +421,4 @@
             event occurs. If the tables on a given channel all have the same set of conflict resolution and detection rules,
             then you might be able to configure the rules for the channel instead of a series of table-level detections and
             resolutions. Complete details on how to configure conflict resolution and detection are discussed further in
-            <xref linkend="conflicts" />.
-        </para>
-    </section>
-</chapter>
+            <xref linkend="conflicts" />.</para></section></chapter>
