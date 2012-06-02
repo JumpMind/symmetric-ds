@@ -34,7 +34,7 @@
     </l:context>
     <l:context name="xref-number-and-title">
       <l:template name="section" style="table" text="%t"/>
-      <l:template name="appendix" text="Appendix&#160;%n, %t (p.&#160;%p)&#160;"/>
+      <l:template name="appendix" text="Appendix&#160;%n, %t (p.&#160;%p)&#160;&#160;"/>
       <l:template name="chapter" text="Chapter&#160;%n, %t (p.&#160;%p)&#160;"/>
       <l:template name="section" text="Section&#160;%n, %t (p.&#160;%p)&#160;"/>
     </l:context>
