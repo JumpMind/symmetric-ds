@@ -51,12 +51,13 @@
         </itemizedlist>
         <para>
             See
-            <xref linkend="databases" /> , for compatibility notes and other details for your specific database.
+            <xref linkend="databases" />, for compatibility notes and other details for your specific database.
         </para>
     </section>
     <section id="definition">
         <title>Overview</title>
         <para>The following is an overview of how SymmetricDS works.</para>
+        <?hard-pagebreak?>
         <section>
             <title>A Node is Born</title>
             <para> SymmetricDS is a Java-based application that hosts a synchronization engine which acts as an agent for
