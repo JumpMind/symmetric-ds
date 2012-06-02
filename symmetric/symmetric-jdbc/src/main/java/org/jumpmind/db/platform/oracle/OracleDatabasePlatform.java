@@ -85,10 +85,10 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns) {
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
         return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getDatabaseInfo().isDateOverridesToTimestamp(), getDatabaseInfo()
-                        .getDelimiterToken());
+                        .getDelimiterToken(), nullKeyValues);
     }
 
 }

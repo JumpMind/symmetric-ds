@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,34 +182,6 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
 
     public int update(String sql, Object... values) {
         return update(sql, values, null);
-    }
-
-    public int update(Table table, Map<String, Object> params) {
-        return update(DmlType.UPDATE, table, params);
-    }
-
-    public int insert(Table table, Map<String, Object> params) {
-        return update(DmlType.INSERT, table, params);
-    }
-
-    public int delete(Table table, Map<String, Object> params) {
-        return update(DmlType.DELETE, table, params);
-    }
-
-    public void save(Table table, Map<String, Object> params) {
-        if (update(table, params) == 0) {
-            insert(table, params);
-        }
-    }
-
-    protected int update(DmlType type, Table table, Map<String, Object> params) {
-        DmlStatement updateStmt = new DmlStatement(type, table.getCatalog(), table.getSchema(),
-                table.getName(), table.getPrimaryKeyColumns(), table.getColumns(),
-                dateOverrideToTimestamp, identifierQuoteString);
-        String sql = updateStmt.getSql();
-        int[] types = updateStmt.getTypes();
-        Object[] values = updateStmt.buildArgsFrom(params);
-        return update(sql, values, types);
     }
 
     protected String expandSql(String sql, Object[] args) {

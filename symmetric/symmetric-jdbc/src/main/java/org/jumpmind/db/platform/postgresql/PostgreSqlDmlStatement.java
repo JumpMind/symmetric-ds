@@ -29,9 +29,9 @@ public class PostgreSqlDmlStatement extends DmlStatement {
 
     public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString) {
+            String identifierQuoteString, boolean[] nullKeyValues) {
         super(type, catalogName, schemaName, tableName, keys, columns, isDateOverrideToTimestamp,
-                identifierQuoteString);
+                identifierQuoteString, nullKeyValues);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.append(") is null)");
             return sql.toString();
         } else {
-            return super.buildInsertSql(tableName, keys, columns);
+            return super.buildInsertSql(tableName, keyColumns, columns);
         }
     }
 
@@ -111,10 +111,13 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
 
     @Override
-    public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
+    public void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullValues, String separator) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getMappedTypeCode() == -101) {
+                if (nullValues[i]) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                    .append(" is NULL").append(separator);
+                } else if (columns[i].getMappedTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = cast(? as timestamp with time zone)").append(separator);
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {

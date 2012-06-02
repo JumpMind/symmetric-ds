@@ -58,6 +58,8 @@ public class CsvData {
 
     protected DataEventType dataEventType;
 
+    protected boolean[] changedDataIndicators;
+
     public CsvData(DataEventType dataEventType) {
         this.dataEventType = dataEventType;
     }
@@ -73,7 +75,8 @@ public class CsvData {
         this.putParsedData(ROW_DATA, rowData);
     }
 
-    public CsvData(DataEventType dataEventType, String[] rowData, String[] oldData, String[] resolveData) {
+    public CsvData(DataEventType dataEventType, String[] rowData, String[] oldData,
+            String[] resolveData) {
         this(dataEventType);
         this.putParsedData(ROW_DATA, rowData);
         this.putParsedData(OLD_DATA, oldData);
@@ -123,6 +126,7 @@ public class CsvData {
         if (csvData == null) {
             csvData = new HashMap<String, String>(2);
         }
+        changedDataIndicators = null;
         csvData.put(key, data);
     }
 
@@ -142,23 +146,27 @@ public class CsvData {
     }
 
     public boolean[] getChangedDataIndicators() {
-        String[] newData = getParsedData(ROW_DATA);
-        boolean[] changes = new boolean[newData.length];
-        String[] oldData = getParsedData(OLD_DATA);
-        for (int i = 0; i < newData.length; i++) {
-            if (oldData != null && oldData.length > i) {
-                if (newData[i] == null) {
-                    changes[i] = oldData[i] != null;
-                } else if (oldData[i] == null) {
-                    changes[i] = newData[i] != null;
+        if (changedDataIndicators == null) {
+            String[] newData = getParsedData(ROW_DATA);
+            boolean[] changes = new boolean[newData.length];
+            String[] oldData = getParsedData(OLD_DATA);
+            for (int i = 0; i < newData.length; i++) {
+                if (oldData != null && oldData.length > i) {
+                    if (newData[i] == null) {
+                        changes[i] = oldData[i] != null;
+                    } else if (oldData[i] == null) {
+                        changes[i] = newData[i] != null;
+                    } else {
+                        changes[i] = !newData[i].equals(oldData[i]);
+                    }
                 } else {
-                    changes[i] = !newData[i].equals(oldData[i]);
+                    changes[i] = true;
                 }
-            } else {
-                changes[i] = true;
             }
+
+            changedDataIndicators = changes;
         }
-        return changes;
+        return changedDataIndicators;
     }
 
     public void putParsedData(String key, String[] data) {
@@ -166,6 +174,7 @@ public class CsvData {
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);
         }
+        changedDataIndicators = null;
         parsedCsvData.put(key, data);
     }
 
@@ -192,7 +201,7 @@ public class CsvData {
         }
         return values;
     }
-    
+
     public String[] getPkData(Table table) {
         String[] data = getPkData(table, CsvData.PK_DATA);
         if (data == null || data.length == 0) {
@@ -230,7 +239,7 @@ public class CsvData {
             return new HashMap<String, String>(0);
         }
     }
-    
+
     public boolean requiresTable() {
         return dataEventType != null && dataEventType != DataEventType.CREATE;
     }
