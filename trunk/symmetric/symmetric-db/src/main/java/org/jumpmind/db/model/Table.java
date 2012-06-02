@@ -238,6 +238,15 @@ public class Table implements Serializable, Cloneable {
     public Column[] getColumns() {
         return (Column[]) columns.toArray(new Column[columns.size()]);
     }
+    
+    /**
+     * Returns the columns in this table.
+     * 
+     * @return The columns
+     */
+    public List<Column> getColumnsAsList() {
+        return new ArrayList<Column>(this.columns);
+    }
 
     /**
      * Adds the given column.
@@ -715,7 +724,7 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The primary key columns
      */
-    public Column[] getPrimaryKeyColumns() {
+    public List<Column> getPrimaryKeyColumnsAsList() {
         if (columns != null) {
             List<Column> selectedColumns = new ArrayList<Column>();
             for (Column column : columns) {
@@ -725,10 +734,20 @@ public class Table implements Serializable, Cloneable {
                     }
                 }
             }
-            return selectedColumns.toArray(new Column[selectedColumns.size()]);
+            return selectedColumns;
         } else {
-            return new Column[0];
+            return new ArrayList<Column>(0);
         }
+    }
+    
+    /**
+     * Returns the primary key columns of this table.
+     * 
+     * @return The primary key columns
+     */
+    public Column[] getPrimaryKeyColumns() {
+        List<Column> pkColumns = getPrimaryKeyColumnsAsList();
+        return pkColumns.toArray(new Column[pkColumns.size()]);
     }
 
     /**
