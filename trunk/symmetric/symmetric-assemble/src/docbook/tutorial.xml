@@ -233,7 +233,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Open registration for the client node server by executing:</para>
                 <para>
-                    <command> ../bin/symadmin --engine server --open-registration "store,1"</command>
+                    <command> ../bin/symadmin --engine server open-registration store 1</command>
                 </para>
                 <para>
                     The registration is now opened for a node group called "store" with an external identifier of "1". This
@@ -265,7 +265,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Send an initial load of data to the client node server by executing:</para>
                 <para>
-                    <command>../bin/sym --engine server --reload-node 1</command>
+                    <command>../bin/sym --engine server reload-node 1</command>
                 </para>
                 <para> With this command, the server node queues up an initial load for the client node that will be sent the next
                     time the client performs its pull. The initial load includes data for each table that is configured for
