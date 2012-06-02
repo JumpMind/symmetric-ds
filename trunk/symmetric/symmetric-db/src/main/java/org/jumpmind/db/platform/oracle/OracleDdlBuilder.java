@@ -50,6 +50,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     public OracleDdlBuilder() {
         databaseInfo.setMaxIdentifierLength(30);
         databaseInfo.setIdentityStatusReadingSupported(false);
+        databaseInfo.setBlobsWorkInWhereClause(false);
 
         // Note that the back-mappings are partially done by the model reader,
         // not the driver

@@ -31,7 +31,6 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -42,6 +41,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
     public DerbyDdlBuilder() {
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
+        databaseInfo.setBlobsWorkInWhereClause(false);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "CHAR {0} FOR BIT DATA");
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
