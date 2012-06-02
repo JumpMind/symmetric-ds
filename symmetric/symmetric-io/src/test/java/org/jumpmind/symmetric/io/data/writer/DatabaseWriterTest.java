@@ -18,6 +18,7 @@ import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -43,14 +44,24 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setErrorExpected(false);
         writerSettings.setDefaultConflictSetting(new Conflict());
     }
-    
+
     @Test
-    public void testNullInWhereClause() {
-        ISqlTemplate template = platform.getSqlTemplate();
-        template.update("delete from test_blob");
-        template.update("insert into test_blob values(1,null,null)");
-        int rows = template.update("update test_blob set string_value=? where string_value=?", new Object[] {"test", null});
-        Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);        
+    public void testBlobInWhereClause() {
+        ISqlTransaction template = platform.getSqlTemplate().startSqlTransaction();
+        try {
+            template.prepareAndExecute("delete from test_blob");
+            byte[] blob = new byte[] { 0x1, '\r', 0x2, '\n', 0x3 };
+            template.prepareAndExecute("insert into test_blob values(1,null,?)",
+                    new Object[] { blob });
+            template.commit();
+            int rows = template.prepareAndExecute(
+                    "update test_blob set string_value=? where blob_value=?", new Object[] {
+                            "test", blob });
+            template.commit();
+            Assert.assertEquals("Null in the where clause does not work on this platform", 1, rows);
+        } finally {
+            template.close();
+        }
     }
 
     @Test
@@ -72,15 +83,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        
-        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.UPDATE,
@@ -108,14 +120,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[6] = "2012-03-12 06:00:00.0";
         data = new CsvData(DataEventType.INSERT,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.INSERT,
@@ -142,14 +156,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
 
-        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[8] = "46";
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
 
-        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldBeApplied[2] = "string3";
         updateShouldBeApplied[8] = "48";
         data = new CsvData(DataEventType.UPDATE,
@@ -178,7 +194,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         long before = countRows(TEST_TABLE);
 
-        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
+        String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
+                originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
         updateShouldNotBeApplied[8] = "1";
         CsvData update = new CsvData(DataEventType.UPDATE,
