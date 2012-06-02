@@ -53,7 +53,7 @@
                         or a delete. If a row already exists during an insert then a conflict has been detected.
                     </para>
                     <para>Note that some platforms do not support comparisons of binary columns. You might get false positive
-                        conflicts when using binary columns on the following platforms: DB2, DERBBY, ORACLE, and SQLSERVER
+                        conflicts when using binary columns on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
                     </para>
                 </listitem>
             </varlistentry>
@@ -69,7 +69,7 @@
                         detected.
                     </para>
                     <para>Note that some platforms do not support comparisons of binary columns. You might get false positive
-                        conflicts when using binary columns on the following platforms: DB2, DERBBY, ORACLE, and SQLSERVER
+                        conflicts when using binary columns on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
                         </para>                    
                 </listitem>
             </varlistentry>
