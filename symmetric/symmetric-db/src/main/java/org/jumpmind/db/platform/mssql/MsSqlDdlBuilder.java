@@ -66,7 +66,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     public MsSqlDdlBuilder() {
 
         databaseInfo.setMaxIdentifierLength(128);
-
+        databaseInfo.setBlobsWorkInWhereClause(false);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
         // BIGINT will be mapped back to BIGINT by the model reader
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
