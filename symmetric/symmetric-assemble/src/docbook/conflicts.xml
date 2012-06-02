@@ -52,8 +52,8 @@
                         on the target system as they were on the source system, then no conflict is detected during an update
                         or a delete. If a row already exists during an insert then a conflict has been detected.
                     </para>
-                    <para>Note that some platforms do not support comparisons of binary columns. You might get false positive
-                        conflicts when using binary columns on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
+                    <para>Note that some platforms do not support comparisons of binary columns. Conflicts in binary column
+                    values will not be detected on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
                     </para>
                 </listitem>
             </varlistentry>
@@ -68,9 +68,8 @@
                         during an update or a delete. If a row already exists during an insert then a conflict has been
                         detected.
                     </para>
-                    <para>Note that some platforms do not support comparisons of binary columns. You might get false positive
-                        conflicts when using binary columns on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
-                        </para>                    
+                    <para>Note that some platforms do not support comparisons of binary columns. Conflicts in binary column
+                    values will not be detected on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
                 </listitem>
             </varlistentry>
             <varlistentry>
