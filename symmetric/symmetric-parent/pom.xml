@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>parent</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -33,9 +33,9 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.0</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.0</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.0</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</url>
     </scm>
 
     <distributionManagement>
@@ -351,18 +351,18 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>            
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -374,7 +374,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -385,13 +385,13 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -403,7 +403,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -414,39 +414,39 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-csv</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
                 <type>test-jar</type>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-server</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.kxml</groupId>
