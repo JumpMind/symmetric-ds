@@ -70,6 +70,7 @@
                     </para>
                     <para>Note that some platforms do not support comparisons of binary columns. Conflicts in binary column
                     values will not be detected on the following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
+                    </para>
                 </listitem>
             </varlistentry>
             <varlistentry>
