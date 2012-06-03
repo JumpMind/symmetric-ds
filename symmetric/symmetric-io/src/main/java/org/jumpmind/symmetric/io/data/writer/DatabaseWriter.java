@@ -458,9 +458,10 @@ public class DatabaseWriter implements IDataWriter {
 
                 lookupDataMap = getLookupDataMap(data);
 
-                boolean[] nullKeyValues = new boolean[lookupKeys.size()];
+                boolean[] nullKeyValues = new boolean[lookupKeys.size()];                
                 for (int i = 0; i < lookupKeys.size(); i++) {
-                    nullKeyValues[i] = lookupDataMap.get(lookupKeys.get(i).getName()) == null;
+                    Column column = lookupKeys.get(i);
+                    nullKeyValues[i] =  !column.isRequired() && lookupDataMap.get(column.getName()) == null;
                 }
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
@@ -585,7 +586,13 @@ public class DatabaseWriter implements IDataWriter {
 
                     boolean[] nullKeyValues = new boolean[lookupKeys.size()];
                     for (int i = 0; i < lookupKeys.size(); i++) {
-                        nullKeyValues[i] = lookupDataMap.get(lookupKeys.get(i).getName()) == null;
+                        Column column = lookupKeys.get(i);
+                        // the isRequired is a bit of a hack. This nullKeyValues
+                        // should really be checking against the object values
+                        // because some null values get translated into empty
+                        // strings
+                        nullKeyValues[i] = !column.isRequired()
+                                && lookupDataMap.get(column.getName()) == null;
                     }
 
                     this.currentDmlStatement = platform.createDmlStatement(DmlType.UPDATE,
