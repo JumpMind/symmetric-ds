@@ -204,13 +204,13 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
         load(out);
 
-        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
+        assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
 
         batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
 
-        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
+        assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
 
         setLoggingLevelForTest(old);
     }
