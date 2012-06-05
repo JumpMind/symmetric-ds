@@ -83,9 +83,13 @@ public class TestTablesService extends AbstractService {
                 order.getStatus(), order.getDeliverDate());
         List<OrderDetail> details = order.getOrderDetails();
         for (OrderDetail orderDetail : details) {
-            sqlTemplate.update(getSql("insertOrderDetailSql"), orderDetail.getOrderId(),
-                    orderDetail.getLineNumber(), orderDetail.getItemType(),
-                    orderDetail.getItemId(), orderDetail.getQuantity(), orderDetail.getPrice());
+            sqlTemplate.update(
+                    getSql("insertOrderDetailSql"),
+                    new Object[] { orderDetail.getOrderId(), orderDetail.getLineNumber(),
+                            orderDetail.getItemType(), orderDetail.getItemId(),
+                            orderDetail.getQuantity(), orderDetail.getPrice() }, new int[] {
+                            Types.VARCHAR, Types.NUMERIC, Types.CHAR, Types.VARCHAR, Types.NUMERIC,
+                            Types.NUMERIC });
         }
     }
 
@@ -113,8 +117,8 @@ public class TestTablesService extends AbstractService {
 
     public int updateCustomer(int id, String column, Object value, int type) {
         return sqlTemplate.update(
-                String.format("update test_customer set %s=? where customer_id=?", column), new Object[] {value,
-                id}, new int[] {type, Types.NUMERIC});
+                String.format("update test_customer set %s=? where customer_id=?", column),
+                new Object[] { value, id }, new int[] { type, Types.NUMERIC });
     }
 
     public Customer getCustomer(int id) {
@@ -158,7 +162,7 @@ public class TestTablesService extends AbstractService {
                 .getTableFromCache(null, null, "test_triggers_table", true);
         String quote = getSymmetricDialect().getPlatform().getDatabaseInfo().getDelimiterToken();
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
-        try {            
+        try {
             transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable, quote);
             transaction.prepareAndExecute(getSql("insertIntoTestTriggersTableSql"), values);
             transaction.commit();
