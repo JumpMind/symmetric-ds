@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -191,7 +192,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLastUpdatedTime(new Date());
             sqlTemplate.update(
                     getSql("insertIncomingBatchSql"),
-                    new Object[] { Long.valueOf(batch.getBatchId()), batch.getNodeId(),
+                    new Object[] { batch.getBatchId(), batch.getNodeId(),
                             batch.getChannelId(), batch.getStatus().name(),
                             batch.getNetworkMillis(), batch.getFilterMillis(),
                             batch.getDatabaseMillis(), batch.getFailedRowNumber(),
@@ -201,7 +202,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getMissingDeleteCount(), batch.getSkipCount(),
                             batch.getSqlState(), batch.getSqlCode(),
                             StringUtils.abbreviate(batch.getSqlMessage(), 1000),
-                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() });
+                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
+                            new int[] {
+                        Types.NUMERIC, Types.VARCHAR,
+                        Types.VARCHAR, Types.CHAR,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC,
+                        Types.VARCHAR, Types.NUMERIC,
+                        Types.VARCHAR,
+                        Types.VARCHAR, Types.TIMESTAMP
+                    });
         }
     }
 
@@ -227,7 +241,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getSqlState(), batch.getSqlCode(),
                             StringUtils.abbreviate(batch.getSqlMessage(), 1000),
                             batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(),
-                            Long.valueOf(batch.getBatchId()), batch.getNodeId() });
+                            batch.getBatchId(), batch.getNodeId() },
+                            new int[] {
+                        Types.CHAR, Types.SMALLINT,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC,
+                                Types.VARCHAR, Types.NUMERIC,
+                                Types.VARCHAR,
+                                Types.VARCHAR, Types.TIMESTAMP,
+                                Types.NUMERIC, Types.VARCHAR
+                    });
         }
         return count;
     }

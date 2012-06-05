@@ -52,6 +52,6 @@ public interface ISqlTransaction {
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote);
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
-            Object... args);
+            Object[] args, int[] types);
 
 }

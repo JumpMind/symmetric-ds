@@ -367,10 +367,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
-            Object... args) {
+            Object[] args, int[] types) {
         try {
             return jdbcSqlTemplate.insertWithGeneratedKey(connection, sql, column, sequenceName,
-                    args, null);
+                    args, types);
         } catch (SQLException ex) {
             throw jdbcSqlTemplate.translate(ex);
         }
