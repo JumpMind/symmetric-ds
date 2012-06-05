@@ -49,7 +49,7 @@ public class SymmetricEngineHolder {
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
     private boolean multiServerMode = false;
-    
+
     private String singleServerPropertiesFile;
 
     private static Date createTime = new Date();
@@ -71,11 +71,11 @@ public class SymmetricEngineHolder {
     public boolean isMultiServerMode() {
         return multiServerMode;
     }
-    
+
     public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
         this.singleServerPropertiesFile = singleServerPropertiesFile;
     }
-    
+
     public String getSingleServerPropertiesFile() {
         return singleServerPropertiesFile;
     }
@@ -109,14 +109,19 @@ public class SymmetricEngineHolder {
 
         } else {
             ISymmetricEngine engine = create(singleServerPropertiesFile);
-            engine.start();
+            if (engine != null) {
+                engine.start();
+            } else {
+                log.error("The engine was not created.  Could not start it");
+            }
         }
     }
 
     protected ISymmetricEngine create(String propertiesFile) {
         ServerSymmetricEngine engine = null;
         try {
-            engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile) : null);
+            engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile)
+                    : null);
             engine.setDeploymentType(deploymentType);
             if (!engines.containsKey(engine.getEngineName())) {
                 engines.put(engine.getEngineName(), engine);
@@ -196,7 +201,8 @@ public class SymmetricEngineHolder {
             engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, engineName);
             String engineExt = "";
             int engineNumber = 0;
-            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt + ".properties").exists()) {
+            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt
+                    + ".properties").exists()) {
                 engineNumber++;
                 engineExt = "-" + engineNumber;
             }

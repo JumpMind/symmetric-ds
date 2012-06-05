@@ -137,7 +137,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.startsWith("TEXT")) {
+        if (typeName != null && typeName.toLowerCase().startsWith("text")) {
             return Types.CLOB;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);

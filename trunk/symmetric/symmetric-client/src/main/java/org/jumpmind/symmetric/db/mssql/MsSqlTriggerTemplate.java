@@ -75,7 +75,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     declare @DataRow varchar(max)                                                                                                                                        " + 
 "     $(declareNewKeyVariables)                                                                                                                                            " + 
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " + 
-"       execute sp_getbindtoken @TransactionId output;                                                                                                                     " + 
+"       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " + 
 "     end                                                                                                                                                                  " + 
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
 "       declare DataCursor cursor local for                                                                                                                                " + 
@@ -108,7 +108,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     $(declareOldKeyVariables)                                                                                                                                            " + 
 "     $(declareNewKeyVariables)                                                                                                                                            " + 
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " + 
-"       execute sp_getbindtoken @TransactionId output;                                                                                                                     " + 
+"       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " + 
 "     end                                                                                                                                                                  " + 
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
 "       declare DataCursor cursor local for                                                                                                                                " + 
@@ -139,7 +139,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "    declare @OldDataRow varchar(max)                                                                                                                                     " + 
 "    $(declareOldKeyVariables)                                                                                                                                            " + 
 "    if (@@TRANCOUNT > 0) begin                                                                                                                                           " + 
-"      execute sp_getbindtoken @TransactionId output;                                                                                                                     " + 
+"       select @TransactionId = convert(VARCHAR(1000),transaction_id)    from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                           " + 
 "    end                                                                                                                                                                  " + 
 "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
 "      declare DataCursor cursor local for                                                                                                                                " + 

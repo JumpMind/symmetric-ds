@@ -338,6 +338,9 @@
                         <additionalClasspathElement>
                             ${user.home}/.symmetricds/lib/interclient.jar
                         </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/sqljdbc4.jar
+                        </additionalClasspathElement>                        
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
