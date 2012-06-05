@@ -28,7 +28,7 @@
                         <entry>Database</entry>
                         <entry>Versions supported</entry>
                         <entry>Transaction Identifier</entry>
-                        <entry>Fallback Update</entry>
+                        <entry>Data Capture</entry>
                         <entry>Conditional Sync</entry>
                         <entry>Update Loop Prevention</entry>
                         <entry>BLOB Sync</entry>
@@ -66,6 +66,16 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>
+                    <row>
+                        <entry>Greenplum</entry>
+                        <entry>8.2.15 and above</entry>
+                        <entry>N</entry>
+                        <entry>N</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>N</entry>
+                        <entry>N</entry>
+                    </row>                    
                     <row>
                         <entry>SQL Server</entry>
                         <entry>2005 and above</entry>
@@ -309,6 +319,13 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
         
         </para>
     </section>
+    <section id="ap02-greenplum">
+        <title>Greenplum</title>
+        <para>
+            Greenplum is a data warehouse based on PostgreSQL.  It is supported as a target platform in SymmetricDS.  For the best performance,
+            the SymmetricDS Pro PostgreSQL bulk loader should be used.
+        </para>
+    </section>    
     <section id="ap02-sql-server">
         <title>MS SQL Server</title>
         <para>

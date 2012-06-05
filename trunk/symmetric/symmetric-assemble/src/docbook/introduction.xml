@@ -31,6 +31,9 @@
                 <para>Sql Server 2005 and above</para>
             </listitem>
             <listitem>
+                <para>Sql Server Azure</para>
+            </listitem>            
+            <listitem>
                 <para>HSQLDB 2.x</para>
             </listitem>
             <listitem>
@@ -47,6 +50,9 @@
             </listitem>
             <listitem>
                 <para>Interbase 2009 and above</para>
+            </listitem>
+            <listitem>
+                <para>Greenplum 8.2.15 and above</para>
             </listitem>
         </itemizedlist>
         <para>
