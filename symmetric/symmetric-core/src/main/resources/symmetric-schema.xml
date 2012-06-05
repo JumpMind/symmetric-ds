@@ -256,7 +256,7 @@
     <table name="trigger_router" description="Map a trigger to a router.">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
-        <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. " />
+        <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. If this value is set to a negative number, then the table will be excluded from an initial load." />
         <column name="initial_load_select" type="LONGVARCHAR"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
         <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/> 
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />

@@ -162,6 +162,119 @@ public class DataService extends AbstractService implements IDataService {
                 triggerRouter.getRouter().getRouterId(), true);
     }
 
+    public void insertReloadEvents(Node targetNode) {
+        // outgoing data events are pointless because we are reloading all
+        // data
+        outgoingBatchService.markAllAsSentForNode(targetNode);
+
+        Node sourceNode = nodeService.findIdentity();
+
+        boolean transactional = parameterService
+                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
+
+        ISqlTransaction transaction = null;
+        try {
+
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.beforeReload(transaction, targetNode);
+
+                    if (!transactional) {
+                        transaction.commit();
+                    }
+                }
+            }
+
+            // insert node security so the client doing the initial load knows
+            // that an initial load is currently happening
+            insertNodeSecurityUpdate(transaction, targetNode, true);
+
+            List<TriggerHistory> triggerHistories = triggerRouterService
+                    .getActiveTriggerHistories();
+
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+                    sourceNode, targetNode, triggerHistories);
+
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                for (TriggerHistory triggerHistory : triggerHistories) {
+                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
+                            .get(triggerHistory.getTriggerHistoryId());
+                    for (TriggerRouter triggerRouter : triggerRouters) {
+                        if (triggerRouter.getInitialLoadOrder() >= 0) {
+                            String xml = symmetricDialect.getCreateTableXML(triggerRouter);
+                            insertCreateEvent(transaction, targetNode, triggerRouter, xml, true);
+                            if (!transactional) {
+                                transaction.commit();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
+                        .listIterator(triggerHistories.size()); triggerHistoryIterator
+                        .hasPrevious();) {
+                    TriggerHistory triggerHistory = triggerHistoryIterator.previous();
+                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
+                            .get(triggerHistory.getTriggerHistoryId());
+                    for (ListIterator<TriggerRouter> iterator = triggerRouters
+                            .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                        TriggerRouter triggerRouter = iterator.previous();
+                        if (triggerRouter.getInitialLoadOrder() >= 0) {
+                            insertPurgeEvent(transaction, targetNode, triggerRouter, true);
+                            if (!transactional) {
+                                transaction.commit();
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (TriggerHistory triggerHistory : triggerHistories) {
+                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                        .getTriggerHistoryId());
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (triggerRouter.getInitialLoadOrder() >= 0) {
+                        insertReloadEvent(transaction, targetNode, triggerRouter, null);
+                        if (!transactional) {
+                            transaction.commit();
+                        }
+                    }
+                }
+            }
+
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.afterReload(transaction, targetNode);
+                    if (!transactional) {
+                        transaction.commit();
+                    }
+                }
+            }
+
+            nodeService.setInitialLoadEnabled(transaction, targetNode.getNodeId(), false);
+
+            // don't mark this batch as a load batch so it is forced to go last
+            insertNodeSecurityUpdate(transaction, targetNode,
+                    parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
+
+            statisticManager.incrementNodesLoaded(1);
+
+            transaction.commit();
+
+        } finally {
+            close(transaction);
+        }
+
+        // remove all incoming events from the node are starting a reload
+        // for.
+        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+
+    }
+
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(
                 trigger.getTriggerId(), trigger.getSourceCatalogName(),
@@ -431,113 +544,6 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void insertReloadEvents(Node targetNode) {
-        // outgoing data events are pointless because we are reloading all
-        // data
-        outgoingBatchService.markAllAsSentForNode(targetNode);
-
-        Node sourceNode = nodeService.findIdentity();
-
-        boolean transactional = parameterService
-                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
-
-        ISqlTransaction transaction = null;
-        try {
-
-            transaction = platform.getSqlTemplate().startSqlTransaction();
-
-            if (reloadListeners != null) {
-                for (IReloadListener listener : reloadListeners) {
-                    listener.beforeReload(transaction, targetNode);
-
-                    if (!transactional) {
-                        transaction.commit();
-                    }
-                }
-            }
-
-            // insert node security so the client doing the initial load knows
-            // that an initial load is currently happening
-            insertNodeSecurityUpdate(transaction, targetNode, true);
-
-            List<TriggerHistory> triggerHistories = triggerRouterService
-                    .getActiveTriggerHistories();
-
-            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
-                    sourceNode, targetNode, triggerHistories);
-
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                for (TriggerHistory triggerHistory : triggerHistories) {
-                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
-                            .get(triggerHistory.getTriggerHistoryId());
-                    for (TriggerRouter triggerRouter : triggerRouters) {
-                        String xml = symmetricDialect.getCreateTableXML(triggerRouter);
-                        insertCreateEvent(transaction, targetNode, triggerRouter, xml, true);
-                        if (!transactional) {
-                            transaction.commit();
-                        }
-                    }
-                }
-            }
-
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-                for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
-                        .listIterator(triggerHistories.size()); triggerHistoryIterator
-                        .hasPrevious();) {
-                    TriggerHistory triggerHistory = triggerHistoryIterator.previous();
-                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
-                            .get(triggerHistory.getTriggerHistoryId());
-                    for (ListIterator<TriggerRouter> iterator = triggerRouters
-                            .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
-                        TriggerRouter triggerRouter = iterator.previous();
-                        insertPurgeEvent(transaction, targetNode, triggerRouter, true);
-                        if (!transactional) {
-                            transaction.commit();
-                        }
-                    }
-                }
-            }
-
-            for (TriggerHistory triggerHistory : triggerHistories) {
-                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
-                        .getTriggerHistoryId());
-                for (TriggerRouter trigger : triggerRouters) {
-                    insertReloadEvent(transaction, targetNode, trigger, null);
-                    if (!transactional) {
-                        transaction.commit();
-                    }
-                }
-            }
-
-            if (reloadListeners != null) {
-                for (IReloadListener listener : reloadListeners) {
-                    listener.afterReload(transaction, targetNode);
-                    if (!transactional) {
-                        transaction.commit();
-                    }
-                }
-            }
-
-            nodeService.setInitialLoadEnabled(transaction, targetNode.getNodeId(), false);
-
-            // don't mark this batch as a load batch so it is forced to go last
-            insertNodeSecurityUpdate(transaction, targetNode,
-                    parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
-
-            statisticManager.incrementNodesLoaded(1);
-
-            transaction.commit();
-
-        } finally {
-            close(transaction);
-        }
-
-        // remove all incoming events from the node are starting a reload
-        // for.
-        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-
-    }
-
     private Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories) {
 
@@ -645,20 +651,18 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
-            // TODO message bundle
             return "Unknown node " + nodeId;
         }
 
         Set<TriggerRouter> triggerRouters = triggerRouterService
                 .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (triggerRouters == null || triggerRouters.size() == 0) {
-            // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
         }
 
         insertSqlEvent(targetNode, triggerRouters.iterator().next().getTrigger(), sql, isLoad);
-        // TODO message bundle
+
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
@@ -671,14 +675,14 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
-            // TODO message bundle
+
             return "Unknown node " + nodeId;
         }
 
         Set<TriggerRouter> triggerRouters = triggerRouterService
                 .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (triggerRouters == null || triggerRouters.size() == 0) {
-            // TODO message bundle
+
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
         }
@@ -693,7 +697,7 @@ public class DataService extends AbstractService implements IDataService {
 
             insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
         }
-        // TODO message bundle
+
         return "Successfully created event to reload table " + tableName + " for node "
                 + targetNode.getNodeId();
     }
