@@ -76,7 +76,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
     public void testExtractOneBatchOneRow() {
         save(new TestExtract(id++, "abc 123", "abcdefghijklmnopqrstuvwxyz", new Timestamp(
                 System.currentTimeMillis()), new Date(System.currentTimeMillis()), true,
-                Integer.MAX_VALUE, new BigDecimal(Math.PI)));
+                Integer.MAX_VALUE, new BigDecimal(Double.toString(Math.PI))));
         routeAndCreateGaps();
         ExtractResults results = extract();
         Assert.assertNotNull(results.getBatches());

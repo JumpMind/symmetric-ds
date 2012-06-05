@@ -301,7 +301,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("101", 100, null, date);
         order.getOrderDetails().add(
-                new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+                new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
 
         Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
 
@@ -324,7 +324,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         order = new Order("102", 100, null, date);
         order.getOrderDetails().add(
-                new OrderDetail("102", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+                new OrderDetail("102", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
 
         Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
 
@@ -374,7 +374,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("105", 100, null, date);
         order.getOrderDetails().add(
-                new OrderDetail("105", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+                new OrderDetail("105", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
 
         Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
 
@@ -394,7 +394,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         order = new Order("106", 100, null, date);
         order.getOrderDetails().add(
-                new OrderDetail("106", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+                new OrderDetail("106", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
 
         clientPush();
 
@@ -702,7 +702,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("10", 100, null, date);
         order.getOrderDetails().add(
-                new OrderDetail("10", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+                new OrderDetail("10", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
         clientTestService.insertOrder(order);
         Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
         clientPush();
