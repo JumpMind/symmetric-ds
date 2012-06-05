@@ -64,12 +64,12 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
                         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
+                            CsvData withoutOldData = 
+                                    new CsvData(data.getDataEventType(), data.getParsedData(CsvData.ROW_DATA));
                             try {
                                 // we already tried to update using the pk
-                                performFallbackToInsert(writer, data, conflict);
+                                performFallbackToInsert(writer, withoutOldData, conflict);
                             } catch (ConflictException ex) {
-                                CsvData withoutOldData = 
-                                        new CsvData(data.getDataEventType(), data.getParsedData(CsvData.ROW_DATA));
                                 performFallbackToUpdate(writer, withoutOldData, conflict);
                             }
                         } else {
