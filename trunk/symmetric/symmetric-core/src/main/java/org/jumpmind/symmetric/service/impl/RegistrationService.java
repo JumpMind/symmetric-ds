@@ -119,7 +119,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if (security == null || security.getInitialLoadTime() == null) {
                 saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode, RegistrationStatus.RQ,
                         remoteHost, remoteAddress));
-                log.warn("Registration is not allowed until this node has an initial load");
+                log.warn("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                 return false;
             }
         }

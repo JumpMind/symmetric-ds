@@ -838,7 +838,8 @@ values
         </para>
         <para>
             An initial load is accomplished by inserting reload batches in a defined order according to the <literal>initial_load_order</literal> column on
-            <xref linkend="table_trigger_router" xrefstyle="table"/>.  Initial load data is always queried from the 
+            <xref linkend="table_trigger_router" xrefstyle="table"/>.  If the <literal>initial_load_order</literal> column contains a negative
+            value the associated table will <emphasis>NOT</emphasis> be loaded.  Initial load data is always queried from the 
             source database table.  All data is passed through the configured router to filter out data that 
             might not be targeted at a node.  
         </para>
