@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -110,13 +111,20 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                 .format("insert into %s (varchar_value, longvarchar_value, timestamp_value, date_value, bit_value, bigint_value, decimal_value, id) values(?,?,?,?,?,?,?,?)",
                         TEST_TABLE);
 
-        if (0 == getSqlTemplate().update(updateSql, obj.getVarcharValue(),
-                obj.getLongVarcharValue(), obj.getTimestampValue(), obj.getDateValue(),
-                obj.isBitValue(), obj.getBigIntValue(), obj.getDecimalValue(),
-                obj.getId())) {
-            getSqlTemplate().update(insertSql, obj.getVarcharValue(), obj.getLongVarcharValue(),
-                    obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
-                    obj.getBigIntValue(), obj.getDecimalValue(), obj.getId());
+        if (0 == getSqlTemplate().update(
+                updateSql,
+                new Object[] { obj.getVarcharValue(), obj.getLongVarcharValue(),
+                        obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
+                        obj.getBigIntValue(), obj.getDecimalValue(), obj.getId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BIT,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC })) {
+            getSqlTemplate().update(
+                    insertSql,
+                    new Object[] { obj.getVarcharValue(), obj.getLongVarcharValue(),
+                            obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
+                            obj.getBigIntValue(), obj.getDecimalValue(), obj.getId() },
+                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.DATE,
+                            Types.BIT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC });
         }
 
     }
