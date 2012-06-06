@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -490,21 +491,33 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void save(ConflictNodeGroupLink setting) {
         this.lastConflictCacheResetTimeInMs = 0;
-        if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
-                .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(), setting
-                .getTargetChannelId(), setting.getTargetCatalogName(), setting
-                .getTargetSchemaName(), setting.getTargetTableName(), setting.getDetectType()
-                .name(), setting.getResolveType().name(), setting.getPingBack().name(), setting
-                .isResolveChangesOnly() ? 1 : 0, setting.isResolveRowOnly() ? 1 : 0, setting
-                .getDetectExpression(), setting.getLastUpdateBy(), setting.getConflictId()) == 0) {
-            sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
-                    .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
-                    setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
-                            .getTargetSchemaName(), setting.getTargetTableName(), setting
-                            .getDetectType().name(), setting.getResolveType().name(), setting
-                            .getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0, setting
-                            .isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(), setting
-                            .getLastUpdateBy(), setting.getConflictId());
+        if (sqlTemplate.update(
+                getSql("updateConflictSettingsSql"),
+                new Object[] { setting.getNodeGroupLink().getSourceNodeGroupId(),
+                        setting.getNodeGroupLink().getTargetNodeGroupId(),
+                        setting.getTargetChannelId(), setting.getTargetCatalogName(),
+                        setting.getTargetSchemaName(), setting.getTargetTableName(),
+                        setting.getDetectType().name(), setting.getResolveType().name(),
+                        setting.getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0,
+                        setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(),
+                        setting.getLastUpdateBy(), setting.getConflictId() }, new int[] {
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
+                        Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 0) {
+            sqlTemplate.update(
+                    getSql("insertConflictSettingsSql"),
+                    new Object[] { setting.getNodeGroupLink().getSourceNodeGroupId(),
+                            setting.getNodeGroupLink().getTargetNodeGroupId(),
+                            setting.getTargetChannelId(), setting.getTargetCatalogName(),
+                            setting.getTargetSchemaName(), setting.getTargetTableName(),
+                            setting.getDetectType().name(), setting.getResolveType().name(),
+                            setting.getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0,
+                            setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(),
+                            setting.getLastUpdateBy(), setting.getConflictId() }, new int[] {
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -522,14 +535,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
                 incomingError.getNodeId(), incomingError.getFailedRowNumber(),
                 incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
-                incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),                
-                incomingError.getEventType().getCode(), 
-                incomingError.getBinaryEncoding().name(),
-                incomingError.getColumnNames(),
-                incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
-                incomingError.getOldData(), incomingError.getResolveData(),
-                incomingError.getResolveData(), incomingError.getCreateTime(),
-                incomingError.getLastUpdateBy(), incomingError.getLastUpdateTime());
+                incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
+                incomingError.getEventType().getCode(), incomingError.getBinaryEncoding().name(),
+                incomingError.getColumnNames(), incomingError.getPrimaryKeyColumnNames(),
+                incomingError.getRowData(), incomingError.getOldData(),
+                incomingError.getResolveData(), incomingError.getResolveData(),
+                incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
+                incomingError.getLastUpdateTime());
     }
 
     public void updateIncomingError(IncomingError incomingError) {
@@ -580,7 +592,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             incomingError.setTargetSchemaName(rs.getString("target_schema_name"));
             incomingError.setTargetTableName(rs.getString("target_table_name"));
             incomingError.setEventType(DataEventType.getEventType(rs.getString("event_type")));
-            incomingError.setBinaryEncoding(BinaryEncoding.valueOf(rs.getString("binary_encoding")));
+            incomingError
+                    .setBinaryEncoding(BinaryEncoding.valueOf(rs.getString("binary_encoding")));
             incomingError.setColumnNames(rs.getString("column_names"));
             incomingError.setPrimaryKeyColumnNames(rs.getString("pk_column_names"));
             incomingError.setRowData(rs.getString("row_data"));
