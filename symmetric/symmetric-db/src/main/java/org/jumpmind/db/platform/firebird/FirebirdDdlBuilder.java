@@ -41,6 +41,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
 
     public FirebirdDdlBuilder() {
         databaseInfo.setMaxIdentifierLength(31);
+        databaseInfo.setRequiresAutoCommitForDdl(true);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setCommentPrefix("/*");
         databaseInfo.setCommentSuffix("*/");
