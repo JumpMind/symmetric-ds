@@ -87,8 +87,8 @@ public class CsvData {
     }
 
     public boolean contains(String key) {
-        return (parsedCsvData != null && parsedCsvData.containsKey(key))
-                || (csvData != null && csvData.containsKey(key));
+        return (parsedCsvData != null && parsedCsvData.get(key) != null)
+                || (csvData != null && csvData.get(key) != null);
     }
 
     public void setDataEventType(DataEventType dataEventType) {
