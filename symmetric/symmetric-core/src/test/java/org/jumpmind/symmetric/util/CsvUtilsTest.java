@@ -46,7 +46,9 @@ public class CsvUtilsTest {
     public void testEscapingLineFeedsInCsv() {
         String[] tokens = new String[] {"test", "line\nfeed"};
         String line = CsvUtils.escapeCsvData(tokens);
-        Assert.assertEquals("\"test\",\"line\nfeed\"", line.trim());
+        String[] newTokens = CsvUtils.tokenizeCsvData(line);
+        Assert.assertEquals(tokens[0], newTokens[0]);
+        Assert.assertEquals(tokens[1], newTokens[1]);
     }
     
 }
