@@ -140,9 +140,9 @@ public class TransformWriter implements IDataWriter {
             if (data.contains(CsvData.PK_DATA)) {
                 sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
             } else if (oldSourceValues.size() > 0) {
-                sourceKeyValues = oldSourceValues;
+                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.OLD_DATA);
             } else {
-                sourceKeyValues = sourceValues;
+                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.ROW_DATA);
             }
 
             if (eventType == DataEventType.DELETE) {
