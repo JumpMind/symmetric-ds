@@ -25,8 +25,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.junit.Test;
 
-public class CsvUtilsTest {
-    
+public class CsvUtilsTest {    
 
     @Test
     public void testLastElementIsNull() {
@@ -42,4 +41,12 @@ public class CsvUtilsTest {
         Assert.assertEquals("test", tokens[0]);
         Assert.assertEquals("line\nfeed", tokens[1]);
     }
+    
+    @Test
+    public void testEscapingLineFeedsInCsv() {
+        String[] tokens = new String[] {"test", "line\nfeed"};
+        String line = CsvUtils.escapeCsvData(tokens);
+        Assert.assertEquals("\"test\",\"line\nfeed\"", line.trim());
+    }
+    
 }

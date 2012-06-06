@@ -79,28 +79,18 @@ public class CsvUtils {
     }
 
     public static String escapeCsvData(String[] data) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        for (String s : data) {
-            try {
-                writer.write(s);
-            } catch (IOException e) {
-                throw new IoException();
-            }
-        }
-        writer.close();
-        return out.toString();
+        return escapeCsvData(data, '\0','\"');
     }
     
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
-        writer.setRecordDelimiter(recordDelimiter);
         writer.setTextQualifier(textQualifier);
+        writer.setRecordDelimiter(recordDelimiter);
+        writer.setForceQualifier(true);
         try {
-            writer.writeRecord(data);
+            writer.writeRecord(data, true);
         } catch (IOException e) {
             throw new IoException();
         }
