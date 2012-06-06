@@ -1,0 +1,129 @@
+<html>
+<body>           
+     
+<h1>Version 3.0.1</h1>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-642'>SYMMETRICDS-642</a>] -         transforms with a transform_policy of implied don&#39;t copy primary keys to transform on insert
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-643'>SYMMETRICDS-643</a>] -         Firebird requires commits after each ddl statement during upgrades
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-644'>SYMMETRICDS-644</a>] -         Carriage return and line feeds are not being handled properly in the creation and parsing of CSV for 3.0.0
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-638'>SYMMETRICDS-638</a>] -         Support Microsoft&#39;s JDBC 4 Driver for SQL Server
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-639'>SYMMETRICDS-639</a>] -         Support Windows Azure
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-640'>SYMMETRICDS-640</a>] -         For fallback, if update fails and then the insert fails (pk changed and row already exists), then attempt to update using the new pk.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-641'>SYMMETRICDS-641</a>] -         Don&#39;t initial load a table if the initial load order is &lt; 0
+</li>
+</ul>
+
+
+<h1>Version 3.0.0</h1>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-543'>SYMMETRICDS-543</a>] -         Column&#39;s JdbcTypeName is Null
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-548'>SYMMETRICDS-548</a>] -         Remove invalid documentation for embedded.webserver.basic.auth.username and embedded.webserver.basic.auth.password
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-549'>SYMMETRICDS-549</a>] -         Section 4.8.2 Transformation Types fails to mention pre-defined Lookup Transform type
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-562'>SYMMETRICDS-562</a>] -         Fix DataService bug.  Max data id that is currently handled in 2.x is Integer.MAX_VALUE.  It should go all the way up to Long.MAX_VALUE
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-601'>SYMMETRICDS-601</a>] -         Data type for data_id and batch_id should be a type that scales bigger than an integer
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-624'>SYMMETRICDS-624</a>] -         The subselect router should not kick in during an initial load if the initial_load_select is used
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-628'>SYMMETRICDS-628</a>] -         Duplicate columns in table.  Fix jdbc ddl reader so that reading table columns is qualified by schema and catalog
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-629'>SYMMETRICDS-629</a>] -         We don&#39;t quote the catalog and schema when allowing sql server identity inserts
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-630'>SYMMETRICDS-630</a>] -         Make sure cached table definitions are cleared out before running sync triggers.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-633'>SYMMETRICDS-633</a>] -         Don&#39;t route inserts of sym_node or sym_node_security to the associated node_id 
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-317'>SYMMETRICDS-317</a>] -         Add an extension point for hooking into the data loader after data has been loaded.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-319'>SYMMETRICDS-319</a>] -         job.purge.max.num.data.events.to.delete.in.tx property is misleading
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-423'>SYMMETRICDS-423</a>] -         Add configurable file cache folder
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-560'>SYMMETRICDS-560</a>] -         Support of AES Encryption Is Needed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-564'>SYMMETRICDS-564</a>] -         Add external_data to subselect router
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-566'>SYMMETRICDS-566</a>] -         Add documentation re purge requirements and sym_node_security
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-593'>SYMMETRICDS-593</a>] -         Re-factor the data loader and data extractor so the components can be re-used outside of the core symmetricds engine
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-594'>SYMMETRICDS-594</a>] -         Remove dependency on commons-logging in favor of using slf4j everywhere for logging
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-595'>SYMMETRICDS-595</a>] -         Turn on multiServerMode as the default.  Update tutorial and documentation
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-596'>SYMMETRICDS-596</a>] -         Load each batch as it arrives at the target (instead of transporting all batches for 1 sync and then loading them all)
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-597'>SYMMETRICDS-597</a>] -         Consolidate database platform (former ddlutils) code and symmetricdialect code that contains information that should be in the platform
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-608'>SYMMETRICDS-608</a>] -         Optimization - Only capture one row in sym_data_event per sym_data when all the routers on a channel always send to all nodes in a group
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-616'>SYMMETRICDS-616</a>] -         Refresh parameter cache whenever new parameters come through the data loader or data router.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-621'>SYMMETRICDS-621</a>] -         Reload parameters from sym_parameter when they come through the data loader or data router (so you don&#39;t have to wait for the cache to time out)
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-622'>SYMMETRICDS-622</a>] -         Restart jobs if job parameters come through the data loader or data router
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-625'>SYMMETRICDS-625</a>] -         Upgrade Jetty from 7.1 to 7.6 (latest stable 7.x version) to fix sporadic EOF exceptions
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-626'>SYMMETRICDS-626</a>] -         Use prepared args for the OK status in the purge service.  Not sure if it makes a difference, but the wrong query plans are sometimes being generated.  Maybe this will help.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-631'>SYMMETRICDS-631</a>] -         Add FKs to the SymmetricDS configuration tables
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-634'>SYMMETRICDS-634</a>] -         Speed up node reloads on push.  Continuously push to a node if the previous push contained a reload event.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-636'>SYMMETRICDS-636</a>] -         Support bigger than 32k clobs and varchar columns by swapping out sym_escape for REPLACE in the Firebird dialect
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-637'>SYMMETRICDS-637</a>] -         By default delete sym_data_gap rows instead of marking them as OK or SK
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-6'>SYMMETRICDS-6</a>] -         Add more robust conflict resolution strategies
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-592'>SYMMETRICDS-592</a>] -         Make the data loader pluggable so that bulk loaders can be configured at the channel level.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-605'>SYMMETRICDS-605</a>] -         Support wildcards for the source_table_name in sym_trigger so you only have to configure one trigger entry to sync and entire database
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-607'>SYMMETRICDS-607</a>] -         Order triggers by FK constraints for initial load when initial_load_order is the same.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-609'>SYMMETRICDS-609</a>] -         Add dbexport and dbimport features to SymmetricDS
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-613'>SYMMETRICDS-613</a>] -         Add a column_policy column to sym_transform_table that indicates whether undefined columns are specified or implied
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-618'>SYMMETRICDS-618</a>] -         Add setting on trigger that indicates whether old data should be captured by the triggers
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-623'>SYMMETRICDS-623</a>] -         Add the ability to set a status of IG (ignore) on either an incoming or outgoing batch so that the status will be transmitted remote nodes so that the batch will be ignored.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-632'>SYMMETRICDS-632</a>] -         Create new feature to allow concurrent pulling and pushing of nodes
+</li>
+</ul>
+
+</body>                
+</html>                
