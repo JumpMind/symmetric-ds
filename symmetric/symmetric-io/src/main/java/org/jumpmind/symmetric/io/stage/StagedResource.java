@@ -37,10 +37,13 @@ public class StagedResource implements IStagedResource {
     private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
 
     private Map<Thread, BufferedWriter> writers = new HashMap<Thread, BufferedWriter>();
+    
+    private StagingManager stagingManager;
 
-    public StagedResource(long threshold, File directory, File file) {
+    public StagedResource(long threshold, File directory, File file, StagingManager stagingManager) {
         this.threshold = threshold;
         this.directory = directory;
+        this.stagingManager = stagingManager;
         this.file = file;
         this.path = file.getAbsolutePath();
         this.path = this.path.substring(directory.getAbsolutePath().length(), file
@@ -57,10 +60,11 @@ public class StagedResource implements IStagedResource {
         }
     }
 
-    public StagedResource(long threshold, File directory, String path) {
+    public StagedResource(long threshold, File directory, String path, StagingManager stagingManager) {
         this.threshold = threshold;
         this.directory = directory;
         this.path = path;
+        this.stagingManager = stagingManager;
         this.file = new File(directory, String.format("%s.%s", path,
                 State.CREATE.getExtensionName()));
         createTime = System.currentTimeMillis();
@@ -177,6 +181,9 @@ public class StagedResource implements IStagedResource {
     }
 
     public void delete() {
+        
+        close();
+        
         if (file.exists()) {
             FileUtils.deleteQuietly(file);
         }
@@ -185,6 +192,9 @@ public class StagedResource implements IStagedResource {
             memoryBuffer.setLength(0);
             memoryBuffer = null;
         }
+        
+        stagingManager.resourceList.remove(getPath());
+        
     }
 
     public File getFile() {

@@ -47,7 +47,7 @@ public class StagingManager implements IStagingManager {
                 new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
                         State.DONE.getExtensionName() }, true);
         for (File file : files) {
-            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file);
+            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file, this);
             resourceList.put(resource.getPath(), resource);
         }
 
@@ -82,7 +82,7 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath);
+        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath, this);
         this.resourceList.put(filePath, resource);
         return resource;
     }

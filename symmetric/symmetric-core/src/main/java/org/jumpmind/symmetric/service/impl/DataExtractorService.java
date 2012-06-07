@@ -503,7 +503,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     } catch (RuntimeException ex) {
                         IStagedResource resource = getStagedResource(currentBatch);
-                        if (resource != null) {
+                        if (resource != null) {                            
+                            resource.close();
                             resource.delete();
                         }
                         throw ex;
