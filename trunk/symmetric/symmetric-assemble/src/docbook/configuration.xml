@@ -309,6 +309,13 @@ values
         </variablelist>
         </para>
         <para>
+           If a channel contains <emphasis>only</emphasis> tables that will be synchronized in one direction and
+           and data is routed to all the nodes in the target node groups, then batching on the channel can be 
+           optimized to share batches across nodes.  This is an important feature when data needs to be routed
+           to thousands of nodes.  When this mode is detected, you will see batches created in <xref linkend="table_outgoing_batch" xrefstyle="table"/>
+           with the <literal>common_flag</literal> set to 1.
+        </para>
+        <para>
         There are also several size-related parameters that can be set by channel.  They include:
          <variablelist>
             <varlistentry>
