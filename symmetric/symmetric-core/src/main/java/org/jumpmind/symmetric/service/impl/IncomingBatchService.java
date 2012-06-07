@@ -192,31 +192,29 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLastUpdatedTime(new Date());
             sqlTemplate.update(
                     getSql("insertIncomingBatchSql"),
-                    new Object[] { batch.getBatchId(), batch.getNodeId(),
-                            batch.getChannelId(), batch.getStatus().name(),
-                            batch.getNetworkMillis(), batch.getFilterMillis(),
-                            batch.getDatabaseMillis(), batch.getFailedRowNumber(),
-                            batch.getFailedLineNumber(), batch.getByteCount(),
-                            batch.getStatementCount(), batch.getFallbackInsertCount(),
-                            batch.getFallbackUpdateCount(), batch.getIgnoreCount(),
-                            batch.getMissingDeleteCount(), batch.getSkipCount(),
-                            batch.getSqlState(), batch.getSqlCode(),
+                    new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
+                            batch.getStatus().name(), batch.getNetworkMillis(),
+                            batch.getFilterMillis(), batch.getDatabaseMillis(),
+                            batch.getFailedRowNumber(), batch.getFailedLineNumber(),
+                            batch.getByteCount(), batch.getStatementCount(),
+                            batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
+                            batch.getIgnoreCount(), batch.getMissingDeleteCount(),
+                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
                             StringUtils.abbreviate(batch.getSqlMessage(), 1000),
                             batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
-                            new int[] {
-                        Types.NUMERIC, Types.VARCHAR,
-                        Types.VARCHAR, Types.CHAR,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC,
-                        Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR,
-                        Types.VARCHAR, Types.TIMESTAMP
-                    });
+                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
+                            Types.TIMESTAMP });
         }
+    }
+
+    public int deleteIncomingBatch(IncomingBatch batch) {
+        return sqlTemplate.update(getSql("deleteIncomingBatchSql"),
+                new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { Types.NUMERIC,
+                        Types.VARCHAR });
     }
 
     public int updateIncomingBatch(IncomingBatch batch) {
@@ -241,20 +239,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getSqlState(), batch.getSqlCode(),
                             StringUtils.abbreviate(batch.getSqlMessage(), 1000),
                             batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(),
-                            batch.getBatchId(), batch.getNodeId() },
-                            new int[] {
-                        Types.CHAR, Types.SMALLINT,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC,
-                                Types.VARCHAR, Types.NUMERIC,
-                                Types.VARCHAR,
-                                Types.VARCHAR, Types.TIMESTAMP,
-                                Types.NUMERIC, Types.VARCHAR
-                    });
+                            batch.getBatchId(), batch.getNodeId() }, new int[] { Types.CHAR,
+                            Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR,
+                            Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC, Types.VARCHAR });
         }
         return count;
     }
