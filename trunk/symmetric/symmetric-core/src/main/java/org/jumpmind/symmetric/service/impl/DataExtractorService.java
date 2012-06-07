@@ -501,6 +501,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             }
                         }
+                    } catch (RuntimeException ex) {
+                        IStagedResource resource = getStagedResource(currentBatch);
+                        if (resource != null) {
+                            resource.delete();
+                        }
+                        throw ex;
                     } finally {
                         synchronized (locks) {
                             lock.release();
@@ -531,12 +537,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return currentBatch;
     }
+    
+    protected IStagedResource getStagedResource(OutgoingBatch currentBatch) {
+        return stagingManager.find(
+                Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
+                currentBatch.getBatchId());        
+    }
 
     protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch) {
-        IStagedResource previouslyExtracted = stagingManager.find(
-                Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
-                currentBatch.getBatchId());
-
+        IStagedResource previouslyExtracted = getStagedResource(currentBatch);
         if (previouslyExtracted != null && previouslyExtracted.exists()
                 && previouslyExtracted.getState() != State.CREATE) {
             if (log.isDebugEnabled()) {
@@ -558,9 +567,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             long ts = System.currentTimeMillis();
 
-            IStagedResource extractedBatch = stagingManager.find(
-                    Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getStagedLocation(),
-                    currentBatch.getBatchId());
+            IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
                 IDataReader dataReader = new ProtocolDataReader(extractedBatch);
 
