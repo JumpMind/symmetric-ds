@@ -820,9 +820,9 @@ values
             An initial load can not occur until after a node is registered.  An initial load is 
             requested by setting the <literal>initial_load_enabled</literal> column on <xref linkend="table_node_security" xrefstyle="table"/> to
             <emphasis>1</emphasis> on the row for the target node in the parent node's database.  The next time the 
-            target node synchronizes, reload batches will be inserted.  At the same time reload batches 
+            source node routes data, reload batches will be inserted.  At the same time reload batches 
             are inserted, all previously pending batches for the node are marked as successfully sent.    
-        </para>
+        </para>        
          <important>
             <para>
             Note that if the parent node that a node is registering with is <emphasis>not</emphasis> a registration server node 
@@ -839,7 +839,13 @@ values
         <para>
             An initial load is accomplished by inserting reload batches in a defined order according to the <literal>initial_load_order</literal> column on
             <xref linkend="table_trigger_router" xrefstyle="table"/>.  If the <literal>initial_load_order</literal> column contains a negative
-            value the associated table will <emphasis>NOT</emphasis> be loaded.  Initial load data is always queried from the 
+            value the associated table will <emphasis>NOT</emphasis> be loaded.  If the <literal>initial_load_order</literal> column contains
+            the same value for multiple tables, SymmetricDS will attempt to order the tables according to foreign key constraints.  If there
+            are cyclical constraints, then foreign keys might need to be turned off or the initial load will need to be manually configured
+            based on knowledge of how the data is structured.
+        </para>
+        <para>                
+            Initial load data is always queried from the 
             source database table.  All data is passed through the configured router to filter out data that 
             might not be targeted at a node.  
         </para>
