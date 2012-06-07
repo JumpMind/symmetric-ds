@@ -43,6 +43,8 @@ public interface IIncomingBatchService {
 
     public int updateIncomingBatch(IncomingBatch batch);
     
+    public int deleteIncomingBatch(IncomingBatch batch);
+    
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, boolean ascending);
     

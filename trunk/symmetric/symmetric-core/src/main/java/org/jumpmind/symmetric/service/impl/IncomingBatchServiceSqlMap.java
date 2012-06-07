@@ -48,6 +48,11 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "  statement_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?,   " + 
 "  last_update_hostname = ?, last_update_time = ? where batch_id = ? and node_id = ?                                                                                     " );
 
+        putSql("deleteIncomingBatchSql" ,"" + 
+"delete from $(incoming_batch) where batch_id = ? and node_id = ?                                                                                     " );
+    
     }
+    
+    
 
 }
