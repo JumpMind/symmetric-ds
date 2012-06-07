@@ -236,6 +236,10 @@ insert into SYM_NODE_GROUP_LINK
 values
   ('corp', 'store', 'W');]]></programlisting>
         </para>
+        <para>
+           A node group link can be configured to use the same node group as the source and the target.  This configuration
+           allows a node group to sync with every other node in its group.
+        </para>
     </section>
    
     <section id="configuration-channel">
