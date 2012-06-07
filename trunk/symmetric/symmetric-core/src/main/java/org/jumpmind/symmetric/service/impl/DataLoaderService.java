@@ -532,16 +532,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void insertIncomingError(IncomingError incomingError) {
-        sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
-                incomingError.getNodeId(), incomingError.getFailedRowNumber(),
-                incomingError.getFailedLineNumber(), incomingError.getTargetCatalogName(),
-                incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
-                incomingError.getEventType().getCode(), incomingError.getBinaryEncoding().name(),
-                incomingError.getColumnNames(), incomingError.getPrimaryKeyColumnNames(),
-                incomingError.getRowData(), incomingError.getOldData(),
-                incomingError.getResolveData(), incomingError.getResolveData(),
-                incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
-                incomingError.getLastUpdateTime());
+        if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
+            sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
+                    incomingError.getNodeId(), incomingError.getFailedRowNumber(), incomingError
+                            .getFailedLineNumber(), incomingError.getTargetCatalogName(),
+                    incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
+                    incomingError.getEventType().getCode(), incomingError.getBinaryEncoding()
+                            .name(), incomingError.getColumnNames(), incomingError
+                            .getPrimaryKeyColumnNames(), incomingError.getRowData(), incomingError
+                            .getOldData(), incomingError.getResolveData(), incomingError
+                            .getResolveData(), incomingError.getCreateTime(), incomingError
+                            .getLastUpdateBy(), incomingError.getLastUpdateTime());
+        }
     }
 
     public void updateIncomingError(IncomingError incomingError) {
