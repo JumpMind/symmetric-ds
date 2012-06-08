@@ -50,6 +50,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_SQL = "sql";
 
     private static final String OPTION_COMMENTS = "comments";
+    
+    private static final String OPTION_SCHEMA = "schema";
 
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
@@ -75,11 +77,15 @@ public class DbExportCommand extends AbstractCommandLauncher {
         super.printHelp(options);
     }
 
+    
+    // ADB: add OPTION_CATALOG
+    // 
     @Override
     protected void buildOptions(Options options) {
         super.buildOptions(options);
         addOption(options, null, OPTION_FORMAT, true);
         addOption(options, null, OPTION_COMPATIBLE, true);
+        addOption(options, null, OPTION_SCHEMA, true);
         addOption(options, null, OPTION_ADD_DROP_TABLE, false);
         addOption(options, null, OPTION_NO_CREATE_INFO, false);
         addOption(options, null, OPTION_NO_INDICES, false);
@@ -121,7 +127,10 @@ public class DbExportCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_COMMENTS)) {
             dbExport.setComments(true);
         }
-
+        if (line.hasOption(OPTION_SCHEMA)) {
+            dbExport.setSchema(line.getOptionValue(OPTION_SCHEMA));
+        }
+ 
         String[] args = line.getArgs();
         if (args.length == 0) {
             dbExport.exportTables(System.out);
