@@ -54,7 +54,7 @@ public class DbExport {
 
     public enum Format { SQL, CSV, XML };
 
-    public enum Compatible { DB2, DERBY, FIREBIRD, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRESQL, SYBASE };
+    public enum Compatible { DB2, DERBY, FIREBIRD, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE };
 		
 	private Format format = Format.SQL;
 	
