@@ -77,9 +77,6 @@ public class DbExportCommand extends AbstractCommandLauncher {
         super.printHelp(options);
     }
 
-    
-    // ADB: add OPTION_CATALOG
-    // 
     @Override
     protected void buildOptions(Options options) {
         super.buildOptions(options);
