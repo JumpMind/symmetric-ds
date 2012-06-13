@@ -275,7 +275,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeIncomingError() {
         log.info("Purging incoming error rows");
-        long rowCount = sqlTemplate.update("deleteIncomingErrorsSql");
+        long rowCount = sqlTemplate.update(getSql("deleteIncomingErrorsSql"));
         log.info("Purged {} incoming error rows", rowCount);
         return rowCount;
 
