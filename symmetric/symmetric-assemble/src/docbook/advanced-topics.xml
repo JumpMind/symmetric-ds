@@ -539,7 +539,7 @@
         </para>
         <para>Next, we will go into a little more detail on the first three deployment options listed above.</para>
         <section id="deployment-options-web-archive">
-            <title>Web Archive</title>
+            <title>Web Archive (WAR)</title>
             <para>
                 As a web application archive, a WAR is deployed to an application server,
                 such as Tomcat, Jetty, or JBoss.  The structure of the archive will have a <literal>web.xml</literal>
@@ -552,8 +552,8 @@
                 </imageobject>
             </mediaobject>
             <para>
-                A war file can be generated using the standalone installation's sym utility and the 
-                --create-war option.  The command requires the name of the war file to generate.  It 
+                A war file can be generated using the standalone installation's <literal>symadmin</literal> utility and the 
+                <literal>create-war</literal> subcommand.  The command requires the name of the war file to generate.  It 
                 essentially packages up the web directory, the conf directory and includes an optional
                 properties file.  Note that if a properties file is included, it will be copied to 
                 WEB-INF/classes/symmetric.properties.  This is the same location conf/symmetric.properties
@@ -561,7 +561,7 @@
                 deployment. 
             </para>
             <para>
-                <command>../bin/sym -p my-symmetric-ds.properties --create-war /some/path/to/symmetric-ds.war</command>
+                <command>../bin/symadmin -p my-symmetric-ds.properties create-war /some/path/to/symmetric-ds.war</command>
             </para>
             <para>
                 The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
