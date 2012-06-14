@@ -192,8 +192,8 @@ public class TransformService extends AbstractService implements ITransformServi
             deleteTransformColumns(transaction, transformTableId);
             transaction.prepareAndExecute(getSql("deleteTransformTableSql"),
                     (Object) transformTableId);
-            refreshCache();
             transaction.commit();
+            refreshCache();
         } finally {
             close(transaction);
         }
