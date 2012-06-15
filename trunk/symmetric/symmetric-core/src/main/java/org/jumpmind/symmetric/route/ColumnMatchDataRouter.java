@@ -175,7 +175,11 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     protected List<Expression> parse(String routerExpression) {
         List<Expression> expressions = new ArrayList<Expression>();       
         if (!StringUtils.isBlank(routerExpression)) {           
-            String[] expTokens = routerExpression.split("\r\n|\r|\n|\\s+|or\\s+|\\s+OR\\s+");
+            
+            String[] expTokens = routerExpression.split("\\s*(\\s+or|\\s+OR)?(\r\n|\r|\n)(or\\s+|OR\\s+)?\\s*" +
+            		                                    "|\\s+or\\s+" +
+            		                                    "|\\s+OR\\s+");
+            
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
@@ -187,6 +191,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                             tokens = t.split("=");
                         }
                         if (tokens.length == 2) {
+                            tokens[0] = parseColumn(tokens[0]);
+                            tokens[1] = parseValue(tokens[1]);
                             expressions.add(new Expression(equals, tokens));
                         } else {
                             log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", t, routerExpression);
@@ -199,6 +205,29 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", routerExpression, routerExpression);
         }
         return expressions;
+    }
+
+    /**
+     * Parse a column (the first half of a column match expression).
+     */
+    private String parseColumn(String value) {
+        return value.trim();
+    }
+    
+    /**
+     * Parse a value (the second half of a column match expression).
+     */
+    private String parseValue(String value) {
+        value = value.trim();
+        // Check for ticks around the value.
+        if (value.charAt(0) == '\''
+                && value.charAt(value.length() - 1) == '\'') {
+            // remove first and last tick
+            value = value.substring(1,value.length()-1);
+            // replace all double ticks with a single tick only if value was surrounded with ticks
+            value = value.replaceAll("''", "'");
+        }
+        return value;
     }
 
     @SuppressWarnings("unchecked")
