@@ -264,7 +264,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Send an initial load of data to the client node server by executing:</para>
                 <para>
-                    <command>../bin/sym --engine server reload-node 1</command>
+                    <command>../bin/symadmin --engine server reload-node 1</command>
                 </para>
                 <para> With this command, the server node queues up an initial load for the client node that will be sent the next
                     time the client performs its pull. The initial load includes data for each table that is configured for
