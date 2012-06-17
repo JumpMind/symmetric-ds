@@ -155,13 +155,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IPullService pullService;
 
     protected IJobManager jobManager;
-    
+
     protected ISequenceService sequenceService;
 
     protected IExtensionPointManager extensionPointManger;
 
     protected IStagingManager stagingManager;
-    
+
     protected INodeCommunicationService nodeCommunicationService;
 
     protected Date lastRestartTime = null;
@@ -208,7 +208,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
-                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));                
+                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
 
         MDC.put("engineName", this.parameterService.getEngineName());
 
@@ -232,7 +232,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager);
-        this.transformService = new TransformService(parameterService, symmetricDialect, configurationService);
+        this.transformService = new TransformService(parameterService, symmetricDialect,
+                configurationService);
         this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
@@ -248,10 +249,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(this);
         this.registrationService = new RegistrationService(parameterService, symmetricDialect,
-                nodeService, dataExtractorService, triggerRouterService, dataService, dataLoaderService,
-                transportManager, statisticManager);
+                nodeService, dataExtractorService, triggerRouterService, dataService,
+                dataLoaderService, transportManager, statisticManager);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
-                outgoingBatchService, registrationService, stagingManager);        
+                outgoingBatchService, registrationService, stagingManager);
         this.nodeCommunicationService = buildNodeCommunicationService();
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
@@ -277,7 +278,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IRouterService buildRouterService() {
         return new RouterService(this);
     }
-    
+
     protected INodeCommunicationService buildNodeCommunicationService() {
         return new NodeCommunicationService(nodeService, parameterService, symmetricDialect);
     }
@@ -285,7 +286,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected static ISecurityService createSecurityService(TypedProperties properties) {
         try {
             String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
-                    SecurityService.class.getName());            
+                    SecurityService.class.getName());
             return (ISecurityService) Class.forName(className).newInstance();
         } catch (RuntimeException e) {
             throw e;
@@ -336,7 +337,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         parameterService.rereadParameters();
         log.info("Done initializing SymmetricDS database");
     }
-    
+
     protected void autoConfigRegistrationServer() {
         Node node = nodeService.findIdentity();
 
@@ -392,7 +393,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     platform.createDatabase(database, true, true);
                     loaded = true;
                 } catch (Exception e) {
-                    log.error(e.getMessage(),e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }
@@ -409,35 +410,42 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
      */
     protected boolean loadFromScriptIfProvided() {
         boolean loaded = false;
-        String sqlScript = parameterService
+        String sqlScripts = parameterService
                 .getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT);
-        if (!StringUtils.isBlank(sqlScript)) {
-            File file = new File(sqlScript);
-            URL fileUrl = null;
-            if (file.isFile()) {
-                try {
-                    fileUrl = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                fileUrl = getClass().getResource(sqlScript);
-                if (fileUrl == null) {
-                    fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
-                }
-            }
+        if (!StringUtils.isBlank(sqlScripts)) {
+            String[] sqlScriptList = sqlScripts.split(",");
+            for (String sqlScript : sqlScriptList) {
+                sqlScript = sqlScript.trim();
+                if (StringUtils.isNotBlank(sqlScript)) {
+                    File file = new File(sqlScript);
+                    URL fileUrl = null;
+                    if (file.isFile()) {
+                        try {
+                            fileUrl = file.toURI().toURL();
+                        } catch (MalformedURLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        fileUrl = getClass().getResource(sqlScript);
+                        if (fileUrl == null) {
+                            fileUrl = Thread.currentThread().getContextClassLoader()
+                                    .getResource(sqlScript);
+                        }
+                    }
 
-            if (fileUrl != null) {
-                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true,
-                        SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
-                                .getSqlScriptReplacementTokens()).execute();
-                loaded = true;
+                    if (fileUrl != null) {
+                        new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(),
+                                true, SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
+                                        .getSqlScriptReplacementTokens()).execute();
+                        loaded = true;
+                    } else {
+                        log.info("Could not find the sql script: {} to execute.  We would have run it if we had found it");
+                    }
+                }
             }
         }
         return loaded;
     }
-
-    
 
     public synchronized boolean start() {
         return start(true);
@@ -526,7 +534,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         triggerRouterService.syncTriggers();
     }
-    
+
     public void forceTriggerRebuild() {
         MDC.put("engineName", getEngineName());
         triggerRouterService.syncTriggers(null, true);
@@ -766,11 +774,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IStagingManager getStagingManager() {
         return stagingManager;
     }
-    
+
     public ISequenceService getSequenceService() {
         return sequenceService;
     }
-    
+
     public INodeCommunicationService getNodeCommunicationService() {
         return nodeCommunicationService;
     }
