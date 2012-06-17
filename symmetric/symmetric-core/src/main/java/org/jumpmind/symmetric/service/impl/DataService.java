@@ -585,20 +585,28 @@ public class DataService extends AbstractService implements IDataService {
             public int compare(TriggerHistory o1, TriggerHistory o2) {
                 List<TriggerRouter> triggerRoutersForTriggerHist1 = triggerRoutersByHistoryId
                         .get(o1.getTriggerHistoryId());
+                int intialLoadOrder1 = 0;
                 for (TriggerRouter triggerRouter1 : triggerRoutersForTriggerHist1) {
-                    List<TriggerRouter> triggerRoutersForTriggerHist2 = triggerRoutersByHistoryId
-                            .get(o2.getTriggerHistoryId());
-                    for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
-                        if (triggerRouter1.getInitialLoadOrder() < triggerRouter2
-                                .getInitialLoadOrder()) {
-                            return -1;
-                        } else if (triggerRouter1.getInitialLoadOrder() > triggerRouter2
-                                .getInitialLoadOrder()) {
-                            return 1;
-                        }
+                    if (triggerRouter1.getInitialLoadOrder() > intialLoadOrder1) {
+                        intialLoadOrder1 = triggerRouter1.getInitialLoadOrder(); 
                     }
                 }
 
+                List<TriggerRouter> triggerRoutersForTriggerHist2 = triggerRoutersByHistoryId
+                        .get(o2.getTriggerHistoryId());
+                int intialLoadOrder2 = 0;
+                for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
+                    if (triggerRouter2.getInitialLoadOrder() > intialLoadOrder2) {
+                        intialLoadOrder2 = triggerRouter2.getInitialLoadOrder(); 
+                    }
+                }
+                
+                if (intialLoadOrder1 < intialLoadOrder2) {
+                    return -1;
+                } else if (intialLoadOrder1 > intialLoadOrder2) {
+                    return 1;
+                }
+                
                 Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
                         o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
