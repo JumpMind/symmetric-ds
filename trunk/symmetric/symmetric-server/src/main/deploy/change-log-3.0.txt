@@ -4,7 +4,6 @@ SymmetricDS - 3.0.2 (Released 2012-06-18)
 - 0000649: [Bug] Column matching routers can't match values with spaces. (abrougher) - resolved.
 - 0000651: [Bug] Initial Load Order not being honored. (chenson) - resolved.
 - 0000645: [Bug] Empty staged resource can be left around during the extract if there is an error during data extraction which causes SymmetricDS (chenson) - resolved.
-[4 issues]
 
 SymmetricDS - 3.0.1 (Released 2012-06-06)  
 =========================================
@@ -15,7 +14,6 @@ SymmetricDS - 3.0.1 (Released 2012-06-06)
 - 0000642: [Bug] transforms with a transform_policy of implied don't copy primary keys to transform on insert - closed.
 - 0000643: [Bug] Firebird requires commits after each ddl statement during upgrades - closed.
 - 0000644: [Bug] Carriage return and line feeds are not being handled properly in the creation and parsing of CSV for 3.0.0 - closed.
-[7 issues]
 
 SymmetricDS - 3.0.0 (Released 2012-06-04)  
 =========================================
