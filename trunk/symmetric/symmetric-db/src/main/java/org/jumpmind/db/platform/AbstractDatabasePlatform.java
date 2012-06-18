@@ -453,7 +453,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
                     } else {
                         newSql = newSql.replaceFirst(regex,
-                                "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                                "ts {" + quote + TIMESTAMP_FORMATTER.format(date) + quote + "}");
                     }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
@@ -467,6 +467,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 + new String(Hex.encodeHex(bytes)) + quote);
                     }
                 }
+            } else {
+                newSql = newSql.replaceFirst(regex, "null");    
             }
         }
         return newSql + getDatabaseInfo().getSqlCommandDelimiter();
