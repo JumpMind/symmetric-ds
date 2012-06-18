@@ -449,8 +449,9 @@ insert into sym_data (
                    <xref linkend="table_node_host_job_stats" xrefstyle="table"/>
                 </listitem>                   
             </itemizedlist>
-            The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The job runs periodically according to the 
-            <literal>job.purge.period.time.ms</literal> property.  The default period is to run every ten minutes.  
+            The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The timing of the three purge jobs (incoming, outgoing, and data gaps) is controlled
+            by a cron expression as specified by the following properties:  <literal>job.purge.outgoing.cron</literal>,  <literal>job.purge.incoming.cron</literal>,
+            and  <literal>job.purge.datagaps.cron</literal>. The default is <literal>0 0 0 * * *</literal>, or once per day at midnight. 
         </para>      
         <para>
             Two retention period properties
