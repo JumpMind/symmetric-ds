@@ -818,7 +818,7 @@ insert into SYM_ROUTER
     router_expression, create_time, last_update_time)
 values
   ('corp-2-store-trimmed-station','corp', 'store', 'bsh', 
-    'for (Node node : nodes) {
+    'for (org.jumpmind.symmetric.model.Node node : nodes) {
          if (STATION != null && node.getExternalId().equals(STATION.trim())) {
              targetNodes.add(node.getNodeId());
          }
