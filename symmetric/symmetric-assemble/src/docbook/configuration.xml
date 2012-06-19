@@ -1178,7 +1178,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     <code>targetNode</code> is a <code>org.jumpmind.symmetric.model.Node</code> object that represents the node where the data is being loaded.
                 </listitem> 
                  <listitem>
-                    Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
+                    Identity Transform ('identity'):  This transformation allows you to insert into an identity column by computing a new identity, not copying the actual identity value from the source.
                  </listitem>
                </itemizedlist>
             </para>
