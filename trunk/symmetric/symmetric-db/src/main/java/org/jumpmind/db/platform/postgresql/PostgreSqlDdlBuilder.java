@@ -42,6 +42,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         // PostgreSQL
         // in file src/include/postgres_ext.h
         databaseInfo.setMaxIdentifierLength(31);
+        
+        databaseInfo.setRequiresSavePointsInTransaction(true);
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTEA", Types.LONGVARBINARY);

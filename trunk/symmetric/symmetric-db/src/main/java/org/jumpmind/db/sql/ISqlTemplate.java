@@ -100,6 +100,6 @@ public interface ISqlTemplate {
     public boolean isStoresMixedCaseQuotedIdentifiers();
 
     public long insertWithGeneratedKey(final String sql, String column, final String sequenceName,
-            final Object[] args, final int[] types);
+            final Object[] args, final int[] types);    
 
 }
