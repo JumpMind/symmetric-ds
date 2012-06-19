@@ -500,7 +500,7 @@ public class DatabaseWriter implements IDataWriter {
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
             ArrayList<Column> changedColumnsList = new ArrayList<Column>();
-            for (int i = 0; i < columnValues.length; i++) {
+            for (int i = 0; i < targetTable.getColumnCount(); i++) {
                 Column column = targetTable.getColumn(i);
                 if (column != null) {
                     if (doesColumnNeedUpdated(i, column, data, applyChangesOnly)) {
