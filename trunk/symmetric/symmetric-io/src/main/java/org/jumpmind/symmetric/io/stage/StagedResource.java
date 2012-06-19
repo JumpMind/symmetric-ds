@@ -146,13 +146,11 @@ public class StagedResource implements IStagedResource {
         BufferedWriter writer = writers.get(thread);
         if (writer == null) {
             if (file.exists()) {
-                throw new IllegalStateException(String.format(
-                        "Cannot create a writer because the file, %s, already exists",
-                        file.getAbsoluteFile()));
+                log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
+                file.delete();
             } else if (this.memoryBuffer != null) {
-                throw new IllegalStateException(
-                        "Cannot create a writer because the memory buffer for " + path
-                                + " has already been written to: \n" + memoryBuffer);
+                log.warn("We had to delete the memory buffer because it already existed");
+                this.memoryBuffer = null;
             }
             this.memoryBuffer = new StringBuilder();
             writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
