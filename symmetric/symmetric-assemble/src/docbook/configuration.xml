@@ -808,6 +808,24 @@ values
     current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>   
+<para>
+            The next example shows a script that iterates over each eligible node and checks to see if the trimmed value of the column
+            named STATION equals the external_id.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-trimmed-station','corp', 'store', 'bsh', 
+    'for (Node node : nodes) {
+         if (STATION != null && node.getExternalId().equals(STATION.trim())) {
+             targetNodes.add(node.getNodeId());
+         }
+      }', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>           
     </section>  
     </section>
      <section id="configuration-trigger-router">
