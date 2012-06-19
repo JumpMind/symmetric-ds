@@ -213,6 +213,8 @@ public class DatabaseInfo {
      * Indicates whether each ddl statement needs to be committed.
      */
     private boolean requiresAutoCommitForDdl = false;
+    
+    private boolean requiresSavePointsInTransaction = false;
 
     /** Contains non-default mappings from jdbc to native types. */
     private Map<Integer, String> nativeTypes = new HashMap<Integer, String>();
@@ -1225,5 +1227,13 @@ public class DatabaseInfo {
 
     public void setBlobsWorkInWhereClause(boolean blobsWorkInWhereClause) {
         this.blobsWorkInWhereClause = blobsWorkInWhereClause;
+    }
+    
+    public void setRequiresSavePointsInTransaction(boolean requiresSavePointsInTransaction) {
+        this.requiresSavePointsInTransaction = requiresSavePointsInTransaction;
+    }
+    
+    public boolean isRequiresSavePointsInTransaction() {
+        return requiresSavePointsInTransaction;
     }
 }

@@ -370,7 +370,8 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
+                        !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -478,7 +479,8 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
+                        !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -620,7 +622,8 @@ public class DatabaseWriter implements IDataWriter {
                             .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                     return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
                 } catch (SqlException ex) {
-                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
+                            !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
