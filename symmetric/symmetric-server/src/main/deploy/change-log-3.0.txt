@@ -1,3 +1,8 @@
+SymmetricDS - 3.0.3 (Released 2012-06-18) 
+=========================================
+- 0000652: [Bug] Update documentation about how to configure purge (chenson) - resolved.
+- 0000647: [Bug] Fallback from insert to update causes an array index out of bounds exception (admin) - resolved.
+
 SymmetricDS - 3.0.2 (Released 2012-06-18)  
 ======================================
 - 0000648: [Bug] Nested database transactions prevents H2 installation from deleting transforms sometimes. (chenson) - resolved.
