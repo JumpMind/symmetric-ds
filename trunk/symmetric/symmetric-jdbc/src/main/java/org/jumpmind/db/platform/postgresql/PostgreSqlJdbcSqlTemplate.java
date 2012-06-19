@@ -12,7 +12,11 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
         this.requiresAutoCommitFalseToSetFetchSize = true;
-        primaryKeyViolationSqlStates = new String[] { "23505" };
+        // don't specify any pk violation errors because SQLExceptions invalidate
+        // a transaction.  We attempt to circumvent SQLExceptions by running insert
+        // statements qualified by where clauses.  If for some reason we still get
+        // a unique key violation, then we should just propogate the error
+        //primaryKeyViolationSqlStates = new String[] { "23505" };
     }
 
     @Override
