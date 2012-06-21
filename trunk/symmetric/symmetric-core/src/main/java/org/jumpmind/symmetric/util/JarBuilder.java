@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.util;
 
@@ -63,8 +64,16 @@ public class JarBuilder {
 
     private String massageJarEntryName(File source) {
         String name = source.getPath();
-        if (baseDir != null && name.startsWith(baseDir.getPath()) && name.length() > baseDir.getPath().length()) {
-            name = name.substring(baseDir.getPath().length()+1);
+        if (baseDir != null && name.startsWith(baseDir.getPath())) {
+            if (name.length() > baseDir.getPath().length()) {
+                name = name.substring(baseDir.getPath().length() + 1);
+            } else {
+                name = "";
+            }
+        }
+
+        if (name.equals("META-INF/MANIFEST.MF")) {
+            name = "";
         }
         return name.replace("\\", "/");
     }
