@@ -20,14 +20,11 @@
 
 package org.jumpmind.symmetric.common;
 
-/**
- * 
- */
 public class SecurityConstants {
 
     public static final String PREFIX_ENC = "enc:";
 
-    public static final String ALGORITHM = "PBEWithMD5AndTripleDES";
+    public static final String ALGORITHM = System.getProperty("sym.secret.key.defalt.algorithm","PBEWithMD5AndDES");
 
     public static final int ITERATION_COUNT = 3;
 
