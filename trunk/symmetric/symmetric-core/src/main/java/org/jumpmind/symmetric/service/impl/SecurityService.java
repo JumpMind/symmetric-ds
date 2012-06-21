@@ -52,7 +52,7 @@ public class SecurityService implements ISecurityService {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected SecretKey secretKey;
-    
+
     protected SecureRandom secRand;
 
     public void init() {
@@ -84,15 +84,18 @@ public class SecurityService implements ISecurityService {
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
-        log.info("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider().getName());
+        log.info("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider()
+                .getName());
         return cipher;
     }
 
     protected void initializeCipher(Cipher cipher, int mode) throws Exception {
         AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
-        
-        if (paramSpec instanceof PBEParameterSpec) {
-            paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
+
+        if (paramSpec instanceof PBEParameterSpec || 
+                (paramSpec == null && cipher.getAlgorithm().startsWith("PBE"))) {
+            paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
+                    SecurityConstants.ITERATION_COUNT);
             cipher.init(mode, secretKey, paramSpec);
         } else if (paramSpec instanceof IvParameterSpec) {
             paramSpec = new IvParameterSpec(SecurityConstants.SALT);
@@ -107,7 +110,8 @@ public class SecurityService implements ISecurityService {
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
-        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
+        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(
+                SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
         if (entry == null) {
             log.debug("Generating secret key");
             entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
@@ -118,7 +122,7 @@ public class SecurityService implements ISecurityService {
         }
         return entry.getSecretKey();
     }
-    
+
     private SecureRandom getSecRan() {
         if (secRand == null) {
             secRand = new SecureRandom();
@@ -126,7 +130,7 @@ public class SecurityService implements ISecurityService {
         }
         return secRand;
     }
-    
+
     public String nextSecureHexString(int len) {
         if (len <= 0)
             throw new IllegalArgumentException("length must be positive");
@@ -159,21 +163,27 @@ public class SecurityService implements ISecurityService {
     }
 
     protected SecretKey getDefaultSecretKey() throws Exception {
-        String keyPassword = nextSecureHexString(16);
-        KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
-        return SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
+        String keyPassword = nextSecureHexString(8);
+        KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
+                SecurityConstants.ITERATION_COUNT, 56);
+        SecretKey secretKey = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
+        System.err.println(keySpec);
+        System.err.println(secretKey);
+        return secretKey;
     }
 
     protected KeyStore getKeyStore(String password) throws Exception {
         KeyStore ks = KeyStore.getInstance(SecurityConstants.KEYSTORE_TYPE);
-        FileInputStream is = new FileInputStream(System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
+        FileInputStream is = new FileInputStream(
+                System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
         ks.load(is, password.toCharArray());
         is.close();
         return ks;
     }
 
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
-        FileOutputStream os = new FileOutputStream(System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
+        FileOutputStream os = new FileOutputStream(
+                System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();
     }

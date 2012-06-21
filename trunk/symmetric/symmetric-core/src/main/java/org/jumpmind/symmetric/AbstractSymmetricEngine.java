@@ -283,7 +283,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return new NodeCommunicationService(nodeService, parameterService, symmetricDialect);
     }
 
-    protected static ISecurityService createSecurityService(TypedProperties properties) {
+    public static ISecurityService createSecurityService(TypedProperties properties) {
         try {
             String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
                     SecurityService.class.getName());
