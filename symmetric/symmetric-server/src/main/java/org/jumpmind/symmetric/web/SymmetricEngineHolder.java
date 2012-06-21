@@ -33,10 +33,14 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ISecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +141,20 @@ public class SymmetricEngineHolder {
         }
     }
 
-    public ISymmetricEngine install(Properties properties) throws Exception {
+    public ISymmetricEngine install(Properties passedInProperties) throws Exception {
+        TypedProperties properties = new TypedProperties(passedInProperties);
+        String password = properties.getProperty(ParameterConstants.DB_POOL_PASSWORD);
+        if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
+            try {
+                ISecurityService service = AbstractSymmetricEngine
+                        .createSecurityService(properties);
+                properties.setProperty(ParameterConstants.DB_POOL_PASSWORD,
+                        SecurityConstants.PREFIX_ENC + service.encrypt(password));
+            } catch (Exception ex) {
+                log.warn("Could not encrypt password", ex);
+            }
+        }
+
         String engineName = validateRequiredProperties(properties);
         if (engines.get(engineName) != null) {
             try {
@@ -179,7 +196,11 @@ public class SymmetricEngineHolder {
         }
 
         ISymmetricEngine engine = create(symmetricProperties.getAbsolutePath());
-        engine.start();
+        if (engine != null) {
+            engine.start();
+        } else {
+            log.warn("The engine could not be created.  It will not be started");
+        }
         return engine;
 
     }
