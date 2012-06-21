@@ -1086,7 +1086,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
         } catch (RuntimeException ex) {
-            if (!symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
+            if (hist != null && !symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
                     hist.getSourceSchemaName(), hist.getSourceTableName(),
                     hist.getTriggerNameForDmlType(dmlType))) {
                 log.warn(
