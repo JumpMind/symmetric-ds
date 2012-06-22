@@ -251,6 +251,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                                     .getTotalSuccessCount() + 1);
                             nodeCommunication.setTotalSuccessMillis(nodeCommunication
                                     .getTotalSuccessMillis() + millis);
+                            nodeCommunication.setFailCount(0);
                         }
                         status.setComplete(true);
                         save(nodeCommunication);
