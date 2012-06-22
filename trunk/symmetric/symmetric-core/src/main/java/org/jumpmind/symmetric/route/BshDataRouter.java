@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 
@@ -43,12 +43,12 @@ import bsh.Interpreter;
  */
 public class BshDataRouter extends AbstractDataRouter {
 
-    protected ISymmetricDialect symmetricDialect;
+    protected ISymmetricEngine engine;
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
        
-    public BshDataRouter(ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
+    public BshDataRouter(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
@@ -108,7 +108,8 @@ public class BshDataRouter extends AbstractDataRouter {
             throws EvalError {
         interpreter.set("nodes", nodes);
         interpreter.set("targetNodes", targetNodes);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, symmetricDialect);
+        interpreter.set("engine", engine);
+        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect());
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));

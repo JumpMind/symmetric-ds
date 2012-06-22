@@ -95,7 +95,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         this.routers = new HashMap<String, IDataRouter>();
         this.routers.put("configurationChanged", new ConfigurationChangedDataRouter(engine));
-        this.routers.put("bsh", new BshDataRouter(symmetricDialect));
+        this.routers.put("bsh", new BshDataRouter(engine));
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
