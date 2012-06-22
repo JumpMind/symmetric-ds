@@ -522,7 +522,7 @@ values
             that represents some other SymmetricDS concept.  Token values always begin with a colon (:).
         </para>                  
         <para>
-            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
+            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'READY TO SEND.'  The following 
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
@@ -530,7 +530,7 @@ values
  router_expression, create_time, last_update_time)
 values
 ('corp-2-store-ok','corp', 'store', 'column', 
- 'STATUS=OK', current_timestamp, current_timestamp);
+ 'STATUS=READY TO SEND', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
