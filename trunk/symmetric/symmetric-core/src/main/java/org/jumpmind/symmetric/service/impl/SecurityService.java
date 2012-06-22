@@ -84,7 +84,7 @@ public class SecurityService implements ISecurityService {
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
-        log.info("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider()
+        log.debug("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider()
                 .getName());
         return cipher;
     }
