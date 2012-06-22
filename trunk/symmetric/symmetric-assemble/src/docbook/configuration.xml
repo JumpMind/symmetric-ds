@@ -759,15 +759,16 @@ values
         <para>
             The router_type for a Bean Shell scripted router is 'bsh'.  The router_expression is a valid Bean Shell script that:
             <itemizedlist>
-                <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
+                <listitem>adds node ids to the <code>targetNodes</code> collection which is bound to the script</listitem>
                 <listitem>returns a new collection of node ids</listitem>
                 <listitem>returns a single node id</listitem>
                 <listitem>returns true to indicate that all nodes should be routed or returns false to indicate that no nodes should be routed</listitem>
             </itemizedlist>                          
-            Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
-            a list of eligible Node objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
+            Also bound to the script evaluation is a list of <code>nodes</code>.  The list of <code>nodes</code> is 
+            a list of eligible <code>org.jumpmind.symmetric.model.Node</code> objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
             The columns are bound using the uppercase names of the columns.  Old values are bound to uppercase representations that are prefixed with 'OLD_'. 
         </para>        
+        <para>If you need access to any of the SymmetricDS services, then the instance of <code>org.jumpmind.symmetric.ISymmetricEngine</code> is accessible via the bound <code>engine</code> variable.</para>
         <para>
             In the following example, the node_id is a combination of STORE_ID and WORKSTATION_NUMBER, both of which are columns on the table that is being routed.
             <programlisting>
@@ -1144,7 +1145,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 <listitem>
                     Variable Transform ('variable'):  This transformation type allows you to map a built-in dynamic variable to the given target column.  The variable name is placed in transform_expression.
                     The following variables are available: <code>system_date</code> is the current system date, <code>system_timestamp</code> is the current system date and time, and <code>source_node_id</code> is
-                    the node id of the source.
+                    the node id of the source, <code>null</code> is a null value.
                 </listitem>
                 <listitem>
                     Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
