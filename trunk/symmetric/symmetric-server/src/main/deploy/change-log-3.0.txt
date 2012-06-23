@@ -1,3 +1,12 @@
+SymmetricDS - 3.0.4 (Released 2012-06-22) 
+=========================================
+- 0000664: [Improvement] Pass a reference to ISymmetricEngine to the Scripted Router so it has access to SymmetricDS services - resolved.
+- 0000663: [Improvement] Add a variable transform that makes a column <null> (chenson) - resolved.
+- 0000659: [Improvement] Instead of failing to load a failed file, log warnings and delete staged resource if it was abandoned during xfer (chenson) - resolved.
+- 0000656: [Bug] Change the default secret key algorithm used for encrypting/decrypting password from PBEWithMD5AndTripleDES to PBEWithMD5AndDES (chenson) - resolved.
+- 0000657: [Improvement] SymmetricEngineHolder.install should encrypt database password by default (chenson) - resolved.
+- 0000658: [Bug] Fix null pointer exception that hides true exception during install of triggers (chenson) - resolved.
+
 SymmetricDS - 3.0.3 (Released 2012-06-18) 
 =========================================
 - 0000652: [Bug] Update documentation about how to configure purge (chenson) - resolved.
