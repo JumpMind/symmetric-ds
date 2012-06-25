@@ -1,11 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
     <version>3.0.5-SNAPSHOT</version>
     <name>assemble</name>
-
     <licenses>
         <license>
             <name>LGPL</name>
@@ -13,20 +13,17 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
-
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
         <version>3.0.5-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
-
     <properties>
         <docbook.source>${basedir}/src/docbook</docbook.source>
-        <docbook.target>${basedir}/target/site/guide/3.0</docbook.target>
+        <docbook.target>${basedir}/target/doc</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
-
     <modules>
         <module>../symmetric-parent</module>
         <module>../symmetric-util</module>
@@ -38,7 +35,6 @@
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
     </modules>
-
     <build>
         <plugins>
             <plugin>
@@ -92,29 +88,16 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
-    </build>
-    <reporting>
-        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <destDir>apidocs-3.0</destDir>
+                    <reportOutputDirectory>${docbook.target}/javadoc</reportOutputDirectory>
                     <doctitle>SymmetricDS API ${project.version}</doctitle>
                 </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
             </plugin>
         </plugins>
-    </reporting>
-
+    </build>
     <profiles>
         <profile>
             <id>includeDocs</id>
@@ -159,7 +142,7 @@
                                     <preProcess>
                                         <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
                                         <delete file="${basedir}/target/torque/sqldbmap.properties" />
-                                        <delete file="${basedir}/target/torque/context.doc.properties" />                                    
+                                        <delete file="${basedir}/target/torque/context.doc.properties" />
                                         <copy todir="${docbook.build}">
                                             <fileset dir="${docbook.source}">
                                             </fileset>
@@ -170,9 +153,9 @@
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
                                     <imgSrcPath>${docbook.build}/images</imgSrcPath>
-                                    <admonGraphicsPath>${docbook.build}/resources/images/admons/
+                                    <admonGraphicsPath>${docbook.build}/resources/images/admons/ 
                                     </admonGraphicsPath>
-                                    <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl
+                                    <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl 
                                     </foCustomization>
                                     <postProcess>
                                         <delete file="${docbook.target}/pdf/user-guide.fo" />
@@ -187,13 +170,12 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/html-single
+                                    <targetDirectory>${docbook.target}/html-single 
                                     </targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
-                                    <htmlCustomization>
-                                        ${docbook.build}/resources/xsl/docbook-html.xsl
+                                    <htmlCustomization> ${docbook.build}/resources/xsl/docbook-html.xsl 
                                     </htmlCustomization>
                                     <chunkedOutput>false</chunkedOutput>
                                     <postProcess>
@@ -227,8 +209,7 @@
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
-                                    <htmlCustomization>
-                                        ${docbook.build}/resources/xsl/docbook-html-chunk.xsl
+                                    <htmlCustomization> ${docbook.build}/resources/xsl/docbook-html-chunk.xsl 
                                     </htmlCustomization>
                                     <chunkedOutput>true</chunkedOutput>
                                     <postProcess>
@@ -264,5 +245,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

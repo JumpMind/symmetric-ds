@@ -376,6 +376,18 @@ insert into sym_data (
 
           <programlisting><![CDATA[http://localhost:31416/]]></programlisting>
 
+          In order to use JConsole, you must enable the JVM.  You can edit the startup scripts to set the following system
+          parameters.  
+          
+          <programlisting><![CDATA[
+          -Dcom.sun.management.jmxremote.port=31417 
+          -Dcom.sun.management.jmxremote.authenticate=false 
+          -Dcom.sun.management.jmxremote.ssl=false
+          ]]></programlisting>
+          
+          More details about enabling JMX for JConsole can be found <ulink url="http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">here</ulink>.          
+          </para>
+          <para>
           Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
           In jconsole, SymmetricDS appears under the MBeans tab under then name defined by the <literal>engine.name</literal>
           property.  The default value is SymmetricDS.
