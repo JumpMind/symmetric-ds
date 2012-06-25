@@ -106,6 +106,7 @@ public class BshDataRouter extends AbstractDataRouter {
 
     protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes)
             throws EvalError {
+        interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);
