@@ -242,7 +242,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             final Trigger trigger, final TriggerHistory hist, final Channel channel,
             final String tablePrefix, final Table table) {
         log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml),
-                trigger.getSourceTableName());
+                table.getFullyQualifiedTableName());
 
         String previousCatalog = null;
         String sourceCatalogName = trigger.getSourceCatalogName();
