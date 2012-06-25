@@ -27,7 +27,7 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>target/site/guide</directory>
+            <directory>target/doc</directory>
             <outputDirectory>/doc</outputDirectory>
         </fileSet>
     </fileSets>
