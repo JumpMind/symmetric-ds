@@ -167,8 +167,6 @@ public class SecurityService implements ISecurityService {
         KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
                 SecurityConstants.ITERATION_COUNT, 56);
         SecretKey secretKey = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
-        System.err.println(keySpec);
-        System.err.println(secretKey);
         return secretKey;
     }
 
