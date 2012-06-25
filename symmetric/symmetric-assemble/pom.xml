@@ -88,14 +88,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <reportOutputDirectory>${docbook.target}/javadoc</reportOutputDirectory>
-                    <doctitle>SymmetricDS API ${project.version}</doctitle>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -109,6 +101,23 @@
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <reportOutputDirectory>${docbook.target}/javadoc</reportOutputDirectory>
+                            <doctitle>SymmetricDS API ${project.version}</doctitle>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>aggregate</id>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
