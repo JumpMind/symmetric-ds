@@ -1,3 +1,10 @@
+SymmetricDS - 3.0.5 (Released 2012-06-26) 
+=========================================
+- 0000665: [Bug] Don't commit a batch that doesn't have commit in the csv protocol (chenson) - closed.
+- 0000666: [Improvement] Don't capture the raw record in the csv parser. It allocates more memory than need be. (chenson) - closed.
+- 0000667: [Improvement] Improve debug logging when the payload is VERY big. truncate data in the log. (chenson) - closed.
+- 0000668: [Bug] sym_trigger.use_stream_lobs had a bug where every column after a lob is not captured (chenson) - closed.
+
 SymmetricDS - 3.0.4 (Released 2012-06-22) 
 =========================================
 - 0000664: [Improvement] Pass a reference to ISymmetricEngine to the Scripted Router so it has access to SymmetricDS services - resolved.
