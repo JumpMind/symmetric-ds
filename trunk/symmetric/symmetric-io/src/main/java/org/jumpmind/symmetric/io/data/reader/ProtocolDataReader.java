@@ -116,15 +116,29 @@ public class ProtocolDataReader implements IDataReader {
             while (csvReader.readRecord()) {
                 lineNumber++;
                 context.put(CTX_LINE_NUMBER, lineNumber);
-                if (log.isDebugEnabled()) {
-                    log.debug(csvReader.getRawRecord());
-                }
                 String[] tokens = csvReader.getValues();
-                if (batch == null) {
-                    bytesRead += csvReader.getRawRecord().length();
-                } else {
+                StringBuilder debugBuffer = log.isDebugEnabled() ? new StringBuilder() : null;
+                if (tokens != null) {
+                    for (String token : tokens) {
+                        bytesRead += token != null ? token.length() : 0;
+                        if (debugBuffer != null) {
+                            if (token != null) {
+                                String tokenTrimmed = token;
+                                if (tokenTrimmed.length() > 1000) {
+                                    tokenTrimmed = tokenTrimmed.substring(0, 1000) + " ... (" + token.length() + " bytes)";
+                                }
+                                debugBuffer.append(tokenTrimmed);
+                            } 
+                            debugBuffer.append(",");                            
+                        }
+                    }                
+                    if (debugBuffer != null && debugBuffer.length() > 1) {
+                        log.debug("CSV parsed: {}", debugBuffer.substring(0, debugBuffer.length()-1));
+                    }
+                }
+                if (batch != null) {
                     statistics.get(batch).increment(DataReaderStatistics.READ_BYTE_COUNT,
-                            csvReader.getRawRecord().length() + bytesRead);
+                            bytesRead);
                     bytesRead = 0;
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
@@ -170,6 +184,9 @@ public class ProtocolDataReader implements IDataReader {
                     tables.put(table.getFullyQualifiedTableName(), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
+                    if (batch != null) {
+                        batch.setComplete(true);
+                    }
                     return null;
                 } else if (tokens[0].equals(CsvConstants.INSERT)) {
                     CsvData data = new CsvData();
@@ -293,6 +310,6 @@ public class ProtocolDataReader implements IDataReader {
 
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
-    }
+    }    
 
 }

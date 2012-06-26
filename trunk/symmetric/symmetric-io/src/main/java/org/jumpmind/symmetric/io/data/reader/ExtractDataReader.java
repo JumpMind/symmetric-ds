@@ -56,8 +56,9 @@ public class ExtractDataReader implements IDataReader {
         if (this.sourcesToUse.size() > 0) {
             this.currentSource = this.sourcesToUse.remove(0);
             this.batch = this.currentSource.getBatch();
+        } else {
+            this.batch = null;
         }
-
         return this.batch;
 
     }
@@ -71,6 +72,10 @@ public class ExtractDataReader implements IDataReader {
             if (this.data != null) {
                 this.table = this.currentSource.getTable();
             }
+        }
+        
+        if (this.table == null && this.batch != null) {
+            this.batch.setComplete(true);
         }
         return this.table;
     }
@@ -101,6 +106,7 @@ public class ExtractDataReader implements IDataReader {
 
     public void close() {
         closeCurrentSource();
+        this.batch = null;
     }
 
     protected void closeCurrentSource() {
@@ -109,7 +115,6 @@ public class ExtractDataReader implements IDataReader {
             this.currentSource = null;
         }
 
-        this.batch = null;
         this.table = null;
         this.data = null;
     }
