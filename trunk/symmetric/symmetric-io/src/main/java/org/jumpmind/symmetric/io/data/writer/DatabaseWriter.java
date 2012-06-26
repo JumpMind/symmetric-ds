@@ -660,11 +660,20 @@ public class DatabaseWriter implements IDataWriter {
             failureMessage.append("\n");
         }
 
+        final long MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
         rowData = data.getCsvData(CsvData.ROW_DATA);
         if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed row data was: ");
-            failureMessage.append(rowData);
-            failureMessage.append("\n");
+            if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
+                failureMessage.append("Failed row data was: ");
+                failureMessage.append(rowData);
+                failureMessage.append("\n");
+            } else {
+                failureMessage.append("Row data was bigger than ");
+                failureMessage.append(MAX_DATA_SIZE_TO_PRINT_TO_LOG);
+                failureMessage.append(" bytes (it was ");
+                failureMessage.append(rowData.length());
+                failureMessage.append(" bytes).  It will not be printed to the log file");                
+            }
         }
 
         rowData = data.getCsvData(CsvData.OLD_DATA);
