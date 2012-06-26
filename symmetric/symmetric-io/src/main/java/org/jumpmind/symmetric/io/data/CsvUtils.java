@@ -46,6 +46,7 @@ public class CsvUtils {
         CsvReader csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
         csvReader.setSafetySwitch(false);
+        csvReader.setCaptureRawRecord(false);
         return csvReader;
     }
 

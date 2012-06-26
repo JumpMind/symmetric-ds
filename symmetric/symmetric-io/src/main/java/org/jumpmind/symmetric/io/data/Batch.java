@@ -21,6 +21,7 @@ public class Batch {
     protected long dataWriteMillis;
     protected boolean ignored = false;
     protected boolean common = false;
+    protected boolean complete = false;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
     
@@ -131,6 +132,14 @@ public class Batch {
     
     public static String getStagedLocation(boolean common, String nodeId) {
         return common ? "common" : nodeId;
+    }
+    
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+    }
+    
+    public boolean isComplete() {
+        return complete;
     }
     
 }
