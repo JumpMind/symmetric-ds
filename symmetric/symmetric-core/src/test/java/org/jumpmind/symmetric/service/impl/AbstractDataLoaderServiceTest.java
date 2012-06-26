@@ -153,7 +153,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + batch.getSqlMessage() + ". " + printDatabase());
-        assertEquals(batch.getByteCount(), 524l, "Wrong byte count. " + printDatabase());
+        assertEquals(batch.getByteCount(), 450l, "Wrong byte count. " + printDatabase());
         assertEquals(batch.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 1l, "Wrong fallback insert count. "
                 + printDatabase());
@@ -259,8 +259,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        Assert.assertTrue("Wrong byte count: " + batch.getByteCount() + ". " + printDatabase(),
-                batch.getByteCount() == 418);
+        Assert.assertEquals("Wrong byte count: " + batch.getByteCount() + ". " + printDatabase(), 370,
+                batch.getByteCount());
         assertEquals(batch.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count. "
                 + printDatabase());
