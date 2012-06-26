@@ -558,7 +558,7 @@ abstract public class AbstractTriggerTemplate {
             String columnPrefix, Column[] columns, DataEventType dml,
             boolean isOld, Channel channel, Trigger trigger) {
         String columnsText = "";
-        boolean isLob = false;
+        boolean containsLob = false;
 
         String lastCommandToken = symmetricDialect.escapesTemplatesForDatabaseInserts() ? (triggerConcatCharacter
                 + "'',''" + triggerConcatCharacter)
@@ -567,6 +567,7 @@ abstract public class AbstractTriggerTemplate {
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (column != null) {
+                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
                 String templateToUse = null;
                 switch (column.getMappedTypeCode()) {
                     case Types.TINYINT:
@@ -586,7 +587,6 @@ abstract public class AbstractTriggerTemplate {
                         break;
                     case Types.LONGVARCHAR:
                         templateToUse = stringColumnTemplate;
-                        isLob = true;
                         break;
                     case ColumnTypes.SQLXML:
                         templateToUse = xmlColumnTemplate;
@@ -600,12 +600,10 @@ abstract public class AbstractTriggerTemplate {
                         } else {
                             templateToUse = clobColumnTemplate;
                         }
-                        isLob = true;
                         break;
                     case Types.BLOB:
                         if (requiresWrappedBlobTemplateForBlobType()) {
                             templateToUse = wrappedBlobColumnTemplate;
-                            isLob = true;
                             break;
                         }
                     case Types.BINARY:
@@ -618,7 +616,6 @@ abstract public class AbstractTriggerTemplate {
                         } else {
                             templateToUse = blobColumnTemplate;
                         }
-                        isLob = true;
                         break;
                     case Types.DATE:
                         if (noDateColumnTemplate()) {
@@ -692,7 +689,9 @@ abstract public class AbstractTriggerTemplate {
                 }
 
                 columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
-            }
+                
+                containsLob |= isLob;
+            }            
 
         }
 
@@ -705,7 +704,7 @@ abstract public class AbstractTriggerTemplate {
         columnsText = FormatUtils.replace("tableAlias", tableAlias, columnsText);
         columnsText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(),
                 columnsText);
-        return new ColumnString(columnsText, isLob);
+        return new ColumnString(columnsText, containsLob);
     }
 
     public String getOtherColumnTemplate() {
