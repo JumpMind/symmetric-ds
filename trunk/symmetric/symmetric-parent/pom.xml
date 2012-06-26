@@ -54,10 +54,6 @@
             </url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
-        <site>
-            <id>dav.codehaus.org</id>
-            <url>dav:https://dav.codehaus.org/symmetricds/</url>
-        </site>
     </distributionManagement>
 
     <repositories>
