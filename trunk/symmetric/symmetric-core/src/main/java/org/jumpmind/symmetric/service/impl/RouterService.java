@@ -227,7 +227,7 @@ public class RouterService extends AbstractService implements IRouterService {
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
             for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
-                IDataRouter dataRouter = routers.get(triggerRouter.getRouter().getRouterType());
+                IDataRouter dataRouter = getDataRouter(triggerRouter);
                 /*
                  * If the data router is not a default data router or there will
                  * be incoming data on the channel where sync_on_incoming_batch
