@@ -404,18 +404,14 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void generateWar(CommandLine line, List<String> args) throws Exception {
         String warFileName = popArg(args, "Filename");
-        String propertiesFileName = line.getOptionValue(OPTION_PROPERTIES_FILE);
         final File workingDirectory = new File("../.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File("../web"), workingDirectory);
         FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory,
                 "WEB-INF/classes"));
-        if (propertiesFileName != null) {
-            File propsFile = new File(propertiesFileName);
-            if (propsFile.exists()) {
-                FileUtils.copyFile(propsFile, new File(workingDirectory,
-                        "WEB-INF/classes/symmetric.properties"));
-            }
+        if (propertiesFile != null && propertiesFile.exists()) {
+            FileUtils.copyFile(propertiesFile, new File(workingDirectory,
+                    "WEB-INF/classes/symmetric.properties"));
         }
         JarBuilder builder = new JarBuilder(workingDirectory, new File(
                 warFileName), new File[] { workingDirectory });
