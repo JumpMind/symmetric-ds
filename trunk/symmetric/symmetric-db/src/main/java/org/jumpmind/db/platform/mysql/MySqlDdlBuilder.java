@@ -67,7 +67,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "MEDIUMBLOB");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "MEDIUMTEXT");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "MEDIUMTEXT", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.NULL, "MEDIUMBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "LONGBLOB", Types.LONGVARBINARY);

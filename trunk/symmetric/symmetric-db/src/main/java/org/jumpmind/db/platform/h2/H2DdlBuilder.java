@@ -58,7 +58,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR("+Integer.MAX_VALUE+")", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
 
@@ -66,12 +66,11 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
-
         
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(true);
-        databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setEmptyStringNulled(false);                
 
         addEscapedCharSequence("'", "''");
     }

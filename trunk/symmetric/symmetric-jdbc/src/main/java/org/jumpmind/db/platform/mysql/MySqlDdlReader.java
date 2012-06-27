@@ -68,6 +68,10 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         if ("YEAR".equals(typeName)) {
             // it is safe to map a YEAR to INTEGER
             return Types.INTEGER;
+        } else if ("LONGTEXT".equals(typeName)) {
+            return Types.CLOB;
+        } else if ("MEDIUMTEXT".equals(typeName)) {
+            return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
