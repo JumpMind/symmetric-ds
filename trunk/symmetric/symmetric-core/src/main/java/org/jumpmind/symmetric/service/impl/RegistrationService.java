@@ -162,7 +162,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             // re-registering
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
-                dataService.reloadNode(preRegisteredNode.getNodeId());
+                dataService.reloadNode(nodeId);
             }
         }
 
