@@ -2,6 +2,6 @@
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${system_path:/mvn.bat}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-Dmaven.test.skip=true  -DincludeDocs=true generate-sources"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/symmetric}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-DskipTests  -DincludeDocs=true generate-sources"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/symmetric-assemble}"/>
 </launchConfiguration>
