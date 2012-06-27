@@ -17,8 +17,9 @@
     <title>Node Properties</title>
     <para>
         To get a SymmetricDS node running, it needs to be given an identity and it needs to know how
-        to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
-        in the <filename>symmetric.properties</filename> file.  When started up, SymmetricDS reads the configuration
+        to connect to the database it will be synchronizing.  The preferred way to configure a SymmetricDS engine
+        is to create a properties file in the engines directory.  The SymmetricDS server will create an engine 
+        for each properties file found in the engines directory.  When started up, SymmetricDS reads the synchronization configuration
         and state from the database.  If the configuration tables are missing, they are created
         automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables (the complete 
         data model is defined in <xref linkend="data-model"/>).
@@ -50,9 +51,30 @@
       </para>
         <para>
             Each node requires properties that allow it to connect to a database and register
-            with a parent node.  To give a node its identity, the following properties are used:
+            with a parent node.  Properties are configured in a file named <code>xxxxx.properties</code>
+            that is placed in the engines directory of the SymmetricDS install.  The file is usually named
+            according to the engine.name, but it is not a requirement.
+        </para>
+        <para>
+            To give a node its identity, the following properties are required.  Any other properties
+            found in <code>conf/symmetric.properties</code> can be overridden for a specific engine in an engine's 
+            properties file.  If the properties are changed in <code>conf/symmetric.properties</code> they will 
+            take effect across all engines deployed to the server.
         </para>
         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>engine.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        This is an arbitrary name that is used to access a specific engine using
+                        an HTTP URL.  Each node configured in the engines directory must have a unique
+                        engine name.  The engine name is also used for the domain name of registered JMX
+                        beans.   
+                    </para>
+                </listitem>
+            </varlistentry>        
             <varlistentry>
                 <term>
                     <command>group.id</command>
@@ -89,8 +111,17 @@
                     <para>
                         The URL where this node can be contacted for synchronization.
                         At startup and during each heartbeat, the node updates its entry in
-                        the database with this URL.  
+                        the database with this URL.  The sync url is of the format: 
+                        <code>http://{hostname}:{port}/{webcontext}/sync/{engine.name}</code>.
                     </para>
+                    <para>                        
+                        The {webcontext} is blank for a standalone deployment.  It will typically be
+                        the name of the war file for an application server deployment.                     
+                    </para>
+                    <para>
+                        The {engine.name} can be left blank if there is only one engine deployed in
+                        a SymmetricDS server.                        
+                    </para>                    
                 </listitem>
             </varlistentry>
         </variablelist>
@@ -109,7 +140,8 @@
                     <para>
                         The URL where this node can connect for registration to receive its
                         configuration. The registration server is part of SymmetricDS and is enabled
-                        as part of the deployment.
+                        as part of the deployment.  This is typically equal to the value of the sync.url of the
+                        registration server.
                     </para>
                 </listitem>
             </varlistentry>
