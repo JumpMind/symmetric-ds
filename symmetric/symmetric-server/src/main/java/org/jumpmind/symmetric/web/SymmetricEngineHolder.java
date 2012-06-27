@@ -107,18 +107,14 @@ public class SymmetricEngineHolder {
                 }
             }
 
-            for (EngineStarter starter : enginesStarting) {
-                starter.start();
-            }
-
         } else {
-            ISymmetricEngine engine = create(singleServerPropertiesFile);
-            if (engine != null) {
-                engine.start();
-            } else {
-                log.error("The engine was not created.  Could not start it");
-            }
+            enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
         }
+        
+        for (EngineStarter starter : enginesStarting) {
+            starter.start();
+        }
+
     }
 
     protected ISymmetricEngine create(String propertiesFile) {
