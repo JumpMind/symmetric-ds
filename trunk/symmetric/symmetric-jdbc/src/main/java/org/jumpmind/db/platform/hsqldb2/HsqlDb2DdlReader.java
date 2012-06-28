@@ -21,8 +21,10 @@ package org.jumpmind.db.platform.hsqldb2;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -73,6 +75,22 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
         String name = index.getName();
 
         return (name != null) && (name.startsWith("SYS_PK_") || name.startsWith("SYS_IDX_"));
+    }
+
+    @Override
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        String size = (String) values.get("COLUMN_SIZE");
+        if (typeName != null && typeName.startsWith("VARCHAR") && StringUtils.isNotBlank(size)) {
+            long sizeAsNumber = Long.parseLong(size);
+            if (sizeAsNumber >= 16777216) {
+                return Types.LONGVARCHAR;
+            } else {
+                return super.mapUnknownJdbcTypeForColumn(values);
+            }
+        } else {
+            return super.mapUnknownJdbcTypeForColumn(values);
+        }
     }
 
 }
