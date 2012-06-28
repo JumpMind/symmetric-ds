@@ -19,6 +19,8 @@ package org.jumpmind.db.platform.derby;
  * under the License.
  */
 
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -67,6 +69,11 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     public String getDefaultCatalog() {
         return null;
+    }
+    
+    @Override
+    public boolean isClob(int type) {
+        return type == Types.CLOB;
     }
 
 }

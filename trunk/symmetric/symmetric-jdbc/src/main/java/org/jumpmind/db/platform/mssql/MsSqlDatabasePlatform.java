@@ -71,4 +71,11 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return defaultSchema;
     }
 
+    @Override
+    public boolean isClob(int type) {
+        return super.isClob(type) ||
+        // SQL-Server ntext binary type
+                type == -10;
+    }
+
 }
