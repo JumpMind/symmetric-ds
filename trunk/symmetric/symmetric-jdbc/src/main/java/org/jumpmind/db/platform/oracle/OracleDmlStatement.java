@@ -1,5 +1,7 @@
 package org.jumpmind.db.platform.oracle;
 
+import java.sql.Types;
+
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
@@ -57,6 +59,15 @@ public class OracleDmlStatement extends DmlStatement {
         if (columns.length > 0) {
             sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
+    }
+    
+    @Override
+    protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
+        int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);
+        if (typeCode == Types.LONGVARCHAR) {
+            typeCode = Types.CLOB;
+        } 
+        return typeCode;
     }
 
 }
