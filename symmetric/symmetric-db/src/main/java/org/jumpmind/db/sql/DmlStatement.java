@@ -110,23 +110,28 @@ public class DmlStatement {
         return null;
 
     }
+    
+    protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
+        int type = column.getMappedTypeCode();
+        if (type == Types.DATE && isDateOverrideToTimestamp) {
+            type = Types.TIMESTAMP;
+        } else if (type == Types.FLOAT || type == Types.DOUBLE) {
+            type = Types.DECIMAL;
+        }
+        return type;        
+    }
 
     protected int[] buildTypes(Column[] columns, boolean isDateOverrideToTimestamp) {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                list.add(columns[i].getMappedTypeCode());
+                list.add(getTypeCode(columns[i], isDateOverrideToTimestamp));
             }
         }
+
         int[] types = new int[list.size()];
-        int index = 0;
-        for (Integer type : list) {
-            if (type == Types.DATE && isDateOverrideToTimestamp) {
-                type = Types.TIMESTAMP;
-            } else if (type == Types.FLOAT || type == Types.DOUBLE) {
-                type = Types.DECIMAL;
-            }
-            types[index++] = type;
+        for (int index = 0; index < list.size(); index++) {
+            types[index] = list.get(index);
         }
         return types;
     }

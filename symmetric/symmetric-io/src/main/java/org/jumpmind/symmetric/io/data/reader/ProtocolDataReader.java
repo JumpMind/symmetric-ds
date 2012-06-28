@@ -128,7 +128,9 @@ public class ProtocolDataReader implements IDataReader {
                                     tokenTrimmed = tokenTrimmed.substring(0, 1000) + " ... (" + token.length() + " bytes)";
                                 }
                                 debugBuffer.append(tokenTrimmed);
-                            } 
+                            } else {
+                                debugBuffer.append("<null>");
+                            }
                             debugBuffer.append(",");                            
                         }
                     }                
