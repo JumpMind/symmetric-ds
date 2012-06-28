@@ -18,7 +18,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || rtrim(char(year(timestamp_iso($(tableAlias).\"$(columnName)\"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'.'||rtrim(char(microsecond(timestamp_iso($(tableAlias).\"$(columnName)\")))) || '\"' end" ;
         timeColumnTemplate = null;
         dateColumnTemplate = null;
-        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast($(tableAlias).\"$(columnName)\" as varchar(32672)) || '\"' end" ;
+        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar(32672)),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || hex(cast($(tableAlias).\"$(columnName)\" as varchar(16336) for bit data)) || '\"' end" ;
         wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = null;
