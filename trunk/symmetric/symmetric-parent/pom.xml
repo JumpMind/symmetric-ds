@@ -73,8 +73,8 @@
     </repositories>
 
     <issueManagement>
-        <system>JIRA</system>
-        <url>http://jira.codehaus.org/BrowseProject.jspa?id=11906</url>
+        <system>MANTIS</system>
+        <url>http://symmetricds.org/issues</url>
     </issueManagement>
 
     <mailingLists>
