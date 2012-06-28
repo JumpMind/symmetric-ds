@@ -1,5 +1,6 @@
 package org.jumpmind.db.platform.informix;
 
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,4 +56,10 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
+    
+    @Override
+    public boolean isClob(int type) {
+        return type == Types.CLOB;
+    }
+    
 }

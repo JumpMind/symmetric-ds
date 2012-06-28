@@ -533,9 +533,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean isClob(int type) {
-        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR||
-                // SQL-Server ntext binary type
-                type == -10;
+        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR;                
     }
 
     public boolean isBlob(int type) {
