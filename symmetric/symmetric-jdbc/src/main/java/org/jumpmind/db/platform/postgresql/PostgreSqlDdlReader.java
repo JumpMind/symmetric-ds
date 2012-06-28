@@ -52,9 +52,9 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
-            // PostgreSQL also returns unique indics for non-pk auto-increment
+            // PostgreSQL also returns unique indices for non-pk auto-increment
             // columns which are of the form "[table]_[column]_key"
-            HashMap uniquesByName = new HashMap();
+            HashMap<String,IIndex> uniquesByName = new HashMap<String,IIndex>();
 
             for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
                 IIndex index = table.getIndex(indexIdx);
@@ -67,7 +67,6 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 Column column = table.getColumn(columnIdx);
                 if (column.isAutoIncrement() && !column.isPrimaryKey()) {
                     String indexName = table.getName() + "_" + column.getName() + "_key";
-
                     if (uniquesByName.containsKey(indexName)) {
                         table.removeIndex((IIndex) uniquesByName.get(indexName));
                         uniquesByName.remove(indexName);
