@@ -591,7 +591,11 @@ abstract public class AbstractTriggerTemplate {
                     case Types.ARRAY:
                         templateToUse = arrayColumnTemplate;
                         break;
-                    case Types.LONGVARCHAR:                        
+                    case Types.LONGVARCHAR:             
+                        if (!isLob) {
+                            templateToUse = stringColumnTemplate;
+                            break;
+                        }
                     case Types.CLOB:
                         if (isOld && symmetricDialect.needsToSelectLobData()) {
                             templateToUse = emptyColumnTemplate;
