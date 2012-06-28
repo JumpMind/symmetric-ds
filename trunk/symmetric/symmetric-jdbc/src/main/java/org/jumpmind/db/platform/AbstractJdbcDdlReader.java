@@ -1090,7 +1090,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             IndexColumn indexColumn = new IndexColumn();
 
-            indexColumn.setName((String) values.get("COLUMN_NAME"));
+            String columnName = (String) values.get("COLUMN_NAME");
+            if (columnName.startsWith("\"") && columnName.endsWith("\"")) {
+                columnName = columnName.substring(1, columnName.length()-1);
+            }
+            indexColumn.setName(columnName);
             if (values.containsKey("ORDINAL_POSITION")) {
                 indexColumn.setOrdinalPosition(((Short) values.get("ORDINAL_POSITION")).intValue());
             }
