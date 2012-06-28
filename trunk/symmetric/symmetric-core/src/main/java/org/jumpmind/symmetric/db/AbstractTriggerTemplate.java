@@ -585,15 +585,13 @@ abstract public class AbstractTriggerTemplate {
                     case Types.VARCHAR:
                         templateToUse = stringColumnTemplate;
                         break;
-                    case Types.LONGVARCHAR:
-                        templateToUse = stringColumnTemplate;
-                        break;
                     case ColumnTypes.SQLXML:
                         templateToUse = xmlColumnTemplate;
                         break;
                     case Types.ARRAY:
                         templateToUse = arrayColumnTemplate;
                         break;
+                    case Types.LONGVARCHAR:                        
                     case Types.CLOB:
                         if (isOld && symmetricDialect.needsToSelectLobData()) {
                             templateToUse = emptyColumnTemplate;

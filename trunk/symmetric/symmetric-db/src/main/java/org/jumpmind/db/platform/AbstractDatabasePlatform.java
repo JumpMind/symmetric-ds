@@ -527,9 +527,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
+    
+    public boolean isLob(int type) {
+        return isClob(type) || isBlob(type);
+    }
 
     public boolean isClob(int type) {
-        return type == Types.CLOB || type == Types.LONGVARCHAR;
+        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR||
+                // SQL-Server ntext binary type
+                type == -10;
     }
 
     public boolean isBlob(int type) {
@@ -575,14 +581,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             storesUpperCaseIdentifiers = getSqlTemplate().isStoresUpperCaseIdentifiers();
         }
         return storesUpperCaseIdentifiers;
-    }
-
-    public boolean isLob(int type) {
-        return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
-                || type == Types.VARBINARY || type == Types.LONGVARBINARY
-                || type == ColumnTypes.LONGNVARCHAR ||
-                // SQL-Server ntext binary type
-                type == -10;
     }
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase) {
