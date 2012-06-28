@@ -37,15 +37,15 @@
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
-			<xsd:attribute name="id" use="required">
+			<xsd:attribute name="id">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:pattern value="[0-9]*" />
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:attribute>
-			<xsd:attribute name="nodeid" type="xsd:string" use="required" />
-			<xsd:attribute name="time" use="required">
+			<xsd:attribute name="nodeid" type="xsd:string" />
+			<xsd:attribute name="time">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:pattern value="[0-9]*" />
