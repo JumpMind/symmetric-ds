@@ -19,6 +19,7 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -121,6 +122,8 @@ public interface IDatabasePlatform {
     public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
+    
+    public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
 
     public boolean isLob(int type);
 
