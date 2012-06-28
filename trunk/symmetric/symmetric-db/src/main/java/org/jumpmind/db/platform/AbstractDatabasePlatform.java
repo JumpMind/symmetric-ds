@@ -363,10 +363,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         }
                         list.add(objectValue);
                     }
-                } catch (Exception ex) {   
+                } catch (Exception ex) {
                     String valueTrimmed = value;
                     if (valueTrimmed.length() > 1000) {
-                        valueTrimmed = valueTrimmed.substring(0, 1000) + " ... (" + value.length() + " bytes)";
+                        valueTrimmed = valueTrimmed.substring(0, 1000) + " ... (" + value.length()
+                                + " bytes)";
                     }
                     log.error("Could not convert a value of {} for column {} of type {}",
                             new Object[] { valueTrimmed, column.getName(), column.getMappedType() });
@@ -472,7 +473,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     }
                 }
             } else {
-                newSql = newSql.replaceFirst(regex, "null");    
+                newSql = newSql.replaceFirst(regex, "null");
             }
         }
         return newSql + getDatabaseInfo().getSqlCommandDelimiter();
@@ -527,13 +528,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
-    
+
     public boolean isLob(int type) {
         return isClob(type) || isBlob(type);
     }
 
     public boolean isClob(int type) {
-        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR;                
+        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR;
     }
 
     public boolean isBlob(int type) {
@@ -595,47 +596,51 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
 
         if (is != null) {
-            InputStreamReader reader = new InputStreamReader(is);
-            Database database = new DatabaseIO().read(reader);
-            IOUtils.closeQuietly(reader);
-            if (alterCaseToMatchDatabaseDefaultCase) {
-                boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-                Table[] tables = database.getTables();
-                for (Table table : tables) {
-                    if (!FormatUtils.isMixedCase(table.getName())) {
-                        table.setName(storesUpperCase ? table.getName().toUpperCase() : table
+            return readDatabaseFromXml(is, alterCaseToMatchDatabaseDefaultCase);
+        } else {
+            throw new IoException("Could not find the file: %s", filePath);
+        }
+    }
+
+    public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
+        InputStreamReader reader = new InputStreamReader(is);
+        Database database = new DatabaseIO().read(reader);
+        IOUtils.closeQuietly(reader);
+        if (alterCaseToMatchDatabaseDefaultCase) {
+            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+            Table[] tables = database.getTables();
+            for (Table table : tables) {
+                if (!FormatUtils.isMixedCase(table.getName())) {
+                    table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                            .toLowerCase());
+                }
+
+                Column[] columns = table.getColumns();
+                for (Column column : columns) {
+                    if (!FormatUtils.isMixedCase(column.getName())) {
+                        column.setName(storesUpperCase ? column.getName().toUpperCase() : column
+                                .getName().toLowerCase());
+                    }
+                }
+
+                IIndex[] indexes = table.getIndices();
+                for (IIndex index : indexes) {
+                    if (!FormatUtils.isMixedCase(index.getName())) {
+                        index.setName(storesUpperCase ? index.getName().toUpperCase() : index
                                 .getName().toLowerCase());
                     }
 
-                    Column[] columns = table.getColumns();
-                    for (Column column : columns) {
-                        if (!FormatUtils.isMixedCase(column.getName())) {
-                            column.setName(storesUpperCase ? column.getName().toUpperCase()
-                                    : column.getName().toLowerCase());
-                        }
-                    }
-
-                    IIndex[] indexes = table.getIndices();
-                    for (IIndex index : indexes) {
-                        if (!FormatUtils.isMixedCase(index.getName())) {
-                            index.setName(storesUpperCase ? index.getName().toUpperCase() : index
-                                    .getName().toLowerCase());
-                        }
-
-                        IndexColumn[] indexColumns = index.getColumns();
-                        for (IndexColumn indexColumn : indexColumns) {
-                            if (!FormatUtils.isMixedCase(indexColumn.getName())) {
-                                indexColumn.setName(storesUpperCase ? indexColumn.getName()
-                                        .toUpperCase() : indexColumn.getName().toLowerCase());
-                            }
+                    IndexColumn[] indexColumns = index.getColumns();
+                    for (IndexColumn indexColumn : indexColumns) {
+                        if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                            indexColumn.setName(storesUpperCase ? indexColumn.getName()
+                                    .toUpperCase() : indexColumn.getName().toLowerCase());
                         }
                     }
                 }
             }
-            return database;
-        } else {
-            throw new IoException("Could not find the file: %s", filePath);
         }
+        return database;
 
     }
 

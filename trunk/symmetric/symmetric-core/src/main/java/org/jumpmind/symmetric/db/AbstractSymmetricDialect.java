@@ -453,7 +453,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    protected Database readSymmetricSchemaFromXml() {
+    public Database readSymmetricSchemaFromXml() {
         try {
             Database database = merge(readDatabaseFromXml("/symmetric-schema.xml"),
                     readDatabaseFromXml("/console-schema.xml"));

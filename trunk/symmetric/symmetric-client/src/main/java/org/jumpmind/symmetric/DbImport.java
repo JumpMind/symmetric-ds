@@ -30,7 +30,6 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -56,6 +55,8 @@ public class DbImport {
     private String schema;
     
     private boolean useVariableDates;
+    
+    private boolean alterCaseToMatchDatabaseDefaultCase = false;
 
     private IDatabasePlatform platform;
     
@@ -99,6 +100,7 @@ public class DbImport {
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
         csvReader.setSafetySwitch(false);
         csvReader.setUseComments(true);
+        csvReader.setCaptureRawRecord(false);
         csvReader.readHeaders();
 
         while (csvReader.readRecord()) {
@@ -115,9 +117,10 @@ public class DbImport {
     }
 
     protected void importTablesFromXml(InputStream in) {
-        // TODO: read in data from XML also
-        Database database = new DatabaseIO().read(in);
+        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
         platform.createDatabase(database, false, true);
+        
+        // TODO: read in data from XML also
     }
 
     protected void importTablesFromSql(InputStream in) throws IOException {
@@ -167,6 +170,14 @@ public class DbImport {
 
     public void setUseVariableForDates(boolean useVariableDates) {
         this.useVariableDates = useVariableDates;
+    }
+    
+    public void setAlterCaseToMatchDatabaseDefaultCase(boolean alterCaseToMatchDatabaseDefaultCase) {
+        this.alterCaseToMatchDatabaseDefaultCase = alterCaseToMatchDatabaseDefaultCase;
+    }
+    
+    public boolean isAlterCaseToMatchDatabaseDefaultCase() {
+        return alterCaseToMatchDatabaseDefaultCase;
     }
 
 }

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Set;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -211,5 +212,7 @@ public interface ISymmetricDialect {
     public String getSequenceKeyName(SequenceIdentifier identifier);
     
     public String getTablePrefix();
+    
+    public Database readSymmetricSchemaFromXml();
     
 }
