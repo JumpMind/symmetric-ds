@@ -57,6 +57,8 @@ public class DbImport {
     private boolean useVariableDates;
     
     private boolean alterCaseToMatchDatabaseDefaultCase = false;
+    
+    private boolean failOnError = false;
 
     private IDatabasePlatform platform;
     
@@ -118,7 +120,7 @@ public class DbImport {
 
     protected void importTablesFromXml(InputStream in) {
         Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
-        platform.createDatabase(database, false, true);
+        platform.createDatabase(database, false, !failOnError);
         
         // TODO: read in data from XML also
     }
@@ -178,6 +180,14 @@ public class DbImport {
     
     public boolean isAlterCaseToMatchDatabaseDefaultCase() {
         return alterCaseToMatchDatabaseDefaultCase;
+    }
+    
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
+    
+    public boolean isFailOnError() {
+        return failOnError;
     }
 
 }

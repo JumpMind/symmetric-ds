@@ -215,7 +215,7 @@ public class DatabaseIO {
                                 }
                             }
                             table.addIndex(index);
-                        } else if (name.equalsIgnoreCase("index-column")) {
+                        } else if (name.equalsIgnoreCase("index-column") || name.equalsIgnoreCase("unique-column")) {
                             IndexColumn indexColumn = new IndexColumn();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
