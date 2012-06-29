@@ -211,7 +211,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             .getSourceCatalogName()))) {
                 if ((StringUtils.isBlank(schemaName) && StringUtils.isBlank(triggerHistory
                         .getSourceSchemaName()))
-                        || (StringUtils.isNotBlank(schemaName) && catalogName.equals(triggerHistory
+                        || (StringUtils.isNotBlank(schemaName) && schemaName.equals(triggerHistory
                                 .getSourceSchemaName()))) {
                     return triggerHistory;
                 }
