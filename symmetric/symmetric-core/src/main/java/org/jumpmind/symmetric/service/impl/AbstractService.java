@@ -47,7 +47,7 @@ abstract public class AbstractService implements IService {
     protected ISymmetricDialect symmetricDialect;
 
     protected ISqlTemplate sqlTemplate;
-    
+
     protected IDatabasePlatform platform;
 
     protected String tablePrefix;
@@ -134,13 +134,23 @@ abstract public class AbstractService implements IService {
             transaction.close();
         }
     }
-    
+
     protected String getRootMessage(Exception ex) {
         Throwable cause = ExceptionUtils.getRootCause(ex);
         if (cause == null) {
             cause = ex;
         }
         return cause.getMessage();
+    }
+
+    protected boolean isCalledFromSymmetricAdminTool() {
+        boolean adminTool = false;
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        for (StackTraceElement stackTraceElement : trace) {
+            adminTool |= stackTraceElement.getClassName().equals(
+                    "org.jumpmind.symmetric.SymmetricAdmin");
+        }
+        return adminTool;
     }
 
 }
