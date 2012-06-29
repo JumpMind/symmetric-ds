@@ -163,7 +163,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void inactivateTriggerHistory(TriggerHistory history) {
         sqlTemplate.update(getSql("inactivateTriggerHistorySql"),
-                new Object[] { history.getErrorMessage(), history.getTriggerHistoryId() }, new int[] { Types.VARCHAR, Types.INTEGER });
+                new Object[] { history.getErrorMessage(), history.getTriggerHistoryId() },
+                new int[] { Types.VARCHAR, Types.INTEGER });
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {
@@ -745,28 +746,41 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways) {
-        if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
-            synchronized (this) {
-                try {
-                    log.info("Synchronizing triggers");
-                    
-                    // make sure all tables are freshly read in
-                    platform.resetCachedTableModel();
-                    
-                    // make sure channels are read from the database
-                    configurationService.reloadChannels();
-                    
-                    List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
-                    inactivateTriggers(triggersForCurrentNode, sqlBuffer);
-                    updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, genAlways);
-                    resetTriggerRouterCacheByNodeGroupId();
-                } finally {
-                    clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
-                    log.info("Done synchronizing triggers");
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)
+                || isCalledFromSymmetricAdminTool()) {
+            if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
+                synchronized (this) {
+                    try {
+                        String additionalMessage = "";
+                        if (isCalledFromSymmetricAdminTool()
+                                && !parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                            additionalMessage = " "
+                                    + ParameterConstants.AUTO_SYNC_TRIGGERS
+                                    + " is set to false, but the sync triggers process will run so that needed changes can be written to a file so they can be applied manually.  Once all of the triggers have been successfully applied this process should not show triggers being created";
+                        }
+                        log.info("Synchronizing triggers{}", additionalMessage);
+
+                        // make sure all tables are freshly read in
+                        platform.resetCachedTableModel();
+
+                        // make sure channels are read from the database
+                        configurationService.reloadChannels();
+
+                        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                        inactivateTriggers(triggersForCurrentNode, sqlBuffer);
+                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, genAlways);
+                        resetTriggerRouterCacheByNodeGroupId();
+                    } finally {
+                        clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
+                        log.info("Done synchronizing triggers");
+                    }
                 }
+            } else {
+                log.info("Failed to synchronize trigger for {}");
             }
         } else {
-            log.info("Failed to synchronize trigger for {}");
+            log.info("Not synchronizing triggers.  {} is set to false",
+                    ParameterConstants.AUTO_SYNC_TRIGGERS);
         }
     }
 
@@ -900,12 +914,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 Set<Table> tables = getTablesForTrigger(trigger, triggers);
                 if (tables.size() > 0) {
-                    for (Table table : tables) {                        
+                    for (Table table : tables) {
                         if (table.getPrimaryKeyColumnCount() == 0) {
                             table = table.copy();
                             table.makeAllColumnsPrimaryKeys();
                         }
-                        
+
                         TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
                                 trigger.getTriggerId(),
                                 trigger.getSourceCatalogName(),
@@ -1086,9 +1100,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
         } catch (RuntimeException ex) {
-            if (hist != null && !symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
-                    hist.getSourceSchemaName(), hist.getSourceTableName(),
-                    hist.getTriggerNameForDmlType(dmlType))) {
+            if (hist != null
+                    && !symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
+                            hist.getSourceSchemaName(), hist.getSourceTableName(),
+                            hist.getTriggerNameForDmlType(dmlType))) {
                 log.warn(
                         "Cleaning up trigger hist row of {} after failing to create the associated trigger",
                         hist.getTriggerHistoryId());
