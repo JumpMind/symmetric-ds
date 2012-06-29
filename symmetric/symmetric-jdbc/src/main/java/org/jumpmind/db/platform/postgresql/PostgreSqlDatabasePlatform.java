@@ -57,7 +57,10 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         ddlBuilder = new PostgreSqlDdlBuilder();
     }   
     
-    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {        
+    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
+        if (settings == null) {
+            settings = new SqlTemplateSettings();
+        }
         // Query timeout needs to be zero for postrgres because the jdbc driver does
         // not support a timeout setting of of other than zero.
         settings.setQueryTimeout(0);
