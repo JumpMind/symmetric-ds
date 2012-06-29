@@ -146,7 +146,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Create the sample tables in the server database by executing the following command:</para>
                 <para>
-                    <command>../bin/dbimport --format XML create_sample.xml</command>
+                    <command>../bin/dbimport --engine server --format XML create_sample.xml</command>
                 </para>
                 <para> Note that the warning messages from the command are safe to ignore.</para>
             </step>
@@ -161,7 +161,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Finally, load the sample data and configuration into the server node database by executing:</para>
                 <para>
-                    <command>../bin/dbimport insert_sample.sql</command>
+                    <command>../bin/dbimport --engine server insert_sample.sql</command>
                 </para>
             </step>
         </procedure>
@@ -174,7 +174,7 @@ registration.url=http://localhost:8080/sync/server]]></programlisting>
             <step>
                 <para>Create the sample tables in the client database by executing:</para>
                 <para>
-                    <command> ../bin/dbimport --format XML create_sample.xml</command>
+                    <command> ../bin/dbimport --engine client --format XML create_sample.xml</command>
                 </para>
                 <para> Note that the warning messages from the command are safe to ignore.</para>
             </step>
