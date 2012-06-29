@@ -1,3 +1,15 @@
+SymmetricDS - 3.0.6 (Released 2012-06-29) 
+=========================================
+- 0000670: [Improvement] Better document how nodes are deployed in the engines directory. (chenson) - closed.
+- 0000671: [Bug] When the router type is null the batch type is always common. (chenson) - closed.
+- 0000672: [Improvement] Support a --engine option for the syadmin create-war command (chenson) - closed.
+- 0000673: [Improvement] Start symmetricds engine instance in background (chenson) - closed.
+- 0000676: [Bug] dbimport fails to create unique indexes (chenson) - closed.
+- 0000678: [Bug] auto.reload is broke in 3.0 (chenson) - closed.
+- 0000679: [Bug] DbImport help screen does not display description for --use-variable-dates. (abrougher) - closed.
+- 0000680: [Improvement] Don't run the sync triggers process at all if in a SymmetricDS instance and auto.sync.triggers is false (chenson) - closed.
+- 0000683: [Bug] Error synchronyzing triggers (NPE) (chenson) - closed.
+
 SymmetricDS - 3.0.5 (Released 2012-06-26) 
 =========================================
 - 0000665: [Bug] Don't commit a batch that doesn't have commit in the csv protocol (chenson) - closed.
