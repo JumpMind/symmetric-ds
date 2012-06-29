@@ -58,7 +58,10 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      * According to the documentation (and experience) the jdbc driver for mysql
      * requires the fetch size to be as follows.
      */
-    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {        
+    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
+        if (settings == null) {
+            settings = new SqlTemplateSettings();
+        }
         settings.setFetchSize(Integer.MIN_VALUE);
         return settings;
     }
