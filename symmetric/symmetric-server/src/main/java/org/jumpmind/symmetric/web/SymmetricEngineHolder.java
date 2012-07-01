@@ -152,6 +152,7 @@ public class SymmetricEngineHolder {
         }
 
         String engineName = validateRequiredProperties(properties);
+        passedInProperties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
         if (engines.get(engineName) != null) {
             try {
                 engines.get(engineName).stop();
