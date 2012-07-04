@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see IIncomingBatchService
@@ -200,7 +201,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
                             batch.getIgnoreCount(), batch.getMissingDeleteCount(),
                             batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
-                            StringUtils.abbreviate(batch.getSqlMessage(), 1000),
+                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
                             batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
                     new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -237,7 +238,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getFallbackUpdateCount(), batch.getIgnoreCount(),
                             batch.getMissingDeleteCount(), batch.getSkipCount(),
                             batch.getSqlState(), batch.getSqlCode(),
-                            StringUtils.abbreviate(batch.getSqlMessage(), 1000),
+                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
                             batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(),
                             batch.getBatchId(), batch.getNodeId() }, new int[] { Types.CHAR,
                             Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,

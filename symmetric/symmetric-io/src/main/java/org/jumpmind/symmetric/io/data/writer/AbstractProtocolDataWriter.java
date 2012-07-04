@@ -16,8 +16,12 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class AbstractProtocolDataWriter implements IDataWriter {
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected DataContext context;
 

@@ -7,11 +7,12 @@ import java.util.List;
 
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.util.FormatUtils;
 
 public class ProtocolDataWriter extends AbstractProtocolDataWriter {
 
     private BufferedWriter writer;
-
+    
     public ProtocolDataWriter(String sourceNodeId, Writer writer) {
         this(sourceNodeId, null, writer);
     }
@@ -41,6 +42,9 @@ public class ProtocolDataWriter extends AbstractProtocolDataWriter {
     @Override
     protected void print(Batch batch, String data) {
         try {
+            if (log.isDebugEnabled() && data != null) {
+                log.debug("Writing data: {}", FormatUtils.abbreviateForLogging(data));
+            }
             writer.write(data);
         } catch (IOException e) {
             throw new IoException(e);
