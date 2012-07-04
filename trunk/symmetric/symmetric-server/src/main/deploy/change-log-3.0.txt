@@ -1,3 +1,8 @@
+SymmetricDS - 3.0.7 (Released 2012-07-04)
+=========================================
+- 0000690: [Bug] symmetric-util test code is being packaged with runtime application (chenson) - closed.
+- 0000692: [Bug] Escaped varchar data can get corrupted (chenson) - closed.
+
 SymmetricDS - 3.0.6 (Released 2012-06-29) 
 =========================================
 - 0000670: [Improvement] Better document how nodes are deployed in the engines directory. (chenson) - closed.
