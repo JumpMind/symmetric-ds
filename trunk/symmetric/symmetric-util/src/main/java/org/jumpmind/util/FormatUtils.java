@@ -11,8 +11,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 public final class FormatUtils {
-    
+
     public final static String WILDCARD = "*";
+
+    public final static int MAX_CHARS_TO_LOG = 1000;
 
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
 
@@ -22,10 +24,11 @@ public final class FormatUtils {
     public static String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
-    
-    public static String replaceToken(String text, String tokenToReplace, String replaceWithText, boolean matchUsingPrefixSuffix) {
+
+    public static String replaceToken(String text, String tokenToReplace, String replaceWithText,
+            boolean matchUsingPrefixSuffix) {
         Map<String, String> replacements = new HashMap<String, String>(1);
-        replacements.put(tokenToReplace,replaceWithText);
+        replacements.put(tokenToReplace, replaceWithText);
         return replaceTokens(text, replacements, matchUsingPrefixSuffix);
     }
 
@@ -80,7 +83,7 @@ public final class FormatUtils {
             return String.format(format, arg);
         }
     }
-    
+
     public static boolean toBoolean(String value) {
         if (StringUtils.isNotBlank(value)) {
             if (value.equals("1")) {
@@ -94,7 +97,7 @@ public final class FormatUtils {
             return false;
         }
     }
-    
+
     public static boolean isMixedCase(String text) {
         char[] chars = text.toCharArray();
         boolean upper = false;
@@ -102,10 +105,10 @@ public final class FormatUtils {
         for (char ch : chars) {
             upper |= Character.isUpperCase(ch);
             lower |= Character.isLowerCase(ch);
-        }        
+        }
         return upper && lower;
     }
-    
+
     public static boolean isWildCardMatch(String text, String pattern) {
         boolean match = true;
         if (pattern.startsWith("^")) {
@@ -130,11 +133,11 @@ public final class FormatUtils {
         }
 
         return match;
-    }   
-    
+    }
+
     /**
-     * Word wrap a string where the line size for the first line is different than 
-     * the lines sizes for the other lines.
+     * Word wrap a string where the line size for the first line is different
+     * than the lines sizes for the other lines.
      * 
      * @param str
      * @param firstLineSize
@@ -142,29 +145,30 @@ public final class FormatUtils {
      * @return
      */
     public static String[] wordWrap(String str, int firstLineSize, int nonFirstLineSize) {
-        
+
         String[] lines = wordWrap(str, firstLineSize);
-        
+
         if (lines.length > 1 && firstLineSize != nonFirstLineSize) {
-            // More than one line.  Re-wrap the non-first lines with the non first line size
+            // More than one line. Re-wrap the non-first lines with the non
+            // first line size
             String notFirstLinesString = StringUtils.join(lines, " ", 1, lines.length);
             String[] nonFirstLines = wordWrap(notFirstLinesString, nonFirstLineSize);
             List<String> nonFirstLineCollection = Arrays.asList(nonFirstLines);
-            
+
             ArrayList<String> allLines = new ArrayList<String>();
             allLines.add(lines[0]);
             allLines.addAll(nonFirstLineCollection);
-            
+
             lines = allLines.toArray(lines);
         }
-        
+
         return lines;
     }
-    
-    
+
     public static String[] wordWrap(String str, int lineSize) {
         if (str != null && str.length() > lineSize) {
-            Pattern regex = Pattern.compile("(\\S\\S{" + lineSize + ",}|.{1," + lineSize + "})(\\s+|$)");
+            Pattern regex = Pattern.compile("(\\S\\S{" + lineSize + ",}|.{1," + lineSize
+                    + "})(\\s+|$)");
             List<String> list = new ArrayList<String>();
             Matcher m = regex.matcher(str);
             while (m.find()) {
@@ -177,13 +181,16 @@ public final class FormatUtils {
                     // push line wrap and cause an unintentional blank line.
                     line = StringUtils.removeEnd(line, " ");
                     list.add(line);
-                }               
+                }
             }
             return (String[]) list.toArray(new String[list.size()]);
         } else {
             return new String[] { str };
         }
     }
-    
+
+    public static String abbreviateForLogging(String value) {
+        return StringUtils.abbreviate(value, MAX_CHARS_TO_LOG);
+    }
 
 }

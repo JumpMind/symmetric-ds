@@ -176,14 +176,19 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String TEST_CLOB = "This is my test's test";
         // now change some data that should be sync'd
 
-        serverTestService.insertCustomer(new Customer(101, "Charlie Brown", true,
-                "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
-                BIG_BINARY));
+        Customer customer = new Customer(101, "Charlie Brown", true,
+                "300 Grub Street \\o", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
+                BIG_BINARY);
+        serverTestService.insertCustomer(customer);
 
         clientPull();
 
         Assert.assertTrue("The customer was not sync'd to the client."
                 + printRootAndClientDatabases(), clientTestService.doesCustomerExist(101));
+        
+        Assert.assertEquals("The customer address was incorrect"
+                + printRootAndClientDatabases(), customer.getAddress(), clientTestService.getCustomer(101).getAddress());
+        
 
         if (getServer().getSymmetricDialect().isClobSyncSupported()) {
             Assert.assertEquals("The CLOB notes field on customer was not sync'd to the client",

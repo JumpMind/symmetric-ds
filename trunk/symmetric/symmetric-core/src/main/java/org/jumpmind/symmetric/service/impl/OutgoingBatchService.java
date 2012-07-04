@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see IOutgoingBatchService
@@ -113,7 +114,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(),
                         outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(),
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
-                        StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
+                        FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
                         outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(),
                         outgoingBatch.getNodeId() },

@@ -364,11 +364,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         list.add(objectValue);
                     }
                 } catch (Exception ex) {
-                    String valueTrimmed = value;
-                    if (valueTrimmed.length() > 1000) {
-                        valueTrimmed = valueTrimmed.substring(0, 1000) + " ... (" + value.length()
-                                + " bytes)";
-                    }
+                    String valueTrimmed = FormatUtils.abbreviateForLogging(value);
                     log.error("Could not convert a value of {} for column {} of type {}",
                             new Object[] { valueTrimmed, column.getName(), column.getMappedType() });
                     log.error(ex.getMessage(), ex);

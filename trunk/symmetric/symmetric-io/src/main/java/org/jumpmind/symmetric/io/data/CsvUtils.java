@@ -81,8 +81,12 @@ public class CsvUtils {
 
     public static String escapeCsvData(String[] data) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+        writer.setTextQualifier('\"');
+        writer.setUseTextQualifier(true);
+        writer.setForceQualifier(true);
         for (String s : data) {
             try {
                 writer.write(s, true);
@@ -100,6 +104,8 @@ public class CsvUtils {
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
         writer.setRecordDelimiter(recordDelimiter);
         writer.setTextQualifier(textQualifier);
+        writer.setUseTextQualifier(true);
+        writer.setForceQualifier(true);
         try {
             writer.writeRecord(data);
         } catch (IOException e) {

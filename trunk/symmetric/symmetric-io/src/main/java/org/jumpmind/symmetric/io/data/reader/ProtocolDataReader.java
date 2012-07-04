@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.CollectionUtils;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,10 +124,7 @@ public class ProtocolDataReader implements IDataReader {
                         bytesRead += token != null ? token.length() : 0;
                         if (debugBuffer != null) {
                             if (token != null) {
-                                String tokenTrimmed = token;
-                                if (tokenTrimmed.length() > 1000) {
-                                    tokenTrimmed = tokenTrimmed.substring(0, 1000) + " ... (" + token.length() + " bytes)";
-                                }
+                                String tokenTrimmed = FormatUtils.abbreviateForLogging(token);
                                 debugBuffer.append(tokenTrimmed);
                             } else {
                                 debugBuffer.append("<null>");
