@@ -51,7 +51,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             LobHandler lobHandler) {
         this.dataSource = dataSource;
-        this.settings = settings;
+        this.settings = settings == null ? new SqlTemplateSettings() : settings;
         this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
     }
     
