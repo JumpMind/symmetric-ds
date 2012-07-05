@@ -339,8 +339,9 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             or a standalone server that can be accessed from the network.
             This dialect implementation creates database triggers that make method calls into
             Java classes.  This means that the supporting JAR files need to be in the classpath when
-            running Derby as a standalone database, which includes symmetric-ds.jar and
-            commons-lang.jar.
+            running Derby as a standalone database.  The supporting jars are: symmetric-client-{version}.jar,
+            commons-codec-1.3.jar and commons-lang-2.3.jar.  All of these files can be found in the web/WEB-INF/lib 
+            directory of the SymmetricDS distribution.
         </para>
     </section>    
     <section id="ap02-db2">
