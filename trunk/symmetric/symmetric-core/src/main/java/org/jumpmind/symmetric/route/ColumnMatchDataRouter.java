@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -172,7 +173,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         return expressions;
     }
     
-    protected List<Expression> parse(String routerExpression) {
+    public List<Expression> parse(String routerExpression) throws SyntaxParsingException {
         List<Expression> expressions = new ArrayList<Expression>();       
         if (!StringUtils.isBlank(routerExpression)) {           
             
@@ -196,13 +197,14 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                             expressions.add(new Expression(equals, tokens));
                         } else {
                             log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", t, routerExpression);
+                            throw new SyntaxParsingException("The provided column match expression was invalid: " + t + ".  The full expression is " + routerExpression + ".");
                         }
 
                     }
                 }
             }
         } else {
-            log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", routerExpression, routerExpression);
+            log.warn("The provided column match expression is empty");
         }
         return expressions;
     }
@@ -242,13 +244,21 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         return redirectMap;
     }
 
-    class Expression {
+    public class Expression {
         boolean equals;
         String[] tokens;
 
         public Expression(boolean equals, String[] tokens) {
             this.equals = equals;
             this.tokens = tokens;
+        }
+        
+        public String[] getTokens() {
+            return tokens;
+        }
+        
+        public boolean getEquals() {
+            return equals;
         }
     }
 }
