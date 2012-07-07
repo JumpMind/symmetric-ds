@@ -1,5 +1,5 @@
 /*
- * Licensed to JumpMind Inc under one or more contributor 
+O * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
@@ -54,7 +54,7 @@ public class DbImport {
     
     private String schema;
     
-    private boolean useVariableDates;
+    private boolean useVariableDates = false;
     
     private boolean alterCaseToMatchDatabaseDefaultCase = false;
     
@@ -107,7 +107,7 @@ public class DbImport {
 
         while (csvReader.readRecord()) {
             String[] values = csvReader.getValues();
-            Object[] data = platform.getObjectValues(BinaryEncoding.HEX, table, csvReader.getHeaders(), values);
+            Object[] data = platform.getObjectValues(BinaryEncoding.HEX, table, csvReader.getHeaders(), values, useVariableDates);
             for (String value : values) {
                 System.out.print("|" + value);
             }
