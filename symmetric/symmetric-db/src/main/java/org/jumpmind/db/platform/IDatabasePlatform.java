@@ -114,6 +114,9 @@ public interface IDatabasePlatform {
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
             String[] values);
     
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
+            String[] values, boolean useVariableDates);
+    
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData, boolean useVariableDates);
     

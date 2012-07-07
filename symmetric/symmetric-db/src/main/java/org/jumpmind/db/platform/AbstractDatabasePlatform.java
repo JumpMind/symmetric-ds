@@ -297,6 +297,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return getObjectValues(encoding, values, metaData);
     }
 
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
+            String[] values, boolean useVariableDates) {
+        Column[] metaData = Table.orderColumns(columnNames, table);
+        return getObjectValues(encoding, values, metaData, useVariableDates);
+    }    
+    
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {
         return getObjectValues(encoding, values, orderedMetaData, false);
@@ -397,7 +403,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
                         long diff = date.getTime() - System.currentTimeMillis();
-                        values[i] = "${curdate" + (diff > 0 ? "+" : "-") + "}";
+                        values[i] = "${curdate" + diff + "}";
                     } else if (type == Types.TIME) {
                         values[i] = TIME_FORMATTER.format(date);
                     } else {
@@ -447,8 +453,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
                         long diff = date.getTime() - System.currentTimeMillis();
-                        newSql = newSql.replaceFirst(regex, "${curdate" + (diff > 0 ? "+" : "-")
-                                + "}");
+                        newSql = newSql.replaceFirst(regex, "${curdate" + diff + "}");
                     } else if (type == Types.TIME) {
                         newSql = newSql.replaceFirst(regex,
                                 "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
@@ -504,7 +509,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
             if (useVariableDates && value.startsWith("${curdate")) {
                 long time = Long.parseLong(value.substring(10, value.length() - 1));
-                if (value.substring(9, 9).equals("-")) {
+                if (value.substring(9, 10).equals("-")) {
                     time *= -1L;
                 }
                 time += System.currentTimeMillis();
