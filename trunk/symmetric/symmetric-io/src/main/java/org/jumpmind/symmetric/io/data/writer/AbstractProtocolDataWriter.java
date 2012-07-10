@@ -63,6 +63,10 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 listener.start(context, batch);
             }
         }
+        
+        if (StringUtils.isBlank(sourceNodeId)) {
+            sourceNodeId = batch.getNodeId();
+        }
 
         if (flushNodeId) {
             if (StringUtils.isNotBlank(sourceNodeId)) {
