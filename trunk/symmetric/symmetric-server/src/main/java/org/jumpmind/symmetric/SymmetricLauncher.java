@@ -62,17 +62,17 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         MDC.put("engineName", "startup");
         new SymmetricLauncher("sym", "", "Launcher.Option.").execute(args);
     }
-    
+
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
         return false;
     }
-    
+
     @Override
     protected boolean requiresPropertiesFile() {
         return false;
     }
-    
+
     protected void printHelp(Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Launch the SymmetricDS engine as a standalone client or server.\n");
@@ -133,20 +133,20 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
             return true;
-        }
-
-        SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
-                maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
-                true, noNio, noDirectBuffer);
-        webServer.setHost(host);
-        if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-            webServer.startMixed(port, securePort);
-        } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-            webServer.startSecure(securePort);
         } else {
-            webServer.start(port);
+            SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
+                    maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
+                    true, noNio, noDirectBuffer);
+            webServer.setHost(host);
+            if (line.hasOption(OPTION_START_MIXED_SERVER)) {
+                webServer.startMixed(port, securePort);
+            } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
+                webServer.startSecure(securePort);
+            } else {
+                webServer.start(port);
+            }
+            return true;
         }
-        return true;
 
     }
 
