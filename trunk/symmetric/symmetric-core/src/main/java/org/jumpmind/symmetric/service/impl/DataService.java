@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -141,28 +140,33 @@ public class DataService extends AbstractService implements IDataService {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            insertReloadEvent(transaction, targetNode, triggerRouter, overrideInitialLoadSelect);
+            insertReloadEvent(transaction, targetNode, triggerRouter, null,
+                    overrideInitialLoadSelect);
             transaction.commit();
         } finally {
             close(transaction);
         }
     }
 
-    public void insertReloadEvent(ISqlTransaction transaction, final Node targetNode,
-            final TriggerRouter triggerRouter, final String overrideInitialLoadSelect) {
+    public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory,
+            String overrideInitialLoadSelect) {
 
-        TriggerHistory history = lookupTriggerHistory(triggerRouter.getTrigger());
+        if (triggerHistory == null) {
+            triggerHistory = lookupTriggerHistory(triggerRouter.getTrigger());
+        }
+
         // initial_load_select for table can be overridden by populating the
         // row_data
-        Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD,
+        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.RELOAD,
                 overrideInitialLoadSelect != null ? overrideInitialLoadSelect
-                        : triggerRouter.getInitialLoadSelect(), null, history, triggerRouter
+                        : triggerRouter.getInitialLoadSelect(), null, triggerHistory, triggerRouter
                         .getTrigger().getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                 triggerRouter.getRouter().getRouterId(), true);
     }
 
-    public void insertReloadEvents(Node targetNode) {
+    public void insertReloadEvents(Node targetNode, boolean reverse) {
         // outgoing data events are pointless because we are reloading all
         // data
         outgoingBatchService.markAllAsSentForNode(targetNode);
@@ -187,9 +191,12 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
-            // insert node security so the client doing the initial load knows
-            // that an initial load is currently happening
-            insertNodeSecurityUpdate(transaction, targetNode, true);
+            if (!reverse) {
+                // insert node security so the client doing the initial load
+                // knows
+                // that an initial load is currently happening
+                insertNodeSecurityUpdate(transaction, targetNode, true);
+            }
 
             List<TriggerHistory> triggerHistories = triggerRouterService
                     .getActiveTriggerHistories();
@@ -238,7 +245,8 @@ public class DataService extends AbstractService implements IDataService {
                         .getTriggerHistoryId());
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     if (triggerRouter.getInitialLoadOrder() >= 0) {
-                        insertReloadEvent(transaction, targetNode, triggerRouter, null);
+                        insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
+                                null);
                         if (!transactional) {
                             transaction.commit();
                         }
@@ -255,23 +263,30 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
-            nodeService.setInitialLoadEnabled(transaction, targetNode.getNodeId(), false);
+            if (!reverse) {
+                nodeService.setInitialLoadEnabled(transaction, targetNode.getNodeId(), false);
 
-            // don't mark this batch as a load batch so it is forced to go last
-            insertNodeSecurityUpdate(transaction, targetNode,
-                    parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
+                // don't mark this batch as a load batch so it is forced to go
+                // last
+                insertNodeSecurityUpdate(transaction, targetNode,
+                        parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
+            }
 
             statisticManager.incrementNodesLoaded(1);
 
             transaction.commit();
-
+        } catch (RuntimeException ex) {
+            transaction.rollback();
+            throw ex;
         } finally {
             close(transaction);
         }
 
-        // remove all incoming events from the node are starting a reload
-        // for.
-        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+        if (!reverse) {
+            // remove all incoming events from the node are starting a reload
+            // for
+            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+        }
 
     }
 
@@ -550,18 +565,6 @@ public class DataService extends AbstractService implements IDataService {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
                 triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(
                         sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
-        for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
-            TriggerRouter triggerRouter = iterator.next();
-            Trigger trigger = triggerRouter.getTrigger();
-            Table table = symmetricDialect.getPlatform().getTableFromCache(
-                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                    trigger.getSourceTableName(), false);
-            if (table == null) {
-                log.warn("Could not find the table {} represented by trigger {}",
-                        trigger.qualifiedSourceTableName(), trigger.getTriggerId());
-                iterator.remove();
-            }
-        }
 
         final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
                 triggerHistories.size());
@@ -588,7 +591,7 @@ public class DataService extends AbstractService implements IDataService {
                 int intialLoadOrder1 = 0;
                 for (TriggerRouter triggerRouter1 : triggerRoutersForTriggerHist1) {
                     if (triggerRouter1.getInitialLoadOrder() > intialLoadOrder1) {
-                        intialLoadOrder1 = triggerRouter1.getInitialLoadOrder(); 
+                        intialLoadOrder1 = triggerRouter1.getInitialLoadOrder();
                     }
                 }
 
@@ -597,16 +600,16 @@ public class DataService extends AbstractService implements IDataService {
                 int intialLoadOrder2 = 0;
                 for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
                     if (triggerRouter2.getInitialLoadOrder() > intialLoadOrder2) {
-                        intialLoadOrder2 = triggerRouter2.getInitialLoadOrder(); 
+                        intialLoadOrder2 = triggerRouter2.getInitialLoadOrder();
                     }
                 }
-                
+
                 if (intialLoadOrder1 < intialLoadOrder2) {
                     return -1;
                 } else if (intialLoadOrder1 > intialLoadOrder2) {
                     return 1;
                 }
-                
+
                 Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
                         o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),

@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
@@ -61,12 +62,12 @@ public interface IDataService {
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
-    public void insertReloadEvents(Node targetNode);
+    public void insertReloadEvents(Node targetNode, boolean reverse);
 
     public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
     
-    public void insertReloadEvent(ISqlTransaction transaction, final Node targetNode,
-            final TriggerRouter triggerRouter, final String overrideInitialLoadSelect);
+    public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
 

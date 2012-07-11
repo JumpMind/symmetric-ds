@@ -172,7 +172,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                         .equals(identity.getCreatedAtNodeId()))) {
                             long ts = System.currentTimeMillis();
                             engine.getDataService().insertReloadEvents(
-                                    engine.getNodeService().findNode(security.getNodeId()));
+                                    engine.getNodeService().findNode(security.getNodeId()), false);
                             ts = System.currentTimeMillis() - ts;
                             if (ts > Constants.LONG_OPERATION_THRESHOLD) {
                                 log.warn("Inserted reload events for node {} in {} ms",
