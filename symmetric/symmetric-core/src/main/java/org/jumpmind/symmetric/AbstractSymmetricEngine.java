@@ -249,8 +249,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(this);
         this.registrationService = new RegistrationService(parameterService, symmetricDialect,
-                nodeService, dataExtractorService, triggerRouterService, dataService,
-                dataLoaderService, transportManager, statisticManager);
+                nodeService, dataExtractorService, dataService, dataLoaderService,
+                transportManager, statisticManager);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
                 outgoingBatchService, registrationService, stagingManager);
         this.nodeCommunicationService = buildNodeCommunicationService();
