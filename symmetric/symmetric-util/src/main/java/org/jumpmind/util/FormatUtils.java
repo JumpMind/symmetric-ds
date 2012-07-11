@@ -190,6 +190,9 @@ public final class FormatUtils {
     }
 
     public static String abbreviateForLogging(String value) {
+        if (value != null) {
+            value = value.trim();
+        }
         return StringUtils.abbreviate(value, MAX_CHARS_TO_LOG);
     }
 
