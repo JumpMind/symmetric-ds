@@ -1,3 +1,10 @@
+SymmetricDS - 3.0.8 (Released 2012-07-11) 
+======================================
+- 0000696: [Bug] Data is being pinged back during a re-registration (chenson) - closed.
+- 0000694: [Bug] JdbcSqlTemplate allows null SqlTemplateSettings and then uses it without null check later on (gwilmer) - closed.
+- 0000705: [Bug] When using the wildcard feature of SymmetricDS, the reload events aren't being generated properly (chenson) - closed.
+- 0000695: [Bug] UseVariableDates option for DbImport and DbExport do not work properly (gwilmer) - closed.
+
 SymmetricDS - 3.0.7 (Released 2012-07-04)
 =========================================
 - 0000690: [Bug] symmetric-util test code is being packaged with runtime application (chenson) - closed.
