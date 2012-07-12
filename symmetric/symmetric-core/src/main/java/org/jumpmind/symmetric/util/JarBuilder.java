@@ -72,10 +72,12 @@ public class JarBuilder {
             }
         }
 
+        name = name.replace("\\","/");
+        
         if (name.equals("META-INF/MANIFEST.MF")) {
             name = "";
         }
-        return name.replace("\\", "/");
+        return name;
     }
 
     private void add(File source, JarOutputStream target) throws IOException {
