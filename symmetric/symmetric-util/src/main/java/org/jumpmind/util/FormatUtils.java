@@ -108,6 +108,18 @@ public final class FormatUtils {
         }
         return upper && lower;
     }
+    
+    public static boolean isWildCardMatch(String text, String pattern, boolean ignoreCase) {
+        boolean match = isWildCardMatch(text, pattern);
+        if (ignoreCase && !match) {
+            match = isWildCardMatch(text.toLowerCase(), pattern);
+            if (!match) {
+                match = isWildCardMatch(text.toUpperCase(), pattern);
+            }
+        }
+        return match;
+    }
+
 
     public static boolean isWildCardMatch(String text, String pattern) {
         boolean match = true;
