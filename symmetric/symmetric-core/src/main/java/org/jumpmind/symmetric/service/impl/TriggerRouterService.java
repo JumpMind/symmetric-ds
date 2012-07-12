@@ -856,6 +856,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Set<Table> tables = new HashSet<Table>();
 
         if (trigger.isSourceTableNameWildcarded()) {
+            boolean ignoreCase = this.parameterService
+                    .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+            
             Database database = symmetricDialect.getPlatform().readDatabase(
                     trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                     new String[] { "TABLE" });
@@ -864,8 +867,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String[] wildcardTokens = trigger.getSourceTableName().split(",");
             for (String wildcardToken : wildcardTokens) {
                 for (Table table : tableArray) {
-                    if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken)
-                            && !containsExactMatchForSourceTableName(table.getName(), triggers)
+                    if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken, ignoreCase)
+                            && !containsExactMatchForSourceTableName(table.getName(), triggers, ignoreCase)
                             && !table.getName().toLowerCase().startsWith(tablePrefix)) {
                         tables.add(table);
                     } else {
@@ -884,9 +887,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return tables;
     }
 
-    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers) {
+    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers, boolean ignoreCase) {
         for (Trigger trigger : triggers) {
             if (trigger.getSourceTableName().equals(tableName)) {
+                return true;
+            } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(tableName)) {
                 return true;
             }
         }
@@ -985,7 +990,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 } else {
                     log.error(
-                            "The configured table does not exist in the datasource that is configured: {}",
+                            "Could not find any database tables matching '{}' in the datasource that is configured",
                             trigger.qualifiedSourceTableName());
 
                     if (this.triggerCreationListeners != null) {
