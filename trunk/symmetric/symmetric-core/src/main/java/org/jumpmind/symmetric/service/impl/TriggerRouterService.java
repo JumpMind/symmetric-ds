@@ -794,12 +794,41 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected void inactivateTriggers(List<Trigger> triggersThatShouldBeActive,
             StringBuilder sqlBuffer) {
+        boolean ignoreCase = this.parameterService
+                .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
         List<TriggerHistory> activeHistories = getActiveTriggerHistories();
-        Set<String> triggerIdsThatShouldBeActive = getTriggerIdsFrom(triggersThatShouldBeActive);
+        Map<String, Set<Table>> tablesByTriggerId = new HashMap<String, Set<Table>>();
         for (TriggerHistory history : activeHistories) {
-            if (!triggerIdsThatShouldBeActive.contains(history.getTriggerId())) {
+            boolean removeTrigger = false;
+            Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
+            Trigger trigger = getTriggerById(history.getTriggerId(), false);
+            if (tables == null) {
+                tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
+                tablesByTriggerId.put(trigger.getTriggerId(), tables);
+            }
+            
+            if (tables == null || trigger == null) {
+                removeTrigger = true;
+            } else {
+                if (!StringUtils.equals(trigger.getSourceCatalogName(),
+                        history.getSourceCatalogName())
+                        || !StringUtils.equals(trigger.getSourceSchemaName(),
+                                history.getSourceSchemaName())) {
+                    removeTrigger = true;
+                } else {
+                    if (trigger.isSourceTableNameWildcarded()) {
+                        boolean foundMatch = false;
+                        for (Table table : tables) {
+                            foundMatch |= ignoreCase ? StringUtils.equalsIgnoreCase(table.getName(), history.getSourceTableName()) : StringUtils.equals(table.getName(), history.getSourceTableName());                            
+                        }
+                        removeTrigger = !foundMatch;
+                    }
+                }
+            }
+            
+            if (removeTrigger) {
                 log.info("About to remove triggers for inactivated table: {}",
-                        history.getSourceTableName());
+                        history.getFullyQualifiedSourceTableName());
                 symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getNameForInsertTrigger(),
                         history.getSourceTableName(), history);
@@ -858,7 +887,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (trigger.isSourceTableNameWildcarded()) {
             boolean ignoreCase = this.parameterService
                     .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
-            
+
             Database database = symmetricDialect.getPlatform().readDatabase(
                     trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                     new String[] { "TABLE" });
@@ -868,7 +897,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             for (String wildcardToken : wildcardTokens) {
                 for (Table table : tableArray) {
                     if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken, ignoreCase)
-                            && !containsExactMatchForSourceTableName(table.getName(), triggers, ignoreCase)
+                            && !containsExactMatchForSourceTableName(table.getName(), triggers,
+                                    ignoreCase)
                             && !table.getName().toLowerCase().startsWith(tablePrefix)) {
                         tables.add(table);
                     } else {
@@ -887,7 +917,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return tables;
     }
 
-    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers, boolean ignoreCase) {
+    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers,
+            boolean ignoreCase) {
         for (Trigger trigger : triggers) {
             if (trigger.getSourceTableName().equals(tableName)) {
                 return true;
@@ -903,23 +934,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         for (Trigger trigger : triggers) {
             TriggerHistory newestHistory = null;
-            try {
-                TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
+            TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                String errorMessage = null;
-                Channel channel = configurationService.getChannel(trigger.getChannelId());
-                if (channel == null) {
-                    errorMessage = String
-                            .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
-                                    trigger.getTriggerId(), trigger.getChannelId(),
-                                    Constants.CHANNEL_DEFAULT);
-                    log.error(errorMessage);
-                    trigger.setChannelId(Constants.CHANNEL_DEFAULT);
-                }
+            String errorMessage = null;
+            Channel channel = configurationService.getChannel(trigger.getChannelId());
+            if (channel == null) {
+                errorMessage = String
+                        .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
+                                trigger.getTriggerId(), trigger.getChannelId(),
+                                Constants.CHANNEL_DEFAULT);
+                log.error(errorMessage);
+                trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+            }
 
-                Set<Table> tables = getTablesForTrigger(trigger, triggers);
-                if (tables.size() > 0) {
-                    for (Table table : tables) {
+            Set<Table> tables = getTablesForTrigger(trigger, triggers);
+            if (tables.size() > 0) {
+                for (Table table : tables) {
+                    try {
+
                         if (table.getPrimaryKeyColumnCount() == 0) {
                             table = table.copy();
                             table.makeAllColumnsPrimaryKeys();
@@ -986,44 +1018,48 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 }
                             }
                         }
-                    }
 
-                } else {
-                    log.error(
-                            "Could not find any database tables matching '{}' in the datasource that is configured",
-                            trigger.qualifiedSourceTableName());
+                    } catch (Exception ex) {
+                        log.error(
+                                String.format("Failed to create triggers for %s",
+                                        trigger.qualifiedSourceTableName()), ex);
 
-                    if (this.triggerCreationListeners != null) {
-                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                            l.tableDoesNotExist(trigger);
+                        if (newestHistory != null) {
+                            // Make sure all the triggers are removed from the
+                            // table
+                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                                    trigger.getSourceSchemaName(),
+                                    newestHistory.getNameForInsertTrigger(),
+                                    trigger.getSourceTableName(), newestHistory);
+                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                                    trigger.getSourceSchemaName(),
+                                    newestHistory.getNameForUpdateTrigger(),
+                                    trigger.getSourceTableName(), newestHistory);
+                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                                    trigger.getSourceSchemaName(),
+                                    newestHistory.getNameForDeleteTrigger(),
+                                    trigger.getSourceTableName(), newestHistory);
+                        }
+
+                        if (this.triggerCreationListeners != null) {
+                            for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                                l.triggerFailed(trigger, ex);
+                            }
                         }
                     }
                 }
-            } catch (Exception ex) {
-                log.error(
-                        String.format("Failed to create triggers for %s",
-                                trigger.qualifiedSourceTableName()), ex);
 
-                if (newestHistory != null) {
-                    // Make sure all the triggers are removed from the table
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                            trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(),
-                            trigger.getSourceTableName(), newestHistory);
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                            trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(),
-                            trigger.getSourceTableName(), newestHistory);
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                            trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(),
-                            trigger.getSourceTableName(), newestHistory);
-                }
+            } else {
+                log.error(
+                        "Could not find any database tables matching '{}' in the datasource that is configured",
+                        trigger.qualifiedSourceTableName());
 
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                        l.triggerFailed(trigger, ex);
+                        l.tableDoesNotExist(trigger);
                     }
                 }
             }
-
         }
     }
 
@@ -1070,7 +1106,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
             symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
-                    oldTriggerName, trigger.getSourceTableName(), oldhist);
+                    oldTriggerName, trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
+                            .getSourceTableName(), oldhist);
             triggerExists = false;
             triggerRemoved = true;
         }

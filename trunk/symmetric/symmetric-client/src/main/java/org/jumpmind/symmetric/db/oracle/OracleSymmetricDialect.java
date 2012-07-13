@@ -208,4 +208,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         }
     }
 
+    @Override
+    protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName,
+            String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+        return "drop trigger " + triggerName;
+    }
+
+
 }

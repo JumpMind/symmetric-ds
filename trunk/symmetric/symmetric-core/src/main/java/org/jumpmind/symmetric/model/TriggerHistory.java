@@ -157,6 +157,10 @@ public class TriggerHistory implements Serializable {
     public void setTableHash(int tableHash) {
         this.tableHash = tableHash;
     }
+    
+    public String getFullyQualifiedSourceTableName() {
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName);
+    }
 
     public String getSourceTableName() {
         return sourceTableName;
