@@ -110,11 +110,14 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         final String dropFunction = "drop function " + schemaName + "f" + triggerName + "()";
         logSql(dropFunction, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            String sql = null;
             try {
+                sql = dropSql;
                 platform.getSqlTemplate().update(dropSql);
+                sql = dropFunction;
                 platform.getSqlTemplate().update(dropFunction);
             } catch (Exception e) {
-                log.warn("Trigger does not exist");
+                log.warn("Tried to remove trigger using: {} and failed because: {}", sql, e.getMessage());
             }
         }
     }
