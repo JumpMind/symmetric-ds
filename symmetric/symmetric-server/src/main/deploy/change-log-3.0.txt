@@ -1,3 +1,10 @@
+SymmetricDS - 3.0.9 (Released 2012-07-14) 
+======================================
+- 0000707: [Bug] Fix JarBuilder for Windows (gwilmer) - closed.
+- 0000709: [Bug] Wildcard table lookup should respect the db.metadata.ignore.case property (chenson) - closed.
+- 0000711: [Bug] Table inactivation doesn't work properly when using the wildcard feature of sym_trigger (chenson) - closed.
+- 0000712: [Bug] drop trigger doesn't work on Oracle if the trigger is in a different schema (chenson) - closed.
+
 SymmetricDS - 3.0.8 (Released 2012-07-11) 
 ======================================
 - 0000696: [Bug] Data is being pinged back during a re-registration (chenson) - closed.
