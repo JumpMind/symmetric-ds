@@ -31,6 +31,24 @@
         <test.root>h2</test.root>
         <test.client>h2</test.client>
     </properties>
+    
+    <distributionManagement>
+        <!-- use the following if you're not using a snapshot version. -->
+        <repository>
+            <id>dav.codehaus.org</id>
+            <name>SymmetricDS Repo</name>
+            <url>dav:https://dav.codehaus.org/repository/symmetricds/
+            </url>
+        </repository>
+        <!-- use the following if you ARE using a snapshot version. -->
+        <snapshotRepository>
+            <id>dav.codehaus.org</id>
+            <name>SymmetricDS Repo</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/
+            </url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>    
 
     <repositories>
         <repository>
