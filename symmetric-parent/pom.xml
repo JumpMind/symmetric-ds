@@ -33,11 +33,11 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.9/trunk/symmetric</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.9/trunk/symmetric</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.9/trunk/symmetric</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk</url>
     </scm>
-
+    
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
