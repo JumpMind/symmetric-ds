@@ -24,7 +24,6 @@
         <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
     <modules>
-        <module>../symmetric-parent</module>
         <module>../symmetric-util</module>
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
