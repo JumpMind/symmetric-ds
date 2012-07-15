@@ -157,4 +157,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
     }
+    
+    @Override
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        ddl.append("AUTO_INCREMENT");
+    }
 }

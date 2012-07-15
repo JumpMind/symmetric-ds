@@ -625,10 +625,15 @@ public class Column implements Cloneable, Serializable {
     public void setDistributionKey(boolean distributionKey) {
         this.distributionKey = distributionKey;
     }
+    
+    public void setTypeCode(int typeCode) {
+        this.setMappedTypeCode(typeCode);
+        this.setJdbcTypeCode(typeCode);
+    }
 
     public void setJdbcTypeCode(int jdbcTypeCode) {
         this.jdbcTypeCode = jdbcTypeCode;
-    }
+    }        
 
     public int getJdbcTypeCode() {
         return jdbcTypeCode;

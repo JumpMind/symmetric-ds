@@ -722,8 +722,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         if (!changes.isEmpty()) {
             // we can only copy the data if no required columns without default
-            // value and
-            // non-autoincrement have been added
+            // value and non-autoincrement have been added
             boolean canMigrateData = true;
 
             for (Iterator<TableChange> it = changes.iterator(); canMigrateData && it.hasNext();) {
@@ -795,7 +794,28 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 changes.clear();
             }
         }
+        
+        Iterator<TableChange> it = changes.iterator();
+        while (it.hasNext()) {
+            TableChange change = (TableChange) it.next();
+            // Check to see if we can generate alters for type changes
+            if (change instanceof ColumnDataTypeChange) {
+                ColumnDataTypeChange typeChange = (ColumnDataTypeChange)change;
+                if (typeChange.getNewTypeCode() == Types.BIGINT) {
+                    writeAlterColumnDataType(typeChange, ddl);
+                    it.remove();
+                }
+            }
+        }
     }
+    
+    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append("ALTER COLUMN ");  
+        change.getChangedColumn().setTypeCode(change.getNewTypeCode());
+        writeColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
+        printEndOfStatement(ddl);
+    }    
 
     /**
      * Creates a temporary table object that corresponds to the given table.
