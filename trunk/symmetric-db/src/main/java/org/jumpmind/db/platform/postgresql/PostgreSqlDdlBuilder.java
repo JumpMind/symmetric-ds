@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -105,6 +106,18 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         for (int idx = 0; idx < columns.length; idx++) {
             dropAutoIncrementSequence(table, columns[idx], ddl);
         }
+    }
+    
+    @Override
+    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" ALTER COLUMN ");  
+        Column column = change.getChangedColumn();
+        column.setTypeCode(change.getNewTypeCode());
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" TYPE ");
+        ddl.append(getSqlType(column));
+        printEndOfStatement(ddl);
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -388,6 +389,23 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
+        
+        super.processTableStructureChanges(currentModel, desiredModel,
+                sourceTable, targetTable, changes, ddl);
+    }
+    
+    @Override
+    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append("MODIFY (");  
+        Column column = change.getChangedColumn();
+        column.setTypeCode(change.getNewTypeCode());
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" ");
+        ddl.append(getSqlType(column));
+        ddl.append(")");
+        printEndOfStatement(ddl);
+
     }
 
     /*

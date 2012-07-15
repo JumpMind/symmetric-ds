@@ -609,7 +609,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = conn.prepareStatement(sql);
                 }
             } else {
-                String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
+                String replaceSql = sql.replaceFirst("\\([\"|\\w]*,", "(").replaceFirst("\\(null,", "(");
                 if (supportsGetGeneratedKeys) {
                     ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
                 } else {
