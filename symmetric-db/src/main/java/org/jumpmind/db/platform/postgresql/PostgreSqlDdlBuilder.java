@@ -109,7 +109,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
-    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" ALTER COLUMN ");  
         Column column = change.getChangedColumn();
@@ -118,6 +118,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append(" TYPE ");
         ddl.append(getSqlType(column));
         printEndOfStatement(ddl);
+        return true;
     }
 
     @Override

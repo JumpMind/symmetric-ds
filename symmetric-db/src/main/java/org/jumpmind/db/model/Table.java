@@ -64,6 +64,8 @@ public class Table implements Serializable, Cloneable {
 
     /** The indices applied to this table. */
     private ArrayList<IIndex> indices = new ArrayList<IIndex>();
+    
+    private String primaryKeyConstraintName;
 
     public Table() {
     }
@@ -803,6 +805,7 @@ public class Table implements Serializable, Cloneable {
         result.schema = schema;
         result.name = name;
         result.type = type;
+        result.primaryKeyConstraintName = primaryKeyConstraintName;
         result.columns = (ArrayList<Column>) columns.clone();
         result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
         result.indices = (ArrayList<IIndex>) indices.clone();
@@ -1147,6 +1150,14 @@ public class Table implements Serializable, Cloneable {
         } else {
             return " ";
         }
+    }
+    
+    public void setPrimaryKeyConstraintName(String primaryKeyConstraintName) {
+        this.primaryKeyConstraintName = primaryKeyConstraintName;
+    }
+    
+    public String getPrimaryKeyConstraintName() {
+        return primaryKeyConstraintName;
     }
 
 }

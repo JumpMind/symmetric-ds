@@ -41,6 +41,7 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 /*
  * The Jdbc Model Reader for Firebird.
@@ -61,9 +62,26 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
 
         if (table != null) {
             determineAutoIncrementColumns(connection, table);
+            setPrimaryKeyConstraintName(connection, table);
         }
 
         return table;
+    }
+    
+    protected void setPrimaryKeyConstraintName(Connection connection, Table table) throws SQLException {
+        String sql = "select RDB$CONSTRAINT_NAME from RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? and RDB$CONSTRAINT_TYPE='PRIMARY KEY'";
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, table.getName()); 
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                table.setPrimaryKeyConstraintName(rs.getString(1).trim());
+            }
+            rs.close();
+        } finally {
+            JdbcSqlTemplate.close(pstmt);
+        }
     }
 
     @Override
@@ -175,21 +193,14 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
                 // it is not able to find the primary key info for the table
                 // So we have to filter manually below
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
-                while (pkData.next()) {
-                    Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
-
-                    if (tableName.equals(values.get("TABLE_NAME"))) {
-                        pks.add(readPrimaryKeyName(metaData, values));
-                    }
-                }
             } else {
                 pkData = metaData.getPrimaryKeys(tableName);
-                while (pkData.next()) {
-                    Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
+            }
+            while (pkData.next()) {
+                Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
 
-                    if (tableName.equals(values.get("TABLE_NAME"))) {
-                        pks.add(readPrimaryKeyName(metaData, values));
-                    }
+                if (tableName.equals(values.get("TABLE_NAME"))) {
+                    pks.add(readPrimaryKeyName(metaData, values));
                 }
             }
         } finally {
@@ -242,8 +253,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         // Jaybird is not able to read indices when delimited identifiers are
-        // turned on,
-        // so we gather the data manually using Firebird's system tables
+        // turned on, so we gather the data manually using Firebird's system tables
         @SuppressWarnings("unchecked")
         Map<String, IIndex> indices = new ListOrderedMap();
         StringBuilder query = new StringBuilder();

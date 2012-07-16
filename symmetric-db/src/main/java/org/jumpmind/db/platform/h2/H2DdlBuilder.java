@@ -28,6 +28,7 @@ import java.sql.Types;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -162,4 +163,14 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("AUTO_INCREMENT");
     }
+    
+    @Override
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append("ALTER COLUMN ");  
+        change.getChangedColumn().setTypeCode(change.getNewTypeCode());
+        writeColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
+        printEndOfStatement(ddl);
+        return true;
+    }   
 }

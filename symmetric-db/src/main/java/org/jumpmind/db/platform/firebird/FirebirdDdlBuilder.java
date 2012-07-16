@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -239,11 +240,9 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // TODO: Dropping of primary keys is currently not supported because we
-        // cannot
-        // determine the pk constraint names and drop them in one go
+        // cannot determine the pk constraint names and drop them in one go
         // (We could used a stored procedure if Firebird would allow them to use
-        // DDL)
-        // This will be easier once named primary keys are supported
+        // DDL) This will be easier once named primary keys are supported
         boolean pkColumnAdded = false;
 
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
@@ -284,7 +283,39 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
+        
+        super.processTableStructureChanges(currentModel, desiredModel,
+                sourceTable, targetTable, changes, ddl);
     }
+    
+    @Override
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        Table table = change.getChangedTable();
+        Column column = change.getChangedColumn();
+        if (column.isPrimaryKey()) {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" DROP CONSTRAINT ");
+            ddl.append(table.getPrimaryKeyConstraintName());
+            printEndOfStatement(ddl);
+        }
+        
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" ALTER COLUMN ");  
+        column.setTypeCode(change.getNewTypeCode());
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" TYPE ");
+        ddl.append(getSqlType(column));
+        printEndOfStatement(ddl);
+        
+        if (column.isPrimaryKey()) {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" ADD ");
+            writePrimaryKeyStmt(table, table.getPrimaryKeyColumns(), ddl);
+            printEndOfStatement(ddl);
+        }
+        
+        return true;
+    }    
 
     /*
      * Processes the addition of a column to a table.

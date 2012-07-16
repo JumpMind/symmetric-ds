@@ -802,19 +802,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange typeChange = (ColumnDataTypeChange)change;
                 if (typeChange.getNewTypeCode() == Types.BIGINT) {
-                    writeAlterColumnDataType(typeChange, ddl);
-                    it.remove();
+                    if (writeAlterColumnDataType(typeChange, ddl)) {
+                        it.remove();
+                    }
                 }
             }
         }
     }
     
-    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
-        writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append("ALTER COLUMN ");  
-        change.getChangedColumn().setTypeCode(change.getNewTypeCode());
-        writeColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
-        printEndOfStatement(ddl);
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        return false;
     }    
 
     /**
