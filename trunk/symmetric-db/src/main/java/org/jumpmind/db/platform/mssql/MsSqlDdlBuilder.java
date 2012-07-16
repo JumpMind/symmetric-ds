@@ -659,6 +659,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ALTER COLUMN ");
         if (typeChange) {
             printIdentifier(getColumnName(targetColumn), ddl);
+            ddl.append(" ");
             ddl.append(getSqlType(targetColumn));
         } else {
             writeColumn(sourceTable, targetColumn, ddl);
