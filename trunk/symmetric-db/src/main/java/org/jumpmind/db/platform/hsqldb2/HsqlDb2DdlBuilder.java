@@ -97,6 +97,11 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
             return true;
         }
     }
+    
+    @Override
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+        return false;
+    }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
@@ -119,12 +124,16 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
                 }
             }
 
-            // LONGVARCHAR columns always report changes
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
+                // LONGVARCHAR columns always report changes
                 if (dataTypeChange.getChangedColumn().getMappedTypeCode() == Types.VARCHAR
                         && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
                     changeIt.remove();
+                } else if (dataTypeChange.getNewTypeCode() == Types.BIGINT) {
+                    if (writeAlterColumnDataType(dataTypeChange, ddl)) {
+                        changeIt.remove();
+                    }
                 }
             }
         }
@@ -163,6 +172,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
+
     }
 
     /*

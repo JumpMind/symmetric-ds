@@ -395,7 +395,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
-    protected void writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append("MODIFY (");  
         Column column = change.getChangedColumn();
@@ -405,7 +405,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         ddl.append(getSqlType(column));
         ddl.append(")");
         printEndOfStatement(ddl);
-
+        return true;
     }
 
     /*

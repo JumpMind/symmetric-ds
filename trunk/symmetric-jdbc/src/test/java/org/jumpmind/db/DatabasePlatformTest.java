@@ -12,7 +12,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -48,57 +47,62 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
     @Test
     public void testUpgradeFromIntToBigInt() throws Exception {
-        Table table = new Table("TEST_UPGRADE");
-        table.addColumn(new Column("ID", true));
-        table.getColumnWithName("ID").setTypeCode(Types.INTEGER);
-        table.getColumnWithName("ID").setAutoIncrement(true);
-        table.getColumnWithName("ID").setRequired(true);
-        table.addColumn(new Column("NOTES"));
-        table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
-        table.getColumnWithName("NOTES").setSize("100");
+        boolean upgradeSupported = platform.getName() != DatabaseNamesConstants.DERBY ||
+                platform.getName() != DatabaseNamesConstants.HSQLDB2;
 
-        Database database = new Database();
-        database.addTable(table);
-        
-        platform.createDatabase(database, true, false);
+        if (upgradeSupported) {
+            Table table = new Table("TEST_UPGRADE");
+            table.addColumn(new Column("ID", true));
+            table.getColumnWithName("ID").setTypeCode(Types.INTEGER);
+            table.getColumnWithName("ID").setAutoIncrement(true);
+            table.getColumnWithName("ID").setRequired(true);
+            table.addColumn(new Column("NOTES"));
+            table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
+            table.getColumnWithName("NOTES").setSize("100");
 
-        Table tableFromDatabase = platform.getTableFromCache(table.getName(), true);
-        Database databaseFromDatabase = new Database();
-        databaseFromDatabase.addTable(tableFromDatabase);
-        
-        Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
+            Database database = new Database();
+            database.addTable(table);
 
-        Assert.assertNotNull(tableFromDatabase);
+            platform.createDatabase(database, true, false);
 
-        String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
-        insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
-        
-        long id1 = platform.getSqlTemplate().insertWithGeneratedKey(
-                insertSql, "ID",
-                getSequenceName(platform), new Object[] { "test" }, new int[] { Types.VARCHAR });
+            Table tableFromDatabase = platform.getTableFromCache(table.getName(), true);
+            Database databaseFromDatabase = new Database();
+            databaseFromDatabase.addTable(tableFromDatabase);
 
-        table.getColumnWithName("ID").setTypeCode(Types.BIGINT);
+            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
 
-        IDdlBuilder builder = platform.getDdlBuilder();
-        String alterSql = builder.alterDatabase(databaseFromDatabase, database);
-        
-        Logger logger = Logger.getLogger("org.jumpmind.db");
-        logger.info(alterSql);
-        
-        Assert.assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
+            Assert.assertNotNull(tableFromDatabase);
 
-        new SqlScript(alterSql, platform.getSqlTemplate(), true).execute(true);
+            String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
+            insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
 
-        tableFromDatabase = platform.getTableFromCache(table.getName(), true);
-        
-        Assert.assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
-        Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
-        
-        long id2 = platform.getSqlTemplate().insertWithGeneratedKey(
-                insertSql, "ID",
-                getSequenceName(platform), new Object[] { "test" }, new int[] { Types.VARCHAR });
+            long id1 = platform.getSqlTemplate()
+                    .insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
+                            new Object[] { "test" }, new int[] { Types.VARCHAR });
 
-        Assert.assertNotSame(id1, id2);
+            table.getColumnWithName("ID").setTypeCode(Types.BIGINT);
+
+            IDdlBuilder builder = platform.getDdlBuilder();
+            String alterSql = builder.alterDatabase(databaseFromDatabase, database);
+
+            Logger logger = Logger.getLogger("org.jumpmind.db");
+            logger.info(alterSql);
+
+            Assert.assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
+
+            new SqlScript(alterSql, platform.getSqlTemplate(), true).execute(true);
+
+            tableFromDatabase = platform.getTableFromCache(table.getName(), true);
+
+            Assert.assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
+            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
+
+            long id2 = platform.getSqlTemplate()
+                    .insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
+                            new Object[] { "test" }, new int[] { Types.VARCHAR });
+
+            Assert.assertNotSame(id1, id2);
+        }
     }
 
     protected String getSequenceName(IDatabasePlatform platform) {

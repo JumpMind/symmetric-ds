@@ -103,7 +103,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         
         addEscapedCharSequence("'", "''");
-    }
+    }   
 
     @Override
     public void createTable(Table table, StringBuilder ddl) {
@@ -657,7 +657,12 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         printlnIdentifier(getTableName(sourceTable.getName()), ddl);
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
-        writeColumn(sourceTable, targetColumn, ddl);
+        if (typeChange) {
+            printIdentifier(getColumnName(targetColumn), ddl);
+            ddl.append(getSqlType(targetColumn));
+        } else {
+            writeColumn(sourceTable, targetColumn, ddl);
+        }
         printEndOfStatement(ddl);
 
         if (shallHaveDefault) {
