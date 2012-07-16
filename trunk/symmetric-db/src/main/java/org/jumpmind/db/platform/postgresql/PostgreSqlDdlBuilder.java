@@ -24,7 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnDefaultValueChange;
+import org.jumpmind.db.alter.ColumnRequiredChange;
+import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -43,7 +47,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         // PostgreSQL
         // in file src/include/postgres_ext.h
         databaseInfo.setMaxIdentifierLength(31);
-        
+
         databaseInfo.setRequiresSavePointsInTransaction(true);
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
@@ -89,10 +93,11 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\r", "\\r");
         addEscapedCharSequence("\t", "\\t");
     }
-    
+
     public static boolean isUsePseudoSequence() {
-        return "true".equalsIgnoreCase(System.getProperty("org.jumpmind.symmetric.ddl.use.table.seq", "false"));
-    }    
+        return "true".equalsIgnoreCase(System.getProperty(
+                "org.jumpmind.symmetric.ddl.use.table.seq", "false"));
+    }
 
     @Override
     public void dropTable(Table table, StringBuilder ddl) {
@@ -107,11 +112,11 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             dropAutoIncrementSequence(table, columns[idx], ddl);
         }
     }
-    
+
     @Override
     protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append(" ALTER COLUMN ");  
+        ddl.append(" ALTER COLUMN ");
         Column column = change.getChangedColumn();
         column.setTypeCode(change.getNewTypeCode());
         printIdentifier(getColumnName(column), ddl);
@@ -252,49 +257,58 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
-                // We can only use PostgreSQL-specific SQL if
-                // * the column is not set to NOT NULL (the constraint would be
-                // applied immediately
-                // which will not work if there is already data in the table)
-                // * the column has no default value (it would be applied after
-                // the change which
-                // means that PostgreSQL would behave differently from other
-                // databases where the
-                // default is applied to every column)
-                // * the column is added at the end of the table (PostgreSQL
-                // does not support
-                // insertion of a column)
-                if (!addColumnChange.getNewColumn().isRequired()
-                        && (addColumnChange.getNewColumn().getDefaultValue() == null)
-                        && (addColumnChange.getNextColumn() == null)) {
-                    processChange(currentModel, desiredModel, addColumnChange, ddl);
-                    changeIt.remove();
-                }
+                processChange(currentModel, desiredModel, addColumnChange, ddl);
+                changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
+            } else if (change instanceof ColumnDefaultValueChange) {
+                processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnRequiredChange) {
+                processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof PrimaryKeyChange) {
+                processChange(currentModel, desiredModel, (PrimaryKeyChange)change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnAutoIncrementChange) {
+                if (processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change,
+                        ddl)) {
+                    changeIt.remove();
+                }
             }
         }
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
                 changes, ddl);
     }
+    
+    protected void processChange(Database currentModel, Database desiredModel,
+            PrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printIndent(ddl);
+        ddl.append(" DROP CONSTRAINT ");
+        ddl.append(change.getChangedTable().getPrimaryKeyConstraintName());
+        printEndOfStatement(ddl);
+
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printIndent(ddl);
+        ddl.append(" ADD ");
+        writePrimaryKeyStmt(change.getChangedTable(), change.getNewPrimaryKeyColumns(), ddl);
+        printEndOfStatement(ddl);
+        
+    }
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
-        ddl.append("ADD COLUMN ");
+        ddl.append(" ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
@@ -302,12 +316,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
@@ -322,4 +330,57 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         }
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
+
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnDefaultValueChange change, StringBuilder ddl) {
+        if (change.getNewDefaultValue() == null
+                && change.getChangedColumn().getDefaultValue() != null) {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" ALTER COLUMN ");
+            Column column = change.getChangedColumn();
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" DROP DEFAULT ");
+            printEndOfStatement(ddl);
+        } else {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" ALTER COLUMN ");
+            Column column = change.getChangedColumn();
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" SET DEFAULT ");
+            ddl.append(column.getDefaultValue());
+            printEndOfStatement(ddl);
+        }
+    }
+
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnRequiredChange change, StringBuilder ddl) {
+        boolean required = !change.getChangedColumn().isRequired();
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" ALTER COLUMN ");
+        Column column = change.getChangedColumn();
+        printIdentifier(getColumnName(column), ddl);
+        if (required) {
+            ddl.append(" SET NOT NULL ");
+        } else {
+            ddl.append(" DROP NOT NULL ");
+        }
+        printEndOfStatement(ddl);
+    }
+
+    protected boolean processChange(Database currentModel, Database desiredModel,
+            ColumnAutoIncrementChange change, StringBuilder ddl) {
+        boolean autoIncrement = !change.getColumn().isAutoIncrement();
+        if (!autoIncrement) {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" ALTER COLUMN ");
+            Column column = change.getColumn();
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" DROP DEFAULT ");
+            printEndOfStatement(ddl);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

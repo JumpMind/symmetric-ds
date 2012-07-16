@@ -20,6 +20,8 @@ package org.jumpmind.db.platform.postgresql;
  */
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 /*
  * Reads a database model from a PostgreSql database.
@@ -74,7 +77,26 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 }
             }
         }
+        setPrimaryKeyConstraintName(connection, table);
         return table;
+    }
+    
+    protected void setPrimaryKeyConstraintName(Connection connection, Table table) throws SQLException {
+        String sql = "select conname from pg_constraint where conrelid in (select oid from pg_class where relname=? and relnamespace in (select oid from pg_namespace where nspname=?)) and contype='p'";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, table.getName());
+            pstmt.setString(2, table.getSchema());
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                table.setPrimaryKeyConstraintName(rs.getString(1).trim());
+            }            
+        } finally {
+            JdbcSqlTemplate.close(rs);
+            JdbcSqlTemplate.close(pstmt);
+        }
     }
 
     @Override
