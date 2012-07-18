@@ -110,8 +110,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\r", "\\r");
         addEscapedCharSequence("\t", "\\t");
         addEscapedCharSequence("\u001A", "\\Z");
-        addEscapedCharSequence("%", "\\%");
-        addEscapedCharSequence("_", "\\_");
     }
 
     @Override
