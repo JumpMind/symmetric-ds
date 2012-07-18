@@ -319,6 +319,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         alterDatabase(currentModel, desiredModel, ddl);
         return ddl.toString();
     }
+    
+    public String alterTable(Table currentTable, Table desiredTable) {
+        Database currentModel = new Database();
+        currentModel.addTable(currentTable);
+        
+        Database desiredModel = new Database();
+        desiredModel.addTable(desiredTable);
+        
+        return alterDatabase(currentModel, desiredModel);
+    }
 
     /**
      * Generates the DDL to modify an existing database so the schema matches

@@ -23,6 +23,8 @@ public interface IDdlBuilder {
     
     public String alterDatabase(Database currentModel, Database desiredModel);
     
+    public String alterTable(Table currentTable, Table desiredTable);
+    
     public String dropTables(Database database);
     
     /*

@@ -44,6 +44,32 @@ public class DatabasePlatformTest extends AbstractDbTest {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         logger.setLevel(originalLevel);
     }
+        
+    @Test 
+    public void testExportDefaultValueWithUnderscores() {
+        Table table = new Table("TEST_DEFAULT_UNDERSCORES");
+        table.addColumn(new Column("ID", true));
+        table.getColumnWithName("ID").setTypeCode(Types.INTEGER);
+        table.getColumnWithName("ID").setRequired(true);
+        table.addColumn(new Column("NOTES"));
+        table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
+        table.getColumnWithName("NOTES").setSize("20");
+        table.getColumnWithName("NOTES").setDefaultValue("this_has_underscores");
+        
+        Table tableFromDatabase = dropCreateAndThenReadTable(table);
+        
+        Assert.assertEquals(table.getColumnWithName("NOTES").getDefaultValue(), 
+                tableFromDatabase.getColumnWithName("NOTES").getDefaultValue());
+        
+    }
+    
+    protected Table dropCreateAndThenReadTable(Table table) {
+        Database database = new Database();
+        database.addTable(table);        
+        platform.createDatabase(database, true, false);        
+        return platform.getTableFromCache(table.getName(), true);
+    
+    }
 
     @Test
     public void testUpgradePrimaryKeyAutoIncrementFromIntToBigInt() throws Exception {
@@ -62,14 +88,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
             table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
             table.getColumnWithName("NOTES").setSize("100");
 
-            Database database = new Database();
-            database.addTable(table);
-
-            platform.createDatabase(database, true, false);
-
-            Table tableFromDatabase = platform.getTableFromCache(table.getName(), true);
-            Database databaseFromDatabase = new Database();
-            databaseFromDatabase.addTable(tableFromDatabase);
+            Table tableFromDatabase = dropCreateAndThenReadTable(table);
 
             Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
 
@@ -85,7 +104,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
             table.getColumnWithName("ID").setTypeCode(Types.BIGINT);
 
             IDdlBuilder builder = platform.getDdlBuilder();
-            String alterSql = builder.alterDatabase(databaseFromDatabase, database);
+            String alterSql = builder.alterTable(tableFromDatabase, table);
 
             Logger logger = Logger.getLogger("org.jumpmind.db");
             logger.info(alterSql);
