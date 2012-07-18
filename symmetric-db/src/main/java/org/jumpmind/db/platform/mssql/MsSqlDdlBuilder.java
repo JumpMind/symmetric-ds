@@ -282,44 +282,6 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         return "SELECT @@IDENTITY";
     }
 
-    /*
-     * Returns the SQL to enable identity override mode.
-     * 
-     * @param table The table to enable the mode for
-     * 
-     * @return The SQL
-     */
-    protected String getEnableIdentityOverrideSql(Table table) {
-        StringBuffer result = new StringBuffer();
-
-        result.append(getQuotationOnStatement());
-        result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
-        result.append(" ON");
-        result.append(databaseInfo.getSqlCommandDelimiter());
-
-        return result.toString();
-    }
-
-    /*
-     * Returns the SQL to disable identity override mode.
-     * 
-     * @param table The table to disable the mode for
-     * 
-     * @return The SQL
-     */
-    protected String getDisableIdentityOverrideSql(Table table) {
-        StringBuffer result = new StringBuffer();
-
-        result.append(getQuotationOnStatement());
-        result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
-        result.append(" OFF");
-        result.append(databaseInfo.getSqlCommandDelimiter());
-
-        return result.toString();
-    }
-
     @Override
     public String getDeleteSql(Table table, Map<String, Object> pkValues, boolean genPlaceholders) {
         return getQuotationOnStatement() + super.getDeleteSql(table, pkValues, genPlaceholders);
