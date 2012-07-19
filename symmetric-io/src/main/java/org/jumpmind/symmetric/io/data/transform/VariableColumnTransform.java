@@ -23,10 +23,12 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
 
     protected static final String OPTION_SOURCE_NODE_ID = "source_node_id";
     
+    protected static final String OPTION_TARGET_NODE_ID = "target_node_id";
+    
     protected static final String OPTION_NULL = "null";
 
     private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_DATE,
-            OPTION_SOURCE_NODE_ID, OPTION_NULL };
+            OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL };
 
     public String getName() {
         return NAME;
@@ -55,7 +57,9 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
             } else if (varName.equalsIgnoreCase(OPTION_DATE)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
             } else if (varName.equalsIgnoreCase(OPTION_SOURCE_NODE_ID)) {
-                return context.getBatch().getNodeId();
+                return context.getBatch().getSourceNodeId();
+            } else if (varName.equalsIgnoreCase(OPTION_TARGET_NODE_ID)) {
+                return context.getBatch().getTargetNodeId();                
             } else if (varName.equals(OPTION_NULL)) {
                 return null;
             }

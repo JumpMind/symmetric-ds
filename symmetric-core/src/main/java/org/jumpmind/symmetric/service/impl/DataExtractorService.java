@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
@@ -153,8 +154,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             String... tablesToExclude) {
         Node sourceNode = nodeService.findIdentity();
 
-        Batch batch = new Batch(BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
-                symmetricDialect.getBinaryEncoding(), targetNode.getNodeId(), false);
+        Batch batch = new Batch(BatchType.EXTRACT, BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
+                symmetricDialect.getBinaryEncoding(), sourceNode.getNodeId(), targetNode.getNodeId(), false);
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
                 targetNode.getNodeGroupId());
@@ -445,8 +446,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long byteCount = 0l;
 
             if (currentBatch.getStatus() == Status.IG) {
-                Batch batch = new Batch(currentBatch.getBatchId(), currentBatch.getChannelId(),
-                        symmetricDialect.getBinaryEncoding(), currentBatch.getNodeId(),
+                Batch batch = new Batch(BatchType.EXTRACT, currentBatch.getBatchId(), currentBatch.getChannelId(),
+                        symmetricDialect.getBinaryEncoding(), sourceNode.getNodeId(), currentBatch.getNodeId(),
                         currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
@@ -490,7 +491,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                                 IDataReader dataReader = new ExtractDataReader(
                                         symmetricDialect.getPlatform(),
-                                        new SelectFromSymDataSource(currentBatch, targetNode));
+                                        new SelectFromSymDataSource(currentBatch, sourceNode, targetNode));
                                 DataContext ctx = new DataContext();
                                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
@@ -570,7 +571,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
-                IDataReader dataReader = new ProtocolDataReader(extractedBatch);
+                IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT, currentBatch.getNodeId(), extractedBatch);
 
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
@@ -595,11 +596,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId,
             long endBatchId) {
         boolean foundBatch = false;
+        Node sourceNode = nodeService.findIdentity();
         for (long batchId = startBatchId; batchId <= endBatchId; batchId++) {
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             Node targetNode = nodeService.findNode(batch.getNodeId());
             IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                    new SelectFromSymDataSource(batch, targetNode));
+                    new SelectFromSymDataSource(batch, sourceNode, targetNode));
             DataContext ctx = new DataContext();
             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -707,10 +709,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private Node targetNode;
 
-        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node targetNode) {
+        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node sourceNode, Node targetNode) {
             this.outgoingBatch = outgoingBatch;
-            this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
-                    symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId(),
+            this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
+                    symmetricDialect.getBinaryEncoding(), sourceNode.getNodeId(), outgoingBatch.getNodeId(),
                     outgoingBatch.isCommonFlag());
             this.targetNode = targetNode;
         }
@@ -838,10 +840,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.selectFromTableEventsToSend = new ArrayList<SelectFromTableEvent>(
                     initialLoadEvents);
             this.batch = batch;
-            this.node = nodeService.findNode(batch.getNodeId());
+            this.node = nodeService.findNode(batch.getTargetNodeId());
             if (node == null) {
                 throw new SymmetricException("Could not find a node represented by %s",
-                        this.batch.getNodeId());
+                        this.batch.getTargetNodeId());
             }
         }
 
@@ -886,7 +888,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(
                             batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
                             .getTrigger().getChannelId());
-                    this.routingContext = new SimpleRouterContext(batch.getNodeId(), channel);
+                    this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(), channel);
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             triggerRouter.getRouter().getRouterId(), history, currentTable, false);
                     this.startNewCursor(history, triggerRouter);

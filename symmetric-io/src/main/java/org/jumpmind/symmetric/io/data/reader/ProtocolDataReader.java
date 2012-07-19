@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
@@ -52,42 +53,50 @@ public class ProtocolDataReader implements IDataReader {
     protected Table table;
     protected String channelId;
     protected String sourceNodeId;
+    protected String targetNodeId;
     protected BinaryEncoding binaryEncoding;
+    protected BatchType batchType;
     protected int lineNumber = 0;
 
-    public ProtocolDataReader(StringBuilder input) {
-        this(new BufferedReader(new StringReader(input.toString())));
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, StringBuilder input) {
+        this(batchType, targetNodeId, new BufferedReader(new StringReader(input.toString())));
     }
 
-    public ProtocolDataReader(InputStream is) {
-        this(toReader(is));
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, InputStream is) {
+        this(batchType, targetNodeId, toReader(is));
     }
 
-    public ProtocolDataReader(IStagedResource stagedResource) {
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, IStagedResource stagedResource) {
         this.stagedResource = stagedResource;
+        this.targetNodeId = targetNodeId;
+        this.batchType = batchType;
+    }
+    
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, String input) {
+        this(batchType, targetNodeId, new BufferedReader(new StringReader(input)));
     }
 
-    protected static Reader toReader(InputStream is) {
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, Reader reader) {
+        this.reader = reader;
+        this.targetNodeId = targetNodeId;
+        this.batchType = batchType;
+    }
+
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, File file) {
         try {
-            return new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            FileInputStream fis = new FileInputStream(file);
+            InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+            this.targetNodeId = targetNodeId;
+            this.batchType = batchType;
+            this.reader = new BufferedReader(in);
         } catch (IOException ex) {
             throw new IoException(ex);
         }
     }
 
-    public ProtocolDataReader(String input) {
-        this(new BufferedReader(new StringReader(input)));
-    }
-
-    public ProtocolDataReader(Reader reader) {
-        this.reader = reader;
-    }
-
-    public ProtocolDataReader(File file) {
+    protected static Reader toReader(InputStream is) {
         try {
-            FileInputStream fis = new FileInputStream(file);
-            InputStreamReader in = new InputStreamReader(fis, "UTF-8");
-            this.reader = new BufferedReader(in);
+            return new BufferedReader(new InputStreamReader(is, "UTF-8"));
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -142,8 +151,8 @@ public class ProtocolDataReader implements IDataReader {
                     bytesRead = 0;
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
-                    Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding,
-                            sourceNodeId, false);
+                    Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding,
+                            sourceNodeId, targetNodeId, false);
                     statistics.put(batch, new DataReaderStatistics());
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {

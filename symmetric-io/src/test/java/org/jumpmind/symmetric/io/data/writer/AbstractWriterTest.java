@@ -21,6 +21,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 
@@ -104,7 +105,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         writer.open(context);
         try {
             for (TableCsvData tableCsvData : datas) {
-                Batch batch = new Batch(getNextBatchId(), "default", BinaryEncoding.BASE64, "00001", false);
+                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", BinaryEncoding.BASE64, "00000", "00001", false);
                 try {
                     writer.start(batch);
                     if (writer.start(tableCsvData.table)) {

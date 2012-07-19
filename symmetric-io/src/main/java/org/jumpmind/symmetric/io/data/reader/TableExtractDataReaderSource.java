@@ -12,6 +12,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 
 /**
  * Convert a source table's rows to {@link CsvData}
@@ -31,7 +32,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
     protected boolean streamLobs;
 
     public TableExtractDataReaderSource(IDatabasePlatform platform, String catalogName,
-            String schemaName, String tableName, String whereClause, boolean streamLobs) {
+            String schemaName, String tableName, String whereClause, boolean streamLobs, String sourceNodeId, String targetNodeId) {
         this.platform = platform;
         this.table = platform.getTableFromCache(catalogName, schemaName, tableName, true);
         if (table == null) {
@@ -40,7 +41,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         }
         this.whereClause = whereClause;
         this.streamLobs = streamLobs;
-        this.batch = new Batch(-1, "default", BinaryEncoding.BASE64, "localhost", false);
+        this.batch = new Batch(BatchType.EXTRACT, -1, "default", BinaryEncoding.BASE64, sourceNodeId, targetNodeId, false);
 
     }
 

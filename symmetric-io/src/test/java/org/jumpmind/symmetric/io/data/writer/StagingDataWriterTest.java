@@ -15,6 +15,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataProcessor;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.StagedResource;
@@ -56,7 +57,7 @@ public class StagingDataWriterTest {
         is.close();
 
         StagingManager stagingManager = new StagingManager(threshold, 0l, DIR.getAbsolutePath());
-        ProtocolDataReader reader = new ProtocolDataReader(origCsv);
+        ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", origCsv);
         StagingDataWriter writer = new StagingDataWriter("aaa", "test", stagingManager, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer);
         processor.process(new DataContext());

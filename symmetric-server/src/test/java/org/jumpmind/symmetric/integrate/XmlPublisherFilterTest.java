@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.util.Context;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +52,7 @@ public class XmlPublisherFilterTest {
 
     @Before
     public void setUp() {
-        context = new DataContext(new Batch(1111, "default", BinaryEncoding.BASE64, "54321", false));
+        context = new DataContext(new Batch(BatchType.LOAD, 1111, "default", BinaryEncoding.BASE64, "54321", "00000", false));
         table = Table.buildTable(TABLE_TEST, new String[] { "ID1", "ID2" }, new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
     }
 

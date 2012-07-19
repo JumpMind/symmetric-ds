@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -308,8 +309,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
 
             long totalNetworkMillis = System.currentTimeMillis();
+            String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                IDataReader dataReader = new ProtocolDataReader(transport.open());
+                IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId, transport.open());
                 IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(sourceNode.getNodeId(), listener));
@@ -317,7 +319,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 DataProcessor processor = new DataProcessor(
-                        new ProtocolDataReader(transport.open()), null, listener) {
+                        new ProtocolDataReader(BatchType.LOAD, targetNodeId, transport.open()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(sourceNode.getNodeId(), batch.getChannelId(),
@@ -637,7 +639,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             try {
-                DataProcessor processor = new DataProcessor(new ProtocolDataReader(resource), null,
+                DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource), null,
                         listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
@@ -681,7 +683,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            symmetricDialect.disableSyncTriggers(context.findTransaction(), batch.getNodeId());
+            symmetricDialect.disableSyncTriggers(context.findTransaction(), batch.getSourceNodeId());
         }
 
         public void batchSuccessful(DataContext context) {
@@ -789,7 +791,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             } catch (Exception e) {
                 log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
-                                .getBatch().getNodeBatchId(), e);
+                                .getBatch().getSourceNodeBatchId(), e);
             }
         }
 
