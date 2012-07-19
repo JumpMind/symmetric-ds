@@ -855,6 +855,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public CsvData next() {
             CsvData data = null;
+            do {
+                data = selectNext();
+            } while (data != null && routingContext != null
+                    && !routerService.shouldDataBeRouted(routingContext, new DataMetaData(
+                            (Data) data, currentTable, triggerRouter, routingContext.getChannel()),
+                            node, true));
+
+            if (data != null && outgoingBatch != null) {
+                outgoingBatch.incrementDataEventCount();
+                outgoingBatch.incrementEventCount(data.getDataEventType());
+            }
+
+            return data;
+        }
+            
+        protected CsvData selectNext() {            
+            CsvData data = null;
             if (this.currentInitialLoadEvent == null && selectFromTableEventsToSend.size() > 0) {
                 this.currentInitialLoadEvent = selectFromTableEventsToSend.remove(0);
                 TriggerHistory history = this.currentInitialLoadEvent.getTriggerHistory();
@@ -882,21 +899,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (this.cursor != null) {
                 data = this.cursor.next();
-                if (data != null) {
-                    if (!routerService.shouldDataBeRouted(routingContext, new DataMetaData(
-                            (Data) data, currentTable, triggerRouter, routingContext.getChannel()),
-                            node, true)) {
-                        data = next();
-                    }
-                } else {
+                if (data == null) {
                     closeCursor();
                     data = next();
                 }
-            }
-
-            if (data != null && outgoingBatch != null) {
-                outgoingBatch.incrementDataEventCount();
-                outgoingBatch.incrementEventCount(data.getDataEventType());
             }
 
             return data;
