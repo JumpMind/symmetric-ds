@@ -65,7 +65,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         }
         
         if (StringUtils.isBlank(sourceNodeId)) {
-            sourceNodeId = batch.getNodeId();
+            sourceNodeId = batch.getSourceNodeId();
         }
 
         if (flushNodeId) {

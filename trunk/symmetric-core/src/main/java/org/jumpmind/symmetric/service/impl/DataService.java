@@ -1058,7 +1058,7 @@ public class DataService extends AbstractService implements IDataService {
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
         return sqlTemplate
                 .queryForCursor(getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()),
-                        dataMapper, new Object[] { batch.getBatchId(), batch.getNodeId() },
+                        dataMapper, new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
                         new int[] { Types.NUMERIC });
     }
 

@@ -86,7 +86,7 @@ public class DataProcessor {
                         forEachTableInBatch(context, processBatch, currentBatch);
                         
                         if (currentBatch != null && !currentBatch.isComplete()) {
-                            throw new ProtocolException("The batch %s was not complete", currentBatch.getNodeBatchId());
+                            throw new ProtocolException("The batch %s was not complete", currentBatch.getSourceNodeBatchId());
                         }
 
                         if (processBatch) {

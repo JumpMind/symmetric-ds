@@ -10,8 +10,11 @@ public class Batch {
     
     public static final long UNKNOWN_BATCH_ID = -9999;
 
+    public enum BatchType { EXTRACT, LOAD };
+    
     protected long batchId = UNKNOWN_BATCH_ID;
-    protected String nodeId;
+    protected String sourceNodeId;
+    protected String targetNodeId;
     protected boolean initialLoad;    
     protected String channelId;
     protected BinaryEncoding binaryEncoding;   
@@ -22,13 +25,16 @@ public class Batch {
     protected boolean ignored = false;
     protected boolean common = false;
     protected boolean complete = false;
+    protected BatchType batchType;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
     
-    public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String nodeId, boolean common) {
+    public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
+        this.batchType = batchType;
         this.batchId = batchId;
         this.channelId = channelId;
-        this.nodeId = nodeId;
+        this.sourceNodeId = sourceNodeId;
+        this.targetNodeId = targetNodeId;
         this.binaryEncoding = binaryEncoding;
         this.common = common;
     }
@@ -86,10 +92,18 @@ public class Batch {
         this.startTime = startTime;
     }
 
-    public String getNodeId() {
-        return nodeId;
+    public String getSourceNodeId() {
+        return sourceNodeId;
     }
-
+    
+    public String getTargetNodeId() {
+        return targetNodeId;
+    }
+    
+    public String getSourceNodeBatchId() {
+        return String.format("%s-%d", sourceNodeId, batchId);
+    }
+    
     public long getBatchId() {
         return batchId;
     }
@@ -104,10 +118,6 @@ public class Batch {
     
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
-    }
-
-    public String getNodeBatchId() {
-        return nodeId + "-" + batchId;
     }
     
     public void setIgnored(boolean ignored) {
@@ -127,7 +137,11 @@ public class Batch {
     }
     
     public String getStagedLocation() {
-        return getStagedLocation(common, nodeId);
+        if (batchType == BatchType.EXTRACT) {
+            return getStagedLocation(common, targetNodeId);            
+        } else {
+            return getStagedLocation(common, sourceNodeId);    
+        }        
     }
     
     public static String getStagedLocation(boolean common, String nodeId) {
