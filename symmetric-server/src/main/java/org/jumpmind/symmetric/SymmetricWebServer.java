@@ -45,6 +45,7 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
@@ -279,7 +280,7 @@ public class SymmetricWebServer {
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
         String keyStoreFile = System.getProperty(SystemConstants.SYSPROP_KEYSTORE);
-        String keyStoreType = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE);
+        String keyStoreType = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = null;
@@ -302,11 +303,11 @@ public class SymmetricWebServer {
                     .getProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword
                     : SecurityConstants.KEYSTORE_PASSWORD;
-            ((SslSocketConnector) connector).setKeystore(keyStoreFile);
-            ((SslSocketConnector) connector).setKeyPassword(keyStorePassword);
-            if (keyStoreType != null) {
-                ((SslSocketConnector) connector).setKeystoreType(keyStoreType);
-            }
+            SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory(); 
+            sslConnectorFactory.setKeyStorePath(keyStoreFile);
+            sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
+            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, "sym"));
+            sslConnectorFactory.setKeyStoreType(keyStoreType);
 
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
             connector.setPort(securePort);
