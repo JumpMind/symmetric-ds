@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.collections.set.ListOrderedSet;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
@@ -45,7 +44,7 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
     public MySqlDdlBuilder() {
-        
+
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);
         databaseInfo.setNullAsDefaultValueRequired(true);
@@ -98,7 +97,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour
-        databaseInfo.setSyntheticDefaultValueForRequiredReturned(false);       
+        databaseInfo.setSyntheticDefaultValueForRequiredReturned(false);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
@@ -170,28 +169,28 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
             if (change instanceof AddColumnChange) {
-                processChange(currentModel, desiredModel, (AddColumnChange)change, ddl);
+                processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 /**
-                 * This has to happen before any primary key changes because if 
-                 * a column is bring dropped as auto increment and being dropped from the
-                 * primary key, an auto increment column can't be a non primary key column
-                 * on mysql.
+                 * This has to happen before any primary key changes because if
+                 * a column is bring dropped as auto increment and being dropped
+                 * from the primary key, an auto increment column can't be a non
+                 * primary key column on mysql.
                  */
                 try {
                     Column sourceColumn = ((ColumnAutoIncrementChange) change).getColumn();
-                    Column targetColumn = (Column)sourceColumn.clone();
+                    Column targetColumn = (Column) sourceColumn.clone();
                     targetColumn.setAutoIncrement(!sourceColumn.isAutoIncrement());
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                     changeIt.remove();
                 } catch (CloneNotSupportedException e) {
-                    log.error(e.getMessage(),e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }
 
-        ListOrderedSet changedColumns = new ListOrderedSet();
+        List<Column> changedColumns = new ArrayList<Column>();
 
         // we don't have to care about the order because the comparator will
         // have ensured that a add primary key change comes after all necessary
@@ -212,10 +211,14 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnChange) {
-                // we gather all changed columns because we can use the ALTER
-                // TABLE MODIFY COLUMN
-                // statement for them
-                changedColumns.add(((ColumnChange) change).getChangedColumn());
+                /*
+                 * we gather all changed columns because we can use the ALTER
+                 * TABLE MODIFY COLUMN statement for them
+                 */
+                Column column = ((ColumnChange) change).getChangedColumn();
+                if (changedColumns.contains(column)) {
+                    changedColumns.add(column);
+                }
                 changeIt.remove();
             }
         }
@@ -301,6 +304,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("MODIFY COLUMN ");
         writeColumn(targetTable, targetColumn, ddl);
         printEndOfStatement(ddl);
-    }    
+    }
 
 }
