@@ -26,7 +26,10 @@ import java.util.regex.Pattern;
 
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
+import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnDefaultValueChange;
+import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -88,7 +91,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
 
-        
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
@@ -171,11 +173,11 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             println("/", ddl);
             println(ddl);
         } else {
-            // note that the BEGIN ... SELECT ... END; is all in one line and
-            // does
-            // not contain a semicolon except for the END-one
-            // this way, the tokenizer will not split the statement before the
-            // END
+            /**
+             * Note that the BEGIN ... SELECT ... END; is all in one line and
+             * does not contain a semicolon except for the END-one this way, the
+             * tokenizer will not split the statement before the END
+             */
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printIdentifier(triggerName, ddl);
             ddl.append(" BEFORE INSERT ON ");
@@ -190,11 +192,12 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" FROM dual");
             ddl.append(databaseInfo.getSqlCommandDelimiter());
             ddl.append(" END");
-            // It is important that there is a semicolon at the end of the
-            // statement (or more
-            // precisely, at the end of the PL/SQL block), and thus we put two
-            // semicolons here
-            // because the tokenizer will remove the one at the end
+            /*
+             * It is important that there is a semicolon at the end of the
+             * statement (or more precisely, at the end of the PL/SQL block),
+             * and thus we put two semicolons here because the tokenizer will
+             * remove the one at the end
+             */
             ddl.append(databaseInfo.getSqlCommandDelimiter());
             printEndOfStatement(ddl);
         }
@@ -233,11 +236,12 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // no need to as we drop the table with CASCASE CONSTRAINTS
     }
 
+    /**
+     * Index names in Oracle are unique to a schema and hence Oracle does not
+     * use the ON <tablename> clause
+     */
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        // Index names in Oracle are unique to a schema and hence Oracle does
-        // not
-        // use the ON <tablename> clause
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -266,16 +270,17 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         if ((column.getMappedTypeCode() == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
-                    Types.SMALLINT).toString();
+            return getDefaultValueHelper().convert(column.getDefaultValue(),
+                    column.getMappedTypeCode(), Types.SMALLINT).toString();
         }
-        // Oracle does not accept ISO formats, so we have to convert an ISO spec
-        // if we find one
-        // But these are the only formats that we make sure work, every other
-        // format has to be database-dependent
-        // and thus the user has to ensure that it is correct
+        /*
+         * Oracle does not accept ISO formats, so we have to convert an ISO spec
+         * if we find one But these are the only formats that we make sure work,
+         * every other format has to be database-dependent and thus the user has
+         * to ensure that it is correct
+         */
         else if (column.getMappedTypeCode() == Types.DATE) {
-            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2}",column.getDefaultValue())) {
+            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2}", column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD')";
             }
         } else if (column.getMappedTypeCode() == Types.TIME) {
@@ -283,7 +288,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'HH24:MI:SS')";
             }
         } else if (column.getMappedTypeCode() == Types.TIMESTAMP) {
-            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}[\\.\\d{1,8}]?", column.getDefaultValue())) {
+            if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}[\\.\\d{1,8}]?",
+                    column.getDefaultValue())) {
                 return "TO_DATE('" + column.getDefaultValue() + "', 'YYYY-MM-DD HH24:MI:SS')";
             }
         }
@@ -321,23 +327,26 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
-        // While Oracle has an ALTER TABLE MODIFY statement, it is somewhat
-        // limited
-        // esp. if there is data in the table, so we don't use it
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
-                // Oracle can only add not insert columns
-                // Also, we cannot add NOT NULL columns unless they have a
-                // default value
-                if (!addColumnChange.isAtEnd()
-                        || (addColumnChange.getNewColumn().isRequired() && (addColumnChange
-                                .getNewColumn().getDefaultValue() == null))) {
+                if (addColumnChange.getNewColumn().isRequired()
+                        && (addColumnChange.getNewColumn().getDefaultValue() == null)) {
                     // we need to rebuild the full table
                     return;
+                }
+            } else if (change instanceof ColumnDefaultValueChange) {
+                processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnRequiredChange) {
+                processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnAutoIncrementChange) {
+                if (processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change,
+                        ddl)) {
+                    changeIt.remove();
                 }
             }
         }
@@ -358,10 +367,11 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             }
         }
 
-        // Next we add/remove columns
-        // While Oracle has an ALTER TABLE MODIFY statement, it is somewhat
-        // limited
-        // esp. if there is data in the table, so we don't use it
+        /*
+         * Next we add/remove columns While Oracle has an ALTER TABLE MODIFY
+         * statement, it is somewhat limited esp. if there is data in the table,
+         * so we don't use it
+         */
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -373,6 +383,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
+
         // Finally we add primary keys
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
@@ -389,15 +400,56 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
-        
-        super.processTableStructureChanges(currentModel, desiredModel,
-                sourceTable, targetTable, changes, ddl);
+
+        super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
+                changes, ddl);
     }
-    
+
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnDefaultValueChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" MODIFY (");
+        Column column = change.getChangedColumn();
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" DEFAULT ");        
+        ddl.append(change.getNewDefaultValue());
+        ddl.append(" )");
+        printEndOfStatement(ddl);
+    }
+
+    protected boolean processChange(Database currentModel, Database desiredModel,
+            ColumnAutoIncrementChange change, StringBuilder ddl) {
+        boolean autoIncrement = !change.getColumn().isAutoIncrement();
+        if (!autoIncrement) {
+            dropAutoIncrementTrigger(change.getChangedTable(), change.getColumn(), ddl);
+            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
+            return true;
+        } else {
+            // TODO
+            return false;
+        }
+    }
+
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnRequiredChange change, StringBuilder ddl) {
+        boolean required = !change.getChangedColumn().isRequired();
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" MODIFY (");
+        Column column = change.getChangedColumn();
+        printIdentifier(getColumnName(column), ddl);
+        if (required) {
+            ddl.append(" NOT NULL ");
+        } else {
+            ddl.append(" NULL ");
+        }
+        ddl.append(" )");
+        printEndOfStatement(ddl);
+    }
+
     @Override
     protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append("MODIFY (");  
+        ddl.append("MODIFY (");
         Column column = change.getChangedColumn();
         column.setTypeCode(change.getNewTypeCode());
         printIdentifier(getColumnName(column), ddl);
