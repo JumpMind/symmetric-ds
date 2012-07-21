@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.commons.collections.set.ListOrderedSet;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
+import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
@@ -165,24 +166,29 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
-        // in order to utilize the ALTER TABLE ADD COLUMN AFTER statement
-        // we have to apply the add column changes in the correct order
-        // thus we first gather all add column changes and then execute them
-        ArrayList<AddColumnChange> addColumnChanges = new ArrayList<AddColumnChange>();
 
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
-                addColumnChanges.add((AddColumnChange) change);
+                processChange(currentModel, desiredModel, (AddColumnChange)change, ddl);
                 changeIt.remove();
+            } else if (change instanceof ColumnAutoIncrementChange) {
+                /**
+                 * This has to happen before any primary key changes because if 
+                 * a column is bring dropped as auto increment and being dropped from the
+                 * primary key, an auto increment column can't be a non primary key column
+                 * on mysql.
+                 */
+                try {
+                    Column sourceColumn = ((ColumnAutoIncrementChange) change).getColumn();
+                    Column targetColumn = (Column)sourceColumn.clone();
+                    targetColumn.setAutoIncrement(!sourceColumn.isAutoIncrement());
+                    processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
+                    changeIt.remove();
+                } catch (CloneNotSupportedException e) {
+                    log.error(e.getMessage(),e);
+                }
             }
-        }
-        for (Iterator<AddColumnChange> changeIt = addColumnChanges.iterator(); changeIt.hasNext();) {
-            AddColumnChange addColumnChange = changeIt.next();
-
-            processChange(currentModel, desiredModel, addColumnChange, ddl);
-            changeIt.remove();
         }
 
         ListOrderedSet changedColumns = new ListOrderedSet();
@@ -295,5 +301,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("MODIFY COLUMN ");
         writeColumn(targetTable, targetColumn, ddl);
         printEndOfStatement(ddl);
-    }
+    }    
+
 }
