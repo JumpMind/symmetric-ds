@@ -25,11 +25,17 @@ package org.jumpmind.db.platform.h2;
  */
 
 import java.sql.Types;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnDefaultValueChange;
+import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
+import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
@@ -75,6 +81,40 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
 
         addEscapedCharSequence("'", "''");
     }
+    
+    @Override
+    protected void processTableStructureChanges(Database currentModel, Database desiredModel,
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
+
+            if (change instanceof AddColumnChange) {
+                AddColumnChange addColumnChange = (AddColumnChange) change;
+                processChange(currentModel, desiredModel, addColumnChange, ddl);
+                changeIt.remove();
+            } else if (change instanceof RemoveColumnChange) {
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnDefaultValueChange) {
+                ColumnDefaultValueChange defaultChange = (ColumnDefaultValueChange)change;
+                defaultChange.getChangedColumn().setDefaultValue(defaultChange.getNewDefaultValue());
+                writeAlterColumn(change.getChangedTable(), defaultChange.getChangedColumn(), ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnRequiredChange) {
+                ColumnRequiredChange defaultChange = (ColumnRequiredChange)change;
+                defaultChange.getChangedColumn().setRequired(!defaultChange.getChangedColumn().isRequired());
+                writeAlterColumn(change.getChangedTable(), defaultChange.getChangedColumn(), ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnAutoIncrementChange) {
+                ColumnAutoIncrementChange defaultChange = (ColumnAutoIncrementChange)change;
+                defaultChange.getColumn().setAutoIncrement(!defaultChange.getColumn().isAutoIncrement());
+                writeAlterColumn(change.getChangedTable(), defaultChange.getColumn(), ddl);
+                changeIt.remove();
+            }
+        }
+        super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
+                changes, ddl);
+    }    
 
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
@@ -83,10 +123,6 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
-        if (change.getNextColumn() != null) {
-            ddl.append(" BEFORE ");
-            printIdentifier(getColumnName(change.getNextColumn()), ddl);
-        }
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
@@ -138,8 +174,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
                     && !defaultValueStr.startsWith("TO_DATE(")
                     && !defaultValue.equals("CURRENT_TIMESTAMP")
-                    && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");
-            ;
+                    && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");            
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
@@ -166,11 +201,15 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     
     @Override
     protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
-        writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append("ALTER COLUMN ");  
         change.getChangedColumn().setTypeCode(change.getNewTypeCode());
-        writeColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
-        printEndOfStatement(ddl);
+        writeAlterColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
         return true;
     }   
+    
+    protected void writeAlterColumn(Table table, Column column, StringBuilder ddl) {
+        writeTableAlterStmt(table, ddl);
+        ddl.append("ALTER COLUMN ");  
+        writeColumn(table, column, ddl);
+        printEndOfStatement(ddl);
+    }
 }
