@@ -26,8 +26,6 @@ import org.jumpmind.db.platform.DdlException;
 
 /**
  * Represents the addition of an index to a table.
- * 
- * @version $Revision: $
  */
 public class AddIndexChange extends TableChangeImplBase
 {

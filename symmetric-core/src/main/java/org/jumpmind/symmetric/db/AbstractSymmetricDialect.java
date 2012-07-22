@@ -434,7 +434,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
 
-                log.info("Alter SQL Generated: {}", alterSql);
+                log.info("Alter SQL generated: {}", alterSql);
 
                 new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
                         .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
