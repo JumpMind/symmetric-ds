@@ -519,11 +519,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 return new Date(time);
             } else {
                 if (useTimestamp) {
-                    return Timestamp.valueOf(value);
+                    try {
+                        return Timestamp.valueOf(value);
+                    } catch (IllegalArgumentException ex) {
+                        return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
+                    }
                 } else if (type == Types.TIME) {
                     return DateUtils.parseDate(value, TIME_PATTERNS);
+                } else {
+                    return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
                 }
-                return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
