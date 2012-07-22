@@ -58,7 +58,7 @@ public abstract class IndexImpBase implements IIndex {
         for (int idx = 0; idx < columns.size(); idx++) {
             IndexColumn curColumn = getColumn(idx);
 
-            if (column.equals(curColumn.getColumn())) {
+            if (column.getName().equals(curColumn.getName())) {
                 return true;
             }
         }

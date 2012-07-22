@@ -1648,11 +1648,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected String getColumnName(Column column) {
         return shortenName(column.getName(), databaseInfo.getMaxColumnNameLength());
     }
-
-    /**
-     * Outputs the DDL for the specified column.
-     */
-    protected void writeColumn(Table table, Column column, StringBuilder ddl) {
+    
+    protected void writeColumnTypeDefaultRequired(Table table, Column column, StringBuilder ddl) {
         // see comments in columnsDiffer about null/"" defaults
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" ");
@@ -1665,8 +1662,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 && databaseInfo.hasNullDefault(column.getMappedTypeCode())) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
-        }
+        }        
+    }
 
+    /**
+     * Outputs the DDL for the specified column.
+     */
+    protected void writeColumn(Table table, Column column, StringBuilder ddl) {
+        writeColumnTypeDefaultRequired(table, column, ddl);
         if (column.isPrimaryKey() && databaseInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }

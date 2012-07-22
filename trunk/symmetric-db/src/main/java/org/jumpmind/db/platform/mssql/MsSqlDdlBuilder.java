@@ -94,16 +94,15 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
 
-        
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
-        
+
         addEscapedCharSequence("'", "''");
-    }   
+    }
 
     @Override
     public void createTable(Table table, StringBuilder ddl) {
@@ -172,41 +171,41 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         StringBuffer result = new StringBuffer();
 
         switch (column.getMappedTypeCode()) {
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-            // SQL Server does not want quotes around the value
-            if (!(value instanceof String) && (getValueNumberFormat() != null)) {
-                result.append(getValueNumberFormat().format(value));
-            } else {
+            case Types.REAL:
+            case Types.NUMERIC:
+            case Types.FLOAT:
+            case Types.DOUBLE:
+            case Types.DECIMAL:
+                // SQL Server does not want quotes around the value
+                if (!(value instanceof String) && (getValueNumberFormat() != null)) {
+                    result.append(getValueNumberFormat().format(value));
+                } else {
+                    result.append(value.toString());
+                }
+                break;
+            case Types.DATE:
+                result.append("CAST(");
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(value instanceof String ? (String) value : getValueDateFormat()
+                        .format(value));
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(" AS datetime)");
+                break;
+            case Types.TIME:
+                result.append("CAST(");
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(value instanceof String ? (String) value : getValueTimeFormat()
+                        .format(value));
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(" AS datetime)");
+                break;
+            case Types.TIMESTAMP:
+                result.append("CAST(");
+                result.append(databaseInfo.getValueQuoteToken());
                 result.append(value.toString());
-            }
-            break;
-        case Types.DATE:
-            result.append("CAST(");
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(value instanceof String ? (String) value : getValueDateFormat().format(
-                    value));
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(" AS datetime)");
-            break;
-        case Types.TIME:
-            result.append("CAST(");
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(value instanceof String ? (String) value : getValueTimeFormat().format(
-                    value));
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(" AS datetime)");
-            break;
-        case Types.TIMESTAMP:
-            result.append("CAST(");
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(value.toString());
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(" AS datetime)");
-            break;
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(" AS datetime)");
+                break;
         }
         return super.getValueAsString(column, value);
     }
@@ -217,8 +216,8 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         if ((column.getMappedTypeCode() == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
-                    Types.SMALLINT).toString();
+            return getDefaultValueHelper().convert(column.getDefaultValue(),
+                    column.getMappedTypeCode(), Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);
         }
@@ -262,8 +261,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
      */
     private String getQuotationOnStatement() {
         if (delimitedIdentifierModeOn) {
-            return "SET quoted_identifier on" + databaseInfo.getSqlCommandDelimiter()
-                    + "\n";
+            return "SET quoted_identifier on" + databaseInfo.getSqlCommandDelimiter() + "\n";
         } else {
             return "";
         }
@@ -341,20 +339,19 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         if (!changes.isEmpty()) {
             writeQuotationOnStatement(ddl);
         }
-        // For column data type and size changes, we need to drop and then
-        // re-create indexes
-        // and foreign keys using the column, as well as any primary keys
-        // containg
-        // these columns
-        // However, if the index/foreign key/primary key is already slated for
-        // removal or
-        // change, then we don't want to generate change duplication
-        HashSet removedIndexes = new HashSet();
-        HashSet removedForeignKeys = new HashSet();
-        HashSet removedPKs = new HashSet();
+        /*
+         * For column data type and size changes, we need to drop and then
+         * re-create indexes and foreign keys using the column, as well as any
+         * primary keys containg these columns However, if the index/foreign
+         * key/primary key is already slated for removal or change, then we
+         * don't want to generate change duplication
+         */
+        HashSet<IIndex> removedIndexes = new HashSet<IIndex>();
+        HashSet<ForeignKey> removedForeignKeys = new HashSet<ForeignKey>();
+        HashSet<Table> removedPKs = new HashSet<Table>();
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            Object change = changeIt.next();
+        for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            IModelChange change = changeIt.next();
 
             if (change instanceof RemoveIndexChange) {
                 removedIndexes.add(((RemoveIndexChange) change).getIndex());
@@ -365,10 +362,10 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             }
         }
 
-        ArrayList additionalChanges = new ArrayList();
+        ArrayList<TableChange> additionalChanges = new ArrayList<TableChange>();
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            Object change = changeIt.next();
+        for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            IModelChange change = changeIt.next();
 
             if ((change instanceof ColumnDataTypeChange) || (change instanceof ColumnSizeChange)) {
                 Column column = ((ColumnChange) change).getChangedColumn();
@@ -413,6 +410,19 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
+        
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
+            if (change instanceof ColumnAutoIncrementChange) {
+            /*
+             * Sql Server has no way of adding or removing an IDENTITY
+             * constraint thus we have to rebuild the table anyway and can
+             * ignore all the other column changes
+             */
+                return;
+            }
+        }
+        
         // First we drop primary keys as necessary
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
@@ -428,43 +438,33 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
                 processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
-
-        ArrayList columnChanges = new ArrayList();
+        
+        ArrayList<ColumnChange> columnChanges = new ArrayList<ColumnChange>();
 
         // Next we add/remove columns
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
 
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
-                // Sql Server can only add not insert columns
-                if (addColumnChange.isAtEnd()) {
-                    processChange(currentModel, desiredModel, addColumnChange, ddl);
-                    changeIt.remove();
-                }
+                processChange(currentModel, desiredModel, addColumnChange, ddl);
+                changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
-            } else if (change instanceof ColumnAutoIncrementChange) {
-                // Sql Server has no way of adding or removing an IDENTITY
-                // constraint
-                // Thus we have to rebuild the table anyway and can ignore all
-                // the other
-                // column changes
-                columnChanges = null;
             } else if ((change instanceof ColumnChange) && (columnChanges != null)) {
-                // we gather all changed columns because we can use the ALTER
-                // TABLE ALTER COLUMN
-                // statement for them
-                columnChanges.add(change);
+                /*
+                 * We gather all changed columns because we can use the ALTER
+                 * TABLE ALTER COLUMN statement for them
+                 */
+                columnChanges.add((ColumnChange) change);
             }
         }
         if (columnChanges != null) {
-            HashSet processedColumns = new HashSet();
+            HashSet<Column> processedColumns = new HashSet<Column>();
 
-            for (Iterator changeIt = columnChanges.iterator(); changeIt.hasNext();) {
-                ColumnChange change = (ColumnChange) changeIt.next();
+            for (Iterator<ColumnChange> changeIt = columnChanges.iterator(); changeIt.hasNext();) {
+                ColumnChange change = changeIt.next();
                 Column sourceColumn = change.getChangedColumn();
                 Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                         delimitedIdentifierModeOn);
@@ -480,8 +480,8 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             }
         }
         // Finally we add primary keys
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
 
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
@@ -570,9 +570,11 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         boolean shallHaveDefault = targetColumn.getParsedDefaultValue() != null;
         String newDefault = targetColumn.getDefaultValue();
 
-        // Sql Server does not like it if there is a default spec in the ALTER
-        // TABLE ALTER COLUMN
-        // statement; thus we have to change the default manually
+        /*
+         * Sql Server does not like it if there is a default spec in the ALTER
+         * TABLE ALTER COLUMN statement; thus we have to change the default
+         * manually
+         */
         if (newDefault != null) {
             targetColumn.setDefaultValue(null);
         }
@@ -619,20 +621,16 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         printlnIdentifier(getTableName(sourceTable.getName()), ddl);
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
-        if (typeChange) {
-            printIdentifier(getColumnName(targetColumn), ddl);
-            ddl.append(" ");
-            ddl.append(getSqlType(targetColumn));
-        } else {
-            writeColumn(sourceTable, targetColumn, ddl);
-        }
+        writeColumnTypeDefaultRequired(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
 
         if (shallHaveDefault) {
             targetColumn.setDefaultValue(newDefault);
 
-            // if the column shall have a default, then we have to add it as a
-            // constraint
+            /*
+             * if the column shall have a default, then we have to add it as a
+             * constraint
+             */
             ddl.append("ALTER TABLE ");
             printlnIdentifier(getTableName(sourceTable.getName()), ddl);
             printIndent(ddl);
@@ -644,7 +642,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
     }
-    
+
     /**
      * Creates a reasonably unique identifier only consisting of hexadecimal
      * characters and underscores. It looks like
