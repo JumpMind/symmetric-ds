@@ -123,7 +123,7 @@ public final class FormatUtils {
 
     public static boolean isWildCardMatch(String text, String pattern) {
         boolean match = true;
-        if (pattern.startsWith("^")) {
+        if (pattern.startsWith("!")) {
             match = !match;
             pattern = pattern.substring(1);
         }
