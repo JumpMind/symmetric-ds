@@ -1,5 +1,6 @@
 SymmetricDS - 3.0.10 (Released 2012-07-23) 
 ==========================================
+- 0000713: [Bug] Automate upgrade from 2.x to 3.x on most platforms (chenson) - closed.
 - 0000700: [Bug] StackOverflowError when filtering data during initial load (chenson) - closed.
 - 0000722: [Bug] Sync of a date field on the source to a datetime field on a target fails (chenson) - closed.
 - 0000715: [Bug] Default values with underscores end up escaped (unecessarily) with a '\' or '%' character on MySQL (chenson) - closed.
