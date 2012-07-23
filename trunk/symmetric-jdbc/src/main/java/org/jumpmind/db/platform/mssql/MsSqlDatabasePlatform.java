@@ -43,7 +43,12 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public MsSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         ddlReader = new MsSqlDdlReader(this);
-        ddlBuilder = new MsSqlDdlBuilder();
+        
+        if (this.sqlTemplate.getDatabaseMajorVersion() >= 10) {
+            ddlBuilder = new MsSql10DdlBuilder();
+        } else {
+            ddlBuilder = new MsSqlDdlBuilder();    
+        }
     }
 
     @Override
