@@ -414,9 +414,9 @@ values
         <para>
             The <literal>source_table_name</literal> may contain the asterick ('*') wildcard character so that one <xref linkend="table_trigger" xrefstyle="table"/> table entry
             can define synchronization for many tables.  System tables and any tables that start with the SymmetricDS table prefix will be excluded.  A list of 
-            wildcard tokens can also be supplied.  If there are multiple tokens they are deliminated with a comma.  A wildcard token can also start with a 
-            bang ('!') to indicate an exclusive match.  Tokens are always evalulated from left to right.  When a table match is made the table is either added to 
-            or removed from the list of tables.  If another trigger already exists for a table, then that table is ignored.
+            wildcard tokens can also be supplied.  If there are multiple tokens, they should be deliminated with a comma.  A wildcard token can also start with a 
+            bang ('!') to indicate an exclusive match.  Tokens are always evalulated from left to right.  When a table match is made, the table is either added to 
+            or removed from the list of tables.  If another trigger already exists for a table, then that table is not included in the wildcard match (the explictly defined trigger entry take precendence).
         </para>
         <para>
         When determining whether a data change has occurred or not, by defalt the triggers will
