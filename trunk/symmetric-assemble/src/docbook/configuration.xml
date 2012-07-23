@@ -412,9 +412,9 @@ values
             is associated with a <xref linkend="table_router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
         </para>
         <para>
-            The <literal>source_table_name</literal> may contain the asterick ('*') wildcard character so that one <xref linkend="table_trigger" xrefstyle="table"/> table entry
+            The <literal>source_table_name</literal> may contain the asterisk ('*') wildcard character so that one <xref linkend="table_trigger" xrefstyle="table"/> table entry
             can define synchronization for many tables.  System tables and any tables that start with the SymmetricDS table prefix will be excluded.  A list of 
-            wildcard tokens can also be supplied.  If there are multiple tokens, they should be deliminated with a comma.  A wildcard token can also start with a 
+            wildcard tokens can also be supplied.  If there are multiple tokens, they should be delimited with a comma.  A wildcard token can also start with a 
             bang ('!') to indicate an exclusive match.  Tokens are always evalulated from left to right.  When a table match is made, the table is either added to 
             or removed from the list of tables.  If another trigger already exists for a table, then that table is not included in the wildcard match (the explictly defined trigger entry take precendence).
         </para>
