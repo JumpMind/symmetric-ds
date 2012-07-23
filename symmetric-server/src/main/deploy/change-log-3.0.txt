@@ -1,3 +1,12 @@
+SymmetricDS - 3.0.10 (Released 2012-07-23) 
+==========================================
+- 0000700: [Bug] StackOverflowError when filtering data during initial load (chenson) - closed.
+- 0000722: [Bug] Sync of a date field on the source to a datetime field on a target fails (chenson) - closed.
+- 0000715: [Bug] Default values with underscores end up escaped (unecessarily) with a '\' or '%' character on MySQL (chenson) - closed.
+- 0000720: [Bug] Variable Transform source-node-id incorrect on Extract type transforms (chenson) - closed.
+- 0000721: [Improvement] Explicitly set the key alias and the keystore type on the ssl connector (chenson) - closed.
+- 0000723: [Bug] XML with DATE column type gets created as a DATETIME on SQL Server (chenson) - closed.
+
 SymmetricDS - 3.0.9 (Released 2012-07-14) 
 ======================================
 - 0000707: [Bug] Fix JarBuilder for Windows (gwilmer) - closed.
