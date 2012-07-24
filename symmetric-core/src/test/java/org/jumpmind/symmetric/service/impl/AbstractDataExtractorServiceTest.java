@@ -53,9 +53,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         dataExtractorService.extractConfigurationStandalone(TestConstants.TEST_CLIENT_NODE, writer);
         String content = writer.getBuffer().toString();
         assertNumberOfLinesThatStartWith(24, "table,", content, false, true);
-        assertNumberOfLinesThatStartWith(16, "columns,", content);
-        assertNumberOfLinesThatStartWith(16, "keys,", content);
-        assertNumberOfLinesThatStartWith(16, "sql,", content);
+        assertNumberOfLinesThatStartWith(17, "columns,", content);
+        assertNumberOfLinesThatStartWith(17, "keys,", content);
+        assertNumberOfLinesThatStartWith(17, "sql,", content);
         assertNumberOfLinesThatStartWith(0, "update,", content);
         assertNumberOfLinesThatStartWith(66, "insert,", content, false, true);
         assertNumberOfLinesThatStartWith(1, "commit,-9999", content);
