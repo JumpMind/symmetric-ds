@@ -94,6 +94,7 @@ public class DefaultParameterParser {
 
         public static final String TYPE_BOOLEAN = "boolean";
         public static final String TYPE_INT = "integer";
+        public static final String TYPE_TEXT_BOX = "textbox";
         
         private static final long serialVersionUID = 1L;
         private String key;
@@ -165,6 +166,10 @@ public class DefaultParameterParser {
         
         public boolean isIntType() {
             return type != null && type.equals(TYPE_INT);
+        }
+        
+        public boolean isTextBoxType() {
+            return type != null && type.equals(TYPE_TEXT_BOX);
         }
         
         public void addTag (String tag) {

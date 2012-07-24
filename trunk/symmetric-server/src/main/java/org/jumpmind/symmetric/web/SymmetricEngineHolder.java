@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.slf4j.Logger;
@@ -192,7 +193,8 @@ public class SymmetricEngineHolder {
                                 .getRegistrationService();
                         if (!registrationService.isAutoRegistration()
                                 && !registrationService.isRegistrationOpen(nodeGroupId, externalId)) {
-                            registrationService.openRegistration(nodeGroupId, externalId);
+                            Node node = new Node(properties);
+                            registrationService.openRegistration(node);
                         }
                     }
                 }

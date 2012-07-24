@@ -363,7 +363,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return openRegistration(node);
     }
 
-    protected synchronized String openRegistration(Node node) {
+    public synchronized String openRegistration(Node node) {
         Node me = nodeService.findIdentity();
         if (me != null
                 || (parameterService.getExternalId().equals(node.getExternalId()) && parameterService

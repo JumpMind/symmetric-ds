@@ -25,17 +25,16 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.impl.MockNodeService;
+import org.jumpmind.symmetric.service.impl.MockParameterService;
 import org.junit.Test;
 
-/**
- * 
- */
+
 public class DefaultNodeIdGeneratorTest {
 
     @Test
     public void testSelectNodeId() throws Exception {
         final String EXPECTED_NODE_ID = "100-2";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.selectNodeId(new MockNodeService() {
@@ -56,7 +55,7 @@ public class DefaultNodeIdGeneratorTest {
 
     @Test
     public void testSelectNodeIdWithNodeIdSet() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         final String EXPECTED_NODE_ID = "10001";
         node.setExternalId(EXPECTED_NODE_ID);
@@ -68,7 +67,7 @@ public class DefaultNodeIdGeneratorTest {
     @Test
     public void testGenerateNodeIdNoExisting() throws Exception {
         final String EXPECTED_NODE_ID = "100";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.generateNodeId(new MockNodeService(), node);
@@ -78,7 +77,7 @@ public class DefaultNodeIdGeneratorTest {
     @Test
     public void testGenerateNodeIdExisting() throws Exception {
         final String EXPECTED_NODE_ID = "100-0";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.generateNodeId(new MockNodeService() {
@@ -98,7 +97,7 @@ public class DefaultNodeIdGeneratorTest {
 
     @Test
     public void testGenerateNodeIdExistingAll() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         node.setExternalId("100");
         try {
@@ -118,7 +117,7 @@ public class DefaultNodeIdGeneratorTest {
 
     @Test
     public void testGenerateNodeIdWithNodeIdSet() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator();
+        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
         Node node = new Node();
         final String EXPECTED_NODE_ID = "10001";
         node.setExternalId(EXPECTED_NODE_ID);

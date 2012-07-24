@@ -75,7 +75,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
-        nodeIdGenerator = new DefaultNodeIdGenerator();
+        nodeIdGenerator = new DefaultNodeIdGenerator(parameterService);
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
