@@ -45,6 +45,7 @@ public class TableConstants {
     public static final String SYM_DATA_GAP = "data_gap";
     public static final String SYM_DATA_EVENT = "data_event";
     public static final String SYM_TRANSFORM_TABLE = "transform_table";
+    public static final String SYM_LOAD_FILTER = "load_filter";
     public static final String SYM_TRANSFORM_COLUMN = "transform_column";
     public static final String SYM_TRIGGER_ROUTER = "trigger_router";
     public static final String SYM_CHANNEL = "channel";
@@ -107,6 +108,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_LOAD_FILTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_CONFLICT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
@@ -119,6 +121,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER));
         tables.add(getTableName(tablePrefix, SYM_ROUTER));
         tables.add(getTableName(tablePrefix, SYM_TRANSFORM_TABLE));
+        tables.add(getTableName(tablePrefix, SYM_LOAD_FILTER));
         tables.add(getTableName(tablePrefix, SYM_TRANSFORM_COLUMN));
         tables.add(getTableName(tablePrefix, SYM_TRIGGER_HIST));
         tables.add(getTableName(tablePrefix, SYM_CHANNEL));
