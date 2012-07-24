@@ -64,6 +64,8 @@ public interface IRegistrationService {
      */
     public String openRegistration(String nodeGroupId, String externalId);
     
+    public String openRegistration(Node node);
+    
     public boolean isRegistrationOpen(String nodeGroupId, String externalId);
 
     /**

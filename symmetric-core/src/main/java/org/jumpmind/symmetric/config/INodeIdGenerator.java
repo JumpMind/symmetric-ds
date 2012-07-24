@@ -36,7 +36,7 @@ public interface INodeIdGenerator extends IExtensionPoint {
 
     /**
      * Based on the node parameters passed in generate an expected node id. This
-     * is used in an attempt to match a registration request.
+     * is used in an attempt to match a registration request with an open registration.
      */
     public String selectNodeId(INodeService nodeService, Node node);
 

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
@@ -87,6 +88,13 @@ public class Node implements Serializable {
         this.externalId = nodeId;
         this.nodeGroupId = nodeGroupId;
     }    
+    
+    public Node(Properties properties) {
+        setNodeGroupId(properties.getProperty(ParameterConstants.NODE_GROUP_ID));
+        setExternalId(properties.getProperty(ParameterConstants.EXTERNAL_ID));
+        setSyncUrl(properties.getProperty(ParameterConstants.SYNC_URL));
+        setSchemaVersion(properties.getProperty(ParameterConstants.SCHEMA_VERSION));
+    }
 
     public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         setNodeGroupId(parameterService.getNodeGroupId());
