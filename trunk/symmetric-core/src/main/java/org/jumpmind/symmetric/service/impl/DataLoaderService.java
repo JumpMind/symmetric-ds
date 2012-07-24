@@ -50,13 +50,13 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -73,6 +73,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.load.BshDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
@@ -89,10 +90,12 @@ import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
+import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -127,6 +130,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private ITransformService transformService;
 
+    private ILoadFilterService loadFilterService;
+
     private IStagingManager stagingManager;
 
     private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
@@ -134,6 +139,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
 
     private long lastConflictCacheResetTimeInMs = 0;
+
+    private ISymmetricEngine engine = null;
 
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -143,11 +150,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.statisticManager = engine.getStatisticManager();
         this.nodeService = engine.getNodeService();
         this.transformService = engine.getTransformService();
+        this.loadFilterService = engine.getLoadFilterService();
         this.stagingManager = engine.getStagingManager();
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(engine));
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
+        this.engine = engine;
     }
 
     public void addDataLoaderFactory(IDataLoaderFactory factory) {
@@ -381,6 +390,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         TransformTable[] transforms = null;
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
+        List<IDatabaseWriterFilter> dynamicFilters = filters;
+        
         if (sourceNodeId != null) {
             Node sourceNode = nodeService.findNode(sourceNodeId);
             if (sourceNode != null) {
@@ -388,6 +399,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         parameterService.getNodeGroupId());
             }
 
+            List<LoadFilterNodeGroupLink> loadFilterList = loadFilterService.findLoadFiltersFor(
+            		link, true);
+
+            if (loadFilterList != null && loadFilterList.size() > 0) {
+            	dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size()+1);
+            	dynamicFilters.addAll(filters);
+            	dynamicFilters.add(new BshDatabaseWriterFilter(this.engine, loadFilterList));
+            }            
+            
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
                     link, TransformPoint.LOAD, true);
             transforms = transformsList != null ? transformsList

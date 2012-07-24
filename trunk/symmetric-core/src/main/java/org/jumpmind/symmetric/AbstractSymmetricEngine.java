@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -63,6 +64,7 @@ import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
+import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
@@ -131,6 +133,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IPurgeService purgeService;
 
     protected ITransformService transformService;
+
+    protected ILoadFilterService loadFilterService;
 
     protected ITriggerRouterService triggerRouterService;
 
@@ -233,6 +237,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager);
         this.transformService = new TransformService(parameterService, symmetricDialect,
+                configurationService);
+        this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
                 configurationService);
         this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
@@ -753,6 +759,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public ITransformService getTransformService() {
         return this.transformService;
+    }
+
+    public ILoadFilterService getLoadFilterService() {
+        return this.loadFilterService;
     }
 
     public IConcurrentConnectionManager getConcurrentConnectionManager() {

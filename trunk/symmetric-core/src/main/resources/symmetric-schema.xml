@@ -538,4 +538,27 @@
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />        
     </table>    
         
+    <table name="load_filter" description="A table that allows you to dynamically define filters using bsh.">
+    	<column name="load_filter_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the load filter." />
+    	<column name="load_filter_type" type="VARCHAR" size="10" required="true" description="The type of load filter.  Currently 'bsh'.  May add 'sql' in the future." />    	
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The source node group for the filter." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The destination node group for the filter." />
+        <column name="target_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog the configured table is in." />
+        <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name for the schema a configured table is in." />
+        <column name="target_table_name" type="VARCHAR" size="50" required="true"  description="The name of the target table that will trigger the bsh filter." />
+        <column name="filter_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an update." />
+        <column name="filter_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an insert." />
+        <column name="filter_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on a delete." />
+        <column name="before_write_script" type="VARCHAR" size="1000" description="The script to apply before the write is completed." />
+        <column name="after_write_script" type="VARCHAR" size="1000" description="The script to apply after the write is completed." />
+        <column name="batch_complete_script" type="VARCHAR" size="1000" description="The script to apply on batch complete." />
+        <column name="batch_commit_script" type="VARCHAR" size="1000" description="The script to apply on batch commit." />
+        <column name="batch_rollback_script" type="VARCHAR" size="1000" description="The script to apply on batch rollback." />        
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="load_filter_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply load filters if more than one target operation occurs."/>        
+        <column name="fail_on_error" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether we should fail the batch if the filter fails." />
+    </table>            
+        
 </database>
