@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
@@ -175,30 +176,43 @@ public class SymmetricEngineHolder {
             IOUtils.closeQuietly(fileOs);
         }
 
-        String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
-        if (StringUtils.isNotBlank(registrationUrl)) {
-            Collection<ServerSymmetricEngine> servers = getEngines().values();
-            for (ISymmetricEngine symmetricWebServer : servers) {
-                if (symmetricWebServer.getParameterService().getSyncUrl().equals(registrationUrl)) {
-                    String nodeGroupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
-                    String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
-                    IRegistrationService registrationService = symmetricWebServer
-                            .getRegistrationService();
-                    if (!registrationService.isAutoRegistration()
-                            && !registrationService.isRegistrationOpen(nodeGroupId, externalId)) {
-                        registrationService.openRegistration(nodeGroupId, externalId);
+        ISymmetricEngine engine = null;
+        try {
+
+            String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
+            if (StringUtils.isNotBlank(registrationUrl)) {
+                Collection<ServerSymmetricEngine> servers = getEngines().values();
+                for (ISymmetricEngine symmetricWebServer : servers) {
+                    if (symmetricWebServer.getParameterService().getSyncUrl()
+                            .equals(registrationUrl)) {
+                        String nodeGroupId = properties
+                                .getProperty(ParameterConstants.NODE_GROUP_ID);
+                        String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
+                        IRegistrationService registrationService = symmetricWebServer
+                                .getRegistrationService();
+                        if (!registrationService.isAutoRegistration()
+                                && !registrationService.isRegistrationOpen(nodeGroupId, externalId)) {
+                            registrationService.openRegistration(nodeGroupId, externalId);
+                        }
                     }
                 }
             }
-        }
 
-        ISymmetricEngine engine = create(symmetricProperties.getAbsolutePath());
-        if (engine != null) {
-            engine.start();
-        } else {
-            log.warn("The engine could not be created.  It will not be started");
+            engine = create(symmetricProperties.getAbsolutePath());
+            if (engine != null) {
+                engine.start();
+            } else {
+                log.warn("The engine could not be created.  It will not be started");
+            }
+            return engine;
+
+        } catch (RuntimeException ex) {
+            if (engine != null) {
+                engine.destroy();
+            }
+            FileUtils.deleteQuietly(symmetricProperties);
+            throw ex;
         }
-        return engine;
 
     }
 

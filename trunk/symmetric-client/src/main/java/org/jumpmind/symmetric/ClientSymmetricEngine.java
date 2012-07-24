@@ -71,27 +71,32 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected void init() {
-        super.init();
+        try {
+            super.init();
 
-        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-        Properties properties = new Properties();
-        properties.setProperty("engine.name", getEngineName());
-        configurer.setProperties(properties);
+            PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+            Properties properties = new Properties();
+            properties.setProperty("engine.name", getEngineName());
+            configurer.setProperties(properties);
 
-        this.springContext = new ClassPathXmlApplicationContext();
-        springContext.addBeanFactoryPostProcessor(configurer);
+            this.springContext = new ClassPathXmlApplicationContext();
+            springContext.addBeanFactoryPostProcessor(configurer);
 
-        if (registerEngine) {
-            springContext.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
-                    "classpath:/symmetric-jmx.xml" });
-        } else {
-            springContext
-                    .setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
+            if (registerEngine) {
+                springContext.setConfigLocations(new String[] {
+                        "classpath:/symmetric-ext-points.xml", "classpath:/symmetric-jmx.xml" });
+            } else {
+                springContext
+                        .setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
+            }
+            springContext.refresh();
+
+            this.extensionPointManger = createExtensionPointManager(springContext);
+            this.extensionPointManger.register();
+        } catch (RuntimeException ex) {
+            destroy();
+            throw ex;
         }
-        springContext.refresh();
-
-        this.extensionPointManger = createExtensionPointManager(springContext);
-        this.extensionPointManger.register();
     }
 
     @Override
@@ -136,7 +141,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 null));
         dataSource.setTestOnBorrow(properties.is(ParameterConstants.DB_POOL_TEST_ON_BORROW, true));
         dataSource.setTestOnReturn(properties.is(ParameterConstants.DB_POOL_TEST_ON_RETURN, false));
-        dataSource.setTestWhileIdle(properties.is(ParameterConstants.DB_POOL_TEST_WHILE_IDLE, false));
+        dataSource.setTestWhileIdle(properties
+                .is(ParameterConstants.DB_POOL_TEST_WHILE_IDLE, false));
 
         String connectionProperties = properties.get(
                 ParameterConstants.DB_POOL_CONNECTION_PROPERTIES, null);
@@ -164,7 +170,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
         createDataSource(properties);
         waitForAvailableDatabase();
-        boolean delimitedIdentifierMode = properties.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
+        boolean delimitedIdentifierMode = properties.is(
+                ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(this.dataSource,
                 createSqlTemplateSettings(properties), delimitedIdentifierMode);
     }
