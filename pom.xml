@@ -3,11 +3,11 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-build</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.10.1</version>
+    <version>3.1.0-SNAPSHOT</version>
     
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.10.1</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-build-3.0.10.1</developerConnection>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk</developerConnection>
     </scm>
     
     <distributionManagement>
