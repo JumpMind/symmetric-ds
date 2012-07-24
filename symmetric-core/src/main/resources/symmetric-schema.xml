@@ -549,11 +549,11 @@
         <column name="filter_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an update." />
         <column name="filter_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an insert." />
         <column name="filter_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on a delete." />
-        <column name="before_write_script" type="VARCHAR" size="1000" description="The script to apply before the write is completed." />
-        <column name="after_write_script" type="VARCHAR" size="1000" description="The script to apply after the write is completed." />
-        <column name="batch_complete_script" type="VARCHAR" size="1000" description="The script to apply on batch complete." />
-        <column name="batch_commit_script" type="VARCHAR" size="1000" description="The script to apply on batch commit." />
-        <column name="batch_rollback_script" type="VARCHAR" size="1000" description="The script to apply on batch rollback." />        
+        <column name="before_write_script" type="LONGVARCHAR" description="The script to apply before the write is completed." />
+        <column name="after_write_script" type="LONGVARCHAR" description="The script to apply after the write is completed." />
+        <column name="batch_complete_script" type="LONGVARCHAR" description="The script to apply on batch complete." />
+        <column name="batch_commit_script" type="LONGVARCHAR" description="The script to apply on batch commit." />
+        <column name="batch_rollback_script" type="LONGVARCHAR" description="The script to apply on batch rollback." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
