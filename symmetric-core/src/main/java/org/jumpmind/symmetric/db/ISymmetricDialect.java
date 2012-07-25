@@ -215,4 +215,6 @@ public interface ISymmetricDialect {
     
     public Database readSymmetricSchemaFromXml();
     
+    public String getTemplateNumberPrecisionSpec();
+    
 }
