@@ -67,52 +67,54 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 "                                PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME                                                                                                     " + 
 "                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'                                                                                                            " );
 
+
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                                                                                                                                                          " + 
-"                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING NEW AS NEW                                                                                                                                                 " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                call sym_insert_data(                                                                                                                                                  " + 
-"                                  '$(defaultSchema)', 'sym', '$(targetTableName)',                                                                                                                     " + 
-"                                  '$(channelName)', 'I', $(triggerHistoryId),                                                                                                                          " + 
-"                                  $(txIdExpression),                                                                                                                                                   " + 
-"                                  $(externalSelect),                                                                                                                                                   " + 
-"                                  null,                                                                                                                                                                " + 
-"                                  case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)                                                                                               " + 
-"                                  then $(columns)                                                                                                                                                      " + 
-"                                  else null end,                                                                                                                                                       " + 
-"                                  null)                                                                                                                                                                " );
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER INSERT ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING NEW AS NEW                                                  \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
+" call sym_insert_data(                                                   \n" + 
+"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'I', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   null,                                                                 \n" + 
+"   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)\n" + 
+"   then $(columns)                                                       \n" + 
+"   else null end,                                                        \n" + 
+"   null)                                                                 \n" );
         sqlTemplates.put("updateTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                                                                                                                                                          " + 
-"                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                call sym_insert_data(                                                                                                                                                  " + 
-"                                  '$(defaultSchema)', 'sym', '$(targetTableName)',                                                                                                                     " + 
-"                                  '$(channelName)', 'U', $(triggerHistoryId),                                                                                                                          " + 
-"                                  $(txIdExpression),                                                                                                                                                   " + 
-"                                  $(externalSelect),                                                                                                                                                   " + 
-"                                  $(oldKeys),                                                                                                                                                          " + 
-"                                  case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)                                                                                               " + 
-"                                  then $(columns)                                                                                                                                                      " + 
-"                                  else null end,                                                                                                                                                       " + 
-"                                  $(oldColumns))                                                                                                                                                       " );
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER UPDATE ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING OLD AS OLD NEW AS NEW                                       \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
+" call sym_insert_data(                                                   \n" + 
+"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'U', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   $(oldKeys),                                                           \n" + 
+"   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)\n" + 
+"   then $(columns)                                                       \n" + 
+"   else null end,                                                        \n" + 
+"   $(oldColumns))                                                        \n" );
         sqlTemplates.put("deleteTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                                                                                                                                                          " + 
-"                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING OLD AS OLD                                                                                                                                                 " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                call sym_insert_data(                                                                                                                                                  " + 
-"                                  '$(defaultSchema)', 'sym', '$(targetTableName)',                                                                                                                     " + 
-"                                  '$(channelName)', 'D', $(triggerHistoryId),                                                                                                                          " + 
-"                                  $(txIdExpression),                                                                                                                                                   " + 
-"                                  $(externalSelect),                                                                                                                                                   " + 
-"                                  case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)                                                                                               " + 
-"                                  then $(oldKeys)                                                                                                                                                      " + 
-"                                  else null end, null, $(oldColumns))                                                                                                                                  " );
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER DELETE ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING OLD AS OLD                                                  \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
+" call sym_insert_data(                                                   \n" + 
+"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'D', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)\n" + 
+"   then $(oldKeys)                                                       \n" + 
+"   else null end, null, $(oldColumns))                                   \n" );
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)                                                                                                                               " );
     }
+
 
 }
