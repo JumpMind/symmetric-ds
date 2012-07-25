@@ -240,7 +240,10 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
  PARTITION I_DEFAULT
 );              
             ]]></programlisting>            
-        </para>        
+        </para>     
+        <para>Note also that, for Oracle, you can control the amount of precision used by the Oracle triggers 
+        with the parameter <literal>oracle.template.precision</literal>, which defaults to a precision of 30,10.
+        </para>   
     </section>
     <section id="ap02-mysql">
         <title>MySQL</title>
