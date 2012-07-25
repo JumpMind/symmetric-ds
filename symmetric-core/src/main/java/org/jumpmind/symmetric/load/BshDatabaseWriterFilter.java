@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.load;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -22,9 +23,10 @@ import bsh.Interpreter;
 public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 	
     private static final String OLD_ = "OLD_";
-    private static final String CONTEXT = "CONTEXT";
-    private static final String TABLE = "TABLE";
-    private static final String DATA = "DATA";
+    private static final String CONTEXT = "context";
+    private static final String TABLE = "table";
+    private static final String DATA = "data";
+    private static final String ENGINE = "engine";
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -102,8 +104,8 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
     }
 
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data) throws EvalError {
-        
-    	interpreter.set("engine", this.symmetricEngine);
+    	
+    	interpreter.set(ENGINE, this.symmetricEngine);
         
     	Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
                 CsvData.ROW_DATA);
@@ -142,24 +144,25 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
     	try {    	
 	        for (LoadFilter filter:loadFilters) {
 	        	currentFilter = filter;
-	        	if (filter.getTargetTableName().equalsIgnoreCase(table.getName()) &&
-	        			filter.getTargetCatalogName().equalsIgnoreCase(table.getCatalog()) &&
-	        			filter.getTargetSchemaName().equalsIgnoreCase(table.getSchema())) {
+	        		        	
+	        	if (StringUtils.equals(filter.getTargetTableName(), table.getName()) &&
+	        			StringUtils.equals(filter.getTargetCatalogName(), table.getCatalog()) &&
+	        			StringUtils.equals(filter.getTargetSchemaName(), table.getSchema())) {
 
 	        		Object result = null;
-	        		if (writeMethod.equals(WriteMethod.BEFORE_WRITE)) {	        		
+	        		if (writeMethod.equals(WriteMethod.BEFORE_WRITE) && filter.getBeforeWriteScript() != null) {	        		
 	                   result = interpreter.eval(filter.getBeforeWriteScript());
 	        		} 
-	        		else if (writeMethod.equals(WriteMethod.AFTER_WRITE)) {
+	        		else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
 	        			result = interpreter.eval(filter.getAfterWriteScript());
 	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_COMMIT)) {
+	        		else if (writeMethod.equals(WriteMethod.BATCH_COMMIT) && filter.getBatchCommitScript() != null) {
 	        			result = interpreter.eval(filter.getBatchCommitScript());
 	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_COMPLETE)) {
+	        		else if (writeMethod.equals(WriteMethod.BATCH_COMPLETE) && filter.getBatchCompleteScript() != null) {
 	        			result = interpreter.eval(filter.getBatchCompleteScript());
 	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_ROLLBACK)) {
+	        		else if (writeMethod.equals(WriteMethod.BATCH_ROLLBACK) && filter.getBatchRollbackScript() != null) {
 	        			result = interpreter.eval(filter.getBatchRollbackScript());
 	        		}
 	        		

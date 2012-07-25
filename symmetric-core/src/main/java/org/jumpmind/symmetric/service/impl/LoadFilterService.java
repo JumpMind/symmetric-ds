@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -65,15 +66,19 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                     || loadFilterCacheByNodeGroupLink == null) {
 
             	loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, List<LoadFilterNodeGroupLink>>();
-
                 List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
-
                 for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
                     NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
-                    List<LoadFilterNodeGroupLink> listFilters = loadFilterCacheByNodeGroupLink
-                    		.get(nodeGroupLink);
-                    listFilters.add(loadFilter);
-                    loadFilterCacheByNodeGroupLink.put(nodeGroupLink,  listFilters);
+                    // this can happen if someone puts a loadfilter in that doesn't match an existing node group link
+                    if (nodeGroupLink != null) {
+	                    List<LoadFilterNodeGroupLink> listFilters = loadFilterCacheByNodeGroupLink
+	                    		.get(nodeGroupLink);
+	                    if (listFilters == null) {
+	                    	listFilters = new ArrayList<LoadFilterNodeGroupLink>();
+	                    }
+	                    listFilters.add(loadFilter);
+	                    loadFilterCacheByNodeGroupLink.put(nodeGroupLink,  listFilters);
+                    }
                 }
                 
                 lastCacheTimeInMs = System.currentTimeMillis();
