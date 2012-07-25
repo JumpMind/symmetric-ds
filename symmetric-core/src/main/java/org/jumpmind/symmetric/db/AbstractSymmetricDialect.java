@@ -771,7 +771,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return parameterService.getTablePrefix();
     }
     
-    public String getNumberPrecisionSpect() {
+    public String getTemplateNumberPrecisionSpec() {
         return null;
     }
 }
