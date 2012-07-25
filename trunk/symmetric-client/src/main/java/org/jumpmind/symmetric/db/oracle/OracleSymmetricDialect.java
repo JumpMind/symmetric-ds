@@ -214,5 +214,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return "drop trigger " + triggerName;
     }
 
-
+    public String getTemplateNumberPrecisionSpec() {
+        return parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC,"30,10");
+    }
 }

@@ -91,7 +91,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected Set<String> sqlKeywords;
 
     protected boolean supportsTransactionViews = false;
-
+    
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
@@ -769,5 +769,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getTablePrefix() {
         return parameterService.getTablePrefix();
+    }
+    
+    public String getNumberPrecisionSpect() {
+        return null;
     }
 }
