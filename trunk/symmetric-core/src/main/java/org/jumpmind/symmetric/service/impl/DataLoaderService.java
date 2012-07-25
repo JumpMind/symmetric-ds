@@ -428,7 +428,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transforms);
 
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
-                symmetricDialect, transformWriter, filters,
+                symmetricDialect, transformWriter, dynamicFilters,
                 getConflictSettingsNodeGroupLinks(link, false), resolvedDatas);
         transformWriter.setTargetWriter(targetWriter);
         return transformWriter;
