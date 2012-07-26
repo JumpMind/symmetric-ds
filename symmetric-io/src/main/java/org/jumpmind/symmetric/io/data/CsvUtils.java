@@ -20,12 +20,11 @@
  */
 package org.jumpmind.symmetric.io.data;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 
 import org.jumpmind.exception.IoException;
@@ -53,9 +52,7 @@ public class CsvUtils {
     public static String[] tokenizeCsvData(String csvData) {
         String[] tokens = null;
         if (csvData != null) {
-            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(
-                    csvData.getBytes()));
-            CsvReader csvReader = getCsvReader(reader);
+            CsvReader csvReader = getCsvReader(new StringReader(csvData));
             try {
                 if (csvReader.readRecord()) {
                     tokens = csvReader.getValues();

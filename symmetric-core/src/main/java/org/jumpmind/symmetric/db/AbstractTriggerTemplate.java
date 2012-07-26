@@ -22,8 +22,6 @@
 package org.jumpmind.symmetric.db;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -81,7 +79,7 @@ abstract public class AbstractTriggerTemplate {
     protected String dateColumnTemplate;
 
     protected String dateTimeWithTimeZoneColumnTemplate;
-    
+
     protected String geometryColumnTemplate;
 
     protected String clobColumnTemplate;
@@ -110,13 +108,14 @@ abstract public class AbstractTriggerTemplate {
         this.symmetricDialect = symmetricDialect;
     }
 
-    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter,
-            Table table, TriggerHistory triggerHistory, Channel channel) {
+    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table table,
+            TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
+        Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
+                table);
         String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
-                channel, triggerRouter.getTrigger()).columnString;
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                false, channel, triggerRouter.getTrigger()).columnString;
 
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils
@@ -173,7 +172,7 @@ abstract public class AbstractTriggerTemplate {
             return name;
         }
     }
-    
+
     protected String replaceDefaultSchemaAndCatalog(String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
         String defaultSchema = symmetricDialect.getPlatform().getDefaultSchema();
@@ -182,14 +181,14 @@ abstract public class AbstractTriggerTemplate {
         return sql;
     }
 
-    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory,
-            Table table, Channel channel, String whereClause) {
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table table,
+            Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = trigger.orderColumnsForTable(table);
         String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
-                channel, trigger).columnString;
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                false, channel, trigger).columnString;
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
@@ -217,8 +216,8 @@ abstract public class AbstractTriggerTemplate {
 
         Column[] columns = table.getPrimaryKeyColumns();
         String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
-                channel, trigger).toString();
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                false, channel, trigger).toString();
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
@@ -257,9 +256,9 @@ abstract public class AbstractTriggerTemplate {
                 defaultCatalog, defaultSchema, ddl);
     }
 
-    public String createPostTriggerDDL(DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table table,
-            String defaultCatalog, String defaultSchema) {
+    public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
+            Channel channel, String tablePrefix, Table table, String defaultCatalog,
+            String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
                 defaultCatalog, defaultSchema, ddl);
@@ -295,21 +294,24 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = FormatUtils
-                .replace("externalSelect", (trigger.getExternalSelect() == null ? "null" : "("
-                        + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect()) + ")"),
-                        ddl);
+        ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
+                : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
+                        + ")"), ddl);
 
         ddl = FormatUtils.replace("syncOnInsertCondition",
-                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()), ddl);
-        ddl = FormatUtils.replace("syncOnUpdateCondition",
-                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()), ddl);
-        ddl = FormatUtils.replace("syncOnDeleteCondition",
-                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()), ddl);
-        ddl = FormatUtils.replace("dataHasChangedCondition",
-                symmetricDialect.preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
                 ddl);
-        ddl = FormatUtils.replace("sourceNodeExpression", symmetricDialect.getSourceNodeExpression(), ddl);
+        ddl = FormatUtils.replace("syncOnUpdateCondition",
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
+                ddl);
+        ddl = FormatUtils.replace("syncOnDeleteCondition",
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
+                ddl);
+        ddl = FormatUtils.replace("dataHasChangedCondition", symmetricDialect
+                .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
+                ddl);
+        ddl = FormatUtils.replace("sourceNodeExpression",
+                symmetricDialect.getSourceNodeExpression(), ddl);
 
         ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long",
                 ddl);
@@ -320,68 +322,72 @@ abstract public class AbstractTriggerTemplate {
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
-        Column[] columns = trigger.orderColumnsForTable(table);
+        Column[] orderedColumns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
-                newColumnPrefix, columns, dml, false, channel, trigger);
+                newColumnPrefix, orderedColumns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(ddl);
 
-        ddl = FormatUtils
-                .replace(
-                        "virtualOldNewTable",
-                        buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, table.getColumns()), ddl);
+        ddl = FormatUtils.replace("virtualOldNewTable",
+                buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, table.getColumns()), ddl);
         ddl = FormatUtils.replace(
-                "oldColumns", trigger.isUseCaptureOldData() ?
-                buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
-                        dml, true, channel, trigger).toString() : "null", ddl);
+                "oldColumns",
+                trigger.isUseCaptureOldData() ? buildColumnString(ORIG_TABLE_ALIAS,
+                        oldTriggerValue, oldColumnPrefix, orderedColumns, dml, true, channel,
+                        trigger).toString() : "null", ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", quote(table.getName()), ddl);
-        ddl = FormatUtils.replace("schemaName", 
-                history == null ? getSourceTablePrefix(trigger)
-                        : getSourceTablePrefix(history), ddl);
+        ddl = FormatUtils.replace("schemaName", history == null ? getSourceTablePrefix(trigger)
+                : getSourceTablePrefix(history), ddl);
 
-        columns = table.getPrimaryKeyColumns();
+        Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
                 "oldKeys",
-                buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
-                        dml, true, channel, trigger).toString(), ddl);
+                buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix,
+                        primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
         ddl = FormatUtils.replace(
                 "oldNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue,
-                        columns.length == 0 ? table.getColumns() : columns), ddl);
+                        primaryKeyColumns.length == 0 ? orderedColumns : primaryKeyColumns), ddl);
         ddl = FormatUtils.replace(
                 "tableNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue,
-                        columns.length == 0 ? table.getColumns() : columns), ddl);
+                        primaryKeyColumns.length == 0 ? orderedColumns : primaryKeyColumns), ddl);
         ddl = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
                         : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
                         : table.getColumns()), ddl);
-        
-        String builtString = buildColumnNameString(oldTriggerValue, columns);
+
+        String builtString = buildColumnNameString(oldTriggerValue, true, trigger,
+                primaryKeyColumns);
         ddl = FormatUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","
                 + builtString : "", ddl);
 
-        builtString = buildColumnNameString(newTriggerValue, columns);
+        builtString = buildColumnNameString(newTriggerValue, true, trigger, primaryKeyColumns);
         ddl = FormatUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","
                 + builtString : "", ddl);
 
-        builtString = buildKeyVariablesString(columns, "old");
+        ddl = FormatUtils.replace("columnNames",
+                buildColumnNameString(null, false, trigger, orderedColumns), ddl);
+        ddl = FormatUtils.replace("pkColumnNames",
+                buildColumnNameString(null, false, trigger, primaryKeyColumns), ddl);
+
+        builtString = buildKeyVariablesString(primaryKeyColumns, "old");
         ddl = FormatUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","
                 + builtString : "", ddl);
 
-        builtString = buildKeyVariablesString(columns, "new");
+        builtString = buildKeyVariablesString(primaryKeyColumns, "new");
         ddl = FormatUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","
                 + builtString : "", ddl);
 
         ddl = FormatUtils.replace("varNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
+                aliasedPrimaryKeyJoinVar(newTriggerValue, "new", primaryKeyColumns), ddl);
         ddl = FormatUtils.replace("varOldPrimaryKeyJoin",
-                aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", columns), ddl);
+                aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", primaryKeyColumns), ddl);
 
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = FormatUtils.replace("newTriggerValue", newTriggerValue, ddl);
@@ -494,56 +500,13 @@ abstract public class AbstractTriggerTemplate {
         return text;
     }
 
-    // TODO: move to DerbyTriggerTemplate or change language for use in all DBMSes
+    /**
+     * Specific to Derby. Needs to be removed when the initial load is
+     * refactored to concat in Java vs. in SQL
+     */
+    @Deprecated
     protected String getPrimaryKeyWhereString(String alias, Column[] columns) {
-        List<Column> columnsMinusLobs = new ArrayList<Column>();
-        for (Column column : columns) {
-            if (!column.isOfBinaryType()) {
-                columnsMinusLobs.add(column);
-            }
-        }
-
-        StringBuilder b = new StringBuilder("'");
-        for (Column column : columnsMinusLobs) {
-            b.append("\"").append(column.getName()).append("\"=");
-            switch (column.getMappedTypeCode()) {
-                case Types.BIT:
-                case Types.TINYINT:
-                case Types.SMALLINT:
-                case Types.INTEGER:
-                case Types.BIGINT:
-                case Types.FLOAT:
-                case Types.REAL:
-                case Types.DOUBLE:
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                case Types.BOOLEAN:
-                    b.append("'").append(triggerConcatCharacter);
-                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                            .append("\"))");
-                    b.append(triggerConcatCharacter).append("'");
-                    break;
-                case Types.CHAR:
-                case Types.VARCHAR:
-                case Types.LONGVARCHAR:
-                    b.append("'''").append(triggerConcatCharacter);
-                    b.append(alias).append(".\"").append(column.getName()).append("\"");
-                    b.append(triggerConcatCharacter).append("'''");
-                    break;
-                case Types.DATE:
-                case Types.TIMESTAMP:
-                    b.append("{ts '''").append(triggerConcatCharacter);
-                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                            .append("\"))");
-                    b.append(triggerConcatCharacter).append("'''}");
-                    break;
-            }
-            if (!column.equals(columnsMinusLobs.get(columnsMinusLobs.size() - 1))) {
-                b.append(" and ");
-            }
-        }
-        b.append("'");
-        return b.toString();
+        return null;
     }
 
     protected boolean requiresWrappedBlobTemplateForBlobType() {
@@ -554,9 +517,31 @@ abstract public class AbstractTriggerTemplate {
         return false;
     }
 
+    protected String buildColumnNameString(String tableAlias, boolean quote, Trigger trigger,
+            Column[] columns) {
+        StringBuilder columnsText = new StringBuilder();
+        for (Column column : columns) {
+            boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
+            String columnName = column.getName();
+            if (quote) {
+                columnName = quote(columnName);
+            }
+
+            if (!(isLob && trigger.isUseStreamLobs())) {
+                if (StringUtils.isNotBlank(tableAlias)) {
+                    columnsText.append(tableAlias);
+                    columnsText.append(".");
+                }
+                columnsText.append(columnName);
+            }
+            columnsText.append(",");
+        }
+        return columnsText.substring(0, columnsText.length() - 1);
+    }
+
     protected ColumnString buildColumnString(String origTableAlias, String tableAlias,
-            String columnPrefix, Column[] columns, DataEventType dml,
-            boolean isOld, Channel channel, Trigger trigger) {
+            String columnPrefix, Column[] columns, DataEventType dml, boolean isOld,
+            Channel channel, Trigger trigger) {
         String columnsText = "";
         boolean containsLob = false;
 
@@ -591,7 +576,7 @@ abstract public class AbstractTriggerTemplate {
                     case Types.ARRAY:
                         templateToUse = arrayColumnTemplate;
                         break;
-                    case Types.LONGVARCHAR:             
+                    case Types.LONGVARCHAR:
                         if (!isLob) {
                             templateToUse = stringColumnTemplate;
                             break;
@@ -641,27 +626,30 @@ abstract public class AbstractTriggerTemplate {
                         templateToUse = booleanColumnTemplate;
                         break;
                     default:
-                        if (column.getJdbcTypeName() != null) {                            
+                        if (column.getJdbcTypeName() != null) {
                             if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
                                 templateToUse = numberColumnTemplate;
-                                 break;
-                            } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
+                                break;
+                            } else if (column.getJdbcTypeName().toUpperCase()
+                                    .contains(TypeMap.GEOMETRY)
                                     && StringUtils.isNotBlank(geometryColumnTemplate)) {
                                 templateToUse = geometryColumnTemplate;
                                 break;
                             } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
-                                    && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
+                                    && StringUtils
+                                            .isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
                                 templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
                                 break;
                             }
 
                         }
-                        
-                        if (StringUtils.isBlank(templateToUse) && StringUtils.isNotBlank(this.otherColumnTemplate)) {
+
+                        if (StringUtils.isBlank(templateToUse)
+                                && StringUtils.isNotBlank(this.otherColumnTemplate)) {
                             templateToUse = this.otherColumnTemplate;
                             break;
-                        }  
-                        
+                        }
+
                         throw new NotImplementedException(column.getName() + " is of type "
                                 + column.getMappedType() + " with JDBC type of "
                                 + column.getJdbcTypeName());
@@ -691,9 +679,9 @@ abstract public class AbstractTriggerTemplate {
                 }
 
                 columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
-                
+
                 containsLob |= isLob;
-            }            
+            }
 
         }
 
@@ -725,17 +713,6 @@ abstract public class AbstractTriggerTemplate {
     protected boolean noDateColumnTemplate() {
         return dateColumnTemplate == null || dateColumnTemplate.equals("null")
                 || dateColumnTemplate.trim().equals("");
-    }
-
-    protected String buildColumnNameString(String tableAlias, Column[] columns) {
-        String columnsText = "";
-        for (int i = 0; i < columns.length; i++) {
-            columnsText += tableAlias + ".\"" + columns[i].getName() + "\"";
-            if (i + 1 < columns.length) {
-                columnsText += ", ";
-            }
-        }
-        return columnsText;
     }
 
     protected String buildKeyVariablesDeclare(Column[] columns, String prefix) {
@@ -926,7 +903,7 @@ abstract public class AbstractTriggerTemplate {
         }
         return ddl;
     }
-    
+
     protected String replaceDefaultCatalog(String ddl, String defaultCatalog) {
         if (StringUtils.isNotBlank(defaultCatalog)) {
             ddl = FormatUtils.replace("defaultCatalog", quote(defaultCatalog) + ".", ddl);
@@ -934,7 +911,7 @@ abstract public class AbstractTriggerTemplate {
             ddl = FormatUtils.replace("defaultCatalog", "", ddl);
         }
         return ddl;
-    }    
+    }
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
