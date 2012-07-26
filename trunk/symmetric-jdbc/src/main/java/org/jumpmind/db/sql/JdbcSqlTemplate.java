@@ -1,6 +1,8 @@
 package org.jumpmind.db.sql;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -409,9 +411,25 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             className = obj.getClass().getName();
         }
         if (obj instanceof Blob) {
-            obj = rs.getBytes(index);
+            Blob blob = (Blob)obj;
+            InputStream is = blob.getBinaryStream();
+            try {
+                obj = IOUtils.toByteArray(is);
+            } catch (IOException e) {
+                throw new SqlException(e);
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
         } else if (obj instanceof Clob) {
-            obj = rs.getString(index);
+            Clob clob = (Clob)obj;
+            Reader reader = clob.getCharacterStream();
+            try {
+                obj = IOUtils.toString(reader);
+            } catch (IOException e) {
+                throw new SqlException(e);
+            } finally {
+                IOUtils.closeQuietly(reader);
+            }
         } else if (className != null
                 && ("oracle.sql.TIMESTAMP".equals(className) || "oracle.sql.TIMESTAMPTZ"
                         .equals(className))) {

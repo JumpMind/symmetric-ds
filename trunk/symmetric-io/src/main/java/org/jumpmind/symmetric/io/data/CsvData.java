@@ -20,14 +20,10 @@
  */
 package org.jumpmind.symmetric.io.data;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
 /**
@@ -185,18 +181,8 @@ public class CsvData {
         } else if (csvData != null && csvData.containsKey(key)) {
             String data = csvData.get(key);
             if (data != null) {
-                try {
-                    CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
-                    if (csvReader.readRecord()) {
-                        values = csvReader.getValues();
-                        putParsedData(key, values);
-                    } else {
-                        throw new IllegalStateException(String.format(
-                                "Could not parse the data passed in: %s", data));
-                    }
-                } catch (IOException e) {
-                    throw new IoException(e);
-                }
+                values = CsvUtils.tokenizeCsvData(data);
+                putParsedData(key, values);
             }
         }
         return values;
