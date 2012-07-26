@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.csv.CsvWriter;
  */
 public class DbExport {
 
-    public enum Format { SQL, CSV, XML };
+    public enum Format { SQL, CSV, XML, SYM_XML };
 
     public enum Compatible { DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE };
 		
@@ -173,6 +173,9 @@ public class DbExport {
         
         if (format == Format.XML) {
             new DatabaseIO().write(getDatabase(tables), writer, "dbexport");
+            
+        } else if (format == Format.SYM_XML) {
+            writer.write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
         }
 
     	for (Table table : tables) {
@@ -193,23 +196,28 @@ public class DbExport {
 
         if (format == Format.XML) {
             writer.write("</dbexport>\n");
+        } else if (format == Format.SYM_XML) {
+            writer.write("</batch>\n");
         }
+        
         writeComment(writer, "Completed on " + df.format(new Date()));
         output.flush();
     	csvWriter.flush();
     	writer.flush();
     }
-
+ 
     protected void writeData(final Writer writer, final CsvWriter csvWriter, final IDatabasePlatform platform, Table table, String sql) throws IOException {
         final Column[] columns = table.getColumns();
+        
         if (sql == null) {
             sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
         }
         final String insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
         final String selectSql = sql;
         
+        final String tableName = table.getName();
         if (format == Format.XML){
-            writer.write("<table_data name=\"" + table.getName() + "\">\n");
+            writer.write("<table_data name=\"" + tableName + "\">\n");
         }
         
         platform.getSqlTemplate().query(selectSql, new ISqlRowMapper<Object>() {
@@ -218,15 +226,29 @@ public class DbExport {
                 try {
                     if (format == Format.CSV) {
                             csvWriter.writeRecord(values, true);
+                            
                     } else if (format == Format.SQL) {
                         writer.write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row, useVariableDates) + "\n");
+                        
                     } else if (format == Format.XML){
                         writer.write("\t<row>\n");
                         for (int i = 0; i < columns.length; i++) {
                             writer.write("\t\t<field name=\"" + columns[i].getName() + "\">" + values[i] + "</field>\n");
                         }
                         writer.write("\t</row>\n");
+                        
+                    } else if (format == Format.SYM_XML){
+                        writer.write("\t<row entity=\"" + tableName + "\" dml=\"I\">\n");
+                        for (int i = 0; i < columns.length; i++) {
+                            if (values[i] != null) {
+                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\">" + values[i] + "</data>\n");
+                            } else {
+                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\" xsi:nil=\"true\" />\n");
+                            }
+                        }
+                        writer.write("\t</row>\n");
                     }
+                    
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
