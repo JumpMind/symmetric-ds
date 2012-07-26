@@ -544,11 +544,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     tableData = metaData.getTables(getTableNamePattern(table));
                     if (tableData != null && tableData.next()) {
-                        ResultSetMetaData meta = tableData.getMetaData();
-                        int count = meta.getColumnCount();
-                        for (int i = 1 ; i <= count; i++) {
-                            System.err.println(meta.getColumnName(i) + "=" + tableData.getObject(i));
-                        }
                         Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                         return readTable(connection, metaData, values);
                     } else {
