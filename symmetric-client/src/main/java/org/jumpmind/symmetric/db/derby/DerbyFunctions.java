@@ -37,7 +37,6 @@ import org.apache.derby.iapi.db.Factory;
 import org.apache.derby.iapi.db.TriggerExecutionContext;
 import org.apache.derby.iapi.sql.conn.LanguageConnectionContext;
 import org.apache.derby.impl.jdbc.EmbedConnection;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 
 public class DerbyFunctions {
 
@@ -135,8 +134,8 @@ public class DerbyFunctions {
             String rowData = null;
             String pkData = null;
             String oldData = null;
-            String[] parsedColumnNames = CsvUtils.tokenizeCsvData(columnNames);
-            String[] parsedPkColumnNames = CsvUtils.tokenizeCsvData(pkColumnNames);
+            String[] parsedColumnNames = StringUtils.splitPreserveAllTokens(columnNames, ',');
+            String[] parsedPkColumnNames = StringUtils.splitPreserveAllTokens(pkColumnNames, ',');
             if (dmlType.equals("I") || dmlType.equals("U")) {
                 StringBuilder dataBuilder = new StringBuilder();
                 appendCsvString(tableName, parsedColumnNames, parsedPkColumnNames,
