@@ -342,7 +342,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                     || type == Types.BIT) {
                                 objectValue = Integer.valueOf(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                                    || type == Types.FLOAT || type == Types.DOUBLE) {
+                                    || type == Types.FLOAT || type == Types.DOUBLE 
+                                    || type == Types.REAL) {
                                 // The number will have either one period or one
                                 // comma
                                 // for the decimal point, but we need a period
