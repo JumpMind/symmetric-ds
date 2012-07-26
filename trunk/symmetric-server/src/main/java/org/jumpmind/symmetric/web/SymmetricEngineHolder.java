@@ -112,7 +112,7 @@ public class SymmetricEngineHolder {
         } else {
             enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
         }
-        
+
         for (EngineStarter starter : enginesStarting) {
             starter.start();
         }
@@ -296,11 +296,9 @@ public class SymmetricEngineHolder {
 
         @Override
         public void run() {
-            if (propertiesFile != null) {
-                ISymmetricEngine engine = create(propertiesFile);
-                if (engine != null) {
-                    engine.start();
-                }
+            ISymmetricEngine engine = create(propertiesFile);
+            if (engine != null) {
+                engine.start();
             }
             enginesStarting.remove(this);
         }
