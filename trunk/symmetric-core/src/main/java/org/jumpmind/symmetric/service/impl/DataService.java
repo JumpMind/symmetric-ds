@@ -89,6 +89,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public DataService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.engine = engine;
         this.reloadListeners = new ArrayList<IReloadListener>();
         this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
         this.heartbeatListeners.add(new PushHeartbeatListener(parameterService, this, engine.getNodeService(),
