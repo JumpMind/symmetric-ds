@@ -71,6 +71,16 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         }
         return column;
     }
+    
+    @Override
+    protected String getResultSetSchemaName() {
+        return "TABLE_SCHEMA";
+    }
+    
+    @Override
+    protected String getResultSetCatalogName() {
+        return "TABLE_CATALOG";
+    }    
 
     @Override
     protected List<MetaDataColumnDescriptor> initColumnsForColumn() {

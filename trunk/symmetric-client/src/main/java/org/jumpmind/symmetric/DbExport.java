@@ -115,11 +115,13 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output) throws IOException {
+        setDefaultSchemaAndCatalog();
         Database database = platform.readDatabase(catalog, schema, new String[] {"TABLE"});
         exportTables(output, database.getTables());
     }
 
     public void exportTables(OutputStream output, String[] tableNames) throws IOException {
+        setDefaultSchemaAndCatalog();
         ArrayList<Table> tableList = new ArrayList<Table>();
 
         for (String tableName : tableNames) {
@@ -136,8 +138,19 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
+        setDefaultSchemaAndCatalog();
         Table table = platform.getDdlReader().readTable(catalog, schema, tableName, sql);
         exportTables(output, new Table[] { table }, sql);
+    }
+    
+    protected void setDefaultSchemaAndCatalog() {
+        if (StringUtils.isBlank(schema)) {
+            schema = platform.getDefaultSchema();
+        }
+        
+        if (StringUtils.isBlank(catalog)) {
+            catalog = platform.getDefaultCatalog();
+        }
     }
 
     public void exportTables(OutputStream output, Table[] tables) throws IOException {
@@ -146,15 +159,7 @@ public class DbExport {
     
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
         final Writer writer = new OutputStreamWriter(output);
-        final CsvWriter csvWriter = new CsvWriter(writer, ',');
-        
-        if (StringUtils.isBlank(schema)) {
-            schema = platform.getDefaultSchema();
-        }
-        
-        if (StringUtils.isBlank(catalog)) {
-            catalog = platform.getDefaultCatalog();
-        }
+        final CsvWriter csvWriter = new CsvWriter(writer, ',');        
         
         tables = Database.sortByForeignKeys(tables);
 
