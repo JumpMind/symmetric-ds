@@ -32,6 +32,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -146,6 +147,14 @@ public class DbExport {
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
         final Writer writer = new OutputStreamWriter(output);
         final CsvWriter csvWriter = new CsvWriter(writer, ',');
+        
+        if (StringUtils.isBlank(schema)) {
+            schema = platform.getDefaultSchema();
+        }
+        
+        if (StringUtils.isBlank(catalog)) {
+            catalog = platform.getDefaultCatalog();
+        }
         
         tables = Database.sortByForeignKeys(tables);
 
