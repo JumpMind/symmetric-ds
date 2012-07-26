@@ -32,41 +32,46 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     ISymmetricEngine symmetricEngine = null;
-    List<LoadFilterNodeGroupLink> loadFilters = null;
+    Map<String, List<LoadFilter>> loadFilters = null;
 	public enum WriteMethod { BEFORE_WRITE, AFTER_WRITE, BATCH_COMPLETE, BATCH_COMMIT, BATCH_ROLLBACK };
        
-    public BshDatabaseWriterFilter(ISymmetricEngine symmetricEngine, List<LoadFilterNodeGroupLink> loadFilters) {
+    public BshDatabaseWriterFilter(ISymmetricEngine symmetricEngine, Map<String, List<LoadFilter>> loadFilters) {
         this.symmetricEngine = symmetricEngine;
         this.loadFilters = loadFilters;
     }	
 	
 	public boolean beforeWrite(DataContext context, Table table, CsvData data) {
 
-		boolean writeRow = true;		
-        try {
+		boolean writeRow = true;
+		List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getName());
+		if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
+	        try {
+		
+		        Interpreter interpreter = getInterpreter(context); 
+		        bind(interpreter, context, table, data);	
+		        writeRow = processLoadFilters(interpreter, table, loadFiltersForTable, WriteMethod.BEFORE_WRITE);
 	
-	        Interpreter interpreter = getInterpreter(context); 
-	        bind(interpreter, context, table, data);	
-	        writeRow = processLoadFilters(interpreter, table, loadFilters, WriteMethod.BEFORE_WRITE);
-
-        }  catch (EvalError evalEx) {
-        	processError(null, table, evalEx.getErrorText());        	  
-        }        
+	        }  catch (EvalError evalEx) {
+	        	processError(null, table, evalEx.getErrorText());        	  
+	        }
+		}
         return writeRow;
 	}
 
 	public void afterWrite(DataContext context, Table table, CsvData data) {
 
-        try {
-	
-	        Interpreter interpreter = getInterpreter(context); 
-	        bind(interpreter, context, table, data);	
-	        processLoadFilters(interpreter, table, loadFilters, WriteMethod.AFTER_WRITE);
-
-        }  catch (EvalError evalEx) {
-        	processError(null, table, evalEx.getErrorText());        	  
-        }        
-
+		List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getName());
+		if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
+		    try {
+		
+		        Interpreter interpreter = getInterpreter(context); 
+		        bind(interpreter, context, table, data);	
+		        processLoadFilters(interpreter, table, loadFiltersForTable, WriteMethod.AFTER_WRITE);
+		
+		    }  catch (EvalError evalEx) {
+		    	processError(null, table, evalEx.getErrorText());        	  
+		    }        
+		}
 	}
 
 	public boolean handlesMissingTable(DataContext context, Table table) {
@@ -76,6 +81,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 
 	public void earlyCommit(DataContext context) {
 		// TODO Auto-generated method stub
+
 
 	}
 
@@ -135,7 +141,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
         }
     }
     
-    protected boolean processLoadFilters(Interpreter interpreter, Table table, List<LoadFilterNodeGroupLink> loadFilters, 
+    protected boolean processLoadFilters(Interpreter interpreter, Table table, List<LoadFilter> loadFilters, 
     		WriteMethod writeMethod) throws EvalError {
     	    	
     	boolean writeRow = true;
@@ -145,32 +151,27 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 	        for (LoadFilter filter:loadFilters) {
 	        	currentFilter = filter;
 	        		        	
-	        	if (StringUtils.equals(filter.getTargetTableName(), table.getName()) &&
-	        			StringUtils.equals(filter.getTargetCatalogName(), table.getCatalog()) &&
-	        			StringUtils.equals(filter.getTargetSchemaName(), table.getSchema())) {
-
-	        		Object result = null;
-	        		if (writeMethod.equals(WriteMethod.BEFORE_WRITE) && filter.getBeforeWriteScript() != null) {	        		
-	                   result = interpreter.eval(filter.getBeforeWriteScript());
-	        		} 
-	        		else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
-	        			result = interpreter.eval(filter.getAfterWriteScript());
-	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_COMMIT) && filter.getBatchCommitScript() != null) {
-	        			result = interpreter.eval(filter.getBatchCommitScript());
-	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_COMPLETE) && filter.getBatchCompleteScript() != null) {
-	        			result = interpreter.eval(filter.getBatchCompleteScript());
-	        		}
-	        		else if (writeMethod.equals(WriteMethod.BATCH_ROLLBACK) && filter.getBatchRollbackScript() != null) {
-	        			result = interpreter.eval(filter.getBatchRollbackScript());
-	        		}
-	        		
-	        		if (result !=null && result.equals(Boolean.FALSE)) {
-	                	writeRow = false;
-	                }
-	        	}
-	        } 
+        		Object result = null;
+        		if (writeMethod.equals(WriteMethod.BEFORE_WRITE) && filter.getBeforeWriteScript() != null) {	        		
+                   result = interpreter.eval(filter.getBeforeWriteScript());
+        		} 
+        		else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
+        			result = interpreter.eval(filter.getAfterWriteScript());
+        		}
+        		else if (writeMethod.equals(WriteMethod.BATCH_COMMIT) && filter.getBatchCommitScript() != null) {
+        			result = interpreter.eval(filter.getBatchCommitScript());
+        		}
+        		else if (writeMethod.equals(WriteMethod.BATCH_COMPLETE) && filter.getBatchCompleteScript() != null) {
+        			result = interpreter.eval(filter.getBatchCompleteScript());
+        		}
+        		else if (writeMethod.equals(WriteMethod.BATCH_ROLLBACK) && filter.getBatchRollbackScript() != null) {
+        			result = interpreter.eval(filter.getBatchRollbackScript());
+        		}
+        		
+        		if (result !=null && result.equals(Boolean.FALSE)) {
+                	writeRow = false;
+                }
+        	}
 
 	    }  catch (EvalError evalEx) {
 	    	processError(currentFilter, table, evalEx.getErrorText());        	  
