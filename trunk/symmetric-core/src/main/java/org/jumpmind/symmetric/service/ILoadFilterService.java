@@ -1,14 +1,14 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 
 public interface ILoadFilterService {
 
-    public List<LoadFilterNodeGroupLink> findLoadFiltersFor(NodeGroupLink link, boolean useCache);
+    public Map<String, List<LoadFilter>> findLoadFiltersFor(NodeGroupLink link, boolean useCache);
 
     public List<LoadFilter> getLoadFilters();
 

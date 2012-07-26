@@ -83,6 +83,7 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.IncomingError;
+import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -95,7 +96,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
-import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -399,13 +399,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         parameterService.getNodeGroupId());
             }
 
-            List<LoadFilterNodeGroupLink> loadFilterList = loadFilterService.findLoadFiltersFor(
+            Map<String, List<LoadFilter>> loadFilters = loadFilterService.findLoadFiltersFor(
             		link, true);
 
-            if (loadFilterList != null && loadFilterList.size() > 0) {
+            if (loadFilters != null && loadFilters.size() > 0) {
             	dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size()+1);
             	dynamicFilters.addAll(filters);
-            	dynamicFilters.add(new BshDatabaseWriterFilter(this.engine, loadFilterList));
+            	dynamicFilters.add(new BshDatabaseWriterFilter(this.engine, loadFilters));
             }            
             
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(

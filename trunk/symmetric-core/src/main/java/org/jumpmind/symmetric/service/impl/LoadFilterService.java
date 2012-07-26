@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
 
-    private Map<NodeGroupLink, List<LoadFilterNodeGroupLink>> loadFilterCacheByNodeGroupLink;
+    private Map<NodeGroupLink,Map<String, List<LoadFilter>>> loadFilterCacheByNodeGroupLink;
 	
 	private long lastCacheTimeInMs;
     
@@ -31,7 +31,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                 createSqlReplacementTokens()));        
     }
 	
-	public List<LoadFilterNodeGroupLink> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
+	public Map<String, List<LoadFilter>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
 			boolean useCache) {
 
         // get the cache timeout
@@ -48,7 +48,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
 
         if (loadFilterCacheByNodeGroupLink != null) {
-            List<LoadFilterNodeGroupLink> loadFilters = loadFilterCacheByNodeGroupLink
+            Map<String, List<LoadFilter>> loadFilters = loadFilterCacheByNodeGroupLink
                     .get(nodeGroupLink);
             return loadFilters;
         }
@@ -65,22 +65,26 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
                     || loadFilterCacheByNodeGroupLink == null) {
 
-            	loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, List<LoadFilterNodeGroupLink>>();
+            	loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, Map<String, List<LoadFilter>>>();
                 List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
+                
                 for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
                     NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
-                    // this can happen if someone puts a loadfilter in that doesn't match an existing node group link
-                    if (nodeGroupLink != null) {
-	                    List<LoadFilterNodeGroupLink> listFilters = loadFilterCacheByNodeGroupLink
+                    if (nodeGroupLink != null) {                    	
+	                    Map<String, List<LoadFilter>> loadFiltersByNodeGroup = loadFilterCacheByNodeGroupLink
 	                    		.get(nodeGroupLink);
-	                    if (listFilters == null) {
-	                    	listFilters = new ArrayList<LoadFilterNodeGroupLink>();
+	                    if (loadFiltersByNodeGroup == null) {
+	                    	loadFiltersByNodeGroup = new HashMap<String, List<LoadFilter>>();
 	                    }
-	                    listFilters.add(loadFilter);
-	                    loadFilterCacheByNodeGroupLink.put(nodeGroupLink,  listFilters);
+	                    List<LoadFilter> loadFiltersForTable = loadFiltersByNodeGroup.get(loadFilter.getTargetTableName());
+	                    if (loadFiltersForTable == null) {
+	                    	loadFiltersForTable = new ArrayList<LoadFilter>();
+	                    }
+	                    loadFiltersForTable.add(loadFilter);
+	                    loadFiltersByNodeGroup.put(loadFilter.getTargetTableName(), loadFiltersForTable);
+	                    loadFilterCacheByNodeGroupLink.put(nodeGroupLink,  loadFiltersByNodeGroup);
                     }
-                }
-                
+                }                
                 lastCacheTimeInMs = System.currentTimeMillis();
             }
         }
