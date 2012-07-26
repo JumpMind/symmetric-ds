@@ -345,8 +345,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                     || type == Types.FLOAT || type == Types.DOUBLE 
                                     || type == Types.REAL) {
                                 // The number will have either one period or one
-                                // comma
-                                // for the decimal point, but we need a period
+                                // comma for the decimal point, but we need a period
                                 objectValue = new BigDecimal(value.replace(',', '.'));
                             } else if (type == Types.BOOLEAN) {
                                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
