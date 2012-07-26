@@ -34,6 +34,7 @@ public class SymmetricContextListener implements ServletContextListener {
                 && multiServerMode.equalsIgnoreCase("true"));
         engineHolder.setSingleServerPropertiesFile(ctx
                 .getInitParameter(WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE));
+        engineHolder.setDeploymentType(ctx.getInitParameter(WebConstants.INIT_PARAM_DEPLOYMENT_TYPE));
         ctx.setAttribute(WebConstants.ATTR_ENGINE_HOLDER, engineHolder);
         engineHolder.start();
     }
