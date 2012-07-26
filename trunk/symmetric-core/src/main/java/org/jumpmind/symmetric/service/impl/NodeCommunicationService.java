@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -99,7 +100,10 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             comm.setNode(nodeToCommunicateWith);
         }
 
-        for (NodeCommunication nodeCommunication : communicationRows) {
+        Iterator<NodeCommunication> it = communicationRows.iterator();
+        while (it.hasNext()) {
+            NodeCommunication nodeCommunication = it.next();
+
             Node node = null;
             for (Node nodeToCommunicateWith : nodesToCommunicateWith) {
                 if (nodeCommunication.getNodeId().equals(nodeToCommunicateWith.getNodeId())) {
@@ -110,7 +114,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
             if (node == null) {
                 delete(nodeCommunication);
-                communicationRows.remove(nodeCommunication);
+                it.remove();
             }
         }
         return communicationRows;
