@@ -156,8 +156,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("TABLE_TYPE", Types.VARCHAR, "UNKNOWN"));
-        result.add(new MetaDataColumnDescriptor("TABLE_CAT", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TABLE_SCHEM", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getResultSetCatalogName(), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getResultSetSchemaName(), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
 
         return result;
@@ -422,6 +422,14 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     public Database getDatabase(Connection connection) throws SQLException {
         return readTables(null, null, null);
     }
+    
+    protected String getResultSetSchemaName() {
+        return "TABLE_SCHEM";
+    }
+    
+    protected String getResultSetCatalogName() {
+        return "TABLE_CAT";
+    }
 
     /*
      * Reads the database model from the given connection.
@@ -536,6 +544,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     tableData = metaData.getTables(getTableNamePattern(table));
                     if (tableData != null && tableData.next()) {
+                        ResultSetMetaData meta = tableData.getMetaData();
+                        int count = meta.getColumnCount();
+                        for (int i = 1 ; i <= count; i++) {
+                            System.err.println(meta.getColumnName(i) + "=" + tableData.getObject(i));
+                        }
                         Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                         return readTable(connection, metaData, values);
                     } else {
@@ -657,11 +670,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             table.setName(tableName);
             table.setType(type);
             
-            String catalog = (String) values.get("TABLE_CAT");
+            String catalog = (String) values.get(getResultSetCatalogName());
             table.setCatalog(catalog);
             metaData.setCatalog(catalog);
             
-            String schema = (String) values.get("TABLE_SCHEM");
+            String schema = (String) values.get(getResultSetSchemaName());
             table.setSchema(schema);
             metaData.setSchemaPattern(schema);
             
@@ -1289,10 +1302,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             while (!found && tableData.next()) {
                 Map<String, Object> values = readMetaData(tableData, getColumnsForTable());
-                String tableName = (String) values.get("TABLE_NAME");
+                String tableName = (String) values.get(getResultSetCatalogName());
 
                 if ((tableName != null) && (tableName.length() > 0)) {
-                    schema = (String) values.get("TABLE_SCHEM");
+                    schema = (String) values.get(getResultSetSchemaName());
                     columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
                     found = true;
 
