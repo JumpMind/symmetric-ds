@@ -244,9 +244,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService);
-        this.dataService = new DataService(parameterService, symmetricDialect, deploymentType,
-                triggerRouterService, nodeService, purgeService, configurationService,
-                outgoingBatchService, statisticManager);
+        this.dataService = new DataService(this);
         this.routerService = buildRouterService();
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
