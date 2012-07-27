@@ -90,4 +90,20 @@ public class LookupTableDataRouterTest {
         
         Assert.assertEquals(false, valid);
     }
+    
+    @Test
+    public void testMissingLine() {
+        LookupTableDataRouter router = new LookupTableDataRouter();
+        
+        boolean valid = true;
+        try {
+            router.parse("LOOKUP_TABLE=STORE\r\n" +
+                         "LOOKUP_KEY_COLUMN=BRAND_ID\r\n" +
+                         "EXTERNAL_ID_COLUMN=STORE_ID");
+        } catch(SyntaxParsingException ex) {
+            valid = false;
+        }
+        
+        Assert.assertEquals(false, valid);
+    }
 }
