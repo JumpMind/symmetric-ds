@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
@@ -38,6 +39,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
@@ -57,22 +59,37 @@ public class SecurityService implements ISecurityService {
 
     public void init() {
     }
-
+    
+    protected void checkThatKeystoreFileExists() {
+        String keyStoreLocation = System.getProperty(SystemConstants.SYSPROP_KEYSTORE);
+        if (!new File(keyStoreLocation).exists()) {
+            throw new IoException(
+                    "Could not find the keystore file.  We expected it to exist here: "
+                            + keyStoreLocation);
+        }
+    }
+    
     public String encrypt(String plainText) {
         try {
+            checkThatKeystoreFileExists();
             byte[] bytes = plainText.getBytes(SecurityConstants.CHARSET);
             byte[] enc = getCipher(Cipher.ENCRYPT_MODE).doFinal(bytes);
             return new String(Base64.encodeBase64(enc), SecurityConstants.CHARSET);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {            
             throw new RuntimeException(e);
         }
     }
 
     public String decrypt(String encText) {
         try {
+            checkThatKeystoreFileExists();            
             byte[] dec = Base64.decodeBase64(encText.getBytes());
             byte[] bytes = getCipher(Cipher.DECRYPT_MODE).doFinal(dec);
             return new String(bytes, SecurityConstants.CHARSET);
+        } catch (RuntimeException e) {
+            throw e;            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
