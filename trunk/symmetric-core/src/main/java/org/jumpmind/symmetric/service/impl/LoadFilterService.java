@@ -136,12 +136,12 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
     }    
     
-	public List<LoadFilter> getLoadFilters() {
+	public List<LoadFilterNodeGroupLink> getLoadFilterNodeGroupLinks() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void saveLoadFilter(LoadFilter loadFilter) {
+	public void saveLoadFilter(LoadFilterNodeGroupLink loadFilter) {
 		// TODO Auto-generated method stub
 
 	}
