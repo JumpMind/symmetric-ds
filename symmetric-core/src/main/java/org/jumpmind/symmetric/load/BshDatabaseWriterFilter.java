@@ -3,7 +3,6 @@ package org.jumpmind.symmetric.load;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -11,7 +10,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.LoadFilter;
-import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +43,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 		boolean writeRow = true;
 		List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getName());
 		if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
-	        try {
-		
+	        try {		
 		        Interpreter interpreter = getInterpreter(context); 
 		        bind(interpreter, context, table, data);	
 		        writeRow = processLoadFilters(interpreter, table, loadFiltersForTable, WriteMethod.BEFORE_WRITE);
@@ -62,8 +59,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 
 		List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getName());
 		if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
-		    try {
-		
+		    try {		
 		        Interpreter interpreter = getInterpreter(context); 
 		        bind(interpreter, context, table, data);	
 		        processLoadFilters(interpreter, table, loadFiltersForTable, WriteMethod.AFTER_WRITE);

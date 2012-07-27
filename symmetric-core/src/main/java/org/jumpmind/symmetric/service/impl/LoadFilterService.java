@@ -158,6 +158,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
 
     public static class LoadFilterNodeGroupLink extends LoadFilter {
 
+        private static final long serialVersionUID = 1L;
+        
         protected NodeGroupLink nodeGroupLink;
 
         public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
