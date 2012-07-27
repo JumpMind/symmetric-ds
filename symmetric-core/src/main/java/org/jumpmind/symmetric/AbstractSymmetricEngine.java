@@ -499,14 +499,19 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void stop() {
+    	
         log.info("Closing SymmetricDS externalId={} version={} database={}",
-                new Object[] { getParameterService().getExternalId(), Version.version(),
-                        symmetricDialect.getName() });
+                new Object[] { parameterService == null ? "?" : parameterService.getExternalId(), Version.version(),
+                        symmetricDialect == null? "?":symmetricDialect.getName() });
         if (jobManager != null) {
             jobManager.stopJobs();
         }
-        routerService.stop();
-        nodeCommunicationService.stop();
+        if (routerService != null) {
+        	routerService.stop();
+        }
+        if (nodeCommunicationService != null) {
+        	nodeCommunicationService.stop();
+        }
         started = false;
         starting = false;
     }
