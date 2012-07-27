@@ -11,10 +11,10 @@ public class LoadFilter implements Serializable {
     private static final long serialVersionUID = 1L;
 
     static final Logger logger = LoggerFactory.getLogger(LoadFilter.class);
+    
+    public enum LoadFilterType { BSH };       
 
     private String loadFilterId;
-    
-    public enum LoadFilterType { BSH };
     
     private LoadFilterType loadFilterType = LoadFilterType.BSH;    
 
