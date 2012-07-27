@@ -291,7 +291,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         try {
             String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
                     SecurityService.class.getName());
-            return (ISecurityService) Class.forName(className).newInstance();
+            ISecurityService securityService = (ISecurityService) Class.forName(className).newInstance();
+            securityService.init();
+            return securityService;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
