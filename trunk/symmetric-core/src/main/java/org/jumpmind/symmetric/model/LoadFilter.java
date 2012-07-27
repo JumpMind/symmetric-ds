@@ -16,15 +16,7 @@ public class LoadFilter implements Serializable {
     
     public enum LoadFilterType { BSH };
     
-    private LoadFilterType loadFilterType = LoadFilterType.BSH;
-    
-	public LoadFilterType getLoadFilterType() {
-		return loadFilterType;
-	}
-
-	public void setLoadFilterType(LoadFilterType loadFilterType) {
-		this.loadFilterType = loadFilterType;
-	}
+    private LoadFilterType loadFilterType = LoadFilterType.BSH;    
 
     private String targetCatalogName;
     
@@ -194,13 +186,13 @@ public class LoadFilter implements Serializable {
 		this.lastUpdateTime = lastUpdateTime;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
+    public LoadFilterType getLoadFilterType() {
+        return loadFilterType;
+    }
 
-	public static Logger getLogger() {
-		return logger;
-	}
+    public void setLoadFilterType(LoadFilterType loadFilterType) {
+        this.loadFilterType = loadFilterType;
+    }	
 
     @Override
     public boolean equals(Object obj) {
