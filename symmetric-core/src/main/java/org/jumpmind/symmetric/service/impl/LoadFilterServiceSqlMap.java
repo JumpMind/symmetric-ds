@@ -6,9 +6,10 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 
-    public LoadFilterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) { 
+    public LoadFilterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
+        // @formatter:off
         putSql("selectLoadFilterTable" ,"" + 
 "select                                                               " + 
 "  load_filter_id, load_filter_type,                                  " +
@@ -25,36 +26,58 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 
         putSql("updateLoadFilterSql" ,"" + 
 "update                       " + 
-"  $(load_filter)   " + 
+"  $(load_filter)             " + 
 "  set                        " + 
+"  after_write_script=?,      " + 
+"  batch_commit_script=?,     " + 
+"  batch_complete_script=?,   " + 
+"  batch_rollback_script=?,   " + 
+"  before_write_script=?,     " + 
+"  load_filter_order=?,       " + 
+"  load_filter_type=?,        " + 
 "  source_node_group_id=?,    " + 
 "  target_node_group_id=?,    " + 
-"  source_catalog_name=?,     " + 
-"  source_schema_name=?,      " + 
-"  source_table_name=?,       " + 
 "  target_catalog_name=?,     " + 
 "  target_schema_name=?,      " + 
 "  target_table_name=?,       " + 
-"  transform_point=?,         " + 
-"  update_first=?,            " + 
-"  delete_action=?,           " + 
-"  transform_order=?,         " + 
-"  column_policy=?            " +
+"  filter_on_insert=?,        " +
+"  filter_on_update=?,        " +
+"  filter_on_delete=?,        " +
+"  fail_on_error=?,           " +
+"  last_update_by=?,          " +
+"  last_update_time=?        " +
 "  where                      " + 
-"  transform_id=?             " );
+"  load_filter_id=?           " );
 
         putSql("insertLoadFilterSql" ,"" + 
-"insert into $(transform_table)                                  " + 
-"  (source_node_group_id, target_node_group_id, source_catalog_name,   " + 
-"  source_schema_name, source_table_name,                              " + 
-"  target_catalog_name, target_schema_name, target_table_name,         " + 
-"  transform_point, update_first, delete_action, transform_order,      " + 
-"  column_policy, transform_id)                                        " + 
-"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                 " );
+"insert into $(load_filter) (" + 
+"  after_write_script,      " + 
+"  batch_commit_script,     " + 
+"  batch_complete_script,   " + 
+"  batch_rollback_script,   " + 
+"  before_write_script,     " + 
+"  load_filter_order,       " + 
+"  load_filter_type,        " + 
+"  source_node_group_id,    " + 
+"  target_node_group_id,    " + 
+"  target_catalog_name,     " + 
+"  target_schema_name,      " + 
+"  target_table_name,       " + 
+"  filter_on_insert,        " +
+"  filter_on_update,        " +
+"  filter_on_delete,        " +
+"  fail_on_error,           " +
+"  last_update_by,          " +
+"  last_update_time,        " +
+"  create_time,             " +
+"  load_filter_id           " +
+"  ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,current_timestamp,?)  " );
 
         putSql("deleteLoadFilterSql" ,"" + 
 "delete from $(load_filter) where   " + 
-"  load_filter_id=?                             " );
+"  load_filter_id=? " );
+
+        // @formatter:on
 
     }
 
