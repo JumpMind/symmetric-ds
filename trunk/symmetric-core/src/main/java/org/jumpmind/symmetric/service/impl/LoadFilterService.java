@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -81,7 +82,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
 	                    	loadFiltersForTable = new ArrayList<LoadFilter>();
 	                    }
 	                    loadFiltersForTable.add(loadFilter);
-	                    loadFiltersByNodeGroup.put(loadFilter.getTargetTableName(), loadFiltersForTable);
+	                    loadFiltersByNodeGroup.put(Table.getFullyQualifiedTableName(loadFilter.getTargetCatalogName(), 
+	                    		loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()), loadFiltersForTable);
 	                    loadFilterCacheByNodeGroupLink.put(nodeGroupLink,  loadFiltersByNodeGroup);
                     }
                 }                
