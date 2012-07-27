@@ -40,15 +40,15 @@ public class LoadFilter implements Serializable {
     
     private String batchRollbackScript;
     
-    private Date createTime;
+    private Date createTime = new Date();
     
-    private String lastUpdateBy;
+    private String lastUpdateBy = "symmetricds";
     
-    private Date lastUpdateTime;
+    private Date lastUpdateTime = new Date();
     
     private int loadFilterOrder;
     
-    private boolean failOnError=false;
+    private boolean failOnError=true;
 
 	public int getLoadFilterOrder() {
 		return loadFilterOrder;
