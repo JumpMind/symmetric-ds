@@ -59,7 +59,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 32, StringUtils.countMatches(output, "create table \"sym_"));
-        Assert.assertEquals(29,
+        Assert.assertEquals(30,
                 StringUtils.countMatches(output, "varchar(" + Integer.MAX_VALUE + ")"));
     }
 

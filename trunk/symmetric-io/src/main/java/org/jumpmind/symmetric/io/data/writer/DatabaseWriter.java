@@ -175,6 +175,10 @@ public class DatabaseWriter implements IDataWriter {
         } catch (IgnoreBatchException ex) {
             rollback();
             throw ex;
+        } catch (RuntimeException ex) {
+            if (filterError(data, ex)) {
+                throw ex;
+            } 
         }
 
     }
@@ -263,6 +267,22 @@ public class DatabaseWriter implements IDataWriter {
             }
         }
         return foundNullValueChange;
+    }
+    
+    protected boolean filterError(CsvData data, Exception ex) {
+        boolean process = true;
+        List<IDatabaseWriterErrorHandler> filters = this.writerSettings.getDatabaseWriterErrorHandlers();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterErrorHandler filter : filters) {
+                    process &= filter.handleError(context, targetTable, data, ex);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+        return process;
     }
 
     protected boolean filterBefore(CsvData data) {

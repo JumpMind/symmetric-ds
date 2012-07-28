@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
@@ -183,6 +184,13 @@ public class ExtensionPointManager implements IExtensionPointManager {
                     IDatabaseWriterFilter.class, true));
             engine.getDataLoaderService().addDatabaseWriterFilter((IDatabaseWriterFilter) ext);
         }
+        
+        if (ext instanceof IDatabaseWriterErrorHandler) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                    IDatabaseWriterErrorHandler.class, true));
+            engine.getDataLoaderService().addDatabaseWriterErrorHandler((IDatabaseWriterErrorHandler) ext);
+        }        
 
         if (ext instanceof IHeartbeatListener) {
             installed = true;

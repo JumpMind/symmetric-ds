@@ -24,6 +24,8 @@ public class DatabaseWriterSettings {
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
     
+    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
+    
     protected List<ResolvedData> resolvedData;
 
     public long getMaxRowsBeforeCommit() {
@@ -97,6 +99,15 @@ public class DatabaseWriterSettings {
     
     public List<ResolvedData> getResolvedData() {
         return resolvedData;
+    }
+    
+    public void setDatabaseWriterErrorHandlers(
+            List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers) {
+        this.databaseWriterErrorHandlers = databaseWriterErrorHandlers;
+    }
+    
+    public List<IDatabaseWriterErrorHandler> getDatabaseWriterErrorHandlers() {
+        return databaseWriterErrorHandlers;
     }
     
     public ResolvedData getResolvedData (long rowNumber) {

@@ -40,6 +40,8 @@ public class LoadFilter implements Serializable {
     
     private String batchRollbackScript;
     
+    private String handleErrorScript;
+    
     private Date createTime = new Date();
     
     private String lastUpdateBy = "symmetricds";
@@ -192,7 +194,15 @@ public class LoadFilter implements Serializable {
 
     public void setLoadFilterType(LoadFilterType loadFilterType) {
         this.loadFilterType = loadFilterType;
-    }	
+    }
+    
+    public void setHandleErrorScript(String handleErrorScript) {
+        this.handleErrorScript = handleErrorScript;
+    }
+    
+    public String getHandleErrorScript() {
+        return handleErrorScript;
+    }
 
     @Override
     public boolean equals(Object obj) {
