@@ -19,6 +19,7 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  filter_on_insert, filter_on_update, filter_on_delete,              " +
 "  before_write_script, after_write_script,                           " +
 "  batch_complete_script, batch_commit_script, batch_rollback_script, " +
+"  handle_error_script,                                               " +
 "  create_time, last_update_by, last_update_time,                     " +
 "  load_filter_order, fail_on_error                                   " +
 "  from                                                               " + 
@@ -33,6 +34,7 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  batch_complete_script=?,   " + 
 "  batch_rollback_script=?,   " + 
 "  before_write_script=?,     " + 
+"  handle_error_script=?,     " +
 "  load_filter_order=?,       " + 
 "  load_filter_type=?,        " + 
 "  source_node_group_id=?,    " + 
@@ -55,7 +57,8 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  batch_commit_script,     " + 
 "  batch_complete_script,   " + 
 "  batch_rollback_script,   " + 
-"  before_write_script,     " + 
+"  before_write_script,     " +
+"  handler_error_script,    " +
 "  load_filter_order,       " + 
 "  load_filter_type,        " + 
 "  source_node_group_id,    " + 

@@ -14,6 +14,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
@@ -38,8 +39,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     public IDataWriter getDataWriter(final String sourceNodeId,
             final ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
-            List<IDatabaseWriterFilter> filters, List<? extends Conflict> conflictSettings,
-            List<ResolvedData> resolvedData) {
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         DatabaseWriter writer = new DatabaseWriter(symmetricDialect.getPlatform(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
@@ -65,7 +66,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                             }
                         }
                     }
-                }, buildDatabaseWriterSettings(filters, conflictSettings, resolvedData));
+                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
         return writer;
     }
 
@@ -74,10 +75,13 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters, List<? extends Conflict> conflictSettings,
+            List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
+        settings.setDatabaseWriterErrorHandlers(errorHandlers);
         settings.setMaxRowsBeforeCommit(parameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
         settings.setTreatDateTimeFieldsAsVarchar(parameterService

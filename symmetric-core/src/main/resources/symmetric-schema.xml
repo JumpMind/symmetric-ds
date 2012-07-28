@@ -554,6 +554,7 @@
         <column name="batch_complete_script" type="LONGVARCHAR" description="The script to apply on batch complete." />
         <column name="batch_commit_script" type="LONGVARCHAR" description="The script to apply on batch commit." />
         <column name="batch_rollback_script" type="LONGVARCHAR" description="The script to apply on batch rollback." />        
+        <column name="handle_error_script" type="LONGVARCHAR" description="The script to apply when data cannot be processed." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />

@@ -9,6 +9,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.util.Context;
@@ -19,7 +20,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 
-public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
+public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabaseWriterErrorHandler {
 	
     private static final String OLD_ = "OLD_";
     private static final String CONTEXT = "context";
@@ -32,7 +33,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     ISymmetricEngine symmetricEngine = null;
     Map<String, List<LoadFilter>> loadFilters = null;
-	public enum WriteMethod { BEFORE_WRITE, AFTER_WRITE, BATCH_COMPLETE, BATCH_COMMIT, BATCH_ROLLBACK };
+	public enum WriteMethod { BEFORE_WRITE, AFTER_WRITE, BATCH_COMPLETE, BATCH_COMMIT, BATCH_ROLLBACK, HANDLE_ERROR };
        
     public BshDatabaseWriterFilter(ISymmetricEngine symmetricEngine, Map<String, List<LoadFilter>> loadFilters) {
     	
@@ -45,9 +46,13 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 		return processLoadFilters(context, table, data, WriteMethod.BEFORE_WRITE);
 	}
 
-	public void afterWrite(DataContext context, Table table, CsvData data) {
-		
+	public void afterWrite(DataContext context, Table table, CsvData data) {		
 		processLoadFilters(context, table, data, WriteMethod.AFTER_WRITE);
+	}
+	
+	public boolean handleError(DataContext context, Table table, CsvData data, Exception ex) {
+	    processLoadFilters(context, table, data, WriteMethod.HANDLE_ERROR);
+	    return false;
 	}
 
 	public boolean handlesMissingTable(DataContext context, Table table) {
@@ -141,14 +146,8 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter {
 		        		else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
 		        			result = interpreter.eval(filter.getAfterWriteScript());
 		        		}
-		        		else if (writeMethod.equals(WriteMethod.BATCH_COMMIT) && filter.getBatchCommitScript() != null) {
-		        			result = interpreter.eval(filter.getBatchCommitScript());
-		        		}
-		        		else if (writeMethod.equals(WriteMethod.BATCH_COMPLETE) && filter.getBatchCompleteScript() != null) {
-		        			result = interpreter.eval(filter.getBatchCompleteScript());
-		        		}
-		        		else if (writeMethod.equals(WriteMethod.BATCH_ROLLBACK) && filter.getBatchRollbackScript() != null) {
-		        			result = interpreter.eval(filter.getBatchRollbackScript());
+		        		else if (writeMethod.equals(WriteMethod.HANDLE_ERROR) && filter.getHandleErrorScript() != null) {
+		        			result = interpreter.eval(filter.getHandleErrorScript());
 		        		}
 		        		
 		        		if (result !=null && result.equals(Boolean.FALSE)) {

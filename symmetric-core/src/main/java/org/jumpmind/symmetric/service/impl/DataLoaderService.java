@@ -65,6 +65,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
@@ -124,6 +125,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private List<IDatabaseWriterFilter> filters;
 
+    private List<IDatabaseWriterErrorHandler> errorHandlers;
+
     private IStatisticManager statisticManager;
 
     private INodeService nodeService;
@@ -154,6 +157,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.stagingManager = engine.getStagingManager();
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(engine));
+        this.errorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
         this.engine = engine;
@@ -217,8 +221,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (local != null) {
                     localSecurity = nodeService.findNodeSecurity(local.getNodeId());
                     if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
-                        // we were redirected for the pull, we need to redirect
-                        // for the ack
+                        /*
+                         * We were redirected for the pull, we need to redirect
+                         * for the ack
+                         */
                         String url = transport.getRedirectionUrl();
                         url = url.replace(HttpTransportManager.buildRegistrationUrl("", local), "");
                         remote.setSyncUrl(url);
@@ -258,14 +264,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
-        if (filters == null) {
-            filters = new ArrayList<IDatabaseWriterFilter>();
-        }
         filters.add(filter);
     }
 
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
         filters.remove(filter);
+    }
+    
+    public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
+        errorHandlers.add(errorHandler);
+    }
+
+    public void removeDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
+        errorHandlers.remove(errorHandler);
     }
 
     /**
@@ -320,15 +331,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long totalNetworkMillis = System.currentTimeMillis();
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId, transport.open());
+                IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
+                        transport.open());
                 IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(sourceNode.getNodeId(), listener));
                 new DataProcessor(dataReader, dataWriter).process(ctx);
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
-                DataProcessor processor = new DataProcessor(
-                        new ProtocolDataReader(BatchType.LOAD, targetNodeId, transport.open()), null, listener) {
+                DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
+                        targetNodeId, transport.open()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(sourceNode.getNodeId(), batch.getChannelId(),
@@ -391,7 +403,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
         List<IDatabaseWriterFilter> dynamicFilters = filters;
-        
+        List<IDatabaseWriterErrorHandler> dynamicErrorHandlers = errorHandlers;
+
         if (sourceNodeId != null) {
             Node sourceNode = nodeService.findNode(sourceNodeId);
             if (sourceNode != null) {
@@ -399,15 +412,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         parameterService.getNodeGroupId());
             }
 
-            Map<String, List<LoadFilter>> loadFilters = loadFilterService.findLoadFiltersFor(
-            		link, true);
+            Map<String, List<LoadFilter>> loadFilters = loadFilterService.findLoadFiltersFor(link,
+                    true);
 
             if (loadFilters != null && loadFilters.size() > 0) {
-            	dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size()+1);
-            	dynamicFilters.addAll(filters);
-            	dynamicFilters.add(new BshDatabaseWriterFilter(this.engine, loadFilters));
-            }            
-            
+                BshDatabaseWriterFilter bshFilter = new BshDatabaseWriterFilter(this.engine, loadFilters);
+                dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size() + 1);
+                dynamicFilters.addAll(filters);
+                dynamicFilters.add(bshFilter);
+                
+                dynamicErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>(errorHandlers.size() + 1);
+                dynamicErrorHandlers.addAll(errorHandlers);
+                dynamicErrorHandlers.add(bshFilter);
+            }
+
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
                     link, TransformPoint.LOAD, true);
             transforms = transformsList != null ? transformsList
@@ -428,7 +446,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transforms);
 
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
-                symmetricDialect, transformWriter, dynamicFilters,
+                symmetricDialect, transformWriter, dynamicFilters, dynamicErrorHandlers,
                 getConflictSettingsNodeGroupLinks(link, false), resolvedDatas);
         transformWriter.setTargetWriter(targetWriter);
         return transformWriter;
@@ -659,8 +677,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             try {
-                DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource), null,
-                        listener) {
+                DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
+                        batch.getTargetNodeId(), resource), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(sourceNodeId, batch.getChannelId(),
@@ -703,7 +721,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            symmetricDialect.disableSyncTriggers(context.findTransaction(), batch.getSourceNodeId());
+            symmetricDialect
+                    .disableSyncTriggers(context.findTransaction(), batch.getSourceNodeId());
         }
 
         public void batchSuccessful(DataContext context) {

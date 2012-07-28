@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -50,6 +51,10 @@ public interface IDataLoaderService {
     public void addDataLoaderFactory(IDataLoaderFactory factory);
     
     public List<String> getAvailableDataLoaderFactories();
+    
+    public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler handler);
+    
+    public void removeDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler handler);
 
     public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);            
 

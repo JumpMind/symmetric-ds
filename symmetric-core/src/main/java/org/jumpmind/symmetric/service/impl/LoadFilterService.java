@@ -122,11 +122,12 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             loadFilter.setBatchCompleteScript(rs.getString("batch_complete_script"));
             loadFilter.setBatchCommitScript(rs.getString("batch_commit_script"));
             loadFilter.setBatchRollbackScript(rs.getString("batch_rollback_script"));
+            loadFilter.setHandleErrorScript(rs.getString("handle_error_script"));
             loadFilter.setCreateTime(rs.getDateTime("create_time"));
             loadFilter.setLastUpdateBy(rs.getString("last_update_by"));
             loadFilter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             loadFilter.setLoadFilterOrder(rs.getInt("load_filter_order"));
-            loadFilter.setFailOnError(rs.getBoolean("fail_on_error"));
+            loadFilter.setFailOnError(rs.getBoolean("fail_on_error"));            
 
             try {
                 loadFilter.setLoadFilterType(LoadFilter.LoadFilterType.valueOf(rs.getString(
@@ -151,7 +152,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         loadFilter.setLastUpdateTime(new Date());
         Object[] args = { loadFilter.getAfterWriteScript(), loadFilter.getBatchCommitScript(),
                 loadFilter.getBatchCompleteScript(), loadFilter.getBatchRollbackScript(),
-                loadFilter.getBeforeWriteScript(), loadFilter.getLoadFilterOrder(),
+                loadFilter.getBeforeWriteScript(), loadFilter.getHandleErrorScript(), 
+                loadFilter.getLoadFilterOrder(),
                 loadFilter.getLoadFilterType().name(),
                 loadFilter.getNodeGroupLink().getSourceNodeGroupId(),
                 loadFilter.getNodeGroupLink().getTargetNodeGroupId(),
