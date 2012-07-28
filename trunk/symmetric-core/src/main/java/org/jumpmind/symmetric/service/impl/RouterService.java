@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
@@ -269,6 +270,14 @@ public class RouterService extends AbstractService implements IRouterService {
             return dataCount;
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
+            if (context != null) {
+                context.rollback();
+            }
+            return 0;
+        } catch (SyntaxParsingException ex) {
+            log.error(
+                    String.format("Failed to route and batch data on '%s' channel due to an invalid router expression.",
+                            nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
             }
