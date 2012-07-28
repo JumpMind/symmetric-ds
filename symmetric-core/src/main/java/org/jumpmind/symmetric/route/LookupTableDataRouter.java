@@ -70,29 +70,21 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
         Set<String> nodeIds = null;
         Router router = dataMetaData.getTriggerRouter().getRouter();
-        boolean validExpression = true;
         Map<String, String> params = null;
         
-        try {
-            params = getParams(router, routingContext);
-        } catch(SyntaxParsingException ex) {
-            validExpression = false;
-        }
-        
-        if (validExpression) {
-            Map<String, String> dataMap = getDataMap(dataMetaData);
-            Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
-            String column = params.get(PARAM_KEY_COLUMN);
-            String keyData = dataMap.get(column);
-            Set<String> externalIds = lookupTable.get(keyData);
-            if (externalIds != null) {
-                for (Node node : nodes) {
-                    if (externalIds.contains(node.getExternalId())) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
-                    }
+        params = getParams(router, routingContext);
+    
+        Map<String, String> dataMap = getDataMap(dataMetaData);
+        Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
+        String column = params.get(PARAM_KEY_COLUMN);
+        String keyData = dataMap.get(column);
+        Set<String> externalIds = lookupTable.get(keyData);
+        if (externalIds != null) {
+            for (Node node : nodes) {
+                if (externalIds.contains(node.getExternalId())) {
+                    nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                 }
             }
-
         }
 
         return nodeIds;
@@ -113,8 +105,8 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         }
         return params;
     }
-   
-    public Map<String, String> parse(String routerExpression) {
+    
+    public Map<String, String> parse(String routerExpression) throws SyntaxParsingException {
         boolean valid = true;
         Map<String, String> params =  new HashMap<String, String>();
         if (!StringUtils.isBlank(routerExpression)) {
