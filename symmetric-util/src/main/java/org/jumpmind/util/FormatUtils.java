@@ -13,6 +13,8 @@ import org.apache.commons.lang.StringUtils;
 public final class FormatUtils {
 
     public final static String WILDCARD = "*";
+    
+    public final static String NEGATE_TOKEN = "!";
 
     public final static int MAX_CHARS_TO_LOG = 1000;
 
@@ -123,8 +125,7 @@ public final class FormatUtils {
 
     public static boolean isWildCardMatch(String text, String pattern) {
         boolean match = true;
-        if (pattern.startsWith("!")) {
-            match = !match;
+        if (pattern.startsWith(NEGATE_TOKEN)) {
             pattern = pattern.substring(1);
         }
         // Create the cards by splitting using a RegEx. If more speed

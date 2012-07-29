@@ -816,7 +816,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 history.getSourceSchemaName())) {
                     removeTrigger = true;
                 } else {
-                    if (trigger.isSourceTableNameWildcarded()) {
+                    if (trigger.isSourceTableNameWildCarded()) {
                         boolean foundMatch = false;
                         for (Table table : tables) {
                             foundMatch |= ignoreCase ? StringUtils.equalsIgnoreCase(table.getName(), history.getSourceTableName()) : StringUtils.equals(table.getName(), history.getSourceTableName());                            
@@ -884,7 +884,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
         Set<Table> tables = new HashSet<Table>();
 
-        if (trigger.isSourceTableNameWildcarded()) {
+        if (trigger.isSourceTableNameWildCarded()) {
             boolean ignoreCase = this.parameterService
                     .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
 
@@ -900,9 +900,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             && !containsExactMatchForSourceTableName(table.getName(), triggers,
                                     ignoreCase)
                             && !table.getName().toLowerCase().startsWith(tablePrefix)) {
-                        tables.add(table);
-                    } else {
-                        tables.remove(table);
+                        if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
+                            tables.add(table);    
+                        } else {
+                            tables.remove(table);    
+                        }
                     }
                 }
             }
@@ -961,7 +963,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 trigger.getTriggerId(),
                                 trigger.getSourceCatalogName(),
                                 trigger.getSourceSchemaName(),
-                                trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
+                                trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
                                         .getSourceTableName());
 
                         boolean forceRebuildOfTriggers = false;
@@ -1106,7 +1108,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
             symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
-                    oldTriggerName, trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
+                    oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
                             .getSourceTableName(), oldhist);
             triggerExists = false;
             triggerRemoved = true;
@@ -1122,7 +1124,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.getTriggerId(),
                     trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(),
-                    trigger.isSourceTableNameWildcarded() ? table.getName() : trigger
+                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
                             .getSourceTableName());
         }
 
@@ -1188,7 +1190,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId());
-            if (trigger.isSourceTableNameWildcarded()) {
+            if (trigger.isSourceTableNameWildCarded()) {
                 triggerSuffix2 = replaceCharsForTriggerName(table.getName());
             }
             String triggerSuffix3 = replaceCharsForTriggerName("_"
