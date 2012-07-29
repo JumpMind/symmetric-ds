@@ -219,6 +219,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     return stmt.getUpdateCount();
                 } finally {
                     JdbcSqlTemplate.close(rs);
+                    JdbcSqlTemplate.close(stmt);
                 }
 
             }
