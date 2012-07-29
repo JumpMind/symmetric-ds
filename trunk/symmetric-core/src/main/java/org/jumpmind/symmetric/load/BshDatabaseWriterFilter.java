@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -20,7 +21,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 
-public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabaseWriterErrorHandler {
+public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabaseWriterErrorHandler, IBuiltInExtensionPoint {
 	
     private static final String OLD_ = "OLD_";
     private static final String CONTEXT = "context";
@@ -51,8 +52,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 	}
 	
 	public boolean handleError(DataContext context, Table table, CsvData data, Exception ex) {
-	    processLoadFilters(context, table, data, WriteMethod.HANDLE_ERROR);
-	    return false;
+	    return processLoadFilters(context, table, data, WriteMethod.HANDLE_ERROR);
 	}
 
 	public boolean handlesMissingTable(DataContext context, Table table) {
