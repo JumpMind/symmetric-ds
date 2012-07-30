@@ -80,7 +80,9 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                             loadFiltersByNodeGroup = new HashMap<String, List<LoadFilter>>();
                         }
                         List<LoadFilter> loadFiltersForTable = loadFiltersByNodeGroup
-                                .get(loadFilter.getTargetTableName());
+                                .get(Table.getFullyQualifiedTableName(
+                                		loadFilter.getTargetCatalogName(),
+                                        loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()));
                         if (loadFiltersForTable == null) {
                             loadFiltersForTable = new ArrayList<LoadFilter>();
                         }
