@@ -59,7 +59,8 @@
             To give a node its identity, the following properties are required.  Any other properties
             found in <code>conf/symmetric.properties</code> can be overridden for a specific engine in an engine's 
             properties file.  If the properties are changed in <code>conf/symmetric.properties</code> they will 
-            take effect across all engines deployed to the server.
+            take effect across all engines deployed to the server.  Note that you can use the variable <literal>$(hostName)</literal> to 
+            represent the host name of the machine when defining these properties (for example, external.id=$(hostName) ).
         </para>
         <variablelist>
             <varlistentry>
