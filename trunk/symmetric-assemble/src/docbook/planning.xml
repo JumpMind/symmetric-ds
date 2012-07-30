@@ -61,7 +61,7 @@
         </para>
         <para>
             <figure id="figure-two-tier">
-                <title>Two Tiered Retail Store Deployment Example</title>
+                <title>Two-Tier Retail Store Deployment Example</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/two-tier-arch.gif" format="GIF" />
@@ -84,7 +84,7 @@
         </para>
         <para>
             <figure id="figure-three-tier-store-server">
-                <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
+                <title>Three-Tier, In-Store Server, Retail Store Deployment Example</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/three-tier-arch.gif" format="GIF" />
@@ -102,7 +102,7 @@
         </para>
         <para>
             <figure id="figure-three-tier-regional">
-                <title>Three Tiered, Regional Server, Retail Store Deployment Example</title>
+                <title>Three-Tier, Regional Server, Retail Store Deployment Example</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/three-tier-regional-arch.gif" format="GIF" />
