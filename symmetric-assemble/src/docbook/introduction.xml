@@ -202,7 +202,7 @@
             </para>
             <para>SymmetricDS was designed to use standard web technologies so it can be scaled to many clients across
                 different types of databases. It can synchronize data to and from as many client nodes as the deployed
-                database and web infrastructure will support. When a two tiered database and web infrastructure is maxed out,
+                database and web infrastructure will support. When a two-tier database and web infrastructure is maxed out,
                 a SymmetricDS network can be designed to use N-tiers to allow for even greater scalability. At this point we
                 have covered what SymmetricDS is and how it does its job of replicating data to many databases using
                 standard, well understood technologies.
