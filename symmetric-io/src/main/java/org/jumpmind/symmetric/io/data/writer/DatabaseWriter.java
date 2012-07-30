@@ -788,16 +788,28 @@ public class DatabaseWriter implements IDataWriter {
         if (!platform.getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
+            /*
+             * Old data isn't captured for some lob fields.  When both values
+             * are null, then we always have to update because we don't know if 
+             * the lob field was previously null. 
+             */
+            boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode()) && StringUtils
+                    .isBlank(oldData[columnIndex]);
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
-                    || (platform.isLob(column.getMappedTypeCode()) && StringUtils
-                            .isBlank(oldData[columnIndex]));
+                    || containsEmptyLobColumn;
+            if (containsEmptyLobColumn) {
+                // indicate that we are considering the column to be changed
+                data.getChangedDataIndicators()[columnIndex] = true;
+            }
         } else {
-            // This is in support of creating update statements that don't use
-            // the keys in the set portion of the update statement. </p> In
-            // oracle (and maybe not only in oracle) if there is no index on
-            // child table on FK column and update is performing on PK on master
-            // table, table lock is acquired on child table. Table lock is taken
-            // not in exclusive mode, but lock contentions is possible.
+            /*
+             * This is in support of creating update statements that don't use
+             * the keys in the set portion of the update statement. </p> In
+             * oracle (and maybe not only in oracle) if there is no index on
+             * child table on FK column and update is performing on PK on master
+             * table, table lock is acquired on child table. Table lock is taken
+             * not in exclusive mode, but lock contentions is possible.
+             */
             needsUpdated = !column.isPrimaryKey()
                     || !StringUtils.equals(rowData[columnIndex], getPkDataFor(data, column));
         }
