@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -36,7 +34,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.SymmetricException;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -296,21 +293,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         }
         return moreData;
-    }
-
-    protected ResultSet executeQuery(PreparedStatement ps) throws SQLException {
-        long ts = System.currentTimeMillis();
-        ResultSet rs = ps.executeQuery();
-        long executeTimeInMs = System.currentTimeMillis() - ts;
-        context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
-        if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("Selected data to route in {} ms for {}", executeTimeInMs, context
-                    .getChannel().getChannelId());
-        } else if (log.isDebugEnabled()) {
-            log.debug("Selected data to route in {} ms for {}", executeTimeInMs, context
-                    .getChannel().getChannelId());
-        }
-        return rs;
     }
 
     protected void copyToQueue(Data data) {
