@@ -64,40 +64,38 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     @SuppressWarnings("unused")
     private static final Log log = LogFactory.getLog(SymmetricAdmin.class);
 
-    private static final String CMD_HELP = "help";
-
     private static final String CMD_RELOAD_NODE = "reload-node";
-    
+
     private static final String CMD_RELOAD_TABLE = "reload-table";
-    
+
     private static final String CMD_EXPORT_BATCH = "export-batch";
-    
+
     private static final String CMD_IMPORT_BATCH = "import-batch";
-    
+
     private static final String CMD_RUN_PURGE = "run-purge";
-    
+
     private static final String CMD_ENCRYPT_TEXT = "encrypt-text";
-    
+
     private static final String CMD_CREATE_WAR = "create-war";
-    
+
     private static final String CMD_CREATE_SYM_TABLES = "create-sym-tables";
-    
+
     private static final String CMD_EXPORT_SYM_TABLES = "export-sym-tables";
-    
+
     private static final String CMD_OPEN_REGISTRATION = "open-registration";
-    
+
     private static final String CMD_SYNC_TRIGGERS = "sync-triggers";
-    
+
     private static final String CMD_EXPORT_PROPERTIES = "export-properties";
-    
+
     private static final String CMD_SEND_SQL = "send-sql";
-    
+
     private static final String CMD_SEND_SCRIPT = "send-script";
-    
+
     private static final String CMD_SEND_SCHEMA = "send-schema";
 
     private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES };
-    
+
     private static final String OPTION_NODE = "node";
 
     private static final String OPTION_CATALOG = "catalog";
@@ -109,7 +107,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_FORCE = "force";
 
     private static final String OPTION_NODE_GROUP = "node-group";
-    
+
     private static final int WIDTH = 80;
 
     private static final int PAD = 3;
@@ -117,49 +115,63 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     public SymmetricAdmin(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
     }
-    
+
     public static void main(String[] args) throws Exception {
-        new SymmetricAdmin("symadmin", "<subcommand> [options] [args]", "SymAdmin.Option.").execute(args);
+        new SymmetricAdmin("symadmin", "<subcommand> [options] [args]", "SymAdmin.Option.")
+                .execute(args);
     }
-    
+
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
         return true;
     }
-    
+
     @Override
     protected boolean requiresPropertiesFile() {
         return true;
     }
 
-    protected void printHelp(Options options) {
-        System.out.println(app + " version " + Version.version());
-        System.out.println("Perform administration tasks with SymmetricDS.\n");
-        System.out.println("Usage: symadmin <subcommand> --engine [engine.name] [options] [args]");
-        System.out.println("       symadmin <subcommand> --properties [properties file] [options] [args]");
-        System.out.println("Type 'symadmin help <subcommand>' for help on a specific subcommand.\n");
-        System.out.println("Available subcommands:");
-        PrintWriter pw = new PrintWriter(System.out);
-        printHelpLine(pw, CMD_OPEN_REGISTRATION);
-        printHelpLine(pw, CMD_RELOAD_NODE);
-        printHelpLine(pw, CMD_RELOAD_TABLE);
-        printHelpLine(pw, CMD_EXPORT_BATCH);
-        printHelpLine(pw, CMD_IMPORT_BATCH);
-        printHelpLine(pw, CMD_RUN_PURGE);
-        printHelpLine(pw, CMD_ENCRYPT_TEXT);
-        printHelpLine(pw, CMD_CREATE_WAR);
-        printHelpLine(pw, CMD_CREATE_SYM_TABLES);
-        printHelpLine(pw, CMD_EXPORT_SYM_TABLES);
-        printHelpLine(pw, CMD_SYNC_TRIGGERS);
-        printHelpLine(pw, CMD_EXPORT_PROPERTIES);
-        printHelpLine(pw, CMD_SEND_SQL);
-        printHelpLine(pw, CMD_SEND_SCHEMA);
-        printHelpLine(pw, CMD_SEND_SCRIPT);
-        pw.flush();
+    @Override
+    protected void printHelp(CommandLine line, Options options) {
+        String[] args = line.getArgs();
+        if (args.length == 0) {
+            System.out.println("Error: no subcommand was given.  Use '" + app
+                    + " help' for a list of subcommands.\n");
+        } else if (args.length > 1 && args[0].equals(HELP)) {
+            printHelpCommand(line);
+        } else {
+            System.out.println(app + " version " + Version.version());
+            System.out.println("Perform administration tasks with SymmetricDS.\n");
+            System.out
+                    .println("Usage: symadmin <subcommand> --engine [engine.name] [options] [args]");
+            System.out
+                    .println("       symadmin <subcommand> --properties [properties file] [options] [args]");
+            System.out
+                    .println("Type 'symadmin help <subcommand>' for help on a specific subcommand.\n");
+            System.out.println("Available subcommands:");
+            PrintWriter pw = new PrintWriter(System.out);
+            printHelpLine(pw, CMD_OPEN_REGISTRATION);
+            printHelpLine(pw, CMD_RELOAD_NODE);
+            printHelpLine(pw, CMD_RELOAD_TABLE);
+            printHelpLine(pw, CMD_EXPORT_BATCH);
+            printHelpLine(pw, CMD_IMPORT_BATCH);
+            printHelpLine(pw, CMD_RUN_PURGE);
+            printHelpLine(pw, CMD_ENCRYPT_TEXT);
+            printHelpLine(pw, CMD_CREATE_WAR);
+            printHelpLine(pw, CMD_CREATE_SYM_TABLES);
+            printHelpLine(pw, CMD_EXPORT_SYM_TABLES);
+            printHelpLine(pw, CMD_SYNC_TRIGGERS);
+            printHelpLine(pw, CMD_EXPORT_PROPERTIES);
+            printHelpLine(pw, CMD_SEND_SQL);
+            printHelpLine(pw, CMD_SEND_SCHEMA);
+            printHelpLine(pw, CMD_SEND_SCRIPT);
+            pw.flush();
+        }
     }
-    
+
     private void printHelpLine(PrintWriter pw, String cmd) {
-        String text = StringUtils.pad("   " + cmd, 23, " ", true) + Message.get("SymAdmin.Cmd." + cmd);
+        String text = StringUtils.pad("   " + cmd, 23, " ", true)
+                + Message.get("SymAdmin.Cmd." + cmd);
         new HelpFormatter().printWrapped(pw, 79, 25, text);
     }
 
@@ -178,20 +190,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     @SuppressWarnings("unchecked")
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        
-        if (line.getArgs().length == 0) {
-            System.out.println("Error: no subcommand was given.  Use '" + app + " help' for a list of subcommands.\n");
-            return false;
-        }
-
         List<String> args = line.getArgList();
         String cmd = args.remove(0);
         configureCrypto(line);
-
-        if (cmd.equals(CMD_HELP)) {
-            printHelpCommand(args);
-            return true;
-        }
 
         if (cmd.equals(CMD_EXPORT_PROPERTIES)) {
             exportDefaultProperties(line, args);
@@ -247,7 +248,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             encryptText(line, args);
             return true;
         }
-        
+
         if (cmd.equals(CMD_SEND_SQL)) {
             sendSql(line, args);
             return true;
@@ -271,52 +272,52 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         return false;
     }
 
-    private void printHelpCommand(List<String> args) {
-        if (args.size() == 0) {
-            printHelp(null);
-            return;
-        }
-        String cmd = args.get(0);
-        HelpFormatter format = new HelpFormatter();
-        PrintWriter writer = new PrintWriter(System.out);
-        Options options = new Options();
-        
-        format.printWrapped(writer, WIDTH, "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
-        format.printWrapped(writer, WIDTH, Message.get("SymAdmin.Help." + cmd));
+    private void printHelpCommand(CommandLine line) {
+        String[] args = line.getArgs();
+        if (args.length > 1) {
+            String cmd = args[1];
+            HelpFormatter format = new HelpFormatter();
+            PrintWriter writer = new PrintWriter(System.out);
+            Options options = new Options();
 
-        if (cmd.equals(CMD_SEND_SQL) || cmd.equals(CMD_SEND_SCHEMA) || cmd.equals(CMD_RELOAD_TABLE) ||
-                cmd.equals(CMD_SEND_SCRIPT)) {
-            addOption(options, "n", OPTION_NODE, true);
-            addOption(options, "g", OPTION_NODE_GROUP, true);
-        }
-        if (cmd.equals(CMD_RELOAD_TABLE)) {
-            addOption(options, "c", OPTION_CATALOG, true);
-            addOption(options, "s", OPTION_SCHEMA, true);
-            addOption(options, "w", OPTION_WHERE, true);
-        }
-        if (cmd.equals(CMD_SYNC_TRIGGERS)) {
-            addOption(options, "f", OPTION_FORCE, false);
-        }
+            format.printWrapped(writer, WIDTH,
+                    "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
+            format.printWrapped(writer, WIDTH, Message.get("SymAdmin.Help." + cmd));
 
-        if (options.getOptions().size() > 0) {
-            format.printWrapped(writer, WIDTH, "\nOptions:");
-            format.printOptions(writer, WIDTH, options, PAD, PAD);
-        }
-        
-        if (! ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd)) {
-            format.printWrapped(writer, WIDTH, "\nEngine options:");
-            options = new Options();
-            super.buildOptions(options);
-            format.printOptions(writer, WIDTH, options, PAD, PAD);
+            if (cmd.equals(CMD_SEND_SQL) || cmd.equals(CMD_SEND_SCHEMA)
+                    || cmd.equals(CMD_RELOAD_TABLE) || cmd.equals(CMD_SEND_SCRIPT)) {
+                addOption(options, "n", OPTION_NODE, true);
+                addOption(options, "g", OPTION_NODE_GROUP, true);
+            }
+            if (cmd.equals(CMD_RELOAD_TABLE)) {
+                addOption(options, "c", OPTION_CATALOG, true);
+                addOption(options, "s", OPTION_SCHEMA, true);
+                addOption(options, "w", OPTION_WHERE, true);
+            }
+            if (cmd.equals(CMD_SYNC_TRIGGERS)) {
+                addOption(options, "f", OPTION_FORCE, false);
+            }
 
-            format.printWrapped(writer, WIDTH, "\nCrypto options:");
-            options = new Options();
-            buildCryptoOptions(options);
-            format.printOptions(writer, WIDTH, options, PAD, PAD);
+            if (options.getOptions().size() > 0) {
+                format.printWrapped(writer, WIDTH, "\nOptions:");
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+            }
+
+            if (!ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd)) {
+                format.printWrapped(writer, WIDTH, "\nEngine options:");
+                options = new Options();
+                super.buildOptions(options);
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+
+                format.printWrapped(writer, WIDTH, "\nCrypto options:");
+                options = new Options();
+                buildCryptoOptions(options);
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+            }
+            writer.flush();
         }
-        writer.flush();
     }
-    
+
     private String popArg(List<String> args, String argName) {
         if (args.size() == 0) {
             System.out.println("ERROR: Expected argument for: " + argName);
@@ -324,7 +325,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         }
         return args.remove(0);
     }
-    
+
     private void runPurge(CommandLine line, List<String> args) {
         IPurgeService purgeService = getSymmetricEngine().getPurgeService();
         boolean all = args.contains("all") || args.size() == 0;
@@ -344,7 +345,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String nodeId = popArg(args, "Node ID");
         String batchId = popArg(args, "Batch ID");
         OutputStreamWriter writer = getWriter(args);
-        dataExtractorService.extractBatchRange(writer, nodeId, Long.valueOf(batchId), Long.valueOf(batchId));
+        dataExtractorService.extractBatchRange(writer, nodeId, Long.valueOf(batchId),
+                Long.valueOf(batchId));
         writer.close();
     }
 
@@ -356,7 +358,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else {
             in = new FileInputStream(args.get(0));
         }
-        service.loadDataFromPush(getSymmetricEngine().getNodeService().findIdentity(), in, System.out);
+        service.loadDataFromPush(getSymmetricEngine().getNodeService().findIdentity(), in,
+                System.out);
         System.out.flush();
         in.close();
     }
@@ -374,8 +377,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         IRegistrationService registrationService = getSymmetricEngine().getRegistrationService();
         registrationService.openRegistration(nodeGroupId, externalId);
 
-        System.out.println(String.format("Opened registration for node group of '%s' external ID of '%s'",
-                nodeGroupId, externalId));
+        System.out.println(String.format(
+                "Opened registration for node group of '%s' external ID of '%s'", nodeGroupId,
+                externalId));
     }
 
     private void reloadNode(CommandLine line, List<String> args) {
@@ -407,14 +411,13 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         final File workingDirectory = new File("../.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File("../web"), workingDirectory);
-        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory,
-                "WEB-INF/classes"));
+        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory, "WEB-INF/classes"));
         if (propertiesFile != null && propertiesFile.exists()) {
             FileUtils.copyFile(propertiesFile, new File(workingDirectory,
                     "WEB-INF/classes/symmetric.properties"));
         }
-        JarBuilder builder = new JarBuilder(workingDirectory, new File(
-                warFileName), new File[] { workingDirectory });
+        JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName),
+                new File[] { workingDirectory });
         builder.build();
         FileUtils.deleteDirectory(workingDirectory);
     }
@@ -427,10 +430,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void exportDefaultProperties(CommandLine line, List<String> args) throws IOException {
         OutputStreamWriter os = getWriter(args);
-        BufferedReader is = new BufferedReader(
-                new InputStreamReader(SymmetricAdmin.class
-                        .getResourceAsStream("/symmetric-default.properties"),
-                        Charset.defaultCharset()));
+        BufferedReader is = new BufferedReader(new InputStreamReader(
+                SymmetricAdmin.class.getResourceAsStream("/symmetric-default.properties"),
+                Charset.defaultCharset()));
         String str = is.readLine();
         while (str != null) {
             os.write(str);
@@ -447,15 +449,16 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void sendSql(CommandLine line, List<String> args) {
         String tableName = popArg(args, "Table Name");
-        String sql = popArg(args, "SQL");        
+        String sql = popArg(args, "SQL");
         String catalogName = line.getOptionValue(OPTION_CATALOG);
         String schemaName = line.getOptionValue(OPTION_SCHEMA);
         for (Node node : getNodes(line)) {
             System.out.println("Sending SQL to node '" + node.getNodeId() + "'");
-            getSymmetricEngine().getDataService().sendSQL(node.getNodeId(), catalogName, schemaName, tableName, sql, false);
+            getSymmetricEngine().getDataService().sendSQL(node.getNodeId(), catalogName,
+                    schemaName, tableName, sql, false);
         }
     }
-    
+
     private void reloadTable(CommandLine line, List<String> args) {
         String tableName = popArg(args, "Table Name");
         String catalogName = line.getOptionValue(OPTION_CATALOG);
@@ -463,11 +466,13 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
         for (Node node : getNodes(line)) {
             System.out.println("Reloading table to node '" + node.getNodeId() + "'");
-    
+
             if (line.hasOption(OPTION_WHERE)) {
-                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName, schemaName, tableName, line.getOptionValue(OPTION_WHERE));
+                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                        schemaName, tableName, line.getOptionValue(OPTION_WHERE));
             } else {
-                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName, schemaName, tableName);
+                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                        schemaName, tableName);
             }
         }
     }
@@ -476,14 +481,17 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String tableName = popArg(args, "Table Name");
         String catalog = line.getOptionValue(OPTION_CATALOG);
         String schema = line.getOptionValue(OPTION_SCHEMA);
-        Set<TriggerRouter> triggerRouters = getSymmetricEngine().getTriggerRouterService().getTriggerRouterForTableForCurrentNode(catalog, schema, tableName, true);
+        Set<TriggerRouter> triggerRouters = getSymmetricEngine().getTriggerRouterService()
+                .getTriggerRouterForTableForCurrentNode(catalog, schema, tableName, true);
         Collection<Node> nodes = getNodes(line);
- 
+
         for (TriggerRouter triggerRouter : triggerRouters) {
-            String xml = getSymmetricEngine().getSymmetricDialect().getCreateTableXML(triggerRouter);
+            String xml = getSymmetricEngine().getSymmetricDialect()
+                    .getCreateTableXML(triggerRouter);
             for (Node node : nodes) {
                 System.out.println("Sending schema to node '" + node.getNodeId() + "'");
-                getSymmetricEngine().getDataService().insertCreateEvent(node, triggerRouter, xml, false);
+                getSymmetricEngine().getDataService().insertCreateEvent(node, triggerRouter, xml,
+                        false);
             }
         }
     }
@@ -499,7 +507,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private Collection<Node> getNodes(CommandLine line) {
         if (line.hasOption(OPTION_NODE_GROUP)) {
-            return getSymmetricEngine().getNodeService().findEnabledNodesFromNodeGroup(line.getOptionValue(OPTION_NODE_GROUP));
+            return getSymmetricEngine().getNodeService().findEnabledNodesFromNodeGroup(
+                    line.getOptionValue(OPTION_NODE_GROUP));
         } else if (line.hasOption(OPTION_NODE)) {
             Collection<Node> nodes = new ArrayList<Node>();
             String nodeId = line.getOptionValue(OPTION_NODE);
@@ -511,7 +520,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             nodes.add(node);
             return nodes;
         } else {
-            System.out.println("ERROR: Must specify one option: " + OPTION_NODE + ", " + OPTION_NODE_GROUP);
+            System.out.println("ERROR: Must specify one option: " + OPTION_NODE + ", "
+                    + OPTION_NODE_GROUP);
             System.exit(1);
         }
         return null;

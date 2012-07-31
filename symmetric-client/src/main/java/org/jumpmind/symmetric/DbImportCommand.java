@@ -61,10 +61,11 @@ public class DbImportCommand extends AbstractCommandLauncher {
         return true;
     }
     
-    protected void printHelp(Options options) {
+    @Override
+    protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Import data from file to database tables.\n");
-        super.printHelp(options);
+        super.printHelp(cmd, options);
     }
 
     @Override
