@@ -93,7 +93,7 @@ values('store_2_corp', 'store', 'corp', 'default',current_timestamp, current_tim
 
 insert into sym_router 
 (router_id,source_node_group_id,target_node_group_id,router_type,create_time,last_update_time)
-values('corp_2_one_store', 'corp', 'store', 'column','store_id=:EXTERNAL_ID OLD_store_id=:EXTERNAL_ID',current_timestamp, current_timestamp);
+values('corp_2_one_store', 'corp', 'store', 'column','STORE_ID=:EXTERNAL_ID OLD_STORE_ID=:EXTERNAL_ID',current_timestamp, current_timestamp);
 
 --
 -- Trigger Router Links
@@ -106,7 +106,7 @@ values('item','corp_2_store', 100, current_timestamp, current_timestamp);
 
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,initial_load_select,last_update_time,create_time)
-values('item_selling_price','corp_2_one_store',100,'store_id=$(externalId)',current_timestamp,current_timestamp);
+values('item_selling_price','corp_2_one_store',100,'"store_id"=$(externalId)',current_timestamp,current_timestamp);
 
 
 insert into sym_trigger_router 
