@@ -174,6 +174,54 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 + Message.get("SymAdmin.Cmd." + cmd);
         new HelpFormatter().printWrapped(pw, 79, 25, text);
     }
+    
+    private void printHelpCommand(CommandLine line) {
+        String[] args = line.getArgs();
+        if (args.length > 1) {
+            String cmd = args[1];
+            HelpFormatter format = new HelpFormatter();
+            PrintWriter writer = new PrintWriter(System.out);
+            Options options = new Options();
+
+            format.printWrapped(writer, WIDTH,
+                    "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
+            format.printWrapped(writer, WIDTH, Message.get("SymAdmin.Help." + cmd));
+
+            if (cmd.equals(CMD_SEND_SQL) || cmd.equals(CMD_SEND_SCHEMA)
+                    || cmd.equals(CMD_RELOAD_TABLE) || cmd.equals(CMD_SEND_SCRIPT)) {
+                addOption(options, "n", OPTION_NODE, true);
+                addOption(options, "g", OPTION_NODE_GROUP, true);
+            }
+            if (cmd.equals(CMD_RELOAD_TABLE)) {
+                addOption(options, "c", OPTION_CATALOG, true);
+                addOption(options, "s", OPTION_SCHEMA, true);
+                addOption(options, "w", OPTION_WHERE, true);
+            }
+            if (cmd.equals(CMD_SYNC_TRIGGERS)) {
+                addOption(options, "f", OPTION_FORCE, false);
+            }
+
+            if (options.getOptions().size() > 0) {
+                format.printWrapped(writer, WIDTH, "\nOptions:");
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+            }
+
+            if (!ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd)) {
+                format.printWrapped(writer, WIDTH, "\nEngine options:");
+                options = new Options();
+                super.buildOptions(options);
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+
+                format.printWrapped(writer, WIDTH, "\nCrypto options:");
+                options = new Options();
+                buildCryptoOptions(options);
+                format.printOptions(writer, WIDTH, options, PAD, PAD);
+            }
+            writer.flush();
+        }
+    }
+
+    
 
     @Override
     protected void buildOptions(Options options) {
@@ -270,52 +318,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         }
 
         return false;
-    }
-
-    private void printHelpCommand(CommandLine line) {
-        String[] args = line.getArgs();
-        if (args.length > 1) {
-            String cmd = args[1];
-            HelpFormatter format = new HelpFormatter();
-            PrintWriter writer = new PrintWriter(System.out);
-            Options options = new Options();
-
-            format.printWrapped(writer, WIDTH,
-                    "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
-            format.printWrapped(writer, WIDTH, Message.get("SymAdmin.Help." + cmd));
-
-            if (cmd.equals(CMD_SEND_SQL) || cmd.equals(CMD_SEND_SCHEMA)
-                    || cmd.equals(CMD_RELOAD_TABLE) || cmd.equals(CMD_SEND_SCRIPT)) {
-                addOption(options, "n", OPTION_NODE, true);
-                addOption(options, "g", OPTION_NODE_GROUP, true);
-            }
-            if (cmd.equals(CMD_RELOAD_TABLE)) {
-                addOption(options, "c", OPTION_CATALOG, true);
-                addOption(options, "s", OPTION_SCHEMA, true);
-                addOption(options, "w", OPTION_WHERE, true);
-            }
-            if (cmd.equals(CMD_SYNC_TRIGGERS)) {
-                addOption(options, "f", OPTION_FORCE, false);
-            }
-
-            if (options.getOptions().size() > 0) {
-                format.printWrapped(writer, WIDTH, "\nOptions:");
-                format.printOptions(writer, WIDTH, options, PAD, PAD);
-            }
-
-            if (!ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd)) {
-                format.printWrapped(writer, WIDTH, "\nEngine options:");
-                options = new Options();
-                super.buildOptions(options);
-                format.printOptions(writer, WIDTH, options, PAD, PAD);
-
-                format.printWrapped(writer, WIDTH, "\nCrypto options:");
-                options = new Options();
-                buildCryptoOptions(options);
-                format.printOptions(writer, WIDTH, options, PAD, PAD);
-            }
-            writer.flush();
-        }
     }
 
     private String popArg(List<String> args, String argName) {
