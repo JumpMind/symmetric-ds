@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -68,55 +67,47 @@ public class Database implements Serializable, Cloneable {
         }
         return tables;
     }
-
+    
+    /**
+     * Implements modified topological sort of tables (@see <a href="http://en.wikipedia.org/wiki/Topological_sorting">topological sorting</a>).
+     * The 'depth-first search' is implemented in order to detect and ignore cycles.  
+     * 
+     * @param tables
+     *            List of tables to sort.
+     * @return List of tables in their dependency order - if table A has a foreign key for table B then table B will precede table A in the list. 
+     */
     public static List<Table> sortByForeignKeys(List<Table> tables) {
-        List<Table> unsorted = new ArrayList<Table>(tables);
-        List<Table> sorted = new ArrayList<Table>(unsorted.size());
-        int index = 0;
-        boolean sortedAtLeastOne = false;
-        while (unsorted.size() > 0) {
-            Table unsortedTable = unsorted.get(index);
-            for (int i = 0; i < sorted.size() && !sorted.contains(unsortedTable); i++) {
-                Table sortedTable = sorted.get(i);
-                ForeignKey[] sortedFks = sortedTable.getForeignKeys();
-                if (sortedFks != null) {
-                    for (ForeignKey sortedFk : sortedFks) {
-                        String fkTableName = sortedFk.getForeignTableName();
-                        if (StringUtils.equals(fkTableName, unsortedTable.getName())) {
-                            sorted.add(i, unsortedTable);
-                            unsorted.remove(unsortedTable);
-                            sortedAtLeastOne = true;
-                            break;
-                        }
-                    }
-                }
-
-                ForeignKey[] unsortedFks = unsortedTable.getForeignKeys();
-                if (unsortedFks != null) {
-                    for (ForeignKey unsortedFk : unsortedFks) {
-                        String fkTableName = unsortedFk.getForeignTableName();
-                        if (StringUtils.equals(fkTableName, sortedTable.getName())) {
-                            sorted.add(i + 1, unsortedTable);
-                            unsorted.remove(unsortedTable);
-                            sortedAtLeastOne = true;
-                            break;
-                        }
-                    }
-                }
-
-            }
-
-            index++;
-            if (index >= unsorted.size()) {
-                if (!sortedAtLeastOne) {
-                    sorted.add(unsorted.remove(0));
-                }
-                index = 0;
-                sortedAtLeastOne = false;
+        List<Table> sorted = new ArrayList<Table>(tables.size());
+        List<Table> visited = new ArrayList<Table>(tables.size());
+        List<Table> stack = new ArrayList<Table>();
+        Map<String, Table> tableMap = new HashMap<String, Table>();
+        
+        for (int i = 0; i < tables.size(); i++) {
+            tableMap.put(tables.get(i).getName(), tables.get(i));
+        }
+        
+        for (int i = 0; i < tables.size(); i++) {
+            sortByForegnKeysVisit(tables.get(i),tableMap,sorted,visited,stack);
+        }
+        
+        return sorted;
+    }
+    
+    private static void sortByForegnKeysVisit (Table table, Map<String, Table> tableMap, List<Table> sorted, List<Table> visited, List<Table> stack) {
+        if (visited.contains(table)) {return;}
+        if (stack.contains(table)) {return;}    // cycle detected - ignore this FK
+        visited.add(table);
+        stack.add(table);
+        
+        for (ForeignKey fk : table.getForeignKeys()) {
+            Table foreignTable = tableMap.get(fk.getForeignTableName());
+            if (foreignTable != null) { // ignore foreign keys to tables outside of the input set
+                sortByForegnKeysVisit(foreignTable,tableMap,sorted,visited,stack);
             }
         }
-        return sorted;
-
+        
+        sorted.add(table);
+        stack.remove(stack.size()-1);
     }
 
     /**
