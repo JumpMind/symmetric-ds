@@ -235,6 +235,9 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
          There are several ways to do this.  We will use the administration feature on the corp node.</para>
         <procedure>
             <step>
+            <para>Leave the server that you started in the previous step running, open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.</para>
                 <para>Open registration for the store node server by executing:</para>
                 <para>
                     <command> ../bin/symadmin --engine corp-000 open-registration store 001</command>
