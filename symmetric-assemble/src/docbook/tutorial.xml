@@ -3,8 +3,7 @@
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Quick Start Tutorial</title>
     <para>Now that an overview of SymmetricDS has been presented, a quick working example of SymmetricDS is in order. 
-        This section contains a hands-on tutorial that demonstrates how to synchronize two databases with a similar schema between two nodes of SymmetricDS, each configured as 
-        a SymmetricDS engine deployed in a single instance of SymmetricDS. This example models a retail business that has a 
+        This section contains a hands-on tutorial that demonstrates how to synchronize two databases with a similar schema between two nodes of SymmetricDS. This example models a retail business that has a 
         central office database (which we'll call the "root" or "corp" database) and multiple retail store databases (which we'll call the "client" or "store" database).  
         For the tutorial, we will have only one "client" or store node, as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>, although by the end of the tutorial
         you could extend the example and configure a second store, if desired.
@@ -21,6 +20,9 @@
                 </figure>
             </para>     
          <para>        
+        For this tutorial, we will simplify setup slightly by having both nodes run as engines inside a single SymmetricDS instance on one server instead of two.  In practice, however, in this two-tier retail example
+        the two nodes would likely run on completely separate servers and therefore in separate instances, not as two engines within a single instnce.    
+        </para><para>
         The root engine (also sometimes called the 'server' engine) captures item data changes for the client, such as
         item number, description, and prices by store. The client engine (a store) captures sale transaction data 
         changes for the root, such as time of sale and items sold.  The pricing information is sent 

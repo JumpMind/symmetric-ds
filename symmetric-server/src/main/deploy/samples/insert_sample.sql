@@ -92,7 +92,7 @@ insert into sym_router
 values('store_2_corp', 'store', 'corp', 'default',current_timestamp, current_timestamp);
 
 insert into sym_router 
-(router_id,source_node_group_id,target_node_group_id,router_type,create_time,last_update_time)
+(router_id,source_node_group_id,target_node_group_id,router_type,router_expression,create_time,last_update_time)
 values('corp_2_one_store', 'corp', 'store', 'column','STORE_ID=:EXTERNAL_ID OLD_STORE_ID=:EXTERNAL_ID',current_timestamp, current_timestamp);
 
 --
