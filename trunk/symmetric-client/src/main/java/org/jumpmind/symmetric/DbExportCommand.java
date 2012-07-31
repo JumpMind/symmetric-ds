@@ -71,10 +71,11 @@ public class DbExportCommand extends AbstractCommandLauncher {
         return true;
     }
     
-    protected void printHelp(Options options) {
+    @Override
+    protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Export the structure and data from database tables to file.\n");
-        super.printHelp(options);
+        super.printHelp(cmd, options);
     }
 
     @Override

@@ -73,10 +73,11 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         return false;
     }
 
-    protected void printHelp(Options options) {
+    @Override
+    protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
         System.out.println("Launch the SymmetricDS engine as a standalone client or server.\n");
-        super.printHelp(options);
+        super.printHelp(cmd, options);
     }
 
     protected void buildOptions(Options options) {

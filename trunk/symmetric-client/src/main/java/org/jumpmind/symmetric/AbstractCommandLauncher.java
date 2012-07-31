@@ -59,7 +59,7 @@ public abstract class AbstractCommandLauncher {
 
     protected static final Logger log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
 
-    protected static final String OPTION_HELP = "help";
+    protected static final String HELP = "help";
 
     protected static final String OPTION_PROPERTIES_FILE = "properties";
 
@@ -109,10 +109,11 @@ public abstract class AbstractCommandLauncher {
         buildOptions(options);
         try {
             CommandLine line = parser.parse(options, args);
-
-            if (line.hasOption(OPTION_HELP)
+            
+            if (line.hasOption(HELP)
+                    || (line.getArgList().contains(HELP))
                     || (line.getArgList().size() == 0 && printHelpIfNoOptionsAreProvided())) {
-                printHelp(options);
+                printHelp(line, options);
                 System.exit(2);
             }
 
@@ -146,14 +147,14 @@ public abstract class AbstractCommandLauncher {
         }
     }
 
-    protected void printHelp(Options options) {
+    protected void printHelp(CommandLine cmd, Options options) {
         new HelpFormatter().printHelp(app + " " + argSyntax, options);
     }
 
     protected void printUsage(Options options) {
         PrintWriter writer = new PrintWriter(System.out);
         new HelpFormatter().printUsage(writer, 80, app, options);
-        writer.write("For more options, use " + app + " --" + OPTION_HELP + "\n");
+        writer.write("For more options, use " + app + " --" + HELP + "\n");
         writer.flush();
     }
 
@@ -332,7 +333,7 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void buildOptions(Options options) {
-        addCommonOption(options, "h", OPTION_HELP, false);
+        addCommonOption(options, "h", HELP, false);
         addCommonOption(options, "p", OPTION_PROPERTIES_FILE, true);
         addCommonOption(options, "e", OPTION_ENGINE, true);
         addCommonOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
