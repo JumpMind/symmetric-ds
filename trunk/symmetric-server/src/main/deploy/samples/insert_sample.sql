@@ -2,10 +2,10 @@
 -- Sample Data
 ------------------------------------------------------------------------------
 insert into "item" ("item_id", "name") values (11000001, 'Yummy Gum');
-insert into "item_selling_price" ("item_id", "store", "price", "cost") values (11000001, '001',0.20, 0.10);
-insert into "item_selling_price" ("item_id", "store", "price", "cost") values (11000001, '002',0.30, 0.20);
+insert into "item_selling_price" ("item_id", "store_id", "price", "cost") values (11000001, '001',0.20, 0.10);
+insert into "item_selling_price" ("item_id", "store_id", "price", "cost") values (11000001, '002',0.30, 0.20);
 
-insert into "sale_transaction" ("tran_id", "store", "workstation", "day", "seq") 
+insert into "sale_transaction" ("tran_id", "store_id", "workstation", "day", "seq") 
 values (900, '001', '3', '2012-12-01', 90);
 insert into "sale_return_line_item" ("tran_id", "item_id", "price", "quantity", "returned_quantity")
 values (900, 11000001, 0.20, 1, 0);
