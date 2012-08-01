@@ -255,7 +255,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
             </step>
             <step>
                 <para> Watch the logging output of the store node to see it successfully register with the corp node. The store
-                    is configured to attempt registration once per minute.
+                    is configured to attempt registration at a random time interval up to a minute.
                      Once registered, the corp and store nodes are enabled for
                     synchronization!</para>
             </step>
@@ -299,11 +299,11 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
             <step>
                 <para>Add a new item for sale, with different prices at store 001 and store 002:</para>
                 <para>
-                    <command> insert into item (item_id, name) values (110000055, 'Soft Drink');</command>
+                    <command> insert into "item" ("item_id", "name") values (110000055, 'Soft Drink');</command>
                 </para>
                 <para>
-                    <command>insert into item_selling_price (item_id, store_id, price) values (110000055, '001', 0.65);</command>
-                    <command>insert into item_selling_price (item_id, store_id, price) values (110000055, '002', 1.00);</command>
+                    <command>insert into "item_selling_price" ("item_id", "store_id", "price") values (110000055, '001', 0.65);</command>
+                    <command>insert into "item_selling_price" ("item_id", "store_id", "price") values (110000055, '002', 1.00);</command>
                 </para>
                 <para>Once the statements are committed, the data change is captured by SymmetricDS and queued for the store node to pull.
                 </para>
