@@ -115,42 +115,29 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output) throws IOException {
-        setDefaultSchemaAndCatalog();
-        Database database = platform.readDatabase(catalog, schema, new String[] {"TABLE"});
+        Database database = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), new String[] {"TABLE"});
         exportTables(output, database.getTables());
     }
 
     public void exportTables(OutputStream output, String[] tableNames) throws IOException {
-        setDefaultSchemaAndCatalog();
         ArrayList<Table> tableList = new ArrayList<Table>();
 
         for (String tableName : tableNames) {
-            Table table = platform.readTableFromDatabase(catalog, schema, tableName);
+            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(), tableName);
             if (table != null) {
                 
                 tableList.add(table);
             } else if (! ignoreMissingTables){
-                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + catalog +
-                        " and schema " + schema);
+                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + getCatalogToUse() +
+                        " and schema " + getSchemaToUse());
             }
         }
         exportTables(output, tableList.toArray(new Table[tableList.size()]));
     }
 
     public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
-        setDefaultSchemaAndCatalog();
-        Table table = platform.getDdlReader().readTable(catalog, schema, tableName, sql);
+        Table table = platform.getDdlReader().readTable(getCatalogToUse(), getSchemaToUse(), tableName, sql);
         exportTables(output, new Table[] { table }, sql);
-    }
-    
-    protected void setDefaultSchemaAndCatalog() {
-        if (StringUtils.isBlank(schema)) {
-            schema = platform.getDefaultSchema();
-        }
-        
-        if (StringUtils.isBlank(catalog)) {
-            catalog = platform.getDefaultCatalog();
-        }
     }
 
     public void exportTables(OutputStream output, Table[] tables) throws IOException {
@@ -167,8 +154,8 @@ public class DbExport {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         writeComment(writer, "SymmetricDS " + Version.version() + " " + DbExport.class.getSimpleName());
-        writeComment(writer, "Catalog: " + (catalog != null ? catalog : ""));
-        writeComment(writer, "Schema: " + (schema != null ? schema : ""));
+        writeComment(writer, "Catalog: " + StringUtils.defaultString(getCatalogToUse()));
+        writeComment(writer, "Schema: " + StringUtils.defaultString(getSchemaToUse()));
         writeComment(writer, "Started on " + df.format(new Date()));
         
         if (format == Format.XML) {
@@ -205,6 +192,22 @@ public class DbExport {
     	csvWriter.flush();
     	writer.flush();
     }
+        
+    protected String getSchemaToUse() {
+        if (StringUtils.isBlank(schema)) {
+            return platform.getDefaultSchema();
+        } else {
+            return schema;
+        }
+    }
+    
+    protected String getCatalogToUse() {
+        if (StringUtils.isBlank(catalog)) {
+            return platform.getDefaultCatalog();
+        } else {
+            return catalog;
+        }
+    }    
  
     protected void writeData(final Writer writer, final CsvWriter csvWriter, final IDatabasePlatform platform, Table table, String sql) throws IOException {
         final Column[] columns = table.getColumns();

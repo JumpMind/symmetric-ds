@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -168,15 +170,23 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        createDataSource(properties);
-        waitForAvailableDatabase();
+        return createDatabasePlatform(properties, true);
+    }
+    
+    public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
+            boolean waitOnAvailableDatabase) {
+        BasicDataSource dataSource = createBasicDataSource(properties,
+                createSecurityService(properties));
+        if (waitOnAvailableDatabase) {
+            waitForAvailableDatabase(dataSource);
+        }
         boolean delimitedIdentifierMode = properties.is(
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
-        return JdbcDatabasePlatformFactory.createNewPlatformInstance(this.dataSource,
+        return JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
                 createSqlTemplateSettings(properties), delimitedIdentifierMode);
     }
 
-    protected SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {
+    protected static SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {
         SqlTemplateSettings settings = new SqlTemplateSettings();
         settings.setFetchSize(properties.getInt(ParameterConstants.DB_FETCH_SIZE, 1000));
         settings.setQueryTimeout(properties.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS, 300));
@@ -207,13 +217,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return new StagingManager(memoryThresholdInBytes, timeToLiveInMs, directory);
     }
 
-    protected void waitForAvailableDatabase() {
+    protected static void waitForAvailableDatabase(DataSource dataSource) {
         boolean success = false;
         while (!success) {
             Connection c = null;
             try {
                 synchronized (ClientSymmetricEngine.class) {
-                    c = this.dataSource.getConnection();
+                    c = dataSource.getConnection();
                     success = true;
                 }
             } catch (Exception ex) {

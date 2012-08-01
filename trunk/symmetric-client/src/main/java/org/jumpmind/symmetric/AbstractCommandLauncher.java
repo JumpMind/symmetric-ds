@@ -50,6 +50,7 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.slf4j.Logger;
@@ -109,9 +110,8 @@ public abstract class AbstractCommandLauncher {
         buildOptions(options);
         try {
             CommandLine line = parser.parse(options, args);
-            
-            if (line.hasOption(HELP)
-                    || (line.getArgList().contains(HELP))
+
+            if (line.hasOption(HELP) || (line.getArgList().contains(HELP))
                     || (line.getArgList().size() == 0 && printHelpIfNoOptionsAreProvided())) {
                 printHelp(line, options);
                 System.exit(2);
@@ -221,14 +221,14 @@ public abstract class AbstractCommandLauncher {
             }
         } else if (line.hasOption(OPTION_ENGINE)) {
             propertiesFile = findPropertiesFileForEngineWithName(line.getOptionValue(OPTION_ENGINE));
-            if (propertiesFile == null || (propertiesFile!=null && !propertiesFile.exists())) {
+            if (propertiesFile == null || (propertiesFile != null && !propertiesFile.exists())) {
                 throw new SymmetricException(
                         "Could not find the properties file for the engine specified: %s",
                         line.getOptionValue(OPTION_ENGINE));
             }
         } else {
             propertiesFile = findSingleEnginesPropertiesFile();
-            
+
             if (propertiesFile == null && requiresPropertiesFile()) {
                 throw new ParseException(String.format("You must specify either --%s or --%s",
                         OPTION_ENGINE, OPTION_PROPERTIES_FILE));
@@ -310,24 +310,32 @@ public abstract class AbstractCommandLauncher {
     protected ISymmetricEngine getSymmetricEngine(boolean testConnection) {
         if (engine == null) {
             if (testConnection) {
-                try {
-                    BasicDataSource ds = ClientSymmetricEngine
-                            .createBasicDataSource(propertiesFile);
-                    Connection conn = ds.getConnection();
-                    conn.close();
-                    ds.close();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                testConnection();
             }
             engine = new ClientSymmetricEngine(propertiesFile);
+            platform = engine.getSymmetricDialect().getPlatform();
         }
         return engine;
     }
+    
+    protected void testConnection() {
+        try {
+            BasicDataSource ds = ClientSymmetricEngine
+                    .createBasicDataSource(propertiesFile);
+            Connection conn = ds.getConnection();
+            conn.close();
+            ds.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }        
+    }
 
-    protected IDatabasePlatform getDatabasePlatform() {
+    protected IDatabasePlatform getDatabasePlatform(boolean testConnection) {
         if (platform == null) {
-            platform = getSymmetricEngine().getSymmetricDialect().getPlatform();
+            if (testConnection) {
+                testConnection();
+            }
+            platform = ClientSymmetricEngine.createDatabasePlatform(new TypedProperties(propertiesFile), false);
         }
         return platform;
     }
