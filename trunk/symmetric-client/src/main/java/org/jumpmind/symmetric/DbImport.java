@@ -67,6 +67,9 @@ public class DbImport {
 
     private IDatabasePlatform platform;
     
+    public DbImport() {
+    }
+    
     public DbImport(IDatabasePlatform platform) {
         this.platform = platform;
     }
@@ -285,4 +288,7 @@ public class DbImport {
         return failOnError;
     }
 
+    public void setDataSource(DataSource dataSource) {
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
+    }
 }
