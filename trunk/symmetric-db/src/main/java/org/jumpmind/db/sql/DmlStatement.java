@@ -115,7 +115,7 @@ public class DmlStatement {
         int type = column.getMappedTypeCode();
         if (type == Types.DATE && isDateOverrideToTimestamp) {
             type = Types.TIMESTAMP;
-        } else if (type == Types.FLOAT || type == Types.DOUBLE) {
+        } else if (type == Types.FLOAT || type == Types.DOUBLE || type == Types.REAL) {
             type = Types.DECIMAL;
         }
         return type;        
