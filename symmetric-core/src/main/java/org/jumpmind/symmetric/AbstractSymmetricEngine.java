@@ -94,7 +94,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected static final Logger log = LoggerFactory.getLogger(AbstractSymmetricEngine.class);
 
     private boolean started = false;
 

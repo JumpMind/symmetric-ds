@@ -1,9 +1,13 @@
 package org.jumpmind.properties;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +18,23 @@ public class TypedProperties extends Properties {
     protected static Logger log = LoggerFactory.getLogger(TypedProperties.class);
 
     public TypedProperties() {
+    }
+    
+    public TypedProperties(File file) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            load(fis);
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     public TypedProperties(Properties properties) {
