@@ -244,6 +244,12 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
         <para>Note also that, for Oracle, you can control the amount of precision used by the Oracle triggers 
         with the parameter <literal>oracle.template.precision</literal>, which defaults to a precision of 30,10.
         </para>   
+        <para>If the following Oracle error 'ORA-01489: result of string concatenation is too long' is encountered
+        you might need to set <code>use_capture_lobs</code> to 1 on in the <xref linkend="table_trigger" xrefstyle="table"/> table
+        and resync the triggers.  The error can happen when the captured data in a row exceeds 4k and lob columns do not exist
+        in the table.  By enabling <code>use_capture_lobs</code> the concatanated varchar string is cast to a clob which 
+        allows a length of more than 4k. 
+        </para>
     </section>
     <section id="ap02-mysql">
         <title>MySQL</title>
