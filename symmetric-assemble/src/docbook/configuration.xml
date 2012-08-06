@@ -1471,7 +1471,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
       complete, at batch commit and/or at batch rollback.</para>
     </section>
 
-    <section id="data-load-filter">
+    <section id="data-load-filter-config">
       <title>Load Filter Configuration Table</title>
 
       <para>SymmetricDS stores its load filter configuration in a single table
