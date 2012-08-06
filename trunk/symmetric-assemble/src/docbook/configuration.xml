@@ -1442,7 +1442,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             To be done.
             </para>        
     </section> -->
-
+ </section>
     <section id="data-load-filter">
       <title>Data Load Filters</title>
 
@@ -1469,13 +1469,12 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
       provide as part of the configuration. Actions can be taken at different
       points in the load process including before write, after write, at batch
       complete, at batch commit and/or at batch rollback.</para>
-    </section>
 
     <section id="data-load-filter-config">
       <title>Load Filter Configuration Table</title>
 
       <para>SymmetricDS stores its load filter configuration in a single table
-      called <xref linkend="load-filter" xrefstyle="table"/>. The load filter
+      called <xref linkend="table_load_filter" xrefstyle="table"/>. The load filter
       table allows you to specify the following: <itemizedlist>
           <listitem>Load Filter Type ('load_filter_type'): The type of load
           filter. Today only beanshell is support ('BSH'), but SQL scripts may
@@ -1573,13 +1572,18 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
       equal to a column named KEY_FIELD on the TABLE_TO_WATCH table.
       <programlisting>
 insert into sym_load_filter 
-   (LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID, TARGET_NODE_GROUP_ID, TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME,
-    TARGET_TABLE_NAME, FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE, BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, 
-    BATCH_COMPLETE_SCRIPT, BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT, CREATE_TIME, LAST_UPDATE_BY,
-    LAST_UPDATE_TIME, LOAD_FILTER_ORDER, FAIL_ON_ERROR)
+   (LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID, TARGET_NODE_GROUP_ID,
+    TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME, TARGET_TABLE_NAME, 
+    FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE, 
+    BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT, 
+    BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT, 
+    CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME,
+    LOAD_FILTER_ORDER, FAIL_ON_ERROR)
 values ('TABLE_TO_RELOAD','BSH','Client','Server',NULL,NULL,
-    'TABLE_TO_WATCH',1,1,0,null,'engine.getDataService().reloadTable(context.getBatch().getSourceNodeId(), 
-    table.getCatalog(), table.getSchema(),"TABLE_TO_RELOAD","KEY_FIELD=''" + KEY_FIELD + "''");'
+    'TABLE_TO_WATCH',1,1,0,null,
+    'engine.getDataService().reloadTable(context.getBatch().getSourceNodeId(), 
+    table.getCatalog(), table.getSchema(),
+    "TABLE_TO_RELOAD","KEY_FIELD=''" + KEY_FIELD + "''");'
     ,null,null,null,null,sysdate,'userid',sysdate,1,1);
 
 </programlisting></para>
