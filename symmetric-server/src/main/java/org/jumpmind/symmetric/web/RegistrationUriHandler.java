@@ -39,9 +39,7 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
  */
 public class RegistrationUriHandler extends AbstractUriHandler {
     
-    private IRegistrationService registrationService;
-    
-    
+    private IRegistrationService registrationService;        
     
     public RegistrationUriHandler( IParameterService parameterService,
             IRegistrationService registrationService, IInterceptor... interceptors) {
