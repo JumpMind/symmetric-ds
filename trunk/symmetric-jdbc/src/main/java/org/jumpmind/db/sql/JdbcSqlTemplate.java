@@ -499,6 +499,20 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             close(c);
         }
     }
+    
+    public static void close(boolean autoCommitValue, int transactionIsolationLevel, Connection c) {
+        try {
+            if (c != null) {
+                c.setAutoCommit(autoCommitValue);
+                if (c.getTransactionIsolation() != transactionIsolationLevel) {
+                    c.setTransactionIsolation(transactionIsolationLevel);
+                }
+            }
+        } catch (SQLException ex) {
+        } finally {
+            close(c);
+        }
+    }    
 
     public static void close(Connection c) {
         try {

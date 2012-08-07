@@ -95,16 +95,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 	public void close() {
 		JdbcSqlTemplate.close(rs);
 		JdbcSqlTemplate.close(st);
-		JdbcSqlTemplate.close(autoCommitFlag, c);
+		JdbcSqlTemplate.close(autoCommitFlag, originalIsolationLevel, c);
 		SqlUtils.removeSqlReadCursor(this);
-		try {
-			if (c != null && !c.isClosed()
-					&& c.getTransactionIsolation() != originalIsolationLevel) {
-				c.setTransactionIsolation(originalIsolationLevel);
-			}
-		} catch (SQLException ex) {
-			throw sqlTemplate.translate(ex);
-		}
-
 	}
 }
