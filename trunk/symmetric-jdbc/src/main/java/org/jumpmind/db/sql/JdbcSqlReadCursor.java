@@ -92,18 +92,19 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         return mapOfColValues;
     }
 
-    public void close() {
-        try {
-	        if (c.getTransactionIsolation() != originalIsolationLevel) {
-	        	c.setTransactionIsolation(originalIsolationLevel);
-	        }
-        } catch (SQLException ex) {
-        	throw sqlTemplate.translate(ex);
-        } finally {
-	    	JdbcSqlTemplate.close(rs);
-	        JdbcSqlTemplate.close(st);
-	        JdbcSqlTemplate.close(autoCommitFlag, c);
-	        SqlUtils.removeSqlReadCursor(this);
-        }
-    }
+	public void close() {
+		JdbcSqlTemplate.close(rs);
+		JdbcSqlTemplate.close(st);
+		JdbcSqlTemplate.close(autoCommitFlag, c);
+		SqlUtils.removeSqlReadCursor(this);
+		try {
+			if (c != null && !c.isClosed()
+					&& c.getTransactionIsolation() != originalIsolationLevel) {
+				c.setTransactionIsolation(originalIsolationLevel);
+			}
+		} catch (SQLException ex) {
+			throw sqlTemplate.translate(ex);
+		}
+
+	}
 }
