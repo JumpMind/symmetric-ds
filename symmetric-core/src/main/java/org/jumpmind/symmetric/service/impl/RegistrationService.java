@@ -126,15 +126,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throw new RegistrationRedirectException(redirectUrl);
         }
 
-        String nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdGenerator()
-                .selectNodeId(nodeService, preRegisteredNode) : preRegisteredNode.getNodeId();
+        String nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdCreator()
+                .selectNodeId(preRegisteredNode, remoteHost, remoteAddress) : preRegisteredNode.getNodeId();
         Node registeredNode = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         if ((registeredNode == null || security == null || !security.isRegistrationEnabled())
                 && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
             openRegistration(preRegisteredNode);
-            nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdGenerator()
-                    .selectNodeId(nodeService, preRegisteredNode) : preRegisteredNode.getNodeId();
+            nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService.getNodeIdCreator()
+                    .selectNodeId(preRegisteredNode, remoteHost, remoteAddress) : preRegisteredNode.getNodeId();
             security = nodeService.findNodeSecurity(nodeId);
             registeredNode = nodeService.findNode(nodeId);
         } else if (registeredNode == null || security == null || !security.isRegistrationEnabled()) {
@@ -330,7 +330,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     public synchronized void reOpenRegistration(String nodeId) {
         Node node = nodeService.findNode(nodeId);
-        String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
+        String password = nodeService.getNodeIdCreator().generatePassword(node);
         password = filterPasswordOnSaveIfNeeded(password);
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
@@ -368,7 +368,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (me != null
                 || (parameterService.getExternalId().equals(node.getExternalId()) && parameterService
                         .getNodeGroupId().equals(node.getNodeGroupId()))) {
-            String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
+            String nodeId = nodeService.getNodeIdCreator().generateNodeId(node, null, null);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
                 node.setNodeId(nodeId);
@@ -379,8 +379,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // make sure there isn't a node security row lying around w/out
                 // a node row
                 nodeService.deleteNodeSecurity(nodeId);                                
-                String password = nodeService.getNodeIdGenerator().generatePassword(nodeService,
-                        node);
+                String password = nodeService.getNodeIdCreator().generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, me.getNodeId() });

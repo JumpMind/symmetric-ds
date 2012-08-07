@@ -35,7 +35,7 @@ public class DbExportImportTest extends AbstractServiceTest {
               export.setNoData(false);
               
               String output = export.exportTables(new String[] {"TEST"}).toLowerCase();
-              
+              System.out.println(output);
               // TODO validate
         }
     }

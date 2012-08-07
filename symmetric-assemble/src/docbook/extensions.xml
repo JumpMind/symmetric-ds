@@ -176,11 +176,11 @@
             </para>
         </section>        
         <section id="extensions-node-id-generator">
-            <title>INodeIdGenerator</title>
+            <title>INodeIdCreator</title>
             <para>
              This extension point allows SymmetricDS users to implement their own algorithms for how 
              node ids and passwords are generated or selected during the registration process.  There may be 
-             only one node generator per SymmetricDS instance.
+             only one node creator per SymmetricDS instance (Please note that the node creator extension has replaced the node generator extension).
             </para>
         </section>
         <section id="extensions-trigger-creation-listener">

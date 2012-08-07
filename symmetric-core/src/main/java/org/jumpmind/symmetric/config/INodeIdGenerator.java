@@ -23,15 +23,16 @@ package org.jumpmind.symmetric.config;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
+import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
 
 /**
  * An {@link IExtensionPoint} that allows SymmetricDS users to implement their
  * own algorithms for how node_ids and passwords are generated or selected
  * during registration.  There may be only one node generator per SymmetricDS instance.
  * </p>
- * The default implementation of this is the {@link DefaultNodeIdGenerator}
+ * The default implementation of this is the {@link DefaultNodeIdCreator}
  */
+@Deprecated
 public interface INodeIdGenerator extends IExtensionPoint {
 
     /**

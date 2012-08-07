@@ -21,11 +21,9 @@
 
 package org.jumpmind.symmetric.util;
 
-import java.net.URL;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
@@ -37,20 +35,23 @@ import org.slf4j.LoggerFactory;
 import bsh.EvalError;
 import bsh.Interpreter;
 
-public class DefaultNodeIdGenerator implements INodeIdGenerator {
+public class DefaultNodeIdCreator implements INodeIdCreator {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected IParameterService parameterService;
+    
+    protected INodeService nodeService;
 
-    public DefaultNodeIdGenerator(IParameterService parameterService) {
+    public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService) {
         this.parameterService = parameterService;
-    }
-
-    public String selectNodeId(INodeService nodeService, Node node) {
+        this.nodeService = nodeService;
+    }        
+    
+    public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
         final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_GENERATOR_MAX_NODES, 100);
         if (StringUtils.isBlank(node.getNodeId())) {
-            String nodeId = evaluateScript(node);
+            String nodeId = evaluateScript(node, remoteHost, remoteAddress);
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
                 for (int sequence = 0; sequence < maxTries; sequence++) {
@@ -67,11 +68,11 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
         return node.getNodeId();
     }
 
-    public String generateNodeId(INodeService nodeService, Node node) {
+    public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
         final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_GENERATOR_MAX_NODES, 100);
         String nodeId = node.getNodeId();
         if (StringUtils.isBlank(nodeId)) {
-            nodeId = evaluateScript(node);
+            nodeId = evaluateScript(node, remoteHost, remoteAddress);
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
                 for (int sequence = 0; sequence < maxTries; sequence++) {
@@ -98,23 +99,20 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
     protected String buildNodeId(INodeService nodeService, Node node) {
         return StringUtils.isBlank(node.getExternalId()) ? "0" : node.getExternalId();
     }
-
-    public String generatePassword(INodeService nodeService, Node node) {
+    
+    public String generatePassword(Node node) {
         return new SecurityService().nextSecureHexString(30);
     }
  
-    protected String evaluateScript(Node node) {
+    protected String evaluateScript(Node node, String remoteHost, String remoteAddress) {
         String script = parameterService.getString(ParameterConstants.NODE_ID_GENERATOR_SCRIPT);
         if (StringUtils.isNotBlank(script)) {
             try {
                 Interpreter interpreter = new Interpreter();
                 interpreter.set("node", node);
-                try {
-                    URL url = new URL(node.getSyncUrl());
-                    interpreter.set("hostname", url.getHost());
-                } catch (Exception ex) {
-                    interpreter.set("hostname", null);
-                }
+                interpreter.set("hostname", remoteHost);
+                interpreter.set("remoteHost", remoteHost);
+                interpreter.set("remoteAddress", remoteAddress);
                 Object retValue = interpreter.eval(script);
                 if (retValue != null) {
                     return retValue.toString();

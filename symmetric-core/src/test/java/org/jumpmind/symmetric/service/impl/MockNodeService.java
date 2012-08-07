@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -195,11 +195,11 @@ public class MockNodeService implements INodeService {
     public void flushNodeAuthorizedCache() {
     }
 
-    public INodeIdGenerator getNodeIdGenerator() {
+    public INodeIdCreator getNodeIdCreator() {
         return null;
     }
 
-    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) {
+    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator) {
     }
 
     public boolean isDataLoadCompleted() {
