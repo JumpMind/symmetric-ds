@@ -77,6 +77,10 @@ public class WebConstants {
     public static final String EXTERNAL_ID = "externalId";
 
     public static final String SYMMETRIC_VERSION = "symmetricVersion";
+    
+    public static final String HOST_NAME = "hostName";
+    
+    public static final String IP_ADDRESS = "ipAddress";
 
     public static final String SYNC_URL = "syncURL";
 

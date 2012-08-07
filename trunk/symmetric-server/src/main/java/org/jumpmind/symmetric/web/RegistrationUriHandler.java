@@ -54,7 +54,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         Node node = transform(req);
         try {
             OutputStream outputStream = res.getOutputStream();
-            if (!registerNode(node, req.getRemoteHost(), req.getRemoteAddr(), outputStream)) {
+            if (!registerNode(node, getHostName(req), getIpAddress(req), outputStream)) {
                 log.warn("{} was not allowed to register.", node);
                 ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.",
                         node));
@@ -77,6 +77,22 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         node.setDatabaseType(ServletUtils.getParameter(req, WebConstants.DATABASE_TYPE));
         node.setDatabaseVersion(ServletUtils.getParameter(req, WebConstants.DATABASE_VERSION));
         return node;
+    }
+    
+    protected String getHostName(HttpServletRequest req) {
+        String hostName = ServletUtils.getParameter(req, WebConstants.HOST_NAME);
+        if (StringUtils.isBlank(hostName)) {
+            hostName = req.getRemoteHost();
+        }
+        return hostName;
+    }
+    
+    protected String getIpAddress(HttpServletRequest req) {
+        String ipAdddress = ServletUtils.getParameter(req, WebConstants.IP_ADDRESS);
+        if (StringUtils.isBlank(ipAdddress)) {
+            ipAdddress = req.getRemoteAddr();
+        }
+        return ipAdddress;
     }
 
     protected boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream outputStream) throws IOException {

@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
@@ -199,6 +200,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
         append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
         append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+        append(builder, WebConstants.HOST_NAME, AppUtils.getHostName());
+        append(builder, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
         return builder.toString();
     }
 
