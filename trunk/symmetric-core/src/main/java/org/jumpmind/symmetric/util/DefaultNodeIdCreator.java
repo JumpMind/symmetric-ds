@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import bsh.TargetError;
 
 public class DefaultNodeIdCreator implements INodeIdCreator {
 
@@ -49,7 +50,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }        
     
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
-        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_GENERATOR_MAX_NODES, 100);
+        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
         if (StringUtils.isBlank(node.getNodeId())) {
             String nodeId = evaluateScript(node, remoteHost, remoteAddress);
             if (StringUtils.isBlank(nodeId)) {
@@ -69,7 +70,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }
 
     public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
-        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_GENERATOR_MAX_NODES, 100);
+        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
         String nodeId = node.getNodeId();
         if (StringUtils.isBlank(nodeId)) {
             nodeId = evaluateScript(node, remoteHost, remoteAddress);
@@ -105,7 +106,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }
  
     protected String evaluateScript(Node node, String remoteHost, String remoteAddress) {
-        String script = parameterService.getString(ParameterConstants.NODE_ID_GENERATOR_SCRIPT);
+        String script = parameterService.getString(ParameterConstants.NODE_ID_CREATOR_SCRIPT);
         if (StringUtils.isNotBlank(script)) {
             try {
                 Interpreter interpreter = new Interpreter();
@@ -116,6 +117,12 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
                 Object retValue = interpreter.eval(script);
                 if (retValue != null) {
                     return retValue.toString();
+                }
+            } catch (TargetError e) {
+                if (e.getTarget() instanceof RuntimeException) {
+                    throw (RuntimeException)e.getTarget();
+                } else {
+                    throw new RuntimeException(e.getTarget() != null ? e.getTarget() : e);
                 }
             } catch (EvalError e) {
                 log.error(

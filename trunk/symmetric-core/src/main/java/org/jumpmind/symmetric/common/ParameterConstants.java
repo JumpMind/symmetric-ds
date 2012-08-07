@@ -176,8 +176,8 @@ final public class ParameterConstants {
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
     
-    public final static String NODE_ID_GENERATOR_SCRIPT = "node.id.generator.script";
-    public final static String NODE_ID_GENERATOR_MAX_NODES = "node.id.generator.max.nodes";
+    public final static String NODE_ID_CREATOR_SCRIPT = "node.id.creator.script";
+    public final static String NODE_ID_CREATOR_MAX_NODES = "node.id.creator.max.nodes";
 
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";

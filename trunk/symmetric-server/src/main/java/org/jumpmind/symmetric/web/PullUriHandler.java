@@ -112,7 +112,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     outgoingTransport.close();
                 }
             } else {
-                log.warn("Node {} does not exist.", nodeId);
+                log.warn("Node {} does not exist", nodeId);
             }
         } finally {
             statisticManager.incrementNodesPulled(1);

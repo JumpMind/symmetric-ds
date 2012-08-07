@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -117,15 +118,20 @@ abstract public class AbstractTransportManager {
         return builder.toString();
     }
 
-    protected static void append(StringBuilder builder, String name, Object value) throws IOException {
-        int len = builder.length();
-        if (len > 0 && builder.charAt(len - 1) != '?') {
-            builder.append("&");
+    protected static void append(StringBuilder builder, String name, Object value) {
+        try {
+            int len = builder.length();
+            if (len > 0 && builder.charAt(len - 1) != '?') {
+                builder.append("&");
+            }
+            if (value == null) {
+                value = "";
+            }
+            builder.append(name).append("=")
+                    .append(URLEncoder.encode(value.toString(), Constants.ENCODING));
+        } catch (IOException ex) {
+            throw new IoException(ex);
         }
-        if (value == null) {
-            value = "";
-        }
-        builder.append(name).append("=").append(URLEncoder.encode(value.toString(), Constants.ENCODING));
     }
 
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
