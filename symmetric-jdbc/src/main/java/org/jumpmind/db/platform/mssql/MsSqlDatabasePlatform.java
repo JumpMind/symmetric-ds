@@ -41,17 +41,19 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      * Creates a new platform instance.
      */
     public MsSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
-        super(dataSource, settings);        
+        super(dataSource, settings);
+        // override the ddl builder based on the version
+        if (this.sqlTemplate.getDatabaseMajorVersion() >= 10) {
+            this.ddlBuilder = new MsSql10DdlBuilder();
+        } else {
+            this.ddlBuilder = new MsSqlDdlBuilder();    
+        }
+
     }
 
     @Override
-    protected MsSqlDdlBuilder createDdlBuilder() {
-    	
-        if (this.sqlTemplate.getDatabaseMajorVersion() >= 10) {
-            return new MsSql10DdlBuilder();
-        } else {
-            return new MsSqlDdlBuilder();    
-        }
+    protected MsSqlDdlBuilder createDdlBuilder() {    	
+       return new MsSqlDdlBuilder();    
     }
 
     @Override
