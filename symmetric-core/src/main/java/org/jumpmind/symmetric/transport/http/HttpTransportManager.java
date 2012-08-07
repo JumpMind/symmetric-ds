@@ -243,6 +243,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(WebConstants.SECURITY_TOKEN);
         sb.append("=");
         sb.append(securityToken);
+        append(sb, WebConstants.HOST_NAME, AppUtils.getHostName());
+        append(sb, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());        
         return sb.toString();
     }
 
