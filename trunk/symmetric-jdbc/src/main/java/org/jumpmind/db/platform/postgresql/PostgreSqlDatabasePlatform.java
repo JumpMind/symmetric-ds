@@ -32,9 +32,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BinaryEncoding;
 
 /*
@@ -53,8 +53,6 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public PostgreSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
-        ddlReader = new PostgreSqlDdlReader(this);
-        ddlBuilder = new PostgreSqlDdlBuilder();
     }   
     
     protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
@@ -66,10 +64,20 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         settings.setQueryTimeout(0);
         return settings;
     }
+
+    @Override
+    protected PostgreSqlDdlBuilder createDdlBuilder() {
+        return new PostgreSqlDdlBuilder();
+    }
+
+    @Override
+    protected PostgreSqlDdlReader createDdlReader() {
+        return new PostgreSqlDdlReader(this);
+    }    
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, null);
+    protected PostgreSqlJdbcSqlTemplate createSqlTemplate() {
+        return new PostgreSqlJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {

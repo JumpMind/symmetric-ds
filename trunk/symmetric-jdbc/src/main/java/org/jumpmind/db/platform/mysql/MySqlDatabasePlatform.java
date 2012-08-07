@@ -45,13 +45,21 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public MySqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
-        ddlReader = new MySqlDdlReader(this);
-        ddlBuilder = new MySqlDdlBuilder();
     }
+
+    @Override
+    protected MySqlDdlBuilder createDdlBuilder() {
+        return new MySqlDdlBuilder();
+    }
+
+    @Override
+    protected MySqlDdlReader createDdlReader() {
+        return new MySqlDdlReader(this);
+    }    
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new MySqlJdbcSqlTemplate(dataSource, settings, null);
+    protected MySqlJdbcSqlTemplate createSqlTemplate() {
+        return new MySqlJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
     
     /*

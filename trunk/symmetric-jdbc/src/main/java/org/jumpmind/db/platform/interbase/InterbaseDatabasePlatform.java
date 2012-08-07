@@ -41,13 +41,21 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public InterbaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        ddlReader = new InterbaseDdlReader(this);
-        ddlBuilder = new InterbaseDdlBuilder();
     }
+
+    @Override
+    protected InterbaseDdlBuilder createDdlBuilder() {
+        return new InterbaseDdlBuilder();
+    }
+
+    @Override
+    protected InterbaseDdlReader createDdlReader() {
+        return new InterbaseDdlReader(this);
+    }    
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new InterbaseJdbcSqlTemplate(dataSource, settings, null);
+    protected InterbaseJdbcSqlTemplate createSqlTemplate() {
+        return new InterbaseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {

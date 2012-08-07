@@ -22,17 +22,24 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     public InformixDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-
-        ddlReader = new InformixDdlReader(this);
-        ddlBuilder = new InformixDdlBuilder();
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new InformixJdbcSqlTemplate(dataSource, settings, null);
+    protected InformixDdlBuilder createDdlBuilder() {
+        return new InformixDdlBuilder();
+    }
+
+    @Override
+    protected InformixDdlReader createDdlReader() {
+        return new InformixDdlReader(this);
+    }    
+    
+    @Override
+    protected InformixJdbcSqlTemplate createSqlTemplate() {
+        return new InformixJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {

@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
@@ -49,12 +50,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int[] foreignKeyViolationCodes;
 
     protected String[] foreignKeyViolationSqlStates;
+    
+    protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            LobHandler lobHandler) {
+            LobHandler lobHandler, DatabaseInfo databaseInfo) {
         this.dataSource = dataSource;
         this.settings = settings == null ? new SqlTemplateSettings() : settings;
         this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
+        this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
     }
     
     protected Connection getConnection() throws SQLException {
@@ -87,7 +91,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
     }
 
-    public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
+    public int getIsolationLevel() {
+		return isolationLevel;
+	}
+
+	public void setIsolationLevel(int isolationLevel) {
+		this.isolationLevel = isolationLevel;
+	}
+
+	public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {

@@ -26,6 +26,8 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     protected JdbcSqlTemplate sqlTemplate;
 
     protected int rowNumber;
+    
+    protected int originalIsolationLevel;
 
     public JdbcSqlReadCursor() {
     }
@@ -36,8 +38,11 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         this.mapper = mapper;
         try {
             c = sqlTemplate.getDataSource().getConnection();
+        	originalIsolationLevel = c.getTransactionIsolation();            
             autoCommitFlag = c.getAutoCommit();
-
+            if (c.getTransactionIsolation() != sqlTemplate.getIsolationLevel()) {
+            	c.setTransactionIsolation(sqlTemplate.getIsolationLevel());
+            }
             if (sqlTemplate.isRequiresAutoCommitFalseToSetFetchSize()) {
                 c.setAutoCommit(false);
             }
@@ -51,6 +56,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             rs = st.executeQuery();
             SqlUtils.addSqlReadCursor(this);
+            
         } catch (SQLException ex) {
             close();
             throw sqlTemplate.translate(sql, ex);
@@ -87,10 +93,17 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     }
 
     public void close() {
-        JdbcSqlTemplate.close(rs);
-        JdbcSqlTemplate.close(st);
-        JdbcSqlTemplate.close(autoCommitFlag, c);
-        SqlUtils.removeSqlReadCursor(this);
+        try {
+	        if (c.getTransactionIsolation() != originalIsolationLevel) {
+	        	c.setTransactionIsolation(originalIsolationLevel);
+	        }
+        } catch (SQLException ex) {
+        	throw sqlTemplate.translate(ex);
+        } finally {
+	    	JdbcSqlTemplate.close(rs);
+	        JdbcSqlTemplate.close(st);
+	        JdbcSqlTemplate.close(autoCommitFlag, c);
+	        SqlUtils.removeSqlReadCursor(this);
+        }
     }
-
 }

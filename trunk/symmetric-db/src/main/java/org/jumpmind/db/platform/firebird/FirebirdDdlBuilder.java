@@ -19,6 +19,7 @@ package org.jumpmind.db.platform.firebird;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
@@ -78,6 +79,8 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
+        databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_REPEATABLE_READ);
+        
         addEscapedCharSequence("'", "''");
     }
 

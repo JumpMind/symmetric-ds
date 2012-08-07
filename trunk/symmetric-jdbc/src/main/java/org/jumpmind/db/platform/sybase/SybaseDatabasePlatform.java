@@ -50,17 +50,24 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public SybaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-
-        ddlReader = new SybaseDdlReader(this);
-        ddlBuilder = new SybaseDdlBuilder();
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
 
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new SybaseJdbcSqlTemplate(dataSource, settings, null);
+    protected SybaseDdlBuilder createDdlBuilder() {
+        return new SybaseDdlBuilder();
+    }
+
+    @Override
+    protected SybaseDdlReader createDdlReader() {
+        return new SybaseDdlReader(this);
+    }    
+    
+    @Override
+    protected SybaseJdbcSqlTemplate createSqlTemplate() {
+        return new SybaseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
     
     public String getName() {

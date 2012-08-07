@@ -47,13 +47,21 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public DerbyDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);        
-        ddlReader = new DerbyDdlReader(this);
-        ddlBuilder = new DerbyDdlBuilder();
     }
 
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new DerbyJdbcSqlTemplate(dataSource, settings, null);
+    protected DerbyDdlBuilder createDdlBuilder() {
+        return new DerbyDdlBuilder();
+    }
+
+    @Override
+    protected DerbyDdlReader createDdlReader() {
+        return new DerbyDdlReader(this);
+    }
+
+    @Override
+    protected DerbyJdbcSqlTemplate createSqlTemplate() {
+        return new DerbyJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {
