@@ -14,13 +14,21 @@ public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
     
     public GreenplumPlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        this.ddlReader = new GreenplumDdlReader(this);
-        this.ddlBuilder = new GreenplumDdlBuilder();
     }
-    
+        
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new GreenplumJdbcSqlTemplate(dataSource, settings, null);
+    protected GreenplumDdlBuilder createDdlBuilder() {
+        return  new GreenplumDdlBuilder();
+    }
+
+    @Override
+    protected GreenplumDdlReader createDdlReader() {
+        return new GreenplumDdlReader(this);
+    }        
+
+    @Override
+    protected GreenplumJdbcSqlTemplate createSqlTemplate() {
+        return new GreenplumJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
         
     @Override

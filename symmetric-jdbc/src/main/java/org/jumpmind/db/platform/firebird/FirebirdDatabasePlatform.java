@@ -42,13 +42,21 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public FirebirdDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        ddlReader = new FirebirdDdlReader(this);
-        ddlBuilder = new FirebirdDdlBuilder();
     }
+
+    @Override
+    protected FirebirdDdlBuilder createDdlBuilder() {
+        return new FirebirdDdlBuilder();
+    }
+
+    @Override
+    protected FirebirdDdlReader createDdlReader() {
+        return new FirebirdDdlReader(this);
+    }    
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new FirebirdJdbcSqlTemplate(dataSource, settings, null);   
+    protected FirebirdJdbcSqlTemplate createSqlTemplate() {
+        return new FirebirdJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());   
     }
 
     public String getName() {

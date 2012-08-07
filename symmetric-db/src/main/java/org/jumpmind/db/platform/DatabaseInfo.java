@@ -20,6 +20,7 @@ package org.jumpmind.db.platform;
  */
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -250,6 +251,12 @@ public class DatabaseInfo {
     private HashSet<Integer> typesWithPrecisionAndScale = new HashSet<Integer>();
 
     /**
+     * The minimum transaction isolation level for the given database that will prevent
+     * phantom reads from occurring. Default is TRANSACTION_READ_COMMITTED which covers most dbs 
+     */
+    private int minIsolationLevelToPreventPhantomReads = Connection.TRANSACTION_READ_COMMITTED;
+    
+	/**
      * Creates a new platform info object.
      */
     public DatabaseInfo() {
@@ -1236,4 +1243,13 @@ public class DatabaseInfo {
     public boolean isRequiresSavePointsInTransaction() {
         return requiresSavePointsInTransaction;
     }
+    
+    public int getMinIsolationLevelToPreventPhantomReads() {
+		return minIsolationLevelToPreventPhantomReads;
+	}
+
+	public void setMinIsolationLevelToPreventPhantomReads(
+			int minIsolationLevelToPreventPhantomReads) {
+		this.minIsolationLevelToPreventPhantomReads = minIsolationLevelToPreventPhantomReads;
+	}
 }

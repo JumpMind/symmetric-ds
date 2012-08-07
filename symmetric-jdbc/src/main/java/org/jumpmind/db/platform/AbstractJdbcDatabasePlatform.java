@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatform {
 
@@ -20,11 +20,17 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     public AbstractJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         this.dataSource = dataSource;
         this.settings = settings;
-        createSqlTemplate();
+        this.ddlBuilder = createDdlBuilder();
+        this.sqlTemplate = createSqlTemplate();
+        this.ddlReader = createDdlReader();
     }
 
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new JdbcSqlTemplate(dataSource, settings, null);
+    protected abstract IDdlBuilder createDdlBuilder();
+    
+    protected abstract IDdlReader createDdlReader();
+    
+    protected ISqlTemplate createSqlTemplate() {
+        return new JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo()); 
     }
 
     @Override

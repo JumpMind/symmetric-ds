@@ -25,10 +25,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.JdbcUtils;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
@@ -56,15 +56,23 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public OracleDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        ddlReader = new OracleDdlReader(this);
-        ddlBuilder = new OracleDdlBuilder();
     }
 
     @Override
-    protected void createSqlTemplate() {
+    protected OracleDdlBuilder createDdlBuilder() {
+        return new OracleDdlBuilder();
+    }
+
+    @Override
+    protected OracleDdlReader createDdlReader() {
+        return new OracleDdlReader(this);
+    }    
+    
+    @Override
+    protected OracleJdbcSqlTemplate createSqlTemplate() {
         OracleLobHandler lobHandler = new OracleLobHandler();
         lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
-        this.sqlTemplate = new OracleJdbcSqlTemplate(dataSource, settings, lobHandler);
+        return new OracleJdbcSqlTemplate(dataSource, settings, lobHandler, getDatabaseInfo());
     }
 
     public String getName() {

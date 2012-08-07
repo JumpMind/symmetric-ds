@@ -42,13 +42,21 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public Db2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);        
-        ddlReader = new Db2DdlReader(this);
-        ddlBuilder = new Db2DdlBuilder();
     }
     
     @Override
-    protected void createSqlTemplate() {
-        this.sqlTemplate = new Db2JdbcSqlTemplate(dataSource, settings, null);
+    protected Db2DdlBuilder createDdlBuilder() {
+        return new Db2DdlBuilder();
+    }
+
+    @Override
+    protected Db2DdlReader createDdlReader() {
+        return new Db2DdlReader(this);
+    }
+
+    @Override
+    protected Db2JdbcSqlTemplate createSqlTemplate() {
+        return new Db2JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {
