@@ -802,7 +802,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean removeTrigger = false;
             Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
             Trigger trigger = getTriggerById(history.getTriggerId(), false);
-            if (tables == null) {
+            if (tables == null && trigger != null) {
                 tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
             }
