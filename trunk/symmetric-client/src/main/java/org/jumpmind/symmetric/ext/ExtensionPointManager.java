@@ -28,9 +28,11 @@ import java.util.TreeMap;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.config.NodeIdCreatorAdaptor;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -217,8 +219,16 @@ public class ExtensionPointManager implements IExtensionPointManager {
             installed = true;
             extensionPoints.add(new ExtensionPointMetaData(ext, beanName, INodeIdGenerator.class,
                     true));
-            engine.getNodeService().setNodeIdGenerator((INodeIdGenerator) ext);
+            engine.getNodeService().setNodeIdCreator(
+                    new NodeIdCreatorAdaptor((INodeIdGenerator) ext, engine.getNodeService()));
         }
+        
+        if (ext instanceof INodeIdCreator) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, INodeIdCreator.class,
+                    true));
+            engine.getNodeService().setNodeIdCreator((INodeIdCreator) ext);
+        }        
 
         if (ext instanceof IDataRouter) {
             installed = true;

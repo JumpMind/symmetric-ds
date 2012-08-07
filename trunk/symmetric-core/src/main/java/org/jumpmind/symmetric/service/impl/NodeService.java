@@ -39,7 +39,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
+import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
 
 /**
  * @see INodeService
@@ -65,7 +65,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     private long securityCacheTime;
 
-    private INodeIdGenerator nodeIdGenerator;
+    private INodeIdCreator nodeIdCreator;
 
     private INodePasswordFilter nodePasswordFilter;
 
@@ -75,7 +75,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
-        nodeIdGenerator = new DefaultNodeIdGenerator(parameterService);
+        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this);
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -225,7 +225,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        String password = nodeIdGenerator.generatePassword(this, new Node(id, null, null));
+        String password = nodeIdCreator.generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
                 findIdentity().getNodeId() });
@@ -453,12 +453,12 @@ public class NodeService extends AbstractService implements INodeService {
                 externalId }) > 0;
     }
 
-    public INodeIdGenerator getNodeIdGenerator() {
-        return nodeIdGenerator;
+    public INodeIdCreator getNodeIdCreator() {
+        return nodeIdCreator;
     }
 
-    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) {
-        this.nodeIdGenerator = nodeIdGenerator;
+    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator) {
+        this.nodeIdCreator = nodeIdGenerator;
     }
 
     public boolean isDataLoadCompleted() {

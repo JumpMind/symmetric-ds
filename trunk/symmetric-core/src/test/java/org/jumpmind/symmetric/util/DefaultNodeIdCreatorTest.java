@@ -29,15 +29,12 @@ import org.jumpmind.symmetric.service.impl.MockParameterService;
 import org.junit.Test;
 
 
-public class DefaultNodeIdGeneratorTest {
+public class DefaultNodeIdCreatorTest {
 
     @Test
     public void testSelectNodeId() throws Exception {
         final String EXPECTED_NODE_ID = "100-2";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
-        Node node = new Node();
-        node.setExternalId("100");
-        String selectedNodeId = generator.selectNodeId(new MockNodeService() {
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService() {
             @Override
             public NodeSecurity findNodeSecurity(String nodeId) {
                 if (nodeId.equals(EXPECTED_NODE_ID)) {
@@ -49,38 +46,38 @@ public class DefaultNodeIdGeneratorTest {
                     return null;
                 }
             }
-        }, node);
+        });
+        Node node = new Node();
+        node.setExternalId("100");
+        String selectedNodeId = generator.selectNodeId(node, null, null);
         Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
     public void testSelectNodeIdWithNodeIdSet() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService());
         Node node = new Node();
         final String EXPECTED_NODE_ID = "10001";
         node.setExternalId(EXPECTED_NODE_ID);
         node.setNodeId(EXPECTED_NODE_ID);
-        String selectedNodeId = generator.selectNodeId(new MockNodeService(), node);
+        String selectedNodeId = generator.selectNodeId(node, null, null);
         Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
     public void testGenerateNodeIdNoExisting() throws Exception {
         final String EXPECTED_NODE_ID = "100";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService());
         Node node = new Node();
         node.setExternalId("100");
-        String selectedNodeId = generator.generateNodeId(new MockNodeService(), node);
+        String selectedNodeId = generator.generateNodeId(node, null, null);
         Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
     public void testGenerateNodeIdExisting() throws Exception {
         final String EXPECTED_NODE_ID = "100-0";
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
-        Node node = new Node();
-        node.setExternalId("100");
-        String selectedNodeId = generator.generateNodeId(new MockNodeService() {
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService() {
             @Override
             public Node findNode(String nodeId) {
                 if (nodeId.equals("100")) {
@@ -91,24 +88,27 @@ public class DefaultNodeIdGeneratorTest {
                     return null;
                 }
             }
-        }, node);
+        });
+        Node node = new Node();
+        node.setExternalId("100");
+        String selectedNodeId = generator.generateNodeId(node, null, null);
         Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
     public void testGenerateNodeIdExistingAll() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService() {
+            @Override
+            public Node findNode(String nodeId) {
+                Node node = new Node();
+                node.setNodeId(nodeId);
+                return node;
+            }
+        });
         Node node = new Node();
         node.setExternalId("100");
         try {
-            generator.generateNodeId(new MockNodeService() {
-                @Override
-                public Node findNode(String nodeId) {
-                    Node node = new Node();
-                    node.setNodeId(nodeId);
-                    return node;
-                }
-            }, node);
+            generator.generateNodeId(node, null, null);
             Assert.fail("Should have received exception");
         } catch (Exception e) {
             // Expected
@@ -117,12 +117,12 @@ public class DefaultNodeIdGeneratorTest {
 
     @Test
     public void testGenerateNodeIdWithNodeIdSet() throws Exception {
-        DefaultNodeIdGenerator generator = new DefaultNodeIdGenerator(new MockParameterService());
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(new MockParameterService(), new MockNodeService());
         Node node = new Node();
         final String EXPECTED_NODE_ID = "10001";
         node.setExternalId(EXPECTED_NODE_ID);
         node.setNodeId(EXPECTED_NODE_ID);
-        String selectedNodeId = generator.generateNodeId(new MockNodeService(), node);
+        String selectedNodeId = generator.generateNodeId(node, null, null);
         Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 

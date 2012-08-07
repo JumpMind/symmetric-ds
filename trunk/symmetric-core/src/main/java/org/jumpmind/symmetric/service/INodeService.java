@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -126,9 +126,9 @@ public interface INodeService {
     
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
 
-    public INodeIdGenerator getNodeIdGenerator();
+    public INodeIdCreator getNodeIdCreator();
 
-    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
+    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator);
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
 
