@@ -50,13 +50,17 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
             int batchIdStartIndex = path.lastIndexOf("/") + 1;
             String nodeIdBatchId = path.substring(batchIdStartIndex);
             if (nodeIdBatchId.contains("-")) {
-                String[] array = nodeIdBatchId.split("-");
-                String nodeId = array[0];
-                String batchId = array[1];
-                if (!write(batchId, nodeId, res.getOutputStream())) {
-                    ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
+                int dashIndex = nodeIdBatchId.lastIndexOf("-");
+                if (dashIndex > 0) {
+                    String nodeId = nodeIdBatchId.substring(0, dashIndex);
+                    String batchId = nodeIdBatchId.substring(dashIndex+1, nodeIdBatchId.length());
+                    if (!write(batchId, nodeId, res.getOutputStream())) {
+                        ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
+                    } else {
+                        res.flushBuffer();
+                    }
                 } else {
-                    res.flushBuffer();
+                    ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
                 }
             } else {
                 ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
