@@ -114,8 +114,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 int pullCount = 0;
-                long batchesProcessedCount = status.getBatchesProcessed();
+                long batchesProcessedCount = 0;
                 do {
+                    batchesProcessedCount = status.getBatchesProcessed();
                     pullCount++;
                     log.debug("Pull requested for {}", node.toString());
                     if (pullCount > 1) {
