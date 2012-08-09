@@ -518,7 +518,7 @@ public class DatabaseWriter implements IDataWriter {
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
+            String[] columnValues = getRowData(data);
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
             ArrayList<Column> changedColumnsList = new ArrayList<Column>();
