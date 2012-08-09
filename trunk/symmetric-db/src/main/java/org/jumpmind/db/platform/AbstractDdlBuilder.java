@@ -1826,7 +1826,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append(" DEFAULT ");
                 writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (databaseInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
+        } else if (databaseInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) { // here?
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
+        } else if (!StringUtils.isBlank(column.getDefaultValue())) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
         }
