@@ -252,8 +252,13 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
-                    && !defaultValueStr.startsWith("TO_DATE(");
-
+                    && !defaultValueStr.startsWith("TO_DATE(")
+                    && !defaultValueStr.equalsIgnoreCase("SYSDATE")
+                    && !defaultValueStr.equalsIgnoreCase("SYSTIMESTAMP")
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
+                    
+            
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
                 ddl.append(databaseInfo.getValueQuoteToken());
