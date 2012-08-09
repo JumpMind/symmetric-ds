@@ -433,9 +433,9 @@ public class Column implements Cloneable, Serializable {
                     break;
                 }
             } catch (NumberFormatException ex) {
-                return null;
+                return defaultValue;
             } catch (IllegalArgumentException ex) {
-                return null;
+                return defaultValue;
             }
         }
         return defaultValue;
