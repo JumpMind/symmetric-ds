@@ -163,9 +163,11 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         String currentScript = null;
         try {
             bind(interpreter, context, null, null);
-            for (String script : scripts) {
-                currentScript = script;
-                interpreter.eval(script);
+            if (scripts != null) {
+	            for (String script : scripts) {
+	                currentScript = script;
+	                interpreter.eval(script);
+	            }
             }
         } catch (EvalError e) {
             String errorMsg = String.format("Beanshell script %s with error %s", new Object[] {
