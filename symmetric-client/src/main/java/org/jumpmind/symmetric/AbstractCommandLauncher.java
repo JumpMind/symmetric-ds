@@ -70,9 +70,9 @@ public abstract class AbstractCommandLauncher {
 
     protected static final String OPTION_DEBUG = "debug";
 
-    protected static final String OPTION_NOCONSOLE = "noconsole";
+    protected static final String OPTION_NO_LOG_CONSOLE = "no-log-console";
 
-    protected static final String OPTION_NOLOGFILE = "nologfile";
+    protected static final String OPTION_NO_LOG_FILE = "no-log-file";
 
     protected static final String OPTION_KEYSTORE_PASSWORD = "storepass";
 
@@ -182,11 +182,11 @@ public abstract class AbstractCommandLauncher {
             }
         }
 
-        if (line.hasOption(OPTION_NOCONSOLE)) {
+        if (line.hasOption(OPTION_NO_LOG_CONSOLE)) {
             org.apache.log4j.Logger.getRootLogger().removeAppender("CONSOLE");
         }
 
-        if (line.hasOption(OPTION_NOLOGFILE)) {
+        if (line.hasOption(OPTION_NO_LOG_FILE)) {
             org.apache.log4j.Logger.getRootLogger().removeAppender("ROLLING");
         } else {
             Appender appender = org.apache.log4j.Logger.getRootLogger().getAppender("ROLLING");
@@ -346,8 +346,8 @@ public abstract class AbstractCommandLauncher {
         addCommonOption(options, "e", OPTION_ENGINE, true);
         addCommonOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
         addCommonOption(options, null, OPTION_DEBUG, false);
-        addCommonOption(options, null, OPTION_NOCONSOLE, false);
-        addCommonOption(options, null, OPTION_NOLOGFILE, false);
+        addCommonOption(options, null, OPTION_NO_LOG_CONSOLE, false);
+        addCommonOption(options, null, OPTION_NO_LOG_FILE, false);
     }
 
     protected void buildCryptoOptions(Options options) {
