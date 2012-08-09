@@ -205,7 +205,7 @@ public abstract class AbstractCommandLauncher {
                     fileAppender.activateOptions();
                 }
 
-                System.out.println(String.format("Log output will be written to %s",
+                System.err.println(String.format("Log output will be written to %s",
                         fileAppender.getFile()));
             }
         }
