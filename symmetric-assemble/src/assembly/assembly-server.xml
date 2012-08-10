@@ -22,6 +22,7 @@
                 <exclude>bin/symadmin</exclude>
                 <exclude>bin/dbexport</exclude>
                 <exclude>bin/dbimport</exclude>
+                <exclude>bin/dbfill</exclude>                
                 <exclude>bin/sym_service</exclude>
                 <exclude>bin/sym_service.initd</exclude>
             </excludes>
