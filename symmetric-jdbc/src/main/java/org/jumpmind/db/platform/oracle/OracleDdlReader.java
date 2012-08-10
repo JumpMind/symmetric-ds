@@ -168,6 +168,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 }
             } else if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
+                    /*
+                     * Latest oracle jdbc drivers for 11g return (0,-127) for
+                     * types defined as integer resulting in bad mappings
+                     */
                     column.setMappedTypeCode(Types.INTEGER);
                 } else if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
