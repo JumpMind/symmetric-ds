@@ -167,7 +167,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     column.setMappedTypeCode(Types.BIGINT);
                 }
             } else if (column.getScale() <= -127 || column.getScale() >= 127) {
-                if (column.getSizeAsInt() <= 63) {
+                if (column.getSizeAsInt() == 0) {
+                    column.setMappedTypeCode(Types.INTEGER);
+                } else if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
                 } else {
                     column.setMappedTypeCode(Types.DOUBLE);
