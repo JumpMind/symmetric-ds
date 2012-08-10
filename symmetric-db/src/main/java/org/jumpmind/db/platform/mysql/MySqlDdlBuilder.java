@@ -36,6 +36,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
@@ -276,6 +277,26 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+
+    @Override
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
+        if (defaultValue != null) {
+            String defaultValueStr = defaultValue.toString();
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
+                    
+            
+            if (shouldUseQuotes) {
+                // characters are only escaped when within a string literal
+                ddl.append(databaseInfo.getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValueStr));
+                ddl.append(databaseInfo.getValueQuoteToken());
+            } else {
+                ddl.append(defaultValueStr);
+            }
+        }
     }
 
     /*
