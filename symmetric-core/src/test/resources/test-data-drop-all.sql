@@ -29,3 +29,4 @@
 --drop table sym_data;
 --drop table sym_incoming_error;
 --drop table sym_sequence;
+--drop table sym_load_filter;
