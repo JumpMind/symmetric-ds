@@ -169,7 +169,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public void alterTables(boolean continueOnError, Table... desiredTables) {
         Database currentDatabase = new Database();
         Database desiredDatabase = new Database();
+        StringBuilder tablesProcessed = new StringBuilder();
         for (Table table : desiredTables) {
+            tablesProcessed.append(table.getFullyQualifiedTableName());
+            tablesProcessed.append(", ");
             desiredDatabase.addTable(table);
             Table currentTable = ddlReader.readTable(table.getCatalog(), table.getSchema(),
                     table.getName());
@@ -178,13 +181,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
 
+        if (tablesProcessed.length() > 1) {
+            tablesProcessed.replace(tablesProcessed.length() - 2, tablesProcessed.length(), "");
+        }
+
         String alterSql = ddlBuilder.alterDatabase(currentDatabase, desiredDatabase);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Generated alter sql: \n", alterSql);
+        if (StringUtils.isNotBlank(alterSql.trim())) {
+            log.info("Running alter sql:\n{}", alterSql);
+            String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
+            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
+        } else {
+            log.info("Tables up to date.  No alters found for {}", tablesProcessed);
         }
-        String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-        new SqlScript(alterSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
 
     }
 
@@ -301,8 +310,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             String[] values, boolean useVariableDates) {
         Column[] metaData = Table.orderColumns(columnNames, table);
         return getObjectValues(encoding, values, metaData, useVariableDates);
-    }    
-    
+    }
+
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {
         return getObjectValues(encoding, values, orderedMetaData, false);
@@ -342,10 +351,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                     || type == Types.BIT) {
                                 objectValue = Integer.valueOf(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                                    || type == Types.FLOAT || type == Types.DOUBLE 
+                                    || type == Types.FLOAT || type == Types.DOUBLE
                                     || type == Types.REAL) {
                                 // The number will have either one period or one
-                                // comma for the decimal point, but we need a period
+                                // comma for the decimal point, but we need a
+                                // period
                                 objectValue = new BigDecimal(value.replace(',', '.'));
                             } else if (type == Types.BOOLEAN) {
                                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;

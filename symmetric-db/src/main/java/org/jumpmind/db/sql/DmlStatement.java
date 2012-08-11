@@ -143,8 +143,10 @@ public class DmlStatement {
             for (int index = 0; index < list.size(); index++) {
                 types[index] = list.get(index);
             }
+            return types;
+        } else {
+            return null;
         }
-        return types;
     }
 
     protected String buildInsertSql(String tableName, Column[] keys, Column[] columns) {

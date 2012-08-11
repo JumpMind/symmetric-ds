@@ -57,7 +57,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.util.FormatUtils;
 
 /**
  * @see ITriggerRouterService
@@ -742,13 +741,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers() {
-        syncTriggers((StringBuilder) null, false);
+        syncTriggers(false);
     }
 
     public void syncTriggers(boolean force) {
         syncTriggers((StringBuilder) null, false);
     }
-    
+
     public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)
                 || isCalledFromSymmetricAdminTool()) {
@@ -898,20 +897,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     new String[] { "TABLE" });
             Table[] tableArray = database.getTables();
 
-            String[] wildcardTokens = trigger.getSourceTableName().split(",");
-            for (String wildcardToken : wildcardTokens) {
-                for (Table table : tableArray) {
-                    if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken, ignoreCase)
-                            && !containsExactMatchForSourceTableName(table.getName(), triggers,
-                                    ignoreCase)
-                            && !table.getName().toLowerCase().startsWith(tablePrefix)) {
-                        if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
-                            tables.add(table);
-                        } else {
-                            tables.remove(table);
-                        }
-                    }
-                }
+            for (Table table : tableArray) {
+                if (trigger.matches(table, platform.getDefaultCatalog(),
+                        platform.getDefaultSchema(), ignoreCase)
+                        && !containsExactMatchForSourceTableName(table.getName(), triggers,
+                                ignoreCase)
+                        && !table.getName().toLowerCase().startsWith(tablePrefix)) {
+                    tables.add(table);
+                } 
             }
         } else {
             Table table = symmetricDialect.getPlatform().getTableFromCache(
@@ -937,10 +930,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(Table table, boolean force) {
+        boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+        
+        /* Re-lookup just in case the table was just altered */
+        platform.resetCachedTableModel();
+        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(),
+                true);
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         for (Trigger trigger : triggersForCurrentNode) {
-            if (trigger.matches(table)) {
+            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase)) {
+                log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
                 updateOrCreateDatabaseTriggers(trigger, table, null, force);
+                log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
             }
         }
     }

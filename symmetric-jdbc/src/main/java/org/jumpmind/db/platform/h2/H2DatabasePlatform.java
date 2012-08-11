@@ -72,7 +72,10 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     }
     
     public String getDefaultCatalog() {
-        return null;
+        if (StringUtils.isBlank(defaultCatalog)) {
+            defaultCatalog = (String) getSqlTemplate().queryForObject("select DATABASE()", String.class);
+        }
+        return defaultCatalog;
     }
 
 }

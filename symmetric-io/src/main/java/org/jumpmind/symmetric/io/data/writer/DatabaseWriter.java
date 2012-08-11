@@ -875,7 +875,8 @@ public class DatabaseWriter implements IDataWriter {
         Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData());
         if (log.isDebugEnabled()) {
-            log.debug("Submitting data {}", Arrays.toString(objectValues));
+            log.debug("Submitting data {} with types {}", Arrays.toString(objectValues), 
+                    Arrays.toString(this.currentDmlStatement.getTypes()));
         }
         return transaction.addRow(data, objectValues, this.currentDmlStatement.getTypes());
     }
