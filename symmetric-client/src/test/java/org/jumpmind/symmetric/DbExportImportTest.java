@@ -130,6 +130,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(), table.getName(), null, table.getColumns(), false, null, null);
         Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt(dml.getSql()));
 
+        // TODO test error
+        
         // TODO test replace
         
         // TODO test ignore

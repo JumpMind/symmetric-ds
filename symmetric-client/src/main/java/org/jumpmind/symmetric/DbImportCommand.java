@@ -42,6 +42,20 @@ public class DbImportCommand extends AbstractCommandLauncher {
     private static final String OPTION_TABLE = "table";
     
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
+    
+    private static final String OPTION_COMMIT = "commit";
+    
+    private static final String OPTION_IGNORE = "ignore";
+    
+    private static final String OPTION_REPLACE = "replace";
+    
+    private static final String OPTION_FORCE = "force";
+
+    private static final String OPTION_ALTER = "alter";
+    
+    private static final String OPTION_DROP_IF_EXISTS = "drop-if-exists";
+    
+    private static final String OPTION_ALTER_CASE = "alter-case";
 
     public DbImportCommand() {
         super("dbimport", "[file...]", "DbImport.Option.");
@@ -76,6 +90,13 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_SCHEMA, true);
         addOption(options, null, OPTION_TABLE, true);
         addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
+        addOption(options, null, OPTION_COMMIT, true);
+        addOption(options, null, OPTION_IGNORE, false);
+        addOption(options, null, OPTION_REPLACE, false);
+        addOption(options, null, OPTION_FORCE, false);
+        addOption(options, null, OPTION_ALTER, false);
+        addOption(options, null, OPTION_DROP_IF_EXISTS, false);
+        addOption(options, null, OPTION_ALTER_CASE, false);
     }
     
     @Override
@@ -85,14 +106,45 @@ public class DbImportCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_FORMAT)) {
             dbImport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
         }
+        
         if (line.hasOption(OPTION_CATALOG)) {
             dbImport.setCatalog(line.getOptionValue(OPTION_CATALOG));
         }
+        
         if (line.hasOption(OPTION_SCHEMA)) {
             dbImport.setSchema(line.getOptionValue(OPTION_SCHEMA));
         }
+        
         if (line.hasOption(OPTION_USE_VARIABLE_DATES)) {
             dbImport.setUseVariableForDates(true);
+        }
+        
+        if (line.hasOption(OPTION_COMMIT)) {
+            dbImport.setCommitRate(Long.parseLong(line.getOptionValue(OPTION_COMMIT)));
+        }
+        
+        if (line.hasOption(OPTION_ALTER_CASE)) {
+            dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
+        }
+        
+        if (line.hasOption(OPTION_DROP_IF_EXISTS)) {
+            dbImport.setDropIfExists(true);
+        }
+
+        if (line.hasOption(OPTION_ALTER)) {
+            dbImport.setAlterTables(true);
+        }
+
+        if (line.hasOption(OPTION_FORCE)) {
+            dbImport.setForceImport(true);
+        }
+
+        if (line.hasOption(OPTION_REPLACE)) {
+            dbImport.setReplaceRows(true);
+        }
+
+        if (line.hasOption(OPTION_IGNORE)) {
+            dbImport.setIgnoreCollisions(true);
         }
 
         String[] args = line.getArgs();
