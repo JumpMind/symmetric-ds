@@ -133,8 +133,10 @@ class DbFill {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
-            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
-                objectValue = randomInt();
+            } else if (type == Types.INTEGER || type == Types.BIT) {
+                objectValue = randomInt();    
+            } else if (type == Types.SMALLINT) {
+                objectValue = randomSmallInt();                
             } else if (type == Types.TINYINT) {
                 objectValue = randomTinyInt();
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
@@ -158,6 +160,11 @@ class DbFill {
             list.add(objectValue);
         }
         return list.toArray();
+    }
+    
+    private Object randomSmallInt() {
+        // TINYINT (-32768  32767)
+        return new Integer(new java.util.Random().nextInt(65535) - 32768);        
     }
 
     private Object randomTinyInt() {
