@@ -21,26 +21,21 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.CollectionUtils;
-import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class ProtocolDataReader implements IDataReader {
+public class ProtocolDataReader extends AbstractCsvDataReader implements IDataReader {
 
     public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName()
             + ".lineNumber";
-
-    protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected IStagedResource stagedResource;
     protected Reader reader;
@@ -127,24 +122,7 @@ public class ProtocolDataReader implements IDataReader {
                 lineNumber++;
                 context.put(CTX_LINE_NUMBER, lineNumber);
                 String[] tokens = csvReader.getValues();
-                StringBuilder debugBuffer = log.isDebugEnabled() ? new StringBuilder() : null;
-                if (tokens != null) {
-                    for (String token : tokens) {
-                        bytesRead += token != null ? token.length() : 0;
-                        if (debugBuffer != null) {
-                            if (token != null) {
-                                String tokenTrimmed = FormatUtils.abbreviateForLogging(token);
-                                debugBuffer.append(tokenTrimmed);
-                            } else {
-                                debugBuffer.append("<null>");
-                            }
-                            debugBuffer.append(",");                            
-                        }
-                    }                
-                    if (debugBuffer != null && debugBuffer.length() > 1) {
-                        log.debug("CSV parsed: {}", debugBuffer.substring(0, debugBuffer.length()-1));
-                    }
-                }
+                bytesRead += logDebugAndCountBytes(tokens);
                 if (batch != null) {
                     statistics.get(batch).increment(DataReaderStatistics.READ_BYTE_COUNT,
                             bytesRead);

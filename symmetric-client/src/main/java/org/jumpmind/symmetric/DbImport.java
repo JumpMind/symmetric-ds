@@ -42,7 +42,14 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.symmetric.io.data.DataProcessor;
+import org.jumpmind.symmetric.io.data.reader.TableCsvDataReader;
+import org.jumpmind.symmetric.io.data.writer.Conflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterErrorIgnorer;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
@@ -51,25 +58,46 @@ import org.xmlpull.v1.XmlPullParserFactory;
  */
 public class DbImport {
 
-    public enum Format { SQL, CSV, XML, SYM_XML };
-        
+    public enum Format {
+        SQL, CSV, XML, SYM_XML
+    };
+
     private Format format = Format.SQL;
 
     private String catalog;
-    
+
     private String schema;
-    
+
+    private long commitRate = 10000;
+
     private boolean useVariableDates = false;
-    
+
+    /**
+     * Force the import to continue, regardless of errors that might occur.
+     */
+    private boolean forceImport = false;
+
+    /**
+     * If a row already exists, then replace it using an update statement.
+     */
+    private boolean replaceRows = false;
+
+    /**
+     * Ignore rows that already exist.
+     */
+    private boolean ignoreCollisions = false;
+
     private boolean alterCaseToMatchDatabaseDefaultCase = false;
     
-    private boolean failOnError = false;
-
-    private IDatabasePlatform platform;
+    private boolean alterTables = false;
     
+    private boolean dropIfExists = false;
+
+    protected IDatabasePlatform platform;
+
     public DbImport() {
     }
-    
+
     public DbImport(IDatabasePlatform platform) {
         this.platform = platform;
     }
@@ -77,13 +105,19 @@ public class DbImport {
     public DbImport(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
+    
+    public void importTables(String importData, String tableName) throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+        importTables(in, tableName);
+        in.close();
+    }    
 
     public void importTables(String importData) throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
         importTables(in);
         in.close();
     }
-    
+
     public void importTables(InputStream in) throws IOException {
         importTables(in, null);
     }
@@ -100,51 +134,64 @@ public class DbImport {
         }
     }
 
+    protected Conflict buildConflictSettings() {
+        Conflict conflict = new Conflict();
+        conflict.setDetectType(DetectConflict.USE_PK_DATA);
+        if (replaceRows) {
+            conflict.setResolveType(ResolveConflict.FALLBACK);
+        } else if (forceImport || ignoreCollisions) {
+            conflict.setResolveType(ResolveConflict.IGNORE);
+        } else {
+            conflict.setResolveType(ResolveConflict.MANUAL);
+        }
+        return conflict;
+    }
+
+    protected DatabaseWriterSettings buildDatabaseWriterSettings() {
+        DatabaseWriterSettings settings = new DatabaseWriterSettings();
+        settings.setMaxRowsBeforeCommit(commitRate);
+        settings.setDefaultConflictSetting(buildConflictSettings());
+        settings.setUsePrimaryKeysFromSource(false);
+        if (forceImport) {
+            settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
+        }
+        return settings;
+    }
+
     protected void importTablesFromCsv(InputStream in, String tableName) throws IOException {
-        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         Table table = platform.readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table");
         }
-        DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
 
-        CsvReader csvReader = new CsvReader(new InputStreamReader(in));
-        csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
-        csvReader.setSafetySwitch(false);
-        csvReader.setUseComments(true);
-        csvReader.setCaptureRawRecord(false);
-        csvReader.readHeaders();
-
-        while (csvReader.readRecord()) {
-            String[] values = csvReader.getValues();
-            Object[] data = platform.getObjectValues(BinaryEncoding.HEX, table, csvReader.getHeaders(), values, useVariableDates);
-            for (String value : values) {
-                System.out.print("|" + value);
-            }
-            System.out.print("\n");
-            int rows = sqlTemplate.update(statement.getSql(), data);
-            System.out.println(rows + " rows updated.");
-        }
-        csvReader.close();
+        TableCsvDataReader reader = new TableCsvDataReader(BinaryEncoding.HEX, table.getCatalog(),
+                table.getSchema(), table.getName(), in);
+        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        dataProcessor.process();
     }
 
     protected void importTablesFromXml(InputStream in) {
-        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
-        platform.createDatabase(database, false, !failOnError);
+        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);        
+        if (alterTables) {
+            platform.alterDatabase(database, forceImport);                
+        } else {
+            platform.createDatabase(database, dropIfExists, forceImport);
+        }
         
         // TODO: read in data from XML also
     }
 
     protected void importTablesFromSymXml(InputStream in) {
         InputStreamReader reader = new InputStreamReader(in);
-        
+
         try {
             String tableName = null;
             String dataValue = null;
             String dmlType = null;
             String columnName = null;
             boolean nullValue = false;
-            Map<String,String> rowData = new LinkedHashMap<String,String>();
+            Map<String, String> rowData = new LinkedHashMap<String, String>();
 
             ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
@@ -154,14 +201,14 @@ public class DbImport {
             int eventType = parser.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 switch (eventType) {
-                        
+
                     case XmlPullParser.TEXT:
                         if (!nullValue)
                             dataValue = parser.getText();
-                        
+
                     case XmlPullParser.START_TAG:
                         String name = parser.getName();
-                        
+
                         if ("row".equalsIgnoreCase(name)) {
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
@@ -180,55 +227,56 @@ public class DbImport {
                                     columnName = attributeValue;
                                 } else if ("dml".equalsIgnoreCase(attributeName)) {
                                     dmlType = attributeValue;
-                                } else if ("xsi:nil".equalsIgnoreCase(attributeName)){
+                                } else if ("xsi:nil".equalsIgnoreCase(attributeName)) {
                                     nullValue = true;
                                 }
                             }
                         }
                         break;
-                        
+
                     case XmlPullParser.END_TAG:
                         name = parser.getName();
                         if ("row".equalsIgnoreCase(name)) {
-                            Table table = platform.readTableFromDatabase(catalog, schema, tableName);
+                            Table table = platform
+                                    .readTableFromDatabase(catalog, schema, tableName);
                             if (table == null) {
                                 throw new RuntimeException("Unable to find table");
                             }
-                            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
-                            Object[] sqlData = platform.getObjectValues(BinaryEncoding.HEX, 
-                                                                        table, 
-                                                                        rowData.keySet().toArray(new String[0]), 
-                                                                        rowData.values().toArray(new String[0]), 
-                                                                        useVariableDates);
-                            
+                            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT,
+                                    table);
+                            Object[] sqlData = platform.getObjectValues(BinaryEncoding.HEX, table,
+                                    rowData.keySet().toArray(new String[0]), rowData.values()
+                                            .toArray(new String[0]), useVariableDates);
+
                             rowData.clear();
                             int rows = sqlTemplate.update(statement.getSql(), sqlData);
                             System.out.println(rows + " rows updated.");
-                            
+
                         } else if ("data".equalsIgnoreCase(name)) {
-                            rowData.put(columnName, nullValue ? null:dataValue);
+                            rowData.put(columnName, nullValue ? null : dataValue);
                             columnName = null;
                             dataValue = null;
                             nullValue = false;
                         }
-                        
+
                         break;
                 }
                 eventType = parser.next();
             }
-            
+
         } catch (Exception e) {
             throw new DdlException(e);
         }
-       
+
     }
 
     protected void importTablesFromSql(InputStream in) throws IOException {
-        // TODO: SqlScript should be able to stream from standard input to run large SQL script
+        // TODO: SqlScript should be able to stream from standard input to run
+        // large SQL script
         List<String> lines = IOUtils.readLines(in);
 
-        SqlScript script = new SqlScript(lines, platform.getSqlTemplate(), true, SqlScript.QUERY_ENDS, 
-                platform.getSqlScriptReplacementTokens());
+        SqlScript script = new SqlScript(lines, platform.getSqlTemplate(), true,
+                SqlScript.QUERY_ENDS, platform.getSqlScriptReplacementTokens());
         script.execute();
     }
 
@@ -271,24 +319,65 @@ public class DbImport {
     public void setUseVariableForDates(boolean useVariableDates) {
         this.useVariableDates = useVariableDates;
     }
-    
+
     public void setAlterCaseToMatchDatabaseDefaultCase(boolean alterCaseToMatchDatabaseDefaultCase) {
         this.alterCaseToMatchDatabaseDefaultCase = alterCaseToMatchDatabaseDefaultCase;
     }
-    
+
     public boolean isAlterCaseToMatchDatabaseDefaultCase() {
         return alterCaseToMatchDatabaseDefaultCase;
     }
-    
-    public void setFailOnError(boolean failOnError) {
-        this.failOnError = failOnError;
+
+    public void setCommitRate(long commitRate) {
+        this.commitRate = commitRate;
     }
-    
-    public boolean isFailOnError() {
-        return failOnError;
+
+    public long getCommitRate() {
+        return commitRate;
     }
 
     public void setDataSource(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
+
+    public void setForceImport(boolean forceImport) {
+        this.forceImport = forceImport;
+    }
+
+    public boolean isForceImport() {
+        return forceImport;
+    }
+
+    public void setIgnoreCollisions(boolean ignoreConflicts) {
+        this.ignoreCollisions = ignoreConflicts;
+    }
+
+    public boolean isIgnoreCollisions() {
+        return ignoreCollisions;
+    }
+    
+    public void setReplaceRows(boolean replaceRows) {
+        this.replaceRows = replaceRows;
+    }
+    
+    public boolean isReplaceRows() {
+        return replaceRows;
+    }
+    
+    public void setAlterTables(boolean alterTables) {
+        this.alterTables = alterTables;
+    }
+    
+    public boolean isAlterTables() {
+        return alterTables;
+    }
+    
+    public void setDropIfExists(boolean dropIfExists) {
+        this.dropIfExists = dropIfExists;
+    }
+    
+    public boolean isDropIfExists() {
+        return dropIfExists;
+    }
+
 }
