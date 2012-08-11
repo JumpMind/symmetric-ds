@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -107,10 +108,17 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
     }
 
-    protected void toXmlElement(DataEventType dml, Element xml, String tableName,
-            String[] columnNames, String[] data, String[] keyNames, String[] keys) {
+    protected void toXmlElement(DataEventType dml, Element xml, String catalogName,
+            String schemaName, String tableName, String[] columnNames, String[] data,
+            String[] keyNames, String[] keys) {
         Element row = new Element("row");
         xml.addContent(row);
+        if (StringUtils.isNotBlank(catalogName)) {
+            row.setAttribute("catalog", catalogName);
+        }
+        if (StringUtils.isNotBlank(schemaName)) {
+            row.setAttribute("schema", schemaName);
+        }
         row.setAttribute("entity", tableName);
         row.setAttribute("dml", dml.getCode());
 
@@ -158,7 +166,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
 
     protected Element getXmlFromCache(Context context, String[] columnNames, String[] data,
             String[] keyNames, String[] keys) {
-        Map<String,Element> xmlCache = getXmlCache(context);
+        Map<String, Element> xmlCache = getXmlCache(context);
         Element xml = null;
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
         if (txId != null) {
@@ -212,7 +220,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
         return null;
     }
-    
+
     public String[] getNodeGroupIdsToApplyTo() {
         return nodeGroups;
     }
