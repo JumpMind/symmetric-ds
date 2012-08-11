@@ -21,6 +21,9 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -47,6 +50,9 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_RESYNC_TABLE_NEEDED = "Resync.Table"
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();    
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
@@ -84,8 +90,14 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             context.put(CTX_KEY_RESYNC_NEEDED, true);
         }
         
-        if (data.getDataEventType() == DataEventType.CREATE) {
-            engine.getTriggerRouterService().syncTriggers(table, false);
+        if (data.getDataEventType() == DataEventType.CREATE) {   
+            @SuppressWarnings("unchecked")
+            Set<Table> tables = (Set<Table>)context.get(CTX_KEY_RESYNC_TABLE_NEEDED);
+            if (tables == null) {
+                tables = new HashSet<Table>();
+                context.put(CTX_KEY_RESYNC_TABLE_NEEDED, tables);
+            }
+            tables.add(table);
         }
     }
 
@@ -171,6 +183,15 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers because new configuration came through the data loader");
             engine.getTriggerRouterService().syncTriggers();
+        }
+
+        if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            @SuppressWarnings("unchecked")
+            Set<Table> tables = (Set<Table>)context.get(CTX_KEY_RESYNC_TABLE_NEEDED);
+            for (Table table : tables) {
+                engine.getTriggerRouterService().syncTriggers(table, false);   
+            }
         }
         
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {

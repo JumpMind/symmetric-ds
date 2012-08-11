@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.model;
 
@@ -66,11 +66,11 @@ public class Trigger implements Serializable {
     private boolean syncOnDelete = true;
 
     private boolean syncOnIncomingBatch = false;
-    
+
     private boolean useStreamLobs = false;
-    
+
     private boolean useCaptureLobs = false;
-    
+
     private boolean useCaptureOldData = true;
 
     private String nameForInsertTrigger;
@@ -92,7 +92,7 @@ public class Trigger implements Serializable {
      * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
-    
+
     private String externalSelect = null;
 
     private Date createTime;
@@ -110,26 +110,25 @@ public class Trigger implements Serializable {
         this.sourceTableName = tableName;
         this.channelId = channelId;
     }
-    
+
     final public String qualifiedSourceTableName() {
         return qualifiedSourceTablePrefix() + sourceTableName;
     }
-    
+
     final public String qualifiedSourceTablePrefix() {
-        String schemaPlus = (getSourceSchemaName() != null ? getSourceSchemaName()
-                + "." : "");
-        String catalogPlus = (getSourceCatalogName() != null ? getSourceCatalogName()
-                + "." : "") + schemaPlus;
+        String schemaPlus = (getSourceSchemaName() != null ? getSourceSchemaName() + "." : "");
+        String catalogPlus = (getSourceCatalogName() != null ? getSourceCatalogName() + "." : "")
+                + schemaPlus;
         return catalogPlus;
     }
-    
+
     public void nullOutBlankFields() {
         if (StringUtils.isBlank(sourceCatalogName)) {
             sourceCatalogName = null;
-        } 
+        }
         if (StringUtils.isBlank(sourceSchemaName)) {
             sourceSchemaName = null;
-        } 
+        }
     }
 
     /**
@@ -157,7 +156,7 @@ public class Trigger implements Serializable {
             return new Column[0];
         }
     }
-    
+
     /**
      * Get a list of the natural indexes of the excluded columns
      */
@@ -199,11 +198,10 @@ public class Trigger implements Serializable {
                 || lastTriggerBuildTime.before(getLastUpdateTime());
     }
 
-
     public String getTriggerId() {
         return triggerId;
     }
-    
+
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
         if (StringUtils.isNotBlank(triggerId) && StringUtils.isNumeric(triggerId)) {
@@ -212,13 +210,12 @@ public class Trigger implements Serializable {
                 maxTriggerId = id + 1;
             }
         }
-    }    
-    
+    }
 
     public String getSourceTableName() {
         return sourceTableName;
     }
-    
+
     public boolean isSourceTableNameWildCarded() {
         return sourceTableName != null && sourceTableName.contains(FormatUtils.WILDCARD);
     }
@@ -345,7 +342,7 @@ public class Trigger implements Serializable {
 
     public void setTxIdExpression(String txIdExpression) {
         this.txIdExpression = txIdExpression;
-    }           
+    }
 
     public String getExternalSelect() {
         return externalSelect;
@@ -358,7 +355,7 @@ public class Trigger implements Serializable {
     public void setLastUpdateBy(String updatedBy) {
         this.lastUpdateBy = updatedBy;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
@@ -370,7 +367,7 @@ public class Trigger implements Serializable {
     public void setLastUpdateTime(Date lastModifiedOn) {
         this.lastUpdateTime = lastModifiedOn;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -378,31 +375,31 @@ public class Trigger implements Serializable {
     public void setCreateTime(Date createdOn) {
         this.createTime = createdOn;
     }
-    
+
     public void setUseStreamLobs(boolean useStreamLobs) {
         this.useStreamLobs = useStreamLobs;
     }
-        
+
     public boolean isUseStreamLobs() {
         return useStreamLobs;
     }
-    
+
     public void setUseCaptureLobs(boolean useCaptureLobs) {
         this.useCaptureLobs = useCaptureLobs;
     }
-    
+
     public boolean isUseCaptureLobs() {
         return useCaptureLobs;
     }
-    
+
     public void setUseCaptureOldData(boolean useCaptureOldData) {
         this.useCaptureOldData = useCaptureOldData;
     }
-    
+
     public boolean isUseCaptureOldData() {
         return useCaptureOldData;
     }
-    
+
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
@@ -459,15 +456,36 @@ public class Trigger implements Serializable {
 
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
-        }        
+        }
 
         return hashedValue;
     }
-    
-    public boolean matches(Table table) {
-        return StringUtils.equals(sourceCatalogName, table.getCatalog())
-                && StringUtils.equals(sourceSchemaName, table.getSchema())
-                && table.getName().equalsIgnoreCase(sourceTableName);        
+
+    public boolean matches(Table table, String defaultCatalog, String defaultSchema,
+            boolean ignoreCase) {
+        boolean schemaAndCatalogMatch = (StringUtils.equals(sourceCatalogName, table.getCatalog()) || (StringUtils
+                .isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog,
+                table.getCatalog())))
+                && (StringUtils.equals(sourceSchemaName, table.getSchema()) || (StringUtils
+                        .isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema,
+                        table.getSchema())));
+        
+        boolean tableMatches = ignoreCase ? table.getName().equalsIgnoreCase(
+                sourceTableName) : table.getName().equals(sourceTableName);
+
+        if (!tableMatches && isSourceTableNameWildCarded()) {
+            String[] wildcardTokens = sourceTableName.split(",");
+            for (String wildcardToken : wildcardTokens) {
+                if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken, ignoreCase)) {
+                    if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
+                        tableMatches = true;
+                    } else {
+                        tableMatches = false;
+                    }
+                }
+            }
+        }
+        return schemaAndCatalogMatch && tableMatches;
     }
 
     public boolean matches(Trigger trigger) {
@@ -489,7 +507,7 @@ public class Trigger implements Serializable {
     public int hashCode() {
         return triggerId != null ? triggerId.hashCode() : super.hashCode();
     }
-    
+
     @Override
     public String toString() {
         if (triggerId != null) {
