@@ -463,15 +463,17 @@ public class Trigger implements Serializable {
 
         return hashedValue;
     }
-
-    public boolean isSame(Trigger trigger) {
-        return isSame(sourceCatalogName, trigger.sourceCatalogName)
-                && isSame(sourceSchemaName, trigger.sourceSchemaName)
-                && trigger.sourceTableName.equalsIgnoreCase(sourceTableName);
+    
+    public boolean matches(Table table) {
+        return StringUtils.equals(sourceCatalogName, table.getCatalog())
+                && StringUtils.equals(sourceSchemaName, table.getSchema())
+                && table.getName().equalsIgnoreCase(sourceTableName);        
     }
 
-    protected boolean isSame(String one, String two) {
-        return (one == null && two == null) || (one != null && two != null && one.equals(two));
+    public boolean matches(Trigger trigger) {
+        return StringUtils.equals(sourceCatalogName, trigger.sourceCatalogName)
+                && StringUtils.equals(sourceSchemaName, trigger.sourceSchemaName)
+                && trigger.sourceTableName.equalsIgnoreCase(sourceTableName);
     }
 
     @Override

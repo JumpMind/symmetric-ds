@@ -742,10 +742,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers() {
-        syncTriggers(null, false);
+        syncTriggers((StringBuilder) null, false);
     }
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways) {
+    public void syncTriggers(boolean force) {
+        syncTriggers((StringBuilder) null, false);
+    }
+    
+    public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)
                 || isCalledFromSymmetricAdminTool()) {
             if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
@@ -768,7 +772,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer);
-                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, genAlways);
+                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force);
                         resetTriggerRouterCacheByNodeGroupId();
                     } finally {
                         clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
@@ -794,8 +798,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected void inactivateTriggers(List<Trigger> triggersThatShouldBeActive,
             StringBuilder sqlBuffer) {
-        boolean ignoreCase = this.parameterService
-                .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+        boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
         List<TriggerHistory> activeHistories = getActiveTriggerHistories();
         Map<String, Set<Table>> tablesByTriggerId = new HashMap<String, Set<Table>>();
         for (TriggerHistory history : activeHistories) {
@@ -806,7 +809,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
             }
-            
+
             if (tables == null || trigger == null) {
                 removeTrigger = true;
             } else {
@@ -819,13 +822,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     if (trigger.isSourceTableNameWildCarded()) {
                         boolean foundMatch = false;
                         for (Table table : tables) {
-                            foundMatch |= ignoreCase ? StringUtils.equalsIgnoreCase(table.getName(), history.getSourceTableName()) : StringUtils.equals(table.getName(), history.getSourceTableName());                            
+                            foundMatch |= ignoreCase ? StringUtils.equalsIgnoreCase(
+                                    table.getName(), history.getSourceTableName()) : StringUtils
+                                    .equals(table.getName(), history.getSourceTableName());
                         }
                         removeTrigger = !foundMatch;
                     }
                 }
             }
-            
+
             if (removeTrigger) {
                 log.info("About to remove triggers for inactivated table: {}",
                         history.getFullyQualifiedSourceTableName());
@@ -901,9 +906,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     ignoreCase)
                             && !table.getName().toLowerCase().startsWith(tablePrefix)) {
                         if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
-                            tables.add(table);    
+                            tables.add(table);
                         } else {
-                            tables.remove(table);    
+                            tables.remove(table);
                         }
                     }
                 }
@@ -931,124 +936,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return false;
     }
 
+    public void syncTriggers(Table table, boolean force) {
+        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+        for (Trigger trigger : triggersForCurrentNode) {
+            if (trigger.matches(table)) {
+                updateOrCreateDatabaseTriggers(trigger, table, null, force);
+            }
+        }
+    }
+
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
-            boolean genAlways) {
+            boolean force) {
 
         for (Trigger trigger : triggers) {
-            TriggerHistory newestHistory = null;
-            TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
-
-            String errorMessage = null;
-            Channel channel = configurationService.getChannel(trigger.getChannelId());
-            if (channel == null) {
-                errorMessage = String
-                        .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
-                                trigger.getTriggerId(), trigger.getChannelId(),
-                                Constants.CHANNEL_DEFAULT);
-                log.error(errorMessage);
-                trigger.setChannelId(Constants.CHANNEL_DEFAULT);
-            }
 
             Set<Table> tables = getTablesForTrigger(trigger, triggers);
             if (tables.size() > 0) {
                 for (Table table : tables) {
-                    try {
-
-                        if (table.getPrimaryKeyColumnCount() == 0) {
-                            table = table.copy();
-                            table.makeAllColumnsPrimaryKeys();
-                        }
-
-                        TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                                trigger.getTriggerId(),
-                                trigger.getSourceCatalogName(),
-                                trigger.getSourceSchemaName(),
-                                trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                                        .getSourceTableName());
-
-                        boolean forceRebuildOfTriggers = false;
-                        if (latestHistoryBeforeRebuild == null) {
-                            reason = TriggerReBuildReason.NEW_TRIGGERS;
-                            forceRebuildOfTriggers = true;
-
-                        } else if (table.calculateTableHashcode() != latestHistoryBeforeRebuild
-                                .getTableHash()) {
-                            reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
-                            forceRebuildOfTriggers = true;
-
-                        } else if (trigger
-                                .hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
-                                        .getCreateTime())
-                                || trigger.toHashedValue() != latestHistoryBeforeRebuild
-                                        .getTriggerRowHash()) {
-                            reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
-                            forceRebuildOfTriggers = true;
-                        } else if (genAlways) {
-                            reason = TriggerReBuildReason.FORCED;
-                            forceRebuildOfTriggers = true;
-                        }
-
-                        boolean supportsTriggers = symmetricDialect.getPlatform().getDatabaseInfo()
-                                .isTriggersSupported();
-
-                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
-                                forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
-                                latestHistoryBeforeRebuild, null, trigger.isSyncOnInsert()
-                                        && supportsTriggers, table);
-
-                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
-                                forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
-                                latestHistoryBeforeRebuild, newestHistory, trigger.isSyncOnUpdate()
-                                        && supportsTriggers, table);
-
-                        newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
-                                forceRebuildOfTriggers, trigger, DataEventType.DELETE, reason,
-                                latestHistoryBeforeRebuild, newestHistory, trigger.isSyncOnDelete()
-                                        && supportsTriggers, table);
-
-                        if (latestHistoryBeforeRebuild != null && newestHistory != null) {
-                            inactivateTriggerHistory(latestHistoryBeforeRebuild);
-                        }
-
-                        if (newestHistory != null) {
-                            newestHistory.setErrorMessage(errorMessage);
-                            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                                if (this.triggerCreationListeners != null) {
-                                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                                        l.triggerCreated(trigger, newestHistory);
-                                    }
-                                }
-                            }
-                        }
-
-                    } catch (Exception ex) {
-                        log.error(
-                                String.format("Failed to create triggers for %s",
-                                        trigger.qualifiedSourceTableName()), ex);
-
-                        if (newestHistory != null) {
-                            // Make sure all the triggers are removed from the
-                            // table
-                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                                    trigger.getSourceSchemaName(),
-                                    newestHistory.getNameForInsertTrigger(),
-                                    trigger.getSourceTableName(), newestHistory);
-                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                                    trigger.getSourceSchemaName(),
-                                    newestHistory.getNameForUpdateTrigger(),
-                                    trigger.getSourceTableName(), newestHistory);
-                            symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                                    trigger.getSourceSchemaName(),
-                                    newestHistory.getNameForDeleteTrigger(),
-                                    trigger.getSourceTableName(), newestHistory);
-                        }
-
-                        if (this.triggerCreationListeners != null) {
-                            for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                                l.triggerFailed(trigger, ex);
-                            }
-                        }
-                    }
+                    updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
                 }
 
             } else {
@@ -1060,6 +965,112 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.tableDoesNotExist(trigger);
                     }
+                }
+            }
+        }
+    }
+
+    protected void updateOrCreateDatabaseTriggers(Trigger trigger, Table table,
+            StringBuilder sqlBuffer, boolean force) {
+        TriggerHistory newestHistory = null;
+        TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
+
+        String errorMessage = null;
+        Channel channel = configurationService.getChannel(trigger.getChannelId());
+        if (channel == null) {
+            errorMessage = String
+                    .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
+                            trigger.getTriggerId(), trigger.getChannelId(),
+                            Constants.CHANNEL_DEFAULT);
+            log.error(errorMessage);
+            trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+        }
+
+        try {
+
+            if (table.getPrimaryKeyColumnCount() == 0) {
+                table = table.copy();
+                table.makeAllColumnsPrimaryKeys();
+            }
+
+            TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
+                    trigger.getTriggerId(),
+                    trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(),
+                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
+                            .getSourceTableName());
+
+            boolean forceRebuildOfTriggers = false;
+            if (latestHistoryBeforeRebuild == null) {
+                reason = TriggerReBuildReason.NEW_TRIGGERS;
+                forceRebuildOfTriggers = true;
+
+            } else if (table.calculateTableHashcode() != latestHistoryBeforeRebuild.getTableHash()) {
+                reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
+                forceRebuildOfTriggers = true;
+
+            } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
+                    .getCreateTime())
+                    || trigger.toHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
+                reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
+                forceRebuildOfTriggers = true;
+            } else if (force) {
+                reason = TriggerReBuildReason.FORCED;
+                forceRebuildOfTriggers = true;
+            }
+
+            boolean supportsTriggers = symmetricDialect.getPlatform().getDatabaseInfo()
+                    .isTriggersSupported();
+
+            newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
+                    DataEventType.INSERT, reason, latestHistoryBeforeRebuild, null,
+                    trigger.isSyncOnInsert() && supportsTriggers, table);
+
+            newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
+                    DataEventType.UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
+                    trigger.isSyncOnUpdate() && supportsTriggers, table);
+
+            newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
+                    DataEventType.DELETE, reason, latestHistoryBeforeRebuild, newestHistory,
+                    trigger.isSyncOnDelete() && supportsTriggers, table);
+
+            if (latestHistoryBeforeRebuild != null && newestHistory != null) {
+                inactivateTriggerHistory(latestHistoryBeforeRebuild);
+            }
+
+            if (newestHistory != null) {
+                newestHistory.setErrorMessage(errorMessage);
+                if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerCreated(trigger, newestHistory);
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception ex) {
+            log.error(
+                    String.format("Failed to create triggers for %s",
+                            trigger.qualifiedSourceTableName()), ex);
+
+            if (newestHistory != null) {
+                // Make sure all the triggers are removed from the
+                // table
+                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(),
+                        trigger.getSourceTableName(), newestHistory);
+                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(),
+                        trigger.getSourceTableName(), newestHistory);
+                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(),
+                        trigger.getSourceTableName(), newestHistory);
+            }
+
+            if (this.triggerCreationListeners != null) {
+                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                    l.triggerFailed(trigger, ex);
                 }
             }
         }
@@ -1108,8 +1119,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
             symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
-                    oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                            .getSourceTableName(), oldhist);
+                    oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
+                            : trigger.getSourceTableName(), oldhist);
             triggerExists = false;
             triggerRemoved = true;
         }
