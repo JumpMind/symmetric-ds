@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 
-public class ProtocolDataReader extends AbstractCsvDataReader implements IDataReader {
+public class ProtocolDataReader extends AbstractDataReader implements IDataReader {
 
     public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName()
             + ".lineNumber";

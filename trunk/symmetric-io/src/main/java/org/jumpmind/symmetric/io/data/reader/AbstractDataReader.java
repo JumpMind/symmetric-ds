@@ -4,12 +4,12 @@ import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractCsvDataReader {
-    
+public abstract class AbstractDataReader {
+
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected long logDebugAndCountBytes(String[] tokens) {
-        long bytesRead =  0;
+        long bytesRead = 0;
         if (tokens != null) {
             StringBuilder debugBuffer = log.isDebugEnabled() ? new StringBuilder() : null;
             for (String token : tokens) {
@@ -21,13 +21,13 @@ public abstract class AbstractCsvDataReader {
                     } else {
                         debugBuffer.append("<null>");
                     }
-                    debugBuffer.append(",");                            
+                    debugBuffer.append(",");
                 }
-            }                
-            if (debugBuffer != null && debugBuffer.length() > 1) {
-                log.debug("CSV parsed: {}", debugBuffer.substring(0, debugBuffer.length()-1));
             }
-        }        
+            if (debugBuffer != null && debugBuffer.length() > 1) {
+                log.debug("CSV parsed: {}", debugBuffer.substring(0, debugBuffer.length() - 1));
+            }
+        }
         return bytesRead;
     }
 }
