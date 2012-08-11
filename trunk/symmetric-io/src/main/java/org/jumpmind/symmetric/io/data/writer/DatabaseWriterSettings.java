@@ -120,6 +120,13 @@ public class DatabaseWriterSettings {
         }
         return null;
     }
+    
+    public void addErrorHandler(IDatabaseWriterErrorHandler handler) {
+        if (this.databaseWriterErrorHandlers == null) {
+            this.databaseWriterErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
+        }
+        this.databaseWriterErrorHandlers.add(handler);
+    }
 
     public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;

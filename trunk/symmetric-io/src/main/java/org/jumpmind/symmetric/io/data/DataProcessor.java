@@ -49,6 +49,10 @@ public class DataProcessor {
     protected IDataWriter chooseDataWriter(Batch batch) {
         return this.defaultDataWriter;
     }
+    
+    public void process() {
+        process(new DataContext());
+    }
 
     public void process(DataContext context) {
         try {

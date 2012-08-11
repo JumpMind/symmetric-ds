@@ -21,23 +21,26 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generate data for populating databases.
- */ 
+ */
 class DbFill {
-    
+
+    final Logger log = LoggerFactory.getLogger(getClass());
+
     private String catalog;
-    
+
     private String schema;
-    
+
     private IDatabasePlatform platform;
-    
+
     private boolean ignoreMissingTables;
-    
+
     private int inputLength = 10;
-    
+
     public DbFill() {
     }
 
@@ -48,73 +51,79 @@ class DbFill {
     public DbFill(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
-    
+
     public void setDataSource(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
-    
-    public void fillTables(String[] tableNames) {
+
+    public void fillTables(String... tableNames) {
         ArrayList<Table> tableList = new ArrayList<Table>();
-        
+
         for (String tableName : tableNames) {
-            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(), tableName);
+            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
+                    tableName);
             if (table != null) {
                 tableList.add(table);
-            } else if (! ignoreMissingTables){
-                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + getCatalogToUse() +
-                        " and schema " + getSchemaToUse());
+            } else if (!ignoreMissingTables) {
+                throw new RuntimeException("Cannot find table " + tableName + " in catalog "
+                        + getCatalogToUse() + " and schema " + getSchemaToUse());
             }
         }
-        
+
         fillTables(tableList.toArray(new Table[tableList.size()]));
     }
-    
-    private void fillTables(Table[] tables) {
+
+    private void fillTables(Table... tables) {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         tables = Database.sortByForeignKeys(tables);
-        
-        // Maintain a map of previously inserted values for foreign key constraints
-        Map<String,Object> insertedColumns = new HashMap<String,Object>(tables.length);
-        
+
+        // Maintain a map of previously inserted values for foreign key
+        // constraints
+        Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
+
         // Insert multiple records
         for (int i = 0; i < inputLength; i++) {
-            
+
             for (Table table : tables) {
                 DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
-                
+
                 Column[] columns = table.getColumns();
                 Object[] values = generateRandomValues(insertedColumns, table);
-                for (int j=0; j<columns.length; j++) {
+                for (int j = 0; j < columns.length; j++) {
                     String qualifiedColumnName = table.getName() + "." + columns[j].getName();
                     insertedColumns.put(qualifiedColumnName, values[j]);
                 }
                 int rows = sqlTemplate.update(statement.getSql(), values);
-                System.out.println(rows + " inserted in " + table.getFullyQualifiedTableName() + ".");
+                if (log.isDebugEnabled()) {
+                    log.debug("{} inserted by {} in {}", new Object[] { rows,
+                            getClass().getSimpleName(), table.getFullyQualifiedTableName() });
+                }
             }
 
             insertedColumns.clear();
         }
     }
-    
-    private Object[] generateRandomValues(Map<String,Object> insertedColumns, Table table) {
+
+    private Object[] generateRandomValues(Map<String, Object> insertedColumns, Table table) {
 
         Column[] columns = table.getColumns();
         List<Object> list = new ArrayList<Object>(columns.length);
-        
-        for_column:
-        for (Column column : columns) {
-            
+
+        for_column: for (Column column : columns) {
+
             Object objectValue = null;
 
-            for (ForeignKey fk : table.getForeignKeys() ) {
+            for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
-                    objectValue = insertedColumns.get(fk.getForeignTableName() + "." + ref.getForeignColumnName());
+                    objectValue = insertedColumns.get(fk.getForeignTableName() + "."
+                            + ref.getForeignColumnName());
                     if (objectValue != null) {
                         list.add(objectValue);
                         continue for_column;
                     } else {
-                        throw new RuntimeException("The foreign key column, " + column.getName() + " found in " + table.getName() + " references " + 
-                                                   "table " + fk.getForeignTableName() + " which was not included.");
+                        throw new RuntimeException("The foreign key column, " + column.getName()
+                                + " found in " + table.getName() + " references " + "table "
+                                + fk.getForeignTableName() + " which was not included.");
                     }
                 }
             }
@@ -124,23 +133,20 @@ class DbFill {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
-            } else if (type == Types.INTEGER || type == Types.SMALLINT
-                    || type == Types.BIT) {
+            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
                 objectValue = randomInt();
             } else if (type == Types.TINYINT) {
                 objectValue = randomTinyInt();
-            } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                    || type == Types.FLOAT || type == Types.DOUBLE 
-                    || type == Types.REAL) {
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
+                    || type == Types.DOUBLE || type == Types.REAL) {
                 objectValue = randomBigDecimal();
             } else if (type == Types.BOOLEAN) {
                 objectValue = randomBoolean();
-            } else if (type == Types.BLOB || type == Types.LONGVARBINARY
-                    || type == Types.BINARY || type == Types.VARBINARY ||
-                    type == Types.CLOB ||
+            } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
+                    || type == Types.VARBINARY || type == Types.CLOB ||
                     // SQLServer next type
                     type == -10) {
-                    objectValue = randomBytes();
+                objectValue = randomBytes();
             } else if (type == Types.ARRAY) {
                 objectValue = null;
             } else if (type == Types.VARCHAR) {
@@ -153,7 +159,7 @@ class DbFill {
         }
         return list.toArray();
     }
-    
+
     private Object randomTinyInt() {
         // TINYINT (-128 to 127)
         return new Integer(new java.util.Random().nextInt(256) - 128);
@@ -161,7 +167,7 @@ class DbFill {
 
     private String randomString(int maxLength) {
         StringBuilder str = new StringBuilder(maxLength);
-        for (int i=0; i<maxLength; i++) {
+        for (int i = 0; i < maxLength; i++) {
             str.append(randomChar());
         }
         return str.toString();
@@ -170,15 +176,15 @@ class DbFill {
     private byte[] randomBytes() {
         int length = 10;
         java.util.Random rnd = new java.util.Random();
-        byte array[]=new byte[length];
-        for (int i=0; i<length; i++) {
-            array[i] = (byte)rnd.nextInt(256);
+        byte array[] = new byte[length];
+        for (int i = 0; i < length; i++) {
+            array[i] = (byte) rnd.nextInt(256);
         }
         return array;
     }
 
     private boolean randomBoolean() {
-        return new java.util.Random().nextBoolean() ;
+        return new java.util.Random().nextBoolean();
     }
 
     private BigDecimal randomBigDecimal() {
@@ -197,11 +203,11 @@ class DbFill {
         long ms = (50L * 365 * 24 * 60 * 60 * 1000);
         return new Date(l % ms);
     }
-    
+
     private Integer randomInt() {
         return new Integer(new java.util.Random().nextInt(1000000));
     }
-    
+
     protected String getSchemaToUse() {
         if (StringUtils.isBlank(schema)) {
             return platform.getDefaultSchema();
@@ -209,14 +215,14 @@ class DbFill {
             return schema;
         }
     }
-    
+
     protected String getCatalogToUse() {
         if (StringUtils.isBlank(catalog)) {
             return platform.getDefaultCatalog();
         } else {
             return catalog;
         }
-    }    
+    }
 
     public void setPlatform(IDatabasePlatform platform) {
         this.platform = platform;
@@ -229,13 +235,13 @@ class DbFill {
     public void setRecordCount(int recordCount) {
         this.inputLength = recordCount;
     }
-    
+
     public void setCatalog(String catalog) {
         this.catalog = catalog;
     }
-    
+
     public void setSchema(String schema) {
         this.schema = schema;
     }
-    
+
 }

@@ -9,6 +9,8 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
@@ -22,21 +24,21 @@ public class DbExportImportTest extends AbstractServiceTest {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
             ISymmetricEngine engine = getSymmetricEngine();
             DataSource ds = engine.getDataSource();
-              ISqlTemplate template = getPlatform().getSqlTemplate();
-              template.update("CREATE SCHEMA IF NOT EXISTS A");
-              template.update("CREATE TABLE IF NOT EXISTS A.TEST (ID INT, NOTES VARCHAR(100), PRIMARY KEY (ID))");
-              template.update("DELETE FROM A.TEST");
-              template.update("INSERT INTO A.TEST VALUES(1,'test')");
-              
-              DbExport export = new DbExport(ds);
-              export.setSchema("A");
-              export.setFormat(Format.SQL);
-              export.setNoCreateInfo(false);
-              export.setNoData(false);
-              
-              String output = export.exportTables(new String[] {"TEST"}).toLowerCase();
-              System.out.println(output);
-              // TODO validate
+            ISqlTemplate template = getPlatform().getSqlTemplate();
+            template.update("CREATE SCHEMA IF NOT EXISTS A");
+            template.update("CREATE TABLE IF NOT EXISTS A.TEST (ID INT, NOTES VARCHAR(100), PRIMARY KEY (ID))");
+            template.update("DELETE FROM A.TEST");
+            template.update("INSERT INTO A.TEST VALUES(1,'test')");
+
+            DbExport export = new DbExport(ds);
+            export.setSchema("A");
+            export.setFormat(Format.SQL);
+            export.setNoCreateInfo(false);
+            export.setNoData(false);
+
+            String output = export.exportTables(new String[] { "TEST" }).toLowerCase();
+            System.out.println(output);
+            // TODO validate
         }
     }
 
@@ -64,7 +66,7 @@ public class DbExportImportTest extends AbstractServiceTest {
     }
 
     @Test
-    public void exportThenImport() throws Exception {
+    public void exportThenImportXml() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
@@ -91,6 +93,48 @@ public class DbExportImportTest extends AbstractServiceTest {
         // System.out.println(output);
         // TODO validate
 
+    }
+
+    @Test
+    public void exportThenImportCsv() throws Exception {
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
+        Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
+        Table table = testTables.findTable("test_db_import_1", false);
+        
+        DbImport reCreateTablesImport = new DbImport(ds);
+        reCreateTablesImport.setFormat(DbImport.Format.XML);
+        reCreateTablesImport.setDropIfExists(true);
+        reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
+        reCreateTablesImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
+        
+        final int RECORD_COUNT = 100;
+        
+        DbFill fill = new DbFill(platform);
+        fill.setRecordCount(RECORD_COUNT);
+        fill.fillTables(table.getName());
+
+        DbExport export = new DbExport(ds);
+        export.setFormat(Format.CSV);
+        export.setNoCreateInfo(true);
+        export.setNoData(false);
+        String csvOutput = export.exportTables(new String[] { table.getName() });
+        
+        reCreateTablesImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
+        
+        DbImport importCsv = new DbImport(ds);
+        importCsv.setFormat(DbImport.Format.CSV);
+        importCsv.importTables(csvOutput, table.getName());
+        
+        DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(), table.getName(), null, table.getColumns(), false, null, null);
+        Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt(dml.getSql()));
+
+        // TODO test replace
+        
+        // TODO test ignore
+        
+        // TODO test force
     }
 
 }

@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.db.sql;
 
@@ -35,7 +35,7 @@ import org.jumpmind.db.model.Table;
  * Builds a SQL DML statement
  */
 public class DmlStatement {
-    
+
     public enum DmlType {
         INSERT, UPDATE, DELETE, COUNT, FROM, SELECT, SELECT_ALL, UNKNOWN
     };
@@ -51,13 +51,15 @@ public class DmlStatement {
     protected Column[] keys;
 
     protected Column[] columns;
-    
+
     protected boolean[] nullKeyValues;
 
-    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keysColumns, Column[] columns, 
-            boolean isDateOverrideToTimestamp, String identifierQuoteString, boolean[] nullKeyValues) {
+    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
+            Column[] keysColumns, Column[] columns, boolean isDateOverrideToTimestamp,
+            String identifierQuoteString, boolean[] nullKeyValues) {
         this.columns = columns;
-        if (nullKeyValues == null || keysColumns == null || nullKeyValues.length != keysColumns.length) {
+        if (nullKeyValues == null || keysColumns == null
+                || nullKeyValues.length != keysColumns.length) {
             this.keys = keysColumns;
             this.nullKeyValues = keysColumns == null ? null : new boolean[keysColumns.length];
         } else {
@@ -67,25 +69,32 @@ public class DmlStatement {
                 if (!nullKeyValues[i]) {
                     cols.add(keysColumns[i]);
                 }
-            }            
+            }
             this.keys = cols.toArray(new Column[cols.size()]);
             this.nullKeyValues = nullKeyValues;
         }
         this.quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
-            this.sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns, columns);
+            this.sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns, columns);
         } else if (type == DmlType.UPDATE) {
-            this.sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns, columns);
+            this.sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns, columns);
         } else if (type == DmlType.DELETE) {
-            this.sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns);
+            this.sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns);
         } else if (type == DmlType.COUNT) {
-            this.sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns);
+            this.sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns);
         } else if (type == DmlType.FROM) {
-            this.sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns);            
+            this.sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns);
         } else if (type == DmlType.SELECT) {
-            this.sql = buildSelectSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns, columns);
+            this.sql = buildSelectSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns, columns);
         } else if (type == DmlType.SELECT_ALL) {
-            this.sql = buildSelectSqlAll(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keysColumns, columns);
+            this.sql = buildSelectSqlAll(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, identifierQuoteString), keysColumns, columns);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
@@ -96,21 +105,21 @@ public class DmlStatement {
 
     protected int[] buildTypes(Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp) {
         switch (dmlType) {
-        case UPDATE:
-            int[] columnTypes = buildTypes(columns, isDateOverrideToTimestamp);
-            int[] keyTypes = buildTypes(keys, isDateOverrideToTimestamp);
-            return ArrayUtils.addAll(columnTypes, keyTypes);
-        case INSERT:
-            return buildTypes(columns, isDateOverrideToTimestamp);
-        case DELETE:
-            return buildTypes(keys, isDateOverrideToTimestamp);
-        case COUNT:
-            return buildTypes(keys, isDateOverrideToTimestamp);
+            case UPDATE:
+                int[] columnTypes = buildTypes(columns, isDateOverrideToTimestamp);
+                int[] keyTypes = buildTypes(keys, isDateOverrideToTimestamp);
+                return ArrayUtils.addAll(columnTypes, keyTypes);
+            case INSERT:
+                return buildTypes(columns, isDateOverrideToTimestamp);
+            case DELETE:
+                return buildTypes(keys, isDateOverrideToTimestamp);
+            case COUNT:
+                return buildTypes(keys, isDateOverrideToTimestamp);
         }
         return null;
 
     }
-    
+
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int type = column.getMappedTypeCode();
         if (type == Types.DATE && isDateOverrideToTimestamp) {
@@ -118,20 +127,22 @@ public class DmlStatement {
         } else if (type == Types.FLOAT || type == Types.DOUBLE || type == Types.REAL) {
             type = Types.DECIMAL;
         }
-        return type;        
+        return type;
     }
 
     protected int[] buildTypes(Column[] columns, boolean isDateOverrideToTimestamp) {
-        ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
-        for (int i = 0; i < columns.length; i++) {
-            if (columns[i] != null) {
-                list.add(getTypeCode(columns[i], isDateOverrideToTimestamp));
+        if (columns != null) {
+            ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i] != null) {
+                    list.add(getTypeCode(columns[i], isDateOverrideToTimestamp));
+                }
             }
-        }
 
-        int[] types = new int[list.size()];
-        for (int index = 0; index < list.size(); index++) {
-            types[index] = list.get(index);
+            int[] types = new int[list.size()];
+            for (int index = 0; index < list.size(); index++) {
+                types[index] = list.get(index);
+            }
         }
         return types;
     }
@@ -148,8 +159,10 @@ public class DmlStatement {
     protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
         appendColumnEquals(sql, columns, ", ");
-        sql.append(" where ");
-        appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
+        if (keyColumns != null && keyColumns.length > 0) {
+            sql.append(" where ");
+            appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
+        }
         return sql.toString();
     }
 
@@ -158,18 +171,19 @@ public class DmlStatement {
         appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }
-    
+
     protected String buildFromSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder(" from ").append(tableName).append(
-                " where ");
+        StringBuilder sql = new StringBuilder(" from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }
 
     protected String buildCountSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(
-                " where ");
-        appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
+        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName);
+        if (keyColumns != null && keyColumns.length > 0) {
+            sql.append(" where ");
+            appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
+        }
         return sql.toString();
     }
 
@@ -187,22 +201,26 @@ public class DmlStatement {
         sql.append(" from ").append(tableName);
         return sql.toString();
     }
-    
+
     protected void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         appendColumnEquals(sql, columns, new boolean[columns.length], separator);
     }
 
-    protected void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullColumns, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullColumns,
+            String separator) {
         int existingCount = 0;
-        for (int i = 0; i < columns.length && i < nullColumns.length; i++) {
-            if (columns[i] != null) {
-                if (existingCount++ > 0) {
-                    sql.append(separator);
-                }
-                if (!nullColumns[i]) {
-                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
-                } else {
-                    sql.append(quote).append(columns[i].getName()).append(quote).append(" is NULL");
+        if (columns != null) {
+            for (int i = 0; i < columns.length && i < nullColumns.length; i++) {
+                if (columns[i] != null) {
+                    if (existingCount++ > 0) {
+                        sql.append(separator);
+                    }
+                    if (!nullColumns[i]) {
+                        sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
+                    } else {
+                        sql.append(quote).append(columns[i].getName()).append(quote)
+                                .append(" is NULL");
+                    }
                 }
             }
         }
@@ -210,30 +228,34 @@ public class DmlStatement {
 
     protected int appendColumns(StringBuilder sql, Column[] columns) {
         int existingCount = 0;
-        for (int i = 0; i < columns.length; i++) {
-            if (columns[i] != null) {
-                if (existingCount++ > 0) {
-                    sql.append(", ");
+        if (columns != null) {
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i] != null) {
+                    if (existingCount++ > 0) {
+                        sql.append(", ");
+                    }
+                    sql.append(quote).append(columns[i].getName()).append(quote);
                 }
-                sql.append(quote).append(columns[i].getName()).append(quote);
             }
         }
         return existingCount;
     }
 
     protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
-        for (int i = 0; i < columns.length; i++) {
-            if (columns[i] != null) {
-                sql.append("?").append(",");
+        if (columns != null) {
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i] != null) {
+                    sql.append("?").append(",");
+                }
+            }
+
+            if (columns.length > 0) {
+                sql.replace(sql.length() - 1, sql.length(), "");
             }
         }
-        
-        if (columns.length > 0) {
-           sql.replace(sql.length()-1, sql.length(), "");    
-        }
-                
+
     }
-    
+
     public String getColumnsSql(Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
         appendColumns(sql, columns);
@@ -258,17 +280,17 @@ public class DmlStatement {
     }
 
     public Column[] getColumnKeyMetaData() {
-            return (Column[]) ArrayUtils.addAll(columns, keys);
+        return (Column[]) ArrayUtils.addAll(columns, keys);
     }
 
     public Column[] getMetaData() {
         switch (dmlType) {
-        case UPDATE:
-            return getColumnKeyMetaData();
-        case INSERT:
-            return getColumns();
-        case DELETE:
-            return getKeys();
+            case UPDATE:
+                return getColumnKeyMetaData();
+            case INSERT:
+                return getColumns();
+            case DELETE:
+                return getKeys();
         }
         return null;
     }
@@ -279,47 +301,47 @@ public class DmlStatement {
 
     public String[] getValueArray(String[] columnValues, String[] keyValues) {
         switch (dmlType) {
-        case UPDATE:            
-            
-            return (String[]) ArrayUtils.addAll(columnValues, keyValues);
-        case INSERT:
-            return columnValues;
-        case DELETE:
-            return keyValues;
+            case UPDATE:
+
+                return (String[]) ArrayUtils.addAll(columnValues, keyValues);
+            case INSERT:
+                return columnValues;
+            case DELETE:
+                return keyValues;
         }
         return null;
     }
-    
+
     public Object[] buildArgsFrom(Map<String, Object> params) {
         Object[] args = null;
         if (params != null) {
             int index = 0;
             switch (dmlType) {
-            case INSERT:
-                args = new Object[columns.length];
-                for (Column column : columns) {
-                    args[index++] = params.get(column.getName());
-                }
-                break;
-            case UPDATE:
-                args = new Object[columns.length + keys.length];
-                for (Column column : columns) {
-                    args[index++] = params.get(column.getName());
-                }
-                for (Column column : keys) {
-                    args[index++] = params.get(column.getName());
-                }
-                break;
-            case DELETE:
-                args = new Object[keys.length];
-                for (Column column : keys) {
-                    args[index++] = params.get(column.getName());
-                }
-                break;
-            default:
-                throw new UnsupportedOperationException();
+                case INSERT:
+                    args = new Object[columns.length];
+                    for (Column column : columns) {
+                        args[index++] = params.get(column.getName());
+                    }
+                    break;
+                case UPDATE:
+                    args = new Object[columns.length + keys.length];
+                    for (Column column : columns) {
+                        args[index++] = params.get(column.getName());
+                    }
+                    for (Column column : keys) {
+                        args[index++] = params.get(column.getName());
+                    }
+                    break;
+                case DELETE:
+                    args = new Object[keys.length];
+                    for (Column column : keys) {
+                        args[index++] = params.get(column.getName());
+                    }
+                    break;
+                default:
+                    throw new UnsupportedOperationException();
             }
         }
         return args;
-    }    
+    }
 }

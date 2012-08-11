@@ -171,11 +171,13 @@ public class DbExport {
             if (! noCreateInfo) {
                 if (format == Format.SQL) {
                     writer.write(target.createTables(getDatabase(table), addDropTable));
-                } else if (format == Format.CSV) {
-                    csvWriter.writeRecord(table.getColumnNames());
                 }
             }
 
+            if (format == Format.CSV) {
+                csvWriter.writeRecord(table.getColumnNames());
+            }
+            
     		if (! noData) {
     		    writeData(writer, csvWriter, platform, table, sql);
     		}
