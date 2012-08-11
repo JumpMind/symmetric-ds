@@ -80,8 +80,12 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     }
 
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
-        if (isSyncTriggersNeeded(table) || data.getDataEventType() == DataEventType.CREATE) {
+        if (isSyncTriggersNeeded(table)) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
+        }
+        
+        if (data.getDataEventType() == DataEventType.CREATE) {
+            engine.getTriggerRouterService().syncTriggers(table, false);
         }
     }
 
