@@ -19,6 +19,8 @@
 								</xsd:complexType>
 							</xsd:element>
 						</xsd:sequence>
+                        <xsd:attribute name="catalog" type="xsd:string" use="optional" />
+                        <xsd:attribute name="schema" type="xsd:string" use="optional" />
 						<xsd:attribute name="entity" type="xsd:string" use="required" />
 						<xsd:attribute name="dml" use="required">
 							<xsd:simpleType>
@@ -37,13 +39,7 @@
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
-			<xsd:attribute name="id">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:pattern value="[0-9]*" />
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
+			<xsd:attribute name="id" type="xsd:string" />
 			<xsd:attribute name="nodeid" type="xsd:string" />
 			<xsd:attribute name="time">
 				<xsd:simpleType>
