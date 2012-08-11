@@ -133,8 +133,10 @@ class DbFill {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
-            } else if (type == Types.INTEGER || type == Types.BIT) {
-                objectValue = randomInt();    
+            } else if (type == Types.INTEGER) {
+                objectValue = randomInt();
+            } else if (type == Types.BIT) {
+                objectValue = randomBit();                    
             } else if (type == Types.SMALLINT) {
                 objectValue = randomSmallInt();                
             } else if (type == Types.TINYINT) {
@@ -214,6 +216,10 @@ class DbFill {
     private Integer randomInt() {
         return new Integer(new java.util.Random().nextInt(1000000));
     }
+    
+    private Integer randomBit() {
+        return new Integer(new java.util.Random().nextInt(1));
+    }    
 
     protected String getSchemaToUse() {
         if (StringUtils.isBlank(schema)) {
