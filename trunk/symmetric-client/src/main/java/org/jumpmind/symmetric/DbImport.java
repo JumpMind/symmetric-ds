@@ -43,7 +43,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.jumpmind.symmetric.io.data.reader.TableCsvDataReader;
+import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
@@ -164,7 +164,7 @@ public class DbImport {
             throw new RuntimeException("Unable to find table");
         }
 
-        TableCsvDataReader reader = new TableCsvDataReader(BinaryEncoding.HEX, table.getCatalog(),
+        CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer);

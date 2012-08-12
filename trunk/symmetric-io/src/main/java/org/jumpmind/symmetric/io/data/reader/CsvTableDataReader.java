@@ -18,41 +18,41 @@ import org.jumpmind.symmetric.io.data.DataEventType;
  * Read CSV formatted data for a single table. Requires that the column names be
  * the header of the CSV.
  */
-public class TableCsvDataReader extends AbstractTableDataReader {
+public class CsvTableDataReader extends AbstractTableDataReader {
 
     protected CsvReader csvReader;
 
-    public TableCsvDataReader(Batch batch, String catalogName, String schemaName, String tableName,
+    public CsvTableDataReader(Batch batch, String catalogName, String schemaName, String tableName,
             File file) {
         super(batch, catalogName, schemaName, tableName, file);
     }
 
-    public TableCsvDataReader(Batch batch, String catalogName, String schemaName, String tableName,
+    public CsvTableDataReader(Batch batch, String catalogName, String schemaName, String tableName,
             InputStream is) {
         super(batch, catalogName, schemaName, tableName, is);
     }
 
-    public TableCsvDataReader(Batch batch, String catalogName, String schemaName, String tableName,
+    public CsvTableDataReader(Batch batch, String catalogName, String schemaName, String tableName,
             Reader reader) {
         super(batch, catalogName, schemaName, tableName, reader);
     }
 
-    public TableCsvDataReader(Batch batch, String catalogName, String schemaName, String tableName,
+    public CsvTableDataReader(Batch batch, String catalogName, String schemaName, String tableName,
             String input) {
         super(batch, catalogName, schemaName, tableName, input);
     }
 
-    public TableCsvDataReader(Batch batch, String catalogName, String schemaName, String tableName,
+    public CsvTableDataReader(Batch batch, String catalogName, String schemaName, String tableName,
             StringBuilder input) {
         super(batch, catalogName, schemaName, tableName, input);
     }
 
-    public TableCsvDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
+    public CsvTableDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
             String tableName, InputStream is) {
         super(binaryEncoding, catalogName, schemaName, tableName, is);
     }
 
-    public TableCsvDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
+    public CsvTableDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
             String tableName, Reader reader) {
         super(binaryEncoding, catalogName, schemaName, tableName, reader);
     }
