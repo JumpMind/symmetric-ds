@@ -39,7 +39,7 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
     protected Batch batch;
     protected Table table;
     protected int lineNumber = 0;
-
+    protected boolean readDataBeforeTable = false;
     protected boolean readingBatch = false;
     protected boolean readingTable = false;
 
@@ -132,7 +132,7 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
     }
 
     public CsvData nextData() {
-        if (readingTable) {
+        if (readDataBeforeTable || readingTable) {
             CsvData data = readNext();
             if (data != null) {
                 lineNumber++;
