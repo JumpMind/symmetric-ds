@@ -732,7 +732,9 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
 
-            log.info("About to run: {}", script);
+            if (log.isDebugEnabled()) {
+                log.debug("About to run: {}", script);
+            }
             interpreter.eval(script);
             statistics.get(batch).increment(DataWriterStatisticConstants.SCRIPTCOUNT);
         } catch (EvalError e) {

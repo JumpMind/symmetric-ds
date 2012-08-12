@@ -68,7 +68,9 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
             String tableName, Reader reader) {
         this.reader = reader;
         this.batch = batch;
-        this.table = new Table(catalogName, schemaName, tableName);
+        if (StringUtils.isNotBlank(tableName)) {
+            this.table = new Table(catalogName, schemaName, tableName);
+        }
     }
 
     public AbstractTableDataReader(BinaryEncoding binaryEncoding, String catalogName,
@@ -123,9 +125,9 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
     abstract protected void init();
 
     abstract protected CsvData readNext();
-    
+
     abstract protected void finish();
-    
+
     protected CsvData buildCsvData(String[] tokens, DataEventType dml) {
         statistics.increment(DataReaderStatistics.READ_BYTE_COUNT, logDebugAndCountBytes(tokens));
         return new CsvData(dml, tokens);
@@ -136,7 +138,7 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
             CsvData data = readNext();
             if (data != null) {
                 lineNumber++;
-                context.put(CTX_LINE_NUMBER, lineNumber);                
+                context.put(CTX_LINE_NUMBER, lineNumber);
                 return data;
             } else {
                 batch.setComplete(true);

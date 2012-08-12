@@ -26,12 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DdlException;
@@ -40,10 +38,11 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
+import org.jumpmind.symmetric.io.data.reader.SqlDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
@@ -88,9 +87,9 @@ public class DbImport {
     private boolean ignoreCollisions = false;
 
     private boolean alterCaseToMatchDatabaseDefaultCase = false;
-    
+
     private boolean alterTables = false;
-    
+
     private boolean dropIfExists = false;
 
     protected IDatabasePlatform platform;
@@ -105,24 +104,33 @@ public class DbImport {
     public DbImport(DataSource dataSource) {
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
-    
-    public void importTables(String importData, String tableName) throws IOException {
-        ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
-        importTables(in, tableName);
-        in.close();
-    }    
 
-    public void importTables(String importData) throws IOException {
-        ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
-        importTables(in);
-        in.close();
+    public void importTables(String importData, String tableName) {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+            importTables(in, tableName);
+            in.close();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 
-    public void importTables(InputStream in) throws IOException {
+    public void importTables(String importData) {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+            importTables(in);
+            in.close();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+
+    }
+
+    public void importTables(InputStream in) {
         importTables(in, null);
     }
 
-    public void importTables(InputStream in, String tableName) throws IOException {
+    public void importTables(InputStream in, String tableName) {
         if (format == Format.SQL) {
             importTablesFromSql(in);
         } else if (format == Format.CSV) {
@@ -158,7 +166,7 @@ public class DbImport {
         return settings;
     }
 
-    protected void importTablesFromCsv(InputStream in, String tableName) throws IOException {
+    protected void importTablesFromCsv(InputStream in, String tableName) {
         Table table = platform.readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table");
@@ -172,13 +180,13 @@ public class DbImport {
     }
 
     protected void importTablesFromXml(InputStream in) {
-        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);        
+        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
         if (alterTables) {
-            platform.alterDatabase(database, forceImport);                
+            platform.alterDatabase(database, forceImport);
         } else {
             platform.createDatabase(database, dropIfExists, forceImport);
         }
-        
+
         // TODO: read in data from XML also
     }
 
@@ -270,14 +278,11 @@ public class DbImport {
 
     }
 
-    protected void importTablesFromSql(InputStream in) throws IOException {
-        // TODO: SqlScript should be able to stream from standard input to run
-        // large SQL script
-        List<String> lines = IOUtils.readLines(in);
-
-        SqlScript script = new SqlScript(lines, platform.getSqlTemplate(), true,
-                SqlScript.QUERY_ENDS, platform.getSqlScriptReplacementTokens());
-        script.execute();
+    protected void importTablesFromSql(InputStream in) {
+        SqlDataReader reader = new SqlDataReader(in);
+        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        dataProcessor.process();
     }
 
     public Format getFormat() {
@@ -355,27 +360,27 @@ public class DbImport {
     public boolean isIgnoreCollisions() {
         return ignoreCollisions;
     }
-    
+
     public void setReplaceRows(boolean replaceRows) {
         this.replaceRows = replaceRows;
     }
-    
+
     public boolean isReplaceRows() {
         return replaceRows;
     }
-    
+
     public void setAlterTables(boolean alterTables) {
         this.alterTables = alterTables;
     }
-    
+
     public boolean isAlterTables() {
         return alterTables;
     }
-    
+
     public void setDropIfExists(boolean dropIfExists) {
         this.dropIfExists = dropIfExists;
     }
-    
+
     public boolean isDropIfExists() {
         return dropIfExists;
     }

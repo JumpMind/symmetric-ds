@@ -14,7 +14,7 @@
             required="true" />
         <column name="date_value" type="DATE" />
         <column name="time_value" type="TIMESTAMP" />
-        <column name="boolean_value" type="BIT" size="1" />
+        <column name="boolean_value" type="BOOLEANINT" size="1" />
         <column name="integer_value" type="INTEGER" />
         <column name="decimal_value" type="DECIMAL" size="10,2" />
         <column name="double_value" type="DOUBLE" />
