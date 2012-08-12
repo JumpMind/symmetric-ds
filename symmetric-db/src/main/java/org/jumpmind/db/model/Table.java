@@ -897,6 +897,10 @@ public class Table implements Serializable, Cloneable {
             String tableName) {
         return getFullyQualifiedTableName(catalogName, schemaName, tableName, null);
     }
+    
+    public String getQualifiedColumnName(Column column) {
+        return getFullyQualifiedTableName() + "." + column.getName();        
+    }
 
     public static String getQualifiedTablePrefix(String catalogName, String schemaName) {
         return getQualifiedTablePrefix(catalogName, schemaName, null);

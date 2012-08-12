@@ -87,17 +87,22 @@ class DbFill {
             for (Table table : tables) {
                 DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
 
-                Column[] columns = table.getColumns();
-                Object[] values = generateRandomValues(insertedColumns, table);
-                for (int j = 0; j < columns.length; j++) {
-                    String qualifiedColumnName = table.getName() + "." + columns[j].getName();
-                    insertedColumns.put(qualifiedColumnName, values[j]);
+                Column[] tableColumns = table.getColumns();
+                Object[] columnValues = generateRandomValues(insertedColumns, table);
+                for (int j = 0; j < tableColumns.length; j++) {
+                    insertedColumns.put(table.getQualifiedColumnName(tableColumns[j]),
+                            columnValues[j]);
                 }
-                int rows = sqlTemplate.update(statement.getSql(), values);
-                if (log.isDebugEnabled()) {
-                    log.debug("{} inserted by {} in {}", new Object[] { rows,
-                            getClass().getSimpleName(), table.getFullyQualifiedTableName() });
+
+                Column[] statementColumns = statement.getMetaData();
+                Object[] statementValues = new Object[statementColumns.length];
+                for (int j = 0; j < statementColumns.length; j++) {
+                    statementValues[j] = insertedColumns.get(table
+                            .getQualifiedColumnName(statementColumns[j]));
                 }
+
+                sqlTemplate.update(statement.getSql(), statementValues);
+
             }
 
             insertedColumns.clear();
@@ -136,9 +141,9 @@ class DbFill {
             } else if (type == Types.INTEGER) {
                 objectValue = randomInt();
             } else if (type == Types.BIT) {
-                objectValue = randomBit();                    
+                objectValue = randomBit();
             } else if (type == Types.SMALLINT) {
-                objectValue = randomSmallInt();                
+                objectValue = randomSmallInt();
             } else if (type == Types.TINYINT) {
                 objectValue = randomTinyInt();
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
@@ -163,10 +168,10 @@ class DbFill {
         }
         return list.toArray();
     }
-    
+
     private Object randomSmallInt() {
-        // TINYINT (-32768  32767)
-        return new Integer(new java.util.Random().nextInt(65535) - 32768);        
+        // TINYINT (-32768 32767)
+        return new Integer(new java.util.Random().nextInt(65535) - 32768);
     }
 
     private Object randomTinyInt() {
@@ -216,10 +221,10 @@ class DbFill {
     private Integer randomInt() {
         return new Integer(new java.util.Random().nextInt(1000000));
     }
-    
+
     private Integer randomBit() {
         return new Integer(new java.util.Random().nextInt(1));
-    }    
+    }
 
     protected String getSchemaToUse() {
         if (StringUtils.isBlank(schema)) {
