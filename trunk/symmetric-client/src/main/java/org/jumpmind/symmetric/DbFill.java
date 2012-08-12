@@ -57,20 +57,27 @@ class DbFill {
     }
 
     public void fillTables(String... tableNames) {
-        ArrayList<Table> tableList = new ArrayList<Table>();
-
-        for (String tableName : tableNames) {
-            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
-                    tableName);
-            if (table != null) {
-                tableList.add(table);
-            } else if (!ignoreMissingTables) {
-                throw new RuntimeException("Cannot find table " + tableName + " in catalog "
-                        + getCatalogToUse() + " and schema " + getSchemaToUse());
+        Table[] tables;
+        if (tableNames.length == 0) {
+            // If no tableNames are provided, fill all of the tables in the schema with random data.
+            Database db = platform.readDatabase(catalog, schema, null);
+            tables = db.getTables();
+        } else {
+            ArrayList<Table> tableList = new ArrayList<Table>();
+            for (String tableName : tableNames) {
+                Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
+                        tableName);
+                if (table != null) {
+                    tableList.add(table);
+                } else if (!ignoreMissingTables){
+                    throw new RuntimeException("Cannot find table " + tableName + " in catalog "
+                            + getCatalogToUse() + " and schema " + getSchemaToUse());
+                }
             }
+            tables = tableList.toArray(new Table[tableList.size()]);
         }
 
-        fillTables(tableList.toArray(new Table[tableList.size()]));
+        fillTables(tables);
     }
 
     private void fillTables(Table... tables) {
@@ -100,9 +107,7 @@ class DbFill {
                     statementValues[j] = insertedColumns.get(table
                             .getQualifiedColumnName(statementColumns[j]));
                 }
-
                 sqlTemplate.update(statement.getSql(), statementValues);
-
             }
 
             insertedColumns.clear();

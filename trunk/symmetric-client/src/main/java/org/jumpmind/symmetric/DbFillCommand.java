@@ -59,11 +59,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
             dbFill.setRecordCount(Integer.parseInt(line.getOptionValue(OPTION_COUNT)));
         }
         String[] args = line.getArgs();
-        if (args.length == 0) {
-            throw new RuntimeException("Must provide a list of tables to fill.");
-        } else {
-            dbFill.fillTables(args);
-        }
+        dbFill.fillTables(args);
         
         return true;
     }
