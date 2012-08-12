@@ -4,7 +4,7 @@
 <database name="testdb">
 
     <table name="test_db_import_1">
-        <column name="id" type="INTEGER" required="true" autoIncrement="true"
+        <column name="id" type="INTEGER" required="true" 
             primaryKey="true" />    
         <column name="string_value" type="VARCHAR" size="50" />
         <column name="string_required_value" type="VARCHAR" size="50"
