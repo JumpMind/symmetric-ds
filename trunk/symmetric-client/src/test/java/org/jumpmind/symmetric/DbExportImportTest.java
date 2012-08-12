@@ -12,6 +12,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
@@ -171,13 +172,24 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         assertCountDbImportTableRecords(5);
 
-        // TODO test error
+        recreateImportTable();
+        
+        assertCountDbImportTableRecords(0);
 
-        // TODO test replace
-
-        // TODO test ignore
-
-        // TODO test force
+        try {
+            importCsv.importTables(getClass()
+                    .getResourceAsStream("/test-dbimport-1-bad-line-2.sql"));
+            Assert.fail("Expected a sql exception");
+        } catch (SqlException ex) {
+        }
+        
+        assertCountDbImportTableRecords(0);
+        
+        importCsv.setCommitRate(1);
+        importCsv.setForceImport(true);
+        importCsv.importTables(getClass()
+                .getResourceAsStream("/test-dbimport-1-bad-line-2.sql"));
+        assertCountDbImportTableRecords(4);
 
     }
 
