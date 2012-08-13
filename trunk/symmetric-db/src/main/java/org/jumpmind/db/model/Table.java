@@ -821,6 +821,8 @@ public class Table implements Serializable, Cloneable {
             // TODO: For now we ignore catalog and schema (type should be
             // irrelevant anyways)
             return new EqualsBuilder()
+            .append(catalog, other.catalog)
+            .append(schema, other.schema)
                     .append(name, other.name)
                     .append(columns, other.columns)
                     .append(new HashSet<ForeignKey>(foreignKeys),

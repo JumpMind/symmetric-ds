@@ -2,10 +2,7 @@ package org.jumpmind.symmetric.io.data.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -15,9 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -91,29 +86,6 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
             }
         }
         return tableName;
-    }
-
-    protected static Batch toBatch(BinaryEncoding binaryEncoding) {
-        return new Batch(BatchType.LOAD, Batch.UNKNOWN_BATCH_ID, "default", binaryEncoding, null,
-                null, true);
-    }
-
-    protected static Reader toReader(File file) {
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            InputStreamReader in = new InputStreamReader(fis, "UTF-8");
-            return new BufferedReader(in);
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
-    }
-
-    protected static Reader toReader(InputStream is) {
-        try {
-            return new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
     }
 
     public void open(DataContext context) {

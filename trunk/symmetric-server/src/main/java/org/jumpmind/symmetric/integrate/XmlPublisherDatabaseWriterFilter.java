@@ -70,7 +70,8 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
             DataContext context, Table table, CsvData data) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(table.getName())) {
-            Element xml = getXmlFromCache(context, table.getColumnNames(),
+            Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(), 
+                    table.getColumnNames(),
                     data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(),
                     data.getParsedData(CsvData.PK_DATA));
             if (xml != null) {

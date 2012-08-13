@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jdom.Element;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -37,9 +39,11 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
  * {@link IPublisher} is the {@link SimpleJmsPublisher}.
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements
-        IDataRouter {
+        IDataRouter, ISymmetricEngineAware {
 
     boolean onePerBatch = false;
+
+    protected ISymmetricEngine engine;
 
     public void contextCommitted(SimpleRouterContext context) {
         if (doesXmlExistToPublish(context)) {
@@ -57,7 +61,8 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
             Set<Node> nodes, boolean initialLoad) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
-            Element xml = getXmlFromCache(context, dataMetaData.getTriggerHistory()
+            Element xml = getXmlFromCache(context, engine.getSymmetricDialect().getBinaryEncoding(),
+                    dataMetaData.getTriggerHistory()
                     .getParsedColumnNames(), dataMetaData.getData().toParsedRowData(), dataMetaData
                     .getTriggerHistory().getParsedPkColumnNames(), dataMetaData.getData()
                     .toParsedPkData());
@@ -85,6 +90,10 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
      */
     public void setOnePerBatch(boolean onePerBatch) {
         this.onePerBatch = onePerBatch;
+    }
+
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
 }

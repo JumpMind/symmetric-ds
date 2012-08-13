@@ -89,14 +89,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         }
     }
 
-    protected static Reader toReader(InputStream is) {
-        try {
-            return new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
-    }
-
     public IStagedResource getStagedResource() {
         return stagedResource;
     }

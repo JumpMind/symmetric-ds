@@ -15,13 +15,14 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
+import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
 import org.junit.Test;
 
 public class DbExportImportTest extends AbstractServiceTest {
 
     @Test
-    public void testExportTableInSchemaOnH2() throws Exception {
+    public void exportTableInAnotherSchemaOnH2() throws Exception {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
             ISymmetricEngine engine = getSymmetricEngine();
             DataSource ds = engine.getDataSource();
@@ -89,7 +90,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                 .getDefaultSchema());
         export.setCatalog(getSymmetricEngine().getSymmetricDialect().getPlatform()
                 .getDefaultCatalog());
-        String output = export.exportTables(new String[] { table.getName() });
+        export.exportTables(new String[] { table.getName() });
 
         // System.out.println(output);
         // TODO validate
@@ -144,6 +145,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         reCreateTablesImport.setFormat(DbImport.Format.XML);
         reCreateTablesImport.setDropIfExists(true);
         reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
+        reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
         reCreateTablesImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
     }
 
@@ -173,7 +175,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(5);
 
         recreateImportTable();
-        
+
         assertCountDbImportTableRecords(0);
 
         try {
@@ -182,14 +184,46 @@ public class DbExportImportTest extends AbstractServiceTest {
             Assert.fail("Expected a sql exception");
         } catch (SqlException ex) {
         }
-        
+
         assertCountDbImportTableRecords(0);
-        
+
         importCsv.setCommitRate(1);
         importCsv.setForceImport(true);
-        importCsv.importTables(getClass()
-                .getResourceAsStream("/test-dbimport-1-bad-line-2.sql"));
+        importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-bad-line-2.sql"));
         assertCountDbImportTableRecords(4);
+
+    }
+
+    @Test
+    public void importSymXmlData() throws Exception {
+        final String FILE = "/test-dbimport-1-sym_xml-1.xml";
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+
+        recreateImportTable();
+
+        assertCountDbImportTableRecords(0);
+
+        DbImport importCsv = new DbImport(ds);
+        importCsv.setFormat(DbImport.Format.SYM_XML);
+        importCsv.importTables(getClass().getResourceAsStream(FILE));
+
+        assertCountDbImportTableRecords(2);
+
+        try {
+            importCsv.importTables(getClass().getResourceAsStream(FILE));
+            Assert.fail("Expected a sql exception");
+        } catch (ConflictException ex) {
+        }
+
+        assertCountDbImportTableRecords(2);
+
+        recreateImportTable();
+
+        importCsv.setReplaceRows(true);
+        importCsv.importTables(getClass().getResourceAsStream(FILE));
+
+        assertCountDbImportTableRecords(2);
 
     }
 
