@@ -156,4 +156,12 @@ public class Batch {
         return complete;
     }
     
+    public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
+        this.binaryEncoding = binaryEncoding;
+    }
+    
+    public void setSourceNodeId(String sourceNodeId) {
+        this.sourceNodeId = sourceNodeId;
+    }
+    
 }

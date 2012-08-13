@@ -51,7 +51,7 @@ public class DatabaseWriter implements IDataWriter {
 
     protected DmlStatement currentDmlStatement;
 
-    protected boolean lastUseConflictDetection = false;
+    protected boolean lastUseConflictDetection = true;
 
     protected boolean lastApplyChangesOnly = false;
 
@@ -178,7 +178,7 @@ public class DatabaseWriter implements IDataWriter {
         } catch (RuntimeException ex) {
             if (filterError(data, ex)) {
                 throw ex;
-            } 
+            }
         }
 
     }
@@ -268,10 +268,11 @@ public class DatabaseWriter implements IDataWriter {
         }
         return foundNullValueChange;
     }
-    
+
     protected boolean filterError(CsvData data, Exception ex) {
         boolean process = true;
-        List<IDatabaseWriterErrorHandler> filters = this.writerSettings.getDatabaseWriterErrorHandlers();
+        List<IDatabaseWriterErrorHandler> filters = this.writerSettings
+                .getDatabaseWriterErrorHandlers();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -377,6 +378,7 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
+                this.lastUseConflictDetection = true;                
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
@@ -390,8 +392,8 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
-                        !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
+                        && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -424,8 +426,9 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
             Map<String, String> lookupDataMap = null;
-            if (requireNewStatement(DmlType.DELETE, data, false, useConflictDetection,
+            if (requireNewStatement(DmlType.DELETE, data, useConflictDetection, useConflictDetection,
                     conflict.getDetectType())) {
+                this.lastUseConflictDetection = useConflictDetection;
                 List<Column> lookupKeys = null;
                 if (!useConflictDetection) {
                     lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
@@ -479,10 +482,11 @@ public class DatabaseWriter implements IDataWriter {
 
                 lookupDataMap = getLookupDataMap(data);
 
-                boolean[] nullKeyValues = new boolean[lookupKeys.size()];                
+                boolean[] nullKeyValues = new boolean[lookupKeys.size()];
                 for (int i = 0; i < lookupKeys.size(); i++) {
                     Column column = lookupKeys.get(i);
-                    nullKeyValues[i] =  !column.isRequired() && lookupDataMap.get(column.getName()) == null;
+                    nullKeyValues[i] = !column.isRequired()
+                            && lookupDataMap.get(column.getName()) == null;
                 }
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
@@ -499,8 +503,8 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
-                        !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
+                        && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -642,8 +646,8 @@ public class DatabaseWriter implements IDataWriter {
                             .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                     return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
                 } catch (SqlException ex) {
-                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex) && 
-                            !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
+                            && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
@@ -692,7 +696,7 @@ public class DatabaseWriter implements IDataWriter {
                 failureMessage.append(MAX_DATA_SIZE_TO_PRINT_TO_LOG);
                 failureMessage.append(" bytes (it was ");
                 failureMessage.append(rowData.length());
-                failureMessage.append(" bytes).  It will not be printed to the log file");                
+                failureMessage.append(" bytes).  It will not be printed to the log file");
             }
         }
 
@@ -769,9 +773,13 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String sql = data.getParsedData(CsvData.ROW_DATA)[0];
             transaction.prepare(sql);
-            log.info("About to run: {}", sql);
+            if (log.isDebugEnabled()) {
+                log.debug("About to run: {}", sql);
+            }
             long count = transaction.prepareAndExecute(sql);
-            log.info("{} rows updated when running: {}", count, sql);
+            if (log.isDebugEnabled()) {
+                log.debug("{} rows updated when running: {}", count, sql);
+            }
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
                     count);
@@ -791,12 +799,12 @@ public class DatabaseWriter implements IDataWriter {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
             /*
-             * Old data isn't captured for some lob fields.  When both values
-             * are null, then we always have to update because we don't know if 
-             * the lob field was previously null. 
+             * Old data isn't captured for some lob fields. When both values are
+             * null, then we always have to update because we don't know if the
+             * lob field was previously null.
              */
-            boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode()) && StringUtils
-                    .isBlank(oldData[columnIndex]);
+            boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode())
+                    && StringUtils.isBlank(oldData[columnIndex]);
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || containsEmptyLobColumn;
             if (containsEmptyLobColumn) {
@@ -877,7 +885,7 @@ public class DatabaseWriter implements IDataWriter {
         Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData());
         if (log.isDebugEnabled()) {
-            log.debug("Submitting data {} with types {}", Arrays.toString(objectValues), 
+            log.debug("Submitting data {} with types {}", Arrays.toString(objectValues),
                     Arrays.toString(this.currentDmlStatement.getTypes()));
         }
         return transaction.addRow(data, objectValues, this.currentDmlStatement.getTypes());

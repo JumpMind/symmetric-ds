@@ -36,6 +36,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -164,7 +165,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
     }
 
-    protected Element getXmlFromCache(Context context, String[] columnNames, String[] data,
+    protected Element getXmlFromCache(Context context, BinaryEncoding binaryEncoding, String[] columnNames, String[] data,
             String[] keyNames, String[] keys) {
         Map<String, Element> xmlCache = getXmlCache(context);
         Element xml = null;
@@ -175,6 +176,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 xml = new Element(xmlTagNameToUseForGroup);
                 xml.addNamespaceDeclaration(getXmlNamespace());
                 xml.setAttribute("id", txId);
+                xml.setAttribute("binary", binaryEncoding.name());
                 addFormattedExtraGroupAttributes(context, xml);
                 xmlCache.put(txId, xml);
             }
