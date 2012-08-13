@@ -145,7 +145,6 @@ public class DbExportImportTest extends AbstractServiceTest {
         reCreateTablesImport.setFormat(DbImport.Format.XML);
         reCreateTablesImport.setDropIfExists(true);
         reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
-        reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
         reCreateTablesImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
     }
 
