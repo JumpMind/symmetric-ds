@@ -165,10 +165,7 @@ public class DatabaseWriter implements IDataWriter {
 
                 filterAfter(data);
 
-                if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
-                    notifyFiltersEarlyCommit();
-                    commit();
-                }
+                checkForEarlyCommit();
 
             }
 
@@ -178,9 +175,20 @@ public class DatabaseWriter implements IDataWriter {
         } catch (RuntimeException ex) {
             if (filterError(data, ex)) {
                 throw ex;
+            } else {
+                uncommittedCount++;
+                statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+                checkForEarlyCommit();
             }
         }
 
+    }
+    
+    protected void checkForEarlyCommit() {
+        if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
+            notifyFiltersEarlyCommit();
+            commit();
+        }
     }
 
     protected void commit() {
