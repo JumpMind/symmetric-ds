@@ -10,7 +10,7 @@
     </appender>
     
     <category name="org.jumpmind">
-        <priority value="DEBUG" />
+        <priority value="INFO" />
     </category>
     
     <!-- To print out SQL 
