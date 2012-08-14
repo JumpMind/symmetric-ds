@@ -1,3 +1,47 @@
+SymmetricDS - 3.1.0 (Released 2012-08-13)  
+=========================================
+- 0000655: [Task] Update dbexport and dbimport to support the SymmetricDS XML format (abrougher) - resolved.
+- 0000771: [Improvement] DbFill should have the ability to load all of the tables in a given schema with random data. (abrougher) - resolved.
+- 0000770: [New Feature] Improve DbImport so that it incorporates the SymmetricDS data loader (chenson) - resolved.
+- 0000757: [Improvement] All tables are synchronized during a CREATE batch when initial.load.create.first is true resulting in a lot of table missing (chenson) - resolved.
+- 0000769: [Bug] Tomcat Deployment Broken (chenson) - resolved.
+- 0000669: [Improvement] Add schema and catalog to the SymmetricDS Batch XML and change the publisher to fill in the schema and catalog (chenson) - resolved.
+- 0000725: [New Feature] Add a feature to allow dynamic load filters to be created and executed based configuration (gwilmer) - resolved.
+- 0000728: [Improvement] Lookup table router should throw an exception when the router expression is invalid. (abrougher) - resolved.
+- 0000747: [Improvement] DbImport should have an empty constructor to make dependency injection easier. (abrougher) - resolved.
+- 0000730: [Bug] dbexport schema property ignored when data is exported. (abrougher) - resolved.
+- 0000748: [Bug] Data in a single transaction is split across batches and is out of order on Firebird (gwilmer) - resolved.
+- 0000753: [Bug] The url for extracting a batch http://server:31415/sync/batch/nodeid-batchid [^] does not work if the nodeid has a '-' in it (chenson) - resolved.
+- 0000759: [New Feature] Create utility to fill a given database with random data. (abrougher) - resolved.
+- 0000716: [Improvement] dbimport should have an option that allows tables to be altered to match the import versus always trying to create them. (chenson) - resolved.
+- 0000768: [Bug] Don't hide startup errors if the spring context fails to start (chenson) - resolved.
+- 0000767: [Bug] Latest oracle jdbc drivers for 11g return (0,-127) for types defined as integer resulting in bad mappings (chenson) - resolved.
+- 0000763: [Improvement] When logging to the console, log to system.err so that command line utilities can redirect system.out to files (chenson) - resolved.
+- 0000762: [Improvement] Change command line options --noconsole to --no-log-console and --nologfile to --no-log-file (chenson) - resolved.
+- 0000760: [Bug] Columns mismatched on updates when source table has more columns than the target table. (chenson) - resolved.
+- 0000756: [Bug] If an initial load is aborted by marking batches as OK, the client might remain in initial load mode and end up in a loop. (chenson) - resolved.
+- 0000752: [Bug] Null pointer during trigger inactivation of deleted table can cause SymmetricDS engine not to start (chenson) - resolved.
+- 0000751: [Improvement] Add new extension point called INodeIdCreator that replaces INodeIdGenerator and gets the remote address and host passed to it (chenson) - resolved.
+- 0000746: [Improvement] Improve documentation on how to handle Oracle error 'ORA-01489: result of string concatenation is too long' (chenson) - resolved.
+- 0000745: [Bug] Type of float(63) on oracle loses precision during data load. (chenson) - resolved.
+- 0000740: [Bug] Symadmin help subcommand missing (chenson) - resolved.
+- 0000724: [Task] Include an example of filtering or data subsetting (route items to a store) in the User Guide Tutorial (chenson) - resolved.
+- 0000738: [Bug] AbstractSymmetricEngine should call init() method of the SecurityService (chenson) - resolved.
+- 0000744: [Bug] Inefficient 'Sort by Foreign Keys' algorithm (chenson) - resolved.
+- 0000726: [New Feature] Add a new parameter that, when set, is evaluated to choose a node id (chenson) - resolved.
+- 0000743: [Bug] Load fails when a null lob column is updated in same batch where the lob column is not null (chenson) - resolved.
+- 0000742: [Bug] "ORA-01000: maximum open cursors exceeded" during initial load (RouterService.insertInitialLoadEvents) (chenson) - resolved.
+- 0000739: [Bug] Multiple wildcard expressions, only one used (chenson) - resolved.
+- 0000737: [Bug] The symmetric engine won't startup in single server mode as a war unless a property file has been specified in the web.xml (chenson) - resolved.
+- 0000736: [Bug] deployment_type not being recorded properly in sym_node (chenson) - resolved.
+- 0000735: [New Feature] dbimport and dbexport should support symmetric batch xml. (chenson) - resolved.
+- 0000733: [Improvement] dbexport should use the default schema and default catalog if they aren't specified (chenson) - resolved.
+- 0000734: [Bug] H2 wasn't selecting the schema or catalog in the table lookup (chenson) - resolved.
+- 0000729: [Bug] oracle.template.precision should be supported in 3.0 (chenson) - resolved.
+- 0000732: [Bug] Support varying Locales for the "REAL" data type (e.g., Oracle's Float(63)) (chenson) - resolved.
+- 0000731: [Improvement] Redo the derby database triggers so they can handle tables with more columns (chenson) - resolved.
+- 0000727: [Improvement] Upgrade Derby to 10.9.1.0 (chenson) - resolved.
+
 SymmetricDS - 3.0.10 (Released 2012-07-23) 
 ==========================================
 - 0000713: [Bug] Automate upgrade from 2.x to 3.x on most platforms (chenson) - closed.
