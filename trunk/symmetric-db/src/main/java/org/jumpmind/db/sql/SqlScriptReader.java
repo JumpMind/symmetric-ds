@@ -85,10 +85,9 @@ public class SqlScriptReader extends LineNumberReader {
     }
 
     protected String trimComments(String line) {
-        for (String commmitChar : COMMENT_CHARS) {
-            int index = line.indexOf(commmitChar);
-            if (index >= 0) {
-                line = line.substring(0, index);
+        for (String commmentChar : COMMENT_CHARS) {
+            if (line.startsWith(commmentChar)) {
+                return null;
             }
         }
         return line;
