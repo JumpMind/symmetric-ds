@@ -161,9 +161,11 @@ class DbFill {
                 objectValue = randomSmallInt();
             } else if (type == Types.FLOAT) {
                 objectValue = randomFloat();
+            } else if (type == Types.DOUBLE) {
+                objectValue = randomDouble();
             } else if (type == Types.TINYINT) {
                 objectValue = randomTinyInt();
-            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.DOUBLE
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL 
                     || type == Types.REAL) {
                 objectValue = randomBigDecimal(column.getSizeAsInt(), column.getScale());
             } else if (type == Types.BOOLEAN) {
@@ -193,6 +195,10 @@ class DbFill {
 
     private Object randomFloat() {
         return new java.util.Random().nextFloat();
+    }
+    
+    private Object randomDouble() {
+        return new java.util.Random().nextDouble();
     }
 
     private Object randomTinyInt() {
