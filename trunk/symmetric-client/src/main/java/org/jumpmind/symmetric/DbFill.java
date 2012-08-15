@@ -11,6 +11,7 @@ import java.util.Random;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -22,6 +23,7 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +62,8 @@ class DbFill {
     public void fillTables(String... tableNames) {
         Table[] tables;
         if (tableNames.length == 0) {
-            // If no tableNames are provided, fill all of the tables in the schema with random data.
+            // If no tableNames are provided, fill all of the tables in the
+            // schema with random data.
             Database db = platform.readDatabase(catalog, schema, null);
             tables = db.getTables();
         } else {
@@ -70,7 +73,7 @@ class DbFill {
                         tableName);
                 if (table != null) {
                     tableList.add(table);
-                } else if (!ignoreMissingTables){
+                } else if (!ignoreMissingTables) {
                     throw new RuntimeException("Cannot find table " + tableName + " in catalog "
                             + getCatalogToUse() + " and schema " + getSchemaToUse());
                 }
@@ -108,7 +111,13 @@ class DbFill {
                     statementValues[j] = insertedColumns.get(table.getName() + "."
                             + statementColumns[j].getName());
                 }
-                sqlTemplate.update(statement.getSql(), statementValues);
+                try {
+                    sqlTemplate.update(statement.getSql(), statementValues);
+                } catch (SqlException ex) {
+                    log.error("Failed to process {} with values of {}", statement.getSql(),
+                            ArrayUtils.toString(statementValues));
+                    throw ex;
+                }
             }
 
             insertedColumns.clear();
@@ -154,7 +163,7 @@ class DbFill {
                 objectValue = randomTinyInt();
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                     || type == Types.DOUBLE || type == Types.REAL) {
-                objectValue = randomBigDecimal(column.getPrecisionRadix(),column.getScale());
+                objectValue = randomBigDecimal(column.getPrecisionRadix(), column.getScale());
             } else if (type == Types.BOOLEAN) {
                 objectValue = randomBoolean();
             } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
@@ -209,8 +218,8 @@ class DbFill {
 
     private BigDecimal randomBigDecimal(int precision, int scale) {
         Random rnd = new java.util.Random();
-        long rndLong = rnd.nextLong() % (long)Math.pow(10,precision);
-        return BigDecimal.valueOf(rndLong,scale);
+        long rndLong = rnd.nextLong() % (long) Math.pow(10, precision);
+        return BigDecimal.valueOf(rndLong, scale);
     }
 
     private Character randomChar() {

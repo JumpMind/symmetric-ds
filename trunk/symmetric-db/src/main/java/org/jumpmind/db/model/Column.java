@@ -94,6 +94,8 @@ public class Column implements Cloneable, Serializable {
     private String jdbcTypeName;
 
     private boolean distributionKey;
+    
+    private int precisionRadix;
 
     public Column() {
     }
@@ -400,7 +402,7 @@ public class Column implements Cloneable, Serializable {
      * @return The precision radix
      */
     public int getPrecisionRadix() {
-        return getSizeAsInt();
+        return this.precisionRadix;
     }
 
     /**
@@ -410,8 +412,7 @@ public class Column implements Cloneable, Serializable {
      *            The precision radix
      */
     public void setPrecisionRadix(int precisionRadix) {
-        sizeAsInt = new Integer(precisionRadix);
-        size = String.valueOf(precisionRadix);
+        this.precisionRadix = precisionRadix;
     }
 
     /**
