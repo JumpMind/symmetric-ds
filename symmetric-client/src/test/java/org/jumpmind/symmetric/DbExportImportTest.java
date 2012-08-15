@@ -97,47 +97,6 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     }
 
-    @Test
-    public void exportThenImportCsv() throws Exception {
-        ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
-        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
-        Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
-        Table table = testTables.findTable("test_db_import_1", false);
-
-        recreateImportTable();
-
-        final int RECORD_COUNT = 100;
-
-        DbFill fill = new DbFill(platform);
-        fill.setRecordCount(RECORD_COUNT);
-        fill.fillTables(table.getName());
-
-        DbExport export = new DbExport(ds);
-        export.setFormat(Format.CSV);
-        export.setNoCreateInfo(true);
-        export.setNoData(false);
-        String csvOutput = export.exportTables(new String[] { table.getName() });
-
-        recreateImportTable();
-
-        DbImport importCsv = new DbImport(ds);
-        importCsv.setFormat(DbImport.Format.CSV);
-        importCsv.importTables(csvOutput, table.getName());
-
-        DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
-                table.getName(), null, table.getColumns(), false, null, null);
-        Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt(dml.getSql()));
-
-        // TODO test error
-
-        // TODO test replace
-
-        // TODO test ignore
-
-        // TODO test force
-    }
-
     protected void recreateImportTable() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         DataSource ds = engine.getDataSource();
@@ -225,5 +184,46 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(2);
 
     }
+    
+    @Test
+    public void exportThenImportCsv() throws Exception {
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
+        Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
+        Table table = testTables.findTable("test_db_import_1", false);
+
+        recreateImportTable();
+
+        final int RECORD_COUNT = 100;
+
+        DbFill fill = new DbFill(platform);
+        fill.setRecordCount(RECORD_COUNT);
+        fill.fillTables(table.getName());
+
+        DbExport export = new DbExport(ds);
+        export.setFormat(Format.CSV);
+        export.setNoCreateInfo(true);
+        export.setNoData(false);
+        String csvOutput = export.exportTables(new String[] { table.getName() });
+
+        recreateImportTable();
+
+        DbImport importCsv = new DbImport(ds);
+        importCsv.setFormat(DbImport.Format.CSV);
+        importCsv.importTables(csvOutput, table.getName());
+
+        DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
+                table.getName(), null, table.getColumns(), false, null, null);
+        Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt(dml.getSql()));
+
+        // TODO test error
+
+        // TODO test replace
+
+        // TODO test ignore
+
+        // TODO test force
+    }    
 
 }
