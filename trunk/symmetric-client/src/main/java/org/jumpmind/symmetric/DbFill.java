@@ -159,11 +159,13 @@ class DbFill {
                 objectValue = randomBit();
             } else if (type == Types.SMALLINT) {
                 objectValue = randomSmallInt();
+            } else if (type == Types.FLOAT) {
+                objectValue = randomFloat();
             } else if (type == Types.TINYINT) {
                 objectValue = randomTinyInt();
-            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
-                    || type == Types.DOUBLE || type == Types.REAL) {
-                objectValue = randomBigDecimal(column.getPrecisionRadix(), column.getScale());
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.DOUBLE
+                    || type == Types.REAL) {
+                objectValue = randomBigDecimal(column.getSizeAsInt(), column.getScale());
             } else if (type == Types.BOOLEAN) {
                 objectValue = randomBoolean();
             } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
@@ -187,6 +189,10 @@ class DbFill {
     private Object randomSmallInt() {
         // TINYINT (-32768 32767)
         return new Integer(new java.util.Random().nextInt(65535) - 32768);
+    }
+
+    private Object randomFloat() {
+        return new java.util.Random().nextFloat();
     }
 
     private Object randomTinyInt() {
@@ -216,10 +222,24 @@ class DbFill {
         return new java.util.Random().nextBoolean();
     }
 
-    private BigDecimal randomBigDecimal(int precision, int scale) {
+    private BigDecimal randomBigDecimal(int size, int digits) {
         Random rnd = new java.util.Random();
-        long rndLong = rnd.nextLong() % (long) Math.pow(10, precision);
-        return BigDecimal.valueOf(rndLong, scale);
+        String left = Long.toString(rnd.nextLong());
+        if (digits > 0) {
+            String right = Long.toString(rnd.nextLong());
+            String number = StringUtils.left(left, size - digits) + "."
+                    + StringUtils.right(right, digits);
+            try {
+                return new BigDecimal(number);
+            } catch (NumberFormatException ex) {
+                log.error("Could not format {}.  Used a size of {} and decimal digits of {}",
+                        new Object[] { number, size, digits });
+                throw ex;
+            }
+        } else {
+            return new BigDecimal(StringUtils.left(left, size));
+        }
+
     }
 
     private Character randomChar() {
