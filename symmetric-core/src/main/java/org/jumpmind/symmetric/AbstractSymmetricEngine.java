@@ -18,6 +18,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -441,7 +442,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
                     if (fileUrl != null) {
                         new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(),
-                                true, SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
+                                true, SqlScriptReader.QUERY_ENDS, getSymmetricDialect().getPlatform()
                                         .getSqlScriptReplacementTokens()).execute();
                         loaded = true;
                     } else {
