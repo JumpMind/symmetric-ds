@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-public class SqlScriptUnitTest {
+public class SqlScriptTest {
 
     @Test
     public void testSimpleSqlScript() throws Exception {

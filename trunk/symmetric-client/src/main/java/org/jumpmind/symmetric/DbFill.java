@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,14 +93,22 @@ class DbFill {
         for (int i = 0; i < inputLength; i++) {
 
             for (Table table : tables) {
+                DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
+
                 Column[] tableColumns = table.getColumns();
                 Object[] columnValues = generateRandomValues(insertedColumns, table);
                 for (int j = 0; j < tableColumns.length; j++) {
-                    insertedColumns.put(table.getName() + "." + tableColumns[j].getName(),
+                    insertedColumns.put(table.getQualifiedColumnName(tableColumns[j]),
                             columnValues[j]);
                 }
-                DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
-                sqlTemplate.update(statement.getSql(), columnValues);
+
+                Column[] statementColumns = statement.getMetaData();
+                Object[] statementValues = new Object[statementColumns.length];
+                for (int j = 0; j < statementColumns.length; j++) {
+                    statementValues[j] = insertedColumns.get(table
+                            .getQualifiedColumnName(statementColumns[j]));
+                }
+                sqlTemplate.update(statement.getSql(), statementValues);
             }
 
             insertedColumns.clear();

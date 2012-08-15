@@ -46,11 +46,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int[] primaryKeyViolationCodes;
 
     protected String[] primaryKeyViolationSqlStates;
-    
+
     protected int[] foreignKeyViolationCodes;
 
     protected String[] foreignKeyViolationSqlStates;
-    
+
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
@@ -60,7 +60,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
         this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
     }
-    
+
     protected Connection getConnection() throws SQLException {
         return this.dataSource.getConnection();
     }
@@ -85,21 +85,21 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return lobHandler;
     }
 
-    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
-            Object[] args, int[] types) {
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] args,
+            int[] types) {
         logSql(sql, args);
         return new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
     }
 
     public int getIsolationLevel() {
-		return isolationLevel;
-	}
+        return isolationLevel;
+    }
 
-	public void setIsolationLevel(int isolationLevel) {
-		this.isolationLevel = isolationLevel;
-	}
+    public void setIsolationLevel(int isolationLevel) {
+        this.isolationLevel = isolationLevel;
+    }
 
-	public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
+    public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {
@@ -271,8 +271,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return update(autoCommit, failOnError, commitRate, null, sql);
     }
 
+    public int update(boolean autoCommit, boolean failOnError, int commitRate,
+            ISqlResultsListener resultsListener, String... sql) {
+        return this.update(autoCommit, failOnError, commitRate, resultsListener,
+                new ListSqlStatementSource(sql));
+    }
+
     public int update(final boolean autoCommit, final boolean failOnError, final int commitRate,
-            final ISqlResultsListener resultsListener, final String... sql) {
+            final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
                 int updateCount = 0;
@@ -282,7 +288,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     con.setAutoCommit(autoCommit);
                     stmt = con.createStatement();
                     int statementCount = 0;
-                    for (String statement : sql) {
+                    for (String statement = source.readSqlStatement(); statement != null; statement = source
+                            .readSqlStatement()) {
                         logSql(statement, null);
                         try {
                             boolean hasResults = stmt.execute(statement);
@@ -312,13 +319,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 resultsListener.sqlErrored(statement, translate(statement, ex),
                                         statementCount);
                             }
-                            
+
                             if (statement.toLowerCase().startsWith("drop")) {
-                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(),
-                                        statement);
+                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             } else {
-                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(),
-                                        statement);
+                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             }
 
                             if (failOnError) {
@@ -423,7 +428,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             className = obj.getClass().getName();
         }
         if (obj instanceof Blob) {
-            Blob blob = (Blob)obj;
+            Blob blob = (Blob) obj;
             InputStream is = blob.getBinaryStream();
             try {
                 obj = IOUtils.toByteArray(is);
@@ -433,7 +438,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 IOUtils.closeQuietly(is);
             }
         } else if (obj instanceof Clob) {
-            Clob clob = (Clob)obj;
+            Clob clob = (Clob) obj;
             Reader reader = clob.getCharacterStream();
             try {
                 obj = IOUtils.toString(reader);
@@ -499,7 +504,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             close(c);
         }
     }
-    
+
     public static void close(boolean autoCommitValue, int transactionIsolationLevel, Connection c) {
         try {
             if (c != null) {
@@ -512,7 +517,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } finally {
             close(c);
         }
-    }    
+    }
 
     public static void close(Connection c) {
         try {
@@ -562,7 +567,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-    
+
     public boolean isStoresLowerCaseIdentifiers() {
         return execute(new IConnectionCallback<Boolean>() {
             public Boolean execute(Connection con) throws SQLException {
@@ -653,7 +658,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = conn.prepareStatement(sql);
                 }
             } else {
-                String replaceSql = sql.replaceFirst("\\([\"|\\w]*,", "(").replaceFirst("\\(null,", "(");
+                String replaceSql = sql.replaceFirst("\\([\"|\\w]*,", "(").replaceFirst("\\(null,",
+                        "(");
                 if (supportsGetGeneratedKeys) {
                     ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
                 } else {
@@ -735,7 +741,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
         return primaryKeyViolation;
     }
-    
+
     public boolean isForeignKeyViolation(Exception ex) {
         boolean foreignKeyViolation = false;
         if (foreignKeyViolationCodes != null || foreignKeyViolationSqlStates != null) {
@@ -768,7 +774,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
         return foreignKeyViolation;
     }
-
 
     protected SQLException findSQLException(Throwable ex) {
         if (ex instanceof SQLException) {
