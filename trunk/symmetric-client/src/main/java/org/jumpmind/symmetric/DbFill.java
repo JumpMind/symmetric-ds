@@ -98,15 +98,15 @@ class DbFill {
                 Column[] tableColumns = table.getColumns();
                 Object[] columnValues = generateRandomValues(insertedColumns, table);
                 for (int j = 0; j < tableColumns.length; j++) {
-                    insertedColumns.put(table.getQualifiedColumnName(tableColumns[j]),
+                    insertedColumns.put(table.getName() + "." + tableColumns[j].getName(),
                             columnValues[j]);
                 }
 
                 Column[] statementColumns = statement.getMetaData();
                 Object[] statementValues = new Object[statementColumns.length];
                 for (int j = 0; j < statementColumns.length; j++) {
-                    statementValues[j] = insertedColumns.get(table
-                            .getQualifiedColumnName(statementColumns[j]));
+                    statementValues[j] = insertedColumns.get(table.getName() + "."
+                            + statementColumns[j].getName());
                 }
                 sqlTemplate.update(statement.getSql(), statementValues);
             }
