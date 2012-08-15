@@ -1,12 +1,14 @@
 package org.jumpmind.symmetric;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.sql.DataSource;
 
@@ -92,22 +94,14 @@ class DbFill {
         for (int i = 0; i < inputLength; i++) {
 
             for (Table table : tables) {
-                DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
-
                 Column[] tableColumns = table.getColumns();
                 Object[] columnValues = generateRandomValues(insertedColumns, table);
                 for (int j = 0; j < tableColumns.length; j++) {
-                    insertedColumns.put(table.getQualifiedColumnName(tableColumns[j]),
+                    insertedColumns.put(table.getName() + "." + tableColumns[j].getName(),
                             columnValues[j]);
                 }
-
-                Column[] statementColumns = statement.getMetaData();
-                Object[] statementValues = new Object[statementColumns.length];
-                for (int j = 0; j < statementColumns.length; j++) {
-                    statementValues[j] = insertedColumns.get(table
-                            .getQualifiedColumnName(statementColumns[j]));
-                }
-                sqlTemplate.update(statement.getSql(), statementValues);
+                DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
+                sqlTemplate.update(statement.getSql(), columnValues);
             }
 
             insertedColumns.clear();
@@ -153,7 +147,7 @@ class DbFill {
                 objectValue = randomTinyInt();
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                     || type == Types.DOUBLE || type == Types.REAL) {
-                objectValue = randomBigDecimal();
+                objectValue = randomBigDecimal(column.getPrecisionRadix(),column.getScale());
             } else if (type == Types.BOOLEAN) {
                 objectValue = randomBoolean();
             } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
@@ -206,8 +200,10 @@ class DbFill {
         return new java.util.Random().nextBoolean();
     }
 
-    private BigDecimal randomBigDecimal() {
-        return new BigDecimal(new java.util.Random().nextDouble());
+    private BigDecimal randomBigDecimal(int precision, int scale) {
+        Random rnd = new java.util.Random();
+        long rndLong = rnd.nextLong() % (long)Math.pow(10,precision);
+        return BigDecimal.valueOf(rndLong,scale);
     }
 
     private Character randomChar() {
