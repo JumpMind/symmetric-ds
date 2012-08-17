@@ -656,8 +656,8 @@ public class StartSymmetricEngine {
         </para>
         <para>
             Use the <command>net</command> command to start and stop the service: 
-            <programlisting>net start symmetric
-net stop symmetric</programlisting>
+            <programlisting>net start symmetricds
+net stop symmetricds</programlisting>
         </para>
     </section>
     <section id="running-service-unix">
