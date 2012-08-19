@@ -1156,10 +1156,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
         } catch (RuntimeException ex) {
-            if (hist != null
-                    && !symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
-                            hist.getSourceSchemaName(), hist.getSourceTableName(),
-                            hist.getTriggerNameForDmlType(dmlType))) {
+            if (hist != null) {
                 log.warn(
                         "Cleaning up trigger hist row of {} after failing to create the associated trigger",
                         hist.getTriggerHistoryId());
