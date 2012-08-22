@@ -228,24 +228,18 @@ class DbFill {
         return new java.util.Random().nextBoolean();
     }
 
-    private BigDecimal randomBigDecimal(int size, int digits) {
+    public BigDecimal randomBigDecimal(int size, int digits) {
         Random rnd = new java.util.Random();
-        String left = Long.toString(rnd.nextLong());
-        if (digits > 0) {
-            String right = Long.toString(rnd.nextLong());
-            String number = StringUtils.left(left, size - digits) + "."
-                    + StringUtils.right(right, digits);
-            try {
-                return new BigDecimal(number);
-            } catch (NumberFormatException ex) {
-                log.error("Could not format {}.  Used a size of {} and decimal digits of {}",
-                        new Object[] { number, size, digits });
-                throw ex;
-            }
-        } else {
-            return new BigDecimal(StringUtils.left(left, size));
+        StringBuilder str = new StringBuilder();
+        if (size>0 && rnd.nextBoolean()) {
+            str.append("-");
         }
-
+        for (int i=0; i<size; i++) {
+            if (i == size-digits)
+                str.append(".");
+            str.append(rnd.nextInt(10));
+        }
+        return new BigDecimal(str.toString());
     }
 
     private Character randomChar() {
