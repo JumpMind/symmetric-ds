@@ -1,3 +1,11 @@
+SymmetricDS - 3.1.2 (Released 2012-08-22)
+=========================================
+- 0000776: [Improvement] Change SqlScriptReader to allow comments in places other than the beginning of a line in a sql script (chenson) - closed.
+- 0000778: [Bug] If database user doesn't have permission to drop trigger, extra trigger_hist rows get created and the old are not deactivated (chenson) - closed.
+- 0000774: [Bug] DbFill does not respect a columns scale and precision. (abrougher) - closed.
+- 0000781: [Bug] Restart of jobs can cause embedded derby database connections to fail (chenson) - closed.
+- 0000775: [Improvement] Change SqlScript to use SqlScriptReader so that statements are streamed (chenson) - closed.
+
 SymmetricDS - 3.1.1 (Released 2012-08-14) 
 =========================================
 - 0000773: [Bug] SqlScriptReader doesn't handle // comments correctly (chenson) - closed.
