@@ -50,6 +50,8 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * This class provides functions to read and write database models from/to XML.
  */
 public class DatabaseIO {
+    
+    public static final String DTD_PREFIX = "http://db.apache.org/torque/dtd/database";
 
     /*
      * Reads the database model contained in the specified file.
@@ -316,7 +318,7 @@ public class DatabaseIO {
 
     public void write(Database model, Writer output, String rootElementName) throws DdlException {
     	try {
-	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">\n");
+	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + DTD_PREFIX + "\">\n");
 	    	if (rootElementName != null) {
 	    	    output.write("<" + rootElementName + ">\n");
 	    	}
