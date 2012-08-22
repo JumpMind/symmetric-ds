@@ -87,6 +87,7 @@ public class JobManager implements IJobManager {
         for (IJob job : jobs) {
             job.stop();
         }      
+        Thread.interrupted();
     }
     
     public synchronized void destroy () {
