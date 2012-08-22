@@ -145,44 +145,49 @@ abstract public class AbstractJob implements Runnable, IJob {
             if (engine == null) {
                 log.info("Could not find a reference to the SymmetricEngine from {}", jobName);
             } else {
-                MDC.put("engineName", engine.getEngineName());
-                if (engine.isStarted()) {
-                    if (!paused || force) {
-                        if (!running) {
-                            running = true;
-                            synchronized (this) {
-                                ran = true;
-                                long startTime = System.currentTimeMillis();
-                                try {
-                                    if (!requiresRegistration
-                                            || (requiresRegistration && engine
-                                                    .getRegistrationService()
-                                                    .isRegisteredWithServer())) {
-                                        hasNotRegisteredMessageBeenLogged = false;
-                                        doJob(force);
-                                    } else {
-                                        if (!hasNotRegisteredMessageBeenLogged) {
-                                            log.warn(
-                                                    "Did not run the {} job because the engine is not registered.",
-                                                    getName());
-                                            hasNotRegisteredMessageBeenLogged = true;
+                if (!Thread.interrupted()) {
+                    MDC.put("engineName", engine.getEngineName());
+                    if (engine.isStarted()) {
+                        if (!paused || force) {
+                            if (!running) {
+                                running = true;
+                                synchronized (this) {
+                                    ran = true;
+                                    long startTime = System.currentTimeMillis();
+                                    try {
+                                        if (!requiresRegistration
+                                                || (requiresRegistration && engine
+                                                        .getRegistrationService()
+                                                        .isRegisteredWithServer())) {
+                                            hasNotRegisteredMessageBeenLogged = false;
+                                            doJob(force);
+                                        } else {
+                                            if (!hasNotRegisteredMessageBeenLogged) {
+                                                log.warn(
+                                                        "Did not run the {} job because the engine is not registered.",
+                                                        getName());
+                                                hasNotRegisteredMessageBeenLogged = true;
+                                            }
                                         }
+                                    } finally {
+                                        lastFinishTime = new Date();
+                                        long endTime = System.currentTimeMillis();
+                                        lastExecutionTimeInMs = endTime - startTime;
+                                        totalExecutionTimeInMs += lastExecutionTimeInMs;
+                                        if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                                            engine.getStatisticManager().addJobStats(jobName,
+                                                    startTime, endTime, 0);
+                                        }
+                                        numberOfRuns++;
+                                        running = false;
                                     }
-                                } finally {
-                                    lastFinishTime = new Date();
-                                    long endTime = System.currentTimeMillis();
-                                    lastExecutionTimeInMs = endTime - startTime;
-                                    totalExecutionTimeInMs += lastExecutionTimeInMs;
-                                    if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                                        engine.getStatisticManager().addJobStats(jobName,
-                                                startTime, endTime, 0);
-                                    }
-                                    numberOfRuns++;
-                                    running = false;
                                 }
                             }
                         }
+                    } else {
+                        log.warn("This thread was interrupted.  Not executing the job until the interrupted status has cleared");
                     }
+
                 } else {
                     log.info("The engine is not currently started.");
                 }
