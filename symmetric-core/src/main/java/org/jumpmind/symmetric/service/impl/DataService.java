@@ -163,9 +163,10 @@ public class DataService extends AbstractService implements IDataService {
             }
 
             if (!reverse) {
-                // insert node security so the client doing the initial load
-                // knows
-                // that an initial load is currently happening
+                /*
+                 * Insert node security so the client doing the initial load
+                 * knows that an initial load is currently happening
+                 */
                 insertNodeSecurityUpdate(transaction, targetNode, true);
             }
 
