@@ -512,36 +512,40 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     protected java.util.Date parseDate(int type, String value, boolean useVariableDates) {
-        try {
-            boolean useTimestamp = (type == Types.TIMESTAMP)
-                    || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
-                            .isDateOverridesToTimestamp());
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                boolean useTimestamp = (type == Types.TIMESTAMP)
+                        || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
+                                .isDateOverridesToTimestamp());
 
-            if (useVariableDates && value.startsWith("${curdate")) {
-                long time = Long.parseLong(value.substring(10, value.length() - 1));
-                if (value.substring(9, 10).equals("-")) {
-                    time *= -1L;
-                }
-                time += System.currentTimeMillis();
-                if (useTimestamp) {
-                    return new Timestamp(time);
-                }
-                return new Date(time);
-            } else {
-                if (useTimestamp) {
-                    try {
-                        return Timestamp.valueOf(value);
-                    } catch (IllegalArgumentException ex) {
+                if (useVariableDates && value.startsWith("${curdate")) {
+                    long time = Long.parseLong(value.substring(10, value.length() - 1));
+                    if (value.substring(9, 10).equals("-")) {
+                        time *= -1L;
+                    }
+                    time += System.currentTimeMillis();
+                    if (useTimestamp) {
+                        return new Timestamp(time);
+                    }
+                    return new Date(time);
+                } else {
+                    if (useTimestamp) {
+                        try {
+                            return Timestamp.valueOf(value);
+                        } catch (IllegalArgumentException ex) {
+                            return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
+                        }
+                    } else if (type == Types.TIME) {
+                        return DateUtils.parseDate(value, TIME_PATTERNS);
+                    } else {
                         return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
                     }
-                } else if (type == Types.TIME) {
-                    return DateUtils.parseDate(value, TIME_PATTERNS);
-                } else {
-                    return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
                 }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } else {
+            return null;
         }
     }
 
