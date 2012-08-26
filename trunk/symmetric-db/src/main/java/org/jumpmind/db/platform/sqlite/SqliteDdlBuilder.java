@@ -3,6 +3,8 @@ package org.jumpmind.db.platform.sqlite;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
@@ -88,5 +90,8 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         super.writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
     }
-
+    
+    @Override
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
+            ForeignKey key, StringBuilder ddl) {}
 }
