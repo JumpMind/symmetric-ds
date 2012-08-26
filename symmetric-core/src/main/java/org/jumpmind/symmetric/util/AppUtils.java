@@ -23,8 +23,13 @@ package org.jumpmind.symmetric.util;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -40,7 +45,7 @@ import bsh.Interpreter;
  * General application utility methods
  */
 public class AppUtils {
-    
+
     private static String UNKNOWN = "unknown";
 
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
@@ -78,7 +83,7 @@ public class AppUtils {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (Exception ex) {
-                log.warn(ex.getMessage(),ex);
+                log.warn(ex.getMessage(), ex);
             }
         }
         return hostName;
@@ -88,9 +93,32 @@ public class AppUtils {
         String ipAddress = System.getProperty("ip.address", UNKNOWN);
         if (UNKNOWN.equals(ipAddress)) {
             try {
-                ipAddress = InetAddress.getLocalHost().getHostAddress();
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                NetworkInterface networkInterface = null;
+                while (interfaces.hasMoreElements()) {
+                    networkInterface = interfaces.nextElement();
+                    if (!networkInterface.isLoopback() && networkInterface.isUp()) {
+                        List<InterfaceAddress> addresses = networkInterface.getInterfaceAddresses();
+                        for (InterfaceAddress interfaceAddress : addresses) {
+                            if (!interfaceAddress.getAddress().isLoopbackAddress()) {
+                                ipAddress = interfaceAddress.getAddress().getHostAddress();
+                            }
+                        }
+                    }
+
+                }
             } catch (Exception ex) {
-                log.warn(ex.getMessage(),ex);
+                log.warn(ex.getMessage(), ex);
+            } finally {
+            }
+        }
+
+        if (UNKNOWN.equals(ipAddress)) {
+            try {
+                ipAddress = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException ex) {
+                log.warn(ex.getMessage(), ex);
+                ipAddress = "127.0.0.1";
             }
         }
         return ipAddress;
@@ -162,11 +190,12 @@ public class AppUtils {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Checks to see if a specific port is available.
-     *
-     * @param port the port to check for availability
+     * 
+     * @param port
+     *            the port to check for availability
      */
     public static boolean isPortAvailable(int port) {
         if (port < 1 || port > 65535) {
@@ -198,6 +227,5 @@ public class AppUtils {
 
         return false;
     }
-    
 
 }
