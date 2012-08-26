@@ -128,6 +128,8 @@ class DbFill {
 
         Column[] columns = table.getColumns();
         List<Object> list = new ArrayList<Object>(columns.length);
+        
+        
 
         for_column: for (Column column : columns) {
 
@@ -135,15 +137,18 @@ class DbFill {
 
             for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
-                    objectValue = insertedColumns.get(fk.getForeignTableName() + "."
-                            + ref.getForeignColumnName());
-                    if (objectValue != null) {
-                        list.add(objectValue);
-                        continue for_column;
-                    } else {
-                        throw new RuntimeException("The foreign key column, " + column.getName()
-                                + " found in " + table.getName() + " references " + "table "
-                                + fk.getForeignTableName() + " which was not included.");
+                    if (ref.getLocalColumn()==column) {
+                        objectValue = insertedColumns.get(fk.getForeignTableName() + "."
+                                + ref.getForeignColumnName());
+                        
+                        if (objectValue != null) {
+                            list.add(objectValue);
+                            continue for_column;
+                        } else {
+                            throw new RuntimeException("The foreign key column, " + column.getName()
+                                    + " found in " + table.getName() + " references " + "table "
+                                    + fk.getForeignTableName() + " which was not included.");
+                        }
                     }
                 }
             }
@@ -153,7 +158,7 @@ class DbFill {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
-            } else if (type == Types.INTEGER) {
+            } else if (type == Types.INTEGER || type == Types.BIGINT) {
                 objectValue = randomInt();
             } else if (type == Types.BIT) {
                 objectValue = randomBit();
@@ -178,10 +183,10 @@ class DbFill {
             } else if (type == Types.ARRAY) {
                 objectValue = null;
             } else if (type == Types.VARCHAR) {
-                objectValue = randomString(column.getSizeAsInt());
+                objectValue = randomString(column.getSizeAsInt()>1000?1000:column.getSizeAsInt());
             }
             if (objectValue == null) {
-                throw new RuntimeException("No random value generated for the object.");
+                throw new RuntimeException("No random value generated for the object " + table.getName() + "." + column.getName());
             }
             list.add(objectValue);
         }
@@ -228,7 +233,7 @@ class DbFill {
         return new java.util.Random().nextBoolean();
     }
 
-    public BigDecimal randomBigDecimal(int size, int digits) {
+    private BigDecimal randomBigDecimal(int size, int digits) {
         Random rnd = new java.util.Random();
         StringBuilder str = new StringBuilder();
         if (size>0 && rnd.nextBoolean()) {
