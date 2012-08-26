@@ -335,14 +335,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
 
-                currentBatch = extractOutgoingBatch(targetNode, targetTransport, currentBatch);
+                boolean streamToFileEnabled = parameterService
+                        .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+                
+                currentBatch = extractOutgoingBatch(targetNode, targetTransport, currentBatch, streamToFileEnabled);
 
-                if (dataWriter == null) {
-                    dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                            targetTransport.open());
+                if (streamToFileEnabled) {
+                    if (dataWriter == null) {
+                        dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                                targetTransport.open());
+                    }
+
+                    currentBatch = sendOutgoingBatch(targetNode, currentBatch, dataWriter);
                 }
-
-                currentBatch = sendOutgoingBatch(targetNode, currentBatch, dataWriter);
 
                 if (currentBatch.getStatus() != Status.OK) {
                     currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
@@ -421,12 +426,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
 
     protected OutgoingBatch extractOutgoingBatch(Node targetNode,
-            IOutgoingTransport targetTransport, OutgoingBatch currentBatch) {
+            IOutgoingTransport targetTransport, OutgoingBatch currentBatch, boolean streamToFileEnabled) {
         if (currentBatch.getStatus() != Status.OK) {
             Node sourceNode = nodeService.findIdentity();
-
-            boolean streamToFileEnabled = parameterService
-                    .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
 
             TransformWriter transformExtractWriter = null;
             if (streamToFileEnabled) {
@@ -488,7 +490,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (!isPreviouslyExtracted(currentBatch)) {
                                 currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                                 changeBatchStatus(Status.QY, currentBatch);
-
                                 IDataReader dataReader = new ExtractDataReader(
                                         symmetricDialect.getPlatform(),
                                         new SelectFromSymDataSource(currentBatch, sourceNode, targetNode));
