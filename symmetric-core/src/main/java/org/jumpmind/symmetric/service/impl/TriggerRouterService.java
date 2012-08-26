@@ -745,7 +745,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(boolean force) {
-        syncTriggers((StringBuilder) null, false);
+        syncTriggers((StringBuilder) null, force);
     }
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
