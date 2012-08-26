@@ -182,11 +182,11 @@ class DbFill {
                 objectValue = randomBytes();
             } else if (type == Types.ARRAY) {
                 objectValue = null;
-            } else if (type == Types.VARCHAR) {
+            } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR) {
                 objectValue = randomString(column.getSizeAsInt()>1000?1000:column.getSizeAsInt());
             }
             if (objectValue == null) {
-                throw new RuntimeException("No random value generated for the object " + table.getName() + "." + column.getName());
+                throw new RuntimeException("No random value generated for the object " + table.getName() + "." + column.getName() + " of type " + type);
             }
             list.add(objectValue);
         }
