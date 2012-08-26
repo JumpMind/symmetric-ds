@@ -349,7 +349,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 }
                             } else if (type == Types.INTEGER || type == Types.SMALLINT
                                     || type == Types.BIT) {
-                                objectValue = Integer.valueOf(value);
+                                objectValue = parseIntegerObjectValue(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
                                     || type == Types.FLOAT || type == Types.DOUBLE
                                     || type == Types.REAL) {
@@ -392,6 +392,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } else {
             return null;
         }
+    }
+    
+    protected Number parseIntegerObjectValue(String value) {
+        return Integer.valueOf(value);
     }
 
     // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
