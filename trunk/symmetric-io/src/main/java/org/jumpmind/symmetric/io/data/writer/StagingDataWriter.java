@@ -10,6 +10,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.util.FormatUtils;
 
 public class StagingDataWriter extends AbstractProtocolDataWriter {
 
@@ -64,6 +65,9 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
 
     @Override
     protected void print(Batch batch, String data) {
+        if (log.isDebugEnabled() && data != null) {
+            log.debug("Writing staging data: {}", FormatUtils.abbreviateForLogging(data));
+        }
         IStagedResource resource = getStagedResource(batch);
         BufferedWriter writer = resource.getWriter();
         try {
