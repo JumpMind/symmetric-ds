@@ -94,16 +94,13 @@ public class AppUtils {
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
                 while (interfaces.hasMoreElements()) {
                     NetworkInterface networkInterface = interfaces.nextElement();
-                    if (!networkInterface.isLoopback() && networkInterface.isUp()) {
-                        Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                        while (inetAddresses.hasMoreElements()) {
-                            InetAddress inetAddress = inetAddresses.nextElement();
-                            if (!inetAddress.isLoopbackAddress()) {
-                                ipAddress = inetAddress.getHostAddress();
-                            }
+                    Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress inetAddress = inetAddresses.nextElement();
+                        if (!inetAddress.isLoopbackAddress()) {
+                            ipAddress = inetAddress.getHostAddress();
                         }
                     }
-
                 }
             } catch (Exception ex) {
                 log.warn(ex.getMessage(), ex);
