@@ -23,13 +23,11 @@ package org.jumpmind.symmetric.util;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -94,14 +92,14 @@ public class AppUtils {
         if (UNKNOWN.equals(ipAddress)) {
             try {
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                NetworkInterface networkInterface = null;
                 while (interfaces.hasMoreElements()) {
-                    networkInterface = interfaces.nextElement();
+                    NetworkInterface networkInterface = interfaces.nextElement();
                     if (!networkInterface.isLoopback() && networkInterface.isUp()) {
-                        List<InterfaceAddress> addresses = networkInterface.getInterfaceAddresses();
-                        for (InterfaceAddress interfaceAddress : addresses) {
-                            if (!interfaceAddress.getAddress().isLoopbackAddress()) {
-                                ipAddress = interfaceAddress.getAddress().getHostAddress();
+                        Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                        while (inetAddresses.hasMoreElements()) {
+                            InetAddress inetAddress = inetAddresses.nextElement();
+                            if (!inetAddress.isLoopbackAddress()) {
+                                ipAddress = inetAddress.getHostAddress();
                             }
                         }
                     }
