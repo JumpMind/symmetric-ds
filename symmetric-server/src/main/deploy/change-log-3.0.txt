@@ -1,3 +1,13 @@
+SymmetricDS - 3.1.3 (Released 2012-08-28) 
+=========================================
+- 0000787: [Bug] DbFill does not generate random values from BigInteger columns. (abrougher) - closed.
+- 0000784: [Improvement] Use the NetworkInterface Java class to get the current ipAddress of a node (chenson) - closed.
+- 0000788: [Bug] DbFill is populating columns with foreign values when a foreign key is not defined for the column. (abrougher) - closed.
+- 0000785: [Bug] syncTriggers(true) does not force trigger to be rebuilt (chenson) - closed.
+- 0000790: [Bug] stream.to.file.enabled=false opens outgoing transport multiple times which causes ack to be lost sometimes (chenson) - closed.
+- 0000786: [Improvement] Create a unit test for DbFill. (abrougher) - closed.
+- 0000783: [Bug] Null date in the primary key causes parse exception on postgres (chenson) - closed.
+
 SymmetricDS - 3.1.2 (Released 2012-08-22)
 =========================================
 - 0000776: [Improvement] Change SqlScriptReader to allow comments in places other than the beginning of a line in a sql script (chenson) - closed.
