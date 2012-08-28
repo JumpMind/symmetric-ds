@@ -12,7 +12,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.junit.Test;
 
-public class CsvDataReaderTest {
+public class ProtocolDataReaderTest {
 
     @Test
     public void testSimpleRead() {
