@@ -106,19 +106,26 @@ public class CsvData {
     public <T> T getAttribute(String attributeName) {
         return attributes == null ? null : (T) attributes.get(attributeName);
     }
-
-    public void removeData(String key) {
-        if (parsedCsvData != null) {
-            parsedCsvData.remove(key);
-        }
-
+    
+    public void removeCsvData(String key) {
         if (csvData != null) {
             csvData.remove(key);
         }
     }
+    
+    public void removeParsedData(String key) {
+        if (parsedCsvData != null) {
+            parsedCsvData.remove(key);
+        }        
+    }
+
+    public void removeAllData(String key) {
+        removeParsedData(key);
+        removeCsvData(key);
+    }
 
     public void putCsvData(String key, String data) {
-        removeData(key);
+        removeAllData(key);
         if (csvData == null) {
             csvData = new HashMap<String, String>(2);
         }
@@ -166,14 +173,14 @@ public class CsvData {
     }
 
     public void putParsedData(String key, String[] data) {
-        removeData(key);
+        removeAllData(key);
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);
         }
         changedDataIndicators = null;
         parsedCsvData.put(key, data);
     }
-
+    
     public String[] getParsedData(String key) {
         String[] values = null;
         if (parsedCsvData != null && parsedCsvData.containsKey(key)) {

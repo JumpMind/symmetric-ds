@@ -623,6 +623,17 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
+    
+    public int getPrimaryKeyColumnIndex(String columnName) {
+        int idx = 0;
+        List<Column> primaryKeyColumns = getPrimaryKeyColumnsAsList();
+        for (Iterator<Column> it = primaryKeyColumns.iterator(); it.hasNext(); idx++) {
+            if (columnName != null && columnName.equals(it.next().getName())) {
+                return idx;
+            }
+        }
+        return -1;
+    }
 
     /**
      * Finds the index with the specified name, using case insensitive matching.
