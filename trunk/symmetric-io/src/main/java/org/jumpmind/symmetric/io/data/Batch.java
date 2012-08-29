@@ -42,6 +42,10 @@ public class Batch {
     public Batch() {
         this.startTime = new Date();
     }
+    
+    public void setBatchId(long batchId) {
+        this.batchId = batchId;
+    }
 
     public long incrementLineCount() {
         return ++lineCount;
