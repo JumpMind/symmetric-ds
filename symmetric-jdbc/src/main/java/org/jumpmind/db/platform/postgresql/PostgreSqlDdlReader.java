@@ -107,7 +107,8 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
             // lets use the same type code that oracle uses
             return -101;            
-        } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
+        } else if (typeName != null && 
+                (typeName.equalsIgnoreCase("OID") || typeName.equalsIgnoreCase("LO"))) {
             return Types.BLOB;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
@@ -115,7 +116,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
         if (column.getSize() != null) {
