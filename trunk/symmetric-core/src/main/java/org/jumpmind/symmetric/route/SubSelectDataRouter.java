@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.InvalidSqlException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -78,18 +79,26 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         Set<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect) && 
                 !(initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect()))) {
-            Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
-            sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
-                    .getTargetNodeGroupId());
-            sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
-            ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
-            List<String> ids = template.query(String.format("%s%s", sql, subSelect),
-                    new StringMapper(), sqlParams);
-            if (ids != null) {
-                nodeIds = new HashSet<String>(ids);
+            try {
+                Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
+                sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
+                        .getTargetNodeGroupId());
+                sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+                ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
+                List<String> ids = template.query(String.format("%s%s", sql, subSelect),
+                        new StringMapper(), sqlParams);
+                if (ids != null) {
+                    nodeIds = new HashSet<String>(ids);
+                }
+            } catch (InvalidSqlException ex) {
+                log.error("The subselect expression was invalid for the {} subselect router",
+                        trigger.getRouter().getRouterId());
+                throw ex;
             }
-        } else {
+        } else if (initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect())) {
             nodeIds = toNodeIds(nodes, null);
+        } else {
+            throw new InvalidSqlException("The subselect expression is missing for the %s router", trigger.getRouter().getRouterId());
         }
         return nodeIds;
     }
