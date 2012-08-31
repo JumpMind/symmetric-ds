@@ -232,7 +232,7 @@ public abstract class NamedParameterUtils {
                     actualSql.append("?");
                 }
             } else {
-                actualSql.append("?");
+                throw new InvalidSqlException("The parameter map passed in did not contain a key for the named parameter %s in the SQL:\n %s" , paramName, originalSql);
             }
             lastIndex = endIndex;
         }
