@@ -106,7 +106,7 @@ values('item','corp_2_store', 100, current_timestamp, current_timestamp);
 
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,initial_load_select,last_update_time,create_time)
-values('item_selling_price','corp_2_one_store',100,'"store_id"=$(externalId)',current_timestamp,current_timestamp);
+values('item_selling_price','corp_2_one_store',100,'"store_id"=''$(externalId)''',current_timestamp,current_timestamp);
 
 
 insert into sym_trigger_router 
