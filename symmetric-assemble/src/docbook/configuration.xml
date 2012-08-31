@@ -485,6 +485,18 @@ insert into SYM_TRIGGER
     ('item', 'item', 'item', current_timestamp, current_timestamp);
 </programlisting></para>
 
+      <important>
+        <para>Note that many databases allow for multiple triggers of the same
+        type to be defined. Each database defines the order in which the
+        triggers fire differently. If you have additional triggers beyond
+        those SymmetricDS installs on your table, please consult your database
+        documentation to determine if there will be issues with the ordering
+        of the triggers.</para>
+      </important>
+
+
+    <section id="configuration-trigger-lobs">
+    <title>Large Objects</title>
       <para>Two lobs-related settings are also available on <xref
       linkend="table_trigger" xrefstyle="table"/>: <variablelist>
           <varlistentry>
@@ -515,15 +527,21 @@ insert into SYM_TRIGGER
             </listitem>
           </varlistentry>
         </variablelist></para>
-
-      <important>
-        <para>Note that many databases allow for multiple triggers of the same
-        type to be defined. Each database defines the order in which the
-        triggers fire differently. If you have additional triggers beyond
-        those SymmetricDS installs on your table, please consult your database
-        documentation to determine if there will be issues with the ordering
-        of the triggers.</para>
-      </important>
+        </section>
+        
+            <section id="configuration-trigger-external-select">
+                <title>External Select</title>
+            
+                <para>Occasionally, you may find that you need to capture and save away a piece of data present in another table when a trigger is firing.
+                This data is typically needed for
+                the purposes of determining where to 'route' the data to once routing takes place.  Each trigger definition contains an optional
+                <literal>external_select</literal> field which can be used to specify the data to be captured.  
+                Once captured, this data is available during routing in <xref
+                linkend="table_data" xrefstyle="table"/>'s <literal>external_data</literal> field.
+                For these cases, place a SQL select statement which returns the data item you need for routing in <literal>external_select</literal>.
+                An example of the use of external select can be found in <xref
+                linkend="configuration-routing-external-select"/>.</para>
+            </section>
     </section>
 
     <section id="configuration-router">
@@ -654,12 +672,14 @@ values
 </programlisting> Attributes on a <xref linkend="table_node"
         xrefstyle="table"/> that can be referenced with tokens include:
         <itemizedlist>
-            <listitem>NODE_ID</listitem>
+            <listitem>:NODE_ID</listitem>
 
-            <listitem>EXTERNAL_ID</listitem>
+            <listitem>:EXTERNAL_ID</listitem>
 
-            <listitem>NODE_GROUP_ID</listitem>
-          </itemizedlist></para>
+            <listitem>:NODE_GROUP_ID</listitem>
+          </itemizedlist>
+          Captured EXTERNAL_DATA is also available for routing as a virtual column.
+          </para>
 
         <para>Consider a table that needs to be routed to a redirect node
         defined by its external id in the <xref
@@ -786,8 +806,37 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
         <title>Subselect Router</title>
 
         <para>Sometimes routing decisions need to be made based on data that
-        is not in the current row being synchronized. Consider an example
-        where an Order table and a OrderLineItem table need to be routed to a
+        is not in the current row being synchronized.  A 'subselect' router can be used 
+        in these cases.  A 'subselect' is configured with a <literal>router_expression</literal> that is a
+        SQL select statement which returns a result set of the node ids that
+        need routed to. Column tokens can be used in the SQL expression and
+        will be replaced with row column data. The overhead of using this
+        router type is high because the 'subselect' statement runs for each
+        row that is routed. It should not be used for tables that have a lot
+        of rows that are updated. It also has the disadvantage that if the
+        data being relied on to determine the node id has been deleted before 
+        routing takes place, then no results would be returned and
+        routing would not happen.</para> 
+        <para>The <literal>router_expression</literal> you specify is appended to the
+        following SQL statement in order to select the node ids:
+        <programlisting>select c.node_id from sym_node c where 
+  c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and ...
+</programlisting>
+    <para>As you can see, you have access to information about the node currently under consideration for routing
+    through the 'c' alias, for example <literal>c.external_id</literal>.
+    
+    There are two node-related tokens you can use in your expression:
+            <itemizedlist>
+            <listitem>:NODE_GROUP_ID</listitem>
+            <listitem>:EXTERNAL_DATA</listitem>
+          </itemizedlist></para>
+    Column names representing data for the row in question are prefixed with a colon as well, for example:         
+         
+        <literal>:EMPLOYEE_ID</literal>, or <literal>:OLD_EMPLOYEE_ID</literal>.  Here, the OLD_ prefix indicates the value before
+        the change in cases where the old data has been captured.
+          
+    </para><para>
+        For an example, consider the case where an Order table and a OrderLineItem table need to be routed to a
         specific store. The Order table has a column named order_id and
         STORE_ID. A store node has an external_id that is equal to the
         STORE_ID on the Order table. OrderLineItem, however, only has a
@@ -795,31 +844,17 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
         same nodes that the Order will be routed to, we need to reference the
         master Order record.</para>
 
-        <para>There are two possible ways to route the OrderLineItem in
+        <para>There are two possible ways to solve this in
         SymmetricDS. One is to configure a 'subselect' router_type on the
-        <xref linkend="table_router" xrefstyle="table"/> table and the other
-        is to configure an external_select on the <xref
-        linkend="table_trigger" xrefstyle="table"/> table.</para>
+        <xref linkend="table_router" xrefstyle="table"/> table, shown below (The other possible
+        approach is to use an <literal>external_select</literal> to capture the data via a trigger for use in
+        a column match router, demonstrated in <xref
+        linkend="configuration-routing-external-select" />).
+        </para>
 
-        <para>A 'subselect' is configured with a router_expression that is a
-        SQL select statement which returns a result set of the node_ids that
-        need routed to. Column tokens can be used in the SQL expression and
-        will be replaced with row column data. The overhead of using this
-        router type is high because the 'subselect' statement runs for each
-        row that is routed. It should not be used for tables that have a lot
-        of rows that are updated. It also has the disadvantage that if the
-        Order master record is deleted, then no results would be returned and
-        routing would not happen. The router_expression is appended to the
-        following SQL statement in order to select the node ids.
-        <programlisting>
-
-select c.node_id from sym_node c where 
-  c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and 
-</programlisting></para>
-
-        <para>Consider a table that needs to be routed to all nodes in the
-        target group only when a status column is set to 'OK.' The following
-        SQL statement will insert a column router to accomplish that.
+ <para>Our solution utilizing subselect compares the external id
+ of the current node with the store id from the Order table where the order id matches
+ the order id of the current row being routed:
         <programlisting>
 insert into SYM_ROUTER 
   (router_id, source_node_group_id, target_node_group_id, router_type, 
@@ -830,47 +865,11 @@ values
     current_timestamp, current_timestamp);
 </programlisting></para>
 
-        <para>Alternatively, when using an external_select on the <xref
-        linkend="table_trigger" xrefstyle="table"/> table, data is captured in
-        the EXTERNAL_DATA column of the <xref linkend="table_data"
-        xrefstyle="table"/> table at the time a trigger fires. The
-        EXTERNAL_DATA can then be used for routing by using a router_type of
-        'column'. The advantage of this approach is that it is very unlikely
-        that the master Order table will have been deleted at the time any DML
-        accures on the OrderLineItem table. It also is a bit more effcient
-        than the 'subselect' approach, although the triggers produced do run
-        the extra external_select inline with application database
-        updates.</para>
+<para>As a final note, please note in this example that the parent row in Order must still exist at the moment of routing for the
+child rows (OrderLineItem) to route, since the select statement is run when routing is occurring, not when the change data is first captured.
+</para>
 
-        <para>In the following example, the STORE_ID is captured from the
-        Order table in the EXTERNAL_DATA column. EXTERNAL_DATA is always
-        available for routing as a virtual column in a 'column' router. The
-        router is configured to route based on the captured EXTERNAL_DATA to
-        all nodes whose external_id matches. Note that other supported node
-        attribute tokens can also be used for routing. <programlisting>
-
-insert into SYM_TRIGGER 
-  (trigger_id,source_table_name,channel_id,external_select,
-    last_update_time,create_time)
-values
-  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
-    from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
-    current_timestamp, current_timestamp);
-
-insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-ext','corp', 'store', 'column', 
-    'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
-</programlisting></para>
-
-        <para>Note the syntax $(curTriggerValue).$(curColumnPrefix). This
-        translates into "OLD_" or "NEW_" based on the DML type being run. In
-        the case of Insert or Update, it's NEW_. For Delete, it's OLD_ (since
-        there is no new data). In this way, you can access the DML-appropriate
-        value for your select statement.</para>
-      </section>
+     </section>
 
       <section id="configuration-scripted-router">
         <title>Scripted Router</title>
@@ -964,6 +963,59 @@ values
     current_timestamp, current_timestamp);
 </programlisting></para>
       </section>
+      
+      
+      
+      
+    <section id="configuration-routing-external-select">
+              <title>Utilizing External Select when Routing</title>
+      
+
+
+<para>There may be times when you wish to route based on a piece of data that exists in
+a table other than the one being routed.  The approach, first discussed in 
+<xref linkend="configuration-subselect-router"/>,
+is to utlize an <literal>external_select</literal> to save away data in <literal>external_data</literal>, which can then
+be referenced during routing.
+</para>
+<para>
+Reconsider subselect's Order / OrderLineItem example (found in <xref linkend="configuration-subselect-router"/>), where
+routing for the line item is accomplished by linking to the "header" Order row.  As an alternate way of solving the problem, 
+we will now use External Select combined with a column match router.  
+</para><para>In this version of the solution, the STORE_ID is captured from the
+        Order table in the EXTERNAL_DATA column when the trigger fires.  The
+        router is configured to route based on the captured EXTERNAL_DATA to
+        all nodes whose external id matches the captured external data.
+        <programlisting>insert into SYM_TRIGGER 
+  (trigger_id,source_table_name,channel_id,external_select,
+    last_update_time,create_time)
+values
+  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
+    from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
+    current_timestamp, current_timestamp);
+
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-ext','corp', 'store', 'column', 
+    'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
+</programlisting></para>
+
+        <para>Note the syntax $(curTriggerValue).$(curColumnPrefix). This
+        translates into "OLD_" or "NEW_" based on the DML type being run. In
+        the case of Insert or Update, it's NEW_. For Delete, it's OLD_ (since
+        there is no new data). In this way, you can access the DML-appropriate
+        value for your select statement.</para>
+     
+       <para>The advantage of this approach over the 'subselect' approach is that it guards against the (somewhat unlikely)
+        possibility that the master Order table row might have been deleted before routing has taken place.   This external select solution
+        also is a bit more efficient
+        than the 'subselect' approach, although the triggers produced do run
+        the extra external_select SQL inline with application database
+        updates.</para>
+        
+    </section>
     </section>
 
     <section id="configuration-trigger-router">
