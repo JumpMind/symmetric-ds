@@ -137,7 +137,7 @@ class DbFill {
 
             for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
-                    if (ref.getLocalColumn()==column) {
+                    if (ref.getLocalColumnName().equalsIgnoreCase(column.getName())) {
                         objectValue = insertedColumns.get(fk.getForeignTableName() + "."
                                 + ref.getForeignColumnName());
                         
