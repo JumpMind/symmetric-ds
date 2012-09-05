@@ -46,7 +46,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         // this is the default length though it might be changed when building
         // PostgreSQL
         // in file src/include/postgres_ext.h
-        databaseInfo.setMaxIdentifierLength(31);
+        databaseInfo.setMaxIdentifierLength(63);
 
         databaseInfo.setRequiresSavePointsInTransaction(true);
 
