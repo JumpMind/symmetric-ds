@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.route;
 
@@ -26,6 +27,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -46,53 +50,54 @@ public abstract class AbstractDataRouter implements IDataRouter {
     public void contextCommitted(SimpleRouterContext context) {
     }
 
-    protected Map<String, String> getDataMap(DataMetaData dataMetaData) {
+    protected Map<String, String> getDataMap(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         Map<String, String> data = null;
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
-        case UPDATE:
-            data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsString(null, dataMetaData));
-            data.putAll(getOldDataAsString(OLD_, dataMetaData));
-            break;
-        case INSERT:
-            data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsString(null, dataMetaData));
-            Map<String, String> map = getNullData(OLD_, dataMetaData);
-            data.putAll(map);
-            break;
-        case DELETE:
-            data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getOldDataAsString(null, dataMetaData));
-            data.putAll(getOldDataAsString(OLD_, dataMetaData));
-            break;
-        default:
-            data = new HashMap<String, String>(1);
-            break;
+            case UPDATE:
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
+                data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
+                break;
+            case INSERT:
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
+                Map<String, String> map = getNullData(OLD_, dataMetaData);
+                data.putAll(map);
+                break;
+            case DELETE:
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getOldDataAsString(null, dataMetaData, symmetricDialect));
+                data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
+                break;
+            default:
+                data = new HashMap<String, String>(1);
+                break;
         }
-        
+
         if (data.size() == 0) {
-            data.putAll(getPkDataAsString(dataMetaData));
+            data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
         data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         return data;
     }
 
-    protected Map<String, String> getNewDataAsString(String prefix, DataMetaData dataMetaData) {
+    protected Map<String, String> getNewDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         String[] rowData = dataMetaData.getData().toParsedRowData();
-        return getDataAsString(prefix, dataMetaData, rowData);
+        return getDataAsString(prefix, dataMetaData, symmetricDialect, rowData);
     }
 
-    protected Map<String, String> getOldDataAsString(String prefix, DataMetaData dataMetaData) {
+    protected Map<String, String> getOldDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         String[] rowData = dataMetaData.getData().toParsedOldData();
-        return getDataAsString(prefix, dataMetaData, rowData);
+        return getDataAsString(prefix, dataMetaData, symmetricDialect, rowData);
     }
 
-    protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData,
+    protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect,
             String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         if (rowData != null) {
+            testSize(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i].toUpperCase();
                 map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
@@ -100,12 +105,13 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
         return map;
     }
-    
-    protected Map<String, String> getPkDataAsString(DataMetaData dataMetaData) {
+
+    protected Map<String, String> getPkDataAsString(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedPkColumnNames();
         String[] rowData = dataMetaData.getData().toParsedPkData();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         if (rowData != null) {
+            testSize(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i].toUpperCase();
                 map.put(columnName, rowData[i]);
@@ -114,31 +120,32 @@ public abstract class AbstractDataRouter implements IDataRouter {
         return map;
     }
 
-    protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
+    protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData,
+            ISymmetricDialect symmetricDialect) {
         Map<String, Object> data = null;
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
-        case UPDATE:
-            data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
-            data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
-            break;
-        case INSERT:
-            data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
-            Map<String, Object> map = getNullData(OLD_, dataMetaData);
-            data.putAll(map);
-            break;
-        case DELETE:
-            data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect));
-            data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
-            if (data.size() == 0) {
-                data.putAll(getPkDataAsObject(dataMetaData, symmetricDialect));
-            }            
-            break;
-        default:
-            break;
+            case UPDATE:
+                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
+                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
+                break;
+            case INSERT:
+                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
+                Map<String, Object> map = getNullData(OLD_, dataMetaData);
+                data.putAll(map);
+                break;
+            case DELETE:
+                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect));
+                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
+                if (data.size() == 0) {
+                    data.putAll(getPkDataAsObject(dataMetaData, symmetricDialect));
+                }
+                break;
+            default:
+                break;
         }
         return data;
     }
@@ -169,8 +176,10 @@ public abstract class AbstractDataRouter implements IDataRouter {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = symmetricDialect.getPlatform().getObjectValues(symmetricDialect.getBinaryEncoding(),
-                    dataMetaData.getTable(), columnNames, rowData);
+            Object[] objects = symmetricDialect.getPlatform().getObjectValues(
+                    symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
+                    rowData);
+            testSize(dataMetaData, symmetricDialect, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
                 String upperCase = columnNames[i].toUpperCase();
                 data.put(prefix != null ? (prefix + upperCase) : upperCase, objects[i]);
@@ -180,18 +189,37 @@ public abstract class AbstractDataRouter implements IDataRouter {
             return Collections.emptyMap();
         }
     }
-    
+
+    protected void testSize(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
+        if (columnNames.length != values.length) {
+            String possibleOracleErrorMessage = "";
+            if (symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
+                boolean isUseCaptureLobs = dataMetaData.getTriggerRouter().getTrigger().isUseCaptureLobs();
+                possibleOracleErrorMessage = String.format("One possible cause of this issue is when trigger.use_capture_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. trigger.use_capture_lobs is currently set to %s.", isUseCaptureLobs ? "1" : "0");
+            }
+            String message = String.format(
+                    "The number of recorded column names (%d) did not match the number of captured data values (%d).  The failed data_id is %d and the event type is %s. %s\ncolumn_names:\n%s\nvalues:\n%s",
+                    columnNames.length, values.length,
+                            dataMetaData.getData().getDataId(),
+                            dataMetaData.getData().getDataEventType().name(),
+                            possibleOracleErrorMessage,
+                            ArrayUtils.toString(columnNames), ArrayUtils.toString(values));
+            throw new SymmetricException(message);
+        }
+    }
+
     protected Map<String, Object> getPkDataAsObject(DataMetaData dataMetaData,
             ISymmetricDialect symmetricDialect) {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = symmetricDialect.getPlatform().getObjectValues(symmetricDialect.getBinaryEncoding(),
-                    dataMetaData.getTable(), columnNames, rowData);
+            Object[] objects = symmetricDialect.getPlatform().getObjectValues(
+                    symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
+                    rowData);
+            testSize(dataMetaData, symmetricDialect, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
-                data.put(columnNames[i]
-                        .toUpperCase(), objects[i]);
+                data.put(columnNames[i].toUpperCase(), objects[i]);
             }
             return data;
         } else {
