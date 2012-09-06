@@ -74,7 +74,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         
         params = getParams(router, routingContext);
     
-        Map<String, String> dataMap = getDataMap(dataMetaData);
+        Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
         Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
         String column = params.get(PARAM_KEY_COLUMN);
         String keyData = dataMap.get(column);

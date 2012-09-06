@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
@@ -76,6 +77,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     private static final String NULL_VALUE = "NULL";
 
     private IConfigurationService configurationService;
+    
+    private ISymmetricDialect symmetricDialect;
 
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
             .getName());        
@@ -83,15 +86,16 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     public ColumnMatchDataRouter() {
     }
 
-    public ColumnMatchDataRouter(IConfigurationService configurationService) {
+    public ColumnMatchDataRouter(IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
         this.configurationService = configurationService;
+        this.symmetricDialect = symmetricDialect;
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
-        Map<String, String> columnValues = getDataMap(dataMetaData);
+        Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
 
         if (columnValues != null) {
             for (Expression e : expressions) {

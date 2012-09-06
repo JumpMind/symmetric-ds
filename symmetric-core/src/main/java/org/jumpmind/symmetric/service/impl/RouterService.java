@@ -100,7 +100,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
-        this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService()));
+        this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(), engine.getSymmetricDialect()));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
