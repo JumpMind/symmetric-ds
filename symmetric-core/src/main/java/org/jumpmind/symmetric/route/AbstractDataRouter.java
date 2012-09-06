@@ -97,7 +97,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         if (rowData != null) {
-            testSize(dataMetaData, symmetricDialect, columns, rowData);
+            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i].toUpperCase();
                 map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
@@ -111,7 +111,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         if (rowData != null) {
-            testSize(dataMetaData, symmetricDialect, columns, rowData);
+            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i].toUpperCase();
                 map.put(columnName, rowData[i]);
@@ -179,7 +179,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
                     rowData);
-            testSize(dataMetaData, symmetricDialect, columnNames, objects);
+            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
                 String upperCase = columnNames[i].toUpperCase();
                 data.put(prefix != null ? (prefix + upperCase) : upperCase, objects[i]);
@@ -190,12 +190,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
     }
 
-    protected void testSize(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
+    protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
             String possibleOracleErrorMessage = "";
             if (symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
-                boolean isUseCaptureLobs = dataMetaData.getTriggerRouter().getTrigger().isUseCaptureLobs();
-                possibleOracleErrorMessage = String.format("One possible cause of this issue is when trigger.use_capture_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. trigger.use_capture_lobs is currently set to %s.", isUseCaptureLobs ? "1" : "0");
+                boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();
+                possibleOracleErrorMessage = String.format("One possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
             }
             String message = String.format(
                     "The number of recorded column names (%d) did not match the number of captured data values (%d).  The failed data_id is %d and the event type is %s. %s\ncolumn_names:\n%s\nvalues:\n%s",
@@ -217,7 +217,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
                     rowData);
-            testSize(dataMetaData, symmetricDialect, columnNames, objects);
+            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
                 data.put(columnNames[i].toUpperCase(), objects[i]);
             }
