@@ -140,14 +140,7 @@ public class DerbyFunctions {
                 StringBuilder dataBuilder = new StringBuilder();
                 appendCsvString(tableName, parsedColumnNames, parsedPkColumnNames,
                         context.getNewRow(), dataBuilder);
-
-                if (dmlType.equals("U")) {
-                    appendCsvString(tableName, parsedColumnNames, parsedPkColumnNames,
-                            context.getOldRow(), dataBuilder);
-                }
-
                 rowData = dataBuilder.substring(0, dataBuilder.length() - 1);
-
             }
 
             if (dmlType.equals("U") || dmlType.equals("D")) {
@@ -157,7 +150,7 @@ public class DerbyFunctions {
                 oldData = dataBuilder.substring(0, dataBuilder.length() - 1);
 
                 dataBuilder = new StringBuilder();
-                appendCsvString(tableName, parsedColumnNames, parsedPkColumnNames,
+                appendCsvString(tableName, parsedPkColumnNames, parsedPkColumnNames,
                         context.getOldRow(), dataBuilder);
                 pkData = dataBuilder.substring(0, dataBuilder.length() - 1);
 

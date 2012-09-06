@@ -80,9 +80,9 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " AFTER INSERT ON $(schemaName)$(tableName)                               \n" + 
 " REFERENCING NEW AS NEW                                                  \n" + 
 " FOR EACH ROW MODE DB2SQL                                                \n" + 
-" call sym_save_data(                                                   \n" +
+" call $(prefixName)_save_data(                                                   \n" +
 "   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
-"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
 "   '$(channelName)', 'I', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
@@ -94,9 +94,9 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " AFTER UPDATE ON $(schemaName)$(tableName)                               \n" + 
 " REFERENCING OLD AS OLD NEW AS NEW                                       \n" + 
 " FOR EACH ROW MODE DB2SQL                                                \n" + 
-" call sym_save_data(                                                   \n" + 
+" call $(prefixName)_save_data(                                                   \n" + 
 "   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
-"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
 "   '$(channelName)', 'U', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
@@ -108,9 +108,9 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " AFTER DELETE ON $(schemaName)$(tableName)                               \n" + 
 " REFERENCING OLD AS OLD                                                  \n" + 
 " FOR EACH ROW MODE DB2SQL                                                \n" + 
-" call sym_save_data(                                                   \n" + 
+" call $(prefixName)_save_data(                                                   \n" + 
 "   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
-"   '$(defaultSchema)', 'sym', '$(targetTableName)',                      \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
 "   '$(channelName)', 'D', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
