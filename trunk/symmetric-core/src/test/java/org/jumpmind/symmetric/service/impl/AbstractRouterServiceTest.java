@@ -41,6 +41,32 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     final static Node NODE_UNROUTED = new Node(Constants.UNROUTED_NODE_ID, null);
 
     @Test
+    public void testRoutingScenarios() throws Exception {
+        testMultiChannelRoutingToEveryone();
+        testLookupTableRouting();
+        testColumnMatchTransactionalOnlyRoutingToNode1();
+        testSubSelectNonTransactionalRoutingToNode1();
+        testSyncIncomingBatch();
+        // testLargeNumberOfEventsToManyNodes();
+        testBshTransactionalRoutingOnUpdate();
+        testBshRoutingDeletesToNode3();
+        testColumnMatchSubtableRoutingToNode1();
+        testColumnMatchOnNull();
+        testColumnMatchOnNotNull();
+        testSyncOnColumnChange();
+        testSyncIncomingBatchWhenUnrouted();
+        testDefaultRouteToTargetNodeGroupOnly();
+        testUnroutedDataCreatedBatch();
+        testGapRouting();
+        testGapWithGapAtBegining();
+        testGapWithGapAtEnd();
+        testDataGapExpired();
+        testLotsOfGaps();
+        testNoResend();
+        testDontSelectOldDataDuringRouting();
+        testMaxNumberOfDataToRoute();
+    }
+
     public void testMultiChannelRoutingToEveryone() {
         resetBatches();
 
@@ -55,7 +81,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 TestConstants.TEST_CHANNEL_ID_OTHER, false);
         Assert.assertEquals(50, testChannel.getMaxBatchSize());
         Assert.assertEquals(1, otherChannel.getMaxBatchSize());
-        // should be 1 batch for table 1 on the testchannel w/ max batch size of 50
+        // should be 1 batch for table 1 on the testchannel w/ max batch size of
+        // 50
         insert(TEST_TABLE_1, 5, false);
         // this should generate 15 batches because the max batch size is 1
         insert(TEST_TABLE_2, 15, false);
@@ -102,7 +129,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 countBatchesForChannel(batches, otherChannel));
     }
 
-    @Test
     public void testLookupTableRouting() {
 
         getDbDialect().truncateTable("test_lookup_table");
@@ -221,7 +247,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testColumnMatchTransactionalOnlyRoutingToNode1() {
         resetBatches();
 
@@ -232,11 +257,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(10000);        
+        testChannel.setMaxBatchToSend(10000);
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel, true);
 
-        
         // should be 51 batches for table 1
         insert(TEST_TABLE_1, 500, true);
         insert(TEST_TABLE_1, 50, false);
@@ -284,7 +308,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testSubSelectNonTransactionalRoutingToNode1() {
         resetBatches();
 
@@ -326,7 +349,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
     }
 
-    @Test
     public void testSyncIncomingBatch() throws Exception {
         resetBatches();
 
@@ -364,7 +386,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    // @Test
     public void testLargeNumberOfEventsToManyNodes() {
         resetBatches();
 
@@ -403,7 +424,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         logger.info("Done routing data");
     }
 
-    @Test
     public void testBshTransactionalRoutingOnUpdate() {
         resetBatches();
 
@@ -466,7 +486,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
     }
 
-    @Test
     public void testBshRoutingDeletesToNode3() {
         resetBatches();
 
@@ -505,7 +524,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
     }
 
-    @Test
     public void testColumnMatchSubtableRoutingToNode1() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
@@ -611,7 +629,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testColumnMatchOnNull() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
@@ -661,7 +678,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testColumnMatchOnNotNull() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
@@ -711,7 +727,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testSyncOnColumnChange() {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
@@ -785,7 +800,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testSyncIncomingBatchWhenUnrouted() throws Exception {
         resetBatches();
 
@@ -823,7 +837,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testDefaultRouteToTargetNodeGroupOnly() throws Exception {
 
         setUpDefaultTriggerRouterForTable1();
@@ -849,12 +862,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
+
     public void testUnroutedDataCreatedBatch() {
         // TODO
     }
 
-    @Test
     public void testGapRouting() throws Exception {
         try {
             if (getDbDialect().canGapsOccurInCapturedDataIds()) {
@@ -901,7 +913,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         }
     }
 
-    @Test
     public void testGapWithGapAtBegining() {
         if (getDbDialect().canGapsOccurInCapturedDataIds()) {
 
@@ -943,7 +954,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         }
     }
 
-    @Test
     public void testGapWithGapAtEnd() {
         if (getDbDialect().canGapsOccurInCapturedDataIds()) {
 
@@ -981,7 +991,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         }
     }
 
-    @Test
     public void testDataGapExpired() throws Exception {
         if (getDbDialect().canGapsOccurInCapturedDataIds()) {
             resetGaps();
@@ -1006,7 +1015,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         }
     }
 
-    @Test
     public void testLotsOfGaps() {
         if (getDbDialect().canGapsOccurInCapturedDataIds()) {
             setUpDefaultTriggerRouterForTable1();
@@ -1039,7 +1047,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         }
     }
 
-    @Test
     public void testNoResend() {
         resetBatches();
 
@@ -1057,7 +1064,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testDontSelectOldDataDuringRouting() throws Exception {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
@@ -1105,7 +1111,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     }
 
-    @Test
     public void testMaxNumberOfDataToRoute() {
         // TODO
     }
