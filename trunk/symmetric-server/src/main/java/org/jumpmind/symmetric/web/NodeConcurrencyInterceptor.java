@@ -69,7 +69,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             if (!concurrentConnectionManager
                     .reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
                 statisticManager.incrementNodesRejected(1);
-                ServletUtils.sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
             } else {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
             }
@@ -80,7 +80,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 return true;
         } else {
             statisticManager.incrementNodesRejected(1);
-            ServletUtils.sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
             return false;
         }
     }
