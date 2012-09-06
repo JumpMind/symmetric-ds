@@ -199,10 +199,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 possibleOracleErrorMessage = String.format("One possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
             }
             String message = String.format(
-                    "The number of recorded column names (%d) did not match the number of captured data values (%d).  The failed data_id is %d and the event type is %s. %s\ncolumn_names:\n%s\nvalues:\n%s",
+                    "The number of recorded column names (%d) did not match the number of captured data values (%d).  The data_id %d failed for an %s on %s. %s\ncolumn_names:\n%s\nvalues:\n%s",
                     columnNames.length, values.length,
                             dataMetaData.getData().getDataId(),
                             dataMetaData.getData().getDataEventType().name(),
+                            dataMetaData.getData().getTableName(),
                             possibleOracleErrorMessage,
                             ArrayUtils.toString(columnNames), ArrayUtils.toString(values));
             throw new SymmetricException(message);
