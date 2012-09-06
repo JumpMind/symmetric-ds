@@ -193,7 +193,8 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
             String possibleOracleErrorMessage = "";
-            if (symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
+            if (symmetricDialect != null && 
+                    symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
                 boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();
                 possibleOracleErrorMessage = String.format("One possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
             }

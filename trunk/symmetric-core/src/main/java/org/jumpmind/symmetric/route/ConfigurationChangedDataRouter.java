@@ -77,7 +77,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         Set<String> nodeIds = null;
 
         // the inbound data
-        Map<String, String> columnValues = getDataMap(dataMetaData, engine.getSymmetricDialect());
+        Map<String, String> columnValues = getDataMap(dataMetaData, engine != null ? engine.getSymmetricDialect() : null);
 
         Node me = findIdentity();
 
