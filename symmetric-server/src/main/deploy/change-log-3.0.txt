@@ -1,3 +1,17 @@
+SymmetricDS - 3.1.4 (Release 2012-09-08) 
+======================================
+- 0000796: [Improvement] AbstractSqlTemplate should report an error if a named parameter map is passed in that does not contain a required parameter (chenson) - closed.
+- 0000793: [Bug] Columns of type OID and LO in Postgres do not work with sym_trigger.use_stream_lobs set to 1 (chenson) - closed.
+- 0000800: [Bug] DbFill is incorrectly generating new random values for columns containing a FK reference. (abrougher) - closed.
+- 0000797: [Bug] table structure sync with wildcards (chenson) - closed.
+- 0000794: [Improvement] Support the lo datatype in postgres (chenson) - closed.
+- 0000803: [Improvement] Check that column names match column values in the abstract router. If not log details. (chenson) - closed.
+- 0000798: [Improvement] Refactor and improved Subselect Router, External Select, and Column Match Router documentation (chenson) - closed.
+- 0000795: [Bug] ip_address field is not long enough to contain ipv6 addresses (chenson) - closed.
+- 0000792: [Improvement] Support tables with names greater than 50 chars (chenson) - closed.
+- 0000804: [Bug] Derby update trigger doubles up the row data (capture columns twice) (chenson) - closed.
+- 0000799: [Bug] Tutorial initial load select needs single quotes around external id variable (chenson) - closed.
+
 SymmetricDS - 3.1.3 (Released 2012-08-28) 
 =========================================
 - 0000787: [Bug] DbFill does not generate random values from BigInteger columns. (abrougher) - closed.
