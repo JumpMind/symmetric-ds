@@ -4,7 +4,9 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgresLobHandler;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
 
@@ -28,7 +30,8 @@ public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
 
     @Override
     protected GreenplumJdbcSqlTemplate createSqlTemplate() {
-        return new GreenplumJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        SymmetricLobHandler lobHandler = new PostgresLobHandler();
+        return new GreenplumJdbcSqlTemplate(dataSource, settings, lobHandler, getDatabaseInfo());
     }
         
     @Override

@@ -5,12 +5,12 @@ import javax.sql.DataSource;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.springframework.jdbc.support.lob.LobHandler;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
     public MySqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            LobHandler lobHandler, DatabaseInfo databaseInfo) {
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int[] {1062};
     }

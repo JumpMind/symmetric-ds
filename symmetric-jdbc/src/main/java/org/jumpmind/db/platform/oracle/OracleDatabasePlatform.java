@@ -29,6 +29,7 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
@@ -72,7 +73,8 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected OracleJdbcSqlTemplate createSqlTemplate() {
         OracleLobHandler lobHandler = new OracleLobHandler();
         lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
-        return new OracleJdbcSqlTemplate(dataSource, settings, lobHandler, getDatabaseInfo());
+        SymmetricLobHandler symmetricLobHandler = new SymmetricLobHandler(lobHandler);
+        return new OracleJdbcSqlTemplate(dataSource, settings, symmetricLobHandler, getDatabaseInfo());
     }
 
     public String getName() {

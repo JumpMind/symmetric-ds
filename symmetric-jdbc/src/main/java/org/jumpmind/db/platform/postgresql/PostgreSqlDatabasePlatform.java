@@ -35,6 +35,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.jumpmind.db.util.BinaryEncoding;
 
 /*
@@ -65,6 +66,14 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return settings;
     }
 
+    protected static boolean isBlobStoredByReference(String jdbcTypeName) {
+        if ("OID".equalsIgnoreCase(jdbcTypeName) || "LO".equalsIgnoreCase(jdbcTypeName)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     @Override
     protected PostgreSqlDdlBuilder createDdlBuilder() {
         return new PostgreSqlDdlBuilder();
@@ -77,7 +86,8 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     protected PostgreSqlJdbcSqlTemplate createSqlTemplate() {
-        return new PostgreSqlJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        SymmetricLobHandler lobHandler = new PostgresLobHandler();
+        return new PostgreSqlJdbcSqlTemplate(dataSource, settings, lobHandler, getDatabaseInfo());
     }
 
     public String getName() {
