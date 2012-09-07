@@ -9,6 +9,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
     public DataServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
+        // Note that the order by data_id is done appended in code
         putSql("selectEventDataToExtractSql",
                 ""
                         + "select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,                                                                          "
