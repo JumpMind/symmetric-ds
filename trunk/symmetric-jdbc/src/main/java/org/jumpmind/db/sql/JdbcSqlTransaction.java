@@ -185,7 +185,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     st = c.prepareStatement(sql);
                     st.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
                     if (args != null) {
-                        JdbcUtils.setValues(st, args, types, jdbcSqlTemplate.getLobHandler());
+                        JdbcUtils.setValues(st, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
                     }
                     st.setFetchSize(jdbcSqlTemplate.getSettings().getFetchSize());
                     rs = st.executeQuery();
@@ -233,7 +233,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 ResultSet rs = null;
                 try {
                     stmt = con.prepareStatement(sql);
-                    JdbcUtils.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler());
+                    JdbcUtils.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
                     if (stmt.execute()) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -334,7 +334,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         : "");
             }
             if (args != null) {
-                JdbcUtils.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler());
+                JdbcUtils.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
             }
             if (inBatchMode) {
                 if (marker == null) {

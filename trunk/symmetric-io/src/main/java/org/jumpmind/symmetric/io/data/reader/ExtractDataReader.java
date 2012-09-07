@@ -146,7 +146,7 @@ public class ExtractDataReader implements IDataReader {
                     String sql = buildSelect(table, lobColumn, pkColumns);
                     String valueForCsv = null;
                     if (platform.isBlob(lobColumn.getMappedTypeCode())) {
-                        byte[] binaryData = sqlTemplate.queryForBlob(sql, args);
+                        byte[] binaryData = sqlTemplate.queryForBlob(sql, lobColumn.getJdbcTypeCode(),lobColumn.getJdbcTypeName(), args);
                         if (binaryData != null) {
                             if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                 valueForCsv = new String(Base64.encodeBase64(binaryData));

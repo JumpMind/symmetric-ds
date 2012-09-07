@@ -5,12 +5,13 @@ import javax.sql.DataSource;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.springframework.jdbc.support.lob.LobHandler;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    public PostgreSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            LobHandler lobHandler, DatabaseInfo databaseInfo) {
+
+    public PostgreSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
+            DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         this.requiresAutoCommitFalseToSetFetchSize = true;
         primaryKeyViolationSqlStates = new String[] { "23505" };
@@ -29,5 +30,4 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-
 }

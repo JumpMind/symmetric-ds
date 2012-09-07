@@ -27,7 +27,6 @@ import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
@@ -39,7 +38,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected SqlTemplateSettings settings;
 
-    protected LobHandler lobHandler;
+    protected SymmetricLobHandler lobHandler;
 
     protected Boolean supportsGetGeneratedKeys = null;
 
@@ -54,10 +53,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            LobHandler lobHandler, DatabaseInfo databaseInfo) {
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         this.dataSource = dataSource;
         this.settings = settings == null ? new SqlTemplateSettings() : settings;
-        this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
+        this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler()) : lobHandler;
         this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
     }
 
@@ -81,7 +80,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return settings;
     }
 
-    public LobHandler getLobHandler() {
+    public SymmetricLobHandler getLobHandler() {
         return lobHandler;
     }
 
@@ -123,10 +122,19 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         });
     }
 
+    @Deprecated
     public byte[] queryForBlob(final String sql, final Object... args) {
+        return queryForBlob(sql,-1,null,args);
+    }
+    
+        
+    public byte[] queryForBlob(final String sql, final int jdbcTypeCode, final String jdbcTypeName, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
+                if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode,jdbcTypeName)) {
+                    con.setAutoCommit(false);
+                }
                 byte[] result = null;
                 PreparedStatement ps = null;
                 ResultSet rs = null;
@@ -136,9 +144,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = lobHandler.getBlobAsBytes(rs, 1);
+                        result = lobHandler.getBlobAsBytes(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
                 } finally {
+                    if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode,jdbcTypeName) && con !=null) {
+                        con.setAutoCommit(true);
+                    }
                     close(rs);
                     close(ps);
                 }
@@ -254,7 +265,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
-                            JdbcUtils.setValues(ps, args, types, getLobHandler());
+                            JdbcUtils.setValues(ps, args, types, getLobHandler().getDefaultHandler());
                         } else {
                             JdbcUtils.setValues(ps, args);
                         }
@@ -667,7 +678,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             }
             ps.setQueryTimeout(settings.getQueryTimeout());
-            JdbcUtils.setValues(ps, args, types, lobHandler);
+            JdbcUtils.setValues(ps, args, types, lobHandler.getDefaultHandler());
 
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {

@@ -107,8 +107,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
             // lets use the same type code that oracle uses
             return -101;            
-        } else if (typeName != null && 
-                (typeName.equalsIgnoreCase("OID") || typeName.equalsIgnoreCase("LO"))) {
+        } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
