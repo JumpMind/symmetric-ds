@@ -154,7 +154,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
                 .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();
 
-        Table table = getDbDialect().getTable(triggerRouter.getTrigger(), true);
+        Table table = getDbDialect().getPlatform().getTableFromCache(triggerRouter.getTrigger().getSourceTableName(), true);
 
         Trigger trigger = triggerRouter.getTrigger();
         String sql = getDbDialect().createInitialLoadSqlFor(

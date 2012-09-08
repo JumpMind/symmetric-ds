@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
@@ -138,8 +139,10 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvents(Node targetNode, boolean reverse) {
-        // outgoing data events are pointless because we are reloading all
-        // data
+        
+        /*
+         * Outgoing data events are pointless because we are reloading all data
+         */
         engine.getOutgoingBatchService().markAllAsSentForNode(targetNode);
 
         Node sourceNode = engine.getNodeService().findIdentity();
@@ -182,8 +185,8 @@ public class DataService extends AbstractService implements IDataService {
                             .get(triggerHistory.getTriggerHistoryId());
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         if (triggerRouter.getInitialLoadOrder() >= 0) {
-                            String xml = symmetricDialect.getCreateTableXML(triggerRouter);
-                            insertCreateEvent(transaction, targetNode, triggerRouter, xml, true);
+                            String xml = symmetricDialect.getCreateTableXML(triggerHistory, triggerRouter);
+                            insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, true);
                             if (!transactional) {
                                 transaction.commit();
                             }
@@ -203,7 +206,7 @@ public class DataService extends AbstractService implements IDataService {
                             .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
                         TriggerRouter triggerRouter = iterator.previous();
                         if (triggerRouter.getInitialLoadOrder() >= 0) {
-                            insertPurgeEvent(transaction, targetNode, triggerRouter, true);
+                            insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, true);
                             if (!transactional) {
                                 transaction.commit();
                             }
@@ -280,11 +283,11 @@ public class DataService extends AbstractService implements IDataService {
         return history;
     }
 
-    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, boolean isLoad) {
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            insertPurgeEvent(transaction, targetNode, triggerRouter, isLoad);
+            insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, isLoad);
             transaction.commit();
         } finally {
             close(transaction);
@@ -292,27 +295,26 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     protected void insertPurgeEvent(ISqlTransaction transaction, final Node targetNode,
-            final TriggerRouter triggerRouter, boolean isLoad) {
-
-        String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter);
+            final TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad) {
+        String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
         Trigger trigger = triggerRouter.getTrigger();
-        TriggerHistory history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                trigger.getTriggerId(), trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName());
-        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, triggerRouter.getTrigger()
+        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, triggerHistory, trigger
                         .getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                 triggerRouter.getRouter().getRouterId(), isLoad);
     }
 
-    public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql,
+    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
             boolean isLoad) {
-        TriggerHistory history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                trigger.getTriggerId(), trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName());
-        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(
+                triggerHistory.getTriggerId());
+        String channelId = Constants.CHANNEL_RELOAD;
+        if (trigger != null && !isLoad) {
+            channelId = trigger.getChannelId();
+        }
+        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, triggerHistory, channelId, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
@@ -320,10 +322,10 @@ public class DataService extends AbstractService implements IDataService {
     private TriggerHistory findTriggerHistoryForGenericSync() {
         String triggerTableName = TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_TRIGGER);
-        TriggerHistory history = engine.getTriggerRouterService().findTriggerHistory(triggerTableName
+        TriggerHistory history = engine.getTriggerRouterService().findTriggerHistory(null, null, triggerTableName
                 .toUpperCase());
         if (history == null) {
-            history = engine.getTriggerRouterService().findTriggerHistory(triggerTableName);
+            history = engine.getTriggerRouterService().findTriggerHistory(null, null, triggerTableName);
         }
         return history;
     }
@@ -361,34 +363,31 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter,
-            String xml, boolean isLoad) {
+            TriggerHistory triggerHistory, String xml, boolean isLoad) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            insertCreateEvent(transaction, targetNode, triggerRouter, xml, isLoad);
+            insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, isLoad);
             transaction.commit();
         } finally {
             close(transaction);
         }
     }
 
-    public void insertCreateEvent(ISqlTransaction transaction, final Node targetNode,
-            final TriggerRouter triggerRouter, String xml, boolean isLoad) {
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String xml, boolean isLoad) {
         Trigger trigger = triggerRouter.getTrigger();
-        TriggerHistory history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                trigger.getTriggerId(), trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName());
         Data data = new Data(
-                triggerRouter.getTrigger().getSourceTableName(),
+                triggerHistory.getSourceTableName(),
                 DataEventType.CREATE,
                 CsvUtils.escapeCsvData(xml),
                 null,
-                history,
+                triggerHistory,
                 parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD
-                        : triggerRouter.getTrigger().getChannelId(), null, null);
+                        : trigger.getChannelId(), null, null);
         try {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
-                    Constants.UNKNOWN_ROUTER_ID, isLoad);
+                    triggerRouter.getRouter().getRouterId(), isLoad);
         } catch (UniqueKeyException e) {
             if (e.getRootCause() != null && e.getRootCause() instanceof DataTruncation) {
                 log.error("Table data definition XML was too large and failed.  The feature to send table creates during the initial load may be limited on your platform.  You may need to set the initial.load.create.first parameter to false.");
@@ -628,6 +627,38 @@ public class DataService extends AbstractService implements IDataService {
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
+    
+    public boolean sendSchema(String nodeId, String catalogName, String schemaName,
+            String tableName, boolean isLoad) {
+        Node sourceNode = engine.getNodeService().findIdentity();
+        Node targetNode = engine.getNodeService().findNode(nodeId);
+        if (targetNode == null) {
+            log.error("Could not send schema to the node {}.  It does not exist", nodeId);
+            return false;
+        }
+
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
+                catalogName, schemaName, tableName);
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+                sourceNode, targetNode, triggerHistories);
+        int eventCount = 0;
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                    .getTriggerHistoryId());
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                eventCount++;
+                String xml = symmetricDialect.getCreateTableXML(triggerHistory, triggerRouter);
+                insertCreateEvent(targetNode, triggerRouter, triggerHistory, xml, false);
+            }
+        }
+
+        if (eventCount > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql, boolean isLoad) {
@@ -637,16 +668,17 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
-        if (triggerRouters == null || triggerRouters.size() == 0) {
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        TriggerHistory triggerHistory = triggerRouterService.findTriggerHistory(catalogName,
+                schemaName, tableName);
+
+        if (triggerHistory == null) {
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
+        } else {
+            insertSqlEvent(targetNode, triggerHistory, sql, isLoad);
+            return "Successfully create SQL event for node " + targetNode.getNodeId();
         }
-
-        insertSqlEvent(targetNode, triggerRouters.iterator().next().getTrigger(), sql, isLoad);
-
-        return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
@@ -658,31 +690,45 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = engine.getNodeService().findIdentity();
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
-
             return "Unknown node " + nodeId;
         }
 
-        Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
-        if (triggerRouters == null || triggerRouters.size() == 0) {
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
+                catalogName, schemaName, tableName);
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+                sourceNode, targetNode, triggerHistories);
+        int eventCount = 0;
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                    .getTriggerHistoryId());
+            if (triggerRouters != null && triggerRouters.size() > 0) {
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (parameterService
+                            .is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                        String xml = symmetricDialect.getCreateTableXML(triggerHistory,
+                                triggerRouter);
+                        insertCreateEvent(targetNode, triggerRouter, triggerHistory, xml, true);
+                    } else if (parameterService
+                            .is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                        insertPurgeEvent(targetNode, triggerRouter, triggerHistory, true);
+                    }
+                    eventCount++;
+                    insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
+                }
+            }
+        }
 
-            return "Trigger for table " + tableName + " does not exist from node "
+        if (eventCount > 0) {
+            return "Successfully created " + (eventCount > 1 ? eventCount + " events" : "event")
+                    + " to reload table " + tableName + " for node "
+
+                    + targetNode.getNodeId();
+        } else {
+            return "Trigger for table " + tableName + " does not exist for source node group of "
                     + sourceNode.getNodeGroupId();
         }
 
-        for (TriggerRouter triggerRouter : triggerRouters) {
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                String xml = symmetricDialect.getCreateTableXML(triggerRouter);
-                insertCreateEvent(targetNode, triggerRouter, xml, true);
-            } else if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-                insertPurgeEvent(targetNode, triggerRouter, true);
-            }
-
-            insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
-        }
-
-        return "Successfully created event to reload table " + tableName + " for node "
-                + targetNode.getNodeId();
     }
 
     /**
@@ -763,10 +809,12 @@ public class DataService extends AbstractService implements IDataService {
                     trigger.getTriggerId(), trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(), trigger.getSourceTableName());
             if (triggerHistory == null) {
-                triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger
+                triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), trigger
                         .getSourceTableName());
                 if (triggerHistory == null) {
-                    triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger
+                    triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger.getSourceCatalogName(),
+                            trigger.getSourceSchemaName(), trigger
                             .getSourceTableName().toUpperCase());
                 }
             }

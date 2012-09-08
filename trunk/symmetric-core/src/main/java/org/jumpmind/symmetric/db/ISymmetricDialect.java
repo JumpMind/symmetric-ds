@@ -78,7 +78,7 @@ public interface ISymmetricDialect {
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel);
 
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory);
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
@@ -119,9 +119,7 @@ public interface ISymmetricDialect {
 
     public String getCreateSymmetricDDL();
 
-    public String getCreateTableXML(TriggerRouter triggerRouter);
-
-    public String getCreateTableSQL(TriggerRouter trig);
+    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter);
 
     public boolean isBlobSyncSupported();
 
@@ -134,7 +132,7 @@ public interface ISymmetricDialect {
      */
     public boolean isTransactionIdOverrideSupported();
 
-    public Table getTable(Trigger trigger, boolean useCache);
+    public Table getTable(TriggerHistory triggerHistory, boolean useCache);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
     

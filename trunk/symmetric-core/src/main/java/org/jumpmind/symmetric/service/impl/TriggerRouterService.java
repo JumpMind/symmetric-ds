@@ -176,18 +176,37 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return sqlTemplate.queryForInt(getSql("selectTriggerNameInUseSql"), triggerName,
                 triggerName, triggerName, triggerId) > 0;
     }
-
-    public TriggerHistory findTriggerHistory(String sourceTableName) {
-        final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
-        sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(retMap), new Object[] { sourceTableName },
-                new int[] { Types.VARCHAR });
-        if (retMap.size() > 0) {
-            return retMap.values().iterator().next();
-        } else {
-            return null;
-        }
+    
+    public TriggerHistory findTriggerHistory(String catalogName, String schemaName, String tableName) {
+        List<TriggerHistory> list = findTriggerHistories(catalogName, schemaName, tableName);        
+        return list.size() > 0 ? list.get(0) : null;
     }
+    
+    public List<TriggerHistory> findTriggerHistories(String catalogName, String schemaName, String tableName) {
+        List<TriggerHistory> listToReturn = new ArrayList<TriggerHistory>();
+        List<TriggerHistory> triggerHistories = sqlTemplate
+                .query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
+                        new TriggerHistoryMapper(), new Object[] { tableName },
+                        new int[] { Types.VARCHAR });
+        if (triggerHistories != null && triggerHistories.size() > 0) {
+            for (TriggerHistory triggerHistory : triggerHistories) {
+                boolean matches = true;
+                if (StringUtils.isNotBlank(catalogName)) {
+                    matches = catalogName.equals(triggerHistory.getSourceCatalogName());
+                }
+                if (matches && StringUtils.isNotBlank(schemaName)) {
+                    matches = schemaName.equals(triggerHistory.getSourceSchemaName());
+                }
+
+                if (matches) {
+                    listToReturn.add(triggerHistory);
+                }
+
+            }
+        }
+        return listToReturn;
+    }
+    
 
     public TriggerHistory getTriggerHistory(int histId) {
         TriggerHistory history = historyMap.get(histId);

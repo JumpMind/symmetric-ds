@@ -179,10 +179,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 .trim();
     }
 
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
         return String.format(
                 parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
-                triggerRouter.qualifiedTargetTableName());
+                triggerRouter.qualifiedTargetTableName(triggerHistory));
     }
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
@@ -324,12 +324,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return builder.createTables(database, true);
     }
 
-    public String getCreateTableSQL(TriggerRouter triggerRouter) {
-        Table table = platform.getTableFromCache(null, triggerRouter.getTrigger()
-                .getSourceSchemaName(), triggerRouter.getTrigger().getSourceTableName(), false);
-        return platform.getDdlBuilder().createTable(table);
-    }
-
     private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
         db.setName(triggerRouter.getTargetSchema(platform.getDefaultSchema()));
         if (db.getName() == null) {
@@ -340,8 +334,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    public String getCreateTableXML(TriggerRouter triggerRouter) {
-        Table table = getTable(triggerRouter.getTrigger(), true);
+    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter) {
+        Table table = getTable(triggerHistory, true);
         String targetTableName = triggerRouter.getRouter().getTargetTableName();
         if (StringUtils.isNotBlank(targetTableName)) {
             table.setName(targetTableName);
@@ -383,9 +377,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    public Table getTable(Trigger trigger, boolean useCache) {
-        return platform.getTableFromCache(trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName(), !useCache);
+    public Table getTable(TriggerHistory triggerHistory, boolean useCache) {
+        return platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), !useCache);
     }
 
     /*

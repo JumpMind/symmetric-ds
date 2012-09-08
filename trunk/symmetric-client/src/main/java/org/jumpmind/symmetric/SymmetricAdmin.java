@@ -34,7 +34,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -46,7 +45,6 @@ import org.apache.commons.logging.LogFactory;
 import org.h2.util.StringUtils;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -483,18 +481,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String tableName = popArg(args, "Table Name");
         String catalog = line.getOptionValue(OPTION_CATALOG);
         String schema = line.getOptionValue(OPTION_SCHEMA);
-        Set<TriggerRouter> triggerRouters = getSymmetricEngine().getTriggerRouterService()
-                .getTriggerRouterForTableForCurrentNode(catalog, schema, tableName, true);
         Collection<Node> nodes = getNodes(line);
-
-        for (TriggerRouter triggerRouter : triggerRouters) {
-            String xml = getSymmetricEngine().getSymmetricDialect()
-                    .getCreateTableXML(triggerRouter);
-            for (Node node : nodes) {
-                System.out.println("Sending schema to node '" + node.getNodeId() + "'");
-                getSymmetricEngine().getDataService().insertCreateEvent(node, triggerRouter, xml,
-                        false);
-            }
+        for (Node node : nodes) {
+            getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog, schema,
+                    tableName, false);
         }
     }
 

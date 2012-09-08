@@ -122,7 +122,9 @@ public interface ITriggerRouterService {
 
     public TriggerHistory getTriggerHistory(int historyId);
     
-    public TriggerHistory findTriggerHistory(String sourceTableName);
+    public List<TriggerHistory> findTriggerHistories(String catalogName, String schemaName, String tableName);
+    
+    public TriggerHistory findTriggerHistory(String catalogName, String schemaName, String tableName);
     
     public Trigger getTriggerById(String triggerId);
     

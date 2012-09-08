@@ -495,7 +495,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                Table table = symmetricDialect.getTable(triggerRouter.getTrigger(), true);
+                Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter,
                         context.getChannel());
                 Collection<String> nodeIds = null;

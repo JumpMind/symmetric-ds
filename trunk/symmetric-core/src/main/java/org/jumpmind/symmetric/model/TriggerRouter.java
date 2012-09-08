@@ -162,9 +162,12 @@ public class TriggerRouter implements Serializable {
         }
     }
 
-    public String getTargetTable() {
+    public String getTargetTable(TriggerHistory triggerHistory) {
         if (router != null && !StringUtils.isBlank(router.getTargetTableName())) {
             return router.getTargetTableName();
+        }
+        if (triggerHistory != null) {
+            return triggerHistory.getSourceTableName();
         }
         if (trigger != null && !StringUtils.isBlank(trigger.getSourceTableName())) {
             return trigger.getSourceTableName();
@@ -181,10 +184,10 @@ public class TriggerRouter implements Serializable {
         return trigger.qualifiedSourceTablePrefix();
     }
 
-    public String qualifiedTargetTableName() {
+    public String qualifiedTargetTableName(TriggerHistory triggerHistory) {
         String catalog = getTargetCatalog(null);
         String schema = getTargetSchema(null);
-        String tableName = getTargetTable();
+        String tableName = getTargetTable(triggerHistory);
         if (!StringUtils.isBlank(schema)) {
             tableName = schema + "." + tableName;
         }

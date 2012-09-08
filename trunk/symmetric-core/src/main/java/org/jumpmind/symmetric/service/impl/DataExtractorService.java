@@ -174,7 +174,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     triggerRouter.getTrigger().getTriggerId(), null, null, triggerRouter
                             .getTrigger().getSourceTableName());
             if (triggerHistory == null) {
-                Table table = symmetricDialect.getTable(triggerRouter.getTrigger(), false);
+                Trigger trigger = triggerRouter.getTrigger();
+                Table table = symmetricDialect.getPlatform().
+                        getTableFromCache(trigger.getSourceCatalogName(), 
+                                trigger.getSourceSchemaName(), 
+                                trigger.getSourceTableName(), false);
                 if (table == null) {
                     throw new IllegalStateException("Could not find a required table: "
                             + triggerRouter.getTrigger().getSourceTableName());
@@ -184,7 +188,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
             StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(targetNode,
-                    triggerRouter));
+                    triggerRouter, triggerHistory));
             addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(),
                     sql);
             String sourceTable = triggerHistory.getSourceTableName();
@@ -199,8 +203,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
                     triggerRouter.getTrigger().getTriggerId(), null, null, null);
             if (triggerHistory == null) {
-                triggerHistory = new TriggerHistory(symmetricDialect.getTable(
-                        triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
+                Trigger trigger = triggerRouter.getTrigger();
+                triggerHistory = new TriggerHistory(
+                symmetricDialect.getPlatform().getTableFromCache(
+                        trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), 
+                        trigger.getSourceTableName(), false), trigger);
                 triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             }
 

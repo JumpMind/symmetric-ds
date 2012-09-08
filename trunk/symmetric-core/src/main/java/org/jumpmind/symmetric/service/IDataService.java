@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
@@ -70,6 +69,9 @@ public interface IDataService {
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
+    
+    public boolean sendSchema(String nodeId, String catalogName, String schemaName,
+            String tableName, boolean isLoad);
 
     /**
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
@@ -86,15 +88,16 @@ public interface IDataService {
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
 
-    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, boolean isLoad);
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad);
     
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad);
 
-    public void insertSqlEvent(Node targetNode, Trigger trigger, String sql, boolean isLoad);
+    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
+            boolean isLoad);
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad);
 
-    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml, boolean isLoad);
+    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, String xml, boolean isLoad);
     
     /**
      * Count the number of data ids in a range
