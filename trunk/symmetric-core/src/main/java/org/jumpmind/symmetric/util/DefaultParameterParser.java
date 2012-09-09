@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -44,12 +45,17 @@ public class DefaultParameterParser {
 
     public DefaultParameterParser() {
     }
-
+    
     public Map<String, ParameterMetaData> parse() {
+        return parse("/symmetric-default.properties");
+    }
+
+    public Map<String, ParameterMetaData> parse(String fileName) {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
-            List<String> lines = IOUtils.readLines(getClass().getResourceAsStream(
-                    "/symmetric-default.properties"));
+            InputStream is = getClass().getResourceAsStream(fileName);
+            List<String> lines = IOUtils.readLines(is);
+
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {
                 if (line.trim().startsWith(COMMENT) && line.length() > 1) {
