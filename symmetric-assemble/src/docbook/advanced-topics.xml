@@ -704,7 +704,7 @@ net stop symmetricds</programlisting>
           <listitem>
             Using <literal>sysv-rc-conf</literal> command (Ubuntu Linux):
         <para>
-            On Ubunut Linux, you might need to use sysv-rc-conf instead of chkconfig.  
+            On Ubuntu Linux, you might need to use sysv-rc-conf instead of chkconfig.  
             Try running sys-rc-conf as a super user (consider utilizing apt-get to install sysv-rc-conf
             if it is not present:  <literal>sudo apt-get install sysv-rc-conf</literal>).
             Run sysv-rc-conf with the following command:
