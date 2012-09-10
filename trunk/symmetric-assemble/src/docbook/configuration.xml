@@ -1022,12 +1022,12 @@ values
       <title>Trigger / Router Mappings</title>
 
       <para>Two important controls can be configured for a specific Trigger /
-      Router combination: Initial Load and Ping Back. The parameters for these
+      Router combination: Initial Loads and Ping Back. The parameters for these
       can be found in the Trigger / Router mapping table, <xref
       linkend="table_trigger_router" xrefstyle="table"/>.</para>
 
       <section id="configuration-initial-load">
-        <title>Initial Load</title>
+        <title>Initial Loads</title>
 
         <para>An initial load is the process of seeding tables at a target
         node with data from its parent node. When a node connects and data is
@@ -1046,7 +1046,9 @@ values
         <literal>initial_load_enabled</literal> column on <xref
         linkend="table_node_security" xrefstyle="table"/> to
         <emphasis>1</emphasis> on the row for the target node in the parent
-        node's database. The next time the source node routes data, reload
+        node's database.  You can configure SymmetricDS to automatically perform an initial load
+        when a node registers by setting the parameter <literal>auto.reload</literal> to true. 
+        Regardless of how the initial load is initiated, the next time the source node routes data, reload
         batches will be inserted. At the same time reload batches are
         inserted, all previously pending batches for the node are marked as
         successfully sent.</para>
@@ -1084,6 +1086,37 @@ values
         table. All data is passed through the configured router to filter out
         data that might not be targeted at a node.</para>
 
+        <section id="configuration-initial-load-options">
+            <title>Target table prep for initial load</title>
+             <para>There are several parameters that can be used to specify what, if anything, should be
+             done to the table on the target database just prior to loading the data.  Note that the parameters below
+             specify the desired behavior for all tables in the initial load, not just one.
+             </para>
+             <itemizedlist>
+             <listitem><literal>initial.load.delete.first / initial.load.delete.first.sql</literal>
+             <para>By default, an initial load will not delete existing rows from a target table
+             before loading the data.  If a delete is desired, the parameter
+             <literal>initial.load.delete.first</literal> can be set to true.  If true,
+             the command found in <literal>initial.load.delete.first.sql</literal> will be run on each table prior to loading the data.
+             Thd default value for  <literal>initial.load.delete.first.sql</literal> is <literal>delete from %s</literal>,
+             but could be changed if needed.
+                Note that additional reload batches are created, in the correct order, to achieve the delete.
+             </para>
+             </listitem>
+             <listitem><literal>initial.load.create.first</literal>
+              <para>
+              By default, an initial load will not create the table on the target if it doesn't aleady exist.
+              If the desired behavior is to create the table on the target if it is not present,
+              set the parameter <literal>intial.load.create.first</literal> to true. SymmetricDS will
+              attempt to create the table and indexes on the target database before doing the initial load. (Additional batches
+              are created to represent the table schema).
+              </para>
+            </listitem>
+            </itemizedlist>
+        </section>
+      <section id="configuration-initial-load-select">
+        <title>Loading subsets of data</title>
+        
         <para>An efficient way to select a subset of data from a table for an
         initial load is to provide an <literal>initial_load_select</literal>
         clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.
@@ -1119,7 +1152,19 @@ values
           indexes.</para>
         </important>
       </section>
-
+      
+       <section id="configuration-initial-load-reverse">
+        <title>Reverse Initial Loads</title>
+        <para>
+        The default behavior for initial loads is to load data from the registration server or parent node, to a client node.
+        Occasionally, there may be need to do a one-time intial load of data in the opposite or "reverse" direction, namely from a client
+        node to the registration node.  To achieve this, set the parameter <literal>auto.reload.reverse</literal> to be true, <emphasis>but only for the specific
+        node group representing the client nodes</emphasis>.  This will cause a one time reverse load of data, for tables configured with non-negative initial load orders, to be 
+        batched at the point when registration of the client node is occurring.  These batches are then sent to the parent or registration node.
+        This capability might be needed, for example, if there is data already present in the client that doesn't exist in the parent but needs to.        
+        </para>     
+     </section>
+ </section>
       <section id="configuration-dead-triggers">
         <title>Dead Triggers</title>
 
