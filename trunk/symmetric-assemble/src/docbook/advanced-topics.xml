@@ -682,6 +682,9 @@ net stop symmetricds</programlisting>
             where SymmetricDS is located.  The init script calls the
             <filename class="file">sym_service</filename> executable.
         </para>
+        <para>Enabling the service varies based on the version of Linux in use.  Three possible approaches are listed below:</para>
+        <orderedlist>
+                <listitem>Using <literal>chkconfig</literal> command:
         <para>
             To enable the service to run automatically when the system is started:
             <programlisting>/sbin/chkconfig --add sym_service</programlisting>
@@ -690,14 +693,30 @@ net stop symmetricds</programlisting>
             To disable the service from running automatically:
             <programlisting>/sbin/chkconfig --del sym_service</programlisting>
         </para>
+        </listitem>
+        <listitem>Using <literal>install_initd</literal> command (Suse Linux):
         <para>
             On Suse Linux install the service by calling:
             <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
             Remove the service by calling:
             <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
-        </para>          
+        </para></listitem>
+          <listitem>
+            Using <literal>sysv-rc-conf</literal> command (Ubuntu Linux):
         <para>
-            Use the <command>service</command> command to start, stop, and query
+            On Ubunut Linux, you might need to use sysv-rc-conf instead of chkconfig.  
+            Try running sys-rc-conf as a super user (consider utilizing apt-get to install sysv-rc-conf
+            if it is not present:  <literal>sudo apt-get install sysv-rc-conf</literal>).
+            Run sysv-rc-conf with the following command:
+            <programlisting>sudo sysv-rc-conf </programlisting>
+            You should see a list of the scripts residing in your /etc/init.d folder.  
+            Use control-N to navigate through the list to locate sym_service, then activate the service
+            for the desired run-levels (most likely 2-5).
+        </para>
+        </listitem>       
+        </orderedlist>  
+        <para>
+            Finally, you can use the <command>service</command> command to start, stop, and query
             the status of the service: 
             <programlisting>/sbin/service sym_service start
 /sbin/service sym_service stop
