@@ -49,7 +49,7 @@
                             <emphasis>symmetric-override.properties</emphasis>
                         </entry>
                         <entry>N</entry>
-                        <entry> Changes to this file, provided by the end user in the JVM's classpath, apply to all engines
+                        <entry>Changes to this file, provided by the end user in the JVM's classpath, apply to all engines
                             in the JVM.
                         </entry>
                     </row>
@@ -729,6 +729,17 @@
                     <listitem>
                         <para> Set this if tables should be purged prior to an initial load.
                             [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                 <varlistentry>
+                    <term>
+                        <command>initial.load.delete.first.sql</command>
+                    </term>
+                    <listitem>
+                        <para>This is the SQL statement that will be used for purging a table during an initial load,
+                        provided initial.load.delete.first is set to true.
+                            [&#xA0;Default:&#xA0;delete from %s&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
