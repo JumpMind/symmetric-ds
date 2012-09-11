@@ -86,7 +86,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] args,
             int[] types) {
-        logSql(sql, args);
+        logSql(sql, args);        
         return new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
     }
 
@@ -292,7 +292,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
-                int updateCount = 0;
+                int totalUpdateCount = 0;
                 boolean oldAutoCommitSetting = con.getAutoCommit();
                 Statement stmt = null;
                 try {
@@ -304,7 +304,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         logSql(statement, null);
                         try {
                             boolean hasResults = stmt.execute(statement);
-                            updateCount += stmt.getUpdateCount();
+                            int updateCount = stmt.getUpdateCount();
+                            totalUpdateCount += updateCount;
                             int rowsRetrieved = 0;
                             if (hasResults) {
                                 ResultSet rs = null;
@@ -346,7 +347,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     if (!autoCommit) {
                         con.commit();
                     }
-                    return updateCount;
+                    return totalUpdateCount;
                 } catch (SQLException ex) {
                     if (!autoCommit) {
                         con.rollback();

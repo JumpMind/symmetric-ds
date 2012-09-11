@@ -253,7 +253,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
 
     public SqlException translate(String message, Exception ex) {
         if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
-            throw new UniqueKeyException(ex);
+            return new UniqueKeyException(ex);
         } else if (ex instanceof SqlException) {
             return (SqlException) ex;
         } else {
