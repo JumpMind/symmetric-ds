@@ -153,5 +153,7 @@ public interface ITriggerRouterService {
     public void addExtraConfigTable(String table);
 
     public Map<Trigger, Exception> getFailedTriggers();
+    
+    public void resetCaches();
 
 }
