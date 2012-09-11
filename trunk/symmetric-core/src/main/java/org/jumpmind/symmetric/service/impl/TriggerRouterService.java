@@ -784,6 +784,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         // make sure all tables are freshly read in
                         platform.resetCachedTableModel();
+                        
+                        resetCaches();
 
                         // make sure channels are read from the database
                         configurationService.reloadChannels();
@@ -803,6 +805,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         } else {
             log.info("Not synchronizing triggers.  {} is set to false",
                     ParameterConstants.AUTO_SYNC_TRIGGERS);
+        }
+    }
+    
+    public void resetCaches() {
+        synchronized (this.getClass()) {
+            this.triggerRouterCacheTime = 0;
+            this.routersCacheTime = 0;
+            this.triggersCacheTime = 0;
         }
     }
 
