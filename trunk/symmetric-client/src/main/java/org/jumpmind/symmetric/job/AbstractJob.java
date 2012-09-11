@@ -185,11 +185,10 @@ abstract public class AbstractJob implements Runnable, IJob {
                             }
                         }
                     } else {
-                        log.warn("This thread was interrupted.  Not executing the job until the interrupted status has cleared");
+                        log.info("The engine is not currently started.");
                     }
-
                 } else {
-                    log.info("The engine is not currently started.");
+                    log.warn("This thread was interrupted.  Not executing the job until the interrupted status has cleared");
                 }
             }
         } catch (final Throwable ex) {
