@@ -39,7 +39,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         		"end                                                                                                                 ";
         timeColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
-        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || encode($(tableAlias).\"$(columnName)\", 'base64') || '\"' end" ;
+        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || pg_catalog.encode($(tableAlias).\"$(columnName)\", 'base64') || '\"' end" ;
         wrappedBlobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias).\"$(columnName)\") || '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "||" ;
@@ -79,11 +79,11 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  encodedBlobPage text;                                                                                                                                                " + 
 "                                BEGIN                                                                                                                                                                  " + 
 "                                  encodedBlob := '';                                                                                                                                                   " + 
-"                                  FOR encodedBlobPage IN SELECT encode(data, 'escape')                                                                                                                 " + 
+"                                  FOR encodedBlobPage IN SELECT pg_catalog.encode(data, 'escape')                                                                                                                 " + 
 "                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP                                                                                                       " + 
 "                                    encodedBlob := encodedBlob || encodedBlobPage;                                                                                                                     " + 
 "                                  END LOOP;                                                                                                                                                            " + 
-"                                  RETURN encode(decode(encodedBlob, 'escape'), 'base64');                                                                                                              " + 
+"                                  RETURN pg_catalog.encode(pg_catalog.decode(encodedBlob, 'escape'), 'base64');                                                                                                              " + 
 "                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
 "                                  RETURN '';                                                                                                                                                           " + 
 "                                END                                                                                                                                                                    " + 
