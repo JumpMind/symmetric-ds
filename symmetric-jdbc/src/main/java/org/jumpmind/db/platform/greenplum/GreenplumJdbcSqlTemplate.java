@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.postgresql.PostgreSqlJdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
@@ -47,7 +48,7 @@ public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {
             String replaceSql = sql.replaceFirst("\\(null,", "(" + key + ",");
             ps = conn.prepareStatement(replaceSql);
             ps.setQueryTimeout(settings.getQueryTimeout());
-//            JdbcUtils.setValues(ps, args, types, lobHandler.getDefaultHandler());
+            JdbcUtils.setValues(ps, args, types, lobHandler.getDefaultHandler());
             ps.executeUpdate();
         } finally {
             close(ps);
