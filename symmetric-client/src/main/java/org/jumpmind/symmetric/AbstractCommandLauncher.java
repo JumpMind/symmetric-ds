@@ -335,7 +335,8 @@ public abstract class AbstractCommandLauncher {
             if (testConnection) {
                 testConnection();
             }
-            platform = ClientSymmetricEngine.createDatabasePlatform(new TypedProperties(propertiesFile), false);
+            platform = ClientSymmetricEngine.createDatabasePlatform(new TypedProperties(
+                    propertiesFile), null, false);
         }
         return platform;
     }

@@ -105,6 +105,7 @@ public class DataProcessor {
                         }
                     } catch (Exception ex) {
                         try {
+                            context.setLastError(ex);
                             if (dataWriter != null && !endBatchCalled) {
                                 dataWriter.end(currentBatch, true);
                             }
