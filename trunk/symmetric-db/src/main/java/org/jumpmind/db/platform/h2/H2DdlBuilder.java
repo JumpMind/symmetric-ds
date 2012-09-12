@@ -108,8 +108,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             } else if (change instanceof ColumnSizeChange) {
                 ColumnSizeChange sizeChange = (ColumnSizeChange)change;
+                sizeChange.getChangedColumn().setSizeAndScale(sizeChange.getNewSize(), sizeChange.getNewScale());                
                 writeAlterColumn(change.getChangedTable(), sizeChange.getChangedColumn(), ddl);
-                changeIt.remove();                
+                changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 ColumnAutoIncrementChange defaultChange = (ColumnAutoIncrementChange)change;
                 defaultChange.getColumn().setAutoIncrement(!defaultChange.getColumn().isAutoIncrement());
