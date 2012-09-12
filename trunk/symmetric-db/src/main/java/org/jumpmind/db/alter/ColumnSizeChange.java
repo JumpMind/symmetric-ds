@@ -25,8 +25,6 @@ import org.jumpmind.db.model.Table;
 
 /**
  * Represents the change of the size or scale of a column.
- * 
- * @version $Revision: $
  */
 public class ColumnSizeChange extends TableChangeImplBase implements ColumnChange
 {
