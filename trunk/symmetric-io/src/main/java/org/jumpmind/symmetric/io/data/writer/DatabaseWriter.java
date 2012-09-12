@@ -188,6 +188,17 @@ public class DatabaseWriter implements IDataWriter {
         if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
             notifyFiltersEarlyCommit();
             commit();
+            /*
+             * Chances are if SymmetricDS is configured to commit early in a
+             * batch we want to give other threads a chance to do work and
+             * access the database.  This was added to support H2 clients
+             * that are loading big batches while an application is doing work.
+             */
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                log.warn("{}", e.getMessage());
+            }
         }
     }
 

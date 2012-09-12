@@ -17,6 +17,8 @@ public class DataContext extends Context {
     protected Table table;
 
     protected CsvData data;
+    
+    protected Throwable lastError;
 
     public DataContext(Batch batch) {
         this.batch = batch;
@@ -67,6 +69,14 @@ public class DataContext extends Context {
 
     public Table getTable() {
         return table;
+    }
+    
+    public void setLastError(Throwable lastError) {
+        this.lastError = lastError;
+    }
+    
+    public Throwable getLastError() {
+        return lastError;
     }
 
     public ISqlTransaction findTransaction() {

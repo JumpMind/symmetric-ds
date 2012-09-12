@@ -1,5 +1,6 @@
 SymmetricDS - 3.1.5 (Released 2012-09-12) 
 =========================================
+- 0000822: [Improvement] Add new constructor to ClientSymmetricEngine so SymmetricDS can share an embedding application's Datasource and Spring Context (chenson) - closed.
 - 0000820: [Bug] Inactivate database trigger when trigger_router is removed. (chenson) - closed.
 - 0000811: [Bug] H2 trigger template doesn't resolve schema (chenson) - closed.
 - 0000821: [Bug] Mark data row as unrouted if no trigger_router can be found for it (chenson) - closed.

@@ -34,12 +34,19 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
+/**
+ * Represents the client portion of a SymmetricDS engine. This class can be used
+ * to embed SymmetricDS into another application.
+ */
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
+
+    public static final String DEPLOYMENT_TYPE_CLIENT = "client";
 
     protected File propertiesFile;
 
@@ -47,11 +54,34 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     protected BasicDataSource dataSource;
 
-    protected ClassPathXmlApplicationContext springContext;
+    protected ApplicationContext springContext;
+    
+    /**
+     * @param dataSource
+     *            If not null, SymmetricDS will use this provided datasource
+     *            instead of creating it's own.
+     * @param springContext
+     *            If not null, SymmetricDS will use this provided Spring context
+     *            instead of creating it's own.
+     * @param properties
+     *            Properties to use for configuration.
+     * @param registerEngine
+     *            Whether to store a reference to this engine in a local static
+     *            map.
+     */
+    public ClientSymmetricEngine(BasicDataSource dataSource, ApplicationContext springContext,
+            Properties properties, boolean registerEngine) {
+        super(registerEngine);
+        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.dataSource = dataSource;
+        this.springContext = springContext;
+        this.properties = properties;
+        this.init();
+    }
 
     public ClientSymmetricEngine(File propertiesFile, boolean registerEngine) {
         super(registerEngine);
-        setDeploymentType("client");
+        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
         this.propertiesFile = propertiesFile;
         this.init();
     }
@@ -62,7 +92,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
         super(registerEngine);
-        setDeploymentType("client");
+        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
         this.properties = properties;
         this.init();
     }
@@ -75,23 +105,31 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected void init() {
         try {
             super.init();
+            
+            this.dataSource = platform.getDataSource();
 
-            PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-            Properties properties = new Properties();
-            properties.setProperty("engine.name", getEngineName());
-            configurer.setProperties(properties);
+            if (springContext == null) {
+                PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+                Properties properties = new Properties();
+                properties.setProperty("engine.name", getEngineName());
+                configurer.setProperties(properties);
 
-            this.springContext = new ClassPathXmlApplicationContext();
-            springContext.addBeanFactoryPostProcessor(configurer);
+                ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext();
+                ctx.addBeanFactoryPostProcessor(configurer);
 
-            if (registerEngine) {
-                springContext.setConfigLocations(new String[] {
-                        "classpath:/symmetric-ext-points.xml", "classpath:/symmetric-jmx.xml" });
-            } else {
-                springContext
-                        .setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
+                if (registerEngine) {
+                    ctx
+                            .setConfigLocations(new String[] {
+                                    "classpath:/symmetric-ext-points.xml",
+                                    "classpath:/symmetric-jmx.xml" });
+                } else {
+                    ctx
+                            .setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
+                }
+                ctx.refresh();
+                
+                this.springContext = ctx;
             }
-            springContext.refresh();
 
             this.extensionPointManger = createExtensionPointManager(springContext);
             this.extensionPointManger.register();
@@ -103,11 +141,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     public synchronized void stop() {
-        if (this.springContext != null && springContext.isActive()) {
+        if (this.springContext instanceof AbstractApplicationContext) {
+            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
             try {
-                this.springContext.stop();
-                this.springContext = null;
+                if (ctx.isActive()) {
+                    ctx.stop();
+                }
             } catch (Exception ex) {
+            } finally {
+                this.springContext = null;
             }
         }
         super.stop();
@@ -173,13 +215,16 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        return createDatabasePlatform(properties, true);
+        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, true);
+        return platform;
     }
-    
-    public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
+
+    public static IDatabasePlatform createDatabasePlatform(TypedProperties properties, BasicDataSource dataSource,
             boolean waitOnAvailableDatabase) {
-        BasicDataSource dataSource = createBasicDataSource(properties,
+        if (dataSource == null) {
+            dataSource = createBasicDataSource(properties,
                 createSecurityService(properties));
+        }
         if (waitOnAvailableDatabase) {
             waitForAvailableDatabase(dataSource);
         }
@@ -195,10 +240,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         settings.setQueryTimeout(properties.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS, 300));
         settings.setBatchSize(properties.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE, 100));
         return settings;
-    }
-
-    protected void createDataSource(TypedProperties properties) {
-        this.dataSource = createBasicDataSource(properties, securityService);
     }
 
     protected IExtensionPointManager createExtensionPointManager(ApplicationContext springContext) {
