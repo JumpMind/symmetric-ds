@@ -1,3 +1,19 @@
+SymmetricDS - 3.1.5 (Released 2012-09-12) 
+=========================================
+- 0000820: [Bug] Inactivate database trigger when trigger_router is removed. (chenson) - closed.
+- 0000811: [Bug] H2 trigger template doesn't resolve schema (chenson) - closed.
+- 0000821: [Bug] Mark data row as unrouted if no trigger_router can be found for it (chenson) - closed.
+- 0000815: [Bug] decode() function needs qualified in most recent version of Greenplum (mhanes) - closed.
+- 0000819: [Bug] Support alter table alter column on H2 when column size changes (chenson) - closed.
+- 0000816: [Bug] Log messages in AbstractJob are reversed (chenson) - closed.
+- 0000813: [Bug] Trigger and Router Cache should be refreshed prior to syncTriggers (chenson) - closed.
+- 0000808: [Improvement] Document installing as a service for Ubuntu (chenson) - closed.
+- 0000817: [Improvement] Take only the first 50 characters of an ipaddress in order to make sure database save to tables doesn't fail (chenson) - closed.
+- 0000814: [Bug] SqlScript autocommit=false with unique key error doesn't rollback or report exception in listener (chenson) - closed.
+- 0000818: [Bug] Support alters tables statements for column size changes in postgres (chenson) - closed.
+- 0000812: [Improvement] Better document various options related to inital loads in the User's Guide (chenson) - closed.
+- 0000807: [Improvement] Allow the symmetric-core parameter parser to work with other parameter files. (abrougher) - closed.
+
 SymmetricDS - 3.1.4 (Release 2012-09-08) 
 ======================================
 - 0000796: [Improvement] AbstractSqlTemplate should report an error if a named parameter map is passed in that does not contain a required parameter (chenson) - closed.
