@@ -49,6 +49,8 @@ public interface ITriggerRouterService {
      */
     public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
+    public Trigger getTriggerForCurrentNodeById(String triggerId);
+    
     /**
      * Returns a list of triggers that should be active for the current node.
      * @param refreshCache Indicates that the cache should be refreshed
