@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.util.AppUtils;
 
@@ -34,6 +35,8 @@ public class NodeHost implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static Date LAST_RESTART_TIME = new Date();
+    
+    protected final static int MAX_IP_ADDRESS_SIZE = 50;
     
     private String nodeId;
     private String hostName;
@@ -62,11 +65,11 @@ public class NodeHost implements Serializable {
         this.nodeId = nodeId;
         this.refresh();
         this.createTime = new Date();
-    }
+    }        
 
     public void refresh() {
         this.hostName = AppUtils.getHostName();
-        this.ipAddress = AppUtils.getIpAddress();
+        setIpAddress(AppUtils.getIpAddress());
         this.osUser = System.getProperty("user.name");
         this.osName = System.getProperty("os.name");
         this.osArch = System.getProperty("os.arch");
@@ -103,7 +106,7 @@ public class NodeHost implements Serializable {
     }
 
     public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+        this.ipAddress = StringUtils.left(ipAddress, MAX_IP_ADDRESS_SIZE);
     }
 
     public String getOsUser() {
