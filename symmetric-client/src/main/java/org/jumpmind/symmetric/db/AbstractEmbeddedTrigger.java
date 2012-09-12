@@ -55,6 +55,7 @@ abstract public class AbstractEmbeddedTrigger {
     protected static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     protected static final String TEMPLATE_TABLE_SUFFIX = "_CONFIG";
     protected String triggerName;
+    protected String schemaName;
     protected Map<String, String> templates = null;
 
     /**
@@ -65,11 +66,13 @@ abstract public class AbstractEmbeddedTrigger {
      *            a connection to the database
      * @param triggerName
      *            the name of the trigger used in the CREATE TRIGGER statement
+     * @param schemaName TODO
      * @param tableName
      *            the name of the table
      */
-    protected void init(Connection conn, String triggerName, String tableName) throws SQLException {
+    protected void init(Connection conn, String triggerName, String schemaName, String tableName) throws SQLException {
         if (this.templates == null) {
+            this.schemaName = schemaName;
             this.triggerName = triggerName;
             this.templates = getTemplates(conn);
         }
@@ -249,7 +252,8 @@ abstract public class AbstractEmbeddedTrigger {
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
         Map<String, String> templates = new HashMap<String, String>();
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(String.format("select * from %s%s", triggerName, TEMPLATE_TABLE_SUFFIX));
+        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? schemaName+"." : "";
+        ResultSet rs = stmt.executeQuery(String.format("select * from %s%s%s", schemaPrefix, triggerName, TEMPLATE_TABLE_SUFFIX));
         if (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();

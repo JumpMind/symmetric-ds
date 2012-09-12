@@ -47,7 +47,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
      */
     public void init(Connection conn, String schemaName, String triggerName, String tableName, boolean before, int type)
             throws SQLException {
-        this.init(conn, triggerName, tableName);
+        this.init(conn, triggerName, schemaName, tableName);
     }
     
     public void close() throws SQLException {

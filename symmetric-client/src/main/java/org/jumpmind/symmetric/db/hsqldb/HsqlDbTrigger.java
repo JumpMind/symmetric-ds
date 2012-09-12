@@ -48,7 +48,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements Trigger {
         Connection conn = findConnection(triggerName);
         if (conn != null) {
             try {
-                init(conn, triggerName, tableName);
+                init(conn, triggerName, null, tableName);
                 fire(conn, oldRow, newRow);
             } catch (SQLException e) {
                 e.printStackTrace();

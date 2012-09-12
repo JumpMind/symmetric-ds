@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.h2;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -58,10 +59,11 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {
-        final String dropSql = String.format("DROP TRIGGER IF EXISTS %s", triggerName);
+        String prefix = Table.getQualifiedTablePrefix(catalogName, schemaName, getPlatform().getDatabaseInfo().getDelimiterToken());
+        final String dropSql = String.format("DROP TRIGGER IF EXISTS %s%s", prefix, triggerName);
         logSql(dropSql, sqlBuffer);
 
-        final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
+        final String dropTable = String.format("DROP TABLE IF EXISTS %s%s_CONFIG", prefix, triggerName);
         logSql(dropTable, sqlBuffer);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
