@@ -34,6 +34,7 @@ import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
+import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -105,6 +106,10 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
                 defaultChange.getChangedColumn().setRequired(!defaultChange.getChangedColumn().isRequired());
                 writeAlterColumn(change.getChangedTable(), defaultChange.getChangedColumn(), ddl);
                 changeIt.remove();
+            } else if (change instanceof ColumnSizeChange) {
+                ColumnSizeChange sizeChange = (ColumnSizeChange)change;
+                writeAlterColumn(change.getChangedTable(), sizeChange.getChangedColumn(), ddl);
+                changeIt.remove();                
             } else if (change instanceof ColumnAutoIncrementChange) {
                 ColumnAutoIncrementChange defaultChange = (ColumnAutoIncrementChange)change;
                 defaultChange.getColumn().setAutoIncrement(!defaultChange.getColumn().isAutoIncrement());
