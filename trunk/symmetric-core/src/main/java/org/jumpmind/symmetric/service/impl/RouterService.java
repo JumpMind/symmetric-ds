@@ -493,9 +493,9 @@ public class RouterService extends AbstractService implements IRouterService {
     protected int routeData(Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
+        Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter,
                         context.getChannel());
                 Collection<String> nodeIds = null;
@@ -518,14 +518,15 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
 
-                numberOfDataEventsInserted += insertDataEvents(context, dataMetaData, nodeIds,
-                        triggerRouter);
+                numberOfDataEventsInserted += insertDataEvents(context, dataMetaData, nodeIds);
             }
 
         } else {
             log.warn(
                     "Could not find triggers for history id of {}.  Not processing data with the id of {}",
                     data.getTriggerHistory().getTriggerHistoryId(), data.getDataId());
+            numberOfDataEventsInserted += insertDataEvents(context, new DataMetaData(data, table, null,
+                    context.getChannel()), new HashSet<String>());
         }
 
         context.incrementStat(numberOfDataEventsInserted,
@@ -535,7 +536,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected int insertDataEvents(ChannelRouterContext context, DataMetaData dataMetaData,
-            Collection<String> nodeIds, TriggerRouter triggerRouter) {
+            Collection<String> nodeIds) {
         int numberOfDataEventsInserted = 0;
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
@@ -566,8 +567,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 numberOfDataEventsInserted++;
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
+                    TriggerRouter triggerRouter = dataMetaData.getTriggerRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            triggerRouter.getRouter().getRouterId());
+                            triggerRouter != null ? triggerRouter.getRouter().getRouterId() : Constants.UNKNOWN_ROUTER_ID);
                     dataEventAdded = true;
                 }
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
