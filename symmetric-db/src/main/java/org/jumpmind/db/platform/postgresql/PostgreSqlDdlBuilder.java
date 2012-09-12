@@ -28,6 +28,7 @@ import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
+import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
@@ -268,8 +269,11 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             } else if (change instanceof ColumnRequiredChange) {
                 processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
                 changeIt.remove();
+            } else if (change instanceof ColumnSizeChange) {
+                processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
+                changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (PrimaryKeyChange)change, ddl);
+                processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 if (processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change,
@@ -281,7 +285,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
                 changes, ddl);
     }
-    
+
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
@@ -297,7 +301,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append(" ADD ");
         writePrimaryKeyStmt(change.getChangedTable(), change.getNewPrimaryKeyColumns(), ddl);
         printEndOfStatement(ddl);
-        
+
     }
 
     /*
@@ -364,6 +368,17 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append(" DROP NOT NULL ");
         }
+        printEndOfStatement(ddl);
+    }
+
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnSizeChange change, StringBuilder ddl) {
+        writeTableAlterStmt(change.getChangedTable(), ddl);
+        ddl.append(" ALTER COLUMN ");
+        Column column = change.getChangedColumn();
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" TYPE ");
+        ddl.append(getSqlType(column));
         printEndOfStatement(ddl);
     }
 
