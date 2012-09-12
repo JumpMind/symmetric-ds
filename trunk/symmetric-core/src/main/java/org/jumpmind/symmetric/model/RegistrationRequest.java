@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
+
 public class RegistrationRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -52,7 +54,7 @@ public class RegistrationRequest implements Serializable {
         this.registeredNodeId = node.getNodeId();
         this.status = status;
         this.hostName = hostName == null ? "unknown" : hostName;
-        this.ipAddress = ipAddress == null ? "unknown" : ipAddress;
+        setIpAddress(ipAddress);
     }
 
     public String getNodeGroupId() {
@@ -92,7 +94,8 @@ public class RegistrationRequest implements Serializable {
     }
 
     public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+        this.ipAddress = StringUtils.left(ipAddress == null ? "unknown" : ipAddress,
+                NodeHost.MAX_IP_ADDRESS_SIZE);
     }
 
     public long getAttemptCount() {
