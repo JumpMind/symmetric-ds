@@ -507,6 +507,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 getSql("select", "selectRoutersColumnList", "selectRouterByNodeGroupLinkWhereSql"),
                 new RouterMapper(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
     }
+    
+    public Trigger getTriggerForCurrentNodeById(String triggerId) {
+        List<Trigger> triggers = getTriggersForCurrentNode();
+        for (Trigger trigger : triggers) {
+            if (trigger.getTriggerId().equals(triggerId)) {
+                return trigger;
+            }
+        }
+        return null;
+    }
 
     public Trigger getTriggerById(String triggerId) {
         return getTriggerById(triggerId, true);
@@ -832,7 +842,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (TriggerHistory history : activeHistories) {
             boolean removeTrigger = false;
             Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
-            Trigger trigger = getTriggerById(history.getTriggerId(), false);
+            Trigger trigger = getTriggerForCurrentNodeById(history.getTriggerId());
             if (tables == null && trigger != null) {
                 tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
