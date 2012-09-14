@@ -18,7 +18,9 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.track;
+
+import org.jumpmind.symmetric.fs.config.DirectorySpec;
 
 public class DirectoryChangeTracker {
 
@@ -35,7 +37,7 @@ public class DirectoryChangeTracker {
         this.directorySnapshotPersister = directorySnapshotPersister;
     }
     
-    protected void init() {
+    public void init() {
         changesSinceLastSnapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
         startWatcher();
         lastSnapshot = directorySnapshotPersister.get(nodeId, directorySpec);
@@ -46,10 +48,10 @@ public class DirectoryChangeTracker {
     }
     
     protected void startWatcher() {
-        
+        // start commons-io file observer
     }
     
-    synchronized protected DirectorySpecSnapshot takeSnapshot() {
+    synchronized public DirectorySpecSnapshot takeSnapshot() {
         DirectorySpecSnapshot changes = changesSinceLastSnapshot;
         lastSnapshot.merge(changesSinceLastSnapshot);
         changesSinceLastSnapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
@@ -57,7 +59,7 @@ public class DirectoryChangeTracker {
         return changes;
     }
     
-    protected void takeFullSnapshot(DirectorySpecSnapshot snapshot) {
+    synchronized protected void takeFullSnapshot(DirectorySpecSnapshot snapshot) {
         // update the snapshot with every file in the directory spec
     }
 

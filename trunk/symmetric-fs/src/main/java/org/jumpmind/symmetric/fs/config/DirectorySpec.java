@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,9 @@ public class DirectorySpec {
 
     protected String directory;
     protected boolean recursive;
+    protected boolean captureUpdates;
+    protected boolean captureCreates;
+    protected boolean captureDeletes;
     protected String[] includes;
     protected String[] excludes;
     
@@ -92,8 +95,28 @@ public class DirectorySpec {
         this.excludes = excludes;
     }
     
+    public void setCaptureCreates(boolean captureCreates) {
+        this.captureCreates = captureCreates;
+    }
     
+    public boolean isCaptureCreates() {
+        return captureCreates;
+    }
     
+    public void setCaptureDeletes(boolean captureDeletes) {
+        this.captureDeletes = captureDeletes;
+    }
     
+    public boolean isCaptureDeletes() {
+        return captureDeletes;
+    }
+    
+    public void setCaptureUpdates(boolean captureUpdates) {
+        this.captureUpdates = captureUpdates;
+    }
+    
+    public boolean isCaptureUpdates() {
+        return captureUpdates;
+    }    
     
 }

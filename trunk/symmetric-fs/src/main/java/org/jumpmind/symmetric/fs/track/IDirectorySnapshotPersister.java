@@ -18,27 +18,14 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.track;
 
-import java.util.Date;
-import java.util.Map;
+import org.jumpmind.symmetric.fs.config.DirectorySpec;
 
-public class DirectorySpecSnapshot {
-
-    protected Date fromDate;
-    protected Date toDate;
-    protected String nodeId;
-    protected DirectorySpec directorySpec;    
-    protected Map<String, FileChangeType> files;
-            
-    public DirectorySpecSnapshot(String nodeId, DirectorySpec directorySpec) {
-        this.fromDate = new Date();
-        this.nodeId = nodeId;
-        this.directorySpec = directorySpec;
-    }
-
-    protected void merge(DirectorySpecSnapshot snapshot) {
-        
-    }
+public interface IDirectorySnapshotPersister {
+    
+    public void save(DirectorySpecSnapshot snapshot);
+    
+    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec);
 
 }

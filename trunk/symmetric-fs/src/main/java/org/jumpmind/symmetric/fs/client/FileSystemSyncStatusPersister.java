@@ -18,19 +18,16 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.client;
 
-import java.io.File;
+import org.jumpmind.symmetric.fs.config.Node;
 
-public class FileSystemDirectorySnapshotPersister implements IDirectorySnapshotPersister {
-    
-    protected File directory;
+public class FileSystemSyncStatusPersister implements ISyncStatusPersister {
 
-    public void save(DirectorySpecSnapshot snapshot) {
-    }
-
-    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec) {
+    public SyncStatus get(Node node) {
         return null;
     }
-
+    
+    public void save(SyncStatus status) {
+    }
 }
