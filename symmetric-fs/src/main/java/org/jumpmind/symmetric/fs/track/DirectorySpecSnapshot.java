@@ -18,10 +18,29 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.track;
 
-public enum FileChangeType {
+import java.util.Date;
+import java.util.List;
 
-    CREATE, UPDATE, DELETE, NONE
-    
+import org.jumpmind.symmetric.fs.config.DirectorySpec;
+
+public class DirectorySpecSnapshot {
+
+    protected Date fromDate;
+    protected Date toDate;
+    protected String nodeId;
+    protected DirectorySpec directorySpec;
+    protected List<FileChange> files;
+
+    public DirectorySpecSnapshot(String nodeId, DirectorySpec directorySpec) {
+        this.fromDate = new Date();
+        this.nodeId = nodeId;
+        this.directorySpec = directorySpec;
+    }
+
+    protected void merge(DirectorySpecSnapshot snapshot) {
+
+    }
+
 }

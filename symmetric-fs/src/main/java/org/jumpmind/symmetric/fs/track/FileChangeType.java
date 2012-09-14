@@ -18,12 +18,10 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.track;
 
-public class FileChange {
+public enum FileChangeType {
 
-    protected String fileName;
-    protected FileChangeType fileChangeType;
-    protected String hashCode;
+    CREATE, UPDATE, DELETE, NONE
     
 }

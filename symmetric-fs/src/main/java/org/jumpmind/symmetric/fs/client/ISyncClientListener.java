@@ -18,12 +18,8 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs;
+package org.jumpmind.symmetric.fs.client;
 
-public interface IDirectorySnapshotPersister {
-    
-    public void save(DirectorySpecSnapshot snapshot);
-    
-    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec);
+public interface ISyncClientListener {
 
 }
