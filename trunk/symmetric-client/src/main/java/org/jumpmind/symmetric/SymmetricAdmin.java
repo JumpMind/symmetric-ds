@@ -402,7 +402,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         StringBuilder sqlBuffer = new StringBuilder();
         triggerService.syncTriggers(sqlBuffer, genAlways);
         if (file != null) {
-            FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
+            FileUtils.writeStringToFile(file, sqlBuffer.toString());
         }
     }
 
