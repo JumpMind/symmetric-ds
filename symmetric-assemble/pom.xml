@@ -90,6 +90,7 @@
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
                 <artifactId>torque-maven-plugin</artifactId>
+                <version>3.3</version>
                 <configuration>
                     <outputFormat>docbook</outputFormat>
                     <targetDatabase>symmetric</targetDatabase>
