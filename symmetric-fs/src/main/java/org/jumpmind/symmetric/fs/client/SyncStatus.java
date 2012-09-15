@@ -39,13 +39,16 @@ public class SyncStatus {
     protected List<String> filesToReceive;
     protected List<String> filesReceived;
     
+    public SyncStatus() {     
+    }
+    
     public SyncStatus(Node node) {
         this.node = node;
     }
     
     public Node getNode() {
         return node;
-    }
+    }   
 
     public void setStage(Stage stage) {
         this.stage = stage;

@@ -27,6 +27,16 @@ public class Node {
     protected String syncUrl;
     protected String securityToken;
     
+    public Node(String nodeId, String groupId, String syncUrl, String securityToken) {
+        this.nodeId = nodeId;
+        this.groupId = groupId;
+        this.syncUrl = syncUrl;
+        this.securityToken = securityToken;
+    }
+    
+    public Node() {     
+    }
+
     public String getNodeId() {
         return nodeId;
     }
@@ -37,6 +47,10 @@ public class Node {
     
     public String getSyncUrl() {
         return syncUrl;
+    }
+   
+    public String getSecurityToken() {
+        return securityToken;
     }
     
 }
