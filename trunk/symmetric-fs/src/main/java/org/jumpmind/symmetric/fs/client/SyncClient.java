@@ -84,7 +84,7 @@ public class SyncClient {
                                 syncStatusPersister.save(syncStatus);
                                 break;
                             case RECORDED_FILES_TO_SEND:
-                                updateFilesToSendAndReceive(syncStatus);
+                                updateFilesToSendAndReceiveFromServer(syncStatus);
                                 syncStatus.setStage(Stage.SEND_FILES);
                                 syncStatusPersister.save(syncStatus);
                                 break;
@@ -121,7 +121,7 @@ public class SyncClient {
         // TODO loop through and receive files that have not yet been sent
     }
 
-    protected void updateFilesToSendAndReceive(SyncStatus syncStatus) {
+    protected void updateFilesToSendAndReceiveFromServer(SyncStatus syncStatus) {
         // TODO contact server and update files to send and receive
     }
 
@@ -131,6 +131,7 @@ public class SyncClient {
     }
 
     protected boolean isServerAvailable(Node serverNode) {
+        // TODO
         return true;
     }
 
