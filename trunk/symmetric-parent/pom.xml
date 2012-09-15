@@ -30,6 +30,7 @@
         <version.slf4j>1.6.4</version.slf4j>
         <test.root>h2</test.root>
         <test.client>h2</test.client>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
     <distributionManagement>
