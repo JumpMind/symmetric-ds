@@ -6,22 +6,30 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
+import org.jumpmind.symmetric.fs.config.Node;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DirectoryChangeTrackerTest {
 
+    File snapshotDirectory = new File("target/snapshots");
     File directory = new File("target/test");
     File subdirectory = new File (directory, "a");
     File fileInDirectory1 = new File(directory, "1.txt");
     File fileInDirectory2 = new File(directory, "2.csv");
     File fileInSubDirectory = new File(subdirectory, "3.doc");
+    Node node = new Node("1", "server", "", "");
 
+    @Before
+    public void setupTest() throws Exception {
+        recreateDirectorySpecAndFiles();
+    }
+    
     @Test
     public void testTakeFullSnapshotRecursive() throws Exception {
-        DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), true, null, null);
-        recreateDirectorySpecAndFiles();
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker("1", directorySpec, new FileSystemDirectorySpecSnapshotPersister(), -1);
-        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot("1", directorySpec);
+        DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), true, null, null);        
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(4, snapshot.getFiles().size());        
     }
@@ -29,9 +37,8 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotNonRecursive() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), false, null, null);
-        recreateDirectorySpecAndFiles();
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker("1", directorySpec, new FileSystemDirectorySpecSnapshotPersister(), -1);
-        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot("1", directorySpec);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(2, snapshot.getFiles().size());        
     }
@@ -39,9 +46,8 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotIncludes() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), false, new String[] {"*.txt"}, null);
-        recreateDirectorySpecAndFiles();
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker("1", directorySpec, new FileSystemDirectorySpecSnapshotPersister(), -1);
-        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot("1", directorySpec);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
         Assert.assertEquals(snapshot.getFiles().get(0).getFile().getAbsolutePath(), fileInDirectory1.getAbsolutePath());
@@ -50,9 +56,8 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotExcludes() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), false, null, new String[] {"*.txt"});
-        recreateDirectorySpecAndFiles();
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker("1", directorySpec, new FileSystemDirectorySpecSnapshotPersister(), -1);
-        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot("1", directorySpec);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
         Assert.assertEquals(snapshot.getFiles().get(0).getFile().getAbsolutePath(), fileInDirectory2.getAbsolutePath());
@@ -61,8 +66,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeSnapshotRecursiveTestDelete() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(directory.getAbsolutePath(), true, null, null);
-        recreateDirectorySpecAndFiles();
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker("1", directorySpec, new FileSystemDirectorySpecSnapshotPersister(), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
         tracker.start();
         tracker.takeSnapshot();
         FileUtils.deleteQuietly(fileInDirectory1);
@@ -79,7 +83,8 @@ public class DirectoryChangeTrackerTest {
         
     }
         
-    protected void recreateDirectorySpecAndFiles() throws Exception {        
+    protected void recreateDirectorySpecAndFiles() throws Exception {     
+        FileUtils.deleteQuietly(snapshotDirectory);
         FileUtils.deleteQuietly(directory);
         directory.mkdirs();
         subdirectory.mkdirs();

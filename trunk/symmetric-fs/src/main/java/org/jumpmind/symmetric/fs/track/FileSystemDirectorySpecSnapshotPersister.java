@@ -20,19 +20,19 @@
  */
 package org.jumpmind.symmetric.fs.track;
 
-import java.io.File;
+import org.jumpmind.persist.AbstractJsonFileSystemPersister;
 
-import org.jumpmind.symmetric.fs.config.DirectorySpec;
+public class FileSystemDirectorySpecSnapshotPersister extends
+        AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> implements
+        IDirectorySpecSnapshotPersister {
 
-public class FileSystemDirectorySpecSnapshotPersister implements IDirectorySpecSnapshotPersister {
-    
-    protected File directory;
-
-    public void save(DirectorySpecSnapshot snapshot) {
+    public FileSystemDirectorySpecSnapshotPersister(String directory) {
+        super(directory);
     }
 
-    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec) {
-        return null;
+    @Override
+    protected String buildFileNameFor(NodeDirectorySpecKey key) {
+        return String.format("%s.%s", key.toString(), "snapshot");
     }
 
 }

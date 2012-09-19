@@ -20,12 +20,9 @@
  */
 package org.jumpmind.symmetric.fs.client;
 
+import org.jumpmind.persist.IPersister;
 import org.jumpmind.symmetric.fs.config.Node;
 
-public interface ISyncStatusPersister {
-
-    public void save(SyncStatus status);
-
-    public SyncStatus get(Node node);
+public interface ISyncStatusPersister extends IPersister<SyncStatus, Node> {
     
 }

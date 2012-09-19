@@ -20,12 +20,9 @@
  */
 package org.jumpmind.symmetric.fs.track;
 
-import org.jumpmind.symmetric.fs.config.DirectorySpec;
+import org.jumpmind.persist.IPersister;
 
-public interface IDirectorySpecSnapshotPersister {
-    
-    public void save(DirectorySpecSnapshot snapshot);
-    
-    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec);
+public interface IDirectorySpecSnapshotPersister extends
+        IPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> {
 
 }
