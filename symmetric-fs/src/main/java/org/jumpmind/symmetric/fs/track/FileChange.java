@@ -20,10 +20,43 @@
  */
 package org.jumpmind.symmetric.fs.track;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.jumpmind.exception.IoException;
+
 public class FileChange {
 
-    protected String fileName;
+    protected File file;
     protected FileChangeType fileChangeType;
     protected String hashCode;
-    
+
+    public FileChange(File file, FileChangeType fileChangeType) {
+        this.file = file;
+        this.fileChangeType = fileChangeType;
+
+        if (file.isFile()) {
+            try {
+                this.hashCode = Long.toString(FileUtils.checksumCRC32(file));
+            } catch (IOException ex) {
+                throw new IoException(ex);
+            }
+        } else {
+            hashCode = "";
+        }
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public FileChangeType getFileChangeType() {
+        return fileChangeType;
+    }
+
+    public String getHashCode() {
+        return hashCode;
+    }
+
 }
