@@ -81,7 +81,11 @@ public class DirectoryChangeTracker {
             currentListener = new DirectorySpecSnasphotUpdater(changesSinceLastSnapshot, false);
             fileObserver.addListener(currentListener);
             fileMonitor.addObserver(fileObserver);
-            fileMonitor.start();
+            if (checkInterval > 0) {
+                fileMonitor.start();
+            } else {
+                fileObserver.initialize();
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -89,11 +93,18 @@ public class DirectoryChangeTracker {
         }
     }
 
+    protected void pollForChanges() {
+        if (checkInterval <= 0 && fileObserver != null) {
+            fileObserver.checkAndNotify();
+        }
+    }
+
     synchronized public DirectorySpecSnapshot takeSnapshot() {
         DirectorySpecSnapshot changes = changesSinceLastSnapshot;
         lastSnapshot.merge(changesSinceLastSnapshot);
         changesSinceLastSnapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
-        DirectorySpecSnasphotUpdater newListener  = new DirectorySpecSnasphotUpdater(changesSinceLastSnapshot, false);
+        DirectorySpecSnasphotUpdater newListener = new DirectorySpecSnasphotUpdater(
+                changesSinceLastSnapshot, false);
         fileObserver.addListener(newListener);
         fileObserver.removeListener(currentListener);
         currentListener = newListener;
