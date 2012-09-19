@@ -20,19 +20,12 @@
  */
 package org.jumpmind.symmetric.fs.track;
 
-import java.io.File;
-
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 
-public class FileSystemDirectorySnapshotPersister implements IDirectorySnapshotPersister {
+public interface IDirectorySpecSnapshotPersister {
     
-    protected File directory;
-
-    public void save(DirectorySpecSnapshot snapshot) {
-    }
-
-    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec) {
-        return null;
-    }
+    public void save(DirectorySpecSnapshot snapshot);
+    
+    public DirectorySpecSnapshot get(String nodeId, DirectorySpec directorySpec);
 
 }

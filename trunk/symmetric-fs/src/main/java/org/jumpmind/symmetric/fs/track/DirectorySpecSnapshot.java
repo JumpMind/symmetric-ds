@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.fs.track;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,16 +32,32 @@ public class DirectorySpecSnapshot {
     protected Date toDate;
     protected String nodeId;
     protected DirectorySpec directorySpec;
-    protected List<FileChange> files;
+    protected List<FileChange> files = new ArrayList<FileChange>();
 
     public DirectorySpecSnapshot(String nodeId, DirectorySpec directorySpec) {
         this.fromDate = new Date();
         this.nodeId = nodeId;
         this.directorySpec = directorySpec;
     }
+    
+    public DirectorySpec getDirectorySpec() {
+        return directorySpec;
+    }
+    
+    public List<FileChange> getFiles() {
+        return files;
+    }
+    
+    public void addFileChange(FileChange fileChange) {
+        files.add(fileChange);
+    }
 
     protected void merge(DirectorySpecSnapshot snapshot) {
 
+    }
+    
+    protected DirectorySpecSnapshot diff(DirectorySpecSnapshot snapshot) {
+        return null;
     }
 
 }

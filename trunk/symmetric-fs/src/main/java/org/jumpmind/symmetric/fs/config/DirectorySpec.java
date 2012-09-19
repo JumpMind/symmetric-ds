@@ -33,9 +33,9 @@ public class DirectorySpec {
 
     protected String directory;
     protected boolean recursive;
-    protected boolean captureUpdates;
-    protected boolean captureCreates;
-    protected boolean captureDeletes;
+    protected boolean captureUpdates = true;
+    protected boolean captureCreates = true;
+    protected boolean captureDeletes = true;
     protected String[] includes;
     protected String[] excludes;
     

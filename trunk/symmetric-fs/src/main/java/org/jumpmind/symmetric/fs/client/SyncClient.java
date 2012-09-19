@@ -30,19 +30,20 @@ import org.jumpmind.symmetric.fs.config.GroupConfig;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.ScriptIdentifier;
 import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
-import org.jumpmind.symmetric.fs.track.IDirectorySnapshotPersister;
+import org.jumpmind.symmetric.fs.track.IDirectorySpecSnapshotPersister;
 import org.jumpmind.util.Context;
 
 public class SyncClient {
 
     protected Config config;
     protected ISyncStatusPersister syncStatusPersister;
-    protected IDirectorySnapshotPersister directorySnapshotPersister;
+    protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected IServerNodeLocker serverNodeLocker;
     protected Map<String, DirectoryChangeTracker> changeTrackerByNodeId;
+    protected long checkInterval = 10000;
 
     public SyncClient(Config config, ISyncStatusPersister syncStatusPersister,
-            IDirectorySnapshotPersister directorySnapshotPersister,
+            IDirectorySpecSnapshotPersister directorySnapshotPersister,
             IServerNodeLocker serverNodeLocker) {
         this.config = config;
         this.syncStatusPersister = syncStatusPersister;
@@ -141,8 +142,8 @@ public class SyncClient {
         if (changeTracker == null) {
             GroupConfig groupConfig = config.getGroupConfig(serverNode.getGroupId());
             changeTracker = new DirectoryChangeTracker(nodeId,
-                    groupConfig.getClientDirectorySpec(), directorySnapshotPersister);
-            changeTracker.init();
+                    groupConfig.getClientDirectorySpec(), directorySnapshotPersister, checkInterval);
+            changeTracker.start();
             changeTrackerByNodeId.put(nodeId, changeTracker);
         }
         return changeTracker;
