@@ -64,10 +64,10 @@ public class SyncClient {
         if (serverNodeLocker.lock(serverNode)) {
             try {
                 if (isServerAvailable(serverNode)) {
-                    SyncStatus syncStatus = syncStatusPersister.get(serverNode);
+                    SyncStatus syncStatus = syncStatusPersister.get(SyncStatus.class, serverNode);
                     if (syncStatus == null) {
                         syncStatus = new SyncStatus(serverNode);
-                        syncStatusPersister.save(syncStatus);
+                        syncStatusPersister.save(syncStatus, syncStatus.getNode());
                     }
 
                     while (syncStatus.getStage() != Stage.DONE) {
@@ -76,33 +76,33 @@ public class SyncClient {
                             case START:
                                 runScript(ScriptIdentifier.PRECLIENT, syncStatus, context);
                                 syncStatus.setStage(Stage.RAN_PRESCRIPT);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                             case RAN_PRESCRIPT:
                                 DirectoryChangeTracker changeTracker = getDirectoryChangeTracker(serverNode);
                                 syncStatus.setSnapshot(changeTracker.takeSnapshot());
                                 syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                             case RECORDED_FILES_TO_SEND:
                                 updateFilesToSendAndReceiveFromServer(syncStatus);
                                 syncStatus.setStage(Stage.SEND_FILES);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                             case SEND_FILES:
                                 sendFiles(syncStatus);
                                 syncStatus.setStage(Stage.RECEIVE_FILES);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                             case RECEIVE_FILES:
                                 receiveFiles(syncStatus);
                                 syncStatus.setStage(Stage.RUN_POSTSCRIPT);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                             case RUN_POSTSCRIPT:
                                 runScript(ScriptIdentifier.POSTCLIENT, syncStatus, context);
                                 syncStatus.setStage(Stage.DONE);
-                                syncStatusPersister.save(syncStatus);
+                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
                                 break;
                         }
                     }
@@ -141,7 +141,7 @@ public class SyncClient {
         DirectoryChangeTracker changeTracker = changeTrackerByNodeId.get(nodeId);
         if (changeTracker == null) {
             GroupConfig groupConfig = config.getGroupConfig(serverNode.getGroupId());
-            changeTracker = new DirectoryChangeTracker(nodeId,
+            changeTracker = new DirectoryChangeTracker(serverNode,
                     groupConfig.getClientDirectorySpec(), directorySnapshotPersister, checkInterval);
             changeTracker.start();
             changeTrackerByNodeId.put(nodeId, changeTracker);

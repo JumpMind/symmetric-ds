@@ -26,11 +26,13 @@ import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
+import org.jumpmind.symmetric.fs.config.Node;
 
 public class DirectoryChangeTracker {
 
-    protected String nodeId;
+    protected Node node;
     protected DirectorySpec directorySpec;
+    protected NodeDirectorySpecKey nodeDirectorySpecKey;
     protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected DirectorySpecSnapshot lastSnapshot;
     protected DirectorySpecSnapshot changesSinceLastSnapshot;
@@ -39,23 +41,25 @@ public class DirectoryChangeTracker {
     protected DirectorySpecSnasphotUpdater currentListener;
     protected long checkInterval = 10000;
 
-    public DirectoryChangeTracker(String nodeId, DirectorySpec directorySpec,
+    public DirectoryChangeTracker(Node node, DirectorySpec directorySpec,
             IDirectorySpecSnapshotPersister directorySnapshotPersister, long checkInterval) {
-        this.nodeId = nodeId;
+        this.node = node;
         this.directorySpec = directorySpec;
+        this.nodeDirectorySpecKey = new NodeDirectorySpecKey(node, directorySpec);
         this.directorySnapshotPersister = directorySnapshotPersister;
         this.checkInterval = checkInterval;
     }
 
     public void start() {
-        changesSinceLastSnapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
+        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directorySpec);
         startWatcher();
-        lastSnapshot = directorySnapshotPersister.get(nodeId, directorySpec);
+        lastSnapshot = directorySnapshotPersister.get(DirectorySpecSnapshot.class,
+                nodeDirectorySpecKey);
         if (lastSnapshot == null) {
             lastSnapshot = changesSinceLastSnapshot;
             takeFullSnapshot(lastSnapshot);
         } else {
-            DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
+            DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
             takeFullSnapshot(snapshot);
             changesSinceLastSnapshot.merge(lastSnapshot.diff(snapshot));
         }
@@ -102,13 +106,13 @@ public class DirectoryChangeTracker {
     synchronized public DirectorySpecSnapshot takeSnapshot() {
         DirectorySpecSnapshot changes = changesSinceLastSnapshot;
         lastSnapshot.merge(changesSinceLastSnapshot);
-        changesSinceLastSnapshot = new DirectorySpecSnapshot(nodeId, directorySpec);
+        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directorySpec);
         DirectorySpecSnasphotUpdater newListener = new DirectorySpecSnasphotUpdater(
                 changesSinceLastSnapshot, false);
         fileObserver.addListener(newListener);
         fileObserver.removeListener(currentListener);
         currentListener = newListener;
-        directorySnapshotPersister.save(lastSnapshot);
+        directorySnapshotPersister.save(lastSnapshot, nodeDirectorySpecKey);
         return changes;
     }
 

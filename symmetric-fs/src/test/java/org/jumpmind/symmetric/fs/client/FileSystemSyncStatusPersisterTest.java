@@ -15,11 +15,12 @@ public class FileSystemSyncStatusPersisterTest {
         final File dir = new File("target/sync_status");
         dir.mkdirs();
         FileSystemSyncStatusPersister persister = new FileSystemSyncStatusPersister(dir.getAbsolutePath());
-        SyncStatus status = new SyncStatus(new Node("12345", "clientgroup", "http://10.2.34.11/fsync", "DFR#$#3223S#D%%"));
-        status.setSnapshot(new DirectorySpecSnapshot("12345", new DirectorySpec("/opt/send", true, null, new String[] {".svn"})));
-        persister.save(status);
+        Node node = new Node("12345", "clientgroup", "http://10.2.34.11/fsync", "DFR#$#3223S#D%%");
+        SyncStatus status = new SyncStatus(node);
+        status.setSnapshot(new DirectorySpecSnapshot(node, new DirectorySpec("/opt/send", true, null, new String[] {".svn"})));
+        persister.save(status, status.getNode());
         
-        SyncStatus newStatus = persister.get(status.getNode());
+        SyncStatus newStatus = persister.get(SyncStatus.class, status.getNode());
         Assert.assertNotNull(newStatus);
         Assert.assertNotNull(newStatus.getNode());
         Assert.assertNotNull(newStatus.getStage());

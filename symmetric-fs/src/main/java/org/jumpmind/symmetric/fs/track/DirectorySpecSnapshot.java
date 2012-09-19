@@ -25,18 +25,18 @@ import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
+import org.jumpmind.symmetric.fs.config.Node;
 
 public class DirectorySpecSnapshot {
 
-    protected Date fromDate;
-    protected Date toDate;
-    protected String nodeId;
+    protected Date date;
+    protected Node node;
     protected DirectorySpec directorySpec;
     protected List<FileChange> files = new ArrayList<FileChange>();
 
-    public DirectorySpecSnapshot(String nodeId, DirectorySpec directorySpec) {
-        this.fromDate = new Date();
-        this.nodeId = nodeId;
+    public DirectorySpecSnapshot(Node node, DirectorySpec directorySpec) {
+        this.date = new Date();
+        this.node = node;
         this.directorySpec = directorySpec;
     }
     
