@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.fs.track;
 
 import org.jumpmind.persist.AbstractJsonFileSystemPersister;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 
 public class FileSystemDirectorySpecSnapshotPersister extends
         AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> implements

@@ -18,20 +18,11 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.client;
+package org.jumpmind.symmetric.fs.config;
 
-import org.jumpmind.persist.AbstractJsonFileSystemPersister;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+public interface ISyncConfigCollectionPersister {        
 
-public class FileSystemSyncStatusPersister extends
-        AbstractJsonFileSystemPersister<SyncStatus, NodeDirectorySpecKey> implements ISyncStatusPersister {
-
-    public FileSystemSyncStatusPersister(String directory) {
-        super(directory);
-    }
-
-    @Override
-    protected String buildFileNameFor(NodeDirectorySpecKey key) {
-        return String.format("%s.%s", key.toString(), "status");
-    }
+    public void save(SyncConfigCollection object);
+    
+    public SyncConfigCollection get();
 }

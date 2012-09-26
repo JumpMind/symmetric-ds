@@ -27,6 +27,7 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 
 public class DirectoryChangeTracker {
 
