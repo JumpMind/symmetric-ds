@@ -21,8 +21,8 @@
 package org.jumpmind.symmetric.fs.client;
 
 import org.jumpmind.persist.IPersister;
-import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 
-public interface ISyncStatusPersister extends IPersister<SyncStatus, Node> {
+public interface ISyncStatusPersister extends IPersister<SyncStatus, NodeDirectorySpecKey> {
     
 }

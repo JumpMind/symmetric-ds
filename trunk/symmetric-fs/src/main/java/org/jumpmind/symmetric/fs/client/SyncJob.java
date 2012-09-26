@@ -20,55 +20,67 @@
  */
 package org.jumpmind.symmetric.fs.client;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.SyncStatus.Stage;
-import org.jumpmind.symmetric.fs.config.Config;
-import org.jumpmind.symmetric.fs.config.GroupConfig;
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 import org.jumpmind.symmetric.fs.config.ScriptIdentifier;
+import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
 import org.jumpmind.symmetric.fs.track.IDirectorySpecSnapshotPersister;
 import org.jumpmind.util.Context;
+import org.springframework.scheduling.TaskScheduler;
 
-public class SyncClient {
+public class SyncJob implements Runnable {
 
-    protected Config config;
     protected ISyncStatusPersister syncStatusPersister;
     protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected IServerNodeLocker serverNodeLocker;
-    protected Map<String, DirectoryChangeTracker> changeTrackerByNodeId;
-    protected long checkInterval = 10000;
+    protected TaskScheduler taskScheduler;
+    protected Node serverNode;
+    protected SyncConfig config;
+    protected DirectoryChangeTracker directoryChangeTracker;
+    protected TypedProperties properties;
+    protected NodeDirectorySpecKey key;
 
-    public SyncClient(Config config, ISyncStatusPersister syncStatusPersister,
+    public SyncJob(ISyncStatusPersister syncStatusPersister,
             IDirectorySpecSnapshotPersister directorySnapshotPersister,
-            IServerNodeLocker serverNodeLocker) {
-        this.config = config;
+            IServerNodeLocker serverNodeLocker, TaskScheduler taskScheduler, Node node,
+            SyncConfig config, TypedProperties properties) {
         this.syncStatusPersister = syncStatusPersister;
         this.directorySnapshotPersister = directorySnapshotPersister;
         this.serverNodeLocker = serverNodeLocker;
-        this.changeTrackerByNodeId = new HashMap<String, DirectoryChangeTracker>();
+        this.taskScheduler = taskScheduler;
+        this.serverNode = node;
+        this.config = config;
+        this.properties = properties;
+        this.key = new NodeDirectorySpecKey(node, config.getDirectorySpec());
     }
 
-    public void sync(Context context, ISyncClientListener listener) {
-        List<Node> nodes = config.getServerNodes();
-        for (Node node : nodes) {
-            // TODO insert per node thread pool here
-            sync(node, context, listener);
-        }
+    public void start() {
+
+    }
+
+    public void stop() {
+
+    }
+
+    public void run() {
+
     }
 
     public void sync(Node serverNode, Context context, ISyncClientListener listener) {
         if (serverNodeLocker.lock(serverNode)) {
             try {
                 if (isServerAvailable(serverNode)) {
-                    SyncStatus syncStatus = syncStatusPersister.get(SyncStatus.class, serverNode);
+                    SyncStatus syncStatus = syncStatusPersister.get(SyncStatus.class, key);
                     if (syncStatus == null) {
                         syncStatus = new SyncStatus(serverNode);
-                        syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                        syncStatusPersister.save(syncStatus, key);
                     }
+
+                    initDirectoryChangeTracker();
 
                     while (syncStatus.getStage() != Stage.DONE) {
 
@@ -76,33 +88,34 @@ public class SyncClient {
                             case START:
                                 runScript(ScriptIdentifier.PRECLIENT, syncStatus, context);
                                 syncStatus.setStage(Stage.RAN_PRESCRIPT);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
                                 break;
                             case RAN_PRESCRIPT:
-                                DirectoryChangeTracker changeTracker = getDirectoryChangeTracker(serverNode);
-                                syncStatus.setSnapshot(changeTracker.takeSnapshot());
+                                syncStatus.setSnapshot(directoryChangeTracker.takeSnapshot());
                                 syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
                                 break;
                             case RECORDED_FILES_TO_SEND:
                                 updateFilesToSendAndReceiveFromServer(syncStatus);
                                 syncStatus.setStage(Stage.SEND_FILES);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
                                 break;
                             case SEND_FILES:
                                 sendFiles(syncStatus);
                                 syncStatus.setStage(Stage.RECEIVE_FILES);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
                                 break;
                             case RECEIVE_FILES:
                                 receiveFiles(syncStatus);
                                 syncStatus.setStage(Stage.RUN_POSTSCRIPT);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
                                 break;
                             case RUN_POSTSCRIPT:
                                 runScript(ScriptIdentifier.POSTCLIENT, syncStatus, context);
                                 syncStatus.setStage(Stage.DONE);
-                                syncStatusPersister.save(syncStatus, syncStatus.getNode());
+                                syncStatusPersister.save(syncStatus, key);
+                                break;
+                            case DONE:
                                 break;
                         }
                     }
@@ -136,17 +149,14 @@ public class SyncClient {
         return true;
     }
 
-    protected DirectoryChangeTracker getDirectoryChangeTracker(Node serverNode) {
-        String nodeId = serverNode.getNodeId();
-        DirectoryChangeTracker changeTracker = changeTrackerByNodeId.get(nodeId);
-        if (changeTracker == null) {
-            GroupConfig groupConfig = config.getGroupConfig(serverNode.getGroupId());
-            changeTracker = new DirectoryChangeTracker(serverNode,
-                    groupConfig.getClientDirectorySpec(), directorySnapshotPersister, checkInterval);
-            changeTracker.start();
-            changeTrackerByNodeId.put(nodeId, changeTracker);
+    protected void initDirectoryChangeTracker() {
+        if (directoryChangeTracker == null) {
+            long checkInterval = properties.getLong(
+                    SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 10000);
+            directoryChangeTracker = new DirectoryChangeTracker(serverNode,
+                    config.getDirectorySpec(), directorySnapshotPersister, checkInterval);
+            directoryChangeTracker.start();
         }
-        return changeTracker;
     }
 
 }

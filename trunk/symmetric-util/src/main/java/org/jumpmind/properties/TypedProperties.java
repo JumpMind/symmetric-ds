@@ -109,7 +109,11 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-
+    
+    public void setProperty(String key, int value) {
+        setProperty(key, Integer.toString(value));
+    }
+    
     public String[] getArray(String key, String[] defaultValue) {
         String value = getProperty(key);
         String[] retValue = defaultValue;

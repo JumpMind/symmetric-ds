@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,10 +18,12 @@ public class FileSystemSyncStatusPersisterTest {
         FileSystemSyncStatusPersister persister = new FileSystemSyncStatusPersister(dir.getAbsolutePath());
         Node node = new Node("12345", "clientgroup", "http://10.2.34.11/fsync", "DFR#$#3223S#D%%");
         SyncStatus status = new SyncStatus(node);
-        status.setSnapshot(new DirectorySpecSnapshot(node, new DirectorySpec("/opt/send", true, null, new String[] {".svn"})));
-        persister.save(status, status.getNode());
+        DirectorySpec spec = new DirectorySpec("/opt/send", true, null, new String[] {".svn"});
+        NodeDirectorySpecKey key = new NodeDirectorySpecKey(node, spec);
+        status.setSnapshot(new DirectorySpecSnapshot(node, spec));
+        persister.save(status, key);
         
-        SyncStatus newStatus = persister.get(SyncStatus.class, status.getNode());
+        SyncStatus newStatus = persister.get(SyncStatus.class, key);
         Assert.assertNotNull(newStatus);
         Assert.assertNotNull(newStatus.getNode());
         Assert.assertNotNull(newStatus.getStage());

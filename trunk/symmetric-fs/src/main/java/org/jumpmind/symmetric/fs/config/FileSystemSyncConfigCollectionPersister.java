@@ -20,20 +20,28 @@
  */
 package org.jumpmind.symmetric.fs.config;
 
-import java.util.List;
-import java.util.Map;
+import org.jumpmind.persist.AbstractJsonFileSystemPersister;
 
-public class Config {
-    
-    List<Node> serverNodes;
-    Map<String, GroupConfig> configsByServerGroupId;
-    
-    public List<Node> getServerNodes() {
-        return serverNodes;
+public class FileSystemSyncConfigCollectionPersister extends
+        AbstractJsonFileSystemPersister<SyncConfigCollection, Object> implements
+        ISyncConfigCollectionPersister {
+
+    public FileSystemSyncConfigCollectionPersister(String directory) {
+        super(directory);
     }
-    
-    public GroupConfig getGroupConfig(String serverGroupId) {
-        return configsByServerGroupId.get(serverGroupId);
+
+    public SyncConfigCollection get() {
+        return get(SyncConfigCollection.class, null);
+    }
+
+    public void save(SyncConfigCollection object) {
+        save(object, null);
+    }
+
+    @Override
+    protected String buildFileNameFor(Object key) {
+        return "sync.conf";
+
     }
 
 }

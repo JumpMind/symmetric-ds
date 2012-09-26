@@ -20,7 +20,7 @@
     </organization>
 
     <properties>
-        <version.springframwork>3.0.7.RELEASE</version.springframwork>
+        <version.springframwork>3.1.2.RELEASE</version.springframwork>
         <version.jetty>7.6.3.v20120416</version.jetty>
         <version.derby>10.9.1.0</version.derby>
         <version.hsqldb>2.2.8</version.hsqldb>

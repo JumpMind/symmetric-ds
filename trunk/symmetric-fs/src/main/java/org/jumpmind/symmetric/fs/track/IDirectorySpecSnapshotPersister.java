@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.fs.track;
 
 import org.jumpmind.persist.IPersister;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
 
 public interface IDirectorySpecSnapshotPersister extends
         IPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> {

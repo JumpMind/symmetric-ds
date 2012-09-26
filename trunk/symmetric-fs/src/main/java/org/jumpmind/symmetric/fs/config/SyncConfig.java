@@ -22,28 +22,30 @@ package org.jumpmind.symmetric.fs.config;
 
 import java.util.Map;
 
-public class GroupConfig {
+public class SyncConfig {
     
     protected String configId;
     
     protected GroupLink groupLink;     
     
-    protected String cronExpression;
+    protected String frequency;
     
-    protected long periodInMilliseconds;
+    protected DirectorySpec directorySpec;
     
-    protected DirectorySpec clientDirectorySpec;
-    
-    protected DirectorySpec serverDirectorySpec;
-    
-    protected boolean packageChanges;
+    protected String serverDir;
     
     protected ScriptType scriptType;
     
+    protected int priority;
+    
     protected Map<ScriptIdentifier, String> scripts;    
     
-    public DirectorySpec getClientDirectorySpec() {
-        return clientDirectorySpec;
+    public DirectorySpec getDirectorySpec() {
+        return directorySpec;
+    }
+    
+    public GroupLink getGroupLink() {
+        return groupLink;
     }
 
 }
