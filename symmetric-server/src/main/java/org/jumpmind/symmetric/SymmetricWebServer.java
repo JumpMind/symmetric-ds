@@ -49,10 +49,10 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
