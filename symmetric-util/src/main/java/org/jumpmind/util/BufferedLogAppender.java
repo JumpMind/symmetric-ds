@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.util.LinkedList;
 

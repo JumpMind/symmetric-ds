@@ -55,7 +55,7 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.jumpmind.util.RandomTimeSlot;
 
 /**
  * @see IRegistrationService

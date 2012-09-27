@@ -79,6 +79,10 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
+    
+    public int getInt(String key) {
+        return getInt(key, 0);
+    }
 
     public int getInt(String key, int defaultValue) {
         int returnValue = defaultValue;

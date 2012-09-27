@@ -18,11 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.util.Date;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

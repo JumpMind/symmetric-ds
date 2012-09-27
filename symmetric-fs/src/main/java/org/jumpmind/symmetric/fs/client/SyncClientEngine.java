@@ -20,9 +20,11 @@
  */
 package org.jumpmind.symmetric.fs.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.fs.SyncParameterConstants;
+import org.jumpmind.symmetric.fs.config.ScriptAPI;
 import org.jumpmind.symmetric.fs.config.FileSystemSyncConfigCollectionPersister;
 import org.jumpmind.symmetric.fs.config.ISyncConfigCollectionPersister;
 import org.jumpmind.symmetric.fs.config.Node;
@@ -45,8 +47,12 @@ public class SyncClientEngine {
     protected IServerNodeLocker serverNodeLocker;
     protected ThreadPoolTaskScheduler taskScheduler;
     protected List<SyncJob> syncJobs;
+    protected ScriptAPI scriptApi;
+    protected ISyncClientListener syncClientListener;
 
     public SyncClientEngine() {
+        syncJobs = new ArrayList<SyncJob>();
+        scriptApi = new ScriptAPI();
     }
 
     protected void init() {
@@ -100,9 +106,26 @@ public class SyncClientEngine {
         }
     }
 
+    public void setScriptApi(ScriptAPI api) {
+        this.scriptApi = api;
+    }
+    
+    public ScriptAPI getScriptApi() {
+        return scriptApi;
+    }
+   
+    public void setSyncClientListener(ISyncClientListener clientListener) {
+        this.syncClientListener = clientListener;
+    }
+    
+    public ISyncClientListener getSyncClientListener() {
+        return syncClientListener;
+    }
+
     protected SyncJob addSyncJob(Node node, SyncConfig syncConfig) {
         SyncJob job = new SyncJob(syncStatusPersister, directorySnapshotPersister,
-                serverNodeLocker, taskScheduler, node, syncConfig, this.config.getProperties());
+                serverNodeLocker, taskScheduler, node, syncConfig, this.config.getProperties(),
+                syncClientListener, scriptApi);
         syncJobs.add(job);
         return job;
     }

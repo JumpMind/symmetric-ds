@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class JarBuilderUnitTest {
         emptyFile("target/file1.txt");
         emptyFile(TEST_JAR_DIR + "/file3.txt");
         
-        JarBuilder jarFile = new JarBuilder(new File(TEST_JAR_DIR), outputFile, new File[] { new File(TEST_JAR_DIR), new File("target/file1.txt") });
+        JarBuilder jarFile = new JarBuilder(new File(TEST_JAR_DIR), outputFile, new File[] { new File(TEST_JAR_DIR), new File("target/file1.txt") }, "3.0.0");
         jarFile.build();
         
         Assert.assertTrue(outputFile.exists());
@@ -60,6 +60,7 @@ public class JarBuilderUnitTest {
         Assert.assertNull(finalJar.getEntry("test.jar.dir"));
         Assert.assertNull(finalJar.getEntry("file1.txt"));
         Assert.assertNotNull(finalJar.getEntry("file3.txt"));
+        finalJar.close();
     }
 
     private void mkdir(String dir) {

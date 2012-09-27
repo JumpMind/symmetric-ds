@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.JarBuilder;
+import org.jumpmind.util.JarBuilder;
 
 /**
  * Perform administration tasks with SymmetricDS.
@@ -417,7 +417,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                     "WEB-INF/classes/symmetric.properties"));
         }
         JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName),
-                new File[] { workingDirectory });
+                new File[] { workingDirectory }, Version.version());
         builder.build();
         FileUtils.deleteDirectory(workingDirectory);
     }
