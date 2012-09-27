@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
