@@ -19,7 +19,7 @@
  * under the License. 
  */
 
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -31,9 +31,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import org.apache.commons.io.IOUtils;
-import org.jumpmind.symmetric.Version;
-
 public class JarBuilder {
 
     private File baseDir;
@@ -41,17 +38,20 @@ public class JarBuilder {
     private File[] sourceFiles;
 
     private File outputFile;
+    
+    private String version;
 
-    public JarBuilder(File baseDir, File outputFile, File[] sourceFiles) {
+    public JarBuilder(File baseDir, File outputFile, File[] sourceFiles, String version) {
         this.sourceFiles = sourceFiles;
         this.outputFile = outputFile;
         this.baseDir = baseDir;
+        this.version = version;
     }
 
     public void build() throws IOException {
         this.outputFile.delete();
         Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, Version.version());
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, version);
         if (outputFile.getParentFile() != null) {
             outputFile.getParentFile().mkdirs();
         }
@@ -114,7 +114,11 @@ public class JarBuilder {
                 target.closeEntry();
             }
         } finally {
-            IOUtils.closeQuietly(in);
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (Exception ex) {}
         }
     }
 

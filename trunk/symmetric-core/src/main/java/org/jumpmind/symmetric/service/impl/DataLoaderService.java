@@ -107,8 +107,8 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.util.AppUtils;
 
 /**
  * Responsible for writing batch data to the database

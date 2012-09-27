@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.jumpmind.util.RandomTimeSlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

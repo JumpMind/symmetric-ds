@@ -17,7 +17,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.io.IOException;
 import java.io.InputStream;

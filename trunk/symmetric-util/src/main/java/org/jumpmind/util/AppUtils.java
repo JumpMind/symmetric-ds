@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -28,16 +28,12 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bsh.EvalError;
-import bsh.Interpreter;
 
 /**
  * General application utility methods
@@ -169,21 +165,6 @@ public class AppUtils {
     public static boolean isSystemPropertySet(String propName, boolean defaultValue) {
         return "true"
                 .equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
-    }
-
-    public static void runBsh(Map<String, Object> variables, String script) {
-        try {
-            Interpreter interpreter = new Interpreter();
-            if (variables != null) {
-                for (String variableName : variables.keySet()) {
-                    interpreter.set(variableName, variables.get(variableName));
-                }
-            }
-            log.info("{}", "About to run: \n" + script);
-            interpreter.eval(script);
-        } catch (EvalError e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**

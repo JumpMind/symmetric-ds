@@ -25,7 +25,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.AppUtils;
 
 /**
  * 

@@ -18,46 +18,41 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
 
-import java.util.Map;
+package org.jumpmind.util;
 
-public class SyncConfig {
-    
-    protected String configId;
-    
-    protected GroupLink groupLink;     
-    
-    protected String frequency;
-    
-    protected DirectorySpec directorySpec;
-    
-    protected String serverDir;
-    
-    protected ScriptType scriptType;
-    
-    protected int priority;
-    
-    protected Map<ScriptIdentifier, String> scripts;
-    
-    public String getConfigId() {
-        return configId;
+import java.util.Random;
+
+/**
+ * Use runtime configuration specific seeding to get a random number for use in
+ * time slotting nodes to help stagger load.
+ */
+public class RandomTimeSlot {
+
+    int maxValue = -1;
+
+    Random random;
+
+    public RandomTimeSlot() {
+        random = new Random();
     }
-    
-    public DirectorySpec getDirectorySpec() {
-        return directorySpec;
+
+    public RandomTimeSlot(String externalId, int maxValue) {
+        this.maxValue = maxValue;
+        random = new Random(fromExternalId(externalId));
     }
-    
-    public GroupLink getGroupLink() {
-        return groupLink;
+
+    private long fromExternalId(String externalId) {
+        if (externalId != null) {
+            return Math.abs(externalId.hashCode());
+        } else {
+            return Integer.MAX_VALUE;
+        }
     }
-    
-    public String getFrequency() {
-        return frequency;
-    }
-    
-    public int getPriority() {
-        return priority;
+
+    public int getRandomValueSeededByExternalId() {
+        int nextValue = random.nextInt(maxValue);
+        return nextValue == 0 ? 1 : nextValue;
     }
 
 }

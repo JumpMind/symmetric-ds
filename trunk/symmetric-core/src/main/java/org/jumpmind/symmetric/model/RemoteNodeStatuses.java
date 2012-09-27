@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.util.ArrayList;
 
 import org.jumpmind.exception.InterruptedException;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.AppUtils;
 
 public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
 

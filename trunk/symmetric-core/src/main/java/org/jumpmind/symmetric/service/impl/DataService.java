@@ -73,7 +73,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.AppUtils;
 
 /**
  * @see IDataService

@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.AppUtils;
 
 /**
  * @see IClusterService

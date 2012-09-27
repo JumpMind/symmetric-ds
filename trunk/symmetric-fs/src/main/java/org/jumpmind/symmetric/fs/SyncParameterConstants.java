@@ -9,4 +9,6 @@ final public class SyncParameterConstants {
     
     public final static String CLIENT_WORKER_THREADS_NUMBER = "sync.client.worker.thread.count";
     public final static String DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL = "sync.tracker.poll.for.change.interval.ms";
+    public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
+
 }
