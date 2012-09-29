@@ -24,14 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.fs.SyncParameterConstants;
-import org.jumpmind.symmetric.fs.config.ScriptAPI;
-import org.jumpmind.symmetric.fs.config.FileSystemSyncConfigCollectionPersister;
-import org.jumpmind.symmetric.fs.config.ISyncConfigCollectionPersister;
+import org.jumpmind.symmetric.fs.client.connector.TransportConnectorFactory;
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.ScriptAPI;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.config.SyncConfigCollection;
-import org.jumpmind.symmetric.fs.track.FileSystemDirectorySpecSnapshotPersister;
-import org.jumpmind.symmetric.fs.track.IDirectorySpecSnapshotPersister;
+import org.jumpmind.symmetric.fs.service.IPersisterServices;
+import org.jumpmind.symmetric.fs.service.filesystem.FileSystemPersisterServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -40,15 +39,14 @@ public class SyncClientEngine {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    protected IPersisterServices persisterServices;
     protected SyncConfigCollection config;
-    protected ISyncConfigCollectionPersister syncConfigCollectionPersister;
-    protected ISyncStatusPersister syncStatusPersister;
-    protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected IServerNodeLocker serverNodeLocker;
     protected ThreadPoolTaskScheduler taskScheduler;
     protected List<SyncJob> syncJobs;
     protected ScriptAPI scriptApi;
     protected ISyncClientListener syncClientListener;
+    protected TransportConnectorFactory transportConnectorFactory;
 
     public SyncClientEngine() {
         syncJobs = new ArrayList<SyncJob>();
@@ -56,14 +54,13 @@ public class SyncClientEngine {
     }
 
     protected void init() {
-        syncConfigCollectionPersister = createSyncConfigCollectionPersister();
-        syncStatusPersister = createSyncStatusPersister();
-        directorySnapshotPersister = createDirectorySpecSnapshotPersister();
+        persisterServices = createPersisterServices();
         serverNodeLocker = createServerNodeLocker();
-        config = syncConfigCollectionPersister.get();
+        transportConnectorFactory = createTransportConnectorFactory(persisterServices);
+        config = persisterServices.getSyncConfigCollectionPersister().get();
         if (config == null) {
             config = new SyncConfigCollection();
-            syncConfigCollectionPersister.save(config);
+            persisterServices.getSyncConfigCollectionPersister().save(config);
         }
         initTaskScheduler();
 
@@ -109,23 +106,23 @@ public class SyncClientEngine {
     public void setScriptApi(ScriptAPI api) {
         this.scriptApi = api;
     }
-    
+
     public ScriptAPI getScriptApi() {
         return scriptApi;
     }
-   
+
     public void setSyncClientListener(ISyncClientListener clientListener) {
         this.syncClientListener = clientListener;
     }
-    
+
     public ISyncClientListener getSyncClientListener() {
         return syncClientListener;
     }
 
     protected SyncJob addSyncJob(Node node, SyncConfig syncConfig) {
-        SyncJob job = new SyncJob(syncStatusPersister, directorySnapshotPersister,
-                serverNodeLocker, taskScheduler, node, syncConfig, this.config.getProperties(),
-                syncClientListener, scriptApi);
+        SyncJob job = new SyncJob(transportConnectorFactory, persisterServices, serverNodeLocker,
+                taskScheduler, node, syncConfig, this.config.getProperties(), syncClientListener,
+                scriptApi);
         syncJobs.add(job);
         return job;
     }
@@ -145,16 +142,12 @@ public class SyncClientEngine {
         return System.getProperty("org.jumpmind.symmetric.fs.conf.dir", "../conf");
     }
 
-    protected ISyncStatusPersister createSyncStatusPersister() {
-        return new FileSystemSyncStatusPersister(getStatusDirectory());
+    protected TransportConnectorFactory createTransportConnectorFactory(IPersisterServices persisterServices) {
+        return new TransportConnectorFactory(persisterServices);
     }
 
-    protected ISyncConfigCollectionPersister createSyncConfigCollectionPersister() {
-        return new FileSystemSyncConfigCollectionPersister(getConfigDirectory());
-    }
-
-    protected IDirectorySpecSnapshotPersister createDirectorySpecSnapshotPersister() {
-        return new FileSystemDirectorySpecSnapshotPersister(getStatusDirectory());
+    protected IPersisterServices createPersisterServices() {
+        return new FileSystemPersisterServices(getStatusDirectory(), getConfigDirectory());
     }
 
     protected IServerNodeLocker createServerNodeLocker() {

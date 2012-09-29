@@ -1,11 +1,13 @@
-package org.jumpmind.symmetric.fs.client;
+package org.jumpmind.symmetric.fs.service.filesystem;
 
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.service.filesystem.FileSystemSyncStatusPersister;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 import org.junit.Assert;
 import org.junit.Test;

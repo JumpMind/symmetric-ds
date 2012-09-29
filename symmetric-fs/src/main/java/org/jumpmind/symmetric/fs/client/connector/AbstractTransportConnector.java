@@ -18,22 +18,38 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.track;
+package org.jumpmind.symmetric.fs.client.connector;
 
-import org.jumpmind.persist.AbstractJsonFileSystemPersister;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.client.SyncStatus;
+import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.SyncConfig;
+import org.jumpmind.symmetric.fs.service.IPersisterServices;
 
-public class FileSystemDirectorySpecSnapshotPersister extends
-        AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> implements
-        IDirectorySpecSnapshotPersister {
+public class AbstractTransportConnector implements ITransportConnector {
 
-    public FileSystemDirectorySpecSnapshotPersister(String directory) {
-        super(directory);
+    protected SyncConfig config;
+    protected Node node;
+    protected IPersisterServices persisterSerivces;
+
+    public void init(SyncConfig syncConfig, Node serverNode, IPersisterServices persisterServices) {
+        this.config = syncConfig;
+        this.node = serverNode;
+        this.persisterSerivces = persisterServices;
     }
 
-    @Override
-    protected String buildFileNameFor(NodeDirectorySpecKey key) {
-        return String.format("%s.%s", key.toString(), "snapshot");
+    public void connect() {
+    }
+
+    public void prepare(SyncStatus syncStatus) {
+    }
+
+    public void send(SyncStatus syncStatus) {
+    }
+
+    public void receive(SyncStatus syncStatus) {
+    }
+
+    public void close() {
     }
 
 }

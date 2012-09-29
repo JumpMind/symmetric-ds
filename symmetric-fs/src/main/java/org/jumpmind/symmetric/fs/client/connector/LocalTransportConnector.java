@@ -18,11 +18,23 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.client.connector;
 
-public interface ISyncConfigCollectionPersister {        
+import org.jumpmind.symmetric.fs.client.SyncStatus;
 
-    public void save(SyncConfigCollection object);
-    
-    public SyncConfigCollection get();
+public class LocalTransportConnector extends AbstractTransportConnector implements
+        ITransportConnector {
+
+    public void connect() {
+    }
+
+    public void prepare(SyncStatus status) {
+    }
+
+    public void send(SyncStatus syncStatus) {
+    }
+
+    public void receive(SyncStatus syncStatus) {
+    }
+
 }

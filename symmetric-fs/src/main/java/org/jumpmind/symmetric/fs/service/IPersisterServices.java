@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.service;
 
-import org.jumpmind.util.Context;
+public interface IPersisterServices {
 
-/**
- * This is a context object that different objects can be added to so that are
- * available to be called from file sync scripts.
- */
-public class ScriptAPI extends Context {
-
+    public IDirectorySpecSnapshotPersister getDirectorySpecSnapshotPersister();
+    
+    public ISyncConfigCollectionPersister getSyncConfigCollectionPersister();
+    
+    public ISyncStatusPersister getSyncStatusPersister();
+    
 }

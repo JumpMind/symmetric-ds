@@ -18,14 +18,34 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.client.connector;
 
-import org.jumpmind.util.Context;
+public class ConnectorException extends RuntimeException {
 
-/**
- * This is a context object that different objects can be added to so that are
- * available to be called from file sync scripts.
- */
-public class ScriptAPI extends Context {
+    private static final long serialVersionUID = 1L;
+
+    public ConnectorException() {
+    }
+
+    public ConnectorException(String message, Throwable cause, boolean enableSuppression,
+            boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+
+    }
+
+    public ConnectorException(String message, Throwable cause) {
+        super(message, cause);
+
+    }
+
+    public ConnectorException(String message) {
+        super(message);
+
+    }
+
+    public ConnectorException(Throwable cause) {
+        super(cause);
+
+    }
 
 }

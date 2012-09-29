@@ -27,14 +27,16 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.SyncStatus.Stage;
-import org.jumpmind.symmetric.fs.config.ScriptAPI;
+import org.jumpmind.symmetric.fs.client.connector.ConnectorException;
+import org.jumpmind.symmetric.fs.client.connector.ITransportConnector;
+import org.jumpmind.symmetric.fs.client.connector.TransportConnectorFactory;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.ScriptAPI;
 import org.jumpmind.symmetric.fs.config.ScriptIdentifier;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
+import org.jumpmind.symmetric.fs.service.IPersisterServices;
 import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
-import org.jumpmind.symmetric.fs.track.IDirectorySpecSnapshotPersister;
-import org.jumpmind.util.Context;
 import org.jumpmind.util.RandomTimeSlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,18 +48,18 @@ public class SyncJob implements Runnable {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected ISyncStatusPersister syncStatusPersister;
-    protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
+    protected IPersisterServices persisterServices;
     protected IServerNodeLocker serverNodeLocker;
     protected TaskScheduler taskScheduler;
     protected Node serverNode;
     protected SyncConfig config;
     protected DirectoryChangeTracker directoryChangeTracker;
+    protected TransportConnectorFactory transportConnectorFactory;
     protected TypedProperties properties;
     protected NodeDirectorySpecKey key;
     protected RandomTimeSlot randomTimeSlot;
     protected ISyncClientListener syncClientListener;
-    protected ScriptAPI api;
+    protected ScriptAPI scriptApi;
 
     private boolean paused = false;
 
@@ -75,13 +77,12 @@ public class SyncJob implements Runnable {
 
     private ScheduledFuture<?> scheduledJob;
 
-    public SyncJob(ISyncStatusPersister syncStatusPersister,
-            IDirectorySpecSnapshotPersister directorySnapshotPersister,
-            IServerNodeLocker serverNodeLocker, TaskScheduler taskScheduler, Node node,
-            SyncConfig config, TypedProperties properties, ISyncClientListener syncClientListener,
-            ScriptAPI api) {
-        this.syncStatusPersister = syncStatusPersister;
-        this.directorySnapshotPersister = directorySnapshotPersister;
+    public SyncJob(TransportConnectorFactory transportConnectorFactory,
+            IPersisterServices persisterServices, IServerNodeLocker serverNodeLocker,
+            TaskScheduler taskScheduler, Node node, SyncConfig config, TypedProperties properties,
+            ISyncClientListener syncClientListener, ScriptAPI api) {
+        this.transportConnectorFactory = transportConnectorFactory;
+        this.persisterServices = persisterServices;
         this.serverNodeLocker = serverNodeLocker;
         this.syncClientListener = syncClientListener;
         this.taskScheduler = taskScheduler;
@@ -103,6 +104,30 @@ public class SyncJob implements Runnable {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public long getAverageExecutionTimeInMs() {
+        if (numberOfRuns > 0) {
+            return totalExecutionTimeInMs / numberOfRuns;
+        } else {
+            return 0;
+        }
+    }
+
+    public long getLastExecutionTimeInMs() {
+        return lastExecutionTimeInMs;
+    }
+
+    public Date getLastFinishTime() {
+        return lastFinishTime;
+    }
+
+    public long getTotalExecutionTimeInMs() {
+        return totalExecutionTimeInMs;
+    }
+
+    public long getNumberOfRuns() {
+        return numberOfRuns;
     }
 
     public void pause() {
@@ -142,8 +167,21 @@ public class SyncJob implements Runnable {
         }
     }
 
-    public void stop() {
-
+    public boolean stop() {
+        boolean success = false;
+        if (this.scheduledJob != null) {
+            success = this.scheduledJob.cancel(true);
+            this.scheduledJob = null;
+            if (success) {
+                log.info("{} for node {} has been cancelled.", config.getConfigId(),
+                        serverNode.getNodeId());
+                started = false;
+            } else {
+                log.warn("Failed to cancel this {} for node {}", config.getConfigId(),
+                        serverNode.getNodeId());
+            }
+        }
+        return success;
     }
 
     protected String getEngineName() {
@@ -197,80 +235,70 @@ public class SyncJob implements Runnable {
 
     protected void doSync() {
         if (serverNodeLocker.lock(serverNode)) {
+            ITransportConnector connector = null;
             try {
-                if (isServerAvailable(serverNode)) {
-                    SyncStatus syncStatus = syncStatusPersister.get(SyncStatus.class, key);
-                    if (syncStatus == null) {
-                        syncStatus = new SyncStatus(serverNode);
-                        syncStatusPersister.save(syncStatus, key);
-                    }
-
-                    initDirectoryChangeTracker();
-
-                    while (syncStatus.getStage() != Stage.DONE) {
-
-                        switch (syncStatus.getStage()) {
-                            case START:
-                                runScript(ScriptIdentifier.PRECLIENT, syncStatus, api);
-                                syncStatus.setStage(Stage.RAN_PRESCRIPT);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case RAN_PRESCRIPT:
-                                syncStatus.setSnapshot(directoryChangeTracker.takeSnapshot());
-                                syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case RECORDED_FILES_TO_SEND:
-                                updateFilesToSendAndReceiveFromServer(syncStatus);
-                                syncStatus.setStage(Stage.SEND_FILES);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case SEND_FILES:
-                                sendFiles(syncStatus);
-                                syncStatus.setStage(Stage.RECEIVE_FILES);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case RECEIVE_FILES:
-                                receiveFiles(syncStatus);
-                                syncStatus.setStage(Stage.RUN_POSTSCRIPT);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case RUN_POSTSCRIPT:
-                                runScript(ScriptIdentifier.POSTCLIENT, syncStatus, api);
-                                syncStatus.setStage(Stage.DONE);
-                                syncStatusPersister.save(syncStatus, key);
-                                break;
-                            case DONE:
-                                break;
-                        }
-                    }
-
+                connector = transportConnectorFactory.createTransportConnector(config, serverNode);
+                connector.connect();
+                SyncStatus syncStatus = persisterServices.getSyncStatusPersister().get(
+                        SyncStatus.class, key);
+                if (syncStatus == null) {
+                    syncStatus = new SyncStatus(serverNode);
+                    persisterServices.getSyncStatusPersister().save(syncStatus, key);
                 }
+
+                initDirectoryChangeTracker();
+
+                while (syncStatus.getStage() != Stage.DONE) {
+
+                    switch (syncStatus.getStage()) {
+                        case START:
+                            runScript(ScriptIdentifier.PRECLIENT, syncStatus);
+                            syncStatus.setStage(Stage.RAN_PRESCRIPT);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case RAN_PRESCRIPT:
+                            syncStatus.setSnapshot(directoryChangeTracker.takeSnapshot());
+                            syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case RECORDED_FILES_TO_SEND:
+                            connector.prepare(syncStatus);
+                            syncStatus.setStage(Stage.SEND_FILES);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case SEND_FILES:
+                            connector.send(syncStatus);
+                            syncStatus.setStage(Stage.RECEIVE_FILES);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case RECEIVE_FILES:
+                            connector.receive(syncStatus);
+                            syncStatus.setStage(Stage.RUN_POSTSCRIPT);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case RUN_POSTSCRIPT:
+                            runScript(ScriptIdentifier.POSTCLIENT, syncStatus);
+                            syncStatus.setStage(Stage.DONE);
+                            persisterServices.getSyncStatusPersister().save(syncStatus, key);
+                            break;
+                        case DONE:
+                            break;
+                    }
+                }
+            } catch (ConnectorException ex) {
+                log.warn("Connection issue: {}", ex.getMessage());
             } finally {
                 serverNodeLocker.unlock(serverNode);
+
+                if (connector != null) {
+                    connector.close();
+                }
             }
         }
     }
 
-    protected void sendFiles(SyncStatus syncStatus) {
-        // TODO loop through and send files that have not yet been sent
-    }
-
-    protected void receiveFiles(SyncStatus syncStatus) {
-        // TODO loop through and receive files that have not yet been sent
-    }
-
-    protected void updateFilesToSendAndReceiveFromServer(SyncStatus syncStatus) {
-        // TODO contact server and update files to send and receive
-    }
-
-    protected boolean runScript(ScriptIdentifier identifier, SyncStatus syncStatus, Context context) {
+    protected boolean runScript(ScriptIdentifier identifier, SyncStatus syncStatus) {
         // TODO runScript
-        return true;
-    }
-
-    protected boolean isServerAvailable(Node serverNode) {
-        // TODO
         return true;
     }
 
@@ -279,7 +307,8 @@ public class SyncJob implements Runnable {
             long checkInterval = properties.getLong(
                     SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 10000);
             directoryChangeTracker = new DirectoryChangeTracker(serverNode,
-                    config.getDirectorySpec(), directorySnapshotPersister, checkInterval);
+                    config.getDirectorySpec(),
+                    persisterServices.getDirectorySpecSnapshotPersister(), checkInterval);
             directoryChangeTracker.start();
         }
     }

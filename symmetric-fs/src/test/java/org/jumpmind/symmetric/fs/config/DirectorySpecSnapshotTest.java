@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.fs.track;
+package org.jumpmind.symmetric.fs.config;
 
 import org.junit.Test;
 

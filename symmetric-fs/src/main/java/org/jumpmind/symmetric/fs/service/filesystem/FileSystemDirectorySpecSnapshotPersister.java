@@ -18,14 +18,24 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.service.filesystem;
 
-import org.jumpmind.util.Context;
+import org.jumpmind.persist.AbstractJsonFileSystemPersister;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.service.IDirectorySpecSnapshotPersister;
+import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 
-/**
- * This is a context object that different objects can be added to so that are
- * available to be called from file sync scripts.
- */
-public class ScriptAPI extends Context {
+public class FileSystemDirectorySpecSnapshotPersister extends
+        AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> implements
+        IDirectorySpecSnapshotPersister {
+
+    public FileSystemDirectorySpecSnapshotPersister(String directory) {
+        super(directory);
+    }
+
+    @Override
+    protected String buildFileNameFor(NodeDirectorySpecKey key) {
+        return String.format("%s.%s", key.toString(), "snapshot");
+    }
 
 }
