@@ -18,14 +18,32 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.service.filesystem;
 
-import org.jumpmind.util.Context;
+import org.jumpmind.persist.AbstractJsonFileSystemPersister;
+import org.jumpmind.symmetric.fs.config.SyncConfigCollection;
+import org.jumpmind.symmetric.fs.service.ISyncConfigCollectionPersister;
 
-/**
- * This is a context object that different objects can be added to so that are
- * available to be called from file sync scripts.
- */
-public class ScriptAPI extends Context {
+public class FileSystemSyncConfigCollectionPersister extends
+        AbstractJsonFileSystemPersister<SyncConfigCollection, Object> implements
+        ISyncConfigCollectionPersister {
+
+    public FileSystemSyncConfigCollectionPersister(String directory) {
+        super(directory);
+    }
+
+    public SyncConfigCollection get() {
+        return get(SyncConfigCollection.class, null);
+    }
+
+    public void save(SyncConfigCollection object) {
+        save(object, null);
+    }
+
+    @Override
+    protected String buildFileNameFor(Object key) {
+        return "sync.conf";
+
+    }
 
 }

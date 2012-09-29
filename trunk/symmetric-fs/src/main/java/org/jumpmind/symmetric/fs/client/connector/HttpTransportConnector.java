@@ -18,30 +18,31 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.client.connector;
 
-import org.jumpmind.persist.AbstractJsonFileSystemPersister;
+import org.jumpmind.symmetric.fs.client.SyncStatus;
+import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.SyncConfig;
+import org.jumpmind.symmetric.fs.service.IPersisterServices;
 
-public class FileSystemSyncConfigCollectionPersister extends
-        AbstractJsonFileSystemPersister<SyncConfigCollection, Object> implements
-        ISyncConfigCollectionPersister {
+public class HttpTransportConnector implements ITransportConnector {
 
-    public FileSystemSyncConfigCollectionPersister(String directory) {
-        super(directory);
+    public void init(SyncConfig syncConfig, Node serverNode, IPersisterServices persisterServices) {
     }
 
-    public SyncConfigCollection get() {
-        return get(SyncConfigCollection.class, null);
+    public void connect() {
     }
 
-    public void save(SyncConfigCollection object) {
-        save(object, null);
+    public void prepare(SyncStatus status) {
     }
-
-    @Override
-    protected String buildFileNameFor(Object key) {
-        return "sync.conf";
-
+    
+    public void send(SyncStatus syncStatus) {
+    }
+    
+    public void receive(SyncStatus syncStatus) {
+    }
+    
+    public void close() {
     }
 
 }

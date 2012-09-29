@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.service.filesystem.FileSystemDirectorySpecSnapshotPersister;
 import org.junit.Before;
 import org.junit.Test;
 

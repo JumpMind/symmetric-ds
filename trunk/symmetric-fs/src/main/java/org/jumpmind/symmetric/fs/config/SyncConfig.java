@@ -36,7 +36,11 @@ public class SyncConfig {
     
     protected ScriptType scriptType;
     
-    protected int priority;
+    protected int processOrder;
+    
+    protected String transportConnectorType = "default";
+    
+    protected String transportConnectorExpression;
     
     protected Map<ScriptIdentifier, String> scripts;
     
@@ -56,8 +60,16 @@ public class SyncConfig {
         return frequency;
     }
     
-    public int getPriority() {
-        return priority;
+    public int getProcessOrder() {
+        return processOrder;
+    }
+    
+    public String getTransportConnectorType() {
+        return transportConnectorType;
+    }
+    
+    public String getTransportConnectorExpression() {
+        return transportConnectorExpression;
     }
 
 }

@@ -18,14 +18,22 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.config;
+package org.jumpmind.symmetric.fs.service.filesystem;
 
-import org.jumpmind.util.Context;
+import org.jumpmind.persist.AbstractJsonFileSystemPersister;
+import org.jumpmind.symmetric.fs.client.SyncStatus;
+import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.service.ISyncStatusPersister;
 
-/**
- * This is a context object that different objects can be added to so that are
- * available to be called from file sync scripts.
- */
-public class ScriptAPI extends Context {
+public class FileSystemSyncStatusPersister extends
+        AbstractJsonFileSystemPersister<SyncStatus, NodeDirectorySpecKey> implements ISyncStatusPersister {
 
+    public FileSystemSyncStatusPersister(String directory) {
+        super(directory);
+    }
+
+    @Override
+    protected String buildFileNameFor(NodeDirectorySpecKey key) {
+        return String.format("%s.%s", key.toString(), "status");
+    }
 }

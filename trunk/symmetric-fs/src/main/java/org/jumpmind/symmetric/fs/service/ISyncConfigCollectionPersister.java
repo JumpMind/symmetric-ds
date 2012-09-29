@@ -18,11 +18,13 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.client;
+package org.jumpmind.symmetric.fs.service;
 
-import org.jumpmind.persist.IPersister;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.SyncConfigCollection;
 
-public interface ISyncStatusPersister extends IPersister<SyncStatus, NodeDirectorySpecKey> {
+public interface ISyncConfigCollectionPersister {        
+
+    public void save(SyncConfigCollection object);
     
+    public SyncConfigCollection get();
 }
