@@ -20,16 +20,16 @@
  */
 package org.jumpmind.symmetric.fs.config;
 
-public class NodeDirectorySpecKey {
+public class NodeDirectoryKey {
 
     protected String key;
 
-    public NodeDirectorySpecKey(Node node, DirectorySpec spec) {
+    public NodeDirectoryKey(Node node, String directory) {
         this.key = String.format(
                 "%s_%s_%s",
                 node.getNodeId(),
                 node.getGroupId(),
-                Integer.toHexString(spec.getDirectory()
+                Integer.toHexString(directory
                         .replace(System.getProperty("file.separator").charAt(0), '_').hashCode()));
     }
 

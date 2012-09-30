@@ -22,18 +22,18 @@ package org.jumpmind.symmetric.fs.service.filesystem;
 
 import org.jumpmind.persist.AbstractJsonFileSystemPersister;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.service.ISyncStatusPersister;
 
 public class FileSystemSyncStatusPersister extends
-        AbstractJsonFileSystemPersister<SyncStatus, NodeDirectorySpecKey> implements ISyncStatusPersister {
+        AbstractJsonFileSystemPersister<SyncStatus, NodeDirectoryKey> implements ISyncStatusPersister {
 
     public FileSystemSyncStatusPersister(String directory) {
         super(directory);
     }
 
     @Override
-    protected String buildFileNameFor(NodeDirectorySpecKey key) {
+    protected String buildFileNameFor(NodeDirectoryKey key) {
         return String.format("%s.%s", key.toString(), "status");
     }
 }

@@ -31,10 +31,11 @@ public class DirectorySpecSnapshot {
 
     protected Date date;
     protected Node node;
+    protected String directory;
     protected DirectorySpec directorySpec;
     protected List<FileChange> files = new ArrayList<FileChange>();
 
-    public DirectorySpecSnapshot(Node node, DirectorySpec directorySpec) {
+    public DirectorySpecSnapshot(Node node, String directory, DirectorySpec directorySpec) {
         this.date = new Date();
         this.node = node;
         this.directorySpec = directorySpec;
@@ -58,6 +59,10 @@ public class DirectorySpecSnapshot {
     
     protected DirectorySpecSnapshot diff(DirectorySpecSnapshot snapshot) {
         return null;
+    }
+    
+    public String getDirectory() {
+        return directory;
     }
 
 }

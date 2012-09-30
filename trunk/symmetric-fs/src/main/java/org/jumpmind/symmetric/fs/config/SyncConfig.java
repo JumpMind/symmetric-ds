@@ -32,11 +32,15 @@ public class SyncConfig {
     
     protected DirectorySpec directorySpec;
     
+    protected String clientDir;
+    
     protected String serverDir;
     
     protected ScriptType scriptType;
     
     protected int processOrder;
+    
+    protected SyncDirection syncDirection = SyncDirection.CLIENT_TO_SERVER;
     
     protected String transportConnectorType = "default";
     
@@ -70,6 +74,18 @@ public class SyncConfig {
     
     public String getTransportConnectorExpression() {
         return transportConnectorExpression;
+    }
+    
+    public void setSyncDirection(SyncDirection syncDirection) {
+        this.syncDirection = syncDirection;
+    }
+    
+    public SyncDirection getSyncDirection() {
+        return syncDirection;
+    }
+    
+    public String getClientDir() {
+        return clientDir;
     }
 
 }
