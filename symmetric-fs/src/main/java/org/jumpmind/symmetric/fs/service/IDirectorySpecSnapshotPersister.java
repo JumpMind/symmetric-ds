@@ -21,10 +21,10 @@
 package org.jumpmind.symmetric.fs.service;
 
 import org.jumpmind.persist.IPersister;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 
 public interface IDirectorySpecSnapshotPersister extends
-        IPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> {
+        IPersister<DirectorySpecSnapshot, NodeDirectoryKey> {
 
 }

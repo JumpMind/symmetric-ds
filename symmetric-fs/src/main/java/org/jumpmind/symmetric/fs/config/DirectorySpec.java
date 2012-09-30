@@ -31,7 +31,6 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 public class DirectorySpec {
 
-    protected String directory;
     protected boolean recursive;
     protected boolean captureUpdates = true;
     protected boolean captureCreates = true;
@@ -39,8 +38,7 @@ public class DirectorySpec {
     protected String[] includes;
     protected String[] excludes;
     
-    public DirectorySpec(String directory, boolean recursive, String[] includes, String[] excludes) {
-        this.directory = directory;
+    public DirectorySpec(boolean recursive, String[] includes, String[] excludes) {
         this.recursive = recursive;
         this.includes = includes;
         this.excludes = excludes;
@@ -61,14 +59,6 @@ public class DirectorySpec {
             filter = new AndFileFilter(fileFilters);            
         }
         return filter;
-    }
-
-    public String getDirectory() {
-        return directory;
-    }
-
-    public void setDirectory(String directory) {
-        this.directory = directory;
     }
 
     public boolean isRecursive() {

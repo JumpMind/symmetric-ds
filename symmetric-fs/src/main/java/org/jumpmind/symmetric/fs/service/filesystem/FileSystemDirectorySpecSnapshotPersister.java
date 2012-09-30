@@ -21,12 +21,12 @@
 package org.jumpmind.symmetric.fs.service.filesystem;
 
 import org.jumpmind.persist.AbstractJsonFileSystemPersister;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.service.IDirectorySpecSnapshotPersister;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 
 public class FileSystemDirectorySpecSnapshotPersister extends
-        AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectorySpecKey> implements
+        AbstractJsonFileSystemPersister<DirectorySpecSnapshot, NodeDirectoryKey> implements
         IDirectorySpecSnapshotPersister {
 
     public FileSystemDirectorySpecSnapshotPersister(String directory) {
@@ -34,7 +34,7 @@ public class FileSystemDirectorySpecSnapshotPersister extends
     }
 
     @Override
-    protected String buildFileNameFor(NodeDirectorySpecKey key) {
+    protected String buildFileNameFor(NodeDirectoryKey key) {
         return String.format("%s.%s", key.toString(), "snapshot");
     }
 

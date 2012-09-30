@@ -27,14 +27,15 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.service.IDirectorySpecSnapshotPersister;
 
 public class DirectoryChangeTracker {
 
     protected Node node;
+    protected String directory;
     protected DirectorySpec directorySpec;
-    protected NodeDirectorySpecKey nodeDirectorySpecKey;
+    protected NodeDirectoryKey nodeDirectorySpecKey;
     protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected DirectorySpecSnapshot lastSnapshot;
     protected DirectorySpecSnapshot changesSinceLastSnapshot;
@@ -43,17 +44,18 @@ public class DirectoryChangeTracker {
     protected DirectorySpecSnasphotUpdater currentListener;
     protected long checkInterval = 10000;
 
-    public DirectoryChangeTracker(Node node, DirectorySpec directorySpec,
+    public DirectoryChangeTracker(Node node, String directory, DirectorySpec directorySpec,
             IDirectorySpecSnapshotPersister directorySnapshotPersister, long checkInterval) {
         this.node = node;
+        this.directory = directory;
         this.directorySpec = directorySpec;
-        this.nodeDirectorySpecKey = new NodeDirectorySpecKey(node, directorySpec);
+        this.nodeDirectorySpecKey = new NodeDirectoryKey(node, directory);
         this.directorySnapshotPersister = directorySnapshotPersister;
-        this.checkInterval = checkInterval;
+        this.checkInterval = checkInterval;       
     }
 
     public void start() {
-        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directorySpec);
+        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directory, directorySpec);
         startWatcher();
         lastSnapshot = directorySnapshotPersister.get(DirectorySpecSnapshot.class,
                 nodeDirectorySpecKey);
@@ -61,7 +63,7 @@ public class DirectoryChangeTracker {
             lastSnapshot = changesSinceLastSnapshot;
             takeFullSnapshot(lastSnapshot);
         } else {
-            DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directorySpec);
+            DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory, directorySpec);
             takeFullSnapshot(snapshot);
             changesSinceLastSnapshot.merge(lastSnapshot.diff(snapshot));
         }
@@ -82,7 +84,7 @@ public class DirectoryChangeTracker {
     protected void startWatcher() {
         try {
             fileMonitor = new FileAlterationMonitor(checkInterval);
-            fileObserver = new FileAlterationObserver(directorySpec.getDirectory(),
+            fileObserver = new FileAlterationObserver(directory,
                     directorySpec.createIOFileFilter());
             currentListener = new DirectorySpecSnasphotUpdater(changesSinceLastSnapshot, false);
             fileObserver.addListener(currentListener);
@@ -108,7 +110,7 @@ public class DirectoryChangeTracker {
     synchronized public DirectorySpecSnapshot takeSnapshot() {
         DirectorySpecSnapshot changes = changesSinceLastSnapshot;
         lastSnapshot.merge(changesSinceLastSnapshot);
-        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directorySpec);
+        changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directory, directorySpec);
         DirectorySpecSnasphotUpdater newListener = new DirectorySpecSnasphotUpdater(
                 changesSinceLastSnapshot, false);
         fileObserver.addListener(newListener);
@@ -120,7 +122,7 @@ public class DirectoryChangeTracker {
 
     synchronized protected void takeFullSnapshot(DirectorySpecSnapshot snapshot) {
         // update the snapshot with every file in the directory spec
-        FileAlterationObserver observer = new FileAlterationObserver(directorySpec.getDirectory(),
+        FileAlterationObserver observer = new FileAlterationObserver(directory,
                 directorySpec.createIOFileFilter());
         observer.addListener(new DirectorySpecSnasphotUpdater(snapshot, true));
         observer.checkAndNotify();

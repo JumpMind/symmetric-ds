@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.fs.client.connector;
 
 import org.jumpmind.symmetric.fs.client.SyncStatus;
+import org.jumpmind.symmetric.fs.config.SyncConfig;
+import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 
 public class LocalTransportConnector extends AbstractTransportConnector implements
         ITransportConnector {
@@ -29,6 +31,11 @@ public class LocalTransportConnector extends AbstractTransportConnector implemen
     }
 
     public void prepare(SyncStatus status) {
+        SyncConfig syncConfig = status.getSyncConfig();
+        
+        //persisterSerivces.getDirectorySpecSnapshotPersister().get(DirectorySpecSnapshot.class, );
+        DirectorySpecSnapshot snapshot = status.getDirectorySpecSnapshot();
+        
     }
 
     public void send(SyncStatus syncStatus) {

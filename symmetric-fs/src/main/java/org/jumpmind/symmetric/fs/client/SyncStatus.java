@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.fs.client;
 import java.util.List;
 
 import org.jumpmind.symmetric.fs.config.Node;
+import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 
 public class SyncStatus {
@@ -33,33 +34,84 @@ public class SyncStatus {
 
     protected Node node;
     protected Stage stage = Stage.START;
-    protected DirectorySpecSnapshot snapshot;
+    protected SyncConfig syncConfig;
+    protected DirectorySpecSnapshot directorySpecSnapshot;
     protected List<String> filesToSend;
     protected List<String> fileSent;
     protected List<String> filesToReceive;
     protected List<String> filesReceived;
     
-    public SyncStatus() {     
+    public SyncStatus() {
+        
     }
     
-    public SyncStatus(Node node) {
+    public SyncStatus(Node node, SyncConfig syncConfig) {
         this.node = node;
+        this.syncConfig = syncConfig;
     }
-    
+
     public Node getNode() {
         return node;
-    }   
+    }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    public void setNode(Node node) {
+        this.node = node;
     }
 
     public Stage getStage() {
         return stage;
     }
 
-    public void setSnapshot(DirectorySpecSnapshot snapshot) {
-        this.snapshot = snapshot;
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
+    public DirectorySpecSnapshot getDirectorySpecSnapshot() {
+        return directorySpecSnapshot;
+    }
+
+    public void setDirectorySpecSnapshot(DirectorySpecSnapshot directorySpecSnapshot) {
+        this.directorySpecSnapshot = directorySpecSnapshot;
+    }
+
+    public List<String> getFilesToSend() {
+        return filesToSend;
+    }
+
+    public void setFilesToSend(List<String> filesToSend) {
+        this.filesToSend = filesToSend;
+    }
+
+    public List<String> getFileSent() {
+        return fileSent;
+    }
+
+    public void setFileSent(List<String> fileSent) {
+        this.fileSent = fileSent;
+    }
+
+    public List<String> getFilesToReceive() {
+        return filesToReceive;
+    }
+
+    public void setFilesToReceive(List<String> filesToReceive) {
+        this.filesToReceive = filesToReceive;
+    }
+
+    public List<String> getFilesReceived() {
+        return filesReceived;
+    }
+
+    public void setFilesReceived(List<String> filesReceived) {
+        this.filesReceived = filesReceived;
+    }
+    
+    public SyncConfig getSyncConfig() {
+        return syncConfig;
+    }
+    
+    public void setSyncConfig(SyncConfig syncConfig) {
+        this.syncConfig = syncConfig;
+    }
+    
 }

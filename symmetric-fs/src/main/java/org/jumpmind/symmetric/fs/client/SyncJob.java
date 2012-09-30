@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.fs.client.connector.ConnectorException;
 import org.jumpmind.symmetric.fs.client.connector.ITransportConnector;
 import org.jumpmind.symmetric.fs.client.connector.TransportConnectorFactory;
 import org.jumpmind.symmetric.fs.config.Node;
-import org.jumpmind.symmetric.fs.config.NodeDirectorySpecKey;
+import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.config.ScriptAPI;
 import org.jumpmind.symmetric.fs.config.ScriptIdentifier;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
@@ -52,11 +52,11 @@ public class SyncJob implements Runnable {
     protected IServerNodeLocker serverNodeLocker;
     protected TaskScheduler taskScheduler;
     protected Node serverNode;
-    protected SyncConfig config;
+    protected SyncConfig syncConfig;
     protected DirectoryChangeTracker directoryChangeTracker;
     protected TransportConnectorFactory transportConnectorFactory;
     protected TypedProperties properties;
-    protected NodeDirectorySpecKey key;
+    protected NodeDirectoryKey key;
     protected RandomTimeSlot randomTimeSlot;
     protected ISyncClientListener syncClientListener;
     protected ScriptAPI scriptApi;
@@ -87,9 +87,9 @@ public class SyncJob implements Runnable {
         this.syncClientListener = syncClientListener;
         this.taskScheduler = taskScheduler;
         this.serverNode = node;
-        this.config = config;
+        this.syncConfig = config;
         this.properties = properties;
-        this.key = new NodeDirectorySpecKey(node, config.getDirectorySpec());
+        this.key = new NodeDirectoryKey(node, config.getClientDir());
         this.randomTimeSlot = new RandomTimeSlot(serverNode.getNodeId(),
                 properties.getInt(SyncParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
     }
@@ -140,8 +140,8 @@ public class SyncJob implements Runnable {
 
     public void start() {
         if (this.scheduledJob == null) {
-            if (!StringUtils.isBlank(config.getFrequency())) {
-                String frequency = config.getFrequency();
+            if (!StringUtils.isBlank(syncConfig.getFrequency())) {
+                String frequency = syncConfig.getFrequency();
                 try {
                     long timeBetweenRunsInMs = Long.parseLong(frequency);
                     int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
@@ -149,18 +149,18 @@ public class SyncJob implements Runnable {
                         this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this, new Date(
                                 System.currentTimeMillis() + startDelay), timeBetweenRunsInMs);
                         log.info("Started {} for node {} on periodic schedule: every {}ms",
-                                new Object[] { config.getConfigId(), serverNode.getNodeId(),
+                                new Object[] { syncConfig.getConfigId(), serverNode.getNodeId(),
                                         timeBetweenRunsInMs });
                         started = true;
                     } else {
                         log.error("Failed to schedule the {} job for node {}",
-                                config.getConfigId(), serverNode.getNodeId());
+                                syncConfig.getConfigId(), serverNode.getNodeId());
                     }
 
                 } catch (NumberFormatException ex) {
                     this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(frequency));
                     log.info("Started {} for node {} with cron expression: {}", new Object[] {
-                            config.getConfigId(), serverNode.getNodeId(), frequency });
+                            syncConfig.getConfigId(), serverNode.getNodeId(), frequency });
                     started = true;
                 }
             }
@@ -173,11 +173,11 @@ public class SyncJob implements Runnable {
             success = this.scheduledJob.cancel(true);
             this.scheduledJob = null;
             if (success) {
-                log.info("{} for node {} has been cancelled.", config.getConfigId(),
+                log.info("{} for node {} has been cancelled.", syncConfig.getConfigId(),
                         serverNode.getNodeId());
                 started = false;
             } else {
-                log.warn("Failed to cancel this {} for node {}", config.getConfigId(),
+                log.warn("Failed to cancel this {} for node {}", syncConfig.getConfigId(),
                         serverNode.getNodeId());
             }
         }
@@ -237,12 +237,13 @@ public class SyncJob implements Runnable {
         if (serverNodeLocker.lock(serverNode)) {
             ITransportConnector connector = null;
             try {
-                connector = transportConnectorFactory.createTransportConnector(config, serverNode);
+                connector = transportConnectorFactory.createTransportConnector(syncConfig,
+                        serverNode);
                 connector.connect();
                 SyncStatus syncStatus = persisterServices.getSyncStatusPersister().get(
                         SyncStatus.class, key);
                 if (syncStatus == null) {
-                    syncStatus = new SyncStatus(serverNode);
+                    syncStatus = new SyncStatus(serverNode, syncConfig);
                     persisterServices.getSyncStatusPersister().save(syncStatus, key);
                 }
 
@@ -257,7 +258,8 @@ public class SyncJob implements Runnable {
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
                         case RAN_PRESCRIPT:
-                            syncStatus.setSnapshot(directoryChangeTracker.takeSnapshot());
+                            syncStatus.setDirectorySpecSnapshot(directoryChangeTracker
+                                    .takeSnapshot());
                             syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
@@ -307,7 +309,7 @@ public class SyncJob implements Runnable {
             long checkInterval = properties.getLong(
                     SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 10000);
             directoryChangeTracker = new DirectoryChangeTracker(serverNode,
-                    config.getDirectorySpec(),
+                    syncConfig.getClientDir(), syncConfig.getDirectorySpec(),
                     persisterServices.getDirectorySpecSnapshotPersister(), checkInterval);
             directoryChangeTracker.start();
         }
