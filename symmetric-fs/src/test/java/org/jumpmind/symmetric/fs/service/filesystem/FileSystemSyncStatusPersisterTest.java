@@ -26,7 +26,7 @@ public class FileSystemSyncStatusPersisterTest {
         DirectorySpec spec = new DirectorySpec(true, null, new String[] {".svn"});
         String directory = "/opt/send";
         NodeDirectoryKey key = new NodeDirectoryKey(node, directory);
-        status.setDirectorySpecSnapshot(new DirectorySpecSnapshot(node, directory, spec));
+        status.setClientSnapshot(new DirectorySpecSnapshot(node, directory, spec));
         persister.save(status, key);
         
         SyncStatus newStatus = persister.get(SyncStatus.class, key);

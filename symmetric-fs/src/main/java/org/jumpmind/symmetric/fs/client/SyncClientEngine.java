@@ -143,7 +143,7 @@ public class SyncClientEngine {
     }
 
     protected TransportConnectorFactory createTransportConnectorFactory(IPersisterServices persisterServices) {
-        return new TransportConnectorFactory(persisterServices);
+        return new TransportConnectorFactory(persisterServices, config.getProperties());
     }
 
     protected IPersisterServices createPersisterServices() {

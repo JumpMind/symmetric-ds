@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.service.filesystem.FileSystemDirectorySpecSnapshotPersister;
+import org.jumpmind.symmetric.fs.util.Utils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +52,7 @@ public class DirectoryChangeTrackerTest {
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
-        Assert.assertEquals(snapshot.getFiles().get(0).getFile().getAbsolutePath(), fileInDirectory1.getAbsolutePath());
+        Assert.assertEquals(snapshot.getFiles().get(0).getFileName(), Utils.getRelativePath(fileInDirectory1, directory));
     }   
     
     @Test
@@ -61,7 +62,7 @@ public class DirectoryChangeTrackerTest {
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
-        Assert.assertEquals(snapshot.getFiles().get(0).getFile().getAbsolutePath(), fileInDirectory2.getAbsolutePath());
+        Assert.assertEquals(snapshot.getFiles().get(0).getFileName(), Utils.getRelativePath(fileInDirectory2, directory));
     }      
     
     @Test
@@ -75,7 +76,7 @@ public class DirectoryChangeTrackerTest {
         DirectorySpecSnapshot snapshot = tracker.takeSnapshot();
         Assert.assertEquals(1, snapshot.getFiles().size());
         FileChange change = snapshot.getFiles().get(0);
-        Assert.assertEquals(change.getFile().getAbsolutePath(), fileInDirectory1.getAbsolutePath());
+        Assert.assertEquals(change.getFileName(), Utils.getRelativePath(fileInDirectory1, directory));
         Assert.assertEquals(change.getFileChangeType(), FileChangeType.DELETE);
     }    
     

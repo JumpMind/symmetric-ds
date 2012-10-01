@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
@@ -33,9 +34,12 @@ public class TransportConnectorFactory {
     protected Map<String, Class<? extends ITransportConnector>> connectorTypes;
     
     protected IPersisterServices persisterServices;
+    
+    protected TypedProperties properties;
 
-    public TransportConnectorFactory(IPersisterServices persisterServices) {
+    public TransportConnectorFactory(IPersisterServices persisterServices, TypedProperties properties) {
         this.persisterServices = persisterServices;
+        this.properties = properties;
         connectorTypes = new HashMap<String, Class<? extends ITransportConnector>>();        
         connectorTypes.put("default", HttpTransportConnector.class);
         connectorTypes.put("http", HttpTransportConnector.class);
@@ -56,7 +60,7 @@ public class TransportConnectorFactory {
         if (clazz != null) {
             try {
                 connector = clazz.newInstance();
-                connector.init(config, node, persisterServices);
+                connector.init(node, persisterServices, properties);
                 return connector;
             } catch (InstantiationException e) {
                 throw new UnsupportedOperationException(e);
