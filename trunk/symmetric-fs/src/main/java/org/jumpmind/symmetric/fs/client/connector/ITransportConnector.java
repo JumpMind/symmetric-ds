@@ -20,9 +20,9 @@
  */
 package org.jumpmind.symmetric.fs.client.connector;
 
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.Node;
-import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
 
 public interface ITransportConnector {
@@ -32,12 +32,13 @@ public interface ITransportConnector {
      * {@link TransportConnectorFactory} then this method is called by the
      * factory.
      */
-    public void init(SyncConfig syncConfig, Node serverNode, IPersisterServices persisterServices);
+    public void init(Node serverNode, IPersisterServices persisterServices, TypedProperties properties);
 
     /**
      * Validate the the destination is available.  Initialize connections.
+     * @param syncStatus TODO
      */
-    public void connect();
+    public void connect(SyncStatus syncStatus);
         
     /**
      * Update the sync status with the list of files to receive.
@@ -49,5 +50,7 @@ public interface ITransportConnector {
     public void receive(SyncStatus syncStatus);
     
     public void close();
+    
+    public void destroy();
 
 }

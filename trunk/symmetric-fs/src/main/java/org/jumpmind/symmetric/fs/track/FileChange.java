@@ -25,17 +25,17 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.fs.util.Utils;
 
 public class FileChange {
 
-    protected File file;
+    protected String fileName;
     protected FileChangeType fileChangeType;
     protected String hashCode;
 
-    public FileChange(File file, FileChangeType fileChangeType) {
-        this.file = file;
+    public FileChange(File baseDir, File file, FileChangeType fileChangeType) {
         this.fileChangeType = fileChangeType;
-
+        this.fileName = Utils.getRelativePath(file.getPath(), baseDir.getPath()); 
         if (file.isFile()) {
             try {
                 this.hashCode = Long.toString(FileUtils.checksumCRC32(file));
@@ -47,8 +47,8 @@ public class FileChange {
         }
     }
 
-    public File getFile() {
-        return file;
+    public String getFileName() {
+        return fileName;
     }
 
     public FileChangeType getFileChangeType() {

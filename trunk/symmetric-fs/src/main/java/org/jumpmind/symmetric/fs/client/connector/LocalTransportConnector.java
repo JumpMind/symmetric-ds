@@ -20,22 +20,45 @@
  */
 package org.jumpmind.symmetric.fs.client.connector;
 
+import java.io.File;
+
+import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
+import org.jumpmind.symmetric.fs.config.ConflictStrategy;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
-import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
+import org.jumpmind.symmetric.fs.config.SyncDirection;
+import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
 
 public class LocalTransportConnector extends AbstractTransportConnector implements
         ITransportConnector {
 
-    public void connect() {
+    DirectoryChangeTracker serverDirectoryChangeTracker;
+
+    @Override
+    public void connect(SyncStatus syncStatus) {
+        if (serverDirectoryChangeTracker == null) {
+            SyncConfig syncConfig = syncStatus.getSyncConfig();
+            File serverDir = new File(syncConfig.getServerDir());
+            if (!serverDir.exists()) {
+                serverDir.mkdirs();
+            }
+            serverDirectoryChangeTracker = new DirectoryChangeTracker(
+                    node,
+                    syncConfig.getServerDir(),
+                    syncConfig.getDirectorySpec(),
+                    persisterSerivces.getDirectorySpecSnapshotPersister(),
+                    properties
+                            .getLong(SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL));
+            serverDirectoryChangeTracker.start();
+        }
     }
 
-    public void prepare(SyncStatus status) {
-        SyncConfig syncConfig = status.getSyncConfig();
-        
-        //persisterSerivces.getDirectorySpecSnapshotPersister().get(DirectorySpecSnapshot.class, );
-        DirectorySpecSnapshot snapshot = status.getDirectorySpecSnapshot();
-        
+    public void prepare(SyncStatus syncStatus) {
+        SyncConfig syncConfig = syncStatus.getSyncConfig();
+        SyncDirection direction = syncConfig.getSyncDirection();
+        ConflictStrategy conflictStrategy = syncConfig.getConflictStrategy();
+        syncStatus.setServerSnapshot(serverDirectoryChangeTracker.takeSnapshot());
+
     }
 
     public void send(SyncStatus syncStatus) {

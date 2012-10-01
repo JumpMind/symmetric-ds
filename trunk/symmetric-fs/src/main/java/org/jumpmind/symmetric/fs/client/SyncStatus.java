@@ -20,11 +20,14 @@
  */
 package org.jumpmind.symmetric.fs.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.symmetric.fs.config.ConflictStrategy;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
+import org.jumpmind.symmetric.fs.track.FileChange;
 
 public class SyncStatus {
 
@@ -35,17 +38,24 @@ public class SyncStatus {
     protected Node node;
     protected Stage stage = Stage.START;
     protected SyncConfig syncConfig;
-    protected DirectorySpecSnapshot directorySpecSnapshot;
+    protected DirectorySpecSnapshot clientSnapshot;
+    protected DirectorySpecSnapshot serverSnapshot;
     protected List<String> filesToSend;
     protected List<String> fileSent;
     protected List<String> filesToReceive;
     protected List<String> filesReceived;
-    
+    protected List<String> filesInConflict;
+     
     public SyncStatus() {
-        
+        filesToSend = new ArrayList<String>();
+        fileSent = new ArrayList<String>();
+        filesToReceive = new ArrayList<String>();
+        filesReceived = new ArrayList<String>();
+        filesInConflict = new ArrayList<String>();
     }
     
     public SyncStatus(Node node, SyncConfig syncConfig) {
+        this();
         this.node = node;
         this.syncConfig = syncConfig;
     }
@@ -66,44 +76,65 @@ public class SyncStatus {
         this.stage = stage;
     }
 
-    public DirectorySpecSnapshot getDirectorySpecSnapshot() {
-        return directorySpecSnapshot;
+    public DirectorySpecSnapshot getClientSnapshot() {
+        return clientSnapshot;
     }
 
-    public void setDirectorySpecSnapshot(DirectorySpecSnapshot directorySpecSnapshot) {
-        this.directorySpecSnapshot = directorySpecSnapshot;
+    public void setClientSnapshot(DirectorySpecSnapshot clientSnapshot) {
+        this.clientSnapshot = clientSnapshot;
+        List<FileChange> changes = clientSnapshot.getFiles();
+        for (FileChange fileChange : changes) {
+            filesToSend.add(fileChange.getFileName());
+        }
+    }
+        
+    public void setServerSnapshot(DirectorySpecSnapshot serverSnapshot) {
+        this.serverSnapshot = serverSnapshot;
+        List<FileChange> changes = serverSnapshot.getFiles();
+        for (FileChange fileChange : changes) {
+            String fileName = fileChange.getFileName();
+            if (!filesToSend.contains(fileName)) {
+                filesToReceive.add(fileName);    
+            } else {
+                ConflictStrategy conflictStrategy = syncConfig.getConflictStrategy();
+                switch (conflictStrategy) {
+                    case CLIENT_WINS:
+                        // do nothing
+                        break;
+                    case REPORT_ERROR:
+                        filesInConflict.add(fileName);
+                        filesToSend.remove(fileName);
+                        break;
+                    case SERVER_WINS:
+                        filesToReceive.add(fileName);
+                        filesToSend.remove(fileName);
+                        break;
+                    default:
+                        break;                    
+                }
+            }
+            
+        }
+    }
+    
+    public List<String> getFilesInConflict() {
+        return filesInConflict;
     }
 
     public List<String> getFilesToSend() {
         return filesToSend;
     }
 
-    public void setFilesToSend(List<String> filesToSend) {
-        this.filesToSend = filesToSend;
-    }
-
     public List<String> getFileSent() {
         return fileSent;
-    }
-
-    public void setFileSent(List<String> fileSent) {
-        this.fileSent = fileSent;
     }
 
     public List<String> getFilesToReceive() {
         return filesToReceive;
     }
 
-    public void setFilesToReceive(List<String> filesToReceive) {
-        this.filesToReceive = filesToReceive;
-    }
-
     public List<String> getFilesReceived() {
         return filesReceived;
-    }
-
-    public void setFilesReceived(List<String> filesReceived) {
-        this.filesReceived = filesReceived;
     }
     
     public SyncConfig getSyncConfig() {
@@ -112,6 +143,10 @@ public class SyncStatus {
     
     public void setSyncConfig(SyncConfig syncConfig) {
         this.syncConfig = syncConfig;
+    }
+    
+    public DirectorySpecSnapshot getServerSnapshot() {
+        return serverSnapshot;
     }
     
 }

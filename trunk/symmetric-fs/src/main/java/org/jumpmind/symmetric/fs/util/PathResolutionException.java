@@ -18,8 +18,30 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.client.connector;
+package org.jumpmind.symmetric.fs.util;
 
-public class HttpTransportConnector extends AbstractTransportConnector {
+public class PathResolutionException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    public PathResolutionException() {
+        super();
+
+    }
+
+    public PathResolutionException(String message, Throwable cause) {
+        super(message, cause);
+
+    }
+
+    public PathResolutionException(String message) {
+        super(message);
+
+    }
+
+    public PathResolutionException(Throwable cause) {
+        super(cause);
+
+    }
 
 }

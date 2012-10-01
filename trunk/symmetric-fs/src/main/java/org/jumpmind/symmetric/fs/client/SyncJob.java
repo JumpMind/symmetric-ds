@@ -54,7 +54,7 @@ public class SyncJob implements Runnable {
     protected Node serverNode;
     protected SyncConfig syncConfig;
     protected DirectoryChangeTracker directoryChangeTracker;
-    protected TransportConnectorFactory transportConnectorFactory;
+    protected ITransportConnector connector;
     protected TypedProperties properties;
     protected NodeDirectoryKey key;
     protected RandomTimeSlot randomTimeSlot;
@@ -81,7 +81,6 @@ public class SyncJob implements Runnable {
             IPersisterServices persisterServices, IServerNodeLocker serverNodeLocker,
             TaskScheduler taskScheduler, Node node, SyncConfig config, TypedProperties properties,
             ISyncClientListener syncClientListener, ScriptAPI api) {
-        this.transportConnectorFactory = transportConnectorFactory;
         this.persisterServices = persisterServices;
         this.serverNodeLocker = serverNodeLocker;
         this.syncClientListener = syncClientListener;
@@ -92,6 +91,8 @@ public class SyncJob implements Runnable {
         this.key = new NodeDirectoryKey(node, config.getClientDir());
         this.randomTimeSlot = new RandomTimeSlot(serverNode.getNodeId(),
                 properties.getInt(SyncParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
+        this.connector = transportConnectorFactory.createTransportConnector(syncConfig,
+                serverNode);        
     }
 
     public boolean isStarted() {
@@ -179,9 +180,17 @@ public class SyncJob implements Runnable {
             } else {
                 log.warn("Failed to cancel this {} for node {}", syncConfig.getConfigId(),
                         serverNode.getNodeId());
-            }
-        }
+            }            
+        }       
         return success;
+    }
+    
+    public void destroy() {
+        stop();
+        if (connector != null) {
+            connector.destroy();
+            connector = null; 
+        }
     }
 
     protected String getEngineName() {
@@ -235,17 +244,16 @@ public class SyncJob implements Runnable {
 
     protected void doSync() {
         if (serverNodeLocker.lock(serverNode)) {
-            ITransportConnector connector = null;
             try {
-                connector = transportConnectorFactory.createTransportConnector(syncConfig,
-                        serverNode);
-                connector.connect();
+                
                 SyncStatus syncStatus = persisterServices.getSyncStatusPersister().get(
                         SyncStatus.class, key);
                 if (syncStatus == null) {
                     syncStatus = new SyncStatus(serverNode, syncConfig);
                     persisterServices.getSyncStatusPersister().save(syncStatus, key);
                 }
+                
+                connector.connect(syncStatus);                
 
                 initDirectoryChangeTracker();
 
@@ -258,7 +266,7 @@ public class SyncJob implements Runnable {
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
                         case RAN_PRESCRIPT:
-                            syncStatus.setDirectorySpecSnapshot(directoryChangeTracker
+                            syncStatus.setClientSnapshot(directoryChangeTracker
                                     .takeSnapshot());
                             syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);

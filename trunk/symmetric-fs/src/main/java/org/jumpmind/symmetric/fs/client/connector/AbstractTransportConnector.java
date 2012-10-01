@@ -20,24 +20,24 @@
  */
 package org.jumpmind.symmetric.fs.client.connector;
 
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.Node;
-import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
 
 public class AbstractTransportConnector implements ITransportConnector {
 
-    protected SyncConfig config;
     protected Node node;
     protected IPersisterServices persisterSerivces;
+    protected TypedProperties properties;
 
-    public void init(SyncConfig syncConfig, Node serverNode, IPersisterServices persisterServices) {
-        this.config = syncConfig;
+    public void init(Node serverNode, IPersisterServices persisterServices, TypedProperties properties) {
         this.node = serverNode;
         this.persisterSerivces = persisterServices;
+        this.properties = properties;
     }
 
-    public void connect() {
+    public void connect(SyncStatus syncStatus) {
     }
 
     public void prepare(SyncStatus syncStatus) {
@@ -50,6 +50,9 @@ public class AbstractTransportConnector implements ITransportConnector {
     }
 
     public void close() {
+    }
+    
+    public void destroy() {
     }
 
 }

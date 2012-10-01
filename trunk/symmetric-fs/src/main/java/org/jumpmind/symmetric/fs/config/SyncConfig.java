@@ -26,9 +26,9 @@ public class SyncConfig {
     
     protected String configId;
     
-    protected GroupLink groupLink;     
+    protected GroupLink groupLink;
     
-    protected String frequency;
+    protected String frequency = Integer.toString(10000);
     
     protected DirectorySpec directorySpec;
     
@@ -36,11 +36,13 @@ public class SyncConfig {
     
     protected String serverDir;
     
-    protected ScriptType scriptType;
+    protected ScriptType scriptType = ScriptType.BEANSHELL;
     
-    protected int processOrder;
+    protected int processOrder = 1;
     
     protected SyncDirection syncDirection = SyncDirection.CLIENT_TO_SERVER;
+    
+    protected ConflictStrategy conflictStrategy = ConflictStrategy.SERVER_WINS;
     
     protected String transportConnectorType = "default";
     
@@ -50,6 +52,18 @@ public class SyncConfig {
     
     public String getConfigId() {
         return configId;
+    }
+    
+    public String getServerDir() {
+        return serverDir;
+    }
+    
+    public ConflictStrategy getConflictStrategy() {
+        return conflictStrategy;
+    }
+    
+    public ScriptType getScriptType() {
+        return scriptType;
     }
     
     public DirectorySpec getDirectorySpec() {
