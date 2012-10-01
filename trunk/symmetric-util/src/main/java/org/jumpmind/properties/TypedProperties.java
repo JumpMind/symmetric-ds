@@ -67,6 +67,10 @@ public class TypedProperties extends Properties {
             put((String) key, properties.getProperty((String) key));
         }
     }
+    
+    public long getLong(String key) {
+        return getLong(key, -1);
+    }
 
     public long getLong(String key, long defaultValue) {
         long returnValue = defaultValue;
@@ -95,6 +99,10 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
+    
+    public boolean is(String key) {
+        return is(key, false);
+    }
 
     public boolean is(String key, boolean defaultValue) {
         boolean returnValue = defaultValue;
@@ -103,6 +111,10 @@ public class TypedProperties extends Properties {
             returnValue = Boolean.parseBoolean(value);
         }
         return returnValue;
+    }
+    
+    public String get(String key) {
+        return get(key, null);
     }
 
     public String get(String key, String defaultValue) {
