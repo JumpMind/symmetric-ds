@@ -638,68 +638,37 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return transformExtractWriter;
     }
 
-    protected boolean doesCurrentTableMatch(String routerId, TriggerHistory triggerHistory,
-            Table currentTable, boolean setTargetTableName) {
-        if (currentTable != null) {
-            String catalogName = triggerHistory.getSourceCatalogName();
-            String schemaName = triggerHistory.getSourceSchemaName();
-            String tableName = triggerHistory.getSourceTableName();
-            Router router = triggerRouterService.getRouterById(routerId, false);
-            if (router != null && setTargetTableName) {
-                if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                    catalogName = router.getTargetCatalogName();
-                }
-
-                if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                    schemaName = router.getTargetSchemaName();
-                }
-
-                if (StringUtils.isNotBlank(router.getTargetTableName())) {
-                    tableName = router.getTargetTableName();
-                }
-            }
-
-            return currentTable.getFullyQualifiedTableName().equals(
-                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-
-        } else {
-            return false;
-        }
-    }
-
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
-            TriggerHistory triggerHistory, Table currentTable, boolean setTargetTableName) {
+            TriggerHistory triggerHistory, boolean setTargetTableName) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
-        if (!doesCurrentTableMatch(routerId, triggerHistory, currentTable, setTargetTableName)) {
-            currentTable = symmetricDialect.getPlatform().getTableFromCache(catalogName,
-                    schemaName, tableName, false);
-            if (currentTable == null) {
-                throw new RuntimeException(String.format(
-                        "Could not find the table, %s, to extract",
-                        Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
+        Table table = symmetricDialect.getPlatform().getTableFromCache(catalogName, schemaName,
+                tableName, false);
+        if (table == null) {
+            throw new RuntimeException(String.format("Could not find the table, %s, to extract",
+                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
+        }
+        table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                triggerHistory.getParsedPkColumnNames(), true);
+        table.setCatalog(catalogName);
+        table.setSchema(schemaName);
+
+        Router router = triggerRouterService.getRouterById(routerId, false);
+        if (router != null && setTargetTableName) {
+            if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
+                table.setCatalog(router.getTargetCatalogName());
             }
-            currentTable = currentTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(), true);
-            currentTable.setCatalog(catalogName);
-            currentTable.setSchema(schemaName);
 
-            Router router = triggerRouterService.getRouterById(routerId, false);
-            if (router != null && setTargetTableName) {
-                if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                    currentTable.setCatalog(router.getTargetCatalogName());
-                }
+            if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
+                table.setSchema(router.getTargetSchemaName());
+            }
 
-                if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                    currentTable.setSchema(router.getTargetSchemaName());
-                }
-
-                if (StringUtils.isNotBlank(router.getTargetTableName())) {
-                    currentTable.setName(router.getTargetTableName());
-                }
+            if (StringUtils.isNotBlank(router.getTargetTableName())) {
+                table.setName(router.getTargetTableName());
             }
         }
-        return currentTable;
+        return table;
     }
 
     class SelectFromSymDataSource implements IExtractDataReaderSource {
@@ -709,6 +678,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private OutgoingBatch outgoingBatch;
 
         private Table currentTable;
+        
+        private TriggerHistory lastTriggerHistory;
 
         private boolean requiresLobSelectedFromSource;
 
@@ -752,7 +723,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (data == null) {
                 data = this.cursor.next();
                 if (data != null) {
-                    // TODO add null checks
                     TriggerHistory triggerHistory = data.getTriggerHistory();
                     String routerId = data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID);
 
@@ -774,9 +744,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
                         if (trigger != null) {
-                            this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                                    routerId, triggerHistory, currentTable, true);
-                            this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
+                            if ((lastTriggerHistory == null || lastTriggerHistory
+                                    .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId())) {
+                                this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                        routerId, triggerHistory, true);
+                                this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
+                            }
                         } else {
                             log.error(
                                     "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
@@ -785,6 +758,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             triggerHistory.getTriggerHistoryId() });
                         }
                     }
+                    
+                    lastTriggerHistory = triggerHistory;
                 } else {
                     closeCursor();
                 }
@@ -891,7 +866,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.currentInitialLoadEvent = null;
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history,
-                            currentTable, true);
+                            true);
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(
@@ -899,10 +874,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             .getTrigger().getChannelId());
                     this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(), channel);
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                            triggerRouter.getRouter().getRouterId(), history, currentTable, false);
+                            triggerRouter.getRouter().getRouterId(), history, false);
                     this.startNewCursor(history, triggerRouter);
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                            triggerRouter.getRouter().getRouterId(), history, currentTable, true);
+                            triggerRouter.getRouter().getRouterId(), history, true);
 
                 }
 
