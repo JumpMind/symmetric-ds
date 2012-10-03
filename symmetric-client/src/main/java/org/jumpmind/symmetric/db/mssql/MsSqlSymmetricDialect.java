@@ -50,9 +50,27 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+    Boolean supportsDisableTriggers = null;
+
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
+    }
+
+    protected boolean supportsDisableTriggers() {
+        if (supportsDisableTriggers == null) {
+            try {
+                getPlatform().getSqlTemplate().update("set context_info 0x0");
+                log.warn("This database DOES support disabling triggers during a symmetricds data load");
+                supportsDisableTriggers = true;
+            } catch (Exception ex) {
+                log.warn("This database does NOT support disabling triggers during a symmetricds data load");
+                supportsDisableTriggers = false;
+            }
+        }
+
+        return supportsDisableTriggers == null ? false : supportsDisableTriggers;
+
     }
 
     @Override
@@ -143,15 +161,19 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        if (nodeId == null) {
-            nodeId = "";
+        if (supportsDisableTriggers()) {
+            if (nodeId == null) {
+                nodeId = "";
+            }
+            transaction.prepareAndExecute("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1"
+                    + nodeId + "' as varbinary(128));" + "SET context_info @CI;");
         }
-        transaction.prepareAndExecute("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
-                + "' as varbinary(128));" + "SET context_info @CI;");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("set context_info 0x0");
+        if (supportsDisableTriggers()) {
+            transaction.prepareAndExecute("set context_info 0x0");
+        }
     }
 
     public String getSyncTriggersExpression() {
