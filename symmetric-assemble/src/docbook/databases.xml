@@ -87,6 +87,16 @@
                         <entry>Y</entry>
                     </row>
                     <row>
+                        <entry>SQL Server Azure</entry>
+                        <entry>Tested on 11.00.2065</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>N</entry>
+                    </row>                    
+                    <row>
                         <entry>HSQLDB</entry>
                         <entry>1.8</entry>
                         <entry>Y</entry>
