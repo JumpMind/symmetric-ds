@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
@@ -42,7 +43,7 @@ public class StatisticFlushJob extends AbstractJob {
     }
     
     public String getClusterLockName() {
-        return "STATISTICS";
+        return ClusterConstants.STATISTICS;
     }
     
     public boolean isClusterable() {
