@@ -24,6 +24,8 @@ package org.jumpmind.symmetric;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -43,6 +45,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterErrorIgnorer;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
  * Import data from file to database tables.
@@ -85,15 +88,20 @@ public class DbImport {
     private boolean dropIfExists = false;
 
     protected IDatabasePlatform platform;
+    
+    protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
     public DbImport() {
+        this.databaseWriterFilters = new ArrayList<IDatabaseWriterFilter>();
     }
 
     public DbImport(IDatabasePlatform platform) {
+        this();
         this.platform = platform;
     }
 
     public DbImport(DataSource dataSource) {
+        this();
         platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
 
@@ -152,6 +160,7 @@ public class DbImport {
         settings.setMaxRowsBeforeCommit(commitRate);
         settings.setDefaultConflictSetting(buildConflictSettings());
         settings.setUsePrimaryKeysFromSource(false);
+        settings.setDatabaseWriterFilters(databaseWriterFilters);
         if (forceImport) {
             settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
         }
@@ -295,5 +304,14 @@ public class DbImport {
     public boolean isDropIfExists() {
         return dropIfExists;
     }
+    
+    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        databaseWriterFilters.add(filter);
+    }
+
+    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        databaseWriterFilters.remove(filter);
+    }
+
 
 }
