@@ -1,3 +1,10 @@
+SymmetricDS - 3.1.6 (Released 2012-10-02) 
+=========================================
+- 0000843: [Improvement] Add ability wire in database writer filters to dbimport (chenson) - closed.
+- 0000845: [Bug] The STAGE_MANGEMENT and WATCHDOG jobs are not initialized (they won't work in a clustered environment) (chenson) - closed.
+- 0000841: [Bug] 2 triggers for the same table that sync different subsets can end up causing errors (chenson) - closed.
+- 0000844: [Bug] Windows Azure does not allow the use of context_info which SymmetricDS uses (chenson) - closed.
+
 SymmetricDS - 3.1.5 (Released 2012-09-12) 
 =========================================
 - 0000822: [Improvement] Add new constructor to ClientSymmetricEngine so SymmetricDS can share an embedding application's Datasource and Spring Context (chenson) - closed.
