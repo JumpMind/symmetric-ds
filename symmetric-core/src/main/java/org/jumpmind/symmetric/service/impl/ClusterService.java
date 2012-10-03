@@ -155,11 +155,11 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void aquireInfiniteLock(String action) {
         if (isClusteringEnabled()) {
-            int tries = 60;
+            int tries = 600;
             Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
             while (tries > 0) {
                 if (!lock(action, new Date(), futureTime, Lock.STOPPED)) {
-                    AppUtils.sleep(1000);
+                    AppUtils.sleep(50);
                     tries--;
                 } else {
                     tries = 0;
