@@ -46,6 +46,7 @@ public class CollectionUtils {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
+    @SuppressWarnings("unchecked")
     public static <T> T[] copyOfRange(T[] original, int from, int to) {
         return copyOfRange(original, from, to, (Class<T[]>) original.getClass());
     }
@@ -81,6 +82,7 @@ public class CollectionUtils {
      *     an array of class <tt>newType</tt>.
      * @since 1.6
      */
+    @SuppressWarnings("unchecked")
     public static <T,U> T[] copyOfRange(U[] original, int from, int to, Class<? extends T[]> newType) {
         int newLength = to - from;
         if (newLength < 0)

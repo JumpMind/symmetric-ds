@@ -178,6 +178,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.UPDATE);
+                    // TODO check for invalid range and print results
                     data.putParsedData(CsvData.ROW_DATA,
                             CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,

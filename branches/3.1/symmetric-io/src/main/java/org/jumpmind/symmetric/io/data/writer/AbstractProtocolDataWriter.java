@@ -1,10 +1,8 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -29,7 +27,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     protected Table table;
 
-    protected Set<Table> processedTables = new HashSet<Table>();
+    protected Map<String, Table> processedTables = new HashMap<String, Table>();
 
     protected String delimiter = ",";
 
@@ -92,11 +90,12 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             String schemaName = table.getSchema();
             println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
             println(CsvConstants.TABLE, table.getName());
-            if (!processedTables.contains(table)) {
+            if (!processedTables.containsKey(table.getName()) || 
+                    !processedTables.get(table.getName()).equals(table)) {
                 println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
                 println(CsvConstants.COLUMNS, table.getColumns());
+                this.processedTables.put(table.getName(), table);
             }
-            this.processedTables.add(table);
             return true;
         } else {
             return false;
@@ -140,6 +139,10 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 case SQL:
                     println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
                     break;
+                    
+                case RELOAD:
+                default:
+                    break;                      
             }
         }
     }
