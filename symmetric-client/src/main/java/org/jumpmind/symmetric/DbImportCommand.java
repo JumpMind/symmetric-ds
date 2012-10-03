@@ -26,7 +26,9 @@ import java.io.FileInputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.DbImport.Format;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
  * Import data from file to database tables.
@@ -52,6 +54,8 @@ public class DbImportCommand extends AbstractCommandLauncher {
     private static final String OPTION_FORCE = "force";
 
     private static final String OPTION_ALTER = "alter";
+    
+    private static final String OPTION_FILTER_CLASSES = "filter-classes";
     
     private static final String OPTION_DROP_IF_EXISTS = "drop-if-exists";
     
@@ -95,6 +99,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_REPLACE, false);
         addOption(options, null, OPTION_FORCE, false);
         addOption(options, null, OPTION_ALTER, false);
+        addOption(options, null, OPTION_FILTER_CLASSES, true);
         addOption(options, null, OPTION_DROP_IF_EXISTS, false);
         addOption(options, null, OPTION_ALTER_CASE, false);
     }
@@ -133,6 +138,20 @@ public class DbImportCommand extends AbstractCommandLauncher {
 
         if (line.hasOption(OPTION_ALTER)) {
             dbImport.setAlterTables(true);
+        }
+        
+        if (line.hasOption(OPTION_FILTER_CLASSES)) {
+            String filters = line.getOptionValue(OPTION_FILTER_CLASSES);
+            if (StringUtils.isNotBlank(filters)) {
+                String[] clazzes = filters.split(",");
+                for (String clazz : clazzes) {
+                    if (StringUtils.isNotBlank(clazz)) {
+                        IDatabaseWriterFilter databaseWriterFilter = (IDatabaseWriterFilter) Class
+                                .forName(clazz.trim()).newInstance();
+                        dbImport.addDatabaseWriterFilter(databaseWriterFilter);
+                    }
+                }
+            }
         }
 
         if (line.hasOption(OPTION_FORCE)) {
