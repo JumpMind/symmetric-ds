@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.util.JarBuilder;
+import org.jumpmind.symmetric.util.JarBuilder;
 
 /**
  * Perform administration tasks with SymmetricDS.
@@ -402,7 +402,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         StringBuilder sqlBuffer = new StringBuilder();
         triggerService.syncTriggers(sqlBuffer, genAlways);
         if (file != null) {
-            FileUtils.writeStringToFile(file, sqlBuffer.toString());
+            FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
         }
     }
 
@@ -417,7 +417,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                     "WEB-INF/classes/symmetric.properties"));
         }
         JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName),
-                new File[] { workingDirectory }, Version.version());
+                new File[] { workingDirectory });
         builder.build();
         FileUtils.deleteDirectory(workingDirectory);
     }

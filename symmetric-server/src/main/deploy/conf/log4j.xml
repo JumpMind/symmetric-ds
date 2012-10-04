@@ -20,7 +20,7 @@
         </layout>
     </appender>
     
-    <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>
+    <appender name="BUFFERED" class="org.jumpmind.symmetric.util.BufferedLogAppender"/>
 
     <category name="org">
         <priority value="WARN" />

@@ -1,23 +1,3 @@
-/*
- * Licensed to JumpMind Inc under one or more contributor 
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU Lesser General Public License (the
- * "License"); you may not use this file except in compliance
- * with the License. 
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
- * <http://www.gnu.org/licenses/>.
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License. 
- */
 package org.jumpmind.properties;
 
 import java.io.File;
@@ -67,10 +47,6 @@ public class TypedProperties extends Properties {
             put((String) key, properties.getProperty((String) key));
         }
     }
-    
-    public long getLong(String key) {
-        return getLong(key, -1);
-    }
 
     public long getLong(String key, long defaultValue) {
         long returnValue = defaultValue;
@@ -82,10 +58,6 @@ public class TypedProperties extends Properties {
             }
         }
         return returnValue;
-    }
-    
-    public int getInt(String key) {
-        return getInt(key, 0);
     }
 
     public int getInt(String key, int defaultValue) {
@@ -99,10 +71,6 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
-    public boolean is(String key) {
-        return is(key, false);
-    }
 
     public boolean is(String key, boolean defaultValue) {
         boolean returnValue = defaultValue;
@@ -111,10 +79,6 @@ public class TypedProperties extends Properties {
             returnValue = Boolean.parseBoolean(value);
         }
         return returnValue;
-    }
-    
-    public String get(String key) {
-        return get(key, null);
     }
 
     public String get(String key, String defaultValue) {
@@ -125,11 +89,7 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
-    public void setProperty(String key, int value) {
-        setProperty(key, Integer.toString(value));
-    }
-    
+
     public String[] getArray(String key, String[] defaultValue) {
         String value = getProperty(key);
         String[] retValue = defaultValue;

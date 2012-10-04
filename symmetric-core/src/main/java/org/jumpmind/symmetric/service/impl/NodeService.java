@@ -51,8 +51,8 @@ import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
-import org.jumpmind.util.AppUtils;
 
 /**
  * @see INodeService

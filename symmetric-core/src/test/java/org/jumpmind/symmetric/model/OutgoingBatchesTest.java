@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

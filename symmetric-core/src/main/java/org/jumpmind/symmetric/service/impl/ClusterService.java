@@ -47,7 +47,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * @see IClusterService
@@ -161,11 +161,11 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void aquireInfiniteLock(String action) {
         if (isClusteringEnabled()) {
-            int tries = 600;
+            int tries = 60;
             Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
             while (tries > 0) {
                 if (!lock(action, new Date(), futureTime, Lock.STOPPED)) {
-                    AppUtils.sleep(50);
+                    AppUtils.sleep(1000);
                     tries--;
                 } else {
                     tries = 0;

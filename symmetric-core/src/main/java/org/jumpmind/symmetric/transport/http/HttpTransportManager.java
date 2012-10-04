@@ -47,8 +47,8 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.util.AppUtils;
 
 /**
  * Allow remote communication to nodes, in order to push data, pull data, and

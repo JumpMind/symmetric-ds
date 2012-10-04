@@ -22,7 +22,7 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

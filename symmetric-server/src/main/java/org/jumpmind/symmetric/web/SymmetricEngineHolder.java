@@ -101,31 +101,12 @@ public class SymmetricEngineHolder {
     public void start() {
         if (isMultiServerMode()) {
             File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
-            File[] files = null;
-            
-            if (enginesDir!=null) {
-                files = enginesDir.listFiles();
-            }
-            
-            if (files == null) {
-                String firstAttempt = enginesDir.getAbsolutePath();
-                enginesDir = new File(".");
-                log.warn("Unable to retrieve engine properties files from {}.  Trying current working directory {}", firstAttempt, enginesDir.getAbsolutePath());
-
-                if (enginesDir!=null) {
-                    files = enginesDir.listFiles();
+            File[] files = enginesDir.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                if (file.getName().endsWith(".properties")) {
+                    enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
                 }
-            }
-            
-            if (files!=null) {
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    if (file.getName().endsWith(".properties")) {
-                        enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
-                    }
-                }
-            } else {
-                log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
             }
 
         } else {
@@ -322,4 +303,5 @@ public class SymmetricEngineHolder {
             enginesStarting.remove(this);
         }
     }
+
 }

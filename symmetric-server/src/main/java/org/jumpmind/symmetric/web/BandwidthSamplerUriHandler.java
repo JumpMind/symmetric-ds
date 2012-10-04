@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * This uri handler streams the number of bytes requested by the sampleSize

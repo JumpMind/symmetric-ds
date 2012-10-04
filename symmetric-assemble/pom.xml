@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.1.6</version>
     <name>assemble</name>
     <licenses>
         <license>
@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.1.6</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <properties>
@@ -26,7 +26,6 @@
     <modules>
         <module>../symmetric-parent</module>
         <module>../symmetric-util</module>
-        <module>../symmetric-fs</module>
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
         <module>../symmetric-jdbc</module>
@@ -43,7 +42,7 @@
                 <version>2.8.1</version>
                 <configuration>
                     <reportOutputDirectory>${docbook.target}</reportOutputDirectory>
-                    <destDir>javadoc</destDir>
+                    <destDir>javadocs</destDir>
                     <doctitle>SymmetricDS API ${project.version}</doctitle>
                 </configuration>
                 <executions>
@@ -90,7 +89,6 @@
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
                 <artifactId>torque-maven-plugin</artifactId>
-                <version>3.3-RC2</version>
                 <configuration>
                     <outputFormat>docbook</outputFormat>
                     <targetDatabase>symmetric</targetDatabase>

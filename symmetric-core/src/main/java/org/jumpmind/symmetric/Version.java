@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric;
 
-import org.jumpmind.util.AbstractVersion;
+import org.jumpmind.symmetric.util.AbstractVersion;
 
 /**
  * Follow the Apache versioning scheme documented <a
