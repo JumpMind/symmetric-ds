@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -123,7 +124,7 @@ abstract public class AbstractTriggerTemplate {
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                                 : triggerRouter.getInitialLoadSelect(), sql);
-        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger())
                         : getSourceTablePrefix(triggerHistory), sql);
@@ -156,22 +157,13 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? quote(triggerHistory
+        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
                 .getSourceSchemaName()) + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? quote(triggerHistory
+        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
                 .getSourceCatalogName()) + "." : "")
                 + schemaPlus;
         return catalogPlus;
-    }
-
-    protected String quote(String name) {
-        String quote = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
-        if (StringUtils.isNotBlank(quote)) {
-            return quote + name + quote;
-        } else {
-            return name;
-        }
-    }
+    }    
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
@@ -193,7 +185,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
-        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(trigger)
                         : getSourceTablePrefix(triggerHistory), sql);
@@ -221,7 +213,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
-        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(trigger)
                         : getSourceTablePrefix(triggerHistory), sql);
@@ -339,7 +331,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
-        ddl = FormatUtils.replace("tableName", quote(table.getName()), ddl);
+        ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
         ddl = FormatUtils.replace("schemaName", history == null ? getSourceTablePrefix(trigger)
                 : getSourceTablePrefix(history), ddl);
 
@@ -524,7 +516,7 @@ abstract public class AbstractTriggerTemplate {
             boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
             String columnName = column.getName();
             if (quote) {
-                columnName = quote(columnName);
+                columnName = SymmetricUtils.quote(symmetricDialect, columnName);
             }
 
             if (!(isLob && trigger.isUseStreamLobs())) {
@@ -897,7 +889,7 @@ abstract public class AbstractTriggerTemplate {
 
     protected String replaceDefaultSchema(String ddl, String defaultSchema) {
         if (StringUtils.isNotBlank(defaultSchema)) {
-            ddl = FormatUtils.replace("defaultSchema", quote(defaultSchema) + ".", ddl);
+            ddl = FormatUtils.replace("defaultSchema", SymmetricUtils.quote(symmetricDialect, defaultSchema) + ".", ddl);
         } else {
             ddl = FormatUtils.replace("defaultSchema", "", ddl);
         }
@@ -906,7 +898,7 @@ abstract public class AbstractTriggerTemplate {
 
     protected String replaceDefaultCatalog(String ddl, String defaultCatalog) {
         if (StringUtils.isNotBlank(defaultCatalog)) {
-            ddl = FormatUtils.replace("defaultCatalog", quote(defaultCatalog) + ".", ddl);
+            ddl = FormatUtils.replace("defaultCatalog", SymmetricUtils.quote(symmetricDialect, defaultCatalog) + ".", ddl);
         } else {
             ddl = FormatUtils.replace("defaultCatalog", "", ddl);
         }
