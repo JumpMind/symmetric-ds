@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
@@ -135,8 +136,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
-    private final String getTransactionFunctionName() {
-        return platform.getDefaultCatalog() + "." + parameterService.getTablePrefix() + "_"
+    private final String getTransactionFunctionName() {        
+        return SymmetricUtils.quote(this, platform.getDefaultCatalog()) + "." + parameterService.getTablePrefix() + "_"
                 + TRANSACTION_ID;
     }
 
