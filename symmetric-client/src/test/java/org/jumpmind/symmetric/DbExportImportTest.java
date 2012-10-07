@@ -1,9 +1,13 @@
 package org.jumpmind.symmetric;
 
+import java.util.List;
+import java.util.Set;
+
 import javax.sql.DataSource;
 
 import junit.framework.Assert;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -12,6 +16,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
@@ -20,6 +25,8 @@ import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
 import org.junit.Test;
 
 public class DbExportImportTest extends AbstractServiceTest {
+
+    private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 
     @Test
     public void exportTableInAnotherSchemaOnH2() throws Exception {
@@ -73,6 +80,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
+        platform.dropDatabase(testTables, true);
         Table table = testTables.findTable("test_db_import_1", false);
 
         DbImport dbImport = new DbImport(ds);
@@ -184,7 +192,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(2);
 
     }
-    
+
     @Test
     public void exportThenImportCsv() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
@@ -207,6 +215,10 @@ public class DbExportImportTest extends AbstractServiceTest {
         export.setNoData(false);
         String csvOutput = export.exportTables(new String[] { table.getName() });
 
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+
+        List<Row> rowsBeforeImport = sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID);
+
         recreateImportTable();
 
         DbImport importCsv = new DbImport(ds);
@@ -215,7 +227,9 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
                 table.getName(), null, table.getColumns(), false, null, null);
-        Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt(dml.getSql()));
+        Assert.assertEquals(RECORD_COUNT, sqlTemplate.queryForInt(dml.getSql()));
+
+        compareRows(rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
 
         // TODO test error
 
@@ -224,6 +238,34 @@ public class DbExportImportTest extends AbstractServiceTest {
         // TODO test ignore
 
         // TODO test force
-    }    
+    }
+
+    protected void compareRows(List<Row> one, List<Row> two) {
+        if (one.size() != two.size()) {
+            Assert.fail("First list had " + one.size() + " and second list had " + two.size());
+        }
+        for (int i = 0; i < one.size(); i++) {
+            Row rOne = one.get(i);
+            Row rTwo = two.get(i);
+            Set<String> keys = rOne.keySet();
+            for (String key : keys) {
+                if (!ObjectUtils.equals(rOne.get(key), rTwo.get(key))) {
+                    Assert.fail("The " + i + " element was not the same.  The column " + key
+                            + " had a value of " + rOne.get(key) + " for one row and "
+                            + rTwo.get(key) + " for the other");
+                }
+            }
+        }
+    }
+
+    protected Row findInList(List<Row> rows, String pk, Object pkValue) {
+        for (Row row : rows) {
+            Object value = row.get(pk);
+            if (ObjectUtils.equals(value, pkValue)) {
+                return row;
+            }
+        }
+        return null;
+    }
 
 }
