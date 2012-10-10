@@ -283,14 +283,14 @@
     </table>
 
     <table name="registration_request" description="Audits when a node registers or attempts to register.">
-        <column name="node_group_id" type="VARCHAR" size="50" description="The node group that this node belongs to, such as 'store'." />
-        <column name="external_id" type="VARCHAR" size="50" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
+        <column name="node_group_id" primaryKey="true" required="true" type="VARCHAR" size="50" description="The node group that this node belongs to, such as 'store'." />
+        <column name="external_id" primaryKey="true" required="true"  type="VARCHAR" size="50" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
         <column name="status" type="CHAR" size="2"  required="true"  description="The current status of the registration attempt.  Valid statuses are NR (not registered), IG (ignored), OK (sucessful)" />
         <column name="host_name" type="VARCHAR" size="60" required="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
         <column name="ip_address" type="VARCHAR" size="50" required="true"  description="The ip address for the host." />
         <column name="attempt_count" type="INTEGER" default="0" description="The number of registration attempts." />
         <column name="registered_node_id" type="VARCHAR" size="50" description="A unique identifier for a node." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="create_time" primaryKey="true" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <index name="idx_reg_req_1">
