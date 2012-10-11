@@ -465,6 +465,16 @@ insert into sym_data (
             by a cron expression as specified by the following properties:  <literal>job.purge.outgoing.cron</literal>,  <literal>job.purge.incoming.cron</literal>,
             and  <literal>job.purge.datagaps.cron</literal>. The default is <literal>0 0 0 * * *</literal>, or once per day at midnight. 
         </para>      
+        
+        <important>
+            <para>
+            SymmetricDS utilizes Spring's CRON support, which includes seconds as the first parameter.  This differs from the typical Unix-based 
+            implementation, where the first parameter is usually minutes.  For example, <literal>*/15 * * * * *</literal> means every 15 seconds, not every 15 minutes. 
+            See  <ulink url="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">Spring's documentation</ulink>
+            for more details.
+            </para>
+        </important>   
+        
         <para>
             Two retention period properties
             indicate how much history SymmetricDS will retain before purging.  The <literal>purge.retention.minutes</literal> property indicates the period
