@@ -183,16 +183,6 @@
     <section id="ap02-oracle">
         <title>Oracle</title>
         <para>
-            On Oracle Real Application Clusters (RAC), sequences should be ordered so data is processed 
-            in the correct order.
-            To offset the performance cost of ordering, the sequences should also be cached.
-            <programlisting><![CDATA[
-alter sequence SEQ_SYM_DATA_DATA_ID cache 1000 order;
-alter sequence SEQ_SYM_OUTGOIN_BATCH_BATCH_ID cache 1000 order;
-alter sequence SEQ_SYM_TRIGGER_RIGGER_HIST_ID cache 1000 order;
-alter sequence SEQ_SYM_TRIGGER_TRIGGER_ID cache 1000 order;]]></programlisting>
-        </para>
-        <para>
             While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
         </para>
         <para>
