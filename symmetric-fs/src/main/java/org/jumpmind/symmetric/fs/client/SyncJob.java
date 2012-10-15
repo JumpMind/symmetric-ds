@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.fs.client;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +38,7 @@ import org.jumpmind.symmetric.fs.config.ScriptIdentifier;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
 import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
+import org.jumpmind.symmetric.fs.util.ConflictDetectedException;
 import org.jumpmind.util.RandomTimeSlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +79,10 @@ public class SyncJob implements Runnable {
 
     private ScheduledFuture<?> scheduledJob;
 
+    private Throwable exception;
+    
+    private List<String> filesInConflict;
+
     public SyncJob(TransportConnectorFactory transportConnectorFactory,
             IPersisterServices persisterServices, IServerNodeLocker serverNodeLocker,
             TaskScheduler taskScheduler, Node node, SyncConfig config, TypedProperties properties,
@@ -89,10 +95,9 @@ public class SyncJob implements Runnable {
         this.syncConfig = config;
         this.properties = properties;
         this.key = new NodeDirectoryKey(node, config.getClientDir());
-        this.randomTimeSlot = new RandomTimeSlot(serverNode.getNodeId(),
-                properties.getInt(SyncParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
-        this.connector = transportConnectorFactory.createTransportConnector(syncConfig,
-                serverNode);        
+        this.randomTimeSlot = new RandomTimeSlot(serverNode.getNodeId(), properties.getInt(
+                SyncParameterConstants.JOB_RANDOM_MAX_START_TIME_MS, 100));
+        this.connector = transportConnectorFactory.createTransportConnector(syncConfig, serverNode);
     }
 
     public boolean isStarted() {
@@ -180,21 +185,21 @@ public class SyncJob implements Runnable {
             } else {
                 log.warn("Failed to cancel this {} for node {}", syncConfig.getConfigId(),
                         serverNode.getNodeId());
-            }            
-        }       
+            }
+        }
         return success;
     }
-    
+
     public void destroy() {
         stop();
         if (connector != null) {
             connector.destroy();
-            connector = null; 
+            connector = null;
         }
     }
 
     protected String getEngineName() {
-        return properties.getProperty(SyncParameterConstants.ENGINE_NAME);
+        return properties.getProperty(SyncParameterConstants.ENGINE_NAME, "syncjob");
     }
 
     /*
@@ -236,6 +241,7 @@ public class SyncJob implements Runnable {
                 log.warn("This thread was interrupted.  Not executing the job until the interrupted status has cleared");
             }
         } catch (final Throwable ex) {
+            exception = ex;
             log.error(ex.getMessage(), ex);
         }
 
@@ -245,17 +251,23 @@ public class SyncJob implements Runnable {
     protected void doSync() {
         if (serverNodeLocker.lock(serverNode)) {
             try {
-                
+
+                exception = null;
+
                 SyncStatus syncStatus = persisterServices.getSyncStatusPersister().get(
                         SyncStatus.class, key);
                 if (syncStatus == null) {
                     syncStatus = new SyncStatus(serverNode, syncConfig);
                     persisterServices.getSyncStatusPersister().save(syncStatus, key);
                 }
-                
-                connector.connect(syncStatus);                
+
+                connector.connect(syncStatus);
 
                 initDirectoryChangeTracker();
+
+                if (syncStatus.getStage() == Stage.DONE) {
+                    syncStatus.setStage(Stage.START);
+                }
 
                 while (syncStatus.getStage() != Stage.DONE) {
 
@@ -266,13 +278,15 @@ public class SyncJob implements Runnable {
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
                         case RAN_PRESCRIPT:
-                            syncStatus.setClientSnapshot(directoryChangeTracker
-                                    .takeSnapshot());
+                            syncStatus.setClientSnapshot(directoryChangeTracker.takeSnapshot());
                             syncStatus.setStage(Stage.RECORDED_FILES_TO_SEND);
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
                         case RECORDED_FILES_TO_SEND:
                             connector.prepare(syncStatus);
+                            if (syncStatus.getFilesInConflict().size() > 0) {
+                                throw new ConflictDetectedException(syncStatus.getFilesInConflict());
+                            }
                             syncStatus.setStage(Stage.SEND_FILES);
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
@@ -295,6 +309,12 @@ public class SyncJob implements Runnable {
                             break;
                     }
                 }
+                
+                filesInConflict = null;
+
+            } catch (ConflictDetectedException ex) {
+                filesInConflict = ex.getFilesInConflict();
+                log.warn("Failed to sync.  The following files were in conflict: " + filesInConflict);
             } catch (ConnectorException ex) {
                 log.warn("Connection issue: {}", ex.getMessage());
             } finally {
@@ -321,6 +341,22 @@ public class SyncJob implements Runnable {
                     persisterServices.getDirectorySpecSnapshotPersister(), checkInterval);
             directoryChangeTracker.start();
         }
+    }
+
+    public SyncStatus getSyncStatus() {
+        return persisterServices.getSyncStatusPersister().get(SyncStatus.class, key);
+    }
+
+    public boolean hasError() {
+        return exception != null;
+    }
+
+    public boolean hasConflict() {
+        return filesInConflict != null;
+    }
+
+    public List<String> getFilesInConflict() {
+        return filesInConflict;
     }
 
 }

@@ -130,6 +130,10 @@ public class TypedProperties extends Properties {
         setProperty(key, Integer.toString(value));
     }
     
+    public void setProperty(String key, long value) {
+        setProperty(key, Long.toString(value));
+    }
+    
     public String[] getArray(String key, String[] defaultValue) {
         String value = getProperty(key);
         String[] retValue = defaultValue;
