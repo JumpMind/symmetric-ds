@@ -12,7 +12,6 @@ import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.config.SyncDirection;
 import org.jumpmind.symmetric.fs.service.filesystem.FileSystemPersisterServices;
-import org.jumpmind.util.AppUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -130,9 +129,10 @@ public class SyncJobTest {
         Assert.assertTrue(clientFile.exists());
         Assert.assertFalse(serverFile.exists());
 
-        AppUtils.sleep(100);
-
-        job.invoke(true);
+        long ts = System.currentTimeMillis();
+        while (clientFile.exists() && System.currentTimeMillis() - ts < 10000) {
+            job.invoke(true);
+        }
 
         Assert.assertFalse(clientFile.exists());
         Assert.assertFalse(serverFile.exists());
@@ -146,16 +146,16 @@ public class SyncJobTest {
         Assert.assertTrue(clientFile.exists());
         Assert.assertTrue(serverFile.exists());
 
-        AppUtils.sleep(100);
-        
         FileUtils.write(clientFile, "This is a test");
         FileUtils.write(serverFile, "of the emergency broadcast system");
 
-        AppUtils.sleep(100);
-            job.invoke(true);            
-            Assert.assertTrue("Should have received a conflict exception", job.hasConflict());
-            Assert.assertEquals(1, job.getFilesInConflict().size());
-            Assert.assertEquals("test.txt", job.getFilesInConflict().get(0));
+        long ts = System.currentTimeMillis();
+        while (!job.hasConflict() && System.currentTimeMillis() - ts < 10000) {
+            job.invoke(true);
+        }
+        Assert.assertTrue("Should have received a conflict exception", job.hasConflict());
+        Assert.assertEquals(1, job.getFilesInConflict().size());
+        Assert.assertEquals("test.txt", job.getFilesInConflict().get(0));
 
     }
 
