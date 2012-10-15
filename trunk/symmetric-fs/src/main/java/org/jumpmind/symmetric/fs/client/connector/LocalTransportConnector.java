@@ -21,10 +21,13 @@
 package org.jumpmind.symmetric.fs.client.connector;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
-import org.jumpmind.symmetric.fs.config.ConflictStrategy;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.config.SyncDirection;
 import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
@@ -56,15 +59,54 @@ public class LocalTransportConnector extends AbstractTransportConnector implemen
     public void prepare(SyncStatus syncStatus) {
         SyncConfig syncConfig = syncStatus.getSyncConfig();
         SyncDirection direction = syncConfig.getSyncDirection();
-        ConflictStrategy conflictStrategy = syncConfig.getConflictStrategy();
-        syncStatus.setServerSnapshot(serverDirectoryChangeTracker.takeSnapshot());
+        if (direction == SyncDirection.SERVER_TO_CLIENT || direction == SyncDirection.BIDIRECTIONAL) {
+            syncStatus.setServerSnapshot(serverDirectoryChangeTracker.takeSnapshot());
+        }
 
     }
 
     public void send(SyncStatus syncStatus) {
+        List<String> toSend = syncStatus.getFilesToSend();
+        List<String> sent = syncStatus.getFileSent();
+        List<String> toDelete = syncStatus.getDeletesToSend();
+        List<String> deleted = syncStatus.getDeletesSent();
+        move(syncStatus.getSyncConfig().getClientDir(), syncStatus.getSyncConfig().getServerDir(),
+                toSend, sent, toDelete, deleted);
     }
 
     public void receive(SyncStatus syncStatus) {
+        List<String> toSend = syncStatus.getFilesToReceive();
+        List<String> sent = syncStatus.getFilesReceived();
+        List<String> toDelete = syncStatus.getDeletesToReceive();
+        List<String> deleted = syncStatus.getDeletesReceived();
+        move(syncStatus.getSyncConfig().getServerDir(), syncStatus.getSyncConfig().getClientDir(),
+                toSend, sent, toDelete, deleted);
+    }
+
+    protected void move(String sourceDir, String targetDir, List<String> toSend, List<String> sent,
+            List<String> toDelete, List<String> deleted) {
+        try {
+            try {
+                for (String fileName : toSend) {
+                    FileUtils
+                            .copyFile(new File(sourceDir, fileName), new File(targetDir, fileName));
+                    sent.add(fileName);
+                }
+            } finally {
+                toSend.removeAll(sent);
+            }
+
+            try {
+                for (String fileName : toDelete) {
+                    FileUtils.deleteQuietly(new File(targetDir, fileName));
+                    deleted.add(fileName);
+                }
+            } finally {
+                toDelete.removeAll(deleted);
+            }
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
     }
 
 }

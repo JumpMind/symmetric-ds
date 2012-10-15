@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.track.DirectorySpecSnapshot;
 import org.jumpmind.symmetric.fs.track.FileChange;
+import org.jumpmind.symmetric.fs.track.FileChangeType;
 
 public class SyncStatus {
 
@@ -40,20 +41,32 @@ public class SyncStatus {
     protected SyncConfig syncConfig;
     protected DirectorySpecSnapshot clientSnapshot;
     protected DirectorySpecSnapshot serverSnapshot;
+    protected List<String> deletesToSend;
+    protected List<String> deletesSent;
     protected List<String> filesToSend;
     protected List<String> fileSent;
     protected List<String> filesToReceive;
+    protected List<String> deletesToReceive;
+    protected List<String> deletesReceived;
     protected List<String> filesReceived;
     protected List<String> filesInConflict;
-     
+
     public SyncStatus() {
+        deletesToSend = new ArrayList<String>();
+        deletesSent = new ArrayList<String>();
+
         filesToSend = new ArrayList<String>();
         fileSent = new ArrayList<String>();
+
+        deletesToReceive = new ArrayList<String>();
+        deletesReceived = new ArrayList<String>();
+
         filesToReceive = new ArrayList<String>();
         filesReceived = new ArrayList<String>();
+
         filesInConflict = new ArrayList<String>();
     }
-    
+
     public SyncStatus(Node node, SyncConfig syncConfig) {
         this();
         this.node = node;
@@ -84,39 +97,52 @@ public class SyncStatus {
         this.clientSnapshot = clientSnapshot;
         List<FileChange> changes = clientSnapshot.getFiles();
         for (FileChange fileChange : changes) {
-            filesToSend.add(fileChange.getFileName());
+            String fileName = fileChange.getFileName();
+            if (fileChange.getFileChangeType() == FileChangeType.DELETE) {
+                filesToSend.remove(fileName);
+                deletesToSend.add(fileName);
+            } else {
+                deletesToSend.remove(fileName);
+                filesToSend.add(fileName);
+            }
         }
     }
-        
+
     public void setServerSnapshot(DirectorySpecSnapshot serverSnapshot) {
         this.serverSnapshot = serverSnapshot;
         List<FileChange> changes = serverSnapshot.getFiles();
         for (FileChange fileChange : changes) {
             String fileName = fileChange.getFileName();
-            if (!filesToSend.contains(fileName)) {
-                filesToReceive.add(fileName);    
+            if (fileChange.getFileChangeType() == FileChangeType.DELETE) {
+                filesToReceive.remove(fileName);
+                deletesToReceive.add(fileName);
             } else {
-                ConflictStrategy conflictStrategy = syncConfig.getConflictStrategy();
-                switch (conflictStrategy) {
-                    case CLIENT_WINS:
-                        // do nothing
-                        break;
-                    case REPORT_ERROR:
-                        filesInConflict.add(fileName);
-                        filesToSend.remove(fileName);
-                        break;
-                    case SERVER_WINS:
-                        filesToReceive.add(fileName);
-                        filesToSend.remove(fileName);
-                        break;
-                    default:
-                        break;                    
+                deletesToReceive.remove(fileName);
+                if (!filesToSend.contains(fileName)) {
+                    filesToReceive.add(fileName);
+                } else {
+                    ConflictStrategy conflictStrategy = syncConfig.getConflictStrategy();
+                    switch (conflictStrategy) {
+                        case CLIENT_WINS:
+                            // do nothing
+                            break;
+                        case REPORT_ERROR:
+                            filesInConflict.add(fileName);
+                            filesToSend.remove(fileName);
+                            break;
+                        case SERVER_WINS:
+                            filesToReceive.add(fileName);
+                            filesToSend.remove(fileName);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-            
+
         }
     }
-    
+
     public List<String> getFilesInConflict() {
         return filesInConflict;
     }
@@ -136,17 +162,33 @@ public class SyncStatus {
     public List<String> getFilesReceived() {
         return filesReceived;
     }
-    
+
+    public List<String> getDeletesReceived() {
+        return deletesReceived;
+    }
+
+    public List<String> getDeletesSent() {
+        return deletesSent;
+    }
+
+    public List<String> getDeletesToReceive() {
+        return deletesToReceive;
+    }
+
+    public List<String> getDeletesToSend() {
+        return deletesToSend;
+    }
+
     public SyncConfig getSyncConfig() {
         return syncConfig;
     }
-    
+
     public void setSyncConfig(SyncConfig syncConfig) {
         this.syncConfig = syncConfig;
     }
-    
+
     public DirectorySpecSnapshot getServerSnapshot() {
         return serverSnapshot;
     }
-    
+
 }
