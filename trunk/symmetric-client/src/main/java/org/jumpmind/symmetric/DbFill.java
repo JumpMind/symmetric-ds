@@ -203,7 +203,10 @@ class DbFill {
     }
     
     private Object randomDouble() {
-        return new java.util.Random().nextDouble();
+        final long places = 1000000000000l;
+        double d = Math.random()*places;
+        long l = Math.round(d);
+        return ((double)l)/(double)places+2 + (double)randomInt();
     }
 
     private Object randomTinyInt() {
