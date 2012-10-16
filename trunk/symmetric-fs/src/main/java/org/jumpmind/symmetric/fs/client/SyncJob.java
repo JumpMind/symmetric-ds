@@ -296,7 +296,7 @@ public class SyncJob implements Runnable {
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
                         case RECEIVE_FILES:
-                            connector.receive(syncStatus);
+                            connector.receive(syncStatus, directoryChangeTracker);
                             syncStatus.setStage(Stage.RUN_POSTSCRIPT);
                             persisterServices.getSyncStatusPersister().save(syncStatus, key);
                             break;
@@ -334,11 +334,9 @@ public class SyncJob implements Runnable {
 
     protected void initDirectoryChangeTracker() {
         if (directoryChangeTracker == null) {
-            long checkInterval = properties.getLong(
-                    SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 10000);
             directoryChangeTracker = new DirectoryChangeTracker(serverNode,
                     syncConfig.getClientDir(), syncConfig.getDirectorySpec(),
-                    persisterServices.getDirectorySpecSnapshotPersister(), checkInterval);
+                    persisterServices.getDirectorySpecSnapshotPersister());
             directoryChangeTracker.start();
         }
     }

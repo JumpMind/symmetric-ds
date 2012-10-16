@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.fs.track;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
@@ -39,6 +40,8 @@ public class FileChange {
         if (file.isFile()) {
             try {
                 this.hashCode = Long.toString(FileUtils.checksumCRC32(file));
+            } catch (FileNotFoundException ex) {
+                fileChangeType = FileChangeType.DELETE;
             } catch (IOException ex) {
                 throw new IoException(ex);
             }

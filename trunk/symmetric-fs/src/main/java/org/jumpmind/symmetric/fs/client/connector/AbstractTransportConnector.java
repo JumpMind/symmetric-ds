@@ -24,9 +24,13 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
+import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbstractTransportConnector implements ITransportConnector {
 
+    final protected Logger log = LoggerFactory.getLogger(getClass());
     protected Node node;
     protected IPersisterServices persisterSerivces;
     protected TypedProperties properties;
@@ -46,7 +50,7 @@ public class AbstractTransportConnector implements ITransportConnector {
     public void send(SyncStatus syncStatus) {
     }
 
-    public void receive(SyncStatus syncStatus) {
+    public void receive(SyncStatus syncStatus, DirectoryChangeTracker clientDirectoryChangeTracker) {
     }
 
     public void close() {

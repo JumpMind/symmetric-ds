@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.connector.TransportConnectorFactory;
 import org.jumpmind.symmetric.fs.config.ConflictStrategy;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
@@ -16,9 +15,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class SyncJobTest {
+
+    final protected Logger log = LoggerFactory.getLogger(getClass());
 
     ThreadPoolTaskScheduler taskScheduler;
 
@@ -53,8 +56,6 @@ public class SyncJobTest {
         taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
         taskScheduler.initialize();
         TypedProperties properties = new TypedProperties();
-        properties
-                .setProperty(SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 1);
 
         FileSystemPersisterServices services = new FileSystemPersisterServices(STATUS_DIR,
                 CONFIG_DIR);
@@ -73,6 +74,10 @@ public class SyncJobTest {
 
         job = new SyncJob(factory, services, new NoOpServerNodeLocker(), taskScheduler, targetNode,
                 config, properties, null, null);
+        
+        // invoke for a few times just for the heck of it
+        job.invoke(true);
+        job.invoke(true);
     }
 
     @After
@@ -124,15 +129,13 @@ public class SyncJobTest {
         Assert.assertTrue(clientFile.exists());
         Assert.assertTrue(serverFile.exists());
 
+        log.info("Just deleted " + serverFile.getAbsolutePath());
         FileUtils.deleteQuietly(serverFile);
 
         Assert.assertTrue(clientFile.exists());
         Assert.assertFalse(serverFile.exists());
 
-        long ts = System.currentTimeMillis();
-        while (clientFile.exists() && System.currentTimeMillis() - ts < 10000) {
-            job.invoke(true);
-        }
+        job.invoke(true);
 
         Assert.assertFalse(clientFile.exists());
         Assert.assertFalse(serverFile.exists());
@@ -149,10 +152,8 @@ public class SyncJobTest {
         FileUtils.write(clientFile, "This is a test");
         FileUtils.write(serverFile, "of the emergency broadcast system");
 
-        long ts = System.currentTimeMillis();
-        while (!job.hasConflict() && System.currentTimeMillis() - ts < 10000) {
-            job.invoke(true);
-        }
+        job.invoke(true);
+
         Assert.assertTrue("Should have received a conflict exception", job.hasConflict());
         Assert.assertEquals(1, job.getFilesInConflict().size());
         Assert.assertEquals("test.txt", job.getFilesInConflict().get(0));
