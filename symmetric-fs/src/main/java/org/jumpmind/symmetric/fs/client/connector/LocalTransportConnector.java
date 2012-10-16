@@ -21,12 +21,13 @@
 package org.jumpmind.symmetric.fs.client.connector;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.fs.SyncParameterConstants;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.SyncConfig;
 import org.jumpmind.symmetric.fs.config.SyncDirection;
@@ -49,9 +50,7 @@ public class LocalTransportConnector extends AbstractTransportConnector implemen
                     node,
                     syncConfig.getServerDir(),
                     syncConfig.getDirectorySpec(),
-                    persisterSerivces.getDirectorySpecSnapshotPersister(),
-                    properties
-                            .getLong(SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL));
+                    persisterSerivces.getDirectorySpecSnapshotPersister());
             serverDirectoryChangeTracker.start();
         }
     }
@@ -72,15 +71,26 @@ public class LocalTransportConnector extends AbstractTransportConnector implemen
         List<String> deleted = syncStatus.getDeletesSent();
         move(syncStatus.getSyncConfig().getClientDir(), syncStatus.getSyncConfig().getServerDir(),
                 toSend, sent, toDelete, deleted);
+        List<String> filesProcesssed = new ArrayList<String>(sent.size() + deleted.size());
+        filesProcesssed.addAll(sent);
+        filesProcesssed.addAll(deleted);
+        serverDirectoryChangeTracker.pollForChanges();
+        serverDirectoryChangeTracker.removeAndMergeChanges(filesProcesssed);
     }
 
-    public void receive(SyncStatus syncStatus) {
+    public void receive(SyncStatus syncStatus, DirectoryChangeTracker clientDirectoryChangeTracker) {
         List<String> toSend = syncStatus.getFilesToReceive();
         List<String> sent = syncStatus.getFilesReceived();
         List<String> toDelete = syncStatus.getDeletesToReceive();
         List<String> deleted = syncStatus.getDeletesReceived();
         move(syncStatus.getSyncConfig().getServerDir(), syncStatus.getSyncConfig().getClientDir(),
                 toSend, sent, toDelete, deleted);
+        List<String> filesProcesssed = new ArrayList<String>(sent.size() + deleted.size());
+        filesProcesssed.addAll(sent);
+        filesProcesssed.addAll(deleted);
+        clientDirectoryChangeTracker.pollForChanges();
+        clientDirectoryChangeTracker.removeAndMergeChanges(filesProcesssed);
+        
     }
 
     protected void move(String sourceDir, String targetDir, List<String> toSend, List<String> sent,
@@ -88,9 +98,13 @@ public class LocalTransportConnector extends AbstractTransportConnector implemen
         try {
             try {
                 for (String fileName : toSend) {
-                    FileUtils
-                            .copyFile(new File(sourceDir, fileName), new File(targetDir, fileName));
-                    sent.add(fileName);
+                    try {
+                        FileUtils.copyFile(new File(sourceDir, fileName), new File(targetDir,
+                                fileName));
+                        sent.add(fileName);
+                    } catch (FileNotFoundException ex) {
+                        log.info(ex.getMessage());
+                    }
                 }
             } finally {
                 toSend.removeAll(sent);

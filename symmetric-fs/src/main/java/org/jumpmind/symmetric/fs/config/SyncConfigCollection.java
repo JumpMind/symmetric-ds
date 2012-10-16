@@ -42,7 +42,6 @@ public class SyncConfigCollection {
     public static void fillPropertyDefaults(TypedProperties properties) {
         properties.setProperty(SyncParameterConstants.ENGINE_NAME, "symmetric");
         properties.setProperty(SyncParameterConstants.CLIENT_WORKER_THREADS_NUMBER, 10);
-        properties.setProperty(SyncParameterConstants.DIRECTORY_TRACKER_POLL_FOR_CHANGE_INTERVAL, 60000);
         properties.setProperty(SyncParameterConstants.JOB_RANDOM_MAX_START_TIME_MS, 10000);
     }
     

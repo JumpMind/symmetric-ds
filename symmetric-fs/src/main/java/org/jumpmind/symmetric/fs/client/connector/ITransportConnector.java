@@ -24,6 +24,7 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.fs.client.SyncStatus;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.service.IPersisterServices;
+import org.jumpmind.symmetric.fs.track.DirectoryChangeTracker;
 
 public interface ITransportConnector {
 
@@ -47,7 +48,7 @@ public interface ITransportConnector {
     
     public void send(SyncStatus syncStatus);
     
-    public void receive(SyncStatus syncStatus);
+    public void receive(SyncStatus syncStatus, DirectoryChangeTracker clientDirectoryChangeTracker);
     
     public void close();
     

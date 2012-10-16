@@ -30,7 +30,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotRecursive() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(true, null, null);        
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()));
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(4, snapshot.getFiles().size());        
@@ -39,7 +39,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotNonRecursive() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(false, null, null);
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()));
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(2, snapshot.getFiles().size());        
@@ -48,7 +48,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotIncludes() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(false, new String[] {"*.txt"}, null);
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()));
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
@@ -58,7 +58,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeFullSnapshotExcludes() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(false, null, new String[] {"*.txt"});
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()));
         DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(), directorySpec);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.getFiles().size());
@@ -68,7 +68,7 @@ public class DirectoryChangeTrackerTest {
     @Test
     public void testTakeSnapshotRecursiveTestDelete() throws Exception {
         DirectorySpec directorySpec = new DirectorySpec(true, null, null);
-        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()), -1);
+        DirectoryChangeTracker tracker = new DirectoryChangeTracker(node, directory.getAbsolutePath(), directorySpec, new FileSystemDirectorySpecSnapshotPersister(snapshotDirectory.getAbsolutePath()));
         tracker.start();
         tracker.takeSnapshot();
         FileUtils.deleteQuietly(fileInDirectory1);

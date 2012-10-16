@@ -21,17 +21,23 @@
 package org.jumpmind.symmetric.fs.track;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
-import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.fs.config.DirectorySpec;
 import org.jumpmind.symmetric.fs.config.Node;
 import org.jumpmind.symmetric.fs.config.NodeDirectoryKey;
 import org.jumpmind.symmetric.fs.service.IDirectorySpecSnapshotPersister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DirectoryChangeTracker {
 
+    final protected Logger log = LoggerFactory.getLogger(getClass());
     protected Node node;
     protected File directory;
     protected DirectorySpec directorySpec;
@@ -39,78 +45,72 @@ public class DirectoryChangeTracker {
     protected IDirectorySpecSnapshotPersister directorySnapshotPersister;
     protected DirectorySpecSnapshot lastSnapshot;
     protected DirectorySpecSnapshot changesSinceLastSnapshot;
-    protected FileAlterationMonitor fileMonitor;
     protected FileAlterationObserver fileObserver;
     protected DirectorySpecSnasphotUpdater currentListener;
-    protected long checkInterval = 10000;
 
     public DirectoryChangeTracker(Node node, String directory, DirectorySpec directorySpec,
-            IDirectorySpecSnapshotPersister directorySnapshotPersister, long checkInterval) {
+            IDirectorySpecSnapshotPersister directorySnapshotPersister) {
         this.node = node;
         this.directory = new File(directory);
         this.directorySpec = directorySpec;
         this.nodeDirectorySpecKey = new NodeDirectoryKey(node, directory);
         this.directorySnapshotPersister = directorySnapshotPersister;
-        this.checkInterval = checkInterval;
     }
 
     public void start() {
         changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(),
                 directorySpec);
-        startWatcher();
-        lastSnapshot = directorySnapshotPersister.get(DirectorySpecSnapshot.class,
-                nodeDirectorySpecKey);
-        if (lastSnapshot == null) {
-            lastSnapshot = changesSinceLastSnapshot;
-            takeFullSnapshot(lastSnapshot);
-        } else {
-            DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node,
-                    directory.getAbsolutePath(), directorySpec);
-            takeFullSnapshot(snapshot);
-            changesSinceLastSnapshot.merge(lastSnapshot.diff(snapshot));
-        }
-    }
-
-    public void stop() {
-        if (fileMonitor != null) {
-            try {
-                fileMonitor.stop();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    protected void startWatcher() {
+        fileObserver = new FileAlterationObserver(directory, directorySpec.createIOFileFilter());
+        currentListener = new DirectorySpecSnasphotUpdater(changesSinceLastSnapshot, false);
+        fileObserver.addListener(currentListener);
         try {
-            fileMonitor = new FileAlterationMonitor(checkInterval);
-            fileObserver = new FileAlterationObserver(directory, directorySpec.createIOFileFilter());
-            currentListener = new DirectorySpecSnasphotUpdater(changesSinceLastSnapshot, false);
-            fileObserver.addListener(currentListener);
-            fileMonitor.addObserver(fileObserver);
-            if (checkInterval > 0) {
-                fileMonitor.start();
+            fileObserver.initialize();
+
+            lastSnapshot = directorySnapshotPersister.get(DirectorySpecSnapshot.class,
+                    nodeDirectorySpecKey);
+            if (lastSnapshot == null) {
+                lastSnapshot = changesSinceLastSnapshot;
+                takeFullSnapshot(lastSnapshot);
             } else {
-                fileObserver.initialize();
+                DirectorySpecSnapshot snapshot = new DirectorySpecSnapshot(node,
+                        directory.getAbsolutePath(), directorySpec);
+                takeFullSnapshot(snapshot);
+                changesSinceLastSnapshot.merge(lastSnapshot.diff(snapshot));
             }
         } catch (RuntimeException e) {
             throw e;
+        } catch (IOException e) {
+            throw new IoException(e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void pollForChanges() {
-        if (checkInterval <= 0 && fileObserver != null) {
+    public void pollForChanges() {
+        if (fileObserver != null) {
             fileObserver.checkAndNotify();
         }
     }
 
+    public List<FileChange> removeAndMergeChanges(List<String> files) {
+        List<FileChange> removed = new ArrayList<FileChange>();
+        List<FileChange> changes = changesSinceLastSnapshot.getFiles();
+        for (String file : files) {
+            for (FileChange fileChange : changes) {
+                if (fileChange.getFileName().equals(file)) {
+                    removed.add(fileChange);
+                }
+            }
+        }
+        changes.removeAll(removed);
+        lastSnapshot.merge(changes);
+        directorySnapshotPersister.save(lastSnapshot, nodeDirectorySpecKey);
+        return removed;
+    }
+
     synchronized public DirectorySpecSnapshot takeSnapshot() {
+        pollForChanges();
         DirectorySpecSnapshot changes = changesSinceLastSnapshot;
-        lastSnapshot.merge(changesSinceLastSnapshot);
         changesSinceLastSnapshot = new DirectorySpecSnapshot(node, directory.getAbsolutePath(),
                 directorySpec);
         DirectorySpecSnasphotUpdater newListener = new DirectorySpecSnasphotUpdater(
@@ -118,6 +118,7 @@ public class DirectoryChangeTracker {
         fileObserver.addListener(newListener);
         fileObserver.removeListener(currentListener);
         currentListener = newListener;
+        lastSnapshot.merge(changes);
         directorySnapshotPersister.save(lastSnapshot, nodeDirectorySpecKey);
         return changes;
     }
@@ -142,58 +143,46 @@ public class DirectoryChangeTracker {
 
         public void onFileDelete(File file) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureDeletes()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot.addFileChange(new FileChange(directory, file,
-                            FileChangeType.DELETE));
-                }
+                log.debug("File delete detected: {}", file.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(directory, file, FileChangeType.DELETE));
             }
         }
 
         public void onFileCreate(File file) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureCreates()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot.addFileChange(new FileChange(directory, file,
-                            FileChangeType.CREATE));
-                }
+                log.debug("File create detected: {}", file.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(directory, file, FileChangeType.CREATE));
             }
         }
 
         public void onFileChange(File file) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureUpdates()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot.addFileChange(new FileChange(directory, file,
-                            FileChangeType.UPDATE));
-                }
+                log.debug("File change detected: {}", file.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(directory, file, FileChangeType.UPDATE));
             }
         }
 
         public void onDirectoryDelete(File directory) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureDeletes()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot
-                            .addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
-                                    directory, FileChangeType.DELETE));
-                }
+                log.debug("File delete detected: {}", directory.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
+                        directory, FileChangeType.DELETE));
             }
         }
 
         public void onDirectoryCreate(File directory) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureCreates()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot
-                            .addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
-                                    directory, FileChangeType.CREATE));
-                }
+                log.debug("File create detected: {}", directory.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
+                        directory, FileChangeType.CREATE));
             }
         }
 
         public void onDirectoryChange(File directory) {
             if (populateAll || snapshot.getDirectorySpec().isCaptureUpdates()) {
-                synchronized (DirectoryChangeTracker.this) {
-                    this.snapshot
-                            .addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
-                                    directory, FileChangeType.UPDATE));
-                }
+                log.debug("File change detected: {}", directory.getAbsolutePath());
+                this.snapshot.addFileChange(new FileChange(DirectoryChangeTracker.this.directory,
+                        directory, FileChangeType.UPDATE));
             }
         }
 
