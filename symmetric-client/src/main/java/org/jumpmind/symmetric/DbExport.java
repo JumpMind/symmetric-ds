@@ -32,6 +32,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
@@ -238,7 +239,7 @@ public class DbExport {
                     } else if (format == Format.XML){
                         writer.write("\t<row>\n");
                         for (int i = 0; i < columns.length; i++) {
-                            writer.write("\t\t<field name=\"" + columns[i].getName() + "\">" + values[i] + "</field>\n");
+                            writer.write("\t\t<field name=\"" + columns[i].getName() + "\">" + StringEscapeUtils.escapeXml(values[i]) + "</field>\n");
                         }
                         writer.write("\t</row>\n");
                         
@@ -246,7 +247,7 @@ public class DbExport {
                         writer.write("\t<row entity=\"" + tableName + "\" dml=\"I\">\n");
                         for (int i = 0; i < columns.length; i++) {
                             if (values[i] != null) {
-                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\">" + values[i] + "</data>\n");
+                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\">" + StringEscapeUtils.escapeXml(values[i]) + "</data>\n");
                             } else {
                                 writer.write("\t\t<data key=\"" + columns[i].getName() + "\" xsi:nil=\"true\" />\n");
                             }
