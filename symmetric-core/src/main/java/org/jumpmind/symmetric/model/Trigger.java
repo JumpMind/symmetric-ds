@@ -453,6 +453,10 @@ public class Trigger implements Serializable {
         if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
+        
+        if (null != externalSelect) {
+            hashedValue += externalSelect.hashCode();
+        }
 
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
