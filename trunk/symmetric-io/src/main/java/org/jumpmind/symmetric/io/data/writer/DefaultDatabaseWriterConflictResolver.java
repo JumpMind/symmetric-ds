@@ -21,11 +21,13 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -227,12 +229,15 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         Object[] objectValues = writer.getPlatform().getObjectValues(
                 writer.getBatch().getBinaryEncoding(), pkData, table.getPrimaryKeyColumns());
         DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, table);
-        String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
+        Column column = table.getColumnWithName(columnName);
+        String sql = stmt.getColumnsSql(new Column[] { column });
         Timestamp existingTs = writer.getTransaction().queryForObject(sql, Timestamp.class,
                 objectValues);
         Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
                 CsvData.ROW_DATA);
-        Timestamp loadingTs = Timestamp.valueOf(newData.get(columnName));
+        IDatabasePlatform platform = writer.getPlatform();
+        Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(), new String[] {newData.get(columnName)}, new Column[] {column});
+        Date loadingTs = (Date)values[0];
         return loadingTs.after(existingTs);
     }
 
