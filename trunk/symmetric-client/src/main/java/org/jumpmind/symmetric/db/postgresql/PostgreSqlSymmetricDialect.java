@@ -114,10 +114,14 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             try {
                 sql = dropSql;
                 platform.getSqlTemplate().update(dropSql);
+            } catch (Exception e) {
+                log.warn("Tried to remove trigger using: {} and failed because: {}", sql, e.getMessage());
+            }
+            try {                
                 sql = dropFunction;
                 platform.getSqlTemplate().update(dropFunction);
             } catch (Exception e) {
-                log.warn("Tried to remove trigger using: {} and failed because: {}", sql, e.getMessage());
+                log.warn("Tried to remove function using: {} and failed because: {}", sql, e.getMessage());
             }
         }
     }
