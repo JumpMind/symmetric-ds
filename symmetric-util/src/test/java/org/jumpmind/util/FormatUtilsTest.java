@@ -28,4 +28,16 @@ public class FormatUtilsTest {
         Assert.assertEquals(afterSql, FormatUtils.replaceTokens(beforeSql, replacementTokens, false));
         
     }
+    
+    @Test
+    public void testIsWildcardMatch() {
+        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_1", "TEST_*"));
+        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_2", "TEST_*"));
+        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_TEST_TEST", "TEST_*"));
+        Assert.assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH", "TEST_*"));
+        Assert.assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "TEST_*"));
+        Assert.assertTrue(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "*TEST*"));
+        Assert.assertFalse(FormatUtils.isWildCardMatch("B_A", "*A*B"));
+        Assert.assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));
+    }
 }

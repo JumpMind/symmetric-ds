@@ -152,17 +152,23 @@ public final class FormatUtils {
         // is desired, a simpler character based splitting can be done.
         String[] cards = pattern.split("\\" + WILDCARD);
 
-        // Iterate over the cards.
-        for (String card : cards) {
-            int idx = text.indexOf(card);
+        for(int i = 0; i < cards.length; i++) {
+            String card = cards[i];
+            
+            boolean foundToken = false;
+            if (i == 0 && !pattern.startsWith("*")) {
+                foundToken = text.startsWith(card);
+            } else {
+                foundToken = text.indexOf(card) != -1;
+            }
 
             // Card not detected in the text.
-            if (idx == -1) {
+            if (!foundToken) {
                 return !match;
             }
 
             // Move ahead, towards the right of the text.
-            text = text.substring(idx + card.length());
+            text = text.substring(text.indexOf(card) + card.length());
         }
 
         return match;
