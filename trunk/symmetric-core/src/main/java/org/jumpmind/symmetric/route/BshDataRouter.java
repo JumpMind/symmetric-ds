@@ -108,6 +108,7 @@ public class BshDataRouter extends AbstractDataRouter {
             throws EvalError {
         interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
+        interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);
         Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect());
