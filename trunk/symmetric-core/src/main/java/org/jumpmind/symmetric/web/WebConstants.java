@@ -44,8 +44,6 @@ public class WebConstants {
     
     public static final int SC_FORBIDDEN = 403;
     
-    public static final int SC_METHOD_NOT_ALLOWED = 405;
-    
     public static final int SC_SERVICE_UNAVAILABLE = 503;
 
     public static final String ACK_BATCH_NAME = "batch-";
