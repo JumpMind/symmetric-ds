@@ -58,7 +58,7 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  batch_complete_script,   " + 
 "  batch_rollback_script,   " + 
 "  before_write_script,     " +
-"  handler_error_script,    " +
+"  handle_error_script,    " +
 "  load_filter_order,       " + 
 "  load_filter_type,        " + 
 "  source_node_group_id,    " + 
