@@ -74,7 +74,7 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  last_update_time,        " +
 "  create_time,             " +
 "  load_filter_id           " +
-"  ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,current_timestamp,?)  " );
+"  ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,current_timestamp,?)  " );
 
         putSql("deleteLoadFilterSql" ,"" + 
 "delete from $(load_filter) where   " + 
