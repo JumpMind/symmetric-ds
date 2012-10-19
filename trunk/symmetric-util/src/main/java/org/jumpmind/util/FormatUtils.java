@@ -20,17 +20,34 @@
  */
 package org.jumpmind.util;
 
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.jumpmind.exception.ParseException;
 
 public final class FormatUtils {
+    
+    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
+            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
+
+    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+
+    public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
+            .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+
+    public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
     public final static String WILDCARD = "*";
     
@@ -233,6 +250,35 @@ public final class FormatUtils {
             value = value.trim();
         }
         return StringUtils.abbreviate(value, MAX_CHARS_TO_LOG);
+    }
+    
+    public static Date parseDate(String str, String[] parsePatterns) {
+        return parseDate(str, parsePatterns, null);
+    }
+
+    public static Date parseDate(String str, String[] parsePatterns, TimeZone timeZone) {
+        if (str == null || parsePatterns == null) {
+            throw new IllegalArgumentException("Date and Patterns must not be null");
+        }
+        
+        SimpleDateFormat parser = null;
+        ParsePosition pos = new ParsePosition(0);
+        for (int i = 0; i < parsePatterns.length; i++) {
+            if (i == 0) {
+                parser = new SimpleDateFormat(parsePatterns[0]);
+                if (timeZone != null) {
+                    parser.setTimeZone(timeZone);
+                }
+            } else {
+                parser.applyPattern(parsePatterns[i]);
+            }
+            pos.setIndex(0);
+            Date date = parser.parse(str, pos);
+            if (date != null && pos.getIndex() == str.length()) {
+                return date;
+            }
+        }
+        throw new ParseException("Unable to parse the date: " + str);
     }
 
 }
