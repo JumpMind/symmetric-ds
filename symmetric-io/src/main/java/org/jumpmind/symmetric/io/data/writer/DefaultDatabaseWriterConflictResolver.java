@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -30,10 +31,12 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter.LoadStatus;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,7 +110,12 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 conflict, writer, data))
                                 || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
                                         conflict, writer, data))) {
-                            performFallbackToUpdate(writer, data, conflict);
+                            try {
+                                performFallbackToUpdate(writer, data, conflict);
+                            } catch (ConflictException ex) {
+                                performFallbackToInsert(writer, data, conflict);
+                            }
+
                         } else {
                             if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();
@@ -223,6 +231,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     }
 
     protected boolean isTimestampNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {
+        IDatabasePlatform platform = writer.getPlatform();
         String columnName = conflict.getDetectExpression();
         Table table = writer.getTargetTable();
         String[] pkData = data.getPkData(table);
@@ -235,10 +244,25 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 objectValues);
         Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
                 CsvData.ROW_DATA);
-        IDatabasePlatform platform = writer.getPlatform();
-        Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(), new String[] {newData.get(columnName)}, new Column[] {column});
-        Date loadingTs = (Date)values[0];
-        return loadingTs.after(existingTs);
+        String columnValue = newData.get(columnName);
+        Date loadingTs = null;
+        if (column.getMappedTypeCode() == -101) {
+            int split = columnValue.lastIndexOf(" ");
+            loadingTs = FormatUtils.parseDate(columnValue.substring(0, split).trim(),
+                    FormatUtils.TIMESTAMP_PATTERNS,
+                    TimeZone.getTimeZone(columnValue.substring(split).trim()));
+        } else {
+            Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(),
+                    new String[] { columnValue }, new Column[] { column });
+            if (values[0] instanceof Date) {
+                loadingTs = (Date) values[0];
+            } else {
+                throw new ParseException("Could not parse " + columnName + " with a value of "
+                        + columnValue + " for purposes of conflict detection");
+            }
+        }
+
+        return existingTs == null || loadingTs.after(existingTs);
     }
 
     protected boolean isVersionNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {

@@ -39,7 +39,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
@@ -65,17 +64,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     /* The log for this platform. */
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
-            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
-
-    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
-
-    public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
-            .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-
-    public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
@@ -419,9 +407,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         long diff = date.getTime() - System.currentTimeMillis();
                         values[i] = "${curdate" + diff + "}";
                     } else if (type == Types.TIME) {
-                        values[i] = TIME_FORMATTER.format(date);
+                        values[i] = FormatUtils.TIME_FORMATTER.format(date);
                     } else {
-                        values[i] = TIMESTAMP_FORMATTER.format(date);
+                        values[i] = FormatUtils.TIMESTAMP_FORMATTER.format(date);
                     }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
@@ -470,10 +458,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         newSql = newSql.replaceFirst(regex, "${curdate" + diff + "}");
                     } else if (type == Types.TIME) {
                         newSql = newSql.replaceFirst(regex,
-                                "ts {" + quote + TIME_FORMATTER.format(date) + quote + "}");
+                                "ts {" + quote + FormatUtils.TIME_FORMATTER.format(date) + quote + "}");
                     } else {
                         newSql = newSql.replaceFirst(regex,
-                                "ts {" + quote + TIMESTAMP_FORMATTER.format(date) + quote + "}");
+                                "ts {" + quote + FormatUtils.TIMESTAMP_FORMATTER.format(date) + quote + "}");
                     }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
@@ -537,14 +525,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         try {
                             return Timestamp.valueOf(value);
                         } catch (IllegalArgumentException ex) {
-                            return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
+                            return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
                         }
                     } else if (type == Types.TIME) {
-                        return DateUtils.parseDate(value, TIME_PATTERNS);
+                        return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
                     } else {
-                        return DateUtils.parseDate(value, TIMESTAMP_PATTERNS);
+                        return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
                     }
                 }
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
