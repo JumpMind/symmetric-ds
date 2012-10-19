@@ -6,12 +6,12 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.exception.ParseException;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
 public class Row extends LinkedCaseInsensitiveMap<Object> {
@@ -171,7 +171,12 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         } else if (obj instanceof Date) {
             return (Date) obj;
         } else if (obj instanceof String) {
-            return getDate((String) obj, SqlConstants.TIMESTAMP_PATTERNS);
+            try {
+                return getDate((String) obj, SqlConstants.TIMESTAMP_PATTERNS);
+            } catch (ParseException ex) {
+                // on xerial sqlite jdbc dates come back as longs
+                return new Date(Long.parseLong((String) obj));
+            }
         } else {
             checkForColumn(columnName);
             return null;
@@ -185,10 +190,6 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     }
 
     final private java.util.Date getDate(String value, String[] pattern) {
-        try {
-            return DateUtils.parseDate(value, pattern);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        return FormatUtils.parseDate(value, pattern);
     }
 }
