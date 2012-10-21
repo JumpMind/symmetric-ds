@@ -523,7 +523,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         } else {
             log.warn(
-                    "Could not find triggers for history id of {}.  Not processing data with the id of {}",
+                    "Could not find trigger routers for trigger history id of {}.  Not processing data with the data id of {}",
                     data.getTriggerHistory().getTriggerHistoryId(), data.getDataId());
             numberOfDataEventsInserted += insertDataEvents(context, new DataMetaData(data, table, null,
                     context.getChannel()), new HashSet<String>());
