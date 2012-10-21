@@ -1232,6 +1232,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     triggerName = trigger.getNameForDeleteTrigger();
                 }
                 break;
+            default:
+                break;
         }
 
         if (StringUtils.isBlank(triggerName)) {
