@@ -115,6 +115,8 @@ public class DmlStatement {
                 return buildTypes(keys, isDateOverrideToTimestamp);
             case COUNT:
                 return buildTypes(keys, isDateOverrideToTimestamp);
+            default:
+                break;
         }
         return null;
 
@@ -151,7 +153,7 @@ public class DmlStatement {
 
     protected String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + " (");
-        appendColumns(sql, columns);
+        appendColumns(sql, columns, false);
         sql.append(") values (");
         appendColumnQuestions(sql, columns);
         sql.append(")");
@@ -191,7 +193,7 @@ public class DmlStatement {
 
     protected String buildSelectSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
-        appendColumns(sql, columns);
+        appendColumns(sql, columns, true);
         sql.append(" from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
@@ -199,7 +201,7 @@ public class DmlStatement {
 
     protected String buildSelectSqlAll(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
-        appendColumns(sql, columns);
+        appendColumns(sql, columns, true);
         sql.append(" from ").append(tableName);
         return sql.toString();
     }
@@ -228,7 +230,7 @@ public class DmlStatement {
         }
     }
 
-    protected int appendColumns(StringBuilder sql, Column[] columns) {
+    protected int appendColumns(StringBuilder sql, Column[] columns, boolean select) {
         int existingCount = 0;
         if (columns != null) {
             for (int i = 0; i < columns.length; i++) {
@@ -236,12 +238,18 @@ public class DmlStatement {
                     if (existingCount++ > 0) {
                         sql.append(", ");
                     }
-                    sql.append(quote).append(columns[i].getName()).append(quote);
+                    appendColumnNameForSql(sql, columns[i], select);
                 }
             }
         }
         return existingCount;
     }
+    
+    protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
+        String columnName = column.getName();
+        sql.append(quote).append(columnName).append(quote);
+    }
+    
 
     protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         if (columns != null) {
@@ -260,7 +268,7 @@ public class DmlStatement {
 
     public String getColumnsSql(Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
-        appendColumns(sql, columns);
+        appendColumns(sql, columns, true);
         sql.append(getSql());
         return sql.toString();
     }
@@ -293,6 +301,8 @@ public class DmlStatement {
                 return getColumns();
             case DELETE:
                 return getKeys();
+            default:
+                break;
         }
         return null;
     }
@@ -304,12 +314,13 @@ public class DmlStatement {
     public String[] getValueArray(String[] columnValues, String[] keyValues) {
         switch (dmlType) {
             case UPDATE:
-
                 return (String[]) ArrayUtils.addAll(columnValues, keyValues);
             case INSERT:
                 return columnValues;
             case DELETE:
                 return keyValues;
+            default:
+                break;
         }
         return null;
     }

@@ -69,5 +69,16 @@ public class OracleDmlStatement extends DmlStatement {
         } 
         return typeCode;
     }
+    
+    @Override
+    protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
+        String columnName = column.getName();
+        if (select && column.isTimestampWithTimezone()) {
+            sql.append("to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM') as ").append(columnName);
+        } else {
+            super.appendColumnNameForSql(sql, column, select);
+        }        
+    }
+
 
 }
