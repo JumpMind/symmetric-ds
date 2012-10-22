@@ -395,13 +395,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             Column column = metaData[i];
             String name = column.getName();
             int type = column.getJdbcTypeCode();
-
+            
             if (row.get(name) != null) {
-                if (column.isOfTextType()) {
+                if (column.isOfNumericType()) {
                     values[i] = row.getString(name);
-                } else if (column.isOfNumericType()) {
-                    values[i] = row.getString(name);
-                } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                } else if (!column.isTimestampWithTimezone() && 
+                        (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
                         long diff = date.getTime() - System.currentTimeMillis();
@@ -420,6 +419,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     } else if (encoding == BinaryEncoding.HEX) {
                         values[i] = new String(Hex.encodeHex(bytes));
                     }
+                } else {
+                    values[i] = row.getString(name);
                 }
             }
         }
@@ -598,21 +599,25 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase) {
         InputStream is = null;
-        File file = new File(filePath);
-        if (file.exists()) {
-            try {
-                is = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                throw new IoException(e);
+        try {
+            File file = new File(filePath);
+            if (file.exists()) {
+                try {
+                    is = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    throw new IoException(e);
+                }
+            } else {
+                is = AbstractDatabasePlatform.class.getResourceAsStream(filePath);
             }
-        } else {
-            is = AbstractDatabasePlatform.class.getResourceAsStream(filePath);
-        }
 
-        if (is != null) {
-            return readDatabaseFromXml(is, alterCaseToMatchDatabaseDefaultCase);
-        } else {
-            throw new IoException("Could not find the file: %s", filePath);
+            if (is != null) {
+                return readDatabaseFromXml(is, alterCaseToMatchDatabaseDefaultCase);
+            } else {
+                throw new IoException("Could not find the file: %s", filePath);
+            }
+        } finally {
+            IOUtils.closeQuietly(is);
         }
     }
 

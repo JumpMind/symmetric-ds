@@ -240,6 +240,50 @@ public class DbExportImportTest extends AbstractServiceTest {
         // TODO test force
     }
 
+    @Test
+    public void testOracleExportTimestampWithTimezone() throws Exception {
+        ISymmetricEngine engine = getSymmetricEngine();
+        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
+        DataSource ds = engine.getDataSource();
+        ISqlTemplate template = platform.getSqlTemplate();
+        if (platform.getName() == DatabaseNamesConstants.ORACLE
+                || platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+            try {
+                template.update("drop table test");
+            } catch (Exception ex) {
+            }
+
+            template.update("create table TEST (ID integer, LAST_UPDATE_TIME timestamp with time zone, primary key (ID))");
+            Object[] args = { 1, "2012-10-18 13:14:11.111000 -04:00" };
+
+            if (platform.getName() == DatabaseNamesConstants.ORACLE) {
+                template.update(
+                        "insert into TEST (ID, LAST_UPDATE_TIME) values (?, TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM'))",
+                        args);
+            } else if (platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+                template.update(
+                        "insert into TEST (ID, LAST_UPDATE_TIME) values (?, cast(? as timestamp with time zone))",
+                        args);
+            }
+            Table table = platform.getTableFromCache("TEST", true);
+
+            DbExport export = new DbExport(ds);
+            export.setFormat(Format.CSV);
+            export.setNoCreateInfo(true);
+            export.setNoData(false);
+            String csvOutput = export.exportTables(new String[] { table.getName() });
+            if (platform.getName() == DatabaseNamesConstants.ORACLE) {
+                Assert.assertEquals(
+                        "ID,LAST_UPDATE_TIME\n" + "1,2012-10-18 13:14:11.111000 -04:00",
+                        csvOutput.trim());
+            } else if (platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+                Assert.assertEquals("id,last_update_time\n" + "1,2012-10-18 13:14:11.111000 -4:00",
+                        csvOutput.trim());
+
+            }
+        }
+    }
+
     protected void compareRows(List<Row> one, List<Row> two) {
         if (one.size() != two.size()) {
             Assert.fail("First list had " + one.size() + " and second list had " + two.size());

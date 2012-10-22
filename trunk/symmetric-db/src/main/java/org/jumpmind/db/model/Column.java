@@ -639,5 +639,9 @@ public class Column implements Cloneable, Serializable {
     public int getJdbcTypeCode() {
         return jdbcTypeCode;
     }
+    
+    public boolean isTimestampWithTimezone() {
+        return jdbcTypeCode == -101 || (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
+    }
 
 }

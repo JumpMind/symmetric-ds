@@ -40,7 +40,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(tableName);
             sql.append("(");
-            appendColumns(sql, columns);
+            appendColumns(sql, columns, false);
             sql.append(") (select ");
             appendColumnQuestions(sql, columns);
             sql.append(" where (select 1 from ");
@@ -139,6 +139,30 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         if (columns.length > 0) {
             sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
+    }
+    
+    @Override
+    protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
+        String columnName = column.getName();
+        if (select && column.isTimestampWithTimezone()) {
+            sql.append(
+            "   case                                                                                                                                 " +
+            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") < -9 then                                " +
+            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
+            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),3,'0')||':'||         " +
+            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
+            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") >= 0 then                                " +
+            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
+            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),2,'0')||':'||         " +
+            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
+            "   else                                                                                                                                 " +
+            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
+            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),2,'0')||':'||         " +
+            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
+            "   end as ").append(columnName);
+        } else {
+            super.appendColumnNameForSql(sql, column, select);
+        }        
     }
 
 }

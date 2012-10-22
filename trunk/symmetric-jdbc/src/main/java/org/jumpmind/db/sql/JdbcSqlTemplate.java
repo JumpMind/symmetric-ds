@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,7 +57,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         this.dataSource = dataSource;
         this.settings = settings == null ? new SqlTemplateSettings() : settings;
-        this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler()) : lobHandler;
+        this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler())
+                : lobHandler;
         this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
     }
 
@@ -86,7 +88,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] args,
             int[] types) {
-        logSql(sql, args);        
+        logSql(sql, args);
         return new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
     }
 
@@ -124,15 +126,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     @Deprecated
     public byte[] queryForBlob(final String sql, final Object... args) {
-        return queryForBlob(sql,-1,null,args);
+        return queryForBlob(sql, -1, null, args);
     }
-    
-        
-    public byte[] queryForBlob(final String sql, final int jdbcTypeCode, final String jdbcTypeName, final Object... args) {
+
+    public byte[] queryForBlob(final String sql, final int jdbcTypeCode, final String jdbcTypeName,
+            final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
-                if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode,jdbcTypeName)) {
+                if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode, jdbcTypeName)) {
                     con.setAutoCommit(false);
                 }
                 byte[] result = null;
@@ -147,7 +149,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         result = lobHandler.getBlobAsBytes(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
                 } finally {
-                    if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode,jdbcTypeName) && con !=null) {
+                    if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode, jdbcTypeName)
+                            && con != null) {
                         con.setAutoCommit(true);
                     }
                     close(rs);
@@ -265,7 +268,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
-                            JdbcUtils.setValues(ps, args, types, getLobHandler().getDefaultHandler());
+                            JdbcUtils.setValues(ps, args, types, getLobHandler()
+                                    .getDefaultHandler());
                         } else {
                             JdbcUtils.setValues(ps, args);
                         }
@@ -435,6 +439,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      */
     public static Object getResultSetValue(ResultSet rs, int index) throws SQLException {
         Object obj = rs.getObject(index);
+        ResultSetMetaData metaData = rs.getMetaData();
         String className = null;
         if (obj != null) {
             className = obj.getClass().getName();
@@ -459,22 +464,26 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             } finally {
                 IOUtils.closeQuietly(reader);
             }
-        } else if (className != null
-                && ("oracle.sql.TIMESTAMP".equals(className) || "oracle.sql.TIMESTAMPTZ"
-                        .equals(className))) {
+        } else if (className != null && ("oracle.sql.TIMESTAMP".equals(className))) {
             obj = rs.getTimestamp(index);
+        } else if (className != null && "oracle.sql.TIMESTAMPTZ".equals(className)) {
+            obj = rs.getString(index);
         } else if (className != null && className.startsWith("oracle.sql.DATE")) {
-            String metaDataClassName = rs.getMetaData().getColumnClassName(index);
+            String metaDataClassName = metaData.getColumnClassName(index);
             if ("java.sql.Timestamp".equals(metaDataClassName)
                     || "oracle.sql.TIMESTAMP".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             } else {
                 obj = rs.getDate(index);
             }
-        } else if (obj != null && obj instanceof java.sql.Date) {
-            if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(index))) {
+        } else if (obj instanceof java.sql.Date) {
+            String metaDataClassName = metaData.getColumnClassName(index);
+            if ("java.sql.Timestamp".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             }
+        } else if (obj instanceof Timestamp
+                && metaData.getColumnTypeName(index).equals("timestamptz")) {
+            obj = rs.getString(index);
         }
         return obj;
     }
