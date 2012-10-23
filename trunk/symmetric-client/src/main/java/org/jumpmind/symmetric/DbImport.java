@@ -36,9 +36,10 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.jumpmind.symmetric.io.data.reader.BatchXmlDataReader;
+import org.jumpmind.symmetric.io.data.reader.SymXmlDataReader;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
 import org.jumpmind.symmetric.io.data.reader.SqlDataReader;
+import org.jumpmind.symmetric.io.data.reader.XmlDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
@@ -181,6 +182,10 @@ public class DbImport {
     }
 
     protected void importTablesFromXml(InputStream in) {
+        
+        // TODO should probably handle database creation in xml/data reader writer.
+        in.mark(Integer.MAX_VALUE);
+        
         Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
         if (alterTables) {
             platform.alterDatabase(database, forceImport);
@@ -188,11 +193,20 @@ public class DbImport {
             platform.createDatabase(database, dropIfExists, forceImport);
         }
 
-        // TODO: read in data from XML also
+        try {
+            in.reset();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+        
+        XmlDataReader reader = new XmlDataReader(in);
+        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        dataProcessor.process();
     }
-
+    
     protected void importTablesFromSymXml(InputStream in) {
-        BatchXmlDataReader reader = new BatchXmlDataReader(in);
+        SymXmlDataReader reader = new SymXmlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer);
         dataProcessor.process();
