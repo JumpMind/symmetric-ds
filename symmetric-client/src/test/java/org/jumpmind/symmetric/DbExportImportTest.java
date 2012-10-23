@@ -171,7 +171,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(0);
 
         DbImport importCsv = new DbImport(ds);
-        importCsv.setFormat(DbImport.Format.SYM_XML);
+        importCsv.setFormat(DbImport.Format.SYM_XML); 
         importCsv.importTables(getClass().getResourceAsStream(FILE));
 
         assertCountDbImportTableRecords(2);
@@ -192,6 +192,27 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(2);
 
     }
+    
+    @Test
+    public void importXmlData() throws Exception {
+        final String FILE = "/test-dbimport-1-xml-1.xml";
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+
+        DbImport importer = new DbImport(ds);
+        importer.setFormat(DbImport.Format.XML);
+        importer.setDropIfExists(true);
+        importer.setAlterCaseToMatchDatabaseDefaultCase(true);       
+        importer.importTables(getClass().getResourceAsStream(FILE));
+
+        assertCountDbImportTableRecords(3);
+
+        // table should be dropped so this should work again
+        importer.importTables(getClass().getResourceAsStream(FILE));
+
+        assertCountDbImportTableRecords(3);
+
+    }    
 
     @Test
     public void exportThenImportCsv() throws Exception {

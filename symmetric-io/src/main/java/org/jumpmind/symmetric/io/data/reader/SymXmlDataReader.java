@@ -42,7 +42,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-public class BatchXmlDataReader extends AbstractDataReader implements IDataReader {
+public class SymXmlDataReader extends AbstractDataReader implements IDataReader {
 
     protected Reader reader;
     protected DataContext context;
@@ -55,11 +55,11 @@ public class BatchXmlDataReader extends AbstractDataReader implements IDataReade
     protected Statistics statistics = new Statistics();
     protected Object next = null;
 
-    public BatchXmlDataReader(InputStream is) {
+    public SymXmlDataReader(InputStream is) {
         this(toReader(is));
     }
 
-    public BatchXmlDataReader(Reader reader) {
+    public SymXmlDataReader(Reader reader) {
         this.reader = reader;
     }
 

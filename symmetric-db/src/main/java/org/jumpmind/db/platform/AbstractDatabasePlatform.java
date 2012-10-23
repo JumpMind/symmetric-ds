@@ -624,7 +624,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
         InputStreamReader reader = new InputStreamReader(is);
         Database database = new DatabaseIO().read(reader);
-        IOUtils.closeQuietly(reader);
         if (alterCaseToMatchDatabaseDefaultCase) {
             boolean storesUpperCase = isStoresUpperCaseIdentifiers();
             Table[] tables = database.getTables();
