@@ -136,23 +136,25 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     synchronized public long routeData(boolean force) {
         long dataCount = -1l;
-        if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
-            try {
-                engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
-                insertInitialLoadEvents();
-                long ts = System.currentTimeMillis();
-                IDataToRouteGapDetector gapDetector = new DataGapDetector(engine.getDataService(),
-                        parameterService, symmetricDialect, this);
-                gapDetector.beforeRouting();
-                dataCount = routeDataForEachChannel();
-                gapDetector.afterRouting();
-                ts = System.currentTimeMillis() - ts;
-                if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
-                    log.info("Routed {} data events in {} ms", dataCount, ts);
-                }
-            } finally {
-                if (!force) {
-                    engine.getClusterService().unlock(ClusterConstants.ROUTE);
+        if (engine.getNodeService().findIdentity() != null) {
+            if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
+                try {
+                    engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
+                    insertInitialLoadEvents();
+                    long ts = System.currentTimeMillis();
+                    IDataToRouteGapDetector gapDetector = new DataGapDetector(
+                            engine.getDataService(), parameterService, symmetricDialect, this);
+                    gapDetector.beforeRouting();
+                    dataCount = routeDataForEachChannel();
+                    gapDetector.afterRouting();
+                    ts = System.currentTimeMillis() - ts;
+                    if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
+                        log.info("Routed {} data events in {} ms", dataCount, ts);
+                    }
+                } finally {
+                    if (!force) {
+                        engine.getClusterService().unlock(ClusterConstants.ROUTE);
+                    }
                 }
             }
         }
