@@ -1,3 +1,17 @@
+SymmetricDS - 3.1.7 (Released 2012-10-22) 
+=========================================
+- 0000825: [Improvement] Improve error handling around SymmetricEngineHolder if the engines dir isn't writeable or isn't a directory (chenson) - closed.
+- 0000834: [Improvement] Add clarity to mention of CRON to differentiate Springs version vs the typical Unix one. (mhanes) - closed.
+- 0000846: [Bug] SymmetricDS won't work with database names with a '-' in them on MySQL (chenson) - closed.
+- 0000847: [Bug] dbexport does not extract timestamp columns correctly on oracle (chenson) - closed.
+- 0000851: [Bug] Add primary key to SYM_REGISTRATION_REQUEST to make Azure happy (chenson) - closed.
+- 0000856: [Bug] DbExport to XML and SYM_XML does not escape data (chenson) - closed.
+- 0000859: [Bug] Changing external_select on sym_trigger does not cause syncTriggers to regenerate a trigger (chenson) - closed.
+- 0000860: [Bug] Timestamp with timezone doesn't work with timestamp new wins conflict resolution (chenson) - closed.
+- 0000862: [Bug] Wildcard matches in sym_trigger match more than they should (chenson) - closed.
+- 0000863: [Bug] When testing to see if a symmetric trigger exists on postgres, also check for the existence of the function (chenson) - closed.
+- 0000864: [Bug] LoadFilterService insert method fails. Effects the pro gui. (chenson) - closed.
+
 SymmetricDS - 3.1.6 (Released 2012-10-02) 
 =========================================
 - 0000843: [Improvement] Add ability wire in database writer filters to dbimport (chenson) - closed.
