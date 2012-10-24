@@ -105,11 +105,11 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          
 insert into test_customer
 (customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time)
-values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '2007-01-02 11:30:00'}, null);
+values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, current_timestamp, null);
 
 insert into test_order_header
 (order_id, customer_id, status, deliver_date)
-values('1', 100, null, {d '2007-01-02'});
+values('1', 100, null, current_date);
 
 insert into test_order_detail
 (order_id, line_number, item_type, item_id, quantity, price)
@@ -117,4 +117,4 @@ values('1', 1, 'STCK', '110000055', 5, 1.29);
 
 insert into test_sync_column_level
 (id, string_value, time_value, date_value, bigint_value, decimal_value)
-values (1, 'data', {ts '2008-01-02 03:04:05'}, {d '2008-01-02'}, 100, 123.45);
+values (1, 'data',current_timestamp, current_date, 100, 123.45);

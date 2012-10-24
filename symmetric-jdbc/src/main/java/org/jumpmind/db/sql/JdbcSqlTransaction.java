@@ -146,6 +146,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return queryForObject(sql, Integer.class, args);
     }
 
+    public long queryForLong(String sql, Object... args) {
+        return queryForObject(sql, Long.class, args);
+    }
+    
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return executeCallback(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {

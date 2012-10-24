@@ -14,6 +14,8 @@ public interface ISqlTransaction {
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
     public int queryForInt(String sql, Object... args);
+    
+    public long queryForLong(String sql, Object... args);
 
     public int execute(String sql);
 

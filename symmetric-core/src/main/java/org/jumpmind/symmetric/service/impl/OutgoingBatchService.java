@@ -141,7 +141,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         long batchId = outgoingBatch.getBatchId();
         if (batchId <= 0) {
-            batchId = sequenceService.nextVal(TableConstants.SYM_OUTGOING_BATCH);
+            batchId = sequenceService.nextVal(transaction,TableConstants.SYM_OUTGOING_BATCH);
         }
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),

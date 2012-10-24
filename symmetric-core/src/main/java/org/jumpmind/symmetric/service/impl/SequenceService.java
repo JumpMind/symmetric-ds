@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -38,11 +39,15 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long nextVal(String name) {
+        return nextVal(sqlTemplate.startSqlTransaction(),name);
+    }
+    
+    public long nextVal(ISqlTransaction transaction,String name) {
         long sequenceTimeoutInMs = parameterService.getLong(ParameterConstants.SEQUENCE_TIMEOUT_MS,
                 5000);
         long ts = System.currentTimeMillis();
         do {
-            long nextVal = tryToGetNextVal(name);
+            long nextVal = tryToGetNextVal(transaction,name);
             if (nextVal > 0) {
                 return nextVal;
             }
@@ -53,8 +58,8 @@ public class SequenceService extends AbstractService implements ISequenceService
                 System.currentTimeMillis() - ts, name));
     }
 
-    protected long tryToGetNextVal(String name) {
-        long currVal = currVal(name);
+    protected long tryToGetNextVal(ISqlTransaction transaction,String name) {
+        long currVal = currVal(transaction,name);
         Sequence sequence = sequenceDefinitionCache.get(name);
         if (sequence == null) {
             sequence = get(name);
@@ -86,7 +91,7 @@ public class SequenceService extends AbstractService implements ISequenceService
             }
         }
 
-        int updateCount = sqlTemplate.update(getSql("updateCurrentValueSql"), nextVal, name,
+        int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal, name,
                 currVal);
         if (updateCount != 1) {
             nextVal = -1;
@@ -95,8 +100,12 @@ public class SequenceService extends AbstractService implements ISequenceService
         return nextVal;
     }
 
+    public long currVal(ISqlTransaction transaction,String name) {
+        return transaction.queryForLong(getSql("getCurrentValueSql"), name);
+    }
+    
     public long currVal(String name) {
-        return sqlTemplate.queryForLong(getSql("getCurrentValueSql"), name);
+        return currVal(sqlTemplate.startSqlTransaction(),name);
     }
 
     public void create(Sequence sequence) {
