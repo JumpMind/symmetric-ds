@@ -90,7 +90,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             log.info("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
         } else {
-            log.warn("Could not communicate with {} at {} because of unexpected error", new Object[] {remoteNode, syncUrl}, error);
+            log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), error);
             status.setStatus(Status.UNKNOWN_ERROR);
         }
 
@@ -139,7 +139,8 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         boolean offline = false;
         if (ex != null) {
             Throwable cause = ExceptionUtils.getRootCause(ex);
-            offline = cause instanceof AuthenticationException;
+            offline = ex instanceof AuthenticationException || 
+                    cause instanceof AuthenticationException;
         }
         return offline;
     }
