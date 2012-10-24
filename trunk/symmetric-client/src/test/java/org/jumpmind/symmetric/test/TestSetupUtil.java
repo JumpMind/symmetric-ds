@@ -109,8 +109,9 @@ abstract public class TestSetupUtil {
         File clientDbDir = new File("target/clientdbs");
         if (clientDbDir.exists()) {
             try {
-                logger.info("Removing client database files");
+                logger.info("Removing client database files and creating directory.");
                 FileUtils.deleteDirectory(clientDbDir);
+                clientDbDir.mkdir();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -118,8 +119,9 @@ abstract public class TestSetupUtil {
         File rootDbDir = new File("target/rootdbs");
         if (rootDbDir.exists()) {
             try {
-                logger.info("Removing root database files");
+                logger.info("Removing root database files and creating directory.");
                 FileUtils.deleteDirectory(rootDbDir);
+                rootDbDir.mkdir();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }

@@ -54,7 +54,15 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 JdbcUtils.setValues(st, values, types, sqlTemplate.getLobHandler().getDefaultHandler());
             }
             st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
-            rs = st.executeQuery();
+            try {
+                rs = st.executeQuery();
+            } catch (SQLException e) {
+                // The Xerial SQLite JDBC driver throws an exception if a query returns an empty set
+                // This gets around that
+                if (e.getMessage()==null || !e.getMessage().equals("query does not return results")) {
+                    throw e;
+                }
+            }
             SqlUtils.addSqlReadCursor(this);
             
         } catch (SQLException ex) {
@@ -65,7 +73,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     public T next() {
         try {
-            if (rs.next()) {
+            if (rs!=null && rs.next()) {
                 Row row = getMapForRow(rs);
                 T value = mapper.mapRow(row);
                 if (value != null) {

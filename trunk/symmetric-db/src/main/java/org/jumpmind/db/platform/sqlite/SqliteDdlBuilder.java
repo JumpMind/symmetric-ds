@@ -1,5 +1,6 @@
 package org.jumpmind.db.platform.sqlite;
 
+import java.sql.Connection;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
@@ -12,6 +13,7 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
 
     public SqliteDdlBuilder() {
+        databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_SERIALIZABLE);
         databaseInfo.setPrimaryKeyEmbedded(true);
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);

@@ -44,9 +44,10 @@ import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -83,6 +84,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, "Sybase", SybaseDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
+        addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);

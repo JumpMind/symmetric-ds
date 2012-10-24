@@ -439,7 +439,11 @@ public class Column implements Cloneable, Serializable {
                     case Types.SMALLINT:
                         return new Short(defaultValue);
                     case Types.INTEGER:
-                        return new Integer(defaultValue);
+                        try {
+                            return new Integer(defaultValue);
+                        } catch (NumberFormatException e) {
+                            return new Long(defaultValue);
+                        }
                     case Types.BIGINT:
                         return new Long(defaultValue);
                     case Types.DECIMAL:
