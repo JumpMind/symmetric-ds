@@ -15,10 +15,11 @@ import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
+import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -120,7 +121,10 @@ public abstract class AbstractIntegrationTest {
         boolean pulled = false;
         while (!pulled && tries < 10) {
             RemoteNodeStatuses statuses = getClient().pull();
-            statuses.waitForComplete(20000);
+            try {
+                statuses.waitForComplete(20000);
+            } catch (InterruptedException ex) {
+            }
             pulled = statuses.wasDataProcessed();
             AppUtils.sleep(100);
             tries++;
