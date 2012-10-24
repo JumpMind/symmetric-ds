@@ -44,11 +44,11 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
 
     public void busy(Node remoteNode) {
-        log.warn("The server was too busy to accept the connection");
+        log.warn("Node '{}' was too busy to accept the connection", remoteNode.getNodeId());
     }
 
     public void notAuthenticated(Node remoteNode) {
-        log.warn("Could not authenticate with node");
+        log.warn("Could not authenticate with node '{}'", remoteNode.getNodeId());
     }
     
     public void unknownError(Node remoteNode, Exception ex) {

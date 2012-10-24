@@ -234,9 +234,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
         } catch (RegistrationRequiredException e) {
-            log.warn("Registration was lost. Attempting to re-register.");
-            loadDataFromPull(null, status);
-            nodeService.findIdentity(false);
+            if (remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
+                log.warn("Registration was lost. Attempting to re-register.");
+                loadDataFromPull(null, status);
+                nodeService.findIdentity(false);
+            } else {
+                log.warn(
+                        "Node '{}' must not have a security record to allow communication.  Will try again on the next pull",
+                        remote.getNodeId());
+            }
         } catch (MalformedURLException e) {
             if (remote != null) {
                 log.error("Could not connect to the {} node's transport because of a bad URL: {}",
