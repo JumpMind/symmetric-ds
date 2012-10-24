@@ -126,7 +126,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                 return true;
             } else {
                 log.warn(
-                        "Node {} requested a {} connection, but was rejected because it already has one",
+                        "Node '{}' requested a {} connection, but was rejected because it already has one",
                         nodeId, poolId);
                 return false;
             }
