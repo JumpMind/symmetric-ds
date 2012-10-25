@@ -61,8 +61,12 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
 
     public void syncDisabled(Node remoteNode) {
-        log.warn("Synchronization is disabled on the server node");
-        nodeService.deleteIdentity();
+        Node identity = nodeService.findIdentity();
+        if (identity != null && identity.getCreatedAtNodeId() != null
+                && identity.getCreatedAtNodeId().equals(remoteNode.getNodeId())) {
+            log.warn("Removing identity because sync has been disabled");
+            nodeService.deleteIdentity();
+        }
     }
     
     public void registrationRequired(Node remoteNode) {

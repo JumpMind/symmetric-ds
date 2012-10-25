@@ -151,13 +151,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 .getSyncUrl()));
                 fireOffline(ex, node, status);
             } catch (ConnectionRejectedException ex) {
-                log.warn("The server was too busy to accept the connection");
                 fireOffline(ex, node, status);
             } catch (AuthenticationException ex) {
-                log.warn("Could not authenticate with node");
                 fireOffline(ex, node, status);
             } catch (SyncDisabledException ex) {
-                log.warn("Synchronization is disabled on the server node");
                 fireOffline(ex, node, status);
             } catch (SocketException ex) {
                 log.warn("{}", ex.getMessage());
