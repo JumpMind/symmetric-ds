@@ -102,7 +102,9 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             map.addIgnoreChannels(remoteSuspendIgnoreChannelsList.getIgnoreChannels());
 
             if (nodeSecurity != null) {
-                if (nodeSecurity.isRegistrationEnabled()) {
+                String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
+                if (nodeSecurity.isRegistrationEnabled() && 
+                        (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
                     registrationService.registerNode(nodeService.findNode(nodeId), remoteHost,
                             remoteAddress, outputStream, false);
                 } else {
