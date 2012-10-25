@@ -240,25 +240,39 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, table);
         Column column = table.getColumnWithName(columnName);
         String sql = stmt.getColumnsSql(new Column[] { column });
-        Timestamp existingTs = writer.getTransaction().queryForObject(sql, Timestamp.class,
-                objectValues);
+
         Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
                 CsvData.ROW_DATA);
-        String columnValue = newData.get(columnName);
+        String loadingStr = newData.get(columnName);
+        
         Date loadingTs = null;
+        Date existingTs = null;
         if (column.getMappedTypeCode() == -101) {
-            int split = columnValue.lastIndexOf(" ");
-            loadingTs = FormatUtils.parseDate(columnValue.substring(0, split).trim(),
+            // Get the existingTs with timezone
+            String existingStr = writer.getTransaction().queryForObject(sql, String.class,
+                    objectValues);
+            int split = existingStr.lastIndexOf(" ");
+            existingTs = FormatUtils.parseDate(existingStr.substring(0, split).trim(),
                     FormatUtils.TIMESTAMP_PATTERNS,
-                    TimeZone.getTimeZone(columnValue.substring(split).trim()));
+                    TimeZone.getTimeZone(existingStr.substring(split).trim()));
+
+            // Get the loadingTs with timezone
+            split = loadingStr.lastIndexOf(" ");
+            loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
+                    FormatUtils.TIMESTAMP_PATTERNS,
+                    TimeZone.getTimeZone(loadingStr.substring(split).trim()));
         } else {
+            // Get the existingTs
+            existingTs = writer.getTransaction().queryForObject(sql, Timestamp.class,
+                    objectValues);
+            // Get the loadingTs
             Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(),
-                    new String[] { columnValue }, new Column[] { column });
+                    new String[] { loadingStr }, new Column[] { column });
             if (values[0] instanceof Date) {
                 loadingTs = (Date) values[0];
             } else {
                 throw new ParseException("Could not parse " + columnName + " with a value of "
-                        + columnValue + " for purposes of conflict detection");
+                        + loadingStr + " for purposes of conflict detection");
             }
         }
 
