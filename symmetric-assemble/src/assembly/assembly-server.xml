@@ -52,7 +52,12 @@
             <source>../symmetric-server/src/main/deploy/bin/dbimport</source>
             <outputDirectory>/bin</outputDirectory>
             <fileMode>774</fileMode>
-        </file>                        
+        </file>   
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/dbfill</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>774</fileMode>
+        </file>                              
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
             <outputDirectory>/bin</outputDirectory>
