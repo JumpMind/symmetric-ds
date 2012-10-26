@@ -310,6 +310,7 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void testExportCsvToDirectory() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
+        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         DataSource ds = engine.getDataSource();
         
         DbImport importXml = new DbImport(ds);
@@ -327,9 +328,9 @@ public class DbExportImportTest extends AbstractServiceTest {
         exportCsv.exportTables(new String[] {"a", "b", "c"});
         
         Assert.assertTrue(dir.exists());
-        Assert.assertTrue(dir.isDirectory());
+        Assert.assertTrue(dir.isDirectory());               
         
-        File a = new File(dir, "a.csv");
+        File a = new File(dir, platform.getTableFromCache("a", false).getName() + ".csv");
         Assert.assertTrue(a.exists());
         Assert.assertTrue(a.isFile());
         List<String> lines = FileUtils.readLines(a);
@@ -338,7 +339,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertEquals("1,This is a test of a", lines.get(6));
         Assert.assertEquals("2,This is a test of a", lines.get(7));
         
-        File b = new File(dir, "b.csv");
+        File b = new File(dir, platform.getTableFromCache("b", false).getName() + ".csv");
         Assert.assertTrue(b.exists());
         Assert.assertTrue(b.isFile());
         lines = FileUtils.readLines(b);
@@ -348,7 +349,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertEquals("2,This is a test of b", lines.get(7));
         Assert.assertEquals("3,This is line 3 of b", lines.get(8));
         
-        File c = new File(dir, "c.csv");
+        File c = new File(dir, platform.getTableFromCache("c", false).getName() + ".csv");
         Assert.assertTrue(c.exists());
         Assert.assertTrue(c.isFile());
         lines = FileUtils.readLines(c);
