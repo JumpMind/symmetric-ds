@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -41,17 +42,21 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.UniqueIndex;
-import org.jumpmind.db.platform.DdlException;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.util.FormatUtils;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 /*
  * This class provides functions to read and write database models from/to XML.
  */
-public class DatabaseIO {
-    
+public class DatabaseXmlUtil {
+
     public static final String DTD_PREFIX = "http://db.apache.org/torque/dtd/database";
+    
+    private DatabaseXmlUtil() {
+    }
 
     /*
      * Reads the database model contained in the specified file.
@@ -60,7 +65,7 @@ public class DatabaseIO {
      * 
      * @return The database model
      */
-    public Database read(String filename) throws DdlException {
+    public static Database read(String filename) {
         return read(new File(filename));
     }
 
@@ -71,27 +76,23 @@ public class DatabaseIO {
      * 
      * @return The database model
      */
-    public Database read(File file) throws DdlException {
+    public static Database read(File file) {
         FileReader reader = null;
         try {
             reader = new FileReader(file);
             return read(reader);
-        } catch (DdlException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new DdlException(ex);
+        } catch (IOException e) {
+            throw new IoException(e);
         } finally {
             IOUtils.closeQuietly(reader);
         }
     }
 
-    public Database read(InputStream is) throws DdlException {
+    public static Database read(InputStream is) {
         try {
             return read(new InputStreamReader(is, "UTF-8"));
-        } catch (DdlException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new DdlException(ex);
+        } catch (IOException e) {
+            throw new IoException(e);
         }
     }
 
@@ -102,7 +103,7 @@ public class DatabaseIO {
      * 
      * @return The database model
      */
-    public Database read(Reader reader) throws DdlException {
+    public static Database read(Reader reader) {
         return read(reader, true);
     }
 
@@ -113,7 +114,7 @@ public class DatabaseIO {
      * 
      * @return The database model
      */
-    public Database read(Reader reader, boolean validate) throws DdlException {
+    public static Database read(Reader reader, boolean validate) {
         try {
             boolean done = false;
             Database database = null;
@@ -217,7 +218,8 @@ public class DatabaseIO {
                                 }
                             }
                             table.addIndex(index);
-                        } else if (name.equalsIgnoreCase("index-column") || name.equalsIgnoreCase("unique-column")) {
+                        } else if (name.equalsIgnoreCase("index-column")
+                                || name.equalsIgnoreCase("unique-column")) {
                             IndexColumn indexColumn = new IndexColumn();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
@@ -256,8 +258,10 @@ public class DatabaseIO {
                 database.initialize();
             }
             return database;
-        } catch (Exception e) {
-            throw new DdlException(e);
+        } catch (XmlPullParserException e) {
+            throw new IoException(e);
+        } catch (IOException e) {
+            throw new IoException(e);
         }
     }
 
@@ -268,21 +272,21 @@ public class DatabaseIO {
      * 
      * @param filename The model file name
      */
-    public void write(Database model, String filename) throws DdlException {
-		try {
-			BufferedWriter writer = null;
-			try {
-				writer = new BufferedWriter(new FileWriter(filename));
-				write(model, writer);
-				writer.flush();
-			} finally {
-				if (writer != null) {
-					writer.close();
-				}
-			}
-		} catch (Exception ex) {
-			throw new DdlException(ex);
-		}
+    public static void write(Database model, String filename) {
+        try {
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(filename));
+                write(model, writer);
+                writer.flush();
+            } finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
     }
 
     /*
@@ -293,13 +297,13 @@ public class DatabaseIO {
      * 
      * @param output The output stream
      */
-    public void write(Database model, OutputStream output) throws DdlException {
+    public static void write(Database model, OutputStream output) {
         Writer writer = new OutputStreamWriter(output);
         write(model, writer);
         try {
             writer.flush();
-        } catch (Exception e) {
-            throw new DdlException(e);
+        } catch (IOException e) {
+            throw new IoException(e);
         }
     }
 
@@ -312,85 +316,89 @@ public class DatabaseIO {
      * @param output The output writer
      */
 
-    public void write(Database model, Writer output) throws DdlException {
-        write(model, output, null);
+    public static void write(Database model, Writer output) {
+        try {
+            output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + DTD_PREFIX
+                    + "\">\n");
+            output.write("<database name=\"" + model.getName() + "\"");
+            if (model.getIdMethod() != null) {
+                output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
+            }
+            output.write(">\n");
+
+            for (Table table : model.getTables()) {
+                write(table, output);
+            }
+            output.write("</database>\n");
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 
-    public void write(Database model, Writer output, String rootElementName) throws DdlException {
-    	try {
-	    	output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + DTD_PREFIX + "\">\n");
-	    	if (rootElementName != null) {
-	    	    output.write("<" + rootElementName + ">\n");
-	    	}
-	    	output.write("<database name=\"" + model.getName() + "\"");
-	    	if (model.getIdMethod() != null) {
-	    		output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
-	    	}
-	    	output.write(">\n");
-	    	
-	    	for (Table table : model.getTables()) {
-	    		output.write("\t<table name=\"" + table.getName() + "\">\n");
-	    		
-	    		for (Column column : table.getColumns()) {
-	    			output.write("\t\t<column name=\"" + column.getName() + "\"");
-	    			if (column.isPrimaryKey()) {
-	    				output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
-	    			}
-	    			if (column.isRequired()) {
-	    				output.write(" required=\"" + column.isRequired() + "\"");
-	    			}
-	    			if (column.getMappedType() != null) {
-	    				output.write(" type=\"" + column.getMappedType() + "\"");
-	    			}
-	    			if (column.getSize() != null) {
-	    				output.write(" size=\"" + column.getSize() + "\"");
-	    			}
-	    			if (column.getDefaultValue() != null) {
-	    				output.write(" default=\"" + column.getDefaultValue() + "\"");
-	    			}
-	    			if (column.isAutoIncrement()) {
-	    				output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
-	    			}
-	    			if (column.getJavaName() != null) {
-	    				output.write(" javaName=\"" + column.getJavaName() + "\"");
-	    			}
-	    			output.write("/>\n");
-	    		}
+    public static void write(Table table, Writer output) {
 
-	    		for (ForeignKey fk : table.getForeignKeys()) {
-	    			output.write("\t\t<foreign-key name=\"" + fk.getName() + "\" foreignTable=\"" + fk.getForeignTableName() + "\">\n");
-	    			for (Reference ref : fk.getReferences()) {
-	    				output.write("\t\t\t<reference local=\"" + ref.getLocalColumnName() + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>\n");
-	    			}
-	    			output.write("\t\t</foreign-key>\n");
-	    		}
+        try {
+            output.write("\t<table name=\"" + table.getName() + "\">\n");
 
-	    		for (IIndex index : table.getIndices()) {
-	    			if (index.isUnique()) {
-	    				output.write("\t\t<unique name=\"" + index.getName() + "\">\n");
-	    				for (IndexColumn column : index.getColumns()) {
-	    					output.write("\t\t\t<unique-column name=\"" + column.getName() + "\"/>\n");
-		    			}
-	    				output.write("\t\t</unique>\n");
-	    			} else {
-	    				output.write("\t\t<index name=\"" + index.getName() + "\">\n");
-		    			for (IndexColumn column : index.getColumns()) {
-	    					output.write("\t\t\t<index-column name=\"" + column.getName() + "\"");
-	    					if (column.getSize() != null) {
-	    						output.write(" size=\"" + column.getSize() + "\"");
-	    					}
-	    					output.write("/>\n");
-		    			}
-	    				output.write("\t\t</index>\n");
-	    			}
-	    		}
+            for (Column column : table.getColumns()) {
+                output.write("\t\t<column name=\"" + column.getName() + "\"");
+                if (column.isPrimaryKey()) {
+                    output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
+                }
+                if (column.isRequired()) {
+                    output.write(" required=\"" + column.isRequired() + "\"");
+                }
+                if (column.getMappedType() != null) {
+                    output.write(" type=\"" + column.getMappedType() + "\"");
+                }
+                if (column.getSize() != null) {
+                    output.write(" size=\"" + column.getSize() + "\"");
+                }
+                if (column.getDefaultValue() != null) {
+                    output.write(" default=\"" + column.getDefaultValue() + "\"");
+                }
+                if (column.isAutoIncrement()) {
+                    output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
+                }
+                if (column.getJavaName() != null) {
+                    output.write(" javaName=\"" + column.getJavaName() + "\"");
+                }
+                output.write("/>\n");
+            }
 
-	    		output.write("\t</table>\n");
-	    	}
+            for (ForeignKey fk : table.getForeignKeys()) {
+                output.write("\t\t<foreign-key name=\"" + fk.getName() + "\" foreignTable=\""
+                        + fk.getForeignTableName() + "\">\n");
+                for (Reference ref : fk.getReferences()) {
+                    output.write("\t\t\t<reference local=\"" + ref.getLocalColumnName()
+                            + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>\n");
+                }
+                output.write("\t\t</foreign-key>\n");
+            }
 
-	    	output.write("</database>\n");
-    	} catch (Exception e) {
-    		throw new DdlException(e);
-    	}
+            for (IIndex index : table.getIndices()) {
+                if (index.isUnique()) {
+                    output.write("\t\t<unique name=\"" + index.getName() + "\">\n");
+                    for (IndexColumn column : index.getColumns()) {
+                        output.write("\t\t\t<unique-column name=\"" + column.getName() + "\"/>\n");
+                    }
+                    output.write("\t\t</unique>\n");
+                } else {
+                    output.write("\t\t<index name=\"" + index.getName() + "\">\n");
+                    for (IndexColumn column : index.getColumns()) {
+                        output.write("\t\t\t<index-column name=\"" + column.getName() + "\"");
+                        if (column.getSize() != null) {
+                            output.write(" size=\"" + column.getSize() + "\"");
+                        }
+                        output.write("/>\n");
+                    }
+                    output.write("\t\t</index>\n");
+                }
+            }
+
+            output.write("\t</table>\n");
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 }

@@ -21,8 +21,12 @@
 
 package org.jumpmind.symmetric;
 
+import java.io.File;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
 
@@ -54,6 +58,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_SCHEMA = "schema";
     
     private static final String OPTION_CATALOG = "catalog";
+    
+    private static final String OPTION_DIR = "dir";
 
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
@@ -84,6 +90,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     protected void buildOptions(Options options) {
         super.buildOptions(options);
         addOption(options, null, OPTION_FORMAT, true);
+        addOption(options, null, OPTION_DIR, true);
         addOption(options, null, OPTION_COMPATIBLE, true);
         addOption(options, null, OPTION_SCHEMA, true);
         addOption(options, null, OPTION_CATALOG, true);
@@ -101,9 +108,24 @@ public class DbExportCommand extends AbstractCommandLauncher {
     protected boolean executeWithOptions(CommandLine line) throws Exception {
         DbExport dbExport = new DbExport(getDatabasePlatform(false));
 
+        if (line.hasOption(OPTION_DIR)) {
+            String dir = line.getOptionValue(OPTION_DIR);
+            if (new File(dir).exists()) {
+                dbExport.setDir(line.getOptionValue(OPTION_DIR));    
+            } else {
+                throw new ParseException(String.format("The directory you chose, {}, does not exist", dir));
+            }            
+        }
+        
         if (line.hasOption(OPTION_FORMAT)) {
             dbExport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
+            if (dbExport.getFormat() == Format.CSV && line.getArgs().length > 1
+                    && StringUtils.isBlank(dbExport.getDir())) {
+                throw new ParseException(
+                        "When exporting multiple tables to CSV format you must designate a directory where the files will be written");
+            }
         }
+        
         if (line.hasOption(OPTION_COMPATIBLE)) {
             try {
                 dbExport.setCompatible(Compatible.valueOf(line.getOptionValue(OPTION_COMPATIBLE).toUpperCase()));

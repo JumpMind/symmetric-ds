@@ -244,6 +244,6 @@ public abstract class AbstractServiceTest {
         SqlUtils.logOpenResources();
         Assert.assertEquals("There should be no open cursors", 0, SqlUtils.getOpenSqlReadCursors().size());
         Assert.assertEquals("There should be no open transactions", 0, SqlUtils.getOpenTransactions().size());
-    }
+    }    
 
 }

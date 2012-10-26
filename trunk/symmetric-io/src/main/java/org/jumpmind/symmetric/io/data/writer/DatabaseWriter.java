@@ -34,7 +34,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -793,7 +793,7 @@ public class DatabaseWriter implements IDataWriter {
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: ", xml);
             StringReader reader = new StringReader(xml);
-            Database db = (Database) new DatabaseIO().read(reader, false);
+            Database db = (Database) DatabaseXmlUtil.read(reader, false);
             platform.alterTables(false, db.getTables());
             platform.resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);

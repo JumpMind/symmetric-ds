@@ -39,7 +39,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
@@ -623,7 +623,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
         InputStreamReader reader = new InputStreamReader(is);
-        Database database = new DatabaseIO().read(reader);
+        Database database = DatabaseXmlUtil.read(reader);
         if (alterCaseToMatchDatabaseDefaultCase) {
             boolean storesUpperCase = isStoresUpperCaseIdentifiers();
             Table[] tables = database.getTables();

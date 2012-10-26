@@ -5,7 +5,7 @@ import java.sql.Types;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -138,7 +138,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
     @Test
     public void testCreateAndReadTestSimpleTable() throws Exception {
-        platform.createDatabase(new DatabaseIO().read(new InputStreamReader(
+        platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
                 false);
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
