@@ -52,7 +52,6 @@ import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.support.JdbcUtils;
 
 /*
  * An utility class to create a Database model from a live database.
@@ -555,41 +554,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
         }));
 
-    }
-
-    public Table readTable(final String catalog, final String schema, final String tableName,
-            final String sql) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
-            public Table execute(Connection connection) throws SQLException {
-                Statement st = connection.createStatement();
-                ResultSet rs = st.executeQuery(sql);
-                try {
-                    st = connection.createStatement();
-                    rs = st.executeQuery(sql);
-                    ResultSetMetaData rsm = rs.getMetaData();
-                    Table table = new Table();
-                    table.setCatalog(catalog);
-                    table.setSchema(schema);
-                    table.setName(tableName);
-                    for (int i = 1; i <= rsm.getColumnCount(); i++) {
-                        Column column = new Column(rsm.getColumnName(i));
-                        column.setMappedTypeCode(rsm.getColumnType(i));
-                        column.setJdbcTypeCode(rsm.getColumnType(i));
-                        column.setJdbcTypeName(column.getMappedType());
-                        column.setRequired(rsm.isNullable(i) == 0);
-                        column.setScale(rsm.getScale(i));
-                        column.setPrecisionRadix(rsm.getPrecision(i));
-                        column.setAutoIncrement(rsm.isAutoIncrement(i));
-                        table.addColumn(column);
-                    }
-                    return table;
-                } finally {
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(st);
-                }
-            }
-        }));
     }
 
     protected Table postprocessTableFromDatabase(Table table) {
