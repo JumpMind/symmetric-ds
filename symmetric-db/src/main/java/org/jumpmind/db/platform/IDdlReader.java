@@ -10,6 +10,4 @@ public interface IDdlReader {
 
     public Table readTable(String catalog, String schema, String tableName);
     
-    public Table readTable(String catalog, String schema, String tableName, String sql);
-    
 }

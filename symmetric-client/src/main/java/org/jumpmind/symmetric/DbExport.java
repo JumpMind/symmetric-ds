@@ -142,7 +142,6 @@ public class DbExport {
             Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                     tableName);
             if (table != null) {
-
                 tableList.add(table);
             } else if (!ignoreMissingTables) {
                 throw new RuntimeException("Cannot find table " + tableName + " in catalog "
@@ -153,16 +152,24 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
-        Table table = platform.getDdlReader().readTable(getCatalogToUse(), getSchemaToUse(),
-                tableName, sql);
+        Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
+                tableName);
         exportTables(output, new Table[] { table }, sql);
     }
 
-    public void exportTables(OutputStream output, Table[] tables) throws IOException {
+    protected void exportTables(OutputStream output, Table[] tables) throws IOException {
         exportTables(output, tables, null);
     }
 
-    public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
+    protected void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
+        
+        for (int i = 0; i < tables.length; i++) {
+            // if the table definition did not come from the database, then read the table from the database
+            if (!tables[i].containsJdbcTypes()) {
+                tables[i] = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
+                        tables[i].getName());
+            }
+        }
 
         WriterWrapper writerWrapper = null;
 
