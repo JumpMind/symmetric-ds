@@ -86,7 +86,7 @@ public class Column implements Cloneable, Serializable {
     /**
      * The actual JDBC type code.
      */
-    private int jdbcTypeCode;
+    private int jdbcTypeCode = Integer.MIN_VALUE;
 
     /**
      * The actual JDBC type name.
@@ -646,6 +646,10 @@ public class Column implements Cloneable, Serializable {
     
     public boolean isTimestampWithTimezone() {
         return jdbcTypeCode == -101 || (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
+    }
+    
+    public boolean containsJdbcTypes() {
+        return jdbcTypeCode != Integer.MIN_VALUE && jdbcTypeName != null;
     }
 
 }

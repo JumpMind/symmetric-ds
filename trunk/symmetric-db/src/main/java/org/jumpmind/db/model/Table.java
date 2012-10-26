@@ -1176,5 +1176,19 @@ public class Table implements Serializable, Cloneable {
     public String getPrimaryKeyConstraintName() {
         return primaryKeyConstraintName;
     }
+    
+    public boolean containsJdbcTypes() {
+        Column[] columns = getColumns();
+        if (columns != null && columns.length > 0) {
+            for (Column column : columns) {
+                if (!column.containsJdbcTypes()) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }
