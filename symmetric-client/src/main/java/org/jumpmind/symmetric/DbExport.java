@@ -377,13 +377,9 @@ public class DbExport {
                         directory.mkdirs();
                     }
 
-                    boolean inDefaultSchemaCatalog = StringUtils.equals(table.getSchema(),
-                            platform.getDefaultSchema())
-                            && StringUtils.equals(table.getCatalog(), platform.getDefaultCatalog());
                     File file = new File(dir, String.format(
                             "%s.%s",
-                            inDefaultSchemaCatalog ? table.getName() : table
-                                    .getFullyQualifiedTableName(),
+                            table.getName(),
                             format.toString().replace('_', '.').toLowerCase()));
                     FileUtils.deleteQuietly(file);
                     try {
