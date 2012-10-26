@@ -629,11 +629,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "The {} property must be a longer period of time than the {} property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
                     ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
                     ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
-        } else if (Version.isOlderThanVersion(Version.version(), node.getSymmetricVersion())) {
+        } else if (node != null && Version.isOlderThanVersion(Version.version(), node.getSymmetricVersion())) {
             log.warn("SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}", 
                     Version.version(), node.getSymmetricVersion());
         } else {
-            if (Version.isOlderThanVersion(node.getSymmetricVersion(), Version.version())) {
+            if (node != null && Version.isOlderThanVersion(node.getSymmetricVersion(), Version.version())) {
                 log.info("The current version of {} is newer than the last running version of {}", 
                         Version.version(), node.getSymmetricVersion());
             }
