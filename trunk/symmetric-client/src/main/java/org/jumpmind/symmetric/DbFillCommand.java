@@ -12,6 +12,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_COUNT = "count";
     
+    private static final String OPTION_CASCADE = "cascade";
+    
+    private static final String OPTION_IGNORE_TABLES = "ignore-prefix";
+    
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
     }
@@ -43,6 +47,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_SCHEMA, true);
         addOption(options, null, OPTION_CATALOG, true);
         addOption(options, null, OPTION_COUNT, true);
+        addOption(options, null, OPTION_CASCADE, false);
+        addOption(options, null, OPTION_IGNORE_TABLES, true);
     }
     
     @Override
@@ -57,6 +63,12 @@ public class DbFillCommand extends AbstractCommandLauncher {
         }    
         if (line.hasOption(OPTION_COUNT)) {
             dbFill.setRecordCount(Integer.parseInt(line.getOptionValue(OPTION_COUNT)));
+        }
+        if (line.hasOption(OPTION_CASCADE)) {
+            dbFill.setCascading(true);
+        }
+        if (line.hasOption(OPTION_IGNORE_TABLES)) {
+            dbFill.setIgnorePrefix(line.getOptionValue(OPTION_IGNORE_TABLES));
         }
         String[] args = line.getArgs();
         dbFill.fillTables(args);
