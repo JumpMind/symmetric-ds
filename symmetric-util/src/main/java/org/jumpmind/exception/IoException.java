@@ -32,7 +32,7 @@ public class IoException extends RuntimeException {
     public IoException() {     
     }
     
-    public IoException(IOException e) {
+    public IoException(Exception e) {
         super(e);
     }
     

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -344,8 +344,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         setDatabaseName(triggerRouter, db);
         db.addTable(table);
         StringWriter buffer = new StringWriter();
-        DatabaseIO xmlWriter = new DatabaseIO();
-        xmlWriter.write(db, buffer);
+        DatabaseXmlUtil.write(db, buffer);
         // TODO: remove when these bugs are fixed in DdlUtils
         String xml = buffer.toString().replaceAll("&apos;", "");
         xml = xml.replaceAll("default=\"empty_blob\\(\\) *\"", "");

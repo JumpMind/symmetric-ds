@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -7,6 +8,7 @@ import javax.sql.DataSource;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Database;
@@ -262,7 +264,7 @@ public class DbExportImportTest extends AbstractServiceTest {
     }
 
     @Test
-    public void testOracleExportTimestampWithTimezone() throws Exception {
+    public void testExportTimestampWithTimezone() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         DataSource ds = engine.getDataSource();
@@ -303,6 +305,58 @@ public class DbExportImportTest extends AbstractServiceTest {
 
             }
         }
+    }
+    
+    @Test
+    public void testExportCsvToDirectory() throws Exception {
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+        
+        DbImport importXml = new DbImport(ds);
+        importXml.setFormat(DbImport.Format.XML);
+        importXml.importTables(getClass().getResourceAsStream("/test-dbexportimport-3-tables.xml"));
+        
+        File dir = new File("target/test");
+        FileUtils.deleteDirectory(dir);
+        Assert.assertFalse(dir.exists());
+        
+        DbExport exportCsv = new DbExport(ds);
+        exportCsv.setComments(true);
+        exportCsv.setFormat(Format.CSV);
+        exportCsv.setDir(dir.getAbsolutePath());
+        exportCsv.exportTables(new String[] {"a", "b", "c"});
+        
+        Assert.assertTrue(dir.exists());
+        Assert.assertTrue(dir.isDirectory());
+        
+        File a = new File(dir, "a.csv");
+        Assert.assertTrue(a.exists());
+        Assert.assertTrue(a.isFile());
+        List<String> lines = FileUtils.readLines(a);
+        Assert.assertEquals(9, lines.size());
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of a", lines.get(6));
+        Assert.assertEquals("2,This is a test of a", lines.get(7));
+        
+        File b = new File(dir, "b.csv");
+        Assert.assertTrue(b.exists());
+        Assert.assertTrue(b.isFile());
+        lines = FileUtils.readLines(b);
+        Assert.assertEquals(10, lines.size());
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of b", lines.get(6));
+        Assert.assertEquals("2,This is a test of b", lines.get(7));
+        Assert.assertEquals("3,This is line 3 of b", lines.get(8));
+        
+        File c = new File(dir, "c.csv");
+        Assert.assertTrue(c.exists());
+        Assert.assertTrue(c.isFile());
+        lines = FileUtils.readLines(c);
+        Assert.assertEquals(9, lines.size());
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of c", lines.get(6));
+        Assert.assertEquals("2,This is a test of c", lines.get(7));
+
     }
 
     protected void compareRows(List<Row> one, List<Row> two) {

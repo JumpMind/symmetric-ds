@@ -10,7 +10,7 @@ public class DatabaseIOTest {
     
     @Test
     public void testReadXml() {
-        Database database = new DatabaseIO().read(getClass().getResourceAsStream("/testDatabaseIO.xml"));
+        Database database = DatabaseXmlUtil.read(getClass().getResourceAsStream("/testDatabaseIO.xml"));
         Assert.assertNotNull(database);
         Assert.assertEquals(1, database.getTableCount());
         Assert.assertEquals("test", database.getName());

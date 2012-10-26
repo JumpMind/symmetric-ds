@@ -144,6 +144,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             } else {
                                 return data;
                             }
+                        } else if ("table_data".equalsIgnoreCase(name)) {
+                            batch.setComplete(true);
                         } else if ("field".equalsIgnoreCase(name)) {
                             columnName = null;
                             nullValue = false;
@@ -182,6 +184,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
         if (next instanceof Table) {
             this.table = (Table) next;
             next = data;
+        } else if (next instanceof Batch) {
+            return null;
         } else {
             next = readNext();
             if (next instanceof Table) {

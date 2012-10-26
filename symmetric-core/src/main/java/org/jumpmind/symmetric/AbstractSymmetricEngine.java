@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -394,7 +394,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             if (fileUrl != null) {
                 try {
                     log.info("Building database schema from: {}", xml);
-                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
+                    Database database = DatabaseXmlUtil.read(new InputStreamReader(fileUrl
                             .openStream()));
                     IDatabasePlatform platform = symmetricDialect.getPlatform();
                     platform.createDatabase(database, true, true);

@@ -22,9 +22,12 @@
 package org.jumpmind.symmetric;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,9 +35,11 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -43,10 +48,12 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 
 /**
@@ -54,35 +61,41 @@ import org.jumpmind.symmetric.csv.CsvWriter;
  */
 public class DbExport {
 
-    public enum Format { SQL, CSV, XML, SYM_XML };
+    public enum Format {
+        SQL, CSV, XML, SYM_XML
+    };
 
-    public enum Compatible { DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE };
-		
-	private Format format = Format.SQL;
-	
-	private Compatible compatible;
-	
-	private boolean addDropTable;
-	
-	private boolean noCreateInfo;
-	
-	private boolean noIndices;
-	
-	private boolean noForeignKeys;
-	
-	private boolean noData;
-	
-	private boolean ignoreMissingTables;
-	
-	private boolean useVariableDates;
+    public enum Compatible {
+        DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE
+    };
 
-	private boolean comments;
-	
-	private String catalog;
-	
-	private String schema;
+    private Format format = Format.SQL;
 
-	private IDatabasePlatform platform;
+    private Compatible compatible;
+
+    private boolean addDropTable;
+
+    private boolean noCreateInfo;
+
+    private boolean noIndices;
+
+    private boolean noForeignKeys;
+
+    private boolean noData;
+
+    private boolean ignoreMissingTables;
+
+    private boolean useVariableDates;
+
+    private boolean comments;
+
+    private String catalog;
+
+    private String schema;
+
+    private String dir;
+
+    private IDatabasePlatform platform;
 
     public DbExport(IDatabasePlatform platform) {
         this.platform = platform;
@@ -90,7 +103,8 @@ public class DbExport {
     }
 
     public DbExport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, new SqlTemplateSettings(), true);
+        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
+                new SqlTemplateSettings(), true);
         compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 
@@ -116,7 +130,8 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output) throws IOException {
-        Database database = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), new String[] {"TABLE"});
+        Database database = platform.readDatabase(getCatalogToUse(), getSchemaToUse(),
+                new String[] { "TABLE" });
         exportTables(output, database.getTables());
     }
 
@@ -124,78 +139,48 @@ public class DbExport {
         ArrayList<Table> tableList = new ArrayList<Table>();
 
         for (String tableName : tableNames) {
-            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(), tableName);
+            Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
+                    tableName);
             if (table != null) {
-                
+
                 tableList.add(table);
-            } else if (! ignoreMissingTables){
-                throw new RuntimeException("Cannot find table " + tableName + " in catalog " + getCatalogToUse() +
-                        " and schema " + getSchemaToUse());
+            } else if (!ignoreMissingTables) {
+                throw new RuntimeException("Cannot find table " + tableName + " in catalog "
+                        + getCatalogToUse() + " and schema " + getSchemaToUse());
             }
         }
         exportTables(output, tableList.toArray(new Table[tableList.size()]));
     }
 
     public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
-        Table table = platform.getDdlReader().readTable(getCatalogToUse(), getSchemaToUse(), tableName, sql);
+        Table table = platform.getDdlReader().readTable(getCatalogToUse(), getSchemaToUse(),
+                tableName, sql);
         exportTables(output, new Table[] { table }, sql);
     }
 
     public void exportTables(OutputStream output, Table[] tables) throws IOException {
         exportTables(output, tables, null);
     }
-    
+
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
-        final Writer writer = new OutputStreamWriter(output);
-        final CsvWriter csvWriter = new CsvWriter(writer, ',');        
-        
-        tables = Database.sortByForeignKeys(tables);
 
-        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible.toString().toLowerCase());
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        writeComment(writer, "SymmetricDS " + Version.version() + " " + DbExport.class.getSimpleName());
-        writeComment(writer, "Catalog: " + StringUtils.defaultString(getCatalogToUse()));
-        writeComment(writer, "Schema: " + StringUtils.defaultString(getSchemaToUse()));
-        writeComment(writer, "Started on " + df.format(new Date()));
-        
-        if (format == Format.XML) {
-            new DatabaseIO().write(getDatabase(tables), writer, "dbexport");
-            
-        } else if (format == Format.SYM_XML) {
-            writer.write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
-        }
+        WriterWrapper writerWrapper = null;
 
-    	for (Table table : tables) {
-            writeComment(writer, "Table: " + table.getName());
-            
-            if (! noCreateInfo) {
-                if (format == Format.SQL) {
-                    writer.write(target.createTables(getDatabase(table), addDropTable));
-                }
+        try {
+            writerWrapper = new WriterWrapper(output);
+
+            tables = Database.sortByForeignKeys(tables);
+
+            for (Table table : tables) {
+                writeTable(writerWrapper, table, sql);
             }
-
-            if (format == Format.CSV) {
-                csvWriter.writeRecord(table.getColumnNames());
+        } finally {
+            if (writerWrapper != null) {
+                writerWrapper.close();
             }
-            
-    		if (! noData) {
-    		    writeData(writer, csvWriter, platform, table, sql);
-    		}
-    	}
-
-        if (format == Format.XML) {
-            writer.write("</dbexport>\n");
-        } else if (format == Format.SYM_XML) {
-            writer.write("</batch>\n");
         }
-        
-        writeComment(writer, "Completed on " + df.format(new Date()));
-        output.flush();
-    	csvWriter.flush();
-    	writer.flush();
     }
-        
+
     protected String getSchemaToUse() {
         if (StringUtils.isBlank(schema)) {
             return platform.getDefaultSchema();
@@ -203,81 +188,35 @@ public class DbExport {
             return schema;
         }
     }
-    
+
     protected String getCatalogToUse() {
         if (StringUtils.isBlank(catalog)) {
             return platform.getDefaultCatalog();
         } else {
             return catalog;
         }
-    }    
- 
-    protected void writeData(final Writer writer, final CsvWriter csvWriter, final IDatabasePlatform platform, Table table, String sql) throws IOException {
-        final Column[] columns = table.getColumns();
-        
-        if (sql == null) {
-            sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
-        }
-        final String insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
-        final String selectSql = sql;
-        
-        final String tableName = table.getName();
-        if (format == Format.XML){
-            writer.write("<table_data name=\"" + tableName + "\">\n");
-        }
-        
-        platform.getSqlTemplate().query(selectSql, new ISqlRowMapper<Object>() {
-            public Object mapRow(Row row) {
-                String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row, useVariableDates);
-                try {
-                    if (format == Format.CSV) {
-                            csvWriter.writeRecord(values, true);
-                            
-                    } else if (format == Format.SQL) {
-                        writer.write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row, useVariableDates) + "\n");
-                        
-                    } else if (format == Format.XML){
-                        writer.write("\t<row>\n");
-                        for (int i = 0; i < columns.length; i++) {
-                            writer.write("\t\t<field name=\"" + columns[i].getName() + "\">" + StringEscapeUtils.escapeXml(values[i]) + "</field>\n");
-                        }
-                        writer.write("\t</row>\n");
-                        
-                    } else if (format == Format.SYM_XML){
-                        writer.write("\t<row entity=\"" + tableName + "\" dml=\"I\">\n");
-                        for (int i = 0; i < columns.length; i++) {
-                            if (values[i] != null) {
-                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\">" + StringEscapeUtils.escapeXml(values[i]) + "</data>\n");
-                            } else {
-                                writer.write("\t\t<data key=\"" + columns[i].getName() + "\" xsi:nil=\"true\" />\n");
-                            }
-                        }
-                        writer.write("\t</row>\n");
-                    }
-                    
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return Boolean.TRUE;
-            }
-        });
-
-        if (format == Format.XML){
-            writer.write("</table_data>\n");
-        }    
     }
-    
-    protected void writeComment(Writer writer, String commentStr) throws IOException {
-        if (comments) {
-            if (format == Format.CSV) {
-                writer.write("# " + commentStr + "\n");
-            } else if (format == Format.XML) {
-                writer.write("<!-- " + commentStr + " -->\n");
-            } else if (format == Format.SQL) {
-                writer.write("-- " + commentStr + "\n");
+
+    protected void writeTable(final WriterWrapper writerWrapper, Table table, String sql)
+            throws IOException {
+
+        writerWrapper.startTable(table);
+
+        if (!noData) {
+            if (sql == null) {
+                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
             }
-            writer.flush();
+
+            platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
+                public Object mapRow(Row row) {
+                    writerWrapper.writeRow(row);
+                    return Boolean.TRUE;
+                }
+            });
         }
+
+        writerWrapper.finishTable(table);
+
     }
 
     protected Database getDatabase(Table table) {
@@ -287,7 +226,7 @@ public class DbExport {
     protected Database getDatabase(Table[] tables) {
         Database db = new Database();
         try {
-            if (! noCreateInfo) {
+            if (!noCreateInfo) {
                 for (Table table : tables) {
                     Table newTable = (Table) table.clone();
                     if (noIndices) {
@@ -400,5 +339,204 @@ public class DbExport {
     public void setNoForeignKeys(boolean noForeignKeys) {
         this.noForeignKeys = noForeignKeys;
     }
-    
+
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    class WriterWrapper {
+        final private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        private CsvWriter csvWriter;
+        private Writer writer;
+        private Table table;
+        private String insertSql;
+        private boolean startedWriting = false;
+
+        public WriterWrapper(OutputStream os) {
+            if (StringUtils.isBlank(dir) && os != null) {
+                try {
+                    writer = new OutputStreamWriter(os, Constants.ENCODING);
+                } catch (UnsupportedEncodingException e) {
+                    throw new IoException(e);
+                }
+            }
+        }
+
+        protected void startTable(Table table) {
+            try {
+                this.table = table;
+                if (StringUtils.isNotBlank(dir)) {
+                    startedWriting = false;
+                    File directory = new File(dir);
+                    if (!directory.exists()) {
+                        directory.mkdirs();
+                    }
+
+                    boolean inDefaultSchemaCatalog = StringUtils.equals(table.getSchema(),
+                            platform.getDefaultSchema())
+                            && StringUtils.equals(table.getCatalog(), platform.getDefaultCatalog());
+                    File file = new File(dir, String.format(
+                            "%s.%s",
+                            inDefaultSchemaCatalog ? table.getName() : table
+                                    .getFullyQualifiedTableName(),
+                            format.toString().replace('_', '.').toLowerCase()));
+                    FileUtils.deleteQuietly(file);
+                    try {
+                        writer = new FileWriter(file);
+                    } catch (IOException e) {
+                        throw new IoException(e);
+                    }
+                }
+
+                if (!startedWriting) {
+                    if (format == Format.SYM_XML) {
+                        write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
+                    } else if (format == Format.XML) {
+                        write("<database name=\"dbexport\">\n");
+                    }
+                    startedWriting = true;
+                }
+
+                if (format == Format.CSV && csvWriter == null) {
+                    csvWriter = new CsvWriter(writer, ',');
+                    csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+                } else if (format == Format.SQL) {
+                    insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
+                }
+
+                if (!noCreateInfo) {
+                    if (format == Format.SQL) {
+                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible
+                                .toString().toLowerCase());
+                        write(target.createTables(getDatabase(table), addDropTable));
+                    } else if (format == Format.XML) {
+                        DatabaseXmlUtil.write(table, writer);
+                    }
+                }
+
+                writeComment("SymmetricDS " + Version.version() + " "
+                        + DbExport.class.getSimpleName());
+                writeComment("Catalog: " + StringUtils.defaultString(getCatalogToUse()));
+                writeComment("Schema: " + StringUtils.defaultString(getSchemaToUse()));
+                writeComment("Table: " + table.getName());
+                writeComment("Started on " + df.format(new Date()));
+                
+                if (format == Format.CSV) {
+                    csvWriter.writeRecord(table.getColumnNames());
+                } else if (format == Format.XML) {
+                    write("<table_data name=\"", table.getName(), "\">\n");
+                }
+            } catch (IOException e) {
+                throw new IoException(e);
+            }
+
+        }
+
+        protected void writeComment(String commentStr) {
+            if (writer != null) {
+                try {
+                    if (comments) {
+                        if (format == Format.CSV) {
+                            write("# ", commentStr, "\n");
+                        } else if (format == Format.XML) {
+                            write("<!-- ", commentStr, " -->\n");
+                        } else if (format == Format.SQL) {
+                            write("-- ", commentStr, "\n");
+                        }
+                        writer.flush();
+                    }
+                } catch (IOException e) {
+                    throw new IoException(e);
+                }
+            }
+        }
+
+        protected void writeRow(Row row) {
+            Column[] columns = table.getColumns();
+            String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row,
+                    useVariableDates);
+            try {
+                if (format == Format.CSV) {
+                    csvWriter.writeRecord(values, true);
+                } else if (format == Format.SQL) {
+                    write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row,
+                            useVariableDates), "\n");
+
+                } else if (format == Format.XML) {
+                    write("\t<row>\n");
+                    for (int i = 0; i < columns.length; i++) {
+                        write("\t\t<field name=\"", columns[i].getName(), "\">",
+                                StringEscapeUtils.escapeXml(values[i]), "</field>\n");
+                    }
+                    write("\t</row>\n");
+
+                } else if (format == Format.SYM_XML) {
+                    write("\t<row entity=\"", table.getName(), "\" dml=\"I\">\n");
+                    for (int i = 0; i < columns.length; i++) {
+                        if (values[i] != null) {
+                            write("\t\t<data key=\"", columns[i].getName(), "\">",
+                                    StringEscapeUtils.escapeXml(values[i]), "</data>\n");
+                        } else {
+                            write("\t\t<data key=\"", columns[i].getName(),
+                                    "\" xsi:nil=\"true\" />\n");
+                        }
+                    }
+                    write("\t</row>\n");
+                }
+
+            } catch (IOException e) {
+                throw new IoException(e);
+            }
+
+        }
+
+        protected void write(String... data) {
+            for (String string : data) {
+                try {
+                    writer.write(string);
+                } catch (IOException e) {
+                    throw new IoException(e);
+                }
+            }
+        }
+
+        protected void finishTable(Table table) {
+            if (format == Format.XML) {
+                write("</table_data>\n");
+            }
+
+            if (StringUtils.isNotBlank(dir)) {
+                close();
+            }
+        }
+
+        public void close() {
+
+            writeComment("Completed on " + df.format(new Date()));
+
+            if (format == Format.SYM_XML) {
+                write("</batch>\n");
+            } else if (format == Format.XML) {
+                write("</database>\n");
+            }
+
+            startedWriting = false;
+
+            if (csvWriter != null) {
+                csvWriter.flush();
+                csvWriter.close();
+                csvWriter = null;
+            }
+
+            IOUtils.closeQuietly(writer);
+            writer = null;
+        }
+
+    }
+
 }
