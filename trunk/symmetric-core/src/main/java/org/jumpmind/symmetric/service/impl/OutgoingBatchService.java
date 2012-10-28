@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -169,69 +170,89 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatchesInError() {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
+    
+    protected String buildWhere(List<String> nodeIds, List<String> channels,
+            List<OutgoingBatch.Status> statuses) {
+        boolean containsErrorStatus = statuses.contains(Status.ER);
+        boolean containsIgnoreStatus = statuses.contains(Status.IG);
+
+        StringBuilder where = new StringBuilder();
+        boolean needsAnd = false;
+        if (nodeIds.size() > 0) {
+            where.append("node_id in (:NODES)");
+            needsAnd = true;
+        }
+        if (channels.size() > 0) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("channel_id in (:CHANNELS)");
+            needsAnd = true;
+        }
+        if (statuses.size() > 0) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("(status in (:STATUSES)");
+            
+            if (containsErrorStatus) {
+                where.append(" or error_flag = 1 ");   
+            }
+            
+            if (containsIgnoreStatus) {
+                where.append(" or ignore_count > 0 ");   
+            }
+            
+            where.append(")");
+
+            needsAnd = true;
+        }
+        
+        if (where.length() > 0) {
+            where.insert(0, " where ");
+        }
+        return where.toString();
+    }
 
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
-        if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("NODES", nodeIds);
-            params.put("CHANNELS", channels);
-            params.put("STATUSES", toStringList(statuses));
-            String sql = null;
-            if (containsOnlyStatus(Status.ER, statuses)) {
-                sql = getSql("selectCountBatchesPrefixSql",
-                        "selectOutgoingBatchByChannelWithErrorSql");
-            } else if (containsOnlyStatus(Status.IG, statuses)) {
-                sql = getSql("selectCountBatchesPrefixSql",
-                        "selectOutgoingBatchByChannelWithIgnoreSql");
-            } else {
-                sql = getSql("selectCountBatchesPrefixSql",
-                        "selectOutgoingBatchByChannelAndStatusSql");
-            }
-            return sqlTemplate.queryForInt(sql, params);
-        } else {
-            return 0;
-        }
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+
+        return sqlTemplate.queryForInt(
+                getSql("selectCountBatchesPrefixSql", buildWhere(nodeIds, channels, statuses)),
+                params);
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve,
             boolean ascending) {
-        if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("NODES", nodeIds);
-            params.put("CHANNELS", channels);
-            params.put("STATUSES", toStringList(statuses));
-            String startAtBatchIdSql = null;
-            if (startAtBatchId > 0) {
-                params.put("BATCH_ID", startAtBatchId);
-                if (ascending) {
-                    startAtBatchIdSql = " and batch_id > :BATCH_ID ";
-                } else {
-                    startAtBatchIdSql = " and batch_id < :BATCH_ID ";
-                }
-            }
 
-            String sql = null;
-            if (containsOnlyStatus(Status.ER, statuses)) {
-                sql = getSql("selectOutgoingBatchPrefixSql",
-                        "selectOutgoingBatchByChannelWithErrorSql", startAtBatchIdSql,
-                        ascending ? "order by batch_id asc" : " order by batch_id desc");
-            } else if (containsOnlyStatus(Status.IG, statuses)) {
-                sql = getSql("selectOutgoingBatchPrefixSql",
-                        "selectOutgoingBatchByChannelWithIgnoreSql", startAtBatchIdSql,
-                        ascending ? "order by batch_id asc" : " order by batch_id desc");
+        String where = buildWhere(nodeIds, channels, statuses);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+        String startAtBatchIdSql = null;
+        if (startAtBatchId > 0) {
+            if (StringUtils.isBlank(where)) {
+                where = " where 1=1 ";
+            }
+            params.put("BATCH_ID", startAtBatchId);
+            if (ascending) {
+                startAtBatchIdSql = " and batch_id > :BATCH_ID ";
             } else {
-                sql = getSql("selectOutgoingBatchPrefixSql",
-                        "selectOutgoingBatchByChannelAndStatusSql", startAtBatchIdSql,
-                        ascending ? "order by batch_id asc" : " order by batch_id desc");
+                startAtBatchIdSql = " and batch_id < :BATCH_ID ";
             }
-
-            return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true, false),
-                    params);
-        } else {
-            return new ArrayList<OutgoingBatch>(0);
         }
+
+        String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
+                ascending ? "order by batch_id asc" : " order by batch_id desc");
+        return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true, false),
+                params);
+
     }
 
     protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {
@@ -247,7 +268,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             List<OutgoingBatch.Status> statuses) {
         return statuses.size() == 1 && statuses.get(0) == status;
     }
-
+    
     /**
      * Select batches to process. Batches that are NOT in error will be returned
      * first. They will be ordered by batch id as the batches will have already
