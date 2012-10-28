@@ -44,12 +44,12 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -62,14 +62,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IConfigurationService configurationService;
 
     private ISequenceService sequenceService;
+    
+    private IClusterService clusterService;
 
     public OutgoingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IConfigurationService configurationService, ISequenceService sequenceService) {
+            IConfigurationService configurationService, ISequenceService sequenceService, IClusterService clusterService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.sequenceService = sequenceService;
+        this.clusterService = clusterService;
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -99,7 +102,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
-        outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
+        outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
         sqlTemplate.update(
                 getSql("updateOutgoingBatchSql"),
                 new Object[] { outgoingBatch.getStatus().name(),
@@ -137,7 +140,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
-        outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
+        outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
 
         long batchId = outgoingBatch.getBatchId();
         if (batchId <= 0) {

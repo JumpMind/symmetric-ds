@@ -44,6 +44,6 @@ public interface IPurgeService {
 
     public void purgeAllIncomingEventsForNode(String nodeId);
     
-    public void purgeStats();
+    public void purgeStats(boolean force);
     
 }

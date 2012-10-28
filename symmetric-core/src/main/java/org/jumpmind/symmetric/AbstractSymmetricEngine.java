@@ -229,12 +229,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.nodeService = new NodeService(parameterService, symmetricDialect);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
+        this.clusterService = new ClusterService(parameterService, symmetricDialect);
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
         this.statisticManager = new StatisticManager(parameterService, nodeService,
-                configurationService, statisticService);
+                configurationService, statisticService, clusterService);
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
-        this.clusterService = new ClusterService(parameterService, symmetricDialect);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager);
         this.transformService = new TransformService(parameterService, symmetricDialect,
@@ -244,13 +244,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
-                nodeService, configurationService, sequenceService);
+                nodeService, configurationService, sequenceService, clusterService);
         this.dataService = new DataService(this);
         this.routerService = buildRouterService();
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
                 nodeService, dataService, transformService, statisticManager, stagingManager);
-        this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect);
+        this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(this);
         this.registrationService = new RegistrationService(parameterService, symmetricDialect,
@@ -258,7 +258,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 transportManager, statisticManager);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
                 outgoingBatchService, registrationService, stagingManager);
-        this.nodeCommunicationService = buildNodeCommunicationService();
+        this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService, nodeCommunicationService);
@@ -284,8 +284,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return new RouterService(this);
     }
 
-    protected INodeCommunicationService buildNodeCommunicationService() {
-        return new NodeCommunicationService(nodeService, parameterService, symmetricDialect);
+    protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+        return new NodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
     }
 
     public static ISecurityService createSecurityService(TypedProperties properties) {
