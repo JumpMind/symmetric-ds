@@ -31,15 +31,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "  load_millis=?, extract_millis=?, sql_state=?, sql_code=?, sql_message=?,                                       " + 
 "  failed_data_id=?, last_update_hostname=?, last_update_time=? where batch_id=? and node_id=?                    " );
 
-        putSql("selectOutgoingBatchByChannelAndStatusSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES)   " );
-
-        putSql("selectOutgoingBatchByChannelWithErrorSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1   " );
-        
-        putSql("selectOutgoingBatchByChannelWithIgnoreSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and ignore_count > 0  " );        
-
         putSql("findOutgoingBatchSql" ,"" + 
 "where batch_id=? and node_id=?  " );
 
