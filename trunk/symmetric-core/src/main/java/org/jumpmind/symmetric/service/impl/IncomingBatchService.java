@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -36,9 +35,9 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -46,9 +45,12 @@ import org.jumpmind.util.FormatUtils;
  */
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
+    protected IClusterService clusterService;
+    
     public IncomingBatchService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect) {
+            ISymmetricDialect symmetricDialect, IClusterService clusterService) {
         super(parameterService, symmetricDialect);
+        this.clusterService = clusterService;
         setSqlMap(new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -189,7 +191,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void insertIncomingBatch(IncomingBatch batch) {
         if (batch.isPersistable()) {
-            batch.setLastUpdatedHostName(AppUtils.getServerId());
+            batch.setLastUpdatedHostName(clusterService.getServerId());
             batch.setLastUpdatedTime(new Date());
             sqlTemplate.update(
                     getSql("insertIncomingBatchSql"),
@@ -226,7 +228,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             } else if (batch.getStatus() == IncomingBatch.Status.OK) {
                 batch.setErrorFlag(false);
             }
-            batch.setLastUpdatedHostName(AppUtils.getServerId());
+            batch.setLastUpdatedHostName(clusterService.getServerId());
             batch.setLastUpdatedTime(new Date());
             count = sqlTemplate.update(
                     getSql("updateIncomingBatchSql"),

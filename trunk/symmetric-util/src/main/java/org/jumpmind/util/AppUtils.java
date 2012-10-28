@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,32 +43,7 @@ public class AppUtils {
 
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
 
-    private static String serverId;
-
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
-
-    /**
-     * Get a unique identifier that represents the JVM instance this server is
-     * currently running in.
-     */
-    public static String getServerId() {
-        if (StringUtils.isBlank(serverId)) {
-            serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("bind.address", null);
-                if (StringUtils.isBlank(serverId)) {
-                    try {
-                        serverId = getHostName();
-                    } catch (Exception ex) {
-                        serverId = "unknown";
-                    }
-                }
-            }
-        }
-        return serverId;
-    }
 
     public static String getHostName() {
         String hostName = System.getProperty("host.name", UNKNOWN);

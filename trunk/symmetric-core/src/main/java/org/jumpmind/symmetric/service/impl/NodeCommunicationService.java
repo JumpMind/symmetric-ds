@@ -25,35 +25,36 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
 
 public class NodeCommunicationService extends AbstractService implements INodeCommunicationService {
-
-    private String serverId = AppUtils.getServerId();
 
     private Map<CommunicationType, ThreadPoolExecutor> executors = new HashMap<NodeCommunication.CommunicationType, ThreadPoolExecutor>();
 
     private INodeService nodeService;
+    
+    private IClusterService clusterService;
 
     private boolean initialized = false;
 
-    public NodeCommunicationService(INodeService nodeService, IParameterService parameterService,
+    public NodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService,
             ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
         setSqlMap(new NodeCommunicationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+        this.clusterService = clusterService;
         this.nodeService = nodeService;
     }
 
     private final void initialize() {
         if (!initialized) {
             try {
-                int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"), serverId);
+                int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"), clusterService.getServerId());
                 if (locksCleared > 0) {
-                    log.info("Cleared {} node communication locks for {}", locksCleared, serverId);
+                    log.info("Cleared {} node communication locks for {}", locksCleared, clusterService.getServerId());
                 }
             } finally {
                 initialized = true;
@@ -219,12 +220,12 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             final INodeCommunicationExecutor executor) {
         Date now = new Date();
         Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
-        boolean locked = sqlTemplate.update(getSql("aquireLockSql"), serverId, now, now,
+        boolean locked = sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now,
                 nodeCommunication.getNodeId(), nodeCommunication.getCommunicationType().name(),
-                lockTimeout, serverId) == 1;
+                lockTimeout, clusterService.getServerId()) == 1;
         if (locked) {
             nodeCommunication.setLastLockTime(now);
-            nodeCommunication.setLockingServerId(serverId);
+            nodeCommunication.setLockingServerId(clusterService.getServerId());
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
             ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
             service.execute(new Runnable() {

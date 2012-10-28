@@ -30,11 +30,11 @@ import java.util.concurrent.Semaphore;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.util.AppUtils;
 
 /**
  * @see IStatisticManager
@@ -56,6 +56,8 @@ public class StatisticManager implements IStatisticManager {
     protected IParameterService parameterService;
 
     protected IConfigurationService configurationService;
+    
+    protected IClusterService clusterService;
 
     private static final int NUMBER_OF_PERMITS = 1000;
 
@@ -66,11 +68,12 @@ public class StatisticManager implements IStatisticManager {
     Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     public StatisticManager(IParameterService parameterService, INodeService nodeService,
-            IConfigurationService configurationService, IStatisticService statisticsService) {
+            IConfigurationService configurationService, IStatisticService statisticsService, IClusterService clusterService) {
         this.parameterService = parameterService;
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.statisticService = statisticsService;
+        this.clusterService = clusterService;
     }
 
     protected void init() {
@@ -397,7 +400,7 @@ public class StatisticManager implements IStatisticManager {
                 Node node = nodeService.getCachedIdentity();
                 if (node != null) {
                     String nodeId = node.getNodeId();
-                    String serverId = AppUtils.getServerId();
+                    String serverId = clusterService.getServerId();
                     for (JobStats stats : toFlush) {
                         stats.setNodeId(nodeId);
                         stats.setHostName(serverId);
@@ -444,11 +447,11 @@ public class StatisticManager implements IStatisticManager {
         if (stats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                stats = new ChannelStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
+                stats = new ChannelStats(node.getNodeId(), clusterService.getServerId(), new Date(),
                         null, channelId);
                 channelStats.put(channelId, stats);
             } else {
-                stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null,
+                stats = new ChannelStats(UNKNOWN, clusterService.getServerId(), new Date(), null,
                         channelId);
             }
 
@@ -460,10 +463,10 @@ public class StatisticManager implements IStatisticManager {
         if (hostStats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
+                hostStats = new HostStats(node.getNodeId(), clusterService.getServerId(), new Date(),
                         null);
             } else {
-                hostStats = new HostStats(UNKNOWN, AppUtils.getServerId(), new Date(), null);
+                hostStats = new HostStats(UNKNOWN, clusterService.getServerId(), new Date(), null);
             }
 
         }

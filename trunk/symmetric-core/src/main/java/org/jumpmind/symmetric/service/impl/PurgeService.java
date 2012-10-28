@@ -330,15 +330,26 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return totalCount;
     }
     
-    public void purgeStats() {
+    public void purgeStats(boolean force) {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_STATS_RETENTION_MINUTES));
-        int purgedCount = sqlTemplate.update(getSql("purgeNodeHostChannelStatsSql"), retentionCutoff.getTime());
-        purgedCount += sqlTemplate.update(getSql("purgeNodeHostStatsSql"), retentionCutoff.getTime());
-        purgedCount += sqlTemplate.update(getSql("purgeNodeHostJobStatsSql"), retentionCutoff.getTime());
-        if (purgedCount > 0) {
-            log.info("{} stats rows were purged", purgedCount);
+        if (force || clusterService.lock(ClusterConstants.PURGE_STATISTICS)) {
+            try {
+                int purgedCount = sqlTemplate.update(getSql("purgeNodeHostChannelStatsSql"),
+                        retentionCutoff.getTime());
+                purgedCount += sqlTemplate.update(getSql("purgeNodeHostStatsSql"),
+                        retentionCutoff.getTime());
+                purgedCount += sqlTemplate.update(getSql("purgeNodeHostJobStatsSql"),
+                        retentionCutoff.getTime());
+                if (purgedCount > 0) {
+                    log.info("{} stats rows were purged", purgedCount);
+                }
+            } finally {
+                if (!force) {
+                    clusterService.unlock(ClusterConstants.PURGE_STATISTICS);
+                }
+            }
         }
     }
 

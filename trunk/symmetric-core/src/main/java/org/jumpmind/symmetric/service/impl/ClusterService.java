@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -54,7 +55,7 @@ import org.jumpmind.util.AppUtils;
  */
 public class ClusterService extends AbstractService implements IClusterService {
 
-    private String serverId = AppUtils.getServerId();
+    private String serverId = null;
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
@@ -96,7 +97,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
                     (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lock(action, timeout, new Date(), serverId);
+            return lock(action, timeout, new Date(), getServerId());
         } else {
             return true;
         }
@@ -127,14 +128,36 @@ public class ClusterService extends AbstractService implements IClusterService {
         return locks;
     }
 
+    /**
+     * Get a unique identifier that represents the JVM instance this server is
+     * currently running in.
+     */
     public String getServerId() {
+        if (StringUtils.isBlank(serverId)) {
+            serverId = parameterService.getString(ParameterConstants.CLUSTER_SERVER_ID);
+            if (StringUtils.isBlank(serverId)) {
+                serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
+                if (StringUtils.isBlank(serverId)) {
+                    // JBoss uses this system property to identify a server in a
+                    // cluster
+                    serverId = System.getProperty("bind.address", null);
+                    if (StringUtils.isBlank(serverId)) {
+                        try {
+                            serverId = AppUtils.getHostName();
+                        } catch (Exception ex) {
+                            serverId = "unknown";
+                        }
+                    }
+                }                
+            }
+        }
         return serverId;
     }
 
     public void unlock(final String action) {
         if (isClusteringEnabled()) {
-            if (!unlock(action, serverId)) {
-                log.warn("Failed to release lock for action:{} server:{}", action, serverId);
+            if (!unlock(action, getServerId())) {
+                log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
             }
         }
     }
