@@ -365,14 +365,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         } catch (Exception ex) {
-            logAndRethrow(ex);
+            logAndRethrow(sourceNode, ex);
         } finally {
             transport.close();
         }
         return listener.getBatchesProcessed();
     }
 
-    protected void logAndRethrow(Exception ex) throws IOException {
+    protected void logAndRethrow(Node remoteNode, Exception ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
@@ -382,11 +382,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     ex.getMessage());
             throw (UnknownHostException) ex;
         } else if (ex instanceof RegistrationNotOpenException) {
-            log.warn("Registration attempt failed.  Registration was not open for the node");
+            log.warn("Registration attempt failed.  Registration was not open for the node'{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof AuthenticationException) {
-            log.warn("Could not authenticate with node");
+            log.warn("Could not authenticate with node '{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
+            throw (AuthenticationException)ex;
         } else if (ex instanceof SyncDisabledException) {
             log.warn("Synchronization is disabled on the server node");
             throw (SyncDisabledException) ex;
