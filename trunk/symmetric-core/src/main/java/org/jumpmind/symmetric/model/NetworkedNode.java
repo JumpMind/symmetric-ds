@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 public class NetworkedNode implements Comparable<NetworkedNode> {
 
@@ -30,7 +30,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     private NetworkedNode parent;
 
-    private Set<NetworkedNode> children;
+    private TreeMap<String, NetworkedNode> children;
 
     public NetworkedNode(Node node) {
         this.node = node;
@@ -38,10 +38,10 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     public void addChild(NetworkedNode node) {
         if (children == null) {
-            children = new TreeSet<NetworkedNode>();
+            children = new TreeMap<String, NetworkedNode>();
         }
         node.parent = this;
-        children.add(node);
+        children.put(node.getNode().getNodeId(), node);
     }
 
     public Node getNode() {
@@ -64,13 +64,14 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
     protected int getNumberOfLinksAwayFromMe(String nodeId, int numberOfLinksIAmFromRoot) {
         if (!node.getNodeId().equals(nodeId)) {
             if (children != null) {
-                for (NetworkedNode child : children) {
-                    if (child.getNode().getNodeId().equals(nodeId)) {
-                        return numberOfLinksIAmFromRoot + 1;
-                    } else {
+                NetworkedNode node = children.get(nodeId);
+                if (node != null) {
+                    return numberOfLinksIAmFromRoot+1;
+                } else {
+                    for (NetworkedNode child : children.values()) {
                         int numberOfLinksAwayFromMe = child.getNumberOfLinksAwayFromMe(nodeId,
                                 numberOfLinksIAmFromRoot + 1);
-                        if (numberOfLinksAwayFromMe > (numberOfLinksIAmFromRoot+1)) {
+                        if (numberOfLinksAwayFromMe > (numberOfLinksIAmFromRoot + 1)) {
                             return numberOfLinksAwayFromMe;
                         }
                     }
@@ -85,10 +86,11 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
             return this;
         } else {
             if (children != null) {
-                for (NetworkedNode child : children) {
-                    if (child.getNode().getNodeId().equals(nodeId)) {
-                        return child;
-                    } else {
+                NetworkedNode node = children.get(nodeId);
+                if (node != null) {
+                    return node;
+                } else {
+                    for (NetworkedNode child : children.values()) {
                         NetworkedNode foundIt = child.findNetworkedNode(nodeId);
                         if (foundIt != null) {
                             return foundIt;
@@ -114,7 +116,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     public boolean hasChildrenThatBelongToGroups(Set<String> groupIds) {
         if (children != null) {
-            for (NetworkedNode child : children) {
+            for (NetworkedNode child : children.values()) {
                 if (groupIds.contains(child.getNode().getNodeGroupId())) {
                     return true;
                 } else {
@@ -129,7 +131,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     public boolean isInChildHierarchy(String nodeId) {
         if (children != null) {
-            for (NetworkedNode child : children) {
+            for (NetworkedNode child : children.values()) {
                 if (child.getNode().getNodeId().equals(nodeId)) {
                     return true;
                 } else {
