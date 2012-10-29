@@ -828,9 +828,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 registeredEnginesByUrl.put(url, this);
             }
         } else {
-            throw new EngineAlreadyRegisteredException(
-                    "Could not register engine.  There was already an engine registered under the url: "
-                            + getSyncUrl());
+            log.warn("Could not register engine.  There was already an engine registered under the url: {}",
+                            getSyncUrl());
         }
 
         alreadyRegister = registeredEnginesByName.get(getEngineName());
