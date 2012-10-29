@@ -278,15 +278,14 @@ public class RouterService extends AbstractService implements IRouterService {
             return 0;
         } catch (SyntaxParsingException ex) {
             log.error(
-                    String.format("Failed to route and batch data on '%s' channel due to an invalid router expression.",
+                    String.format("Failed to route and batch data on '%s' channel due to an invalid router expression",
                             nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
             }
             return 0;
-        } catch (Exception ex) {
-            log.error(
-                    String.format("Failed to route and batch data on '%s' channel",
+        } catch (Throwable ex) {
+            log.error(String.format("Failed to route and batch data on '%s' channel",
                             nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
