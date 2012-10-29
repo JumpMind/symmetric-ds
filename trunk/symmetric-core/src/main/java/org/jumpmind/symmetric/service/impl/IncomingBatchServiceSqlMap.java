@@ -22,12 +22,6 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("findIncomingBatchSql" ,"" + 
 "where batch_id = ? and node_id = ?   " );
 
-        putSql("listIncomingBatchesSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES) " );
-
-        putSql("listIncomingBatchesInErrorSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1 " );
-
         putSql("listIncomingBatchesInErrorForNodeSql" ,"" + 
 "where node_id=? and error_flag=1   " );
 

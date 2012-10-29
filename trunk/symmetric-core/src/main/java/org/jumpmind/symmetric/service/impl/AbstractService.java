@@ -33,6 +33,8 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.slf4j.Logger;
@@ -152,5 +154,51 @@ abstract public class AbstractService implements IService {
         }
         return adminTool;
     }
+    
+    protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
+            List<?> statuses) {
+        boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
+                || statuses.contains(IncomingBatch.Status.ER);
+        boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)
+                || statuses.contains(IncomingBatch.Status.IG);
+
+        StringBuilder where = new StringBuilder();
+        boolean needsAnd = false;
+        if (nodeIds.size() > 0) {
+            where.append("node_id in (:NODES)");
+            needsAnd = true;
+        }
+        if (channels.size() > 0) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("channel_id in (:CHANNELS)");
+            needsAnd = true;
+        }
+        if (statuses.size() > 0) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("(status in (:STATUSES)");
+            
+            if (containsErrorStatus) {
+                where.append(" or error_flag = 1 ");   
+            }
+            
+            if (containsIgnoreStatus) {
+                where.append(" or ignore_count > 0 ");   
+            }
+            
+            where.append(")");
+
+            needsAnd = true;
+        }
+        
+        if (where.length() > 0) {
+            where.insert(0, " where ");
+        }
+        return where.toString();
+    }
+    
 
 }
