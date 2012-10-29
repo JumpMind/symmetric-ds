@@ -19,6 +19,8 @@
             <param name="ConversionPattern" value="[%X{engineName}] - %c{1} - %m%n" />
         </layout>
     </appender>
+    
+    <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>
 
     <category name="org">
         <priority value="WARN" />
