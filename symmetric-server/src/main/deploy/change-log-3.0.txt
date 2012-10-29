@@ -1,3 +1,16 @@
+SymmetricDS - 3.1.8 (Released 2012-10-29) 
+=========================================
+- 0000860: [Bug] Timestamp with timezone doesn't work with timestamp new wins conflict resolution (chenson) - closed.
+- 0000868: [Task] dbimport needs to support imports from xml format (chenson) - closed.
+- 0000870: [Improvement] Do not attempt to route data if a node does not have an identity (chenson) - closed.
+- 0000875: [Bug] Node attempts to re-register when it attempts to pull from a non-registration server node that does yet have its security record (chenson) - closed.
+- 0000876: [Improvement] During schema upgrade log the old version before attempting upgrade (chenson) - closed.
+- 0000877: [Improvement] Downgrade not supported. Don't allow a older version of symmetricds start up against an newer schema (chenson) - closed.
+- 0000882: [Bug] Stats Purge Job needs to be clustered. Running on multiple nodes can cause deadlocks (chenson) - closed.
+- 0000883: [Bug] Non-authenticated pull wasn't being recorded as a failed pull attempt in sym_node_communication (chenson) - closed.
+- 0000884: [Bug] Documented cluster.server.id property is not supported. Add support. (chenson) - closed.
+- 0000886: [Improvement] Routing of configuration data (especially the node tables) is very slow when there are lots of nodes (chenson) - closed.
+
 SymmetricDS - 3.1.7 (Released 2012-10-22) 
 =========================================
 - 0000825: [Improvement] Improve error handling around SymmetricEngineHolder if the engines dir isn't writeable or isn't a directory (chenson) - closed.
