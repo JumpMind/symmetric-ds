@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -176,7 +177,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
                 }
             }
             for (String fileName : args) {
-                FileInputStream in = new FileInputStream(fileName);
+                BufferedInputStream in = new BufferedInputStream(new FileInputStream(fileName));
                 dbImport.importTables(in, line.getOptionValue(OPTION_TABLE));
                 in.close();
             }
