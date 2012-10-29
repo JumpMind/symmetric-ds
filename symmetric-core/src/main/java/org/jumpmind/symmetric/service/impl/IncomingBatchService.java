@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -88,48 +89,44 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, boolean ascending) {
-        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
-                && statuses != null && statuses.size() > 0) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("NODES", nodeIds);
-            params.put("CHANNELS", channels);
-            params.put("STATUSES", toStringList(statuses));
-            String sql = getSql("selectCreateTimePrefixSql",
-                    containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
-                            : "listIncomingBatchesSql", ascending ? " order by create_time"
-                            : " order by create_time desc");
-            return sqlTemplate.query(sql, new DateMapper(), params);
-        } else {
-            return new ArrayList<Date>(0);
-        }
+
+        String whereClause = buildBatchWhere(nodeIds, channels, statuses);
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+
+        String sql = getSql("selectCreateTimePrefixSql", whereClause,
+                ascending ? " order by create_time" : " order by create_time desc");
+        return sqlTemplate.query(sql, new DateMapper(), params);
     }
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, Date startAtCreateTime,
             final int maxRowsToRetrieve, boolean ascending) {
-        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
-                && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
+            
+            String where = buildBatchWhere(nodeIds, channels, statuses);
 
             String createTimeLimiter = "";
             if (startAtCreateTime != null) {
+                if (StringUtils.isBlank(where)) {
+                    where = " where 1=1 ";
+                }
                 createTimeLimiter = " and create_time " + (ascending ? ">=" : "<=")
                         + " :CREATE_TIME";
             }
 
-            String sql = getSql("selectIncomingBatchPrefixSql",
-                    containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
-                            : "listIncomingBatchesSql", createTimeLimiter,
+            String sql = getSql("selectIncomingBatchPrefixSql", where, createTimeLimiter,
                     ascending ? " order by create_time" : " order by create_time desc");
 
             return sqlTemplate.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
-        } else {
-            return new ArrayList<IncomingBatch>(0);
-        }
+
     }
 
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {

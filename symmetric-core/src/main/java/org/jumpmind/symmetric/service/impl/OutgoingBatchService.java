@@ -170,49 +170,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatchesInError() {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
-    
-    protected String buildWhere(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses) {
-        boolean containsErrorStatus = statuses.contains(Status.ER);
-        boolean containsIgnoreStatus = statuses.contains(Status.IG);
-
-        StringBuilder where = new StringBuilder();
-        boolean needsAnd = false;
-        if (nodeIds.size() > 0) {
-            where.append("node_id in (:NODES)");
-            needsAnd = true;
-        }
-        if (channels.size() > 0) {
-            if (needsAnd) {
-                where.append(" and ");
-            }
-            where.append("channel_id in (:CHANNELS)");
-            needsAnd = true;
-        }
-        if (statuses.size() > 0) {
-            if (needsAnd) {
-                where.append(" and ");
-            }
-            where.append("(status in (:STATUSES)");
-            
-            if (containsErrorStatus) {
-                where.append(" or error_flag = 1 ");   
-            }
-            
-            if (containsIgnoreStatus) {
-                where.append(" or ignore_count > 0 ");   
-            }
-            
-            where.append(")");
-
-            needsAnd = true;
-        }
-        
-        if (where.length() > 0) {
-            where.insert(0, " where ");
-        }
-        return where.toString();
-    }
 
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
@@ -222,7 +179,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         params.put("STATUSES", toStringList(statuses));
 
         return sqlTemplate.queryForInt(
-                getSql("selectCountBatchesPrefixSql", buildWhere(nodeIds, channels, statuses)),
+                getSql("selectCountBatchesPrefixSql", buildBatchWhere(nodeIds, channels, statuses)),
                 params);
     }
 
@@ -230,7 +187,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve,
             boolean ascending) {
 
-        String where = buildWhere(nodeIds, channels, statuses);
+        String where = buildBatchWhere(nodeIds, channels, statuses);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
