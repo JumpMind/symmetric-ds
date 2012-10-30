@@ -400,7 +400,9 @@ public class NodeService extends AbstractService implements INodeService {
                 leaves.put(node.getNodeId(), nodeLeaf);
             }
         }
-        return nodeLeaf.getRoot();
+        NetworkedNode root = nodeLeaf.getRoot();
+        root.setAllNetworkedNodes(leaves);
+        return root;
     }
     
     public boolean updateNodeSecurity(NodeSecurity security) {
