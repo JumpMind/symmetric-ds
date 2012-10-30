@@ -1,3 +1,8 @@
+SymmetricDS - 3.1.9 (Released 2012-10-30) 
+=========================================
+- 0000889: [Bug] dbimport of xml format fails with mark/reset error (chenson) - closed.
+- 0000886: [Improvement] Routing of configuration data (especially the node tables) is very slow when there are lots of nodes (chenson) - closed.
+
 SymmetricDS - 3.1.8 (Released 2012-10-29) 
 =========================================
 - 0000860: [Bug] Timestamp with timezone doesn't work with timestamp new wins conflict resolution (chenson) - closed.
