@@ -3,156 +3,155 @@ package org.jumpmind.symmetric.web.rest;
 import org.jumpmind.symmetric.Version;
 
 public class NodeStatus {
-        
-        Boolean registered;
-        
-        Boolean registrationServer;
-        
-        Boolean isInitialLoaded;
 
-    private String nodeId;
+	Boolean registered;
 
-    private String nodeGroupId;
+	Boolean registrationServer;
 
-    private String externalId;
+	Boolean isInitialLoaded;
 
-    private String syncUrl;
+	private String nodeId;
 
-    private String databaseType;
+	private String nodeGroupId;
 
-    private String symmetricVersion = Version.version();
+	private String externalId;
 
-    public Boolean getRegistered() {
-                return registered;
-        }
+	private String syncUrl;
 
-        public void setRegistered(Boolean registered) {
-                this.registered = registered;
-        }
+	private String databaseType;
 
-        public Boolean getRegistrationServer() {
-                return registrationServer;
-        }
+	private String databaseVersion;
 
-        public void setRegistrationServer(Boolean registrationServer) {
-                this.registrationServer = registrationServer;
-        }
+	private boolean syncEnabled = true;
 
-        public Boolean getIsInitialLoaded() {
-                return isInitialLoaded;
-        }
+	private String createdAtNodeId;
 
-        public void setIsInitialLoaded(Boolean isInitialLoaded) {
-                this.isInitialLoaded = isInitialLoaded;
-        }
+	private int batchToSendCount;
 
-        public String getNodeId() {
-                return nodeId;
-        }
+	private int batchInErrorCount;
 
-        public void setNodeId(String nodeId) {
-                this.nodeId = nodeId;
-        }
+	private String deploymentType;
+	
+	private String symmetricVersion = Version.version();
 
-        public String getNodeGroupId() {
-                return nodeGroupId;
-        }
+	public Boolean getRegistered() {
+		return registered;
+	}
 
-        public void setNodeGroupId(String nodeGroupId) {
-                this.nodeGroupId = nodeGroupId;
-        }
+	public void setRegistered(Boolean registered) {
+		this.registered = registered;
+	}
 
-        public String getExternalId() {
-                return externalId;
-        }
+	public Boolean getRegistrationServer() {
+		return registrationServer;
+	}
 
-        public void setExternalId(String externalId) {
-                this.externalId = externalId;
-        }
+	public void setRegistrationServer(Boolean registrationServer) {
+		this.registrationServer = registrationServer;
+	}
 
-        public String getSyncUrl() {
-                return syncUrl;
-        }
+	public Boolean getIsInitialLoaded() {
+		return isInitialLoaded;
+	}
 
-        public void setSyncUrl(String syncUrl) {
-                this.syncUrl = syncUrl;
-        }
+	public void setIsInitialLoaded(Boolean isInitialLoaded) {
+		this.isInitialLoaded = isInitialLoaded;
+	}
 
-        public String getDatabaseType() {
-                return databaseType;
-        }
+	public String getNodeId() {
+		return nodeId;
+	}
 
-        public void setDatabaseType(String databaseType) {
-                this.databaseType = databaseType;
-        }
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
 
-        public String getSymmetricVersion() {
-                return symmetricVersion;
-        }
+	public String getNodeGroupId() {
+		return nodeGroupId;
+	}
 
-        public void setSymmetricVersion(String symmetricVersion) {
-                this.symmetricVersion = symmetricVersion;
-        }
+	public void setNodeGroupId(String nodeGroupId) {
+		this.nodeGroupId = nodeGroupId;
+	}
 
-        public String getDatabaseVersion() {
-                return databaseVersion;
-        }
+	public String getExternalId() {
+		return externalId;
+	}
 
-        public void setDatabaseVersion(String databaseVersion) {
-                this.databaseVersion = databaseVersion;
-        }
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
 
-        public boolean isSyncEnabled() {
-                return syncEnabled;
-        }
+	public String getSyncUrl() {
+		return syncUrl;
+	}
 
-        public void setSyncEnabled(boolean syncEnabled) {
-                this.syncEnabled = syncEnabled;
-        }
+	public void setSyncUrl(String syncUrl) {
+		this.syncUrl = syncUrl;
+	}
 
-        public String getCreatedAtNodeId() {
-                return createdAtNodeId;
-        }
+	public String getDatabaseType() {
+		return databaseType;
+	}
 
-        public void setCreatedAtNodeId(String createdAtNodeId) {
-                this.createdAtNodeId = createdAtNodeId;
-        }
+	public void setDatabaseType(String databaseType) {
+		this.databaseType = databaseType;
+	}
 
-        public int getBatchToSendCount() {
-                return batchToSendCount;
-        }
+	public String getSymmetricVersion() {
+		return symmetricVersion;
+	}
 
-        public void setBatchToSendCount(int batchToSendCount) {
-                this.batchToSendCount = batchToSendCount;
-        }
+	public void setSymmetricVersion(String symmetricVersion) {
+		this.symmetricVersion = symmetricVersion;
+	}
 
-        public int getBatchInErrorCount() {
-                return batchInErrorCount;
-        }
+	public String getDatabaseVersion() {
+		return databaseVersion;
+	}
 
-        public void setBatchInErrorCount(int batchInErrorCount) {
-                this.batchInErrorCount = batchInErrorCount;
-        }
+	public void setDatabaseVersion(String databaseVersion) {
+		this.databaseVersion = databaseVersion;
+	}
 
-        public String getDeploymentType() {
-                return deploymentType;
-        }
+	public boolean isSyncEnabled() {
+		return syncEnabled;
+	}
 
-        public void setDeploymentType(String deploymentType) {
-                this.deploymentType = deploymentType;
-        }
+	public void setSyncEnabled(boolean syncEnabled) {
+		this.syncEnabled = syncEnabled;
+	}
 
-        private String databaseVersion;
+	public String getCreatedAtNodeId() {
+		return createdAtNodeId;
+	}
 
-    private boolean syncEnabled = true;
+	public void setCreatedAtNodeId(String createdAtNodeId) {
+		this.createdAtNodeId = createdAtNodeId;
+	}
 
-    private String createdAtNodeId;
-    
-    private int batchToSendCount;
-    
-    private int batchInErrorCount;
-    
-    private String deploymentType;
+	public int getBatchToSendCount() {
+		return batchToSendCount;
+	}
 
+	public void setBatchToSendCount(int batchToSendCount) {
+		this.batchToSendCount = batchToSendCount;
+	}
+
+	public int getBatchInErrorCount() {
+		return batchInErrorCount;
+	}
+
+	public void setBatchInErrorCount(int batchInErrorCount) {
+		this.batchInErrorCount = batchInErrorCount;
+	}
+
+	public String getDeploymentType() {
+		return deploymentType;
+	}
+
+	public void setDeploymentType(String deploymentType) {
+		this.deploymentType = deploymentType;
+	}
 
 }
