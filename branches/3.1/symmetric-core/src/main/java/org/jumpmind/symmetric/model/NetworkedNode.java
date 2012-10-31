@@ -31,6 +31,8 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
     private NetworkedNode parent;
 
     private TreeMap<String, NetworkedNode> children;
+    
+    private Map<String, NetworkedNode> allNetworkedNodes;
 
     public NetworkedNode(Node node) {
         this.node = node;
@@ -85,7 +87,9 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
         if (this.node.getNodeId().equals(nodeId)) {
             return this;
         } else {
-            if (children != null) {
+            if (allNetworkedNodes != null) {
+                return allNetworkedNodes.get(nodeId);
+            } else if (children != null) {
                 NetworkedNode node = children.get(nodeId);
                 if (node != null) {
                     return node;
