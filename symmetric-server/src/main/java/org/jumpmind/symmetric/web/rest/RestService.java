@@ -12,7 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class RestService {
@@ -49,11 +51,11 @@ public class RestService {
      * Loads a profile for the specified engine on the node. 
      * @param engineName 
      */
-    @RequestMapping(value = "/loadprofile/engines/{engine}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/loadprofile/engines/{engine}", method = RequestMethod.POST)
     @ResponseBody
     //TODO: figure out how we will pass the file info...
-    public final void loadProfile(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
+    public final void loadProfile(@PathVariable("engine") String engineName, @RequestParam MultipartFile file) {
+        System.out.println("File '" + file.getOriginalFilename() + "' uploaded successfully");
     }
 
     /**
