@@ -23,6 +23,7 @@ package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.BufferedInputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
