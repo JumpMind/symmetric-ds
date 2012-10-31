@@ -7,17 +7,17 @@ public class NodeStatus {
     /**
      * Is the node is registered with another node.
      */
-	Boolean registered;
+	boolean registered;
 
 	/**
 	 * Is the node a registration server.
 	 */
-	Boolean registrationServer;
+	boolean registrationServer;
 
 	/**
 	 * Is the node initially loaded.
 	 */
-	Boolean isInitialLoaded;
+	boolean isInitialLoaded;
 
 	/**
 	 * The node's ID.
@@ -80,44 +80,44 @@ public class NodeStatus {
 	private String symmetricVersion = Version.version();
 
 	/**
-	 * @return Boolean indicating if the node is registered with another node.
+	 * @return boolean indicating if the node is registered with another node.
 	 */
-	public Boolean getRegistered() {
+	public boolean getRegistered() {
 		return registered;
 	}
 
 	/**
-	 * @param registered Boolean indicating if the node is registered with another node.
+	 * @param registered boolean indicating if the node is registered with another node.
 	 */
-	public void setRegistered(Boolean registered) {
+	public void setRegistered(boolean registered) {
 		this.registered = registered;
 	}
 
 	/** 
-	 * @return Boolean indicating if the node is a registration server.
+	 * @return boolean indicating if the node is a registration server.
 	 */
-	public Boolean getRegistrationServer() {
+	public boolean getRegistrationServer() {
 		return registrationServer;
 	}
 
 	/**
-	 * @param registrationServer Boolean indicating if the node is a registration server.
+	 * @param registrationServer boolean indicating if the node is a registration server.
 	 */
-	public void setRegistrationServer(Boolean registrationServer) {
+	public void setRegistrationServer(boolean registrationServer) {
 		this.registrationServer = registrationServer;
 	}
 
 	/**
-	 * @return Boolean indicating if the node is initial loaded.
+	 * @return boolean indicating if the node is initial loaded.
 	 */
-	public Boolean getIsInitialLoaded() {
+	public boolean getIsInitialLoaded() {
 		return isInitialLoaded;
 	}
 
 	/**
-	 * @param isInitialLoaded Boolean indicating if the node is initial loaded.
+	 * @param isInitialLoaded boolean indicating if the node is initial loaded.
 	 */
-	public void setIsInitialLoaded(Boolean isInitialLoaded) {
+	public void setIsInitialLoaded(boolean isInitialLoaded) {
 		this.isInitialLoaded = isInitialLoaded;
 	}
 
