@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.web.rest;
+package org.jumpmind.symmetric.web.rest.model;
 
 import org.jumpmind.symmetric.Version;
 import javax.xml.bind.annotation.XmlRootElement;
