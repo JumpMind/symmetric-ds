@@ -3,7 +3,6 @@ package org.jumpmind.symmetric;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
-import org.junit.Test;
 
 public class DbFillTest extends AbstractServiceTest {
 

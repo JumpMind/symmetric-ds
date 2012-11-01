@@ -9,6 +9,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 
     public InformixTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        dropFunctionSql = "drop function $(defaultSchema)$(functionName)";
         functionInstalledSql = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "rtrim(case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace($(tableAlias).$(columnName), '\\', '\\\\'), '\"', '\\\"') || '\"' end)" ;

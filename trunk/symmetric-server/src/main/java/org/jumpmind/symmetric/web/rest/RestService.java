@@ -98,6 +98,8 @@ public class RestService {
                 response.setSuccess(true);
                 response.setMessage(buffer.toString());
                 return response;
+            } else if (actionName.equals("uninstall")) {
+                
             } else if (actionName.equals("reinitialize")) {
 
             } else if (actionName.equals("start")) {
@@ -254,7 +256,14 @@ public class RestService {
 
     protected ISymmetricEngine getSymmetricEngine(String engineName) {
         SymmetricEngineHolder holder = getSymmetricEngineHolder();
-        ISymmetricEngine engine = holder.getEngines().get(engineName);
+        
+        ISymmetricEngine engine = null;        
+        if (StringUtils.isNotBlank(engineName)) {
+            engine = holder.getEngines().get(engineName);
+        } else if (holder.getEngines().size() > 0) {
+            engine = holder.getEngines().values().iterator().next();
+        }
+        
         if (engine == null) {
             throw new NotFoundException();
         } else {

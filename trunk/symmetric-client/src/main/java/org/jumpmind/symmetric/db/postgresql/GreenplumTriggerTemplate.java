@@ -9,6 +9,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
 
     public GreenplumTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        dropFunctionSql = "DROP FUNCTION $(defaultSchema)$(functionName)";
         functionInstalledSql = "select count(*) from information_schema.routines " + 
 "                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;

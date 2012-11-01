@@ -9,6 +9,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
     public MySqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        dropFunctionSql = "drop function $(functionName)";
         functionInstalledSql = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))" ;
