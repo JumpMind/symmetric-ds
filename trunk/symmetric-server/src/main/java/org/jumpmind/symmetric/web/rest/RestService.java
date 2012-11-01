@@ -1,15 +1,18 @@
 package org.jumpmind.symmetric.web.rest;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.symmetric.web.rest.model.ActionResponse;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
@@ -34,152 +37,181 @@ public class RestService {
     ServletContext context;
 
     /**
-     * Returns the list of engine names that are configured on the node.   
+     * Returns the list of engine names that are configured on the node.
+     * 
      * @return Set<{@link Engine> of engine names configured on the node
      */
-    @RequestMapping(value = "/engine", method = RequestMethod.GET)
+    @RequestMapping(value = "/engines", method = RequestMethod.GET)
     @ResponseBody
     public final EngineList engine() {
-    	//TODO:implement
-        //return getSymmetricEngineHolder().getEngines().keySet();
-    	return new EngineList(new Engine("one"), new Engine("two"));
+        EngineList list = new EngineList();
+        Collection<String> engineNames = getSymmetricEngineHolder().getEngines().keySet();
+        for (String engine : engineNames) {
+            list.addEngine(new Engine(engine));
+        }
+        return list;
     }
 
     /**
-     * Returns the identity for the single engine on the node.
-     * If more than one engine exists on the node, service will 
-     * return an HTTP Status Code 405 (Method Not Allowed)
+     * Returns the identity for the single engine on the node. If more than one
+     * engine exists on the node, service will return an HTTP Status Code 405
+     * (Method Not Allowed)
+     * 
      * @return Identity the identity of the engine
      */
     @RequestMapping(value = "/identity", method = RequestMethod.GET)
     @ResponseBody
     public final Identity identity(@RequestParam("engine") String engineName) {
-    	//TODO:implement
-        //ISymmetricEngine engine = getSymmetricEngine(engineName);
-        //return engine.getNodeService().findIdentityNodeId();
-    	return null;
+        // TODO:implement
+        // ISymmetricEngine engine = getSymmetricEngine(engineName);
+        // return engine.getNodeService().findIdentityNodeId();
+        return null;
     }
 
     /**
-     * Loads a profile for the specified engine on the node. 
-     * @param engineName 
+     * Loads a profile for the specified engine on the node.
+     * 
+     * @param engineName
      */
     @RequestMapping(value = "profile", method = RequestMethod.POST)
     @ResponseBody
-    //TODO: figure out how we will pass the file info...
-    public final void loadProfile(@RequestParam("engine") String engineName, @RequestParam MultipartFile file) {
+    // TODO: figure out how we will pass the file info...
+    public final void loadProfile(@RequestParam("engine") String engineName,
+            @RequestParam MultipartFile file) {
         System.out.println("File '" + file.getOriginalFilename() + "' uploaded successfully");
+    }
+    
+    @RequestMapping(value = "/actions/{action}", method = RequestMethod.GET)
+    @ResponseBody
+    public final ActionResponse action(@RequestParam(required=false,value="engine") String engineName,
+            @PathVariable("action") String actionName, @RequestParam(required=false,value="force") boolean force) {
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        if (StringUtils.isNotBlank(actionName) && engine != null) {
+            if (actionName.equals("synctriggers")) {
+                ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                StringBuilder buffer = new StringBuilder();
+                triggerRouterService.syncTriggers(buffer, force);
+                ActionResponse response = new ActionResponse();
+                response.setSuccess(true);
+                response.setMessage(buffer.toString());
+                return response;
+            } else if (actionName.equals("reinitialize")) {
+                
+            }
+        }
+        throw new NotFoundException();
     }
 
     /**
-     * Drops SymmetricDS triggers for the specified engine and table on the node.
+     * Drops SymmetricDS triggers for the specified engine and table on the
+     * node.
+     * 
      * @param engineName
      * @param tableName
      */
-    @RequestMapping(value = "/tables/{table}/trigger", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/tables/{table}/triggers", method = RequestMethod.DELETE)
     @ResponseBody
     public final void dropTrigger(@RequestParam("engine") String engineName,
-                    @PathVariable("table") String tableName) {
-            //TODO: Implementation
+            @PathVariable("table") String tableName) {
+        // TODO: Implementation
     }
+       
 
     /**
      * Drops all SymmetricDS triggers for the specified engine on the node.
+     * 
      * @param engineName
      */
-    @RequestMapping(value = "/trigger", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/triggers", method = RequestMethod.DELETE)
     @ResponseBody
     public final void dropTrigger(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
-    }
-    
-    /**
-     * Creates SymmetricDS triggers for the specified engine and table on the node.
-     * @param engineName
-     * @param tableName
-     */
-    @RequestMapping(value = "/tables/{table}/trigger", method = RequestMethod.POST)
-    @ResponseBody
-    public final void syncTrigger(@RequestParam("engine") String engineName,
-                    @PathVariable("table") String tableName) {
-            //TODO: Implementation
+        // TODO: Implementation
     }
 
     /**
-     * Creates SymmetricDS triggers for all configured tables on the specified engine on the node.
+     * Creates SymmetricDS triggers for the specified engine and table on the
+     * node.
+     * 
      * @param engineName
+     * @param tableName
      */
-    @RequestMapping(value = "/trigger", method = RequestMethod.POST)
+    @RequestMapping(value = "/tables/{table}/triggers", method = RequestMethod.POST)
     @ResponseBody
-    public final void syncTrigger(@RequestParam("engine") String engineName) {
-            //TODO: Implementation
-    }    
-    
+    public final void syncTrigger(@RequestParam("engine") String engineName,
+            @PathVariable("table") String tableName) {
+        // TODO: Implementation
+    }
+
     /**
-     * Reinitializes the specified engine on the node.  This includes:
+     * Reinitializes the specified engine on the node. This includes:
      * <ul>
      * <li>Uninstalling all SymmetricDS objects from the database</li>
      * <li>Reregistering the node</li>
      * <li>Initial load (if configured)</li>
      * <li>Reverse initial load (if configured)</li>
      * </ul>
+     * 
      * @param engineName
      */
     @RequestMapping(value = "/reinitialize/engines/{engine}", method = RequestMethod.POST)
     @ResponseBody
     public final void initialize(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
+        // TODO: Implementation
     }
-    
+
     /**
      * Returns an overall status for the specified engine of the node.
+     * 
      * @param engineName
      * @return {@link NodeStatus}
      */
     @RequestMapping(value = "/engines/{engine}/node/status", method = RequestMethod.GET)
     @ResponseBody
     public final NodeStatus nodeStatus(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
-            return new NodeStatus();
-    }
-        
-    /**
-     * Returns status of each channel for the specified engine of the node.
-     * @param engineName
-     * @return Set<{@link ChannelStatus}>
-     */    
-    @RequestMapping(value = "/engines/{engine}/channel/status", method = RequestMethod.GET)
-    @ResponseBody
-    public final Set<ChannelStatus> channelStatus(@PathVariable("engine") String engineName) {
-            throw new RuntimeException("Test");
+        // TODO: Implementation
+        return new NodeStatus();
     }
 
     /**
-     * Uninstalls all SymmetricDS objects from the database for the specified engine of the node.
+     * Returns status of each channel for the specified engine of the node.
+     * 
+     * @param engineName
+     * @return Set<{@link ChannelStatus}>
+     */
+    @RequestMapping(value = "/engines/{engine}/channel/status", method = RequestMethod.GET)
+    @ResponseBody
+    public final Set<ChannelStatus> channelStatus(@PathVariable("engine") String engineName) {
+        throw new RuntimeException("Test");
+    }
+
+    /**
+     * Uninstalls all SymmetricDS objects from the database for the specified
+     * engine of the node.
+     * 
      * @param engineName
      */
     @RequestMapping(value = "/engines/{engine}", method = RequestMethod.DELETE)
     @ResponseBody
     public final void unintstall(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
+        // TODO: Implementation
     }
-        
+
     /**
      * Starts SymmetricDS for the node.
      */
     @RequestMapping(value = "/start", method = RequestMethod.POST)
     @ResponseBody
     public final void start() {
-            //TODO: Implementation
+        // TODO: Implementation
     }
-        
+
     /**
      * Stops SymmetricDS for the node.
      */
     @RequestMapping(value = "/stop", method = RequestMethod.POST)
     @ResponseBody
     public final void stop() {
-            //TODO: Implementation
+        // TODO: Implementation
     }
 
     /**
@@ -188,23 +220,23 @@ public class RestService {
     @RequestMapping(value = "/cache", method = RequestMethod.PUT)
     @ResponseBody
     public final void refreshCache() {
-            //TODO: Implementation
+        // TODO: Implementation
     }
 
-    //TODO: reloadtable
-    //TODO: reloadnode
-    
+    // TODO: reloadtable
+    // TODO: reloadnode
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public RestError handleError(Exception ex, HttpServletRequest req) {
         int httpErrorCode = 500;
         Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
         if (annotation != null) {
-           httpErrorCode = ((ResponseStatus)annotation).value().value();
+            httpErrorCode = ((ResponseStatus) annotation).value().value();
         }
         return new RestError(ex, httpErrorCode);
     }
-    
+
     protected SymmetricEngineHolder getSymmetricEngineHolder() {
         SymmetricEngineHolder holder = (SymmetricEngineHolder) context
                 .getAttribute(WebConstants.ATTR_ENGINE_HOLDER);
