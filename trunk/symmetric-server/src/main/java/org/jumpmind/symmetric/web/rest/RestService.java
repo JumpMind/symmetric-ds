@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.web.rest;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -11,8 +12,10 @@ import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
+import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Identity;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
+import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,24 +39,10 @@ public class RestService {
      */
     @RequestMapping(value = "/engine", method = RequestMethod.GET)
     @ResponseBody
-    public final Set<Engine> engine() {
+    public final EngineList engine() {
     	//TODO:implement
         //return getSymmetricEngineHolder().getEngines().keySet();
-    	return null;
-    }
-
-    /**
-     * Returns the identity for the specified engine on the node.
-     * @param String engine
-     * @return {@link Identity} of the engine
-     */
-    @RequestMapping(value = "/engine/{engine}/identity", method = RequestMethod.GET)
-    @ResponseBody
-    public final Identity identity(@PathVariable("engine") String engineName) {
-    	//TODO:implement
-        //ISymmetricEngine engine = getSymmetricEngine(engineName);
-        //return engine.getNodeService().findIdentityNodeId();
-    	return null;
+    	return new EngineList(new Engine("one"), new Engine("two"));
     }
 
     /**
@@ -62,10 +51,12 @@ public class RestService {
      * return an HTTP Status Code 405 (Method Not Allowed)
      * @return Identity the identity of the engine
      */
-    @RequestMapping(value = "/engine/identity", method = RequestMethod.GET)
+    @RequestMapping(value = "/identity", method = RequestMethod.GET)
     @ResponseBody
-    public final Identity identity() {
-    	//TODO: implement
+    public final Identity identity(@RequestParam("engine") String engineName) {
+    	//TODO:implement
+        //ISymmetricEngine engine = getSymmetricEngine(engineName);
+        //return engine.getNodeService().findIdentityNodeId();
     	return null;
     }
 
@@ -73,10 +64,10 @@ public class RestService {
      * Loads a profile for the specified engine on the node. 
      * @param engineName 
      */
-    @RequestMapping(value = "/engines/{engine}/profile", method = RequestMethod.POST)
+    @RequestMapping(value = "profile", method = RequestMethod.POST)
     @ResponseBody
     //TODO: figure out how we will pass the file info...
-    public final void loadProfile(@PathVariable("engine") String engineName, @RequestParam MultipartFile file) {
+    public final void loadProfile(@RequestParam("engine") String engineName, @RequestParam MultipartFile file) {
         System.out.println("File '" + file.getOriginalFilename() + "' uploaded successfully");
     }
 
@@ -85,9 +76,9 @@ public class RestService {
      * @param engineName
      * @param tableName
      */
-    @RequestMapping(value = "/engines/{engine}/tables/{table}/trigger", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/tables/{table}/trigger", method = RequestMethod.DELETE)
     @ResponseBody
-    public final void dropTrigger(@PathVariable("engine") String engineName,
+    public final void dropTrigger(@RequestParam("engine") String engineName,
                     @PathVariable("table") String tableName) {
             //TODO: Implementation
     }
@@ -96,7 +87,7 @@ public class RestService {
      * Drops all SymmetricDS triggers for the specified engine on the node.
      * @param engineName
      */
-    @RequestMapping(value = "/engines/{engine}/trigger", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/trigger", method = RequestMethod.DELETE)
     @ResponseBody
     public final void dropTrigger(@PathVariable("engine") String engineName) {
             //TODO: Implementation
@@ -107,9 +98,9 @@ public class RestService {
      * @param engineName
      * @param tableName
      */
-    @RequestMapping(value = "engines/{engine}/tables/{table}/trigger", method = RequestMethod.POST)
+    @RequestMapping(value = "/tables/{table}/trigger", method = RequestMethod.POST)
     @ResponseBody
-    public final void syncTrigger(@PathVariable("engine") String engineName,
+    public final void syncTrigger(@RequestParam("engine") String engineName,
                     @PathVariable("table") String tableName) {
             //TODO: Implementation
     }
@@ -118,9 +109,9 @@ public class RestService {
      * Creates SymmetricDS triggers for all configured tables on the specified engine on the node.
      * @param engineName
      */
-    @RequestMapping(value = "/engines/{engine}/trigger", method = RequestMethod.POST)
+    @RequestMapping(value = "/trigger", method = RequestMethod.POST)
     @ResponseBody
-    public final void syncTrigger(@PathVariable("engine") String engineName) {
+    public final void syncTrigger(@RequestParam("engine") String engineName) {
             //TODO: Implementation
     }    
     
