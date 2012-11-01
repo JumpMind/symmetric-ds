@@ -1,19 +1,23 @@
 package org.jumpmind.symmetric.web.rest;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
@@ -127,7 +131,7 @@ public class RestService {
     @ResponseBody
     public final NodeStatus nodeStatus(@PathVariable("engine") String engineName) {
             //TODO: Implementation
-            return null;
+            return new NodeStatus();
     }
         
     /**
@@ -138,8 +142,7 @@ public class RestService {
     @RequestMapping(value = "/channelstatus/engines/{engine}", method = RequestMethod.GET)
     @ResponseBody
     public final Set<ChannelStatus> channelStatus(@PathVariable("engine") String engineName) {
-            //TODO: Implementation
-            return null;
+            throw new RuntimeException("Test");
     }
 
     /**
@@ -181,6 +184,17 @@ public class RestService {
 
     //TODO: reloadtable
     //TODO: reloadnode
+    
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public RestError handleError(Exception ex, HttpServletRequest req) {
+        int httpErrorCode = 500;
+        Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
+        if (annotation != null) {
+           httpErrorCode = ((ResponseStatus)annotation).value().value();
+        }
+        return new RestError(ex, httpErrorCode);
+    }
     
     protected SymmetricEngineHolder getSymmetricEngineHolder() {
         SymmetricEngineHolder holder = (SymmetricEngineHolder) context
