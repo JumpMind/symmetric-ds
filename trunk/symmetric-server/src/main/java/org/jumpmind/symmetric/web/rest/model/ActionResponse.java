@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.web.rest.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name="actionresponse")
 public class ActionResponse {
 
     protected boolean success;

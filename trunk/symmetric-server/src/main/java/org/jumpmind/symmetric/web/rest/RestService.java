@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Identity;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
 import org.jumpmind.symmetric.web.rest.model.RestError;
+import org.jumpmind.symmetric.web.rest.model.SyncTriggersActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -80,7 +81,7 @@ public class RestService {
             @RequestParam MultipartFile file) {
         System.out.println("File '" + file.getOriginalFilename() + "' uploaded successfully");
     }
-    
+
     @RequestMapping(value = "/actions/{action}", method = RequestMethod.GET)
     @ResponseBody
     public final ActionResponse action(
@@ -93,12 +94,16 @@ public class RestService {
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
                 StringBuilder buffer = new StringBuilder();
                 triggerRouterService.syncTriggers(buffer, force);
-                ActionResponse response = new ActionResponse();
+                SyncTriggersActionResponse response = new SyncTriggersActionResponse();
                 response.setSuccess(true);
                 response.setMessage(buffer.toString());
                 return response;
             } else if (actionName.equals("reinitialize")) {
-                
+
+            } else if (actionName.equals("start")) {
+
+            } else if (actionName.equals("stop")) {
+
             }
         }
         throw new NotFoundException();
@@ -117,7 +122,6 @@ public class RestService {
             @PathVariable("table") String tableName) {
         // TODO: Implementation
     }
-       
 
     /**
      * Drops all SymmetricDS triggers for the specified engine on the node.
