@@ -83,8 +83,10 @@ public class RestService {
     
     @RequestMapping(value = "/actions/{action}", method = RequestMethod.GET)
     @ResponseBody
-    public final ActionResponse action(@RequestParam(required=false,value="engine") String engineName,
-            @PathVariable("action") String actionName, @RequestParam(required=false,value="force") boolean force) {
+    public final ActionResponse action(
+            @RequestParam(required = false, value = "engine") String engineName,
+            @PathVariable("action") String actionName,
+            @RequestParam(required = false, value = "force") boolean force) {
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         if (StringUtils.isNotBlank(actionName) && engine != null) {
             if (actionName.equals("synctriggers")) {
