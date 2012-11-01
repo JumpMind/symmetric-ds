@@ -510,6 +510,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
         for (TriggerRouter triggerRouter : triggerRouters) {
             triggerRouterService.deleteTriggerRouter(triggerRouter);
+        }
+        
+        for (TriggerRouter triggerRouter : triggerRouters) {
             triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
             triggerRouterService.deleteRouter(triggerRouter.getRouter());
         }

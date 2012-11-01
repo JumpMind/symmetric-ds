@@ -61,6 +61,8 @@ public interface ISymmetricEngine {
     public void stop();
     
     public void destroy();
+    
+    public void uninstall();
 
     /**
      * @return the URL that represents this engine
