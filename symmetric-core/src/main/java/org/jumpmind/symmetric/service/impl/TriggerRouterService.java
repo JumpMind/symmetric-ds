@@ -324,11 +324,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
 
-        if (trigger.getSourceTableName().equalsIgnoreCase(
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER))) {
-            router.setRouterType("configurationChanged");
-        }
-
         return triggerRouter;
     }
 
