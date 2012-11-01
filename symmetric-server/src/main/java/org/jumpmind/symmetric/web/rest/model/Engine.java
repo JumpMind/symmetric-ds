@@ -5,15 +5,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Engine {
 
-	private String Name;
+    private String name;
 
-	public String getName() {
-		return Name;
-	}
+    public Engine(String name) {
+        setName(name);
+    }
 
-	public void setName(String name) {
-		Name = name;
-	}
-	
-	
+    public Engine() {
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

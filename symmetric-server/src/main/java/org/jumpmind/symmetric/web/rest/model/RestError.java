@@ -1,10 +1,10 @@
-package org.jumpmind.symmetric.web.rest;
+package org.jumpmind.symmetric.web.rest.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-@XmlRootElement
+@XmlRootElement(name="error")
 public class RestError {
 
     protected String message;
