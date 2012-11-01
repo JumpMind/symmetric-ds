@@ -1,7 +1,9 @@
 package org.jumpmind.symmetric.web.rest;
 
 import org.jumpmind.symmetric.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement
 public class NodeStatus {
 
     /**
