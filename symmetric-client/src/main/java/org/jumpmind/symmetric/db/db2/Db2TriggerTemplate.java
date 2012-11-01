@@ -8,7 +8,8 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 
     public Db2TriggerTemplate(ISymmetricDialect symmetricDialect) {
-        super(symmetricDialect); 
+        super(symmetricDialect);
+        dropFunctionSql = "DROP FUNCTION $(functionName)";
         functionInstalledSql = "select count(*) from syscat.functions where funcname = '$(functionName)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;

@@ -14,6 +14,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
     public DerbyTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off
+        dropFunctionSql = "DROP FUNCTION $(functionName)";
         functionInstalledSql = "select count(*) from sys.sysaliases where alias = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "sym_escape($(tableAlias).\"$(columnName)\")" ;

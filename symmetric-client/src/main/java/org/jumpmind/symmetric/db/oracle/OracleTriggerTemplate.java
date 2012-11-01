@@ -10,6 +10,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
     public OracleTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         // @formatter:off         
+        dropFunctionSql = "DROP FUNCTION $(functionName)";
         functionInstalledSql = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;

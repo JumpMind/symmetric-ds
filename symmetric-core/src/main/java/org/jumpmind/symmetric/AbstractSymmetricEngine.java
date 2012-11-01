@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -500,10 +502,30 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         symmetricDialect.getDriverVersion() });
         return started;
     }
+    
+    
+    public synchronized void uninstall() {
+        stop();
+        
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            triggerRouterService.deleteTriggerRouter(triggerRouter);
+            triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
+            triggerRouterService.deleteRouter(triggerRouter.getRouter());
+        }
+        
+        // this should remove all triggers because we have removed all the trigger configuration
+        triggerRouterService.syncTriggers();
+        
+        // TODO should we go through and look for abandoned triggers to remove?
+        
+        symmetricDialect.dropTablesAndFunctions();
+        
+    }    
 
     public synchronized void stop() {
-    	
-        log.info("Closing SymmetricDS externalId={} version={} database={}",
+        
+        log.info("Stopping SymmetricDS externalId={} version={} database={}",
                 new Object[] { parameterService == null ? "?" : parameterService.getExternalId(), Version.version(),
                         symmetricDialect == null? "?":symmetricDialect.getName() });
         if (jobManager != null) {

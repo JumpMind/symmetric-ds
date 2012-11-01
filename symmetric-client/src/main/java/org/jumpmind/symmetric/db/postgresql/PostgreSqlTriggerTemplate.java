@@ -10,6 +10,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off
+        dropFunctionSql = "drop function $(defaultSchema)$(functionName)";
         functionInstalledSql = 
             " select count(*) from information_schema.routines " + 
             " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
