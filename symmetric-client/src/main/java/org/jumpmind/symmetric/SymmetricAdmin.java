@@ -85,8 +85,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_SYNC_TRIGGERS = "sync-triggers";
 
     private static final String CMD_EXPORT_PROPERTIES = "export-properties";
-    
-    private static final String CMD_UNINSTALL = "uninstall";
 
     private static final String CMD_SEND_SQL = "send-sql";
 
@@ -165,7 +163,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_SEND_SQL);
             printHelpLine(pw, CMD_SEND_SCHEMA);
             printHelpLine(pw, CMD_SEND_SCRIPT);
-            printHelpLine(pw, CMD_UNINSTALL);
             pw.flush();
         }
     }
@@ -246,49 +243,74 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         if (cmd.equals(CMD_EXPORT_PROPERTIES)) {
             exportDefaultProperties(line, args);
             return true;
-        } else if (cmd.equals(CMD_CREATE_WAR)) {
+        }
+
+        if (cmd.equals(CMD_CREATE_WAR)) {
             generateWar(line, args);
             return true;
-        } else if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
+        }
+
+        if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
             exportSymTables(line, args);
             return true;
-        } else if (cmd.equals(CMD_RUN_PURGE)) {
+        }
+
+        if (cmd.equals(CMD_RUN_PURGE)) {
             runPurge(line, args);
             return true;
-        } else if (cmd.equals(CMD_OPEN_REGISTRATION)) {
+        }
+
+        if (cmd.equals(CMD_OPEN_REGISTRATION)) {
             openRegistration(line, args);
             return true;
-        } else if (cmd.equals(CMD_RELOAD_NODE)) {
+        }
+
+        if (cmd.equals(CMD_RELOAD_NODE)) {
             reloadNode(line, args);
             return true;
-        } else if (cmd.equals(CMD_EXPORT_BATCH)) {
+        }
+
+        if (cmd.equals(CMD_EXPORT_BATCH)) {
             exportBatch(line, args);
             return true;
-        } else if (cmd.equals(CMD_SYNC_TRIGGERS)) {
+        }
+
+        if (cmd.equals(CMD_SYNC_TRIGGERS)) {
             syncTrigger(line, args);
             return true;
-        } else if (cmd.equals(CMD_CREATE_SYM_TABLES)) {
+        }
+
+        if (cmd.equals(CMD_CREATE_SYM_TABLES)) {
             createSymTables();
             return true;
-        } else if (cmd.equals(CMD_IMPORT_BATCH)) {
+        }
+
+        if (cmd.equals(CMD_IMPORT_BATCH)) {
             importBatch(line, args);
             return true;
-        } else if (cmd.equals(CMD_ENCRYPT_TEXT)) {
+        }
+
+        if (cmd.equals(CMD_ENCRYPT_TEXT)) {
             encryptText(line, args);
             return true;
-        } else if (cmd.equals(CMD_SEND_SQL)) {
+        }
+
+        if (cmd.equals(CMD_SEND_SQL)) {
             sendSql(line, args);
             return true;
-        } else if (cmd.equals(CMD_UNINSTALL)) {
-            uninstall(line, args);
-            return true;
-        } else if (cmd.equals(CMD_RELOAD_TABLE)) {
+        }
+
+        if (cmd.equals(CMD_RELOAD_TABLE)) {
             reloadTable(line, args);
             return true;
-        } else if (cmd.equals(CMD_SEND_SCHEMA)) {
+        }
+
+        if (cmd.equals(CMD_SEND_SCHEMA)) {
             sendSchema(line, args);
             return true;
-        } else if (cmd.equals(CMD_SEND_SCRIPT)) {
+        }
+
+        if (cmd.equals(CMD_SEND_SCRIPT)) {
             sendScript(line, args);
             return true;
         }
@@ -423,10 +445,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void createSymTables() {
         getSymmetricEngine().setupDatabase(true);
-    }
-    
-    private void uninstall(CommandLine line, List<String> args) {
-        getSymmetricEngine().uninstall();
     }
 
     private void sendSql(CommandLine line, List<String> args) {

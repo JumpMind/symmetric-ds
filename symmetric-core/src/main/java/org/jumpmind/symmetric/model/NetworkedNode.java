@@ -20,13 +20,9 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.commons.lang.StringUtils;
 
 public class NetworkedNode implements Comparable<NetworkedNode> {
 
@@ -35,19 +31,11 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
     private NetworkedNode parent;
 
     private TreeMap<String, NetworkedNode> children;
-
+    
     private Map<String, NetworkedNode> allNetworkedNodes;
 
     public NetworkedNode(Node node) {
         this.node = node;
-    }
-
-    public Set<NetworkedNode> getChildren() {
-        if (children != null) {
-            return new HashSet<NetworkedNode>(children.values());
-        } else {
-            return null;
-        }
     }
 
     public void addChild(NetworkedNode node) {
@@ -80,7 +68,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
             if (children != null) {
                 NetworkedNode node = children.get(nodeId);
                 if (node != null) {
-                    return numberOfLinksIAmFromRoot + 1;
+                    return numberOfLinksIAmFromRoot+1;
                 } else {
                     for (NetworkedNode child : children.values()) {
                         int numberOfLinksAwayFromMe = child.getNumberOfLinksAwayFromMe(nodeId,
@@ -192,32 +180,9 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
     public int compareTo(NetworkedNode o) {
         return node.getNodeId().compareTo(o.getNode().getNodeId());
     }
-
+    
     public void setAllNetworkedNodes(Map<String, NetworkedNode> allNetworkedNodes) {
         this.allNetworkedNodes = allNetworkedNodes;
-    }
-
-    public int getNumberOfLinksFromRoot() {
-        int count = 0;
-        NetworkedNode root = this.parent;
-        while (root != null) {
-            root = root.getParent();
-            count++;
-        }
-        return count;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder string = new StringBuilder();
-        string.append(StringUtils.repeat("-", getNumberOfLinksFromRoot())).append(node.getNodeId());
-        if (children != null) {
-            Collection<NetworkedNode> set = children.values();
-            for (NetworkedNode networkedNode : set) {
-                string.append("\n").append(networkedNode.toString());
-            }
-        }
-        return string.toString();
     }
 
 }

@@ -60,8 +60,6 @@ abstract public class AbstractTriggerTemplate {
     protected Map<String, String> sqlTemplates;
 
     protected Map<String, String> functionTemplatesToInstall;
-    
-    protected String dropFunctionSql;
 
     protected String functionInstalledSql;
 
@@ -906,22 +904,12 @@ abstract public class AbstractTriggerTemplate {
         }
         return ddl;
     }
-    
-    public String getDropFunctionSql(String functionName, String defaultSchema) {
-        if (functionInstalledSql != null) {
-            String ddl = FormatUtils.replace("functionName", functionName, dropFunctionSql);
-            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = FormatUtils.replace("defaultSchema", defaultSchema, ddl);
-            return ddl;
-        } else {
-            return null;
-        }
-    }    
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
             String ddl = FormatUtils.replace("functionName", functionName, functionInstalledSql);
             ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
+            // don't need quotes around this schema
             ddl = FormatUtils.replace("defaultSchema", defaultSchema, ddl);
             return ddl;
         } else {

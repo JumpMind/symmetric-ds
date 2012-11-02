@@ -18,7 +18,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         super(symmetricDialect);
         
         // @formatter:off
-        dropFunctionSql = "drop function dbo.$(functionName)";
+        
         functionInstalledSql = "select count(object_name(object_id('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert(varchar(max),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
