@@ -16,7 +16,6 @@ public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
 
     public SybaseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
-        dropFunctionSql = "drop function dbo.$(functionName)";
         functionInstalledSql = "select count(object_name(object_id('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;

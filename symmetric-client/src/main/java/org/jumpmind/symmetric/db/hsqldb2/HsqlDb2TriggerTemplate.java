@@ -9,7 +9,6 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 
     public HsqlDb2TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
-        dropFunctionSql = "drop function $(functionName)";
         functionInstalledSql = "select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME=UPPER('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"' end" ;

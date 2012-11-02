@@ -9,7 +9,6 @@ public class HsqlDbTriggerTemplate extends AbstractTriggerTemplate {
 
     public HsqlDbTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
-        dropFunctionSql = "DROP ALIAS $(functionName)";
         functionInstalledSql = "select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='$(functionName)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;
