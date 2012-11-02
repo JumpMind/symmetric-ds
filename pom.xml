@@ -6,8 +6,8 @@
     <version>3.1.9.b-SNAPSHOT</version>
     
     <scm>
-        <connection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/tags/symmetric-build-3.1.9</connection>
-        <developerConnection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/tags/symmetric-build-3.1.9</developerConnection>
+        <connection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/branches/3.1</connection>
+        <developerConnection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/branches/3.1</developerConnection>
     </scm>
     
     <distributionManagement>
