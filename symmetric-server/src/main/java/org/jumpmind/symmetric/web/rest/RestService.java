@@ -99,7 +99,7 @@ public class RestService {
      * 
      * @return {@link EngineList} - Engines configured on the node
      */
-    @RequestMapping(value = "/engine", method = RequestMethod.GET)
+    @RequestMapping(value = "/enginelist", method = RequestMethod.GET)
     @ResponseBody
     public final EngineList engine() {
         EngineList list = new EngineList();
