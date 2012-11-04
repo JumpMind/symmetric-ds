@@ -71,7 +71,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     
     @Override
     protected void createRequiredFunctions() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "BASE_64_ENCODE";
+        String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     " + 
                     " RETURNS VARCHAR(1000000)                                                                                                                                    " + 
@@ -82,25 +82,24 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
             install(sql, encode);
         }
         
-        String setSession = this.parameterService.getTablePrefix() + "_" + "BASE_64_ENCODE";
+        String setSession = this.parameterService.getTablePrefix() + "_set_session";
         if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
-            String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     " + 
-                    "  RETURNS VARCHAR(1000000)                                                                                                                                    " + 
-                    "  NO SQL                                                                                                                                                      " + 
-                    "  LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
-                    "  EXTERNAL NAME                                                                                                                                               " + 
-                    "   'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'                                                                                  ";
+            String sql = "CREATE PROCEDURE $(functionName)(key VARCHAR(50), data VARCHAR(50))                                                                                                                                    " + 
+                    " NO SQL                                                                                                                                                      " + 
+                    " LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
+                    " EXTERNAL NAME                                                                                                                                               " + 
+                    "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'                                                                                    ";
             install(sql, setSession);
         }
 
-        String getSession = this.parameterService.getTablePrefix() + "_" + "BASE_64_ENCODE";
+        String getSession = this.parameterService.getTablePrefix() + "_get_session";
         if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
             String sql = "CREATE FUNCTION $(functionName)(key VARCHAR(50))                                                                                                                                                       " + 
-                    "  RETURNS VARCHAR(50)                                                                                                                                         " + 
-                    "  NO SQL                                                                                                                                                      " + 
-                    "  LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
-                    "  EXTERNAL NAME                                                                                                                                               " + 
-                    "   'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    ";
+                    " RETURNS VARCHAR(50)                                                                                                                                         " + 
+                    " NO SQL                                                                                                                                                      " + 
+                    " LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
+                    " EXTERNAL NAME                                                                                                                                               " + 
+                    "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    ";
             install(sql, getSession);
         }
         
@@ -108,17 +107,17 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     
     @Override
     protected void dropRequiredFunctions() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
+        String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
         }
 
-        String setSession = this.parameterService.getTablePrefix() + "_" + "set_session";
+        String setSession = this.parameterService.getTablePrefix() + "_set_session";
         if (installed(SQL_FUNCTION_INSTALLED, setSession)) {
             uninstall(SQL_DROP_FUNCTION, setSession);
         }
 
-        String getSession = this.parameterService.getTablePrefix() + "_" + "get_session";
+        String getSession = this.parameterService.getTablePrefix() + "_get_session";
         if (installed(SQL_FUNCTION_INSTALLED, getSession)) {
             uninstall(SQL_DROP_FUNCTION, getSession);
         }
