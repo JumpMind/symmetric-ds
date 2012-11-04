@@ -9,36 +9,17 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 
     public InterbaseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
-        functionInstalledSql = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || sym_escape($(tableAlias).\"$(columnName)\") || '\"' end" ;
-        xmlColumnTemplate = null;
-        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
-        timeColumnTemplate = null;
-        dateColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || sym_escape($(tableAlias).\"$(columnName)\") || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || sym_hex($(tableAlias).\"$(columnName)\") || '\"' end" ;
-        wrappedBlobColumnTemplate = null;
-        booleanColumnTemplate = null;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = null;
-
-        functionTemplatesToInstall = new HashMap<String,String>();
-        functionTemplatesToInstall.put("escape" ,
-"declare external function $(functionName) cstring(4096)                                                                                                                                                " + 
-"                                returns cstring(4096) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                           " );
-        functionTemplatesToInstall.put("hex" ,
-"declare external function $(functionName) blob                                                                                                                                                         " + 
-"                                returns cstring(4096) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                              " );
-        functionTemplatesToInstall.put("rtrim" ,
-"declare external function $(functionName) cstring(32767)                                                                                                                                               " + 
-"                                returns cstring(32767) free_it entry_point 'IB_UDF_rtrim' module_name 'ib_udf'                                                                                         " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

@@ -12,6 +12,14 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         super(parameterService, platform);
         this.triggerTemplate = new SqliteTriggerTemplate(this);
     }
+    
+    @Override
+    protected void createRequiredFunctions() {
+    }
+    
+    @Override
+    protected void dropRequiredFunctions() {
+    }
 
     public void purge() {
     }

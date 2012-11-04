@@ -10,10 +10,6 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off
-        dropFunctionSql = "drop function $(defaultSchema)$(functionName)";
-        functionInstalledSql = 
-            " select count(*) from information_schema.routines " + 
-            " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -38,7 +34,6 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
         		"   end                                                                                                              " +
         		"end                                                                                                                 ";
-        timeColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || pg_catalog.encode($(tableAlias).\"$(columnName)\", 'base64') || '\"' end" ;
         wrappedBlobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias).\"$(columnName)\") || '\"' end" ;
@@ -49,46 +44,6 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
         otherColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast($(tableAlias).\"$(columnName)\" as varchar) || '\"' end" ;
-
-        functionTemplatesToInstall = new HashMap<String,String>();
-        functionTemplatesToInstall.put("triggers_disabled" ,
-"CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$                                                                                                                     " + 
-"                                DECLARE                                                                                                                                                                " + 
-"                                  triggerDisabled INTEGER;                                                                                                                                             " + 
-"                                BEGIN                                                                                                                                                                  " + 
-"                                  select current_setting('symmetric.triggers_disabled') into triggerDisabled;                                                                                          " + 
-"                                  return triggerDisabled;                                                                                                                                              " + 
-"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
-"                                  return 0;                                                                                                                                                            " + 
-"                                END;                                                                                                                                                                   " + 
-"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
-        functionTemplatesToInstall.put("node_disabled" ,
-"CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$                                                                                                                     " + 
-"                                DECLARE                                                                                                                                                                " + 
-"                                  nodeId VARCHAR(50);                                                                                                                                                  " + 
-"                                BEGIN                                                                                                                                                                  " + 
-"                                  select current_setting('symmetric.node_disabled') into nodeId;                                                                                                       " + 
-"                                  return nodeId;                                                                                                                                                       " + 
-"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
-"                                  return '';                                                                                                                                                           " + 
-"                                END;                                                                                                                                                                   " + 
-"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
-        functionTemplatesToInstall.put("largeobject" ,
-"CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$                                                                                                            " + 
-"                                DECLARE                                                                                                                                                                " + 
-"                                  encodedBlob text;                                                                                                                                                    " + 
-"                                  encodedBlobPage text;                                                                                                                                                " + 
-"                                BEGIN                                                                                                                                                                  " + 
-"                                  encodedBlob := '';                                                                                                                                                   " + 
-"                                  FOR encodedBlobPage IN SELECT pg_catalog.encode(data, 'escape')                                                                                                                 " + 
-"                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP                                                                                                       " + 
-"                                    encodedBlob := encodedBlob || encodedBlobPage;                                                                                                                     " + 
-"                                  END LOOP;                                                                                                                                                            " + 
-"                                  RETURN pg_catalog.encode(pg_catalog.decode(encodedBlob, 'escape'), 'base64');                                                                                                              " + 
-"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
-"                                  RETURN '';                                                                                                                                                           " + 
-"                                END                                                                                                                                                                    " + 
-"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

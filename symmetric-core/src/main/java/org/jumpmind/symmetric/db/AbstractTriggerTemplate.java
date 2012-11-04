@@ -30,7 +30,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -58,12 +57,6 @@ abstract public class AbstractTriggerTemplate {
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
 
     protected Map<String, String> sqlTemplates;
-
-    protected Map<String, String> functionTemplatesToInstall;
-    
-    protected String dropFunctionSql;
-
-    protected String functionInstalledSql;
 
     protected String emptyColumnTemplate = "''";
 
@@ -227,15 +220,6 @@ abstract public class AbstractTriggerTemplate {
                 sql);
 
         return sql;
-    }
-
-    public String[] getFunctionsToInstall() {
-        if (functionTemplatesToInstall != null) {
-            return functionTemplatesToInstall.keySet().toArray(
-                    new String[functionTemplatesToInstall.size()]);
-        } else {
-            return new String[0];
-        }
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
@@ -695,10 +679,6 @@ abstract public class AbstractTriggerTemplate {
         return otherColumnTemplate;
     }
 
-    public void setOtherColumnTemplate(String otherColumnTemplate) {
-        this.otherColumnTemplate = otherColumnTemplate;
-    }
-
     protected boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
@@ -785,108 +765,28 @@ abstract public class AbstractTriggerTemplate {
         return text;
     }
 
-    public void setStringColumnTemplate(String columnTemplate) {
-        this.stringColumnTemplate = columnTemplate;
-    }
-
-    public void setXmlColumnTemplate(String columnTemplate) {
-        this.xmlColumnTemplate = columnTemplate;
-    }
-
-    public void setArrayColumnTemplate(String arrayColumnTemplate) {
-        this.arrayColumnTemplate = arrayColumnTemplate;
-    }
-
-    public void setDatetimeColumnTemplate(String datetimeColumnTemplate) {
-        this.datetimeColumnTemplate = datetimeColumnTemplate;
-    }
-
-    public void setNumberColumnTemplate(String numberColumnTemplate) {
-        this.numberColumnTemplate = numberColumnTemplate;
-    }
-
-    public void setSqlTemplates(Map<String, String> sqlTemplates) {
-        this.sqlTemplates = sqlTemplates;
-    }
-
     public String getClobColumnTemplate() {
         return clobColumnTemplate;
-    }
-
-    public void setClobColumnTemplate(String clobColumnTemplate) {
-        this.clobColumnTemplate = clobColumnTemplate;
     }
 
     public void setBooleanColumnTemplate(String booleanColumnTemplate) {
         this.booleanColumnTemplate = booleanColumnTemplate;
     }
 
-    public void setTriggerConcatCharacter(String triggerConcatCharacter) {
-        this.triggerConcatCharacter = triggerConcatCharacter;
-    }
-
     public String getNewTriggerValue() {
         return newTriggerValue;
-    }
-
-    public void setNewTriggerValue(String newTriggerValue) {
-        this.newTriggerValue = newTriggerValue;
     }
 
     public String getOldTriggerValue() {
         return oldTriggerValue;
     }
 
-    public void setOldTriggerValue(String oldTriggerValue) {
-        this.oldTriggerValue = oldTriggerValue;
-    }
-
     public String getBlobColumnTemplate() {
         return blobColumnTemplate;
     }
 
-    public void setBlobColumnTemplate(String blobColumnTemplate) {
-        this.blobColumnTemplate = blobColumnTemplate;
-    }
-
     public String getWrappedBlobColumnTemplate() {
         return wrappedBlobColumnTemplate;
-    }
-
-    public void setWrappedBlobColumnTemplate(String wrappedBlobColumnTemplate) {
-        this.wrappedBlobColumnTemplate = wrappedBlobColumnTemplate;
-    }
-
-    public void setFunctionInstalledSql(String functionInstalledSql) {
-        this.functionInstalledSql = functionInstalledSql;
-    }
-
-    public void setFunctionTemplatesToInstall(Map<String, String> functionTemplatesToInstall) {
-        this.functionTemplatesToInstall = functionTemplatesToInstall;
-    }
-
-    public void setOldColumnPrefix(String oldColumnPrefix) {
-        this.oldColumnPrefix = oldColumnPrefix;
-    }
-
-    public void setEmptyColumnTemplate(String emptyColumnTemplate) {
-        this.emptyColumnTemplate = emptyColumnTemplate;
-    }
-
-    public void setNewColumnPrefix(String newColumnPrefix) {
-        this.newColumnPrefix = newColumnPrefix;
-    }
-
-    public String getFunctionSql(String functionKey, String functionName) {
-        if (this.functionTemplatesToInstall != null) {
-            String ddl = FormatUtils.replace("functionName", functionName,
-                    this.functionTemplatesToInstall.get(functionKey));
-            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = replaceDefaultSchemaAndCatalog(ddl);
-            return ddl;
-        } else {
-            return null;
-        }
     }
 
     protected String replaceDefaultSchema(String ddl, String defaultSchema) {
@@ -905,28 +805,6 @@ abstract public class AbstractTriggerTemplate {
             ddl = FormatUtils.replace("defaultCatalog", "", ddl);
         }
         return ddl;
-    }
-    
-    public String getDropFunctionSql(String functionName, String defaultSchema) {
-        if (functionInstalledSql != null) {
-            String ddl = FormatUtils.replace("functionName", functionName, dropFunctionSql);
-            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = FormatUtils.replace("defaultSchema", defaultSchema, ddl);
-            return ddl;
-        } else {
-            return null;
-        }
-    }    
-
-    public String getFunctionInstalledSql(String functionName, String defaultSchema) {
-        if (functionInstalledSql != null) {
-            String ddl = FormatUtils.replace("functionName", functionName, functionInstalledSql);
-            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = FormatUtils.replace("defaultSchema", defaultSchema, ddl);
-            return ddl;
-        } else {
-            return null;
-        }
     }
 
     public String getTimeColumnTemplate() {

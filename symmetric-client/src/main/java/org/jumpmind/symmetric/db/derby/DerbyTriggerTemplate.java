@@ -14,8 +14,6 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
     public DerbyTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off
-        dropFunctionSql = "DROP FUNCTION $(functionName)";
-        functionInstalledSql = "select count(*) from sys.sysaliases where alias = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "sym_escape($(tableAlias).\"$(columnName)\")" ;
         xmlColumnTemplate = null;
@@ -34,46 +32,6 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
         otherColumnTemplate = null;
-
-        functionTemplatesToInstall = new HashMap<String,String>();
-        functionTemplatesToInstall.put("escape" ,
-"CREATE FUNCTION $(functionName)(STR VARCHAR(10000)) RETURNS                                                                                                                                            " + 
-"                                VARCHAR(10000) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                 " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.escape'                                                                                                                " );        
-        functionTemplatesToInstall.put("clob_to_string" ,
-"CREATE FUNCTION $(functionName)(columnName varchar(50),                                                                                                                                                " + 
-"                                tableName varchar(50), whereClause varchar(8000)) RETURNS                                                                                                              " + 
-"                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME                                                                                         " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.clobToString'                                                                                                          " );
-        functionTemplatesToInstall.put("blob_to_string" ,
-"CREATE FUNCTION $(functionName)(columnName varchar(50),                                                                                                                                                " + 
-"                                tableName varchar(50), whereClause varchar(8000)) RETURNS                                                                                                              " + 
-"                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME                                                                                         " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.blobToString'                                                                                                          " );
-        
-        functionTemplatesToInstall.put("transaction_id" ,
-"CREATE FUNCTION $(functionName)() RETURNS                                                                                                                                                              " + 
-"                                varchar(100) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                   " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.getTransactionId'                                                                                                      " );
-        functionTemplatesToInstall.put("sync_triggers_disabled" ,
-"CREATE FUNCTION $(functionName)() RETURNS                                                                                                                                                              " + 
-"                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                        " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.isSyncDisabled'                                                                                                        " );
-        functionTemplatesToInstall.put("sync_triggers_set_disabled" ,
-"CREATE FUNCTION $(functionName)(state integer) RETURNS                                                                                                                                                 " + 
-"                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                        " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncDisabled'                                                                                                       " );
-        functionTemplatesToInstall.put("sync_node_set_disabled" ,
-"CREATE FUNCTION $(functionName)(nodeId varchar(50)) RETURNS                                                                                                                                            " + 
-"                                varchar(50) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                    " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncNodeDisabled'                                                                                                   " );
-        functionTemplatesToInstall.put("save_data" ,
-"CREATE PROCEDURE $(functionName)(enabled integer, schemaName varchar(50), prefixName varchar(50),                                                                                                                       " + 
-"                                tableName varchar(50), channelName varchar(50), dmlType varchar(1), triggerHistId int,                                                                                 " + 
-"                                transactionId varchar(1000), externalData varchar(50), columnNames varchar(32672), pkColumnNames varchar(32672))                                       " + 
-"                                PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME                                                                                                     " + 
-"                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'                                                                                                            " );
-
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

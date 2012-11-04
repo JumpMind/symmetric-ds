@@ -18,52 +18,18 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         super(symmetricDialect);
         
         // @formatter:off
-        dropFunctionSql = "drop function dbo.$(functionName)";
-        functionInstalledSql = "select count(object_name(object_id('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert(varchar(max),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        xmlColumnTemplate = null;
-        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar, $(tableAlias).\"$(columnName)\",2) + '\"') end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar,$(tableAlias).\"$(columnName)\",121) + '\"') end" ;
-        timeColumnTemplate = null;
-        dateColumnTemplate = null;
         clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as varchar(max)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.sym_base64_encode(CONVERT(VARBINARY(max), $(origTableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
         oldTriggerValue = "deleted" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = null;
-
-        functionTemplatesToInstall = new HashMap<String,String>();
-
-        functionTemplatesToInstall.put("base64_encode" ,
-"create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
-"  with schemabinding, returns null on null input                                                                                                                       " + 
-"  begin                                                                                                                                                                " + 
-"    return ( select [text()] = @data for xml path('') )                                                                                                                " + 
-"  end                                                                                                                                                                  " );
-        functionTemplatesToInstall.put("triggers_disabled" ,
-"create function dbo.$(functionName)() returns smallint                                                                                                                                                 " + 
-"  begin                                                                                                                                                                  " + 
-"    declare @disabled varchar(1);                                                                                                                                        " + 
-"    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    " + 
-"    if @disabled is null or @disabled != '1'                                                                                                                             " + 
-"      return 0;                                                                                                                                                          " + 
-"    return 1;                                                                                                                                                            " + 
-"  end                                                                                                                                                                    " );
-
-        functionTemplatesToInstall.put("node_disabled" ,
-"create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              " + 
-"  begin                                                                                                                                                                  " + 
-"    declare @node varchar(50);                                                                                                                                           " + 
-"    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  " + 
-"    return @node;                                                                                                                                                        " + 
-"  end                                                                                                                                                                    " );
 
         sqlTemplates = new HashMap<String,String>();
 

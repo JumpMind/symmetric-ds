@@ -41,6 +41,12 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     static final String SYNC_TRIGGERS_DISABLED_VARIABLE = "symmetric.triggers_disabled";
 
     static final String SYNC_NODE_DISABLED_VARIABLE = "symmetric.node_disabled";
+    
+    static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema)$(functionName)";
+    
+    static final String SQL_FUNCTION_INSTALLED = 
+        " select count(*) from information_schema.routines " + 
+        " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;    
 
     private boolean supportsTransactionId = false;
 
@@ -52,8 +58,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
     
     @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-
+    protected void createRequiredFunctions() {
     	
         if (transactionIdSupported()) {
             supportsTransactionId = true;
@@ -74,6 +79,75 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             if (transaction != null) {
                 transaction.close();
             }
+        }
+        
+        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
+        if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
+            String sql = "CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$                                                                                                                     " + 
+                    "                                DECLARE                                                                                                                                                                " + 
+                    "                                  triggerDisabled INTEGER;                                                                                                                                             " + 
+                    "                                BEGIN                                                                                                                                                                  " + 
+                    "                                  select current_setting('symmetric.triggers_disabled') into triggerDisabled;                                                                                          " + 
+                    "                                  return triggerDisabled;                                                                                                                                              " + 
+                    "                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+                    "                                  return 0;                                                                                                                                                            " + 
+                    "                                END;                                                                                                                                                                   " + 
+                    "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
+            install(sql, triggersDisabled);
+        }
+
+        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
+            String sql = "CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$                                                                                                                     " + 
+                    "                                DECLARE                                                                                                                                                                " + 
+                    "                                  nodeId VARCHAR(50);                                                                                                                                                  " + 
+                    "                                BEGIN                                                                                                                                                                  " + 
+                    "                                  select current_setting('symmetric.node_disabled') into nodeId;                                                                                                       " + 
+                    "                                  return nodeId;                                                                                                                                                       " + 
+                    "                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+                    "                                  return '';                                                                                                                                                           " + 
+                    "                                END;                                                                                                                                                                   " + 
+                    "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
+            install(sql, nodeDisabled);
+        }
+
+        String largeObjects = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (!installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
+            String sql = "CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$                                                                                                            " + 
+                    "                                DECLARE                                                                                                                                                                " + 
+                    "                                  encodedBlob text;                                                                                                                                                    " + 
+                    "                                  encodedBlobPage text;                                                                                                                                                " + 
+                    "                                BEGIN                                                                                                                                                                  " + 
+                    "                                  encodedBlob := '';                                                                                                                                                   " + 
+                    "                                  FOR encodedBlobPage IN SELECT pg_catalog.encode(data, 'escape')                                                                                                                 " + 
+                    "                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP                                                                                                       " + 
+                    "                                    encodedBlob := encodedBlob || encodedBlobPage;                                                                                                                     " + 
+                    "                                  END LOOP;                                                                                                                                                            " + 
+                    "                                  RETURN pg_catalog.encode(pg_catalog.decode(encodedBlob, 'escape'), 'base64');                                                                                                              " + 
+                    "                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+                    "                                  RETURN '';                                                                                                                                                           " + 
+                    "                                END                                                                                                                                                                    " + 
+                    "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
+            install(sql, largeObjects);
+        }
+        
+    }
+    
+    @Override
+    protected void dropRequiredFunctions() {
+        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
+        if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
+            uninstall(SQL_DROP_FUNCTION, triggersDisabled);
+        }
+
+        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
+            uninstall(SQL_DROP_FUNCTION, nodeDisabled);
+        }
+
+        String largeObjects = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
+            uninstall(SQL_DROP_FUNCTION, largeObjects);
         }
 
     }

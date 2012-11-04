@@ -36,6 +36,9 @@ import org.springframework.jdbc.UncategorizedSQLException;
  */
 public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
+
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
@@ -47,14 +50,40 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     
     @Override
     protected void createRequiredFunctions() {
-        super.createRequiredFunctions();
+        String escape = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
+            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
+                    "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
+            install(sql, escape);
+        }
+        
+        String hex = this.parameterService.getTablePrefix() + "_" + "hex";
+        if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
+            String sql = "declare external function $(functionName) blob                                                                                                                                                         " + 
+                    "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
+            install(sql, hex);
+        }        
+        
         try {
-            platform.getSqlTemplate().queryForInt("select char_length(sym_escape('')) from rdb$database");
+            platform.getSqlTemplate().queryForInt("select char_length("+escape+"('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
                 log.error("Please install the sym_udf.so/dll to your {firebird_home}/UDF folder");
             }
-            throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
+            throw new RuntimeException("Function "+escape+" is not installed", e);
+        }
+    }
+    
+    @Override
+    protected void dropRequiredFunctions() {
+        String escape = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (installed(SQL_FUNCTION_INSTALLED, escape)) {
+            uninstall(SQL_DROP_FUNCTION, escape);
+        }
+        
+        String hex = this.parameterService.getTablePrefix() + "_" + "hex";
+        if (installed(SQL_FUNCTION_INSTALLED, hex)) {
+            uninstall(SQL_DROP_FUNCTION, hex);
         }
     }
 
