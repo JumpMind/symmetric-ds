@@ -16,59 +16,18 @@ public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
 
     public SybaseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
-        dropFunctionSql = "drop function dbo.$(functionName)";
-        functionInstalledSql = "select count(object_name(object_id('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        xmlColumnTemplate = null;
-        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + cast($(tableAlias).\"$(columnName)\" as varchar) + '\"') end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + str_replace(convert(varchar,$(tableAlias).\"$(columnName)\",23),'T',' ') + '\"') end" ;
-        timeColumnTemplate = null;
-        dateColumnTemplate = null;
         clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace(dbo.sym_base64_encode($(origTableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
         oldTriggerValue = "deleted" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = null;
-
-        functionTemplatesToInstall = new HashMap<String,String>();
-        functionTemplatesToInstall.put("base64_encode" ,
-"create function dbo.$(functionName)(@data varbinary(1000)) returns varchar(2000) as                                                                                                                    " + 
-"                                  begin                                                                                                                                                                " + 
-"                                      declare @test varchar(50)                                                                                                                                        " + 
-"                                      return @test                                                                                                                                                     " + 
-"                                  end                                                                                                                                                                  " );
-        functionTemplatesToInstall.put("triggers_disabled" ,
-"create function dbo.$(functionName)(@unused smallint) returns smallint as                                                                                                                              " + 
-"                                begin                                                                                                                                                                  " + 
-"                                    declare @clientapplname varchar(50)                                                                                                                                " + 
-"                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid                                                                           " + 
-"                                    if @clientapplname = 'SymmetricDS'                                                                                                                                 " + 
-"                                        return 1                                                                                                                                                       " + 
-"                                    return 0                                                                                                                                                           " + 
-"                                end                                                                                                                                                                    " );
-        functionTemplatesToInstall.put("node_disabled" ,
-"create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
-"                                begin                                                                                                                                                                  " + 
-"                                    declare @clientname varchar(50)                                                                                                                                    " + 
-"                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'                                                " + 
-"                                    return @clientname                                                                                                                                                 " + 
-"                                end                                                                                                                                                                    " );
-        functionTemplatesToInstall.put("txid" ,
-"create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
-"                                begin                                                                                                                                                                  " + 
-"                                    declare @txid varchar(50)                                                                                                                                          " + 
-"                                    if (@@TRANCOUNT > 0) begin                                                                                                                                         " + 
-"                                        select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " + 
-"                                    end                                                                                                                                                                " + 
-"                                    return @txid                                                                                                                                                       " + 
-"                                end                                                                                                                                                                    " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

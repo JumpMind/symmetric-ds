@@ -10,8 +10,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
     public OracleTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         // @formatter:off         
-        dropFunctionSql = "DROP FUNCTION $(functionName)";
-        functionInstalledSql = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
+                
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
         geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then to_clob('') else '\"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"' end";
@@ -29,76 +28,6 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
 
-        functionTemplatesToInstall = new HashMap<String,String>();
-        functionTemplatesToInstall.put("blob2clob" ,
-"CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)                                                                                                                                           " + 
-"                                  RETURN CLOB                                                                                                                                                          " + 
-"                                AS                                                                                                                                                                     " + 
-"                                    v_clob    CLOB := null;                                                                                                                                            " + 
-"                                    v_varchar VARCHAR2(32767);                                                                                                                                         " + 
-"                                    v_start   PLS_INTEGER := 1;                                                                                                                                        " + 
-"                                    v_buffer  PLS_INTEGER := 999;                                                                                                                                      " + 
-"                                BEGIN                                                                                                                                                                  " + 
-"                                    IF blob_in IS NOT NULL THEN                                                                                                                                        " + 
-"                                        IF DBMS_LOB.GETLENGTH(blob_in) > 0 THEN                                                                                                                        " + 
-"                                            DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);                                                                                                                    " + 
-"                                            FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)                                                                                                   " + 
-"                                            LOOP                                                                                                                                                       " + 
-"                                                v_varchar := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.base64_encode(DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start)));                                          " + 
-"                                                v_varchar := REPLACE(v_varchar,CHR(13)||CHR(10));                                                                                                      " + 
-"                                                DBMS_LOB.WRITEAPPEND(v_clob, LENGTH(v_varchar), v_varchar);                                                                                            " + 
-"                                                v_start := v_start + v_buffer;                                                                                                                         " + 
-"                                            END LOOP;                                                                                                                                                  " + 
-"                                        END IF;                                                                                                                                                        " + 
-"                                    END IF;                                                                                                                                                            " + 
-"                                    RETURN v_clob;                                                                                                                                                     " + 
-"                                END $(functionName);                                                                                                                                                   " );
-        functionTemplatesToInstall.put("transaction_id" ,
-"CREATE OR REPLACE function $(functionName)                                                                                                                                                             " + 
-"                                    return varchar is                                                                                                                                                  " + 
-"                                    begin                                                                                                                                                              " + 
-"                                       return DBMS_TRANSACTION.local_transaction_id(false);                                                                                                            " + 
-"                                    end;                                                                                                                                                               " );
-        functionTemplatesToInstall.put("trigger_disabled" ,
-"CREATE OR REPLACE function $(functionName) return varchar is                                                                                                                                           " + 
-"                                  begin                                                                                                                                                                " + 
-"                                     return sym_pkg.disable_trigger;                                                                                                                                   " + 
-"                                  end;                                                                                                                                                                 " );
-        functionTemplatesToInstall.put("pkg_package" ,
-"CREATE OR REPLACE package sym_pkg as                                                                                                                                                                   " + 
-"                                    disable_trigger pls_integer;                                                                                                                                       " + 
-"                                    disable_node_id varchar(50);                                                                                                                                       " + 
-"                                    procedure setValue (a IN number);                                                                                                                                  " + 
-"                                    procedure setNodeValue (node_id IN varchar);                                                                                                                       " + 
-"                                end sym_pkg;                                                                                                                                                           " );
-        functionTemplatesToInstall.put("pkg_package body" ,
-"CREATE OR REPLACE package body sym_pkg as                                                                                                                                                              " + 
-"                                    procedure setValue(a IN number) is                                                                                                                                 " + 
-"                                    begin                                                                                                                                                              " + 
-"                                         sym_pkg.disable_trigger:=a;                                                                                                                                   " + 
-"                                    end;                                                                                                                                                               " + 
-"                                    procedure setNodeValue(node_id IN varchar) is                                                                                                                      " + 
-"                                    begin                                                                                                                                                              " + 
-"                                         sym_pkg.disable_node_id := node_id;                                                                                                                           " + 
-"                                    end;                                                                                                                                                               " + 
-"                                end sym_pkg;                                                                                                                                                           " );
-
-        functionTemplatesToInstall.put("wkt2geom" ,
-                "  CREATE OR REPLACE                                                                                                         " + 
-                "    FUNCTION $(functionName)(                            " + 
-                "        clob_in IN CLOB)                                 " + 
-                "      RETURN SDO_GEOMETRY                                " +
-                "    AS                                                   " + 
-                "      v_out SDO_GEOMETRY := NULL;                        " + 
-                "    BEGIN                                                " + 
-                "      IF clob_in IS NOT NULL THEN                        " + 
-                "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN          " +
-                "          v_out := SDO_GEOMETRY(clob_in);                " + 
-                "        END IF;                                          " + 
-                "      END IF;                                            " + 
-                "      RETURN v_out;                                      " + 
-                "    END $(functionName);                                 ");
-                        
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
 "create or replace trigger $(triggerName)                                         \n" +

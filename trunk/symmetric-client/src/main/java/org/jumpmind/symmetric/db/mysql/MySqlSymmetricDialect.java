@@ -46,6 +46,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
 
+    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
+    
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
+
     private String functionTemplateKeySuffix = null;
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
@@ -55,38 +59,65 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
+    public boolean supportsTransactionId() {
+        return true;
+    }        
+
+    @Override
+    protected void createRequiredFunctions() {
         int[] versions = Version.parseVersion(getProductVersion());
         if (getMajorVersion() == 5
                 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
             this.functionTemplateKeySuffix = "_pre_5_1_23";
+            String function = this.parameterService.getTablePrefix() + "_" + "transaction_id_post_5_1_23";
+            if (!installed(SQL_FUNCTION_INSTALLED, function)) {
+                String sql = "create function $(functionName)()                                                                                                                                                                      " + 
+                        "                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                                                                 " + 
+                        "                                  begin                                                                                                                                                                " + 
+                        "                                     declare comm_value varchar(50);                                                                                                                                   " + 
+                        "                                     declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';                                        " + 
+                        "                                     if @@autocommit = 0 then                                                                                                                                          " + 
+                        "                                          open comm_cur;                                                                                                                                               " + 
+                        "                                          fetch comm_cur into comm_value;                                                                                                                              " + 
+                        "                                          close comm_cur;                                                                                                                                              " + 
+                        "                                          return concat(concat(connection_id(), '.'), comm_value);                                                                                                     " + 
+                        "                                     else                                                                                                                                                              " + 
+                        "                                          return null;                                                                                                                                                 " + 
+                        "                                     end if;                                                                                                                                                           " + 
+                        "                                  end                                                                                                                                                                  ";
+                install(sql, function);
+            }        
+
         } else {
             this.functionTemplateKeySuffix = "_post_5_1_23";
+            String function = this.parameterService.getTablePrefix() + "_" + "transaction_id_post_5_1_23";
+            if (!installed(SQL_FUNCTION_INSTALLED, function)) {
+                String sql = "create function $(functionName)()                                                                                                                                                                      " + 
+                        "                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                                                                 " + 
+                        "                                  begin                                                                                                                                                                " + 
+                        "                                     declare comm_name varchar(50);                                                                                                                                    " + 
+                        "                                     declare comm_value varchar(50);                                                                                                                                   " + 
+                        "                                     declare comm_cur cursor for show status like 'Com_commit';                                                                                                        " + 
+                        "                                     if @@autocommit = 0 then                                                                                                                                          " + 
+                        "                                          open comm_cur;                                                                                                                                               " + 
+                        "                                          fetch comm_cur into comm_name, comm_value;                                                                                                                   " + 
+                        "                                          close comm_cur;                                                                                                                                              " + 
+                        "                                          return concat(concat(connection_id(), '.'), comm_value);                                                                                                     " + 
+                        "                                     else                                                                                                                                                              " + 
+                        "                                          return null;                                                                                                                                                 " + 
+                        "                                     end if;                                                                                                                                                           " + 
+                        "                                  end                                                                                                                                                                  ";
+                install(sql, function);
+            }                    
         }
     }
-
+    
     @Override
-    public boolean supportsTransactionId() {
-        return true;
-    }
-
-    @Override
-    protected void createRequiredFunctions() {
-        String[] functions = triggerTemplate.getFunctionsToInstall();
-        for (int i = 0; i < functions.length; i++) {
-            if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
-                String funcName = parameterService.getTablePrefix()
-                        + "_"
-                        + functions[i].substring(0, functions[i].length()
-                                - this.functionTemplateKeySuffix.length());
-                if (platform.getSqlTemplate().queryForInt(
-                        triggerTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
-                    platform.getSqlTemplate().update(
-                            triggerTemplate.getFunctionSql(functions[i], funcName));
-                    log.info("Just installed {}", funcName);
-                }
-            }
-        }
+    protected void dropRequiredFunctions() {
+        String function = this.parameterService.getTablePrefix() + "_" + "transaction_id" + functionTemplateKeySuffix;
+        if (installed(SQL_FUNCTION_INSTALLED, function)) {
+            uninstall(SQL_DROP_FUNCTION, function);
+        }        
     }
 
     @Override

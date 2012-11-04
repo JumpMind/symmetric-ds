@@ -36,6 +36,9 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     
+    static final String SQL_DROP_FUNCTION = "DROP ALIAS $(functionName)";
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'" ;
+
     public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new H2TriggerTemplate(this);
@@ -79,6 +82,24 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
             } catch (Exception e) {
                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
+        }
+    }
+    
+    @Override
+    protected void createRequiredFunctions() {        
+        String encode = this.parameterService.getTablePrefix() + "_" + "BASE64_ENCODE";
+        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
+            String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
+            install(sql, encode);
+        }
+
+    }
+    
+    @Override
+    protected void dropRequiredFunctions() {
+        String encode = this.parameterService.getTablePrefix() + "_" + "BASE64_ENCODE";
+        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
+            uninstall(SQL_DROP_FUNCTION, encode);
         }
     }
 

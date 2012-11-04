@@ -47,6 +47,10 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
+    
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
+
+    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
 
     public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -54,7 +58,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
     
     @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
+    protected void createRequiredFunctions() {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
@@ -66,11 +70,28 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
                 log.error("Error while initializing Interbase dialect", ex);
             }
         }
-    }
+        
+        String escape = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
+            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
+                    "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
+            install(sql, escape);
+        }
+        
+        String hex = this.parameterService.getTablePrefix() + "_" + "hex";
+        if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
+            String sql = "declare external function $(functionName) blob                                                                                                                                                         " + 
+                    "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
+            install(sql, hex);
+        }
+        
+        String rtrim = this.parameterService.getTablePrefix() + "_" + "rtrim";
+        if (!installed(SQL_FUNCTION_INSTALLED, rtrim)) {
+            String sql = "declare external function $(functionName) cstring(32767)                                                                                                                                               " + 
+                    "                                returns cstring(32767) free_it entry_point 'IB_UDF_rtrim' module_name 'ib_udf'                                                                                         ";
+            install(sql, rtrim);
+        }        
 
-    @Override
-    protected void createRequiredFunctions() {
-        super.createRequiredFunctions();
         try {
             platform.getSqlTemplate().queryForObject("select sym_escape('') from rdb$database", String.class);
         } catch (UncategorizedSQLException e) {
@@ -79,6 +100,25 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             }
             throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
         }
+    }
+    
+    @Override
+    protected void dropRequiredFunctions() {
+        String escape = this.parameterService.getTablePrefix() + "_" + "escape";
+        if (installed(SQL_FUNCTION_INSTALLED, escape)) {
+            uninstall(SQL_DROP_FUNCTION, escape);
+        }
+        
+        String hex = this.parameterService.getTablePrefix() + "_" + "hex";
+        if (installed(SQL_FUNCTION_INSTALLED, hex)) {
+            uninstall(SQL_DROP_FUNCTION, hex);
+        }
+        
+        String rtrim = this.parameterService.getTablePrefix() + "_" + "rtrim";
+        if (installed(SQL_FUNCTION_INSTALLED, rtrim)) {
+            uninstall(SQL_DROP_FUNCTION, rtrim);
+        }        
+
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -122,22 +123,35 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
-
     public void initTablesAndFunctions() {
-        initTablesAndFunctionsForSpecificDialect();
         createOrAlterTablesIfNecessary();
         createRequiredFunctions();
         platform.resetCachedTableModel();
     }
     
-    protected void dropTablesAndFunctionsForSpecificDialect() {
-        
+    protected String replaceTokens(String sql, String objectName) {
+        String ddl = FormatUtils.replace("functionName", objectName, sql);
+        ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
+        ddl = FormatUtils.replace("defaultSchema", platform.getDefaultSchema(), ddl);
+        return ddl;        
     }
     
+    protected boolean installed(String sql, String objectName) {
+        return platform.getSqlTemplate().queryForInt(replaceTokens(sql, objectName)) > 0;
+    }
+    
+    protected void install(String sql, String objectName) {
+        sql = replaceTokens(sql, objectName);
+        platform.getSqlTemplate().update(sql);
+        log.info("Just installed {}", objectName);
+    }
+    
+    protected void uninstall(String sql, String objectName) {
+        platform.getSqlTemplate().update(replaceTokens(sql, objectName), objectName);
+        log.info("Just uninstalled {}", objectName);
+    }    
+    
     public void dropTablesAndFunctions() {
-        dropTablesAndFunctionsForSpecificDialect();
         Database modelFromDatabase = readSymmetricSchemaFromDatabase(); 
         platform.dropDatabase(modelFromDatabase, true);
         dropRequiredFunctions();        
@@ -153,35 +167,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
     
-    protected void dropRequiredFunctions() {
-        String[] functions = triggerTemplate.getFunctionsToInstall();
-        for (int i = 0; i < functions.length; i++) {
-            String functionName = parameterService.getTablePrefix() + "_" + functions[i];
-            String defaultSchema = platform.getDefaultSchema();
-            String dropSql = triggerTemplate.getDropFunctionSql(functionName, defaultSchema);
-            if (StringUtils.isNotBlank(dropSql)) {
-                try {
-                    platform.getSqlTemplate().update(dropSql);
-                    log.info("Just dropped {}", functionName);
-                } catch (Exception ex) {
-                    log.warn("Could not drop {} because {}", functionName, ex.getMessage());
-                }
-            }
-        }
-    }    
-
-    protected void createRequiredFunctions() {
-        String[] functions = triggerTemplate.getFunctionsToInstall();
-        for (int i = 0; i < functions.length; i++) {
-            String funcName = this.parameterService.getTablePrefix() + "_" + functions[i];
-            if (this.platform.getSqlTemplate().queryForInt(
-                    triggerTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
-                this.platform.getSqlTemplate().update(
-                        triggerTemplate.getFunctionSql(functions[i], funcName));
-                log.info("Just installed {}", funcName);
-            }
-        }
-    }
+    abstract protected void dropRequiredFunctions();
+    
+    abstract protected void createRequiredFunctions();
 
     abstract public BinaryEncoding getBinaryEncoding();
 
@@ -405,9 +393,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      * @return true if SQL was executed.
      */
     public boolean createOrAlterTablesIfNecessary() {
-
-        try {
-            
+        try {            
             log.info("Checking if SymmetricDS tables need created or altered");
             
             Database modelFromXml = readSymmetricSchemaFromXml();
