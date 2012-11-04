@@ -47,7 +47,7 @@ class DbFill {
 
     private boolean cascading = false;
     
-    private String ignorePrefix = "";
+    private String ignore[] = null;
 
     private int inputLength = 1;
 
@@ -72,15 +72,18 @@ class DbFill {
             // If no tableNames are provided look up all tables.
             Database db = platform.readDatabase(catalog, schema, null);
             tables = db.getTables();
-            if (!StringUtils.isEmpty(ignorePrefix)) {
-                // Ignore any tables matching the ignorePrefix. (e.g., "sym_")
+            if (ignore != null) {
+                // Ignore any tables matching an ignorePrefix. (e.g., "sym_")
                 List<Table> tableList = new ArrayList<Table>(tables.length);
+                table_loop:
                 for (Table table : tables) {
-                    if (table.getName().startsWith(ignorePrefix)) {
-                        System.out.println("Ignore table " + table.getName());
-                    } else {
-                        tableList.add(table);
+                    for (String ignoreName : ignore) {
+                        if (table.getName().startsWith(ignoreName)) {
+                            System.out.println("Ignore table " + table.getName());
+                            continue table_loop;
+                        }
                     }
+                    tableList.add(table);
                 }
                 tables = tableList.toArray(new Table[tableList.size()]);
             }
@@ -369,12 +372,12 @@ class DbFill {
         this.cascading = cascading;
     }
 
-    public String getIgnorePrefix() {
-        return ignorePrefix;
+    public String[] getIgnore() {
+        return ignore;
     }
 
-    public void setIgnorePrefix(String ignorePrefix) {
-        this.ignorePrefix = ignorePrefix;
+    public void setIgnore(String[] ignore) {
+        this.ignore = ignore;
     }
 
 }
