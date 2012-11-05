@@ -53,7 +53,7 @@ abstract public class TestSetupUtil {
 
     public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
         
-        engine.uninstall();
+        engine.uninstall();       
         
         ISymmetricDialect dialect = engine.getSymmetricDialect();
 
