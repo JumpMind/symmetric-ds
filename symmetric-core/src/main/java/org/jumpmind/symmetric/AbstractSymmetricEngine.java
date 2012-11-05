@@ -114,7 +114,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected ISecurityService securityService;
 
-    protected IParameterService parameterService;
+    protected ParameterService parameterService;
 
     protected ISymmetricDialect symmetricDialect;
 
@@ -506,6 +506,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     
     public synchronized void uninstall() {
+        
+        log.warn("Attempting an uninstall of all SymmetricDS database objects from the database");
+        
         stop();
         
         try {
@@ -531,6 +534,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         symmetricDialect.cleanupTriggers();                
         
         symmetricDialect.dropTablesAndDatabaseObjects();
+        
+        parameterService.setDatabaseHasBeenInitialized(false);
+        
+        log.warn("Finished uninstalling SymmetricDS database objects from the database");
         
     }    
 
