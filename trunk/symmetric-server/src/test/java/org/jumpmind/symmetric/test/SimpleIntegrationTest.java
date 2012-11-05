@@ -70,7 +70,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
-    @Test(timeout = 120000)
+    @Test(timeout = 240000)
     public void createServer() {
         ISymmetricEngine server = getServer();
         Assert.assertNotNull(server);
@@ -78,7 +78,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    @Test(timeout = 120000)
+    @Test(timeout = 240000)
     public void registerClientWithRoot() {
         logTestRunning();
         ISymmetricEngine rootEngine = getServer();
