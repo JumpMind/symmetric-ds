@@ -147,7 +147,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
     
     protected void uninstall(String sql, String objectName) {
-        platform.getSqlTemplate().update(replaceTokens(sql, objectName));
+        sql = replaceTokens(sql, objectName);
+        platform.getSqlTemplate().update(sql);
         log.info("Just uninstalled {}", objectName);
     }    
     

@@ -42,7 +42,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     static final String SYNC_NODE_DISABLED_VARIABLE = "symmetric.node_disabled";
     
-    static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema)$(functionName)";
+    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
     
     static final String SQL_FUNCTION_INSTALLED = 
         " select count(*) from information_schema.routines " + 
@@ -83,7 +83,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$                                                                                                                     " + 
+            String sql = "CREATE or REPLACE FUNCTION $(functionName)() RETURNS INTEGER AS $$                                                                                                                     " + 
                     "                                DECLARE                                                                                                                                                                " + 
                     "                                  triggerDisabled INTEGER;                                                                                                                                             " + 
                     "                                BEGIN                                                                                                                                                                  " + 
@@ -96,9 +96,9 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             install(sql, triggersDisabled);
         }
 
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "escape";
+        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$                                                                                                                     " + 
+            String sql = "CREATE or REPLACE FUNCTION $(functionName)() RETURNS VARCHAR AS $$                                                                                                                     " + 
                     "                                DECLARE                                                                                                                                                                " + 
                     "                                  nodeId VARCHAR(50);                                                                                                                                                  " + 
                     "                                BEGIN                                                                                                                                                                  " + 
@@ -111,9 +111,9 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             install(sql, nodeDisabled);
         }
 
-        String largeObjects = this.parameterService.getTablePrefix() + "_" + "escape";
+        String largeObjects = this.parameterService.getTablePrefix() + "_" + "largeobject";
         if (!installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
-            String sql = "CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$                                                                                                            " + 
+            String sql = "CREATE OR REPLACE FUNCTION $(functionName)(objectId oid) RETURNS text AS $$                                                                                                            " + 
                     "                                DECLARE                                                                                                                                                                " + 
                     "                                  encodedBlob text;                                                                                                                                                    " + 
                     "                                  encodedBlobPage text;                                                                                                                                                " + 
@@ -137,17 +137,17 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     protected void dropRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, triggersDisabled);
+            uninstall(SQL_DROP_FUNCTION+ "()", triggersDisabled);
         }
 
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "escape";
+        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, nodeDisabled);
+            uninstall(SQL_DROP_FUNCTION + "()", nodeDisabled);
         }
 
-        String largeObjects = this.parameterService.getTablePrefix() + "_" + "escape";
+        String largeObjects = this.parameterService.getTablePrefix() + "_" + "largeobject";
         if (installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
-            uninstall(SQL_DROP_FUNCTION, largeObjects);
+            uninstall(SQL_DROP_FUNCTION + "(objectId oid)", largeObjects);
         }
 
     }

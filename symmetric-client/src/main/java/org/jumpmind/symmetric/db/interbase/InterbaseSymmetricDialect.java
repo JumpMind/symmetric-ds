@@ -50,7 +50,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
 
-    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
+    static final String SQL_DROP_FUNCTION = "DROP EXTERNAL FUNCTION $(functionName)";
 
     public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
