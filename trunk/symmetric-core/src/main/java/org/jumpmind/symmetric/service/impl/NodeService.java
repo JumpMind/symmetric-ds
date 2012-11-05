@@ -336,9 +336,13 @@ public class NodeService extends AbstractService implements INodeService {
 
     public Node findIdentity(boolean useCache) {
         if (cachedNodeIdentity == null || useCache == false) {
-            List<Node> list = sqlTemplate.query(
-                    getSql("selectNodePrefixSql", "findNodeIdentitySql"), new NodeRowMapper());
-            cachedNodeIdentity = (Node) getFirstEntry(list);
+            try {
+                List<Node> list = sqlTemplate.query(
+                        getSql("selectNodePrefixSql", "findNodeIdentitySql"), new NodeRowMapper());
+                cachedNodeIdentity = (Node) getFirstEntry(list);
+            } catch (SqlException ex) {
+                log.warn("Failed to load the node identity because: {}.  Returning {}", ex.getMessage(), cachedNodeIdentity);
+            }
         }
         return cachedNodeIdentity;
     }
