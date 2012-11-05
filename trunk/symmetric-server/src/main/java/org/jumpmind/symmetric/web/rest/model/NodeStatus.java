@@ -104,6 +104,45 @@ public class NodeStatus {
 	private String symmetricVersion = Version.version();
 
 	/**
+	 * The last heartbeat for the given node.
+	 */
+	private String lastHeartbeat;
+	
+	/**
+	 * The hearbeat interval for the given node.
+	 */
+	private String hearbeatInterval;
+	
+	
+	public boolean isStarted() {
+		return started;
+	}
+
+	public void setStarted(boolean started) {
+		this.started = started;
+	}
+
+	public String getLastHeartbeat() {
+		return lastHeartbeat;
+	}
+
+	public void setLastHeartbeat(String lastHeartbeat) {
+		this.lastHeartbeat = lastHeartbeat;
+	}
+
+	public String getHearbeatInterval() {
+		return hearbeatInterval;
+	}
+
+	public void setHearbeatInterval(String hearbeatInterval) {
+		this.hearbeatInterval = hearbeatInterval;
+	}
+
+	public void setInitialLoaded(boolean initialLoaded) {
+		this.initialLoaded = initialLoaded;
+	}
+
+	/**
 	 * @return boolean indicating if the node is registered with another node.
 	 */
 	public boolean getRegistered() {

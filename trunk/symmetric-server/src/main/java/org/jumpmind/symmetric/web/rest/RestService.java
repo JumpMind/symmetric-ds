@@ -36,6 +36,8 @@ import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Identity;
+import org.jumpmind.symmetric.web.rest.model.Node;
+import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
 import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,35 +113,29 @@ public class RestService {
     }    
     
     /**
-     * Returns the {@link Identity} for a given engine on the node.
-     *   
-     * @param engine - The engine name for which the action is intended.  
-     * 
-     * @return {@link Identity} - The identity of the engine<br>
+     * Provides a list of children {@link Node} that are registered with this engine.
      */
-    @RequestMapping(value = "/engine/{engine}/identity", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/{engine}/children", method = RequestMethod.GET)
     @ResponseBody
-    public final Identity identity(
-    		@PathVariable("engine") String engineName) {
-    	return identityImpl(getSymmetricEngine(engineName));
+    public final NodeList children(
+    		@PathVariable("engine") String actionName, String engineName) {
+        return null;
     }
-
+    
     /**
-     * Returns the {@link Identity} for the single engine on this node.  
-     * 
-     * @return {@link Identity} - The identity of the engine
+     * Provides a list of children {@link Node} that are registered with this engine.
      */
-    @RequestMapping(value = "/engine/identity", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/children", method = RequestMethod.GET)
     @ResponseBody
-    public final Identity identity() {    	
-    	return identityImpl(getSymmetricEngine());
+    public final NodeList children() {
+        return null;
     }
-         
+    
     /**
      * Loads a profile for the specified engine on the node.
      * 
-     * @param engine - The engine name for which the action is intended.     
-     * @param file - A file stream that contains the profile itself.
+     * @param engine The engine name for which the action is intended.     
+     * @param file A file stream that contains the profile itself.
      * TODO:  put more details here on the specifics of how the file needs to be passed
      */
     @RequestMapping(value = "engine/{engine}/profile", method = RequestMethod.POST)
@@ -154,7 +150,7 @@ public class RestService {
     /**
      * Loads a profile for the single engine on the node.
      *      
-     * @param file - A file stream that contains the profile itself.
+     * @param file A file stream that contains the profile itself.
      * TODO:  put more details here on the specifics of how the file needs to be passed
      */
     @RequestMapping(value = "engine/profile", method = RequestMethod.POST)
@@ -171,49 +167,54 @@ public class RestService {
      * <ul>
      * <li><b>synctriggers</b> - Creates or updates trigger instances that are defined in your 
      * synchronization scenario (i.e. defined in sym_trigger)</li>
-     * <li><b>droptriggers</b> - Removes trigger instances that are defined in your synchronizationh scenario
+     * <li><b>droptriggers</b> - Removes trigger instances that are defined in your synchronization scenario
      * <li><b>uninstall</b> - Uninstalls all SymmetricDS objects from the given node (database)</li>
+     * <li><b>generateuninstallscript</b> - Generates an uninstall script for database objects for 
+     * the given engine. The script is contained in the response body.
+     * <li><b>createinstallscript</b> - Creates an install script for database objects for the given engine. 
+     * The script is contained in the response body.
      * <li><b>reinitialize</b> - Reinitializes an engine including unregistering the engine and 
      * removing all symmetric configuration, operational objects and data from the
      * node (database).  Does not remove the engine. Thus, if the engine is a Server instance,
      * when the engine starts back up, it will need configuration reloaded. If the engine is
      * a client, it will request registration again from its configured registration server.</li>
-     * <li><b> - refreshcache</b> - Refreshes the cached parameters 
+     * <li><b>refreshcache</b> - Refreshes the cached parameters 
      * <li><b>start</b> - Starts the given engine</li>
      * <li><b>stop</b> - Stops the given engine</li>
      * </ul>
      * </p>
-     * @param actionName - One of the actions listed above
-     * @param force - Whether to force the action to occur regardless of activity occuring on the node
-     * @return  TODO: determine whether we really want this to return an ActionResponse object (is it really needed?)
+     * @param actionName One of the actions listed above
+     * @param force Whether to force the action to occur regardless of activity occurring on the node
      */
     @RequestMapping(value = "/engine", method = RequestMethod.GET)
     @ResponseBody
-    public final void action(
+    public final String action(
     		@RequestParam(value = "action") String actionName,    		
     		@RequestParam(required = false, value = "force") boolean force) {
     	
     	actionImpl(getSymmetricEngine(), actionName, force);
+    	
+    	return null;
     }    
     
     
     /**
      * Performs a specific action on the specified engine on the node.  
-     * @param engine - The engine name for which the action is intended.
-     * @param action - The action desired
-     * @param force - Whether to force the action to occur regardless of activity occuring on the node
-     * @return  TODO: determine whether we reall want the return type.
+     * @param engine The engine name for which the action is intended.
+     * @param action The action desired
+     * @param force Whether to force the action to occur regardless of activity occurring on the node
      * @see #action(String, boolean)
      */
     @RequestMapping(value = "/engine/{engine}", method = RequestMethod.GET)
     @ResponseBody
-    public final void action(
+    public final String action(
     		@PathVariable("engine") String engineName,
     		@RequestParam(value = "action") String actionName,    		
     		@RequestParam(required = false, value = "force") boolean force) {
     	
     	actionImpl(getSymmetricEngine(engineName), actionName, force);
     	
+    	return null;
     }
 
     /**
@@ -240,7 +241,7 @@ public class RestService {
     public final Set<ChannelStatus> channelStatus(@PathVariable("engine") String engineName) {
         throw new RuntimeException("Test");
     }
-
+    
     //***********************************************************************************************
     //TODO: stuff that should probably get moved out to some type of delegate or implementation class
     //***********************************************************************************************
