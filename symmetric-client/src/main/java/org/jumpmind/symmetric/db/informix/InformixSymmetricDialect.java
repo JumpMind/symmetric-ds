@@ -62,7 +62,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function $(defaultSchema)$(functionName)() returning boolean;                                                                                                                                   " + 
@@ -104,7 +104,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersDisabled);
@@ -155,7 +155,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         return false;
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     @Override

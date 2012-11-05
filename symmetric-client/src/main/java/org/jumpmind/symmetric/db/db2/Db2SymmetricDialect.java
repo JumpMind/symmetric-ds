@@ -67,11 +67,11 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
     
     @Override
-    protected void createRequiredFunctions() {        
+    protected void createRequiredDatabaseObjects() {        
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
     }
 
     @Override
@@ -110,7 +110,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         return false;
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     @Override

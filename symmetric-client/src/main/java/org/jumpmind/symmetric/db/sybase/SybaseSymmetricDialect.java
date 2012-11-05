@@ -60,7 +60,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "create function dbo.$(functionName)(@data varbinary(1000)) returns varchar(2000) as                                                                                                                    " + 
@@ -111,7 +111,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
@@ -251,7 +251,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         return true;
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     public boolean needsToSelectLobData() {

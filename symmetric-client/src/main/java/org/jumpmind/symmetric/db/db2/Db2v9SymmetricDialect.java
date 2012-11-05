@@ -39,7 +39,7 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
@@ -57,7 +57,7 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
             close(transaction);
         }
 
-        super.createRequiredFunctions();
+        super.createRequiredDatabaseObjects();
     }
 
     private URL getSqlScriptUrl() {

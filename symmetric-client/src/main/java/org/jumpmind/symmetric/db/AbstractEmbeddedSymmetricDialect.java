@@ -62,7 +62,7 @@ abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetric
     }
 
   
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     public String getDefaultCatalog() {

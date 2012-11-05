@@ -378,11 +378,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } else if (ex instanceof ConnectException) {
             throw (ConnectException) ex;
         } else if (ex instanceof UnknownHostException) {
-            log.warn("Could not connect to the transport because the host was unknown: {}",
+            log.warn("Could not connect to the transport because the host was unknown: '{}'",
                     ex.getMessage());
             throw (UnknownHostException) ex;
         } else if (ex instanceof RegistrationNotOpenException) {
-            log.warn("Registration attempt failed.  Registration was not open for the node'{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
+            log.warn("Registration attempt failed.  Registration was not open for the node '{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof AuthenticationException) {

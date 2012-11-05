@@ -68,7 +68,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"; ";
@@ -90,7 +90,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
