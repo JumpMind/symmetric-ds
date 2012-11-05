@@ -18,6 +18,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
@@ -335,7 +336,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public void setupDatabase(boolean force) {
         log.info("Initializing SymmetricDS database");
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            symmetricDialect.initTablesAndFunctions();
+            symmetricDialect.initTablesAndDatabaseObjects();
         } else {
             log.info("SymmetricDS is not configured to auto-create the database");
         }
@@ -507,22 +508,29 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public synchronized void uninstall() {
         stop();
         
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
-        for (TriggerRouter triggerRouter : triggerRouters) {
-            triggerRouterService.deleteTriggerRouter(triggerRouter);
+        try {
+            List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                triggerRouterService.deleteTriggerRouter(triggerRouter);
+            }
+
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
+                triggerRouterService.deleteRouter(triggerRouter.getRouter());
+            }
+
+            // this should remove all triggers because we have removed all the
+            // trigger configuration
+            triggerRouterService.syncTriggers();
+
+        } catch (SqlException ex) {
+            // these tables must not exist
         }
+
+        // remove any additional triggers that may remain because they were not in trigger history
+        symmetricDialect.cleanupTriggers();                
         
-        for (TriggerRouter triggerRouter : triggerRouters) {
-            triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
-            triggerRouterService.deleteRouter(triggerRouter.getRouter());
-        }
-        
-        // this should remove all triggers because we have removed all the trigger configuration
-        triggerRouterService.syncTriggers();
-        
-        // TODO should we go through and look for abandoned triggers to remove?
-        
-        symmetricDialect.dropTablesAndFunctions();
+        symmetricDialect.dropTablesAndDatabaseObjects();
         
     }    
 

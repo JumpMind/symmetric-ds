@@ -55,9 +55,9 @@ public interface ISymmetricDialect {
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
-    public void initTablesAndFunctions();
+    public void initTablesAndDatabaseObjects();
     
-    public void dropTablesAndFunctions();
+    public void dropTablesAndDatabaseObjects();
     
     public boolean createOrAlterTablesIfNecessary();
 
@@ -106,7 +106,7 @@ public interface ISymmetricDialect {
      * that needs to be run when dropping database objects. An example is
      * Oracle's 'purge recyclebin'
      */
-    public void purge();
+    public void purgeRecycleBin();
 
     public void disableSyncTriggers(ISqlTransaction transaction);
 

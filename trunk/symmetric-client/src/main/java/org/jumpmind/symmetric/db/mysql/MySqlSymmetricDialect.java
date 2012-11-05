@@ -64,7 +64,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }        
 
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         int[] versions = Version.parseVersion(getProductVersion());
         if (getMajorVersion() == 5
                 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
@@ -112,7 +112,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
@@ -177,7 +177,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return getTransactionFunctionName() + "()";
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     @Override

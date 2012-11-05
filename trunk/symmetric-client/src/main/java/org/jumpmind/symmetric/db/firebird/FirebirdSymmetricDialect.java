@@ -49,7 +49,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
             String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
@@ -75,7 +75,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (installed(SQL_FUNCTION_INSTALLED, escape)) {
             uninstall(SQL_DROP_FUNCTION, escape);
@@ -128,7 +128,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
         return BinaryEncoding.HEX;
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     @Override

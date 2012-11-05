@@ -14,14 +14,14 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
     }
     
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {

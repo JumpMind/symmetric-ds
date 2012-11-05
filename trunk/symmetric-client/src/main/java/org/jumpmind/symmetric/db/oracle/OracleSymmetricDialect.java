@@ -106,7 +106,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
     
     @Override
-    protected void createRequiredFunctions() {
+    protected void createRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
         if (!installed(SQL_FUNCTION_INSTALLED, blobToClob)) {
             String sql = "CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)                                                                                                                                           "
@@ -200,7 +200,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected void dropRequiredFunctions() {
+    protected void dropRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
         if (installed(SQL_FUNCTION_INSTALLED, blobToClob)) {
             uninstall(SQL_DROP_FUNCTION, blobToClob);
@@ -261,7 +261,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return null;
     }
 
-    public void purge() {
+    public void purgeRecycleBin() {
         platform.getSqlTemplate().update("purge recyclebin");
     }
 

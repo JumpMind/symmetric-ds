@@ -123,9 +123,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    public void initTablesAndFunctions() {
+    public void initTablesAndDatabaseObjects() {
         createOrAlterTablesIfNecessary();
-        createRequiredFunctions();
+        createRequiredDatabaseObjects();
         platform.resetCachedTableModel();
     }
     
@@ -151,10 +151,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         log.info("Just uninstalled {}", objectName);
     }    
     
-    public void dropTablesAndFunctions() {
+    public void dropTablesAndDatabaseObjects() {
         Database modelFromDatabase = readSymmetricSchemaFromDatabase(); 
         platform.dropDatabase(modelFromDatabase, true);
-        dropRequiredFunctions();        
+        dropRequiredDatabaseObjects();        
     }
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
@@ -167,9 +167,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
     
-    abstract protected void dropRequiredFunctions();
+    abstract protected void dropRequiredDatabaseObjects();
     
-    abstract protected void createRequiredFunctions();
+    abstract protected void createRequiredDatabaseObjects();
 
     abstract public BinaryEncoding getBinaryEncoding();
 

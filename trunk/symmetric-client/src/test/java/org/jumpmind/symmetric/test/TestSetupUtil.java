@@ -15,10 +15,8 @@ import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,46 +53,23 @@ abstract public class TestSetupUtil {
 
     public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
         
-        engine.stop();
+        engine.uninstall();
         
         ISymmetricDialect dialect = engine.getSymmetricDialect();
 
-        final AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
+        AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
                 .getPlatform();
         
-        dialect.cleanupTriggers();
-
         IDdlBuilder builder = platform.getDdlBuilder();
         
-        platform.resetDataSource();
-
-        String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
-        URL url = getResource(fileName);
-        if (url != null) {
-            new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-        }
-
         Database db2drop = platform.readDatabase(platform.getDefaultCatalog(),
                 platform.getDefaultSchema(), new String[] { "TABLE" });
         
         String sql = builder.dropTables(db2drop);                
-        
-        platform.resetDataSource();
-        
         SqlScript dropScript = new SqlScript(sql, platform.getSqlTemplate(), false);
         dropScript.execute(true);
 
-        new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), platform.getSqlTemplate(),
-                false).execute(true);
-        ((ParameterService) engine.getParameterService()).setDatabaseHasBeenInitialized(false);
-
-        fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
-        url = getResource(fileName);
-        if (url != null) {
-            new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
-        }
-
-        dialect.purge();
+        dialect.purgeRecycleBin();
 
         return platform;
     }
