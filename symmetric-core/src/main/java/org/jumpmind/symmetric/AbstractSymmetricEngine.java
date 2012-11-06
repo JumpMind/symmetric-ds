@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
@@ -512,6 +513,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         stop();
         
         try {
+            
             List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
             for (TriggerRouter triggerRouter : triggerRouters) {
                 triggerRouterService.deleteTriggerRouter(triggerRouter);
@@ -520,6 +522,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
                 triggerRouterService.deleteRouter(triggerRouter.getRouter());
+            }
+            
+            // remove the links so the symmetric table trigger will be removed
+            List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
+            for (NodeGroupLink nodeGroupLink : links) {
+                configurationService.deleteNodeGroupLink(nodeGroupLink);
             }
 
             // this should remove all triggers because we have removed all the
