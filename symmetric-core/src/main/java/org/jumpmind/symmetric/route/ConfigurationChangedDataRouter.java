@@ -112,12 +112,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                      * updated by initial load
                      */
                     if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-
                         nodeIds.remove(nodeIdInQuestion);
                     }
+                    
                     /*
                      * don't route insert events for a node to itself. they will
-                     * be loaded during
+                     * be loaded during registration.  if we route them, then an old
+                     * state can override the correct state
                      */
                     if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
                         nodeIds.remove(nodeIdInQuestion);
