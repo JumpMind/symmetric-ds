@@ -52,7 +52,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     static final String SQL_SELECT_TRANSACTIONS = "select min(start_time) from gv$transaction";
 
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
+    static final String SQL_OBJECT_INSTALLED = "select count(*) from user_source where line = 1 and (((type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
     
     static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
     
@@ -108,7 +108,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected void createRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
-        if (!installed(SQL_FUNCTION_INSTALLED, blobToClob)) {
+        if (!installed(SQL_OBJECT_INSTALLED, blobToClob)) {
             String sql = "CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)                                                                                                                                           "
                     + "     RETURN CLOB                                                                                                                                                          "
                     + "   AS                                                                                                                                                                     "
@@ -135,7 +135,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         }
 
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
-        if (!installed(SQL_FUNCTION_INSTALLED, transactionId)) {
+        if (!installed(SQL_OBJECT_INSTALLED, transactionId)) {
             String sql = "CREATE OR REPLACE function $(functionName)                                                                                                                                                             "
                     + "   return varchar is                                                                                                                                                  "
                     + "   begin                                                                                                                                                              "
@@ -145,7 +145,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         }
 
         String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, triggerDisabled)) {
+        if (!installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
             String sql = "CREATE OR REPLACE function $(functionName) return varchar is                                                                                                                                           "
                     + "   begin                                                                                                                                                                "
                     + "      return sym_pkg.disable_trigger;                                                                                                                                   "
@@ -154,7 +154,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         }
 
         String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
+        if (!installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
             String sql = "CREATE OR REPLACE package $(functionName) as                                                                                                                                                                   "
                     + "      disable_trigger pls_integer;                                                                                                                                       "
                     + "      disable_node_id varchar(50);                                                                                                                                       "
@@ -162,10 +162,8 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "      procedure setNodeValue (node_id IN varchar);                                                                                                                       "
                     + "  end sym_pkg;                                                                                                                                                           ";
             install(sql, pkgPackage);
-        }
-
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
-            String sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
+            
+            sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
                     + "     procedure setValue(a IN number) is                                                                                                                                 "
                     + "     begin                                                                                                                                                              "
                     + "         $(functionName).disable_trigger:=a;                                                                                                                                   "
@@ -179,7 +177,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         }
 
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
-        if (!installed(SQL_FUNCTION_INSTALLED, wkt2geom)) {
+        if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
             String sql = "  CREATE OR REPLACE                                                                                                         "
                     + "    FUNCTION $(functionName)(                            "
                     + "        clob_in IN CLOB)                                 "
@@ -201,31 +199,27 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected void dropRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
-        if (installed(SQL_FUNCTION_INSTALLED, blobToClob)) {
+        if (installed(SQL_OBJECT_INSTALLED, blobToClob)) {
             uninstall(SQL_DROP_FUNCTION, blobToClob);
         }
 
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
-        if (!installed(SQL_FUNCTION_INSTALLED, transactionId)) {
+        if (installed(SQL_OBJECT_INSTALLED, transactionId)) {
             uninstall(SQL_DROP_FUNCTION, transactionId);
         }
 
         String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, triggerDisabled)) {
+        if (installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggerDisabled);
         }
         
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
-        if (!installed(SQL_FUNCTION_INSTALLED, wkt2geom)) {
+        if (installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
             uninstall(SQL_DROP_FUNCTION, wkt2geom);
         }        
 
         String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
-            uninstall("DROP PACKAGE BODY $(functionName)", pkgPackage);
-        }
-
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
+        if (installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
             uninstall("DROP PACKAGE $(functionName)", pkgPackage);
         }
 
