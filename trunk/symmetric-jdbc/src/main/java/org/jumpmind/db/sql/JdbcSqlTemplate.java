@@ -730,7 +730,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return key;
     }
 
-    public boolean isUniqueKeyViolation(Exception ex) {
+    public boolean isUniqueKeyViolation(Throwable ex) {
         boolean primaryKeyViolation = false;
         if (primaryKeyViolationCodes != null || primaryKeyViolationSqlStates != null) {
             SQLException sqlEx = findSQLException(ex);
@@ -763,7 +763,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return primaryKeyViolation;
     }
 
-    public boolean isForeignKeyViolation(Exception ex) {
+    public boolean isForeignKeyViolation(Throwable ex) {
         boolean foreignKeyViolation = false;
         if (foreignKeyViolationCodes != null || foreignKeyViolationSqlStates != null) {
             SQLException sqlEx = findSQLException(ex);

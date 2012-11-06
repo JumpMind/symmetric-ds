@@ -247,11 +247,11 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return args;
     }
 
-    public SqlException translate(Exception ex) {
+    public SqlException translate(Throwable ex) {
         return translate(ex.getMessage(), ex);
     }
 
-    public SqlException translate(String message, Exception ex) {
+    public SqlException translate(String message, Throwable ex) {
         if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
             return new UniqueKeyException(ex);
         } else if (ex instanceof SqlException) {
