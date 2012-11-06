@@ -59,7 +59,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.setDateOverridesToTimestamp(false);
         databaseInfo.setEmptyStringNulled(false);
-        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
 
     }
