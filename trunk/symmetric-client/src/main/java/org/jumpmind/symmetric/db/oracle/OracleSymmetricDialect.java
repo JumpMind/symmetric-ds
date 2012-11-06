@@ -153,9 +153,9 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             install(sql, triggerDisabled);
         }
 
-        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg_package";
+        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
         if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
-            String sql = "CREATE OR REPLACE package sym_pkg as                                                                                                                                                                   "
+            String sql = "CREATE OR REPLACE package $(functionName) as                                                                                                                                                                   "
                     + "      disable_trigger pls_integer;                                                                                                                                       "
                     + "      disable_node_id varchar(50);                                                                                                                                       "
                     + "      procedure setValue (a IN number);                                                                                                                                  "
@@ -164,19 +164,18 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             install(sql, pkgPackage);
         }
 
-        String pkgPackageBody = this.parameterService.getTablePrefix() + "_" + "pkg_package body";
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackageBody)) {
-            String sql = "CREATE OR REPLACE package body sym_pkg as                                                                                                                                                              "
+        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
+            String sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
                     + "     procedure setValue(a IN number) is                                                                                                                                 "
                     + "     begin                                                                                                                                                              "
-                    + "          sym_pkg.disable_trigger:=a;                                                                                                                                   "
+                    + "         $(functionName).disable_trigger:=a;                                                                                                                                   "
                     + "     end;                                                                                                                                                               "
                     + "     procedure setNodeValue(node_id IN varchar) is                                                                                                                      "
                     + "     begin                                                                                                                                                              "
-                    + "          sym_pkg.disable_node_id := node_id;                                                                                                                           "
+                    + "         $(functionName).disable_node_id := node_id;                                                                                                                           "
                     + "     end;                                                                                                                                                               "
                     + " end sym_pkg;                                                                                                                                                           ";
-            install(sql, pkgPackageBody);
+            install(sql, pkgPackage);
         }
 
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
@@ -221,13 +220,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             uninstall(SQL_DROP_FUNCTION, wkt2geom);
         }        
 
-
-        String pkgPackageBody = this.parameterService.getTablePrefix() + "_" + "pkg_package body";
-        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackageBody)) {
-            uninstall("DROP PACKAGE BODY $(functionName)", pkgPackageBody);
+        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
+        if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
+            uninstall("DROP PACKAGE BODY $(functionName)", pkgPackage);
         }
 
-        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg_package";
         if (!installed(SQL_FUNCTION_INSTALLED, pkgPackage)) {
             uninstall("DROP PACKAGE $(functionName)", pkgPackage);
         }

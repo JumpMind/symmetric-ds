@@ -805,7 +805,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } else {
-                log.info("Failed to synchronize trigger for {}");
+                log.info("Sync triggers was locked by the cluster service");
             }
         } else {
             log.info("Not synchronizing triggers.  {} is set to false",
