@@ -235,7 +235,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         && !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
                     if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
                         return true;
-                    } else {
+                    } else if (networkedNodeThatCouldBeRoutedTo != null) {
                         // the node was created at some other node. lets attempt
                         // to get that update back to that node
                         return networkedNodeThatCouldBeRoutedTo.isInChildHierarchy(createdAtNodeId);
