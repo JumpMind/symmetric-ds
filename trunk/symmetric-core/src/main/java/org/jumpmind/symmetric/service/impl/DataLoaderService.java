@@ -728,8 +728,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            symmetricDialect
-                    .disableSyncTriggers(context.findTransaction(), batch.getSourceNodeId());
+            ISqlTransaction transaction = context.findTransaction();
+            if (transaction != null) {
+                symmetricDialect.disableSyncTriggers(transaction, batch.getSourceNodeId());
+            }
         }
 
         public void batchSuccessful(DataContext context) {
