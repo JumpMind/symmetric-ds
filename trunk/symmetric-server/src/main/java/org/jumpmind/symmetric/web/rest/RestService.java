@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.web.rest;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
@@ -256,6 +255,19 @@ public class RestService {
     }
     
     /**
+     * Removes instances of triggers for the specified table for the single engine on the node
+     * @param engineName
+     */
+    @RequestMapping(value = "engine/{engine}/table/{table}/droptriggers", method = RequestMethod.POST)
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseBody
+    public final void dropTriggers(
+    		@PathVariable("engine") String engineName,
+    		@PathVariable("table") String tableName) {
+    	dropTriggersImpl(getSymmetricEngine(engineName), tableName);
+    }
+    
+    /**
      * Uninstalls all SymmetricDS objects from the given node (database) for the single engine on the node
      */
     @RequestMapping(value = "engine/uninstall", method = RequestMethod.POST)
@@ -434,6 +446,10 @@ public class RestService {
     	//TODO: implement
     }
     
+    private void dropTriggersImpl(ISymmetricEngine engine, String tableName) {
+    	//TODO: implement
+    }
+    
     private void uninstallImpl(ISymmetricEngine engine) {
     	engine.uninstall();
     }
@@ -472,9 +488,8 @@ public class RestService {
             inError = true;
         }
         if (inError) {
-            throw new RuntimeException("Error loading profile.");
+            throw new InternalServerErrorException();
         }
-        // TODO: Add error handling
     }
 
     private NodeList childrenImpl(ISymmetricEngine engine) {
