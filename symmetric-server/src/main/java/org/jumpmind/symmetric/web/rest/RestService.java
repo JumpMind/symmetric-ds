@@ -20,8 +20,10 @@
  */
 package org.jumpmind.symmetric.web.rest;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -29,6 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -161,7 +166,6 @@ public class RestService {
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
     public final void loadProfile(@RequestParam MultipartFile file) {
-    	
     	loadProfileImpl(getSymmetricEngine(), file);
     }
     
@@ -453,7 +457,24 @@ public class RestService {
     }
     
     private void loadProfileImpl(ISymmetricEngine engine, MultipartFile file) {
-    	//TODO:implement    	
+       
+        IDataLoaderService dataLoaderService = engine.getDataLoaderService();
+        boolean inError = false;
+        try {
+            String content = new String(file.getBytes());
+            List<IncomingBatch> batches = dataLoaderService.loadDataBatch(content);
+            for (IncomingBatch batch : batches) {
+                if (batch.getStatus() == Status.ER) {
+                    inError = true;
+                }
+            }
+        } catch (Exception e) {
+            inError = true;
+        }
+        if (inError) {
+            throw new RuntimeException("Error loading profile.");
+        }
+        // TODO: Add error handling
     }
 
     private NodeList childrenImpl(ISymmetricEngine engine) {
