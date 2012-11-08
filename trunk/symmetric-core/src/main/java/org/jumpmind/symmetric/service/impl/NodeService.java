@@ -313,7 +313,7 @@ public class NodeService extends AbstractService implements INodeService {
         Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
         NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
         if (nodeSecurity != null
-                && ((nodeSecurity.getNodePassword() != null
+                && !nodeId.equals(findIdentityNodeId()) && ((nodeSecurity.getNodePassword() != null
                         && !nodeSecurity.getNodePassword().equals("") && nodeSecurity
                         .getNodePassword().equals(password)) || nodeSecurity
                             .isRegistrationEnabled())) {
