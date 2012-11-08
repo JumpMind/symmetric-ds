@@ -94,7 +94,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setDoOutput(true);
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
-        //conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
         OutputStream os = conn.getOutputStream();
         try {
             writeMessage(os, data);
@@ -107,6 +106,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public static HttpURLConnection openConnection(URL url, String username, String password)
             throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("Accept-Charset", "utf-8");
         setBasicAuthIfNeeded(conn, username, password);
         return conn;
     }

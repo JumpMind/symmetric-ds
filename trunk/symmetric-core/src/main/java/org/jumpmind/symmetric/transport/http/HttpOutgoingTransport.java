@@ -156,8 +156,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
-            connection.setRequestMethod("PUT");
-            connection.setRequestProperty("accept-encoding", "gzip");
+            connection.setRequestMethod("PUT");            
+            connection.setRequestProperty("Accept-Encoding", "gzip");
             if (useCompression) {
                 connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
             }
