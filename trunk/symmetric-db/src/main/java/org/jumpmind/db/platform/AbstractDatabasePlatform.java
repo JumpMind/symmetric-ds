@@ -450,6 +450,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 + row.getString(name));
                         throw ex;
                     }
+                } else if (column.getMappedTypeCode() == -101) {
+                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
                 } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
