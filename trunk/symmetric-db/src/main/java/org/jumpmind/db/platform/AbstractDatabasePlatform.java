@@ -450,8 +450,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 + row.getString(name));
                         throw ex;
                     }
-                } else if (column.isOfNumericType()) {
-                    newSql = newSql.replaceFirst(regex, row.getString(name));
                 } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
@@ -475,6 +473,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         newSql = newSql.replaceFirst(regex, quote
                                 + new String(Hex.encodeHex(bytes)) + quote);
                     }
+                } else {
+                    newSql = newSql.replaceFirst(regex, row.getString(name));
                 }
             } else {
                 newSql = newSql.replaceFirst(regex, "null");
