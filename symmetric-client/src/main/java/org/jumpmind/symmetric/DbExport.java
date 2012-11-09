@@ -44,6 +44,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DdlBuilderFactory;
+import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
@@ -211,7 +212,8 @@ public class DbExport {
 
         if (!noData) {
             if (sql == null) {
-                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
+                sql = DmlStatementFactory.createDmlStatement(compatible
+                        .toString().toLowerCase(), DmlType.SELECT_ALL, table).getSql();
             }
 
             platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
