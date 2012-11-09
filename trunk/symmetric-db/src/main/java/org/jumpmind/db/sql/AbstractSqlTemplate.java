@@ -96,7 +96,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public List<Row> query(String sql) {
-        return query(sql, (Object[]) null, (int[]) null);
+        return query(sql, (Object[])null, (int[]) null);
     }
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
