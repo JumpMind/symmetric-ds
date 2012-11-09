@@ -42,8 +42,6 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class InfoUriHandler extends AbstractUriHandler {
 
-    private static final long serialVersionUID = 1L;
-
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
@@ -79,7 +77,6 @@ public class InfoUriHandler extends AbstractUriHandler {
             properties.setProperty(InfoConstants.DATABASE_TYPE, node.getDatabaseType());
             properties.setProperty(InfoConstants.DATABASE_VERSION, node.getDatabaseVersion());
             properties.setProperty(InfoConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
-            properties.setProperty(InfoConstants.TIMEZONE_OFFSET, node.getTimezoneOffset());
             properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
         }
 

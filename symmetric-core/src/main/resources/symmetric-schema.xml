@@ -13,8 +13,8 @@
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
         <column name="database_type" type="VARCHAR" size="50"  description="The database product name at this node as reported by JDBC."  />
         <column name="database_version" type="VARCHAR" size="50"  description="The database product version at this node as reported by JDBC." />
-        <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
-        <column name="timezone_offset" type="VARCHAR" size="6"  description="The timezone offset in RFC822 format at the time of the last heartbeat. " />
+        <column name="heartbeat_time" type="TIMESTAMP"  description="Deprecated.  Use node_host.heartbeat_time instead." />
+        <column name="timezone_offset" type="VARCHAR" size="6"  description="Deprecated.  Use node_host.timezone_offset instead." />
         <column name="batch_to_send_count" type="INTEGER" default="0" description="The number of outgoing batches that have not yet been sent.  This field is updated as part of the heartbeat job." />
         <column name="batch_in_error_count" type="INTEGER" default="0" description="The number of outgoing batches that are in error at this node.  This field is updated as part of the heartbeat job." />        
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />

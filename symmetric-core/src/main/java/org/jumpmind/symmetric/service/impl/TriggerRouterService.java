@@ -284,10 +284,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
-        trigger.setSyncOnIncomingBatch(true);
+        trigger.setSyncOnIncomingBatch(parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING_AT_REG_SVR, true));
         trigger.setSourceTableName(tableName);
         trigger.setUseCaptureOldData(false);
-        trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName)) {
+            trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
+        } else {
+            trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        }
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
         trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
