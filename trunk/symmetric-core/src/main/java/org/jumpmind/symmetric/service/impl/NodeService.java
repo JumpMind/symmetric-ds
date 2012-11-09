@@ -165,7 +165,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<NodeHost> findNodeHosts(String nodeId) {
         return sqlTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"),
                 new NodeHostRowMapper(), nodeId);
-    }
+    }        
 
     public void updateNodeHostForCurrentNode() {
         if (nodeHostForCurrentNode == null) {
@@ -257,8 +257,8 @@ public class NodeService extends AbstractService implements INodeService {
                     getSql("insertNodeSql"),
                     new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
                             node.getDatabaseVersion(), node.getSchemaVersion(),
-                            node.getSymmetricVersion(), node.getSyncUrl(), node.getHeartbeatTime(),
-                            node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(),
+                            node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
+                            node.isSyncEnabled() ? 1 : 0, AppUtils.getTimezoneOffset(),
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
                             node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -273,8 +273,8 @@ public class NodeService extends AbstractService implements INodeService {
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
                         node.getDatabaseVersion(), node.getSchemaVersion(),
-                        node.getSymmetricVersion(), node.getSyncUrl(), node.getHeartbeatTime(),
-                        node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(),
+                        node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
+                        node.isSyncEnabled() ? 1 : 0,  AppUtils.getTimezoneOffset(),
                         node.getBatchToSendCount(), node.getBatchInErrorCount(),
                         node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -567,25 +567,27 @@ public class NodeService extends AbstractService implements INodeService {
         if (myNode != null) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
 
-            List<Node> list = sqlTemplate.query(
-                    getSql("selectNodePrefixSql", "findOfflineNodesSql"), new NodeRowMapper(),
-                    myNode.getNodeId(), myNode.getNodeId());
+            List<Row> list = sqlTemplate.query(getSql("findOfflineNodesSql"), new Object[] {
+                    myNode.getNodeId(), myNode.getNodeId()}, (int[])null);
 
-            for (Node node : list) {
+            for (Row node : list) {
+                String nodeId = node.getString("node_id");
+                Date time = node.getDateTime("heartbeat_time");
+                String offset = node.getString("timezone_offset");
                 // Take the timezone of the client node into account when
                 // checking the hearbeat time.
                 Date clientNodeCurrentTime = null;
-                if (node.getTimezoneOffset() != null) {
+                if (offset != null) {
                     clientNodeCurrentTime = AppUtils
-                            .getLocalDateForOffset(node.getTimezoneOffset());
+                            .getLocalDateForOffset(offset);
                 } else {
                     clientNodeCurrentTime = new Date();
                 }
                 long cutOffTimeMillis = clientNodeCurrentTime.getTime()
                         - offlineNodeDetectionMillis;
-                if (node.getHeartbeatTime() == null
-                        || node.getHeartbeatTime().getTime() < cutOffTimeMillis) {
-                    offlineNodeList.add(node);
+                if (time == null
+                        || time.getTime() < cutOffTimeMillis) {
+                    offlineNodeList.add(findNode(nodeId));
                 }
             }
         }
@@ -635,8 +637,6 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDatabaseVersion(rs.getString("database_version"));
             node.setSymmetricVersion(rs.getString("symmetric_version"));
             node.setCreatedAtNodeId(rs.getString("created_at_node_id"));
-            node.setHeartbeatTime(rs.getDateTime("heartbeat_time"));
-            node.setTimezoneOffset(rs.getString("timezone_offset"));
             node.setBatchToSendCount(rs.getInt("batch_to_send_count"));
             node.setBatchInErrorCount(rs.getInt("batch_in_error_count"));
             node.setDeploymentType(rs.getString("deployment_type"));

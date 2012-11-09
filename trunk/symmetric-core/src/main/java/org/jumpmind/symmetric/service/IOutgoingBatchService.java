@@ -62,6 +62,8 @@ public interface IOutgoingBatchService {
 
     public int countOutgoingBatchesInError();
     
+    public int countOutgoingBatchesUnsent();
+    
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,

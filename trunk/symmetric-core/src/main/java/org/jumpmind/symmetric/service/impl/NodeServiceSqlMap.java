@@ -97,13 +97,12 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "select node_id, host_name, ip_address, os_user, os_name, os_arch, os_version, available_processors,        "
                         + "  free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version,   "
-                        + "  timezone_offset, heartbeat_time, last_restart_time, create_time from $(node_host)                  ");
+                        + "  timezone_offset, heartbeat_time, last_restart_time, create_time from $(node_host) h");
 
-        putSql("selectNodeHostByNodeIdSql", "" + "where node_id=?   ");
+        putSql("selectNodeHostByNodeIdSql", "where node_id=?");
 
         putSql("selectNodePrefixSql",
-                ""
-                        + "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
+                          "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
                         + "  c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.heartbeat_time, c.timezone_offset, c.batch_to_send_count, c.batch_in_error_count, c.deployment_type from   "
                         + "  $(node) c                                                                                                                                                                                                ");
 
@@ -133,8 +132,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + "  total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?,   "
                         + "  last_restart_time=? where node_id=? and host_name=?                                                                                  ");
 
-        putSql("findOfflineNodesSql", ""
-                + "where sync_enabled = 1 and node_id != ? and created_at_node_id = ?   ");
+        putSql("findOfflineNodesSql", 
+                "select h.node_id, max(h.heartbeat_time), h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
+              + " where n.sync_enabled = 1 and n.node_id != ? and n.created_at_node_id = ? group by h.node_id, h.timezone_offset");
 
     }
 
