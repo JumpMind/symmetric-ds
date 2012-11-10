@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.web.rest;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -103,12 +104,25 @@ public class RestService {
     /**
      * Provides a list of {@link Engine} that are configured on the node.
      * 
-     * @return {@link EngineList} - Engines configured on the node
+     * @return {@link EngineList} - Engines configured on the node <br>
+     * <pre>
+     * Example xml reponse is as follows:<br><br>
+     *   {@code
+     *   <enginelist>
+     *     <engines>
+     *       <name>RootSugarDB-root</name>
+     *     </engines>
+     *   </enginelist>
+     *   }
+	 * <br>
+	 * Example json response is as follows:<br><br>
+	 *   {"engines":[{"name":"RootSugarDB-root"}]}
+	 * </pre>
      */
     @RequestMapping(value = "/enginelist", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )
     @ResponseBody
-    public final EngineList engine() {
+    public final EngineList getEngineList() {
         EngineList list = new EngineList();
         Collection<String> engineNames = getSymmetricEngineHolder().getEngines().keySet();
         for (String engine : engineNames) {
@@ -116,26 +130,39 @@ public class RestService {
         }
         return list;
     }    
-    
-    /**
-     * Provides a list of children {@link Node} that are registered with this engine.
-     */
-    @RequestMapping(value = "engine/{engine}/children", method = RequestMethod.GET)
-    @ResponseStatus( HttpStatus.OK )
-    @ResponseBody
-    public final NodeList children(
-    		@PathVariable("engine") String engineName) {
-        return childrenImpl(getSymmetricEngine(engineName));
-    }
-    
+
     /**
      * Provides a list of children {@link Node} that are registered with this engine.
      */
     @RequestMapping(value = "engine/children", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )    
     @ResponseBody
-    public final NodeList children() {
+    public final NodeList getChildren() {
         return childrenImpl(getSymmetricEngine());
+    }
+        
+    /**
+     * Provides a list of children {@link Node} that are registered with this engine.
+     */
+    @RequestMapping(value = "engine/{engine}/children", method = RequestMethod.GET)
+    @ResponseStatus( HttpStatus.OK )
+    @ResponseBody
+    public final NodeList getChildrenByEngine(
+    		@PathVariable("engine") String engineName) {
+        return childrenImpl(getSymmetricEngine(engineName));
+    }
+    
+    /**
+     * Loads a profile for the single engine on the node.
+     *      
+     * @param file A file stream that contains the profile itself.
+     * TODO:  put more details here on the specifics of how the file needs to be passed
+     */
+    @RequestMapping(value = "engine/profile", method = RequestMethod.POST)
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseBody
+    public final void postProfile(@RequestParam MultipartFile file) {
+    	loadProfileImpl(getSymmetricEngine(), file);
     }
     
     /**
@@ -148,7 +175,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/profile", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void loadProfile(
+    public final void postProfileByEngine(
     		@PathVariable("engine") String engineName,
             @RequestParam (value = "file") MultipartFile file) {
         
@@ -156,25 +183,12 @@ public class RestService {
     }
 
     /**
-     * Loads a profile for the single engine on the node.
-     *      
-     * @param file A file stream that contains the profile itself.
-     * TODO:  put more details here on the specifics of how the file needs to be passed
-     */
-    @RequestMapping(value = "engine/profile", method = RequestMethod.POST)
-    @ResponseStatus( HttpStatus.NO_CONTENT )
-    @ResponseBody
-    public final void loadProfile(@RequestParam MultipartFile file) {
-    	loadProfileImpl(getSymmetricEngine(), file);
-    }
-    
-    /**
      * Starts the single engine on the node
      */
     @RequestMapping(value = "engine/start", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void start() {
+    public final void postStart() {
     	startImpl(getSymmetricEngine());
     }
     
@@ -185,7 +199,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/start", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void start(@PathVariable("engine") String engineName) {
+    public final void postStartByEngine(@PathVariable("engine") String engineName) {
     	startImpl(getSymmetricEngine(engineName));
     }
     
@@ -195,7 +209,7 @@ public class RestService {
     @RequestMapping(value = "engine/stop", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void stop() {
+    public final void postStop() {
     	stopImpl(getSymmetricEngine());
     }
     
@@ -206,7 +220,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/stop", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void stop(@PathVariable("engine") String engineName) {
+    public final void postStopByEngine(@PathVariable("engine") String engineName) {
     	stopImpl(getSymmetricEngine(engineName));
     }
     
@@ -216,7 +230,7 @@ public class RestService {
     @RequestMapping(value = "engine/synctriggers", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void syncTriggers(@RequestParam(required = false, value = "force") boolean force) {
+    public final void postSyncTriggers(@RequestParam(required = false, value = "force") boolean force) {
     	syncTriggersImpl(getSymmetricEngine(), force);
     }
     
@@ -227,7 +241,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/synctriggers", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void syncTriggers(
+    public final void postSyncTriggersByEngine (
     		@PathVariable("engine") String engineName,
     		@RequestParam(required = false, value = "force") boolean force) {
     	syncTriggersImpl(getSymmetricEngine(engineName), force);
@@ -239,7 +253,7 @@ public class RestService {
     @RequestMapping(value = "engine/droptriggers", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void dropTriggers() {
+    public final void postDropTriggers() {
     	dropTriggersImpl(getSymmetricEngine());
     }
     
@@ -250,8 +264,20 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void dropTriggers(@PathVariable("engine") String engineName) {
+    public final void postDropTriggersByEngine(@PathVariable("engine") String engineName) {
     	dropTriggersImpl(getSymmetricEngine(engineName));
+    }
+
+    /**
+     * Removes instances of triggers for the specified table for the single engine on the node
+     * @param engineName
+     */
+    @RequestMapping(value = "engine/table/{table}/droptriggers", method = RequestMethod.POST)
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseBody
+    public final void postDropTriggersByTable(
+    		@PathVariable("table") String tableName) {
+    	dropTriggersImpl(getSymmetricEngine(), tableName);
     }
     
     /**
@@ -261,7 +287,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/table/{table}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void dropTriggers(
+    public final void postDropTriggersByEngineByTable(
     		@PathVariable("engine") String engineName,
     		@PathVariable("table") String tableName) {
     	dropTriggersImpl(getSymmetricEngine(engineName), tableName);
@@ -273,7 +299,7 @@ public class RestService {
     @RequestMapping(value = "engine/uninstall", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void uninstall() {
+    public final void postUninstall() {
     	uninstallImpl(getSymmetricEngine());
     }
     
@@ -284,7 +310,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/uninstall", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
     @ResponseBody
-    public final void uninstall(@PathVariable("engine") String engineName) {
+    public final void postUninstallByEngine(@PathVariable("engine") String engineName) {
     	uninstallImpl(getSymmetricEngine(engineName));
     }
 
@@ -292,10 +318,10 @@ public class RestService {
      * Generates an uninstall script for database objects for 
      * the single engine on the node. The script is contained in the response body.
      */
-    @RequestMapping(value = "engine/generateuninstallscript", method = RequestMethod.POST)
+    @RequestMapping(value = "engine/uninstallscript", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )
     @ResponseBody
-    public final String gnerateUninstallScript() {
+    public final String getUninstallScript() {
     	return generateUninstallScriptImpl(getSymmetricEngine());
     }
     
@@ -304,10 +330,10 @@ public class RestService {
      * the specified engine on the node. The script is contained in the response body.
      * @param engineName
      */
-    @RequestMapping(value = "engine/{engine}/generateuninstallscript", method = RequestMethod.POST)
+    @RequestMapping(value = "engine/{engine}/uninstallscript", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )
     @ResponseBody
-    public final String generateUninstallScript(@PathVariable("engine") String engineName) {
+    public final String getUninstallScriptByEngine(@PathVariable("engine") String engineName) {
     	return generateUninstallScriptImpl(getSymmetricEngine(engineName));
     }
         
@@ -315,10 +341,10 @@ public class RestService {
      * Generates an install script for database objects for 
      * the single engine on the node. The script is contained in the response body.
      */
-    @RequestMapping(value = "engine/generateinstallscript", method = RequestMethod.POST)
+    @RequestMapping(value = "engine/installscript", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )
     @ResponseBody
-    public final String gnerateInstallScript() {
+    public final String getInstallScript() {
     	return generateInstallScriptImpl(getSymmetricEngine());
     }
     
@@ -327,10 +353,10 @@ public class RestService {
      * the specified engine on the node. The script is contained in the response body.
      * @param engineName
      */
-    @RequestMapping(value = "engine/{engine}/generateInstallscript", method = RequestMethod.POST)
+    @RequestMapping(value = "engine/{engine}/installscript", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )
     @ResponseBody
-    public final String generateInstallScript(@PathVariable("engine") String engineName) {
+    public final String getInstallScriptByEngine(@PathVariable("engine") String engineName) {
     	return generateUninstallScriptImpl(getSymmetricEngine(engineName));
     }
 
@@ -340,7 +366,7 @@ public class RestService {
 	@RequestMapping(value = "engine/reinitialize", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ResponseBody
-	public final void reinitialize() {
+	public final void postReinitialize() {
 		reinitializeImpl(getSymmetricEngine());
 	}
 
@@ -353,7 +379,7 @@ public class RestService {
 	@RequestMapping(value = "engine/{engine}/reinitialize", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ResponseBody
-	public final void reinitialize(@PathVariable("engine") String engineName) {
+	public final void postReinitializeByEngine(@PathVariable("engine") String engineName) {
 		reinitializeImpl(getSymmetricEngine(engineName));
 	}
 
@@ -363,7 +389,7 @@ public class RestService {
 	@RequestMapping(value = "engine/refreshcache", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ResponseBody
-	public final void refreshcache() {
+	public final void postRefreshcache() {
 		refreshCacheImpl(getSymmetricEngine());
 	}
 
@@ -375,9 +401,21 @@ public class RestService {
 	@RequestMapping(value = "engine/{engine}/refreshcache", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ResponseBody
-	public final void refreshcache(@PathVariable("engine") String engineName) {
+	public final void postRefreshcacheByEngine(@PathVariable("engine") String engineName) {
 		refreshCacheImpl(getSymmetricEngine(engineName));
 	}	
+
+    /**
+     * Returns an overall status for the single engine of the node.
+     * 
+     * @param engineName
+     * @return {@link NodeStatus}
+     */
+    @RequestMapping(value = "/engines/status", method = RequestMethod.GET)
+    @ResponseBody
+    public final NodeStatus getStatus(@PathVariable("engine") String engineName) {
+        return nodeStatusImpl(getSymmetricEngine());
+    }
 
     /**
      * Returns an overall status for the specified engine of the node.
@@ -387,11 +425,22 @@ public class RestService {
      */
     @RequestMapping(value = "/engines/{engine}/status", method = RequestMethod.GET)
     @ResponseBody
-    public final NodeStatus nodeStatus(@PathVariable("engine") String engineName) {
-        // TODO: Implementation
-        return new NodeStatus();
+    public final NodeStatus getStatusByEngine(@PathVariable("engine") String engineName) {
+        return nodeStatusImpl(getSymmetricEngine(engineName));
     }
 
+    /**
+     * Returns status of each channel for the single engine of the node.
+     * 
+     * @param engineName
+     * @return Set<{@link ChannelStatus}>
+     */
+    @RequestMapping(value = "/engines/channelstatus", method = RequestMethod.GET)
+    @ResponseBody
+    public final Set<ChannelStatus> getChannelStatus(@PathVariable("engine") String engineName) {
+        return channelStatusImpl(getSymmetricEngine());
+    }
+    
     /**
      * Returns status of each channel for the specified engine of the node.
      * 
@@ -400,8 +449,8 @@ public class RestService {
      */
     @RequestMapping(value = "/engines/{engine}/channelstatus", method = RequestMethod.GET)
     @ResponseBody
-    public final Set<ChannelStatus> channelStatus(@PathVariable("engine") String engineName) {
-        throw new RuntimeException("Test");
+    public final Set<ChannelStatus> getChannelStatusByEngine(@PathVariable("engine") String engineName) {
+        return channelStatusImpl(getSymmetricEngine(engineName));
     }
     
     //***********************************************************************************************
@@ -434,20 +483,20 @@ public class RestService {
 				.getTriggerRouterService();
 		StringBuilder buffer = new StringBuilder();
 		triggerRouterService.syncTriggers(buffer, force);
-		// FIGURE OUT WHAT WE WANT TO DO HERE. RESPONSE CODE IN HTTP RESPONSE
-		// AND MSG IN BODY?
-		// SyncTriggersActionResponse response = new
-		// SyncTriggersActionResponse();
-		// response.setSuccess(true);
-		// response.setMessage(buffer.toString());
     }
 
     private void dropTriggersImpl(ISymmetricEngine engine) {
-    	//TODO: implement
+		ITriggerRouterService triggerRouterService = engine
+				.getTriggerRouterService();
+		triggerRouterService.dropTriggers();
     }
     
     private void dropTriggersImpl(ISymmetricEngine engine, String tableName) {
-    	//TODO: implement
+		ITriggerRouterService triggerRouterService = engine
+				.getTriggerRouterService();
+		HashSet<String> tables = new HashSet<String>();
+		tables.add(tableName);
+		triggerRouterService.dropTriggers(tables);    	
     }
     
     private void uninstallImpl(ISymmetricEngine engine) {
@@ -496,6 +545,16 @@ public class RestService {
     	//TODO:implement
     	return null;
     }    
+    
+    private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
+    	//TODO:implement
+    	return new NodeStatus();
+    }
+    
+    private Set<ChannelStatus> channelStatusImpl(ISymmetricEngine engine) {
+    	//TODO:implement
+    	return new HashSet<ChannelStatus>();
+    }
     
     protected SymmetricEngineHolder getSymmetricEngineHolder() {
         SymmetricEngineHolder holder = (SymmetricEngineHolder) context
