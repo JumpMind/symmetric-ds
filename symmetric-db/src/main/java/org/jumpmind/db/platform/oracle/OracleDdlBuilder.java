@@ -415,9 +415,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" MODIFY (");
         Column column = change.getChangedColumn();
+        column.setDefaultValue(change.getNewDefaultValue());
         printIdentifier(getColumnName(column), ddl);
-        ddl.append(" DEFAULT ");        
-        ddl.append(change.getNewDefaultValue());
+        ddl.append(" DEFAULT ");       
+        writeColumnDefaultValue(change.getChangedTable(), column, ddl);
         ddl.append(" )");
         printEndOfStatement(ddl);
     }
