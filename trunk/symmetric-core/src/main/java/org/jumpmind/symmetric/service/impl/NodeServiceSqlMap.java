@@ -133,7 +133,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + "  last_restart_time=? where node_id=? and host_name=?                                                                                  ");
 
         putSql("findOfflineNodesSql", 
-                "select h.node_id, max(h.heartbeat_time), h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
+                "select h.node_id, max(h.heartbeat_time) as heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
               + " where n.sync_enabled = 1 and n.node_id != ? and n.created_at_node_id = ? group by h.node_id, h.timezone_offset");
 
     }
