@@ -114,7 +114,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void dropTable(Table table, StringBuilder ddl) {
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
         ddl.append("DROP TABLE IF EXISTS ");
         printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
@@ -127,7 +127,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected boolean shouldGeneratePrimaryKeys(Column[] primaryKeyColumns) {
-        // mySQL requires primary key indication for autoincrement key columns
+        // mySQL requires primary key indication for auto increment key columns
         // I'm not sure why the default skips the pk statement if all are
         // identity
         return true;
