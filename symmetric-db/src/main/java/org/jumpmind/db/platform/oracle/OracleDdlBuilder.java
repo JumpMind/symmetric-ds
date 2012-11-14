@@ -101,31 +101,37 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void createTable(Table table, StringBuilder ddl) {
+    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         // lets create any sequences
         Column[] columns = table.getAutoIncrementColumns();
 
-        for (int idx = 0; idx < columns.length; idx++) {
-            createAutoIncrementSequence(table, columns[idx], ddl);
+        if (!temporary) {
+            for (int idx = 0; idx < columns.length; idx++) {
+                createAutoIncrementSequence(table, columns[idx], ddl);
+            }
         }
 
-        super.createTable(table, ddl);
+        super.createTable(table, ddl, temporary, recreate);
 
-        for (int idx = 0; idx < columns.length; idx++) {
-            createAutoIncrementTrigger(table, columns[idx], ddl);
+        if (!temporary) {
+            for (int idx = 0; idx < columns.length; idx++) {
+                createAutoIncrementTrigger(table, columns[idx], ddl);
+            }
         }
     }
 
     @Override
-    public void dropTable(Table table, StringBuilder ddl) {
-        // The only difference to the Oracle 8/9 variant is the purge which
-        // prevents the
-        // table from being moved to the recycle bin (which is new in Oracle 10)
-        Column[] columns = table.getAutoIncrementColumns();
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+        if (!temporary) {
+            // The only difference to the Oracle 8/9 variant is the purge which
+            // prevents the table from being moved to the recycle bin (which is 
+            // new in Oracle 10)
+            Column[] columns = table.getAutoIncrementColumns();
 
-        for (int idx = 0; idx < columns.length; idx++) {
-            dropAutoIncrementTrigger(table, columns[idx], ddl);
-            dropAutoIncrementSequence(table, columns[idx], ddl);
+            for (int idx = 0; idx < columns.length; idx++) {
+                dropAutoIncrementTrigger(table, columns[idx], ddl);
+                dropAutoIncrementSequence(table, columns[idx], ddl);
+            }
         }
 
         ddl.append("DROP TABLE ");
@@ -219,16 +225,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP TRIGGER ");
         printIdentifier(getConstraintName(PREFIX_TRIGGER, table, column.getName(), null), ddl);
         printEndOfStatement(ddl);
-    }
-
-    @Override
-    protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
-        createTable(table, ddl);
-    }
-
-    @Override
-    protected void dropTemporaryTable(Database database, Table table, StringBuilder ddl) {
-        dropTable(table, ddl);
     }
 
     @Override
