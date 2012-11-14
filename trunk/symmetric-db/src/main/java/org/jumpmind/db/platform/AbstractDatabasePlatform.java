@@ -46,6 +46,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -347,10 +348,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = new BigDecimal(value.replace(',', '.'));
                             } else if (type == Types.BOOLEAN) {
                                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                            } else if (type == Types.BLOB || type == Types.LONGVARBINARY
+                            } else if (!(column.getJdbcTypeName().toUpperCase()
+                                    .contains(TypeMap.GEOMETRY)) && 
+                                    (type == Types.BLOB || type == Types.LONGVARBINARY
                                     || type == Types.BINARY || type == Types.VARBINARY ||
                                     // SQLServer ntext type
-                                    type == -10) {
+                                    type == -10)) {
                                 if (encoding == BinaryEncoding.NONE) {
                                     objectValue = value.getBytes();
                                 } else if (encoding == BinaryEncoding.BASE64) {

@@ -576,7 +576,11 @@ abstract public class AbstractTriggerTemplate {
                     case Types.LONGVARBINARY:
                         // SQL-Server ntext binary type
                     case -10:
-                        if (isOld && symmetricDialect.needsToSelectLobData()) {
+                        if (column.getJdbcTypeName().toUpperCase()
+                                .contains(TypeMap.GEOMETRY)
+                                && StringUtils.isNotBlank(geometryColumnTemplate)) {
+                            templateToUse = geometryColumnTemplate;
+                        } else if (isOld && symmetricDialect.needsToSelectLobData()) {
                             templateToUse = emptyColumnTemplate;
                         } else {
                             templateToUse = blobColumnTemplate;
