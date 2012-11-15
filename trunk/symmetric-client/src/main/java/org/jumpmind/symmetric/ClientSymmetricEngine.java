@@ -78,6 +78,16 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.properties = properties;
         this.init();
     }
+    
+    public ClientSymmetricEngine(BasicDataSource dataSource, 
+            Properties properties, boolean registerEngine) {
+        super(registerEngine);
+        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.dataSource = dataSource;
+        this.properties = properties;
+        this.init();
+    }
+    
 
     public ClientSymmetricEngine(File propertiesFile, boolean registerEngine) {
         super(registerEngine);
@@ -100,6 +110,14 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(Properties properties) {
         this(properties, true);
     }
+    
+    public ClientSymmetricEngine() {
+        this((Properties)null, true);
+    }
+    
+    public ClientSymmetricEngine(boolean registerEngine) {
+        this((Properties)null, registerEngine);
+    }    
 
     @Override
     protected void init() {
@@ -351,5 +369,5 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             }
         }
     }
-
+    
 }
