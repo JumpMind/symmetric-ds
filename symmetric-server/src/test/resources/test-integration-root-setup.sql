@@ -109,7 +109,7 @@ values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, curre
 
 insert into test_order_header
 (order_id, customer_id, status, deliver_date)
-values('1', 100, null, current_timestamp);
+values('1', 100, null, null);
 
 insert into test_order_detail
 (order_id, line_number, item_type, item_id, quantity, price)
@@ -117,4 +117,4 @@ values('1', 1, 'STCK', '110000055', 5, 1.29);
 
 insert into test_sync_column_level
 (id, string_value, time_value, date_value, bigint_value, decimal_value)
-values (1, 'data',current_timestamp, current_timestamp, 100, 123.45);
+values (1, 'data',current_timestamp, null, 100, 123.45);
