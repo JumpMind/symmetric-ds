@@ -461,9 +461,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
-                    IStagedResource resource = stagingManager.find(
-                            Constants.STAGING_CATEGORY_OUTGOING, batch.getStagedLocation(),
-                            batch.getBatchId());
+                    IStagedResource resource = getStagedResource(currentBatch);
                     if (resource != null) {
                         resource.delete();
                     }
@@ -646,8 +644,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table table = symmetricDialect.getPlatform().getTableFromCache(catalogName, schemaName,
                 tableName, false);
         if (table == null) {
-            throw new RuntimeException(String.format("Could not find the table, %s, to extract",
-                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
+            table = new Table(tableName);
+            table.addColumns(triggerHistory.getParsedColumnNames());
         }
         table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
