@@ -448,13 +448,17 @@ public class DatabaseWriter implements IDataWriter {
 
     protected String[] getRowData(CsvData data) {
         String[] targetValues = new String[targetTable.getColumnCount()];
+        String[] targetColumnNames = targetTable.getColumnNames();
+
         String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
         String[] sourceColumnNames = sourceTable.getColumnNames();
-        String[] targetColumnNames = targetTable.getColumnNames();
-        for (int i = 0, t = 0; i < sourceColumnNames.length && t < targetColumnNames.length; i++) {
-            if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
-                targetValues[t] = originalValues[i];
-                t++;
+        
+        for (int i = 0; i < sourceColumnNames.length; i++) {
+            for(int t = 0; t < targetColumnNames.length; t++) {
+                if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
+                    targetValues[t] = originalValues[i];
+                    break;
+                }
             }
         }
         return targetValues;
@@ -866,21 +870,22 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected Map<String, String> getLookupDataMap(CsvData data) {
+        Map<String, String> keyData = null;
         if (data.getDataEventType() == DataEventType.INSERT) {
-            return data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(), CsvData.ROW_DATA);
         } else {
-            Map<String, String> keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
+            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                     CsvData.OLD_DATA);
             if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(),
+                keyData = data.toColumnNameValuePairs(sourceTable.getPrimaryKeyColumnNames(),
                         CsvData.PK_DATA);
             }
             if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(targetTable.getColumnNames(),
+                keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                         CsvData.ROW_DATA);
-            }
-            return keyData;
+            }            
         }
+        return keyData;
     }
 
     protected String[] getLookupKeyData(Map<String, String> lookupDataMap, DmlStatement dmlStatement) {
@@ -892,7 +897,6 @@ public class DatabaseWriter implements IDataWriter {
                 for (Column keyColumn : lookupColumns) {
                     keyDataAsArray[index++] = lookupDataMap.get(keyColumn.getName());
                 }
-
                 return keyDataAsArray;
             }
         }
