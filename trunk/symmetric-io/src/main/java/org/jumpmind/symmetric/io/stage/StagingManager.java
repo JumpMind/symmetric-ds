@@ -67,7 +67,8 @@ public class StagingManager implements IStagingManager {
                 new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
                         State.DONE.getExtensionName() }, true);
         for (File file : files) {
-            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file, this);
+            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file,
+                    this);
             resourceList.put(resource.getPath(), resource);
         }
 
@@ -102,7 +103,8 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath, this);
+        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath,
+                this);
         this.resourceList.put(filePath, resource);
         return resource;
     }
@@ -124,7 +126,16 @@ public class StagingManager implements IStagingManager {
 
     public IStagedResource find(Object... path) {
         String filePath = buildFilePath(path);
-        return resourceList.get(filePath);
+        IStagedResource resource = resourceList.get(filePath);
+        if (resource != null) {
+            if (!resource.exists()
+                    && (resource.getState() == State.READY || resource.getState() == State.READY)) {
+                resource.delete();
+                resource = null;
+            }
+        }
+
+        return resource;
     }
 
 }
