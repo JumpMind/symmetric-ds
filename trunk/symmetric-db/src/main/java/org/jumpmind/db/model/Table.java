@@ -306,6 +306,14 @@ public class Table implements Serializable, Cloneable {
             addColumn((Column) it.next());
         }
     }
+    
+    public void addColumns(String[] columnNames) {
+        if (columnNames != null) {
+            for (String columnName : columnNames) {
+                addColumn(new Column(columnName));
+            }
+        }
+    }
 
     /**
      * Removes the given column.
