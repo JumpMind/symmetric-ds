@@ -896,7 +896,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testHeartbeat() throws Exception {
         logTestRunning();
-        final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='"
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node_host where node_id='"
                 + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
         Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
                 checkHeartbeatSql, Timestamp.class);
