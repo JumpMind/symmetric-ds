@@ -26,8 +26,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Node {
 
     private String name;
+    private boolean isRootNode;
 
-    public Node(String name) {
+    public boolean isRootNode() {
+		return isRootNode;
+	}
+
+	public void setRootNode(boolean isRootNode) {
+		this.isRootNode = isRootNode;
+	}
+
+	public Node(String name) {
         setName(name);
     }
 
