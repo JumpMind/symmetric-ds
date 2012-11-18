@@ -33,7 +33,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.NetworkedNode;
+import org.jumpmind.symmetric.model.NodeHost;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -132,7 +136,60 @@ public class RestService {
     }    
 
     /**
-     * Provides a list of children {@link Node} that are registered with this engine.
+     * Provides Node information for the single engine
+     * 
+     * return {@link Node}<br>
+     * 
+     * <pre>
+     * Example xml reponse is as follows:<br><br>
+     *   {@code
+     * <node>
+	 * 	 <name>root</name>
+	 *   <rootNode>true</rootNode>
+	 * </node>
+     *   }
+	 * <br>
+	 * Example json response is as follows:<br><br>
+	 *   
+	 * </pre>
+     */
+    @RequestMapping(value = "engine/node", method = RequestMethod.GET)
+    @ResponseStatus( HttpStatus.OK )    
+    @ResponseBody
+    public final Node getNode() {
+        return nodeImpl(getSymmetricEngine());
+    }
+    
+    /** 
+     * Provides Node information for the specified engine
+     */
+    @RequestMapping(value = "engine/{engine}/node", method = RequestMethod.GET)
+    @ResponseStatus( HttpStatus.OK )
+    @ResponseBody
+    public final Node getNode(
+    		@PathVariable("engine") String engineName) {
+        return nodeImpl(getSymmetricEngine(engineName));
+    }
+    
+    /**
+     * Provides a list of children that are registered with this engine.
+     * 
+     * return {@link Node}<br>
+     * 
+     * <pre>
+     * Example xml reponse is as follows:<br><br>
+     *   {@code
+ 	 * <nodelist>
+	 *	<nodes>
+	 *		<name>client01</name>
+	 *		<rootNode>false</rootNode>
+	 *	</nodes>
+	 * </nodelist>
+     *   }
+	 * <br>
+	 * Example json response is as follows:<br><br>
+	 *   
+	 * </pre>
      */
     @RequestMapping(value = "engine/children", method = RequestMethod.GET)
     @ResponseStatus( HttpStatus.OK )    
@@ -156,7 +213,6 @@ public class RestService {
      * Loads a profile for the single engine on the node.
      *      
      * @param file A file stream that contains the profile itself.
-     * TODO:  put more details here on the specifics of how the file needs to be passed
      */
     @RequestMapping(value = "engine/profile", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
@@ -170,7 +226,6 @@ public class RestService {
      * 
      * @param engine The engine name for which the action is intended.     
      * @param file A file stream that contains the profile itself.
-     * TODO:  put more details here on the specifics of how the file needs to be passed
      */
     @RequestMapping(value = "engine/{engine}/profile", method = RequestMethod.POST)
     @ResponseStatus( HttpStatus.NO_CONTENT )
@@ -406,14 +461,45 @@ public class RestService {
 	}	
 
     /**
-     * Returns an overall status for the single engine of the node.
-     * 
-     * @param engineName
-     * @return {@link NodeStatus}
-     */
-    @RequestMapping(value = "/engines/status", method = RequestMethod.GET)
+	 * Returns an overall status for the single engine of the node.
+	 * 
+	 * @return {@link NodeStatus}
+	 * 
+	 *         <pre>
+	 * Example xml reponse is as follows:<br><br>
+	 *   {@code
+	 * <nodestatus>
+	 * <batchInErrorCount>0</batchInErrorCount>
+	 * <batchToSendCount>0</batchToSendCount>
+	 * <databaseType>Microsoft SQL Server</databaseType>
+	 * <databaseVersion>9.0</databaseVersion>
+	 * <deploymentType>professional</deploymentType>
+	 * 	<externalId>root</externalId>
+	 * 	<initialLoaded>true</initialLoaded>
+	 * 	<lastHeartbeat>2012-11-17 14:52:19.267</lastHeartbeat>
+	 * <nodeGroupId>RootSugarDB</nodeGroupId>
+	 * <nodeId>root</nodeId>
+	 * <registered>true</registered>
+	 * <registrationServer>false</registrationServer>
+	 * <started>true</started>
+	 * <symmetricVersion>3.1.10</symmetricVersion>
+	 * <syncEnabled>true</syncEnabled>
+	 * <syncUrl>http://my-machine-name:31415/sync/RootSugarDB-root</syncUrl>
+	 * </nodestatus>        
+	 *   }
+	 * <br>
+	 * Example json response is as follows:<br><br>
+	 * {"started":true,"registered":true,"registrationServer":false,"initialLoaded":true,
+	 * "nodeId":"root","nodeGroupId":"RootSugarDB","externalId":"root",
+	 * "syncUrl":"http://my-machine-name:31415/sync/RootSugarDB-root","databaseType":"Microsoft SQL Server",
+	 * "databaseVersion":"9.0","syncEnabled":true,"createdAtNodeId":null,"batchToSendCount":0,
+	 * "batchInErrorCount":0,"deploymentType":"professional","symmetricVersion":"3.1.10",
+	 * "lastHeartbeat":"2012-11-17 15:15:00.033","hearbeatInterval":null}
+	 * </pre>
+	 */
+    @RequestMapping(value = "/engine/status", method = RequestMethod.GET)
     @ResponseBody
-    public final NodeStatus getStatus(@PathVariable("engine") String engineName) {
+    public final NodeStatus getStatus() {
         return nodeStatusImpl(getSymmetricEngine());
     }
 
@@ -423,7 +509,7 @@ public class RestService {
      * @param engineName
      * @return {@link NodeStatus}
      */
-    @RequestMapping(value = "/engines/{engine}/status", method = RequestMethod.GET)
+    @RequestMapping(value = "/engine/{engine}/status", method = RequestMethod.GET)
     @ResponseBody
     public final NodeStatus getStatusByEngine(@PathVariable("engine") String engineName) {
         return nodeStatusImpl(getSymmetricEngine(engineName));
@@ -435,7 +521,7 @@ public class RestService {
      * @param engineName
      * @return Set<{@link ChannelStatus}>
      */
-    @RequestMapping(value = "/engines/channelstatus", method = RequestMethod.GET)
+    @RequestMapping(value = "/engine/channelstatus", method = RequestMethod.GET)
     @ResponseBody
     public final Set<ChannelStatus> getChannelStatus(@PathVariable("engine") String engineName) {
         return channelStatusImpl(getSymmetricEngine());
@@ -447,7 +533,7 @@ public class RestService {
      * @param engineName
      * @return Set<{@link ChannelStatus}>
      */
-    @RequestMapping(value = "/engines/{engine}/channelstatus", method = RequestMethod.GET)
+    @RequestMapping(value = "/engine/{engine}/channelstatus", method = RequestMethod.GET)
     @ResponseBody
     public final Set<ChannelStatus> getChannelStatusByEngine(@PathVariable("engine") String engineName) {
         return channelStatusImpl(getSymmetricEngine(engineName));
@@ -542,20 +628,80 @@ public class RestService {
     }
 
     private NodeList childrenImpl(ISymmetricEngine engine) {
-    	//TODO:implement
-    	return null;
+    	NodeList children = new NodeList();
+    	Node xmlChildNode = null;
+    	
+    	INodeService nodeService = engine.getNodeService();
+    	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
+
+    	if (isRootNode(engine, modelNode)) {
+    		NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
+    		Set<NetworkedNode> childNetwork = networkedNode.getChildren();
+    		for (NetworkedNode child : childNetwork) {
+    			xmlChildNode = new Node();
+    			xmlChildNode.setName(child.getNode().getNodeId());
+    			xmlChildNode.setRootNode(false);
+    			children.addNode(xmlChildNode);
+    		}
+    	}
+    	return children;
     }    
+
+    private Node nodeImpl(ISymmetricEngine engine) {      	
+    	    	
+    	INodeService nodeService = engine.getNodeService();
+    	Node xmlNode = new Node(); 
+    	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();    	
+    	xmlNode.setName(modelNode.getNodeId());
+    	xmlNode.setRootNode(isRootNode(engine, modelNode));
+    	return xmlNode;    	
+    }
+    
+    private boolean isRootNode(ISymmetricEngine engine, org.jumpmind.symmetric.model.Node node) {
+    	boolean isRootNode = false;
+    	INodeService nodeService = engine.getNodeService(); 
+    	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();    	
+    	NetworkedNode rootNode = nodeService.getRootNetworkedNode();    	    	
+    	if (rootNode.getNode().equals(modelNode)) {
+    		isRootNode = true;
+    	}    	
+    	return isRootNode;
+    }
     
     private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
-    	//TODO:implement
-    	return new NodeStatus();
+    	
+    	INodeService nodeService = engine.getNodeService();
+    	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+    	NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+    	List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
+    	
+    	NodeStatus status = new NodeStatus();
+    	status.setStarted(engine.isStarted());
+    	status.setRegistered(nodeSecurity.getRegistrationTime() != null);
+    	status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
+    	status.setNodeId(modelNode.getNodeId());
+    	status.setNodeGroupId(modelNode.getNodeGroupId());
+    	status.setExternalId(modelNode.getExternalId());
+    	status.setSyncUrl(modelNode.getSyncUrl());
+    	status.setDatabaseType(modelNode.getDatabaseType());
+    	status.setDatabaseVersion(modelNode.getDatabaseVersion());
+    	status.setSyncEnabled(modelNode.isSyncEnabled());
+    	status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
+    	status.setBatchToSendCount(modelNode.getBatchToSendCount());
+    	status.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+    	status.setDeploymentType(modelNode.getDeploymentType());
+    	
+    	if (nodeHost != null && nodeHost.size() > 0) {
+    		status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime().toString());
+    	}
+    	return status;
     }
     
     private Set<ChannelStatus> channelStatusImpl(ISymmetricEngine engine) {
     	//TODO:implement
     	return new HashSet<ChannelStatus>();
     }
-    
+  
     protected SymmetricEngineHolder getSymmetricEngineHolder() {
         SymmetricEngineHolder holder = (SymmetricEngineHolder) context
                 .getAttribute(WebConstants.ATTR_ENGINE_HOLDER);
