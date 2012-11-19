@@ -240,9 +240,17 @@ public class NodeService extends AbstractService implements INodeService {
         sqlTemplate.update(getSql("insertNodeIdentitySql"), nodeId);
     }
 
-    public void deleteIdentity() {
-        sqlTemplate.update(getSql("deleteNodeIdentitySql"));
-        cachedNodeIdentity = null;
+    public boolean deleteIdentity() {
+        boolean successful = false;
+        try {
+            sqlTemplate.update(getSql("deleteNodeIdentitySql"));
+            successful = true;
+        } catch (SqlException ex) {
+            log.info(ex.getMessage());
+        } finally {
+            cachedNodeIdentity = null;
+        }
+        return successful;
     }
 
     public void insertNodeGroup(String groupId, String description) {

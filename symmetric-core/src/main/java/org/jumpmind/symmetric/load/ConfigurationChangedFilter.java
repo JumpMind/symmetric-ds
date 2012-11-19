@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.load;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.model.Table;
@@ -68,11 +69,30 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_REINITIALIZED = "Reinitialized."
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
     private ISymmetricEngine engine;
 
     public ConfigurationChangedFilter(ISymmetricEngine engine) {
         this.engine = engine;
+    }
+    
+    @Override
+    public boolean beforeWrite(DataContext context, Table table, CsvData data) {
+        IParameterService parameterService = engine.getParameterService();
+        if (parameterService.is(ParameterConstants.REGISTRATION_REINITIALIZE_ENABLED)
+                && table.getName().toLowerCase().startsWith(parameterService.getTablePrefix().toLowerCase()) 
+                && data.getDataEventType().equals(DataEventType.SQL)) {
+            if (!Boolean.TRUE.equals(context.get(CTX_KEY_REINITIALIZED))) {             
+                log.info("Reinitializing the database because the {} parameter was set to true", ParameterConstants.REGISTRATION_REINITIALIZE_ENABLED);
+                engine.uninstall();
+                engine.setupDatabase(true);
+                engine.start();
+            }
+        }
+        return true;
     }
 
     @Override
