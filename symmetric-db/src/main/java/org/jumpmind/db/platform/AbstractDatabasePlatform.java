@@ -348,7 +348,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = new BigDecimal(value.replace(',', '.'));
                             } else if (type == Types.BOOLEAN) {
                                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                            } else if (!(column.getJdbcTypeName().toUpperCase()
+                            } else if (!(column.getJdbcTypeName()!=null && column.getJdbcTypeName().toUpperCase()
                                     .contains(TypeMap.GEOMETRY)) && 
                                     (type == Types.BLOB || type == Types.LONGVARBINARY
                                     || type == Types.BINARY || type == Types.VARBINARY ||
