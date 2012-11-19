@@ -563,6 +563,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         symmetricDialect.dropTablesAndDatabaseObjects();
         
+        // force cache to be cleared
+        nodeService.deleteIdentity();
+        
         parameterService.setDatabaseHasBeenInitialized(false);
         
         log.warn("Finished uninstalling SymmetricDS database objects from the database");
@@ -583,6 +586,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (nodeCommunicationService != null) {
         	nodeCommunicationService.stop();
         }
+        
         started = false;
         starting = false;
     }

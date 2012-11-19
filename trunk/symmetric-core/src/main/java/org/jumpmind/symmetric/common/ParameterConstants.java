@@ -63,6 +63,7 @@ final public class ParameterConstants {
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
+    public final static String REGISTRATION_REINITIALIZE_ENABLED = "registration.reinitialize.enable";
 
     public final static String REGISTRATION_URL = "registration.url";
     public final static String SYNC_URL = "sync.url";

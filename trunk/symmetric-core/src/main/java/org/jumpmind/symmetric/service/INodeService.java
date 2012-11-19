@@ -96,7 +96,7 @@ public interface INodeService {
     
     public Node getCachedIdentity();
 
-    public void deleteIdentity();
+    public boolean deleteIdentity();
 
     public List<Node> findAllNodes();
 
