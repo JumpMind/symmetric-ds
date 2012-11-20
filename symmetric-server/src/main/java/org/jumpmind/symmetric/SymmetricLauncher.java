@@ -37,6 +37,10 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     private static final String OPTION_PORT_SERVER = "port";
 
     private static final String OPTION_HOST_SERVER = "host";
+    
+    private static final String OPTION_HTTP_BASIC_AUTH_USER = "http-basic-auth-user";
+    
+    private static final String OPTION_HTTP_BASIC_AUTH_PASSWORD = "http-basic-auth-password";
 
     private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
 
@@ -93,6 +97,8 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
         addOption(options, "nnio", OPTION_NO_NIO, false);
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
+        addOption(options, "hbau", OPTION_HTTP_BASIC_AUTH_USER, true);
+        addOption(options, "hbap", OPTION_HTTP_BASIC_AUTH_PASSWORD, true);
     }
 
     protected boolean executeWithOptions(CommandLine line) throws Exception {
@@ -104,8 +110,16 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
         boolean noNio = false;
         boolean noDirectBuffer = false;
+        String httpBasicAuthUser = null;
+        String httpBasicAuthPassword = null;
 
         configureCrypto(line);
+
+        if (line.hasOption(OPTION_HTTP_BASIC_AUTH_USER) && 
+                line.hasOption(OPTION_HTTP_BASIC_AUTH_PASSWORD)) {
+            httpBasicAuthUser = line.getOptionValue(OPTION_HTTP_BASIC_AUTH_USER);
+            httpBasicAuthPassword = line.getOptionValue(OPTION_HTTP_BASIC_AUTH_PASSWORD);
+        }
 
         if (line.hasOption(OPTION_HOST_SERVER)) {
             host = line.getOptionValue(OPTION_HOST_SERVER);
@@ -139,6 +153,8 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
                     true, noNio, noDirectBuffer);
             webServer.setHost(host);
+            webServer.setBasicAuthUsername(httpBasicAuthUser);
+            webServer.setBasicAuthPassword(httpBasicAuthPassword);
             if (line.hasOption(OPTION_START_MIXED_SERVER)) {
                 webServer.startMixed(port, securePort);
             } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
