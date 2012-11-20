@@ -246,7 +246,8 @@ public class NodeService extends AbstractService implements INodeService {
             sqlTemplate.update(getSql("deleteNodeIdentitySql"));
             successful = true;
         } catch (SqlException ex) {
-            log.info(ex.getMessage());
+            log.info("Could not delete the node identity");
+            log.debug(ex.getMessage());
         } finally {
             cachedNodeIdentity = null;
         }
