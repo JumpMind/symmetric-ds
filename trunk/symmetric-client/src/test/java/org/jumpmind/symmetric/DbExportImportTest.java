@@ -47,8 +47,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.setNoCreateInfo(false);
             export.setNoData(false);
 
-            String output = export.exportTables(new String[] { "TEST" }).toLowerCase();
-            System.out.println(output);
+            export.exportTables(new String[] { "TEST" }).toLowerCase();
             // TODO validate
         }
     }
@@ -71,8 +70,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         export.setCompatible(Compatible.H2);
         String output = export.exportTables(tables).toLowerCase();
 
-        Assert.assertEquals(output, 32, StringUtils.countMatches(output, "create table \"sym_"));
-        Assert.assertEquals(30,
+        Assert.assertEquals(output, 33, StringUtils.countMatches(output, "create table \"sym_"));
+        Assert.assertEquals(31,
                 StringUtils.countMatches(output, "varchar(" + Integer.MAX_VALUE + ")"));
     }
 
