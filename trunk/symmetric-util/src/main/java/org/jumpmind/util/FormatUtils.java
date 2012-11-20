@@ -278,6 +278,14 @@ public final class FormatUtils {
                 return date;
             }
         }
+        
+        try {
+            Date date = new Date(Long.parseLong(str));
+            return date;
+        } catch (NumberFormatException e) {
+            
+        }
+        
         throw new ParseException("Unable to parse the date: " + str);
     }
 
