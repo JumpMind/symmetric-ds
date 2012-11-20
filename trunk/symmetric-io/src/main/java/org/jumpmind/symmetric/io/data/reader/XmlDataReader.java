@@ -101,6 +101,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
 
                         if ("row".equalsIgnoreCase(name)) {
                             data = new CsvData();         
+                            table.removeAllColumns();
                             data.setDataEventType(DataEventType.INSERT);
                         } else if ("field".equalsIgnoreCase(name)) {
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
