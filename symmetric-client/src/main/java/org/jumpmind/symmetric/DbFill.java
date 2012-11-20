@@ -166,7 +166,6 @@ class DbFill {
                 }
                 try {
                     sqlTemplate.update(statement.getSql(), statementValues);
-                    System.out.println("Succesfully inserted values in " + table.getName());
                 } catch (SqlException ex) {
                     log.error("Failed to process {} with values of {}", statement.getSql(),
                             ArrayUtils.toString(statementValues));
