@@ -319,10 +319,6 @@ class DbFill {
     private Integer randomInt() {
         return new Integer(new java.util.Random().nextInt(1000000));
     }
-
-    private Integer randomBit() {
-        return new Integer(new java.util.Random().nextInt(1));
-    }
     
     private String randomUUID() {
         return UUID.randomUUID().toString();
