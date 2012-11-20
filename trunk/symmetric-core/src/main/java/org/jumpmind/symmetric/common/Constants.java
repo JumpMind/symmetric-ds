@@ -26,6 +26,8 @@ import org.jumpmind.symmetric.model.DataEvent;
  */
 final public class Constants {
 
+    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
+
     private Constants() {
     }
     

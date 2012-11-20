@@ -78,7 +78,6 @@ import org.jumpmind.symmetric.load.BshDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -358,7 +357,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
             for (IncomingBatch incomingBatch : batchesProcessed) {
-                if (incomingBatch.getBatchId() != BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION
+                if (incomingBatch.getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("Failed to update batch {}.  Zero rows returned.",
                             incomingBatch.getBatchId());
