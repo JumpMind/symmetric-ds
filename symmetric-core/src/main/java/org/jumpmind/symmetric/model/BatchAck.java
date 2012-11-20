@@ -30,8 +30,6 @@ public class BatchAck  implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
-    
     private long batchId;
 
     private String nodeId;
