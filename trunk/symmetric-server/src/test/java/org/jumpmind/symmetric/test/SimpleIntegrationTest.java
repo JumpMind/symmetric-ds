@@ -825,8 +825,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     new Object[] { 2, "00001", "" });
             clientPush();
 
-            int status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
+            int status =-1;
+            
+            if (getClient().getSymmetricDialect().getPlatform().getDatabaseInfo().isBlankCharColumnSpacePadded()) {
+                status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
                     new Object[] { "00001", "   " });
+            } else {
+                status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
+                        new Object[] { "00001", "" });
+            }
 
             Assert.assertEquals("Wrong store status", 2, status);
         } finally {
