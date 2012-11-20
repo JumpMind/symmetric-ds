@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -82,7 +83,9 @@ public class NodeHost implements Serializable {
         this.javaVendor = System.getProperty("java.vendor");
         this.symmetricVersion = Version.version();
         this.timezoneOffset = AppUtils.getTimezoneOffset();
-        this.heartbeatTime = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MILLISECOND, 0);
+        this.heartbeatTime = cal.getTime();
     }
 
     public String getNodeId() {
