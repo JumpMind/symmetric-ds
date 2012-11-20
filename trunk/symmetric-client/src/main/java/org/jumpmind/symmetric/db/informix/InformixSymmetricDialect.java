@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
-    static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema)$(functionName)";
+    static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema).$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
 
     public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
