@@ -6,7 +6,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.junit.Test;
 
-public class DatabaseIOTest {
+public class DatabaseXmlUtilTest {
     
     @Test
     public void testReadXml() {

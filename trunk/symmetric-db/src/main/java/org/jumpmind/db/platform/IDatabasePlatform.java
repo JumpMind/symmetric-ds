@@ -127,6 +127,10 @@ public interface IDatabasePlatform {
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
     
     public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
+    
+    public void alterCaseToMatchDatabaseDefaultCase(Table table);
+    
+    public void alterCaseToMatchDatabaseDefaultCase(Database database);
 
     public boolean isLob(int type);
 

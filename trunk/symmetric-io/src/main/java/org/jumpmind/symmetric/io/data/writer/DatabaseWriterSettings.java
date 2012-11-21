@@ -37,6 +37,14 @@ public class DatabaseWriterSettings {
     protected boolean usePrimaryKeysFromSource = true;
 
     protected Conflict defaultConflictSetting;
+    
+    protected boolean createTableFailOnError = true;
+    
+    protected boolean alterTable = true;
+    
+    protected boolean createTableDropFirst = false;
+    
+    protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
 
@@ -47,6 +55,30 @@ public class DatabaseWriterSettings {
     protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
     
     protected List<ResolvedData> resolvedData;
+    
+    public boolean isAlterTable() {
+        return alterTable;
+    }
+    
+    public void setAlterTable(boolean alterTable) {
+        this.alterTable = alterTable;
+    }
+    
+    public boolean isCreateTableDropFirst() {
+        return createTableDropFirst;
+    }
+    
+    public void setCreateTableDropFirst(boolean createTableDropFirst) {
+        this.createTableDropFirst = createTableDropFirst;
+    }
+    
+    public boolean isCreateTableFailOnError() {
+        return createTableFailOnError;
+    }
+    
+    public void setCreateTableFailOnError(boolean createTableFailOnError) {
+        this.createTableFailOnError = createTableFailOnError;
+    }
 
     public long getMaxRowsBeforeCommit() {
         return maxRowsBeforeCommit;
@@ -78,6 +110,15 @@ public class DatabaseWriterSettings {
 
     public void setDefaultConflictSetting(Conflict defaultConflictSetting) {
         this.defaultConflictSetting = defaultConflictSetting;
+    }
+    
+    public boolean isCreateTableAlterCaseToMatchDatabaseDefault() {
+        return createTableAlterCaseToMatchDatabaseDefault;
+    }
+    
+    public void setCreateTableAlterCaseToMatchDatabaseDefault(
+            boolean createTableAlterCaseToMatchDatabaseDefault) {
+        this.createTableAlterCaseToMatchDatabaseDefault = createTableAlterCaseToMatchDatabaseDefault;
     }
 
     public Map<String, Conflict> getConflictSettingsByChannel() {

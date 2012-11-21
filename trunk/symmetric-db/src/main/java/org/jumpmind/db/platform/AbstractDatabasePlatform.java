@@ -633,44 +633,52 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } finally {
             IOUtils.closeQuietly(is);
         }
+    }        
+    
+    public void alterCaseToMatchDatabaseDefaultCase(Database database) {
+        Table[] tables = database.getTables();
+        for (Table table : tables) {
+            alterCaseToMatchDatabaseDefaultCase(table);
+        }
+    }
+    
+    public void alterCaseToMatchDatabaseDefaultCase(Table table) {
+        boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+        if (!FormatUtils.isMixedCase(table.getName())) {
+            table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                    .toLowerCase());
+        }
+
+        Column[] columns = table.getColumns();
+        for (Column column : columns) {
+            if (!FormatUtils.isMixedCase(column.getName())) {
+                column.setName(storesUpperCase ? column.getName().toUpperCase() : column.getName()
+                        .toLowerCase());
+            }
+        }
+
+        IIndex[] indexes = table.getIndices();
+        for (IIndex index : indexes) {
+            if (!FormatUtils.isMixedCase(index.getName())) {
+                index.setName(storesUpperCase ? index.getName().toUpperCase() : index.getName()
+                        .toLowerCase());
+            }
+
+            IndexColumn[] indexColumns = index.getColumns();
+            for (IndexColumn indexColumn : indexColumns) {
+                if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                    indexColumn.setName(storesUpperCase ? indexColumn.getName().toUpperCase()
+                            : indexColumn.getName().toLowerCase());
+                }
+            }
+        }
     }
 
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
         InputStreamReader reader = new InputStreamReader(is);
         Database database = DatabaseXmlUtil.read(reader);
         if (alterCaseToMatchDatabaseDefaultCase) {
-            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-            Table[] tables = database.getTables();
-            for (Table table : tables) {
-                if (!FormatUtils.isMixedCase(table.getName())) {
-                    table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
-                            .toLowerCase());
-                }
-
-                Column[] columns = table.getColumns();
-                for (Column column : columns) {
-                    if (!FormatUtils.isMixedCase(column.getName())) {
-                        column.setName(storesUpperCase ? column.getName().toUpperCase() : column
-                                .getName().toLowerCase());
-                    }
-                }
-
-                IIndex[] indexes = table.getIndices();
-                for (IIndex index : indexes) {
-                    if (!FormatUtils.isMixedCase(index.getName())) {
-                        index.setName(storesUpperCase ? index.getName().toUpperCase() : index
-                                .getName().toLowerCase());
-                    }
-
-                    IndexColumn[] indexColumns = index.getColumns();
-                    for (IndexColumn indexColumn : indexColumns) {
-                        if (!FormatUtils.isMixedCase(indexColumn.getName())) {
-                            indexColumn.setName(storesUpperCase ? indexColumn.getName()
-                                    .toUpperCase() : indexColumn.getName().toLowerCase());
-                        }
-                    }
-                }
-            }
+            alterCaseToMatchDatabaseDefaultCase(database);
         }
         return database;
 
