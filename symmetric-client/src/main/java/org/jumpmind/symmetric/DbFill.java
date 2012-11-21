@@ -27,6 +27,8 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,14 +204,16 @@ class DbFill {
             }
 
             int type = column.getMappedTypeCode();
-            if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME || type == -101) {
+            if (column.isTimestampWithTimezone()) {
+                objectValue = String.format("%s %s",
+                        FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
+                        AppUtils.getTimezoneOffset());
+            } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
             } else if (type == Types.INTEGER || type == Types.BIGINT) {
                 objectValue = randomInt();
-//            } else if (type == Types.BIT) {
-//                objectValue = randomBit();
             } else if (type == Types.SMALLINT) {
                 objectValue = randomSmallInt();
             } else if (type == Types.FLOAT) {
