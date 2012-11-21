@@ -21,9 +21,6 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -49,7 +46,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
