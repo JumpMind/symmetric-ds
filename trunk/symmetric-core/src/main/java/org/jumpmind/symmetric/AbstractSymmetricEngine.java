@@ -931,5 +931,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public <T> T getDataSource() {
         return (T) getSymmetricDialect().getPlatform().getDataSource();
     }
+    
+    public IDatabasePlatform getDatabasePlatform() {
+        return getSymmetricDialect().getPlatform();
+    }
 
 }

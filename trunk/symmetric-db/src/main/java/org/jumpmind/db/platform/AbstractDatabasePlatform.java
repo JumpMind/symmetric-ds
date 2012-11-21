@@ -430,13 +430,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
 
-    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row,
+    public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row,
             boolean useVariableDates) {
+        final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = getDatabaseInfo().getValueQuoteToken();
         String regex = "\\?";
-        for (int i = 0; i < metaData.length; i++) {
-            Column column = metaData[i];
+        
+        List<Column> columnsToProcess = new ArrayList<Column>();
+        columnsToProcess.addAll(table.getColumnsAsList());
+        columnsToProcess.addAll(table.getPrimaryKeyColumnsAsList());
+        
+        for (int i = 0; i < columnsToProcess.size(); i++) {
+            Column column = columnsToProcess.get(i);
             String name = column.getName();
             int type = column.getJdbcTypeCode();
 
@@ -447,13 +453,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         value = value.replace("\\", "\\\\");
                         value = value.replace("$", "\\$");
                         value = value.replace("'", "''");
+                        value = value.replace("?", QUESTION_MARK);
                         newSql = newSql.replaceFirst(regex, quote + value + quote);
                     } catch (RuntimeException ex) {
                         log.error("Failed to replace ? in {" + sql + "} with " + name + "="
                                 + row.getString(name));
                         throw ex;
                     }
-                } else if (column.getMappedTypeCode() == -101) {
+                } else if (column.isTimestampWithTimezone()) {
                     newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
                 } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                     Date date = row.getDateTime(name);
@@ -485,6 +492,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 newSql = newSql.replaceFirst(regex, "null");
             }
         }
+        
+        newSql = newSql.replace(QUESTION_MARK, "?");
         return newSql + getDatabaseInfo().getSqlCommandDelimiter();
     }
 
