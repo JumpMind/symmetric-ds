@@ -67,10 +67,11 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public String[] getValueArray(String[] columnValues, String[] keyValues) {
+    public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         if (dmlType == DmlType.INSERT) {
-            return (String[]) ArrayUtils.addAll(columnValues, keyValues);
+            return (T[]) ArrayUtils.addAll(columnValues, keyValues);
         } else {
             return super.getValueArray(columnValues, keyValues);
         }

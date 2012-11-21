@@ -409,6 +409,9 @@ public class DbExport {
                 if (format == Format.CSV && csvWriter == null) {
                     csvWriter = new CsvWriter(writer, ',');
                     csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+                    csvWriter.setTextQualifier('\"');
+                    csvWriter.setUseTextQualifier(true);
+                    csvWriter.setForceQualifier(true);                    
                 } else if (format == Format.SQL) {
                     Table targetTable = table.copy();
                     targetTable.setSchema(schema);
