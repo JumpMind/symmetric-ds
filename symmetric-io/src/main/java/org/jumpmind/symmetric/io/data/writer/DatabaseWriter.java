@@ -795,10 +795,19 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
-            log.info("About to create table using the following definition: ", xml);
+            log.info("About to create table using the following definition: {}", xml);
             StringReader reader = new StringReader(xml);
-            Database db = (Database) DatabaseXmlUtil.read(reader, false);
-            platform.alterTables(false, db.getTables());
+            Database db = DatabaseXmlUtil.read(reader, false);
+            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
+                platform.alterCaseToMatchDatabaseDefaultCase(db);
+            }
+
+            if (writerSettings.isAlterTable()) {
+                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+            } else {
+                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+            }
+            
             platform.resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;

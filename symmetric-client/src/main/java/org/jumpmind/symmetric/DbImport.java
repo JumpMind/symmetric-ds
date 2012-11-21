@@ -29,7 +29,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
@@ -158,10 +157,14 @@ public class DbImport {
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings() {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
-        settings.setMaxRowsBeforeCommit(commitRate);
+        settings.setMaxRowsBeforeCommit(commitRate);        
         settings.setDefaultConflictSetting(buildConflictSettings());
         settings.setUsePrimaryKeysFromSource(false);
+        settings.setAlterTable(alterTables);
+        settings.setCreateTableDropFirst(dropIfExists);
+        settings.setCreateTableFailOnError(!forceImport);
         settings.setDatabaseWriterFilters(databaseWriterFilters);
+        settings.setCreateTableAlterCaseToMatchDatabaseDefault(alterCaseToMatchDatabaseDefaultCase);
         if (forceImport) {
             settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
         }
@@ -181,24 +184,7 @@ public class DbImport {
         dataProcessor.process();
     }
 
-    protected void importTablesFromXml(InputStream in) {
-        
-        // TODO should probably handle database creation in xml/data reader writer.
-        in.mark(Integer.MAX_VALUE);
-        
-        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
-        if (alterTables) {
-            platform.alterDatabase(database, forceImport);
-        } else {
-            platform.createDatabase(database, dropIfExists, forceImport);
-        }
-
-        try {
-            in.reset();
-        } catch (IOException e) {
-            throw new IoException(e);
-        }
-        
+    protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer);
