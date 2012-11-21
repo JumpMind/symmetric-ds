@@ -120,8 +120,6 @@ public interface IDataService {
 
     public Map<String, String> getRowDataAsMap(Data data);
 
-    public void setRowDataFromMap(Data data, Map<String, String> map);
-
     public void addReloadListener(IReloadListener listener);
     
     public void addHeartbeatListener(IHeartbeatListener listener);

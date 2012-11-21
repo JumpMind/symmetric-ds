@@ -310,11 +310,12 @@ public class DmlStatement {
     public Column[] getKeys() {
         return keys;
     }
-
-    public String[] getValueArray(String[] columnValues, String[] keyValues) {
+   
+    @SuppressWarnings("unchecked")
+    public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         switch (dmlType) {
             case UPDATE:
-                return (String[]) ArrayUtils.addAll(columnValues, keyValues);
+                return (T[]) ArrayUtils.addAll(columnValues, keyValues);
             case INSERT:
                 return columnValues;
             case DELETE:
@@ -323,7 +324,7 @@ public class DmlStatement {
                 break;
         }
         return null;
-    }
+    }    
 
     public Object[] buildArgsFrom(Map<String, Object> params) {
         Object[] args = null;

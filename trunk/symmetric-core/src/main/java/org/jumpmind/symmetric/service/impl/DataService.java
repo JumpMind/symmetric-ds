@@ -920,21 +920,6 @@ public class DataService extends AbstractService implements IDataService {
         return map;
     }
 
-    public void setRowDataFromMap(Data data, Map<String, String> map) {
-        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        for (String columnName : columnNames) {
-            try {
-                writer.write(map.get(columnName.toLowerCase()), true);
-            } catch (IOException e) {
-            }
-        }
-        writer.close();
-        data.setRowData(out.toString());
-    }
-
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat
      * according to
