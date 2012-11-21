@@ -147,16 +147,12 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         if (select && column.isTimestampWithTimezone()) {
             sql.append(
             "   case                                                                                                                                 " +
-            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") < -9 then                                " +
-            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
-            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),3,'0')||':'||         " +
-            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
-            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") >= 0 then                                " +
-            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
-            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),2,'0')||':'||         " +
+            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") < 0 then                                 " +
+            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                            " +
+            "     lpad(cast(abs(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(")) as varchar),2,'0')||':'||    " +
             "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
             "   else                                                                                                                                 " +
-            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
+            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                            " +
             "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),2,'0')||':'||         " +
             "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
             "   end as ").append(columnName);

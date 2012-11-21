@@ -212,8 +212,7 @@ public class DbExport {
 
         if (!noData) {
             if (sql == null) {
-                sql = DmlStatementFactory.createDmlStatement(compatible
-                        .toString().toLowerCase(), DmlType.SELECT_ALL, table).getSql();
+                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
             }
 
             platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
@@ -411,7 +410,11 @@ public class DbExport {
                     csvWriter = new CsvWriter(writer, ',');
                     csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
                 } else if (format == Format.SQL) {
-                    insertSql = platform.createDmlStatement(DmlType.INSERT, table).getSql();
+                    Table targetTable = table.copy();
+                    targetTable.setSchema(schema);
+                    targetTable.setCatalog(catalog);
+                    insertSql = DmlStatementFactory.createDmlStatement(compatible
+                            .toString().toLowerCase(), DmlType.INSERT, targetTable).getSql();
                 }
 
                 if (!noCreateInfo) {
@@ -469,7 +472,7 @@ public class DbExport {
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(values, true);
                 } else if (format == Format.SQL) {
-                    write(platform.replaceSql(insertSql, BinaryEncoding.HEX, columns, row,
+                    write(platform.replaceSql(insertSql, BinaryEncoding.HEX, table, row,
                             useVariableDates), "\n");
 
                 } else if (format == Format.XML) {

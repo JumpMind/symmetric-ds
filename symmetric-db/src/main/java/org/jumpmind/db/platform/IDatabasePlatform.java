@@ -122,7 +122,7 @@ public interface IDatabasePlatform {
     
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 
-    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
+    public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row, boolean useVariableDates);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
     
