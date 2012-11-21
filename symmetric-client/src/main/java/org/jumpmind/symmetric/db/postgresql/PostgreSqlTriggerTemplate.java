@@ -20,16 +20,12 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         dateTimeWithTimeZoneColumnTemplate = 
         		"case when $(tableAlias).\"$(columnName)\" is null then '' else                                                      " +
         		"   case                                                                                                             " +
-        		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") < -9 then                                       " +
-        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
-        		"     lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),3,'0')||':'||                " +
+        		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") < 0 then                                        " +
+        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                           " +
+        		"     lpad(cast(abs(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||           " +
         		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
-        		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") >= 0 then                                       " +
+                "   else                                                                                                             " +
         		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
-        		"     lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),2,'0')||':'||                " +
-        		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
-        		"   else                                                                                                             " +
-        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||                                " +
         		"     lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),2,'0')||':'||                " +
         		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
         		"   end                                                                                                              " +
