@@ -827,7 +827,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
             int status =-1;
             
-            if (getClient().getSymmetricDialect().getPlatform().getDatabaseInfo().isBlankCharColumnSpacePadded()) {
+            if (getServer().getSymmetricDialect().getPlatform().getDatabaseInfo().isBlankCharColumnSpacePadded()) {
                 status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
                     new Object[] { "00001", "   " });
             } else {
