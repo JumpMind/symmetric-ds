@@ -58,6 +58,10 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
 
+    private static final String OPTION_JMX_DISABLE = "jmx-disable";
+    
+    private static final String OPTION_JMX_PORT = "jmx-port";
+    
     public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
     }
@@ -99,13 +103,17 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
         addOption(options, "hbau", OPTION_HTTP_BASIC_AUTH_USER, true);
         addOption(options, "hbap", OPTION_HTTP_BASIC_AUTH_PASSWORD, true);
+        addOption(options, "JD", OPTION_JMX_DISABLE, false);
+        addOption(options, "J", OPTION_JMX_PORT, true);
     }
 
     protected boolean executeWithOptions(CommandLine line) throws Exception {
 
         String host = null;
-        int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
-        int securePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
+        int httpPort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
+        int httpSecurePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
+        int jmxPort = 0;
+        
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
         boolean noNio = false;
@@ -126,11 +134,11 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         }
 
         if (line.hasOption(OPTION_PORT_SERVER)) {
-            port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+            httpPort = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
         }
 
         if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
-            securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
+            httpSecurePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
         }
 
         if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
@@ -145,6 +153,18 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             noDirectBuffer = true;
         }
 
+        if (!line.hasOption(OPTION_JMX_DISABLE)) {
+            if (line.hasOption(OPTION_JMX_PORT)) {
+                jmxPort = new Integer(line.getOptionValue(OPTION_JMX_PORT));
+            } else {
+                if (line.hasOption(OPTION_START_SECURE_SERVER)) {
+                    jmxPort = httpSecurePort + 1;
+                } else {
+                    jmxPort = httpPort + 1;
+                }
+            }
+        }
+
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
             return true;
@@ -156,11 +176,11 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             webServer.setBasicAuthUsername(httpBasicAuthUser);
             webServer.setBasicAuthPassword(httpBasicAuthPassword);
             if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                webServer.startMixed(port, securePort);
+                webServer.startMixed(httpPort, httpSecurePort, jmxPort);
             } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                webServer.startSecure(securePort);
+                webServer.startSecure(httpSecurePort, jmxPort);
             } else {
-                webServer.start(port);
+                webServer.start(httpPort, jmxPort);
             }
             return true;
         }
