@@ -282,8 +282,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> definedTriggers = getTriggers();
         for (Trigger trigger : definedTriggers) {
             if (tables.remove(trigger.getSourceTableName())) {
-                log.info("Not generating virtual triggers for {} because there is a user defined trigger already defined", 
-                        trigger.getSourceTableName());
+                logOnce(String.format("Not generating virtual triggers for %s because there is a user defined trigger already defined", 
+                        trigger.getSourceTableName()));
             }
         }
         
