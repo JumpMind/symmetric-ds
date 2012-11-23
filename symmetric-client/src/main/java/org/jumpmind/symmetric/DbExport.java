@@ -153,8 +153,8 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
-        Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
-                tableName);
+        Table table = platform
+                .readTableFromDatabase(getCatalogToUse(), getSchemaToUse(), tableName);
         exportTables(output, new Table[] { table }, sql);
     }
 
@@ -163,9 +163,10 @@ public class DbExport {
     }
 
     protected void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
-        
+
         for (int i = 0; i < tables.length; i++) {
-            // if the table definition did not come from the database, then read the table from the database
+            // if the table definition did not come from the database, then read
+            // the table from the database
             if (!tables[i].containsJdbcTypes()) {
                 tables[i] = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                         tables[i].getName());
@@ -385,10 +386,8 @@ public class DbExport {
                         directory.mkdirs();
                     }
 
-                    File file = new File(dir, String.format(
-                            "%s.%s",
-                            table.getName(),
-                            format.toString().replace('_', '.').toLowerCase()));
+                    File file = new File(dir, String.format("%s.%s", table.getName(), format
+                            .toString().replace('_', '.').toLowerCase()));
                     FileUtils.deleteQuietly(file);
                     try {
                         writer = new FileWriter(file);
@@ -401,7 +400,7 @@ public class DbExport {
                     if (format == Format.SYM_XML) {
                         write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
                     } else if (format == Format.XML) {
-                        write("<database name=\"dbexport\">\n");
+                        write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\">\n");
                     }
                     startedWriting = true;
                 }
@@ -411,13 +410,14 @@ public class DbExport {
                     csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
                     csvWriter.setTextQualifier('\"');
                     csvWriter.setUseTextQualifier(true);
-                    csvWriter.setForceQualifier(true);                    
+                    csvWriter.setForceQualifier(true);
                 } else if (format == Format.SQL) {
                     Table targetTable = table.copy();
                     targetTable.setSchema(schema);
                     targetTable.setCatalog(catalog);
-                    insertSql = DmlStatementFactory.createDmlStatement(compatible
-                            .toString().toLowerCase(), DmlType.INSERT, targetTable).getSql();
+                    insertSql = DmlStatementFactory.createDmlStatement(
+                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable)
+                            .getSql();
                 }
 
                 if (!noCreateInfo) {
@@ -436,7 +436,7 @@ public class DbExport {
                 writeComment("Schema: " + StringUtils.defaultString(getSchemaToUse()));
                 writeComment("Table: " + table.getName());
                 writeComment("Started on " + df.format(new Date()));
-                
+
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(table.getColumnNames());
                 } else if (format == Format.XML) {
@@ -481,8 +481,13 @@ public class DbExport {
                 } else if (format == Format.XML) {
                     write("\t<row>\n");
                     for (int i = 0; i < columns.length; i++) {
-                        write("\t\t<field name=\"", columns[i].getName(), "\">",
-                                StringEscapeUtils.escapeXml(values[i]), "</field>\n");
+                        if (values[i] != null) {
+                            write("\t\t<field name=\"", columns[i].getName(), "\">",
+                                    StringEscapeUtils.escapeXml(values[i]), "</field>\n");
+                        } else {
+                            write("\t\t<field name=\"", columns[i].getName(),
+                                    "\" xsi:nil=\"true\" />\n");
+                        }
                     }
                     write("\t</row>\n");
 
