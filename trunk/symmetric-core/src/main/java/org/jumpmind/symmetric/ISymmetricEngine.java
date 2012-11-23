@@ -280,4 +280,6 @@ public interface ISymmetricEngine {
     
     public IDatabasePlatform getDatabasePlatform();
     
+    public void snapshot();
+    
 }
