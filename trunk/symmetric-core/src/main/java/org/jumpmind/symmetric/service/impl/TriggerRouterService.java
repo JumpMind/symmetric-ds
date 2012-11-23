@@ -278,6 +278,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> triggers = new ArrayList<Trigger>();
         List<String> tables = new ArrayList<String>(TableConstants.getConfigTables(symmetricDialect
                 .getTablePrefix()));
+        
+        List<Trigger> definedTriggers = getTriggers();
+        for (Trigger trigger : definedTriggers) {
+            if (tables.remove(trigger.getSourceTableName())) {
+                log.info("Not generating virtual triggers for {} because there is a trigger already defined for it", 
+                        trigger.getSourceTableName());
+            }
+        }
+        
+        
         if (extraConfigTables != null) {
             for (String extraTable : extraConfigTables) {
                 tables.add(extraTable);
