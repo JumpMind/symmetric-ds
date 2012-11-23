@@ -439,7 +439,7 @@ public class DbExport {
 
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(table.getColumnNames());
-                } else if (format == Format.XML) {
+                } else if (!noData && format == Format.XML) {
                     write("<table_data name=\"", table.getName(), "\">\n");
                 }
             } catch (IOException e) {
@@ -522,7 +522,7 @@ public class DbExport {
         }
 
         protected void finishTable(Table table) {
-            if (format == Format.XML) {
+            if (!noData && format == Format.XML) {
                 write("</table_data>\n");
             }
 
