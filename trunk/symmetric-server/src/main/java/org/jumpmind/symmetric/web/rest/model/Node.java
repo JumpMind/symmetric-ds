@@ -27,8 +27,17 @@ public class Node {
 
     private String name;
     private boolean isRootNode;
+    private String syncUrl;
 
-    public boolean isRootNode() {
+    public String getSyncUrl() {
+		return syncUrl;
+	}
+
+	public void setSyncUrl(String syncUrl) {
+		this.syncUrl = syncUrl;
+	}
+
+	public boolean isRootNode() {
 		return isRootNode;
 	}
 

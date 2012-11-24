@@ -600,7 +600,12 @@ public class RestService {
     }
     
     private void reinitializeImpl(ISymmetricEngine engine) {
-    	//TODO: implement
+    	INodeService nodeService = engine.getNodeService();
+    	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
+    	    	
+    	if (!this.isRootNode(engine, modelNode)) {
+    		engine.uninstall();
+    	}
     }
 
     private void refreshCacheImpl(ISymmetricEngine engine) {
@@ -641,6 +646,7 @@ public class RestService {
     			xmlChildNode = new Node();
     			xmlChildNode.setName(child.getNode().getNodeId());
     			xmlChildNode.setRootNode(false);
+    			xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
     			children.addNode(xmlChildNode);
     		}
     	}
@@ -654,6 +660,7 @@ public class RestService {
     	org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();    	
     	xmlNode.setName(modelNode.getNodeId());
     	xmlNode.setRootNode(isRootNode(engine, modelNode));
+    	xmlNode.setSyncUrl(modelNode.getSyncUrl());
     	return xmlNode;    	
     }
     
