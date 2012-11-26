@@ -102,7 +102,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     }
                 }
             } else {
-                log.info("Did not run the pull process because the cluster service has it locked");
+                log.debug("Did not run the pull process because the cluster service has it locked");
             }
         }
 
