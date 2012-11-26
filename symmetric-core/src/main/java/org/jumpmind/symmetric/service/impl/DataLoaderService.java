@@ -764,9 +764,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void batchInError(DataContext context, Exception ex) {
             try {
-                ex.printStackTrace();
                 Batch batch = context.getBatch();
-                if (context.getWriter() != null) {
+                if (context.getWriter() != null && 
+                        context.getReader().getStatistics().get(batch) != null &&
+                        context.getWriter().getStatistics().get(batch) != null) {
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
                     statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
