@@ -115,7 +115,7 @@ public class SymmetricServlet extends HttpServlet {
                 engine = holder.getEngines().values().iterator().next();
             }
         }
-        return engine.isStarted() ? engine : null;
+        return engine != null && engine.isStarted() ? engine : null;
     }
 
     protected static String getEngineNameFromUrl(HttpServletRequest req) {
