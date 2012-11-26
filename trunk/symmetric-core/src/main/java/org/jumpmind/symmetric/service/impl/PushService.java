@@ -120,7 +120,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     }
                 }
             } else {
-                log.info("Did not run the push process because the cluster service has it locked");
+                log.debug("Did not run the push process because the cluster service has it locked");
             }
         }
         return statuses;
