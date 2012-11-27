@@ -90,6 +90,10 @@ public class StagedResource implements IStagedResource {
         createTime = System.currentTimeMillis();
         this.state = State.CREATE;
     }
+    
+    public boolean isFileResource() {     
+        return file != null && file.exists();
+    }
 
     protected File buildFile(State state) {
         return new File(directory, String.format("%s.%s", path, state.getExtensionName()));
