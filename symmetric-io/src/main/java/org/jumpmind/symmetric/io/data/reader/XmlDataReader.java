@@ -23,21 +23,17 @@ package org.jumpmind.symmetric.io.data.reader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
@@ -51,12 +47,14 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
     protected Reader reader;
     protected DataContext context;
     protected Batch batch;
+    protected Table lastTable;
     protected Table table;
+    protected CsvData data;
     protected String sourceNodeId;
     protected int lineNumber = 0;
     protected XmlPullParser parser;
     protected Statistics statistics = new Statistics();
-    protected List<Object> next = new ArrayList<Object>();
+    protected Object next = null;
 
     public XmlDataReader(InputStream is) {
         this(toReader(is));
@@ -72,19 +70,17 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
             this.context = context;
             this.parser = XmlPullParserFactory.newInstance().newPullParser();
             this.parser.setInput(reader);
-            readNext();
+            this.next = readNext();
         } catch (XmlPullParserException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void readNext() {
+    protected Object readNext() {
         try {
             boolean nullValue = false;
             Map<String, String> rowData = new LinkedHashMap<String, String>();
             String columnName = null;
-            CsvData data = null;
-            Table table = null;
             int eventType = parser.next();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 switch (eventType) {
@@ -104,10 +100,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                         String name = parser.getName();
 
                         if ("row".equalsIgnoreCase(name)) {
-                            data = new CsvData();
-                            if (table != null) {
-                                table.removeAllColumns();
-                            }
+                            data = new CsvData();         
                             data.setDataEventType(DataEventType.INSERT);
                         } else if ("field".equalsIgnoreCase(name)) {
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -120,28 +113,17 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                 }
                             }
                         } else if ("table_data".equalsIgnoreCase(name)) {
-                            Batch batch = new Batch();
+                            batch = new Batch();
                             batch.setBinaryEncoding(BinaryEncoding.BASE64);
-                            next.add(batch);
                             table = new Table();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
                                 if ("name".equalsIgnoreCase(attributeName)) {
                                     table.setName(attributeValue);
-                                }
+                                } 
                             }
-                            next.add(table);
-                        } else if ("table".equalsIgnoreCase(name)) {
-                            Batch batch = new Batch();
-                            batch.setBinaryEncoding(BinaryEncoding.BASE64);
-                            next.add(batch);
-                            table = DatabaseXmlUtil.nextTable(parser);
-                            next.add(table);
-                            String xml = DatabaseXmlUtil.toXml(table);
-                            data = new CsvData(DataEventType.CREATE);
-                            data.putCsvData(CsvData.ROW_DATA, CsvUtils.escapeCsvData(xml));
-                            next.add(data);
+                            return batch;
                         }
                         break;
 
@@ -156,14 +138,14 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             String[] columnValues = rowData.values().toArray(
                                     new String[rowData.values().size()]);
                             data.putParsedData(CsvData.ROW_DATA, columnValues);
-                            if (this.table == null || !this.table.equals(table)) {
-                                next.add(table);
+                            if (lastTable == null || !lastTable.equals(table)) {
+                                lastTable = table;
+                                return table;
+                            } else {
+                                return data;
                             }
-                            next.add(data);
                         } else if ("table_data".equalsIgnoreCase(name)) {
-                            if (batch != null) {
-                                batch.setComplete(true);
-                            }
+                            batch.setComplete(true);
                         } else if ("field".equalsIgnoreCase(name)) {
                             columnName = null;
                             nullValue = false;
@@ -174,6 +156,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                 eventType = parser.next();
             }
 
+            return null;
         } catch (IOException ex) {
             throw new IoException(ex);
         } catch (XmlPullParserException ex) {
@@ -182,45 +165,56 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
     }
 
     public Batch nextBatch() {
-        do {
-            readNext();
-            if (next.size() > 0) {
-                Object o = next.remove(0);
-                if (o instanceof Batch) {
-                    batch = (Batch) o;
-                    return batch;
-                }
+        if (next instanceof Batch) {
+            this.batch = (Batch) next;
+            next = null;
+            return batch;
+        } else {
+            next = readNext();
+            if (next instanceof Batch) {
+                this.batch = (Batch) next;
+                next = null;
+                return batch;
             }
-        } while (next.size() > 0);
+        }
         return null;
     }
 
     public Table nextTable() {
-        this.table = null;
-        do {
-            readNext();
-            if (next.size() > 0) {
-                Object o = next.remove(0);
-                if (o instanceof Table) {
-                    this.table = (Table) o;
-                    break;
-                }
+        if (next instanceof Table) {
+            this.table = (Table) next;
+            next = data;
+        } else if (next instanceof Batch) {
+            return null;
+        } else {
+            next = readNext();
+            if (next instanceof Table) {
+                this.table = (Table) next;
+                next = data;
+            } else {
+                this.table = null;
             }
-        } while (next.size() > 0);
-
-        if (this.table == null && batch != null) {
-            batch.setComplete(true);
         }
 
+        if (this.table == null) {
+            batch.setComplete(true);
+        }
         return this.table;
     }
 
     public CsvData nextData() {
-        readNext();
-        if (next.size() > 0 && next.get(0) instanceof CsvData) {
-            return (CsvData) next.remove(0);
+        if (next instanceof CsvData) {
+            CsvData data = (CsvData) next;
+            next = null;
+            return data;
+        } else {
+            next = readNext();
+            if (next instanceof CsvData) {
+                CsvData data = (CsvData) next;
+                next = null;
+                return data;
+            }
         }
-
         return null;
     }
 

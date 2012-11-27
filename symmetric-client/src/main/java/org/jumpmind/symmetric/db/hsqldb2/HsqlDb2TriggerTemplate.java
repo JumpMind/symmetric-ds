@@ -9,18 +9,47 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 
     public HsqlDb2TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        functionInstalledSql = "select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME=UPPER('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"' end" ;
+        xmlColumnTemplate = null;
+        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||$(tableAlias).\"$(columnName)\"||'\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||$(tableAlias).\"$(columnName)\"||'\"' end" ;
+        timeColumnTemplate = null;
+        dateColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then ''else '\"'||rawtohex($(tableAlias).\"$(columnName)\")||'\"' end" ;
+        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "newrow" ;
         oldTriggerValue = "oldrow" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
+        otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("BASE_64_ENCODE" ,
+"CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     " + 
+"                                           RETURNS VARCHAR(1000000)                                                                                                                                    " + 
+"                                           NO SQL                                                                                                                                                      " + 
+"                                           LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
+"                                           EXTERNAL NAME                                                                                                                                               " + 
+"                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'                                                                                  " );
+        functionTemplatesToInstall.put("SET_SESSION" ,
+"CREATE PROCEDURE $(functionName)(key VARCHAR(50), data VARCHAR(50))                                                                                                                                    " + 
+"                                           NO SQL                                                                                                                                                      " + 
+"                                           LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
+"                                           EXTERNAL NAME                                                                                                                                               " + 
+"                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'                                                                                    " );
+        functionTemplatesToInstall.put("GET_SESSION" ,
+"CREATE FUNCTION $(functionName)(key VARCHAR(50))                                                                                                                                                       " + 
+"                                           RETURNS VARCHAR(50)                                                                                                                                         " + 
+"                                           NO SQL                                                                                                                                                      " + 
+"                                           LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
+"                                           EXTERNAL NAME                                                                                                                                               " + 
+"                                            'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

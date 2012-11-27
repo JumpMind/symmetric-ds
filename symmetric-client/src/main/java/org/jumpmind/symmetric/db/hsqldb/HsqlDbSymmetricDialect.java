@@ -33,9 +33,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
 
-    static final String SQL_DROP_FUNCTION = "DROP ALIAS $(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='$(functionName)'" ;
-    static final String  DUAL_TABLE = "DUAL";
+    public static String DUAL_TABLE = "DUAL";
 
     private boolean enforceStrictSize = true;    
 
@@ -65,47 +63,6 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
                         "select count(*) from INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
         return exists;
-    }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
-        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"; ";
-            install(sql, encode);
-        }
-
-        String setSession = this.parameterService.getTablePrefix() + "_" + "set_session";
-        if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
-            String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession\"; ";
-            install(sql, setSession);
-        }
-
-        String getSession = this.parameterService.getTablePrefix() + "_" + "get_session";
-        if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
-            String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession\"; ";
-            install(sql, getSession);
-        }
-        
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
-        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
-            uninstall(SQL_DROP_FUNCTION, encode);
-        }
-
-        String setSession = this.parameterService.getTablePrefix() + "_" + "set_session";
-        if (installed(SQL_FUNCTION_INSTALLED, setSession)) {
-            uninstall(SQL_DROP_FUNCTION, setSession);
-        }
-
-        String getSession = this.parameterService.getTablePrefix() + "_" + "get_session";
-        if (installed(SQL_FUNCTION_INSTALLED, getSession)) {
-            uninstall(SQL_DROP_FUNCTION, getSession);
-        }
-
     }
 
     /*

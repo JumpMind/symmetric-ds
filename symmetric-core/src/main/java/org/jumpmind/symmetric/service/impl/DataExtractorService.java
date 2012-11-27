@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -153,7 +154,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             String... tablesToExclude) {
         Node sourceNode = nodeService.findIdentity();
 
-        Batch batch = new Batch(BatchType.EXTRACT, Constants.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
+        Batch batch = new Batch(BatchType.EXTRACT, BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
                 symmetricDialect.getBinaryEncoding(), sourceNode.getNodeId(), targetNode.getNodeId(), false);
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
@@ -460,7 +461,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.isCommonFlag());
                 batch.setIgnored(true);
                 try {
-                    IStagedResource resource = getStagedResource(currentBatch);
+                    IStagedResource resource = stagingManager.find(
+                            Constants.STAGING_CATEGORY_OUTGOING, batch.getStagedLocation(),
+                            batch.getBatchId());
                     if (resource != null) {
                         resource.delete();
                     }
@@ -643,8 +646,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table table = symmetricDialect.getPlatform().getTableFromCache(catalogName, schemaName,
                 tableName, false);
         if (table == null) {
-            table = new Table(tableName);
-            table.addColumns(triggerHistory.getParsedColumnNames());
+            throw new RuntimeException(String.format("Could not find the table, %s, to extract",
+                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
         }
         table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);

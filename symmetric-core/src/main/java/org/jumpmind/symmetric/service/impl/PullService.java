@@ -102,7 +102,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     }
                 }
             } else {
-                log.debug("Did not run the pull process because the cluster service has it locked");
+                log.info("Did not run the pull process because the cluster service has it locked");
             }
         }
 
@@ -146,7 +146,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         && status.getBatchesProcessed() > batchesProcessedCount);
             } catch (ConnectException ex) {
                 log.warn(
-                        "Failed to connect to the transport: {}",
+                        "Failed to connect to the transport: ",
                         (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
                                 .getSyncUrl()));
                 fireOffline(ex, node, status);

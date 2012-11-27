@@ -46,7 +46,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -348,12 +347,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = new BigDecimal(value.replace(',', '.'));
                             } else if (type == Types.BOOLEAN) {
                                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                            } else if (!(column.getJdbcTypeName()!=null && column.getJdbcTypeName().toUpperCase()
-                                    .contains(TypeMap.GEOMETRY)) && 
-                                    (type == Types.BLOB || type == Types.LONGVARBINARY
+                            } else if (type == Types.BLOB || type == Types.LONGVARBINARY
                                     || type == Types.BINARY || type == Types.VARBINARY ||
                                     // SQLServer ntext type
-                                    type == -10)) {
+                                    type == -10) {
                                 if (encoding == BinaryEncoding.NONE) {
                                     objectValue = value.getBytes();
                                 } else if (encoding == BinaryEncoding.BASE64) {
@@ -430,19 +427,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
 
-    public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row,
+    public String replaceSql(String sql, BinaryEncoding encoding, Column[] metaData, Row row,
             boolean useVariableDates) {
-        final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = getDatabaseInfo().getValueQuoteToken();
         String regex = "\\?";
-        
-        List<Column> columnsToProcess = new ArrayList<Column>();
-        columnsToProcess.addAll(table.getColumnsAsList());
-        columnsToProcess.addAll(table.getPrimaryKeyColumnsAsList());
-        
-        for (int i = 0; i < columnsToProcess.size(); i++) {
-            Column column = columnsToProcess.get(i);
+        for (int i = 0; i < metaData.length; i++) {
+            Column column = metaData[i];
             String name = column.getName();
             int type = column.getJdbcTypeCode();
 
@@ -453,15 +444,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         value = value.replace("\\", "\\\\");
                         value = value.replace("$", "\\$");
                         value = value.replace("'", "''");
-                        value = value.replace("?", QUESTION_MARK);
                         newSql = newSql.replaceFirst(regex, quote + value + quote);
                     } catch (RuntimeException ex) {
                         log.error("Failed to replace ? in {" + sql + "} with " + name + "="
                                 + row.getString(name));
                         throw ex;
                     }
-                } else if (column.isTimestampWithTimezone()) {
-                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
+                } else if (column.isOfNumericType()) {
+                    newSql = newSql.replaceFirst(regex, row.getString(name));
                 } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                     Date date = row.getDateTime(name);
                     if (useVariableDates) {
@@ -485,15 +475,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         newSql = newSql.replaceFirst(regex, quote
                                 + new String(Hex.encodeHex(bytes)) + quote);
                     }
-                } else {
-                    newSql = newSql.replaceFirst(regex, row.getString(name));
                 }
             } else {
                 newSql = newSql.replaceFirst(regex, "null");
             }
         }
-        
-        newSql = newSql.replace(QUESTION_MARK, "?");
         return newSql + getDatabaseInfo().getSqlCommandDelimiter();
     }
 
@@ -633,52 +619,44 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } finally {
             IOUtils.closeQuietly(is);
         }
-    }        
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Database database) {
-        Table[] tables = database.getTables();
-        for (Table table : tables) {
-            alterCaseToMatchDatabaseDefaultCase(table);
-        }
-    }
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Table table) {
-        boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-        if (!FormatUtils.isMixedCase(table.getName())) {
-            table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
-                    .toLowerCase());
-        }
-
-        Column[] columns = table.getColumns();
-        for (Column column : columns) {
-            if (!FormatUtils.isMixedCase(column.getName())) {
-                column.setName(storesUpperCase ? column.getName().toUpperCase() : column.getName()
-                        .toLowerCase());
-            }
-        }
-
-        IIndex[] indexes = table.getIndices();
-        for (IIndex index : indexes) {
-            if (!FormatUtils.isMixedCase(index.getName())) {
-                index.setName(storesUpperCase ? index.getName().toUpperCase() : index.getName()
-                        .toLowerCase());
-            }
-
-            IndexColumn[] indexColumns = index.getColumns();
-            for (IndexColumn indexColumn : indexColumns) {
-                if (!FormatUtils.isMixedCase(indexColumn.getName())) {
-                    indexColumn.setName(storesUpperCase ? indexColumn.getName().toUpperCase()
-                            : indexColumn.getName().toLowerCase());
-                }
-            }
-        }
     }
 
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
         InputStreamReader reader = new InputStreamReader(is);
         Database database = DatabaseXmlUtil.read(reader);
         if (alterCaseToMatchDatabaseDefaultCase) {
-            alterCaseToMatchDatabaseDefaultCase(database);
+            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+            Table[] tables = database.getTables();
+            for (Table table : tables) {
+                if (!FormatUtils.isMixedCase(table.getName())) {
+                    table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                            .toLowerCase());
+                }
+
+                Column[] columns = table.getColumns();
+                for (Column column : columns) {
+                    if (!FormatUtils.isMixedCase(column.getName())) {
+                        column.setName(storesUpperCase ? column.getName().toUpperCase() : column
+                                .getName().toLowerCase());
+                    }
+                }
+
+                IIndex[] indexes = table.getIndices();
+                for (IIndex index : indexes) {
+                    if (!FormatUtils.isMixedCase(index.getName())) {
+                        index.setName(storesUpperCase ? index.getName().toUpperCase() : index
+                                .getName().toLowerCase());
+                    }
+
+                    IndexColumn[] indexColumns = index.getColumns();
+                    for (IndexColumn indexColumn : indexColumns) {
+                        if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                            indexColumn.setName(storesUpperCase ? indexColumn.getName()
+                                    .toUpperCase() : indexColumn.getName().toLowerCase());
+                        }
+                    }
+                }
+            }
         }
         return database;
 

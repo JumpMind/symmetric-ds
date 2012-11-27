@@ -22,7 +22,6 @@ package org.jumpmind.symmetric;
 import java.util.Date;
 import java.util.Properties;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
@@ -62,8 +61,6 @@ public interface ISymmetricEngine {
     public void stop();
     
     public void destroy();
-    
-    public void uninstall();
 
     /**
      * @return the URL that represents this engine
@@ -277,9 +274,5 @@ public interface ISymmetricEngine {
     public Date getLastRestartTime();
     
     public <T> T getDataSource();
-    
-    public IDatabasePlatform getDatabasePlatform();
-    
-    public void snapshot();
     
 }

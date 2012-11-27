@@ -39,11 +39,11 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -109,6 +109,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.driverVersion = sqlTemplate.getDriverVersion();
     }
 
+    public String toFormattedTimestamp(java.util.Date time) {
+        StringBuilder ts = new StringBuilder("{ts '");
+        ts.append(SqlConstants.JDBC_TIMESTAMP_FORMATTER.format(time));
+        ts.append("'}");
+        return ts.toString();
+    }
+
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
     }
@@ -123,39 +130,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    public void initTablesAndDatabaseObjects() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
+    }
+
+    public void initTablesAndFunctions() {
+        initTablesAndFunctionsForSpecificDialect();
         createOrAlterTablesIfNecessary();
-        createRequiredDatabaseObjects();
+        createRequiredFunctions();
         platform.resetCachedTableModel();
-    }
-    
-    protected String replaceTokens(String sql, String objectName) {
-        String ddl = FormatUtils.replace("functionName", objectName, sql);
-        ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-        ddl = FormatUtils.replace("defaultSchema", platform.getDefaultSchema(), ddl);
-        return ddl;        
-    }
-    
-    protected boolean installed(String sql, String objectName) {
-        return platform.getSqlTemplate().queryForInt(replaceTokens(sql, objectName)) > 0;
-    }
-    
-    protected void install(String sql, String objectName) {
-        sql = replaceTokens(sql, objectName);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just installed {}", objectName);
-    }
-    
-    protected void uninstall(String sql, String objectName) {
-        sql = replaceTokens(sql, objectName);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just uninstalled {}", objectName);
-    }    
-    
-    public void dropTablesAndDatabaseObjects() {
-        Database modelFromDatabase = readSymmetricSchemaFromDatabase(); 
-        platform.dropDatabase(modelFromDatabase, true);
-        dropRequiredDatabaseObjects();        
     }
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
@@ -167,10 +149,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return false;
         }
     }
-    
-    abstract protected void dropRequiredDatabaseObjects();
-    
-    abstract protected void createRequiredDatabaseObjects();
+
+    protected void createRequiredFunctions() {
+        String[] functions = triggerTemplate.getFunctionsToInstall();
+        for (int i = 0; i < functions.length; i++) {
+            String funcName = this.parameterService.getTablePrefix() + "_" + functions[i];
+            if (this.platform.getSqlTemplate().queryForInt(
+                    triggerTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                this.platform.getSqlTemplate().update(
+                        triggerTemplate.getFunctionSql(functions[i], funcName));
+                log.info("Just installed {}", funcName);
+            }
+        }
+    }
 
     abstract public BinaryEncoding getBinaryEncoding();
 
@@ -389,16 +380,36 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
                 triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), !useCache);
     }
-    
+
     /*
      * @return true if SQL was executed.
      */
     public boolean createOrAlterTablesIfNecessary() {
-        try {            
+
+        Database modelFromXml = readSymmetricSchemaFromXml();
+
+        String extraTablesXml = parameterService
+                .getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
+        if (StringUtils.isNotBlank(extraTablesXml)) {
+            try {
+                modelFromXml = merge(modelFromXml, readDatabaseFromXml(extraTablesXml));
+            } catch (Exception ex) {
+                log.error(ex.getMessage(), ex);
+            }
+        }
+
+        try {
             log.info("Checking if SymmetricDS tables need created or altered");
-            
-            Database modelFromXml = readSymmetricSchemaFromXml();
-            Database modelFromDatabase = readSymmetricSchemaFromDatabase();
+            Database modelFromDatabase = new Database();
+
+            Table[] tablesFromXml = modelFromXml.getTables();
+            for (Table tableFromXml : tablesFromXml) {
+                Table tableFromDatabase = platform.getTableFromCache(platform.getDefaultCatalog(),
+                        platform.getDefaultSchema(), tableFromXml.getName(), true);
+                if (tableFromDatabase != null) {
+                    modelFromDatabase.addTable(tableFromDatabase);
+                }
+            }
 
             IDdlBuilder builder = platform.getDdlBuilder();
 
@@ -445,41 +456,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             Database database = merge(readDatabaseFromXml("/symmetric-schema.xml"),
                     readDatabaseFromXml("/console-schema.xml"));
             prefixConfigDatabase(database);
-            
-            String extraTablesXml = parameterService
-                    .getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
-            if (StringUtils.isNotBlank(extraTablesXml)) {
-                try {
-                    database = merge(database, readDatabaseFromXml(extraTablesXml));
-                } catch (Exception ex) {
-                    log.error(ex.getMessage(), ex);
-                }
-            }
-            
             return database;
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-    
-    public Database readSymmetricSchemaFromDatabase() {
-        Database modelFromXml = readSymmetricSchemaFromXml();
-
-        Database modelFromDatabase = new Database();
-
-        Table[] tablesFromXml = modelFromXml.getTables();
-        for (Table tableFromXml : tablesFromXml) {
-            Table tableFromDatabase = platform.getTableFromCache(platform.getDefaultCatalog(),
-                    platform.getDefaultSchema(), tableFromXml.getName(), true);
-            if (tableFromDatabase != null) {
-                modelFromDatabase.addTable(tableFromDatabase);
-            }
-        }
-
-        return modelFromDatabase;
-
     }
 
     protected Database readDatabaseFromXml(String resourceName) throws IOException {

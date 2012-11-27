@@ -45,14 +45,11 @@ public class HttpIncomingTransport implements IIncomingTransport {
 
     private IParameterService parameterService;
     
-    private int httpTimeout;
-    
     private String redirectionUrl;
     
     public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService) {
         this.connection = connection;
         this.parameterService = parameterService;
-        this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
     
     public String getUrl() {
@@ -110,21 +107,29 @@ public class HttpIncomingTransport implements IIncomingTransport {
        int redirects = 0;
        do
        {
-          connection.setInstanceFollowRedirects(false);         
+          if (connection instanceof HttpURLConnection)
+          {
+             ((HttpURLConnection) connection).setInstanceFollowRedirects(false);
+          }
+         
           redir = false;
-             int stat = connection.getResponseCode();
+          if (connection instanceof HttpURLConnection)
+          {
+             HttpURLConnection http = (HttpURLConnection) connection;
+
+             int stat = http.getResponseCode();
              if (stat >= 300 && stat <= 307 && stat != 306 &&
                 stat != HttpURLConnection.HTTP_NOT_MODIFIED)
              {
-                URL base = connection.getURL();
-                redirectionUrl = connection.getHeaderField("Location");
+                URL base = http.getURL();
+                redirectionUrl = http.getHeaderField("Location");
 
                 URL target = null;
                 if (redirectionUrl != null)
                 {
                    target = new URL(base, redirectionUrl);
                 }
-                connection.disconnect();
+                http.disconnect();
                 // Redirection should be allowed only for HTTP and HTTPS
                 // and should be limited to 5 redirections at most.
                 if (target == null || !(target.getProtocol().equals("http")
@@ -135,11 +140,10 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 }
                 redir = true;
                 connection = HttpTransportManager.openConnection(target, getBasicAuthUsername(), getBasicAuthPassword());
-                connection.setConnectTimeout(httpTimeout);
-                connection.setReadTimeout(httpTimeout);
 
                 redirects++;
              }
+          }
        }
        while (redir);
        

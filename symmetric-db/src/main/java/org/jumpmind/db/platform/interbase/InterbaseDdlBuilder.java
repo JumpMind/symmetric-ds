@@ -65,8 +65,8 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR("
-                + SWITCH_TO_LONGVARCHAR_SIZE + ")", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(" + SWITCH_TO_LONGVARCHAR_SIZE + ")",
+                Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.REAL, "FLOAT");
@@ -82,25 +82,24 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
 
+        
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
-        databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setEmptyStringNulled(false);        
 
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        super.createTable(table, ddl, temporary, recreate);
+    public void createTable(Table table, StringBuilder ddl) {
+        super.createTable(table, ddl);
 
-        if (!temporary) {
-            // creating generator and trigger for auto-increment
-            Column[] columns = table.getAutoIncrementColumns();
+        // creating generator and trigger for auto-increment
+        Column[] columns = table.getAutoIncrementColumns();
 
-            for (int idx = 0; idx < columns.length; idx++) {
-                writeAutoIncrementCreateStmts(table, columns[idx], ddl);
-            }
+        for (int idx = 0; idx < columns.length; idx++) {
+            writeAutoIncrementCreateStmts(table, columns[idx], ddl);
         }
     }
 
@@ -109,24 +108,22 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if ((column.getMappedTypeCode() == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT).toString();
+            return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
+                    Types.SMALLINT).toString();
         } else {
             return super.getNativeDefaultValue(column);
         }
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        if (!temporary) {
-            // dropping generators for auto-increment
-            Column[] columns = table.getAutoIncrementColumns();
+    public void dropTable(Table table, StringBuilder ddl) {
+        // dropping generators for auto-increment
+        Column[] columns = table.getAutoIncrementColumns();
 
-            for (int idx = 0; idx < columns.length; idx++) {
-                writeAutoIncrementDropStmts(table, columns[idx], ddl);
-            }
+        for (int idx = 0; idx < columns.length; idx++) {
+            writeAutoIncrementDropStmts(table, columns[idx], ddl);
         }
-        super.dropTable(table, ddl, temporary, recreate);
+        super.dropTable(table, ddl);
     }
 
     @Override
@@ -142,7 +139,8 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
      * Writes the creation statements to make the given column an auto-increment
      * column.
      */
-    private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl) {
+    private void writeAutoIncrementCreateStmts(Table table, Column column,
+            StringBuilder ddl) {
         ddl.append("CREATE GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -330,7 +328,8 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
             if (prevColumn != null) {
                 // we need the corresponding column object from the current
                 // table
-                prevColumn = curTable.findColumn(prevColumn.getName(), delimitedIdentifierModeOn);
+                prevColumn = curTable.findColumn(prevColumn.getName(),
+                        delimitedIdentifierModeOn);
             }
             // Even though Interbase can only add columns, we can move them
             // later on

@@ -13,8 +13,8 @@
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
         <column name="database_type" type="VARCHAR" size="50"  description="The database product name at this node as reported by JDBC."  />
         <column name="database_version" type="VARCHAR" size="50"  description="The database product version at this node as reported by JDBC." />
-        <column name="heartbeat_time" type="TIMESTAMP"  description="Deprecated.  Use node_host.heartbeat_time instead." />
-        <column name="timezone_offset" type="VARCHAR" size="6"  description="Deprecated.  Use node_host.timezone_offset instead." />
+        <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
+        <column name="timezone_offset" type="VARCHAR" size="6"  description="The timezone offset in RFC822 format at the time of the last heartbeat. " />
         <column name="batch_to_send_count" type="INTEGER" default="0" description="The number of outgoing batches that have not yet been sent.  This field is updated as part of the heartbeat job." />
         <column name="batch_in_error_count" type="INTEGER" default="0" description="The number of outgoing batches that are in error at this node.  This field is updated as part of the heartbeat job." />        
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
@@ -561,38 +561,5 @@
         <column name="load_filter_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply load filters if more than one target operation occurs."/>        
         <column name="fail_on_error" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether we should fail the batch if the filter fails." />
     </table>            
-    
-    <table name="file_sync" description="A table that defines file synchronization configuration">
-        <column name="file_sync_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the synchronization." />
-        <column name="server_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the client during file synchronization." />
-        <column name="client_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the server during file synchronization." />
-        <column name="processing_order" type="INTEGER" required="true" default="1" description="Order in which to process the synchronizations."/>        
-        <column name="frequency" type="VARCHAR" size="50" required="true" description="This is a cron expression or the period in between synchronizations in milliseconds." />
-        <column name="client_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
-        <column name="server_dir" type="VARCHAR" size="255" required="true" description="The base directory on the server that will be synchronized." />
-        <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />        
-        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to include in synchronization." />
-        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to exclude from synchronization." />       
-        <column name="direction" type="VARCHAR" size="50" required="true" default="bidirectional" description="The direction to synchronize files.  Possible values are: client_to_server, server_to_client, bidirectional." />    
-        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are created." />
-        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are modified." />
-        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are deleted." />
-        <column name="transport_type" type="VARCHAR" size="50"  description="The name of a specific type of transport that will be used by the client.  Out of the box types are: local, http, ftp, symmetric" />
-        <column name="transport_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transport that is configured in transport_type  See the documentation for each transport_type for more details." />
-        <column name="conflict_strategy" type="VARCHAR" size="128" default="client_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: client_wins, server_wins, report_error" />        
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />    
-    <!-- 
-compress_for_xfer
-package_files
-conflict_strategy
-script_type
-client_pre_sync_script
-client_post_sync_script
-server_pre_sync_script
-server_post_sync_script
-     -->
-    </table>         
         
 </database>

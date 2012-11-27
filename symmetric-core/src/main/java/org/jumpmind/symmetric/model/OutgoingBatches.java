@@ -177,7 +177,44 @@ public class OutgoingBatches implements Serializable {
             }
         }
         return batchList;
-    }    
+    }
+
+    public List<OutgoingBatch> getBatchesForChannelWindows(Node targetNode, NodeChannel channel,
+            List<NodeGroupChannelWindow> windows) {
+        List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
+
+        if (batches != null && batches.size() > 0) {
+            if (inTimeWindow(windows, targetNode.getTimezoneOffset())) {
+                int maxBatchesToSend = channel.getMaxBatchToSend();
+                for (OutgoingBatch outgoingBatch : batches) {
+                    if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && maxBatchesToSend > 0) {
+                        keeping.add(outgoingBatch);
+                        maxBatchesToSend--;
+                    }
+                }
+            }
+        }
+        return keeping;
+    }
+
+    /**
+     * If {@link NodeGroupChannelWindow}s are defined for this channel, then
+     * check to see if the time (according to the offset passed in) is within on
+     * of the configured windows.
+     */
+    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, String timezoneOffset) {
+        if (windows != null && windows.size() > 0) {
+            for (NodeGroupChannelWindow window : windows) {
+                if (window.inTimeWindow(timezoneOffset)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+
+    }
 
     /**
      * Removes all batches that are not associated with an 'activeChannel'.

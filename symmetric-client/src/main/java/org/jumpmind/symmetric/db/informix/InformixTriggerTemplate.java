@@ -9,18 +9,49 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 
     public InformixTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        functionInstalledSql = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "rtrim(case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace($(tableAlias).$(columnName), '\\', '\\\\'), '\"', '\\\"') || '\"' end)" ;
+        xmlColumnTemplate = null;
+        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || $(tableAlias).$(columnName) || '\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || $(tableAlias).$(columnName) || '\"' end" ;
+        timeColumnTemplate = null;
+        dateColumnTemplate = null;
         clobColumnTemplate = "''" ;
         blobColumnTemplate = "''" ;
+        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
+        otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("triggers_disabled" ,
+"create function $(defaultSchema)$(functionName)() returning boolean;                                                                                                                                   " + 
+"                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
+"                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
+"                                end function;                                                                                                                                                          " );
+        functionTemplatesToInstall.put("triggers_set_disabled" ,
+"create function $(defaultSchema)$(functionName)(is_disabled boolean) returning boolean;                                                                                                                " + 
+"                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
+"                                   let symmetric_triggers_disabled = is_disabled;                                                                                                                      " + 
+"                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
+"                                end function;                                                                                                                                                          " );
+        functionTemplatesToInstall.put("node_disabled" ,
+"create function $(defaultSchema)$(functionName)() returning varchar(50);                                                                                                                               " + 
+"                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
+"                                   return symmetric_node_disabled;                                                                                                                                     " + 
+"                                end function;                                                                                                                                                          " );
+        functionTemplatesToInstall.put("node_set_disabled" ,
+"create function $(defaultSchema)$(functionName)(node_id varchar(50)) returning integer;                                                                                                                " + 
+"                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
+"                                   let symmetric_node_disabled = node_id;                                                                                                                              " + 
+"                                   return 1;                                                                                                                                                           " + 
+"                                end function;                                                                                                                                                          " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

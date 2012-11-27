@@ -78,6 +78,7 @@ import org.jumpmind.symmetric.load.BshDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -288,7 +289,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Try a configured number of times to get the ACK through.
      */
     protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
-            List<IncomingBatch> list) throws IOException {        
+            List<IncomingBatch> list) throws IOException {
         Exception error = null;
         int sendAck = -1;
         int numberOfStatusSendRetries = parameterService
@@ -357,7 +358,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
             for (IncomingBatch incomingBatch : batchesProcessed) {
-                if (incomingBatch.getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION
+                if (incomingBatch.getBatchId() != BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("Failed to update batch {}.  Zero rows returned.",
                             incomingBatch.getBatchId());
@@ -377,11 +378,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } else if (ex instanceof ConnectException) {
             throw (ConnectException) ex;
         } else if (ex instanceof UnknownHostException) {
-            log.warn("Could not connect to the transport because the host was unknown: '{}'",
+            log.warn("Could not connect to the transport because the host was unknown: {}",
                     ex.getMessage());
             throw (UnknownHostException) ex;
         } else if (ex instanceof RegistrationNotOpenException) {
-            log.warn("Registration attempt failed.  Registration was not open");
+            log.warn("Registration attempt failed.  Registration was not open for the node'{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof AuthenticationException) {
@@ -727,10 +728,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            ISqlTransaction transaction = context.findTransaction();
-            if (transaction != null) {
-                symmetricDialect.disableSyncTriggers(transaction, batch.getSourceNodeId());
-            }
+            symmetricDialect
+                    .disableSyncTriggers(context.findTransaction(), batch.getSourceNodeId());
         }
 
         public void batchSuccessful(DataContext context) {
@@ -765,9 +764,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void batchInError(DataContext context, Exception ex) {
             try {
                 Batch batch = context.getBatch();
-                if (context.getWriter() != null && 
-                        context.getReader().getStatistics().get(batch) != null &&
-                        context.getWriter().getStatistics().get(batch) != null) {
+                if (context.getWriter() != null) {
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
                     statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),

@@ -37,9 +37,9 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     public Db2v9SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
     }
-    
+
     @Override
-    protected void createRequiredDatabaseObjects() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
@@ -56,10 +56,8 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
         } finally {
             close(transaction);
         }
-
-        super.createRequiredDatabaseObjects();
     }
-
+    
     private URL getSqlScriptUrl() {
         return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }

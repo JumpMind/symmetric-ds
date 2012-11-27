@@ -101,17 +101,16 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE ");
         printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" CASCADE");
         printEndOfStatement(ddl);
-        if (!temporary) {
-            Column[] columns = table.getAutoIncrementColumns();
 
-            for (int idx = 0; idx < columns.length; idx++) {
-                dropAutoIncrementSequence(table, columns[idx], ddl);
-            }
+        Column[] columns = table.getAutoIncrementColumns();
+
+        for (int idx = 0; idx < columns.length; idx++) {
+            dropAutoIncrementSequence(table, columns[idx], ddl);
         }
     }
 
@@ -136,8 +135,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        if (!temporary) {
+    public void createTable(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
 
@@ -145,8 +143,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                 createAutoIncrementSequence(table, column, ddl);
             }
         }
-        }
-        super.createTable(table, ddl, temporary, recreate);
+        super.createTable(table, ddl);
     }
 
     /*

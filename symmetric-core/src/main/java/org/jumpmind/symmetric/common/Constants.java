@@ -26,8 +26,6 @@ import org.jumpmind.symmetric.model.DataEvent;
  */
 final public class Constants {
 
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
-
     private Constants() {
     }
     
@@ -64,9 +62,7 @@ final public class Constants {
     
     public static final String SYMMETRIC_ENGINE = "symmetricEngine";
     
-    public static final String MBEAN_SERVER = "mbeanserver";
-    
-    public static final String CHANNEL_HEARTBEAT = "heartbeat";
+    public static final String MBEAN_SERVER = "mbeanserver";  
 
     public static final String CHANNEL_CONFIG = "config";
     

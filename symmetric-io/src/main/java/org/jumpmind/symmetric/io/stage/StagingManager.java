@@ -67,8 +67,7 @@ public class StagingManager implements IStagingManager {
                 new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
                         State.DONE.getExtensionName() }, true);
         for (File file : files) {
-            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file,
-                    this);
+            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file, this);
             resourceList.put(resource.getPath(), resource);
         }
 
@@ -109,7 +108,7 @@ public class StagingManager implements IStagingManager {
             log.info("Purged {} staged memory buffers, freeing {} kb of memory", purgedMemCount,
                     (int) (purgedMemSize / 1000));
         }
-        return purgedFileCount + purgedMemCount;
+        return purgedFileCount;
     }
 
     /**
@@ -117,8 +116,7 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath,
-                this);
+        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath, this);
         this.resourceList.put(filePath, resource);
         return resource;
     }
@@ -140,6 +138,7 @@ public class StagingManager implements IStagingManager {
 
     public IStagedResource find(Object... path) {
         String filePath = buildFilePath(path);
+        
         IStagedResource resource = resourceList.get(filePath);
         if (resource != null) {
             if (!resource.exists()
@@ -148,7 +147,7 @@ public class StagingManager implements IStagingManager {
                 resource = null;
             }
         }
-
+        
         return resource;
     }
 

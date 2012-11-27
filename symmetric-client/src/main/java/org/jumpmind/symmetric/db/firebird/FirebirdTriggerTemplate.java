@@ -11,17 +11,34 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         super(symmetricDialect); 
         
         // @formatter:off
+        
+        functionInstalledSql = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || REPLACE(REPLACE($(tableAlias).\"$(columnName)\", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
+        xmlColumnTemplate = null;
+        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
+        timeColumnTemplate = null;
+        dateColumnTemplate = null;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || sym_hex($(tableAlias).\"$(columnName)\") || '\"' end" ;
+        wrappedBlobColumnTemplate = null;
+        booleanColumnTemplate = null;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
+        otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("escape" ,
+"declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
+"                                returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          " );
+        functionTemplatesToInstall.put("hex" ,
+"declare external function $(functionName) blob                                                                                                                                                         " + 
+"                                returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

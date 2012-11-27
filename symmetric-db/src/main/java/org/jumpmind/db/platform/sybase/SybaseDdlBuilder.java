@@ -100,9 +100,9 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void createTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
-        super.createTable(table, ddl, temporary, recreate);
+        super.createTable(table, ddl);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
         ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(getTableName(table.getName()), ddl);

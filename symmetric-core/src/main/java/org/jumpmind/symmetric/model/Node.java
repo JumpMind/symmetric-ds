@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -66,6 +67,10 @@ public class Node implements Serializable {
     private String databaseVersion;
 
     private boolean syncEnabled = true;
+
+    private String timezoneOffset;
+
+    private Date heartbeatTime = new Date();
 
     private String createdAtNodeId;
     
@@ -190,6 +195,22 @@ public class Node implements Serializable {
 
     public String toString() {
         return nodeGroupId + ":" + externalId + ":" + (nodeId == null ? "?" : nodeId);
+    }
+
+    public Date getHeartbeatTime() {
+        return heartbeatTime;
+    }
+
+    public void setHeartbeatTime(Date heartbeatTime) {
+        this.heartbeatTime = heartbeatTime;
+    }
+
+    public String getTimezoneOffset() {
+        return timezoneOffset;
+    }
+
+    public void setTimezoneOffset(String timezoneOffset) {
+        this.timezoneOffset = timezoneOffset;
     }
 
     public String getCreatedAtNodeId() {

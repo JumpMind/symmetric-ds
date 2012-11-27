@@ -29,15 +29,16 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.DataProcessor;
+import org.jumpmind.symmetric.io.data.reader.SymXmlDataReader;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
 import org.jumpmind.symmetric.io.data.reader.SqlDataReader;
-import org.jumpmind.symmetric.io.data.reader.SymXmlDataReader;
 import org.jumpmind.symmetric.io.data.reader.XmlDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -157,14 +158,10 @@ public class DbImport {
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings() {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
-        settings.setMaxRowsBeforeCommit(commitRate);        
+        settings.setMaxRowsBeforeCommit(commitRate);
         settings.setDefaultConflictSetting(buildConflictSettings());
         settings.setUsePrimaryKeysFromSource(false);
-        settings.setAlterTable(alterTables);
-        settings.setCreateTableDropFirst(dropIfExists);
-        settings.setCreateTableFailOnError(!forceImport);
         settings.setDatabaseWriterFilters(databaseWriterFilters);
-        settings.setCreateTableAlterCaseToMatchDatabaseDefault(alterCaseToMatchDatabaseDefaultCase);
         if (forceImport) {
             settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
         }
@@ -184,7 +181,24 @@ public class DbImport {
         dataProcessor.process();
     }
 
-    protected void importTablesFromXml(InputStream in) {        
+    protected void importTablesFromXml(InputStream in) {
+        
+        // TODO should probably handle database creation in xml/data reader writer.
+        in.mark(Integer.MAX_VALUE);
+        
+        Database database = platform.readDatabaseFromXml(in, alterCaseToMatchDatabaseDefaultCase);
+        if (alterTables) {
+            platform.alterDatabase(database, forceImport);
+        } else {
+            platform.createDatabase(database, dropIfExists, forceImport);
+        }
+
+        try {
+            in.reset();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+        
         XmlDataReader reader = new XmlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer);

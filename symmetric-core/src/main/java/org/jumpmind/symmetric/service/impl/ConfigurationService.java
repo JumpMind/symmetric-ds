@@ -65,7 +65,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         super(parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));

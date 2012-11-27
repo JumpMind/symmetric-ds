@@ -33,9 +33,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME=UPPER('$(functionName)')" ;
-
     public HsqlDb2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new HsqlDb2TriggerTemplate(this);
@@ -67,61 +64,6 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
         }
-    }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
-        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     " + 
-                    " RETURNS VARCHAR(1000000)                                                                                                                                    " + 
-                    " NO SQL                                                                                                                                                      " + 
-                    " LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
-                    " EXTERNAL NAME                                                                                                                                               " + 
-                    "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'                                                                                  ";
-            install(sql, encode);
-        }
-        
-        String setSession = this.parameterService.getTablePrefix() + "_set_session";
-        if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
-            String sql = "CREATE PROCEDURE $(functionName)(key VARCHAR(50), data VARCHAR(50))                                                                                                                                    " + 
-                    " NO SQL                                                                                                                                                      " + 
-                    " LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
-                    " EXTERNAL NAME                                                                                                                                               " + 
-                    "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'                                                                                    ";
-            install(sql, setSession);
-        }
-
-        String getSession = this.parameterService.getTablePrefix() + "_get_session";
-        if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
-            String sql = "CREATE FUNCTION $(functionName)(key VARCHAR(50))                                                                                                                                                       " + 
-                    " RETURNS VARCHAR(50)                                                                                                                                         " + 
-                    " NO SQL                                                                                                                                                      " + 
-                    " LANGUAGE JAVA PARAMETER STYLE JAVA                                                                                                                          " + 
-                    " EXTERNAL NAME                                                                                                                                               " + 
-                    "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    ";
-            install(sql, getSession);
-        }
-        
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
-        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
-            uninstall(SQL_DROP_FUNCTION, encode);
-        }
-
-        String setSession = this.parameterService.getTablePrefix() + "_set_session";
-        if (installed(SQL_FUNCTION_INSTALLED, setSession)) {
-            uninstall(SQL_DROP_FUNCTION, setSession);
-        }
-
-        String getSession = this.parameterService.getTablePrefix() + "_get_session";
-        if (installed(SQL_FUNCTION_INSTALLED, getSession)) {
-            uninstall(SQL_DROP_FUNCTION, getSession);
-        }
-        
     }
 
     @Override
@@ -178,7 +120,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
         platform.getSqlTemplate().update("delete from " + tableName);
     }
 
-    public void purgeRecycleBin() {
+    public void purge() {
     }
 
     @Override

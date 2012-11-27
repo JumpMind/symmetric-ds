@@ -19,6 +19,7 @@
  * under the License.  */
 package org.jumpmind.symmetric.db;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.jumpmind.db.model.Column;
@@ -55,9 +56,7 @@ public interface ISymmetricDialect {
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
-    public void initTablesAndDatabaseObjects();
-    
-    public void dropTablesAndDatabaseObjects();
+    public void initTablesAndFunctions();
     
     public boolean createOrAlterTablesIfNecessary();
 
@@ -106,7 +105,7 @@ public interface ISymmetricDialect {
      * that needs to be run when dropping database objects. An example is
      * Oracle's 'purge recyclebin'
      */
-    public void purgeRecycleBin();
+    public void purge();
 
     public void disableSyncTriggers(ISqlTransaction transaction);
 
@@ -159,6 +158,8 @@ public interface ISymmetricDialect {
     public String getInitialLoadTableAlias();
 
     public String preProcessTriggerSqlClause(String sqlClause);
+    
+    public String toFormattedTimestamp(Date time);
     
     public void truncateTable(String tableName);
     

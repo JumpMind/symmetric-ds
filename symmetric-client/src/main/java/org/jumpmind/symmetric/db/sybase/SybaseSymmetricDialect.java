@@ -50,87 +50,11 @@ import org.jumpmind.symmetric.service.IParameterService;
  *  create database symmetricclient on master = '30M'
  */
 public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
-    static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
-
+       
     public SybaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new SybaseTriggerTemplate(this);
-    }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "create function dbo.$(functionName)(@data varbinary(1000)) returns varchar(2000) as                                                                                                                    " + 
-                    "                                  begin                                                                                                                                                                " + 
-                    "                                      declare @test varchar(50)                                                                                                                                        " + 
-                    "                                      return @test                                                                                                                                                     " + 
-                    "                                  end                                                                                                                                                                  ";
-            install(sql, encode);
-        }
-        
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns smallint as                                                                                                                              " + 
-                    "                                begin                                                                                                                                                                  " + 
-                    "                                    declare @clientapplname varchar(50)                                                                                                                                " + 
-                    "                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid                                                                           " + 
-                    "                                    if @clientapplname = 'SymmetricDS'                                                                                                                                 " + 
-                    "                                        return 1                                                                                                                                                       " + 
-                    "                                    return 0                                                                                                                                                           " + 
-                    "                                end                                                                                                                                                                    ";
-            install(sql, triggersDisabled);
-        }
-        
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
-                    "                                begin                                                                                                                                                                  " + 
-                    "                                    declare @clientname varchar(50)                                                                                                                                    " + 
-                    "                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'                                                " + 
-                    "                                    return @clientname                                                                                                                                                 " + 
-                    "                                end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
-        }
-        
-        String txId = this.parameterService.getTablePrefix() + "_" + "txid";
-        if (!installed(SQL_FUNCTION_INSTALLED, txId)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
-                    "                                begin                                                                                                                                                                  " + 
-                    "                                    declare @txid varchar(50)                                                                                                                                          " + 
-                    "                                    if (@@TRANCOUNT > 0) begin                                                                                                                                         " + 
-                    "                                        select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " + 
-                    "                                    end                                                                                                                                                                " + 
-                    "                                    return @txid                                                                                                                                                       " + 
-                    "                                end                                                                                                                                                                    ";
-            install(sql, txId);
-        }
-
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
-            uninstall(SQL_DROP_FUNCTION, encode);
-        }
-
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, triggersDisabled);
-        }
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, nodeDisabled);
-        }
-        String txId = this.parameterService.getTablePrefix() + "_" + "txid";
-        if (installed(SQL_FUNCTION_INSTALLED, txId)) {
-            uninstall(SQL_DROP_FUNCTION, txId);
-        }
-
-    }
+    } 
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
@@ -251,7 +175,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         return true;
     }
 
-    public void purgeRecycleBin() {
+    public void purge() {
     }
 
     public boolean needsToSelectLobData() {

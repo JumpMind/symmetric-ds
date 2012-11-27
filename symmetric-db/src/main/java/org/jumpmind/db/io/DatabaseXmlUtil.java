@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 
 import org.apache.commons.io.IOUtils;
@@ -55,7 +54,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 public class DatabaseXmlUtil {
 
     public static final String DTD_PREFIX = "http://db.apache.org/torque/dtd/database";
-
+    
     private DatabaseXmlUtil() {
     }
 
@@ -119,6 +118,9 @@ public class DatabaseXmlUtil {
         try {
             boolean done = false;
             Database database = null;
+            Table table = null;
+            ForeignKey fk = null;
+            IIndex index = null;
 
             XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
             parser.setInput(reader);
@@ -140,45 +142,6 @@ public class DatabaseXmlUtil {
                                 }
                             }
                         } else if (name.equalsIgnoreCase("table")) {
-                            Table table = nextTable(parser);
-                            if (table != null) {
-                                database.addTable(table);
-                            }
-                        }
-                        break;
-                    case XmlPullParser.END_TAG:
-                        name = parser.getName();
-                        if (name.equalsIgnoreCase("database")) {
-                            done = true;
-                        }
-                        break;
-                }
-                eventType = parser.next();
-            }
-
-            if (validate) {
-                database.initialize();
-            }
-            return database;
-        } catch (XmlPullParserException e) {
-            throw new IoException(e);
-        } catch (IOException e) {
-            throw new IoException(e);
-        }
-    }
-
-    public static Table nextTable(XmlPullParser parser) {
-        try {
-            Table table = null;
-            ForeignKey fk = null;
-            IIndex index = null;
-            boolean done = false;
-            int eventType = parser.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT && !done) {
-                switch (eventType) {
-                    case XmlPullParser.START_TAG:
-                        String name = parser.getName();
-                        if (name.equalsIgnoreCase("table")) {
                             table = new Table();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
@@ -187,6 +150,7 @@ public class DatabaseXmlUtil {
                                     table.setName(attributeValue);
                                 }
                             }
+                            database.addTable(table);
                         } else if (name.equalsIgnoreCase("column")) {
                             Column column = new Column();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -275,7 +239,7 @@ public class DatabaseXmlUtil {
                         break;
                     case XmlPullParser.END_TAG:
                         name = parser.getName();
-                        if (name.equalsIgnoreCase("table")) {
+                        if (name.equalsIgnoreCase("database")) {
                             done = true;
                         } else if (name.equalsIgnoreCase("index")
                                 || name.equalsIgnoreCase("unique")) {
@@ -287,13 +251,13 @@ public class DatabaseXmlUtil {
                         }
                         break;
                 }
-
-                if (!done) {
-                    eventType = parser.next();
-                }
+                eventType = parser.next();
             }
-            
-            return table;
+
+            if (validate) {
+                database.initialize();
+            }
+            return database;
         } catch (XmlPullParserException e) {
             throw new IoException(e);
         } catch (IOException e) {
@@ -369,12 +333,6 @@ public class DatabaseXmlUtil {
         } catch (IOException e) {
             throw new IoException(e);
         }
-    }
-    
-    public static String toXml(Table table) {
-        StringWriter writer = new StringWriter();
-        write(table, writer);
-        return writer.toString();
     }
 
     public static void write(Table table, Writer output) {

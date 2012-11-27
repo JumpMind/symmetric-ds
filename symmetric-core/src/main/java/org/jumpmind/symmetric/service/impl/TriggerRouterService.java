@@ -126,28 +126,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         sqlTemplate.update(getSql("deleteTriggerSql"), (Object) trigger.getTriggerId());
     }
 
-	public void dropTriggers() {		
-        List<TriggerHistory> activeHistories = getActiveTriggerHistories();
-        for (TriggerHistory history : activeHistories) {
-        	if (!TableConstants.getTables(symmetricDialect.getTablePrefix())
-        			.contains(history.getSourceTableName())) {
-        		dropTriggers(history, (StringBuilder) null);
-        	}
-        }
-	}
-
-	public void dropTriggers(Set<String> tables) {
-		List<TriggerHistory> activeHistories = null;
-		for (String table:tables) {
-			if (doesTriggerExistForTable(table)) {
-				activeHistories = this.getActiveTriggerHistories(table);
-				for (TriggerHistory history:activeHistories) {
-					dropTriggers(history, (StringBuilder) null);
-				}				
-			}
-		}		
-	}
-    
     protected void deleteTriggerHistory(TriggerHistory history) {
         sqlTemplate.update(getSql("deleteTriggerHistorySql"), history.getTriggerHistoryId());
     }
@@ -268,26 +246,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 new TriggerHistoryMapper());
     }
 
-    public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
-        return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(), tableName);
-    }
-
     protected List<Trigger> buildTriggersForSymmetricTables(String version,
             String... tablesToExclude) {
         List<Trigger> triggers = new ArrayList<Trigger>();
         List<String> tables = new ArrayList<String>(TableConstants.getConfigTables(symmetricDialect
                 .getTablePrefix()));
-        
-        List<Trigger> definedTriggers = getTriggers();
-        for (Trigger trigger : definedTriggers) {
-            if (tables.remove(trigger.getSourceTableName())) {
-                logOnce(String.format("Not generating virtual triggers for %s because there is a user defined trigger already defined", 
-                        trigger.getSourceTableName()));
-            }
-        }
-        
-        
         if (extraConfigTables != null) {
             for (String extraTable : extraConfigTables) {
                 tables.add(extraTable);
@@ -321,14 +284,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
-        trigger.setSyncOnIncomingBatch(parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING_AT_REG_SVR, true));
+        trigger.setSyncOnIncomingBatch(true);
         trigger.setSourceTableName(tableName);
         trigger.setUseCaptureOldData(false);
-        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName)) {
-            trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
-        } else {
-            trigger.setChannelId(Constants.CHANNEL_CONFIG);
-        }
+        trigger.setChannelId(Constants.CHANNEL_CONFIG);
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
         trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
@@ -364,6 +323,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         router.setLastUpdateTime(trigger.getLastUpdateTime());
 
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
+
+        if (trigger.getSourceTableName().equalsIgnoreCase(
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER))) {
+            router.setRouterType("configurationChanged");
+        }
 
         return triggerRouter;
     }
@@ -846,7 +810,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } else {
-                log.info("Sync triggers was locked by the cluster service");
+                log.info("Failed to synchronize trigger for {}");
             }
         } else {
             log.info("Not synchronizing triggers.  {} is set to false",
@@ -908,49 +872,44 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (removeTrigger) {
                 log.info("About to remove triggers for inactivated table: {}",
                         history.getFullyQualifiedSourceTableName());
-                dropTriggers(history, sqlBuffer);
-            }
-        }
-    }
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForInsertTrigger(),
+                        history.getSourceTableName(), history);
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
+                        history.getSourceTableName(), history);
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
+                        history.getSourceTableName(), history);
 
-    protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
+                if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerInactivated(null, history);
+                        }
+                    }
+                }
 
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForInsertTrigger(),
-                history.getSourceTableName(), history);
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
-                history.getSourceTableName(), history);
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
-                history.getSourceTableName(), history);
-
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            if (this.triggerCreationListeners != null) {
-                for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                    l.triggerInactivated(null, history);
+                boolean triggerExists = symmetricDialect.doesTriggerExist(
+                        history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getSourceTableName(), history.getNameForInsertTrigger());
+                triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getSourceTableName(),
+                        history.getNameForUpdateTrigger());
+                triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getSourceTableName(),
+                        history.getNameForDeleteTrigger());
+                if (triggerExists) {
+                    log.warn(
+                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id={} and trigger_hist_id={}",
+                            history.getTriggerId(), history.getTriggerHistoryId());
+                } else {
+                    inactivateTriggerHistory(history);
                 }
             }
         }
-
-        boolean triggerExists = symmetricDialect.doesTriggerExist(
-                history.getSourceCatalogName(), history.getSourceSchemaName(),
-                history.getSourceTableName(), history.getNameForInsertTrigger());
-        triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getSourceTableName(),
-                history.getNameForUpdateTrigger());
-        triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getSourceTableName(),
-                history.getNameForDeleteTrigger());
-        if (triggerExists) {
-            log.warn(
-                    "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id={} and trigger_hist_id={}",
-                    history.getTriggerId(), history.getTriggerHistoryId());
-        } else {
-            inactivateTriggerHistory(history);
-        }
     }
-    
+
     protected List<TriggerRouter> toList(Collection<List<TriggerRouter>> source) {
         ArrayList<TriggerRouter> list = new ArrayList<TriggerRouter>();
         for (List<TriggerRouter> triggerRouters : source) {
