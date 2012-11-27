@@ -109,7 +109,7 @@ public class StagingManager implements IStagingManager {
             log.info("Purged {} staged memory buffers, freeing {} kb of memory", purgedMemCount,
                     (int) (purgedMemSize / 1000));
         }
-        return purgedFileCount;
+        return purgedFileCount + purgedMemCount;
     }
 
     /**
