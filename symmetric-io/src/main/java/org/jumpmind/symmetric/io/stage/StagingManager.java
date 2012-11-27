@@ -80,21 +80,35 @@ public class StagingManager implements IStagingManager {
     public long clean() {
         this.refreshResourceList();
         Set<String> keys = new HashSet<String>(resourceList.keySet());
-        long purgedCount = 0;
-        long purgedSize = 0;
+        long purgedFileCount = 0;
+        long purgedFileSize = 0;
+        long purgedMemCount = 0;
+        long purgedMemSize = 0;        
         for (String key : keys) {
             IStagedResource resource = resourceList.get(key);
-            boolean resourceIsOld = System.currentTimeMillis() - resource.getCreateTime() > timeToLiveInMs;
-            if (resource.getState() == State.DONE && (resourceIsOld || !resource.exists())) {
-                purgedCount++;
-                purgedSize += resource.getSize();
+            boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > timeToLiveInMs;
+            if ((resource.getState() == State.READY || resource.getState() == State.DONE) && 
+                (resourceIsOld || !resource.exists())) {
+                if (resource.isFileResource()) {
+                    purgedFileCount++;
+                    purgedFileSize += resource.getSize();
+                } else {
+                    purgedMemCount++;
+                    purgedMemSize += resource.getSize();                    
+                }
                 resource.delete();
                 resourceList.remove(key);
             }
         }
-        log.info("Purged {} staged files, freeing {} kb of disk space", purgedCount,
-                (int) (purgedSize / 1000));
-        return purgedCount;
+        if (purgedFileCount > 0) {
+            log.info("Purged {} staged files, freeing {} kb of disk space", purgedFileCount,
+                    (int) (purgedFileSize / 1000));
+        }
+        if (purgedMemCount > 0) {
+            log.info("Purged {} staged memory buffers, freeing {} kb of memory", purgedMemCount,
+                    (int) (purgedMemSize / 1000));
+        }
+        return purgedFileCount;
     }
 
     /**
@@ -124,7 +138,15 @@ public class StagingManager implements IStagingManager {
 
     public IStagedResource find(Object... path) {
         String filePath = buildFilePath(path);
-        return resourceList.get(filePath);
+        
+        IStagedResource resource = resourceList.get(filePath);
+        if (resource != null) {
+            if (!resource.exists()
+                    && (resource.getState() == State.READY || resource.getState() == State.DONE)) {
+                resource.delete();
+                resource = null;
+            }
+        }
     }
 
 }
