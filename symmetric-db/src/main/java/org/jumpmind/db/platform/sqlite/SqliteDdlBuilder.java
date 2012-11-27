@@ -30,9 +30,9 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
         
-        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "VARCHAR", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(Types.TIME, "VARCHAR", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(Types.DATE, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.VARCHAR);
 
         databaseInfo.addNativeTypeMapping(Types.BIT, "INTEGER", Types.INTEGER);
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "INTEGER", Types.INTEGER);
