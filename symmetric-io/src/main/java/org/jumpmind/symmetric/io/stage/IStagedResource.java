@@ -50,6 +50,8 @@ public interface IStagedResource {
     
     public long getCreateTime();
     
+    public boolean isFileResource();
+    
     public void delete();
     
     public boolean exists();
