@@ -147,6 +147,8 @@ public class StagingManager implements IStagingManager {
                 resource = null;
             }
         }
+        
+        return resource;
     }
 
 }
