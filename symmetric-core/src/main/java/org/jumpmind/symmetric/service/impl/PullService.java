@@ -146,7 +146,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         && status.getBatchesProcessed() > batchesProcessedCount);
             } catch (ConnectException ex) {
                 log.warn(
-                        "Failed to connect to the transport: ",
+                        "Failed to connect to the transport: {}",
                         (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
                                 .getSyncUrl()));
                 fireOffline(ex, node, status);
