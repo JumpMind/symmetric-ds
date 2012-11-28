@@ -569,7 +569,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected OutgoingBatch sendOutgoingBatch(Node targetNode, OutgoingBatch currentBatch,
             IDataWriter dataWriter) {
         if (currentBatch.getStatus() != Status.OK) {
-
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
             changeBatchStatus(Status.SE, currentBatch);
 
@@ -583,11 +582,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                 new DataProcessor(dataReader, dataWriter).process(ctx);
-                Statistics stats = dataWriter.getStatistics().values().iterator().next();
-                statisticManager.incrementDataSent(currentBatch.getChannelId(),
-                        stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
-                statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
-                        stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                if (dataWriter.getStatistics().size() > 0) {
+                    Statistics stats = dataWriter.getStatistics().values().iterator().next();
+                    statisticManager.incrementDataSent(currentBatch.getChannelId(),
+                            stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                    statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
+                            stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                }
 
             }
 
