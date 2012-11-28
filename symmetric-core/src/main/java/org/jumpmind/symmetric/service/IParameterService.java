@@ -74,6 +74,8 @@ public interface IParameterService {
     public TypedProperties getAllParameters();
 
     public void setParameterFilter(IParameterFilter f);
+    
+    public boolean isRegistrationServer();
 
     /**
      * Get the group id for this instance
