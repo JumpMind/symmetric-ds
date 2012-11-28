@@ -70,6 +70,12 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
     
     @Override
+    protected void buildSqlReplacementTokens() {
+        super.buildSqlReplacementTokens();
+        sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d,SYM_IDX_D_CHANNEL_ID) */");
+    }
+    
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_TRIGGERS,
