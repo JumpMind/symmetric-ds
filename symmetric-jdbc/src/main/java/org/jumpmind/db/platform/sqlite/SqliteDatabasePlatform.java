@@ -1,5 +1,8 @@
 package org.jumpmind.db.platform.sqlite;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -13,10 +16,20 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
     /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     
+    private Map<String, String> sqlScriptReplacementTokens;
+    
     public SqliteDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
     }
 
+    
+    @Override
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return sqlScriptReplacementTokens;
+    }
+    
     public String getName() {
         return DatabaseNamesConstants.SQLITE;
     }
