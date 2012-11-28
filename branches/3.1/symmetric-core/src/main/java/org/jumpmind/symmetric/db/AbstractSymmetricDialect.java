@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -99,6 +101,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.platform = platform;
 
         log.info("The DbDialect being used is {}", this.getClass().getName());
+        
+        buildSqlReplacementTokens();
 
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
@@ -119,6 +123,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
     }
+    
+    protected void buildSqlReplacementTokens() {
+        sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "");
+    }
+    
+    public Map<String, String> getSqlReplacementTokens() {
+        return sqlReplacementTokens;
+    }    
 
     /*
      * Provide a default implementation of this method using DDLUtils,

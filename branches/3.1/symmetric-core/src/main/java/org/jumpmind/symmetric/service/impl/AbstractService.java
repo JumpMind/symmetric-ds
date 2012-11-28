@@ -96,10 +96,12 @@ abstract public class AbstractService implements IService {
     }
 
     protected Map<String, String> createSqlReplacementTokens() {
-        return createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
+        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken());
+        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
+        return replacementTokens;
     }
-
+    
     protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
             String quotedIdentifier) {
         Map<String, String> map = new HashMap<String, String>();
