@@ -109,6 +109,14 @@ public class Column implements Cloneable, Serializable {
         setPrimaryKey(primaryKey);
     }
 
+    public Column(String name, boolean primaryKey, int typeCode, int size, int scale) {
+        setName(name);
+        setPrimaryKey(primaryKey);
+        setRequired(primaryKey);
+        setTypeCode(typeCode);
+        setSizeAndScale(size, scale);
+    }
+
     /**
      * Returns the name of the column.
      * 
