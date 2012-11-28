@@ -1,3 +1,8 @@
+SymmetricDS - 3.1.10 (Released 2012-11-27) 
+==========================================
+- 0000926: [Bug] Staging area is not being cleaned up. Can cause out of memory or file system issues. (chenson) - closed.
+- 0000913: [Bug] Verify that a staged resource reference exists before returning the reference. Symmetricds wasn't allowing me to remove failed (chenson) - closed.
+
 SymmetricDS - 3.1.9 (Released 2012-10-30) 
 =========================================
 - 0000889: [Bug] dbimport of xml format fails with mark/reset error (chenson) - closed.
