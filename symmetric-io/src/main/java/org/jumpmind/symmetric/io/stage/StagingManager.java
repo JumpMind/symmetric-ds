@@ -54,24 +54,28 @@ public class StagingManager implements IStagingManager {
     }
 
     protected void refreshResourceList() {
+        synchronized (StagingManager.class) {
+            Set<String> keys = new HashSet<String>(resourceList.keySet());
+            for (String key : keys) {
+                IStagedResource resource = resourceList.get(key);
+                if (resource != null && !resource.exists()) {
+                    resourceList.remove(key);
+                }
+            }
 
-        Set<String> keys = new HashSet<String>(resourceList.keySet());
-        for (String key : keys) {
-            IStagedResource resource = resourceList.get(key);
-            if (resource != null && !resource.exists()) {
-                resourceList.remove(key);
+            Collection<File> files = FileUtils.listFiles(this.directory,
+                    new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
+                            State.DONE.getExtensionName() }, true);
+            for (File file : files) {
+                try {
+                    StagedResource resource = new StagedResource(memoryThresholdInBytes, directory,
+                            file, this);
+                    resourceList.put(resource.getPath(), resource);
+                } catch (IllegalStateException ex) {
+                    log.warn(ex.getMessage());
+                }
             }
         }
-
-        Collection<File> files = FileUtils.listFiles(this.directory,
-                new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
-                        State.DONE.getExtensionName() }, true);
-        for (File file : files) {
-            StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, file,
-                    this);
-            resourceList.put(resource.getPath(), resource);
-        }
-
     }
 
     /**
@@ -79,37 +83,40 @@ public class StagingManager implements IStagingManager {
      * marked as done.
      */
     public long clean() {
-        this.refreshResourceList();
-        Set<String> keys = new HashSet<String>(resourceList.keySet());
-        long purgedFileCount = 0;
-        long purgedFileSize = 0;
-        long purgedMemCount = 0;
-        long purgedMemSize = 0;        
-        for (String key : keys) {
-            IStagedResource resource = resourceList.get(key);
-            boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > timeToLiveInMs;
-            if ((resource.getState() == State.READY || resource.getState() == State.DONE) && 
-                (resourceIsOld || !resource.exists())) {
-                if (resource.isFileResource()) {
-                    purgedFileCount++;
-                    purgedFileSize += resource.getSize();
-                } else {
-                    purgedMemCount++;
-                    purgedMemSize += resource.getSize();                    
+        synchronized (StagingManager.class) {
+            this.refreshResourceList();
+
+            Set<String> keys = new HashSet<String>(resourceList.keySet());
+            long purgedFileCount = 0;
+            long purgedFileSize = 0;
+            long purgedMemCount = 0;
+            long purgedMemSize = 0;
+            for (String key : keys) {
+                IStagedResource resource = resourceList.get(key);
+                boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > timeToLiveInMs;
+                if ((resource.getState() == State.READY || resource.getState() == State.DONE)
+                        && (resourceIsOld || !resource.exists())) {
+                    if (resource.isFileResource()) {
+                        purgedFileCount++;
+                        purgedFileSize += resource.getSize();
+                    } else {
+                        purgedMemCount++;
+                        purgedMemSize += resource.getSize();
+                    }
+                    resource.delete();
+                    resourceList.remove(key);
                 }
-                resource.delete();
-                resourceList.remove(key);
             }
+            if (purgedFileCount > 0) {
+                log.info("Purged {} staged files, freeing {} kb of disk space", purgedFileCount,
+                        (int) (purgedFileSize / 1000));
+            }
+            if (purgedMemCount > 0) {
+                log.info("Purged {} staged memory buffers, freeing {} kb of memory",
+                        purgedMemCount, (int) (purgedMemSize / 1000));
+            }
+            return purgedFileCount + purgedMemCount;
         }
-        if (purgedFileCount > 0) {
-            log.info("Purged {} staged files, freeing {} kb of disk space", purgedFileCount,
-                    (int) (purgedFileSize / 1000));
-        }
-        if (purgedMemCount > 0) {
-            log.info("Purged {} staged memory buffers, freeing {} kb of memory", purgedMemCount,
-                    (int) (purgedMemSize / 1000));
-        }
-        return purgedFileCount + purgedMemCount;
     }
 
     /**
