@@ -1,3 +1,7 @@
+SymmetricDS - 3.1.11 (Released 2012-11-28) 
+=======================================
+- 0000894: [New Feature] Add property to turn sync_on_incoming off for sym_ table triggers (chenson) - closed.
+
 SymmetricDS - 3.1.10 (Released 2012-11-27) 
 ==========================================
 - 0000926: [Bug] Staging area is not being cleaned up. Can cause out of memory or file system issues. (chenson) - closed.
