@@ -33,7 +33,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'I',    \n"
                                 + "      $(triggerHistoryId),                                          \n"
                                 + "      $(columns),    \n" + "      '$(channelName)', null,null,    \n"
-                                + "      $(externalSelect),    \n" + "      CURRENT_TIMESTAMP    \n" + "    );    \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
                                 + "end");
 
         sqlTemplates
@@ -47,7 +47,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
                                 + "      '$(channelName)', null,null,   \n" + "      $(externalSelect),   \n"
-                                + "      CURRENT_TIMESTAMP   \n" + "    );   \n" + "end  ");
+                                + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n" + "end  ");
 
         sqlTemplates
                 .put("deleteTriggerTemplate",
@@ -59,7 +59,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
                                 + "       $(oldColumns),    \n" + "      '$(channelName)', null,null,    \n"
-                                + "      $(externalSelect),    \n" + "      CURRENT_TIMESTAMP    \n" + "    );    \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );    \n"
                                 + "end");
 
         sqlTemplates.put("initialLoadSqlTemplate",
