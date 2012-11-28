@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.db;
 
 import java.util.Date;
 import java.util.Set;
+import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -214,5 +215,7 @@ public interface ISymmetricDialect {
     public Database readSymmetricSchemaFromXml();
     
     public String getTemplateNumberPrecisionSpec();
+    
+    public Map<String, String> getSqlReplacementTokens();
     
 }
