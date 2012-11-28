@@ -158,10 +158,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 ResultSet rs = null;
                 try {
                     ps = con.prepareStatement(sql);
-                    JdbcUtils.setValues(ps, args);
+                    jdbcSqlTemplate.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = JdbcUtils.getObjectFromResultSet(rs, clazz);
+                        result = jdbcSqlTemplate.getObjectFromResultSet(rs, clazz);
                     }
                 } finally {
                     JdbcSqlTemplate.close(rs);
@@ -189,7 +189,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     st = c.prepareStatement(sql);
                     st.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
                     if (args != null) {
-                        JdbcUtils.setValues(st, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
+                        jdbcSqlTemplate.setValues(st, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
                     }
                     st.setFetchSize(jdbcSqlTemplate.getSettings().getFetchSize());
                     rs = st.executeQuery();
@@ -237,7 +237,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 ResultSet rs = null;
                 try {
                     stmt = con.prepareStatement(sql);
-                    JdbcUtils.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
+                    jdbcSqlTemplate.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
                     if (stmt.execute()) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -261,7 +261,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 try {
                     stmt = con.prepareStatement(sql);
                     if (args != null && args.length > 0) {
-                        JdbcUtils.setValues(stmt, args);
+                        jdbcSqlTemplate.setValues(stmt, args);
                     }
                     if (stmt.execute()) {
                         rs = stmt.getResultSet();
@@ -338,7 +338,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         : "");
             }
             if (args != null) {
-                JdbcUtils.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
+                jdbcSqlTemplate.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
             }
             if (inBatchMode) {
                 if (marker == null) {

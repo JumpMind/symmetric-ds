@@ -11,7 +11,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
-
+    
     public SqliteDdlBuilder() {
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_SERIALIZABLE);
         databaseInfo.setPrimaryKeyEmbedded(true);
@@ -30,9 +30,9 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
         
-        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "VARCHAR", Types.VARCHAR);
 
         databaseInfo.addNativeTypeMapping(Types.BIT, "INTEGER", Types.INTEGER);
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "INTEGER", Types.INTEGER);
