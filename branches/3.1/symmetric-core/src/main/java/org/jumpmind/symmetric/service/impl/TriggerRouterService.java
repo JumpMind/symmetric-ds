@@ -284,7 +284,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
-        trigger.setSyncOnIncomingBatch(true);
+        trigger.setSyncOnIncomingBatch(parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true));
         trigger.setSourceTableName(tableName);
         trigger.setUseCaptureOldData(false);
         trigger.setChannelId(Constants.CHANNEL_CONFIG);

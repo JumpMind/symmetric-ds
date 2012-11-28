@@ -210,6 +210,8 @@ final public class ParameterConstants {
     
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
     
+    public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
