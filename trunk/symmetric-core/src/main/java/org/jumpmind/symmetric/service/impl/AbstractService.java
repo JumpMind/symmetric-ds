@@ -100,8 +100,10 @@ abstract public class AbstractService implements IService {
     }
 
     protected Map<String, String> createSqlReplacementTokens() {
-        return createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
+        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken());
+        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
+        return replacementTokens;
     }
 
     protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
@@ -111,7 +113,7 @@ abstract public class AbstractService implements IService {
         for (String table : tables) {
             map.put(table, String.format("%s%s%s", tablePrefix,
                     StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-        }
+        }        
         return map;
     }
 
