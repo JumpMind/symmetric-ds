@@ -20,6 +20,10 @@ public class MockParameterService extends AbstractParameterService implements IP
         this.properties = properties;
     }
     
+    public boolean isRegistrationServer() {
+        return false;
+    }
+    
     public void saveParameter(String key, Object paramValue) {
     }
 

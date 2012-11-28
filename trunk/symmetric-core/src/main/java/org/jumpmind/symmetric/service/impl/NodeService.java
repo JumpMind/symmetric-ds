@@ -491,8 +491,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean isRegistrationServer() {
-        return StringUtils.isBlank(parameterService.getRegistrationUrl())
-                || parameterService.getRegistrationUrl().equals(parameterService.getSyncUrl());
+        return parameterService.isRegistrationServer();
     }
 
     public NodeStatus getNodeStatus() {
