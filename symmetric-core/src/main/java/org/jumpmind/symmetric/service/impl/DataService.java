@@ -21,9 +21,13 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -43,9 +47,11 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -87,7 +93,8 @@ public class DataService extends AbstractService implements IDataService {
         this.engine = engine;
         this.reloadListeners = new ArrayList<IReloadListener>();
         this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
-        this.heartbeatListeners.add(new PushHeartbeatListener(engine));
+        this.heartbeatListeners.add(new PushHeartbeatListener(parameterService, this, engine.getNodeService(),
+                symmetricDialect));
         this.dataMapper = new DataMapper();
 
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
@@ -916,6 +923,21 @@ public class DataService extends AbstractService implements IDataService {
         return map;
     }
 
+    public void setRowDataFromMap(Data data, Map<String, String> map) {
+        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+        for (String columnName : columnNames) {
+            try {
+                writer.write(map.get(columnName.toLowerCase()), true);
+            } catch (IOException e) {
+            }
+        }
+        writer.close();
+        data.setRowData(out.toString());
+    }
+
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat
      * according to
@@ -962,11 +984,38 @@ public class DataService extends AbstractService implements IDataService {
         if (listeners.size() > 0) {
             Node me = engine.getNodeService().findIdentity();
             if (me != null) {
+                log.info("Updating time and version node info");
+                Calendar now = Calendar.getInstance();
+                now.set(Calendar.MILLISECOND, 0);
+                me.setDeploymentType(engine.getDeploymentType());
+                me.setHeartbeatTime(now.getTime());
+                me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                me.setSymmetricVersion(Version.version());
+                me.setDatabaseType(symmetricDialect.getName());
+                me.setDatabaseVersion(symmetricDialect.getVersion());
+                me.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
+                if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
+                    log.info("Updating my node configuration info according to the symmetric properties");
+                    me.setSchemaVersion(parameterService
+                            .getString(ParameterConstants.SCHEMA_VERSION));
+                    me.setExternalId(parameterService.getExternalId());
+                    me.setNodeGroupId(parameterService.getNodeGroupId());
+                    if (!StringUtils.isBlank(parameterService.getSyncUrl())) {
+                        me.setSyncUrl(parameterService.getSyncUrl());
+                    }
+                }
+
+                engine.getNodeService().save(me);
+                engine.getNodeService().updateNodeHostForCurrentNode();
+                log.info("Done updating my node info.");
+
                 Set<Node> children = engine.getNodeService().findNodesThatOriginatedFromNodeId(me.getNodeId());
                 for (IHeartbeatListener l : listeners) {
                     l.heartbeat(me, children);
                 }
+
                 updateLastHeartbeatTime(listeners);
+
             } else {
                 log.debug("Did not run the heartbeat process because the node has not been configured");
             }

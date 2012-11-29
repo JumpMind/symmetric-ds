@@ -109,24 +109,17 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     /*
                      * don't route node security to it's own node. that node
                      * will get node security via registration and it will be
-                     * updated by initial load.  Otherwise, updates can be 
-                     * unpredictable in the order they will be applied at the
-                     * node because updates are on a different channel than reloads
+                     * updated by initial load
                      */
                     if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+
                         nodeIds.remove(nodeIdInQuestion);
                     }
-                    
                     /*
                      * don't route insert events for a node to itself. they will
-                     * be loaded during registration.  if we route them, then an old
-                     * state can override the correct state
-                     * 
-                     * don't send deletes to a node.  a node should be responsible for deleting
-                     * itself.
+                     * be loaded during
                      */
-                    if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT ||
-                            dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
+                    if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
                         nodeIds.remove(nodeIdInQuestion);
                     }
                 }
@@ -241,7 +234,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         && !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
                     if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
                         return true;
-                    } else if (networkedNodeThatCouldBeRoutedTo != null) {
+                    } else {
                         // the node was created at some other node. lets attempt
                         // to get that update back to that node
                         return networkedNodeThatCouldBeRoutedTo.isInChildHierarchy(createdAtNodeId);

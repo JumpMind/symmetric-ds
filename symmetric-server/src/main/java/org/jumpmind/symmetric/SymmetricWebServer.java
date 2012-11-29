@@ -96,8 +96,6 @@ public class SymmetricWebServer {
     protected int httpPort = -1;
 
     protected int httpsPort = -1;
-    
-    protected int jmxPort = -1;
 
     protected String basicAuthUsername = null;
 
@@ -141,48 +139,44 @@ public class SymmetricWebServer {
         this.maxIdleTime = maxIdleTime;
     }
 
-    public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {
+    public SymmetricWebServer start(int port, String propertiesUrl) throws Exception {
         this.propertiesFile = propertiesUrl;
-        return start(httpPort, jmxPort);
+        return start(port);
     }
 
     public SymmetricWebServer start() throws Exception {
         if (httpPort > 0 && httpsPort > 0) {
-            return startMixed(httpPort, httpsPort, jmxPort);
+            return startMixed(httpPort, httpsPort);
         } else if (httpPort > 0) {
-            return start(httpPort, jmxPort);
+            return start(httpPort);
         } else if (httpsPort > 0) {
-            return startSecure(httpsPort, jmxPort);
+            return startSecure(httpsPort);
         } else {
             throw new IllegalStateException(
                     "Either an http or https port needs to be set before starting the server.");
         }
     }
-    
-    public SymmetricWebServer start(int httpPort) throws Exception {
-        return start(httpPort, 0, httpPort + 1, Mode.HTTP);
-    }
-    
-    public SymmetricWebServer start(int httpPort, int jmxPort) throws Exception {
-        return start(httpPort, 0, jmxPort, Mode.HTTP);
+
+    public SymmetricWebServer start(int port) throws Exception {
+        return start(port, 0, Mode.HTTP);
     }
 
-    public SymmetricWebServer startSecure(int httpsPort, int jmxPort) throws Exception {
-        return start(0, httpsPort, jmxPort, Mode.HTTPS);
+    public SymmetricWebServer startSecure(int port) throws Exception {
+        return start(0, port, Mode.HTTPS);
     }
 
-    public SymmetricWebServer startMixed(int httpPort, int secureHttpPort, int jmxPort) throws Exception {
-        return start(httpPort, secureHttpPort, jmxPort, Mode.MIXED);
+    public SymmetricWebServer startMixed(int port, int securePort) throws Exception {
+        return start(port, securePort, Mode.MIXED);
     }
-    
-    public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
 
-        // indicate to the app that we are in stand alone mode
+    public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
+
+        // indicate to the app that we are in standalone mode
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
 
         server = new Server();
 
-        server.setConnectors(getConnectors(httpPort, securePort, mode));
+        server.setConnectors(getConnectors(port, securePort, mode));
         setupBasicAuthIfNeeded(server);
 
         webapp = new WebAppContext();
@@ -191,7 +185,7 @@ public class SymmetricWebServer {
         webapp.setWar(webAppDir);
         SessionManager sm = webapp.getSessionHandler().getSessionManager();
         sm.setMaxInactiveInterval(maxIdleTime / 1000);
-        sm.setSessionCookie(sm.getSessionCookie() + (httpPort > 0 ? httpPort : securePort));
+        sm.setSessionCookie(sm.getSessionCookie() + (port > 0 ? port : securePort));
         webapp.getServletContext().getContextHandler().setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
         webapp.getServletContext().getContextHandler().setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));        
         if (propertiesFile != null) {
@@ -207,9 +201,8 @@ public class SymmetricWebServer {
 
         server.start();
 
-        if (httpJmxPort > 0) {
-            registerHttpJmxAdaptor(httpJmxPort);
-        }
+        int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
+        registerHttpJmxAdaptor(httpJmxPort);
 
         if (join) {
             log.info("Joining the web server main thread");
@@ -373,7 +366,7 @@ public class SymmetricWebServer {
     }
 
     public static void main(String[] args) throws Exception {
-        new SymmetricWebServer().start(8080, 8081);
+        new SymmetricWebServer().start(8080);
     }
 
     public boolean isJoin() {
@@ -446,14 +439,6 @@ public class SymmetricWebServer {
 
     public String getName() {
         return name;
-    }
-
-    public int getJmxPort() {
-        return jmxPort;
-    }
-
-    public void setJmxPort(int jmxPort) {
-        this.jmxPort = jmxPort;
     }
 
 }

@@ -978,8 +978,6 @@ Enter key password for <sym>
         <title>Basic Authentication</title>
         <para>
             SymmetricDS supports basic authentication for client and server nodes. 
-        </para>
-        <para>
             To configure a client node to use basic authentication when communicating with a server node, 
             specify the following startup parameters:
         </para>
@@ -1008,28 +1006,31 @@ Enter key password for <sym>
                 </varlistentry>
             </variablelist>
         <para>
-            The SymmetricDS Standalone Web Server also supports Basic Authentication.  It can be enabled by 
-            passing the following arguments to the startup program
+            The SymmetricDS Standalone and Embedded Server also support basic authentication.
+            This feature is enabled by specifying the basic authentication username and
+            password using the following startup parameters:
         </para>
             <variablelist>
                 <varlistentry>
                     <term>
-                        <command>--http-basic-auth-user</command>
+                        <command>embedded.webserver.basic.auth.username</command>
                     </term>
                     <listitem>
                         <para>
-                            username for basic authentication
+                            username for basic authentication for an embedded server
+                            or standalone server node.
                             [&#xA0;Default:&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>--http-basic-auth-password</command>
+                        <command>embedded.webserver.basic.auth.password</command>
                     </term>
                     <listitem>
                         <para>
-                            password for basic authentication
+                            password for basic authentication for an embedded server
+                            or standalone server node.
                             [&#xA0;Default:&#xA0;]
                         </para>
                     </listitem>

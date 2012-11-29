@@ -1,47 +1,23 @@
-/*
- * Licensed to JumpMind Inc under one or more contributor 
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU Lesser General Public License (the
- * "License"); you may not use this file except in compliance
- * with the License. 
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
- * <http://www.gnu.org/licenses/>.
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License. 
- */
-package org.jumpmind.symmetric.web.rest.model;
+package org.jumpmind.symmetric.web.rest;
 
 import org.jumpmind.symmetric.Version;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name="nodestatus")
 public class NodeStatus {
-    
-    boolean started;        
 
     /**
      * Is the node is registered with another node.
      */
-	boolean registered;
+	Boolean registered;
 
 	/**
 	 * Is the node a registration server.
 	 */
-	boolean registrationServer;
+	Boolean registrationServer;
 
 	/**
 	 * Is the node initially loaded.
 	 */
-	boolean initialLoaded;
+	Boolean isInitialLoaded;
 
 	/**
 	 * The node's ID.
@@ -104,84 +80,45 @@ public class NodeStatus {
 	private String symmetricVersion = Version.version();
 
 	/**
-	 * The last heartbeat for the given node.
+	 * @return Boolean indicating if the node is registered with another node.
 	 */
-	private String lastHeartbeat;
-	
-	/**
-	 * The hearbeat interval for the given node.
-	 */
-	private String hearbeatInterval;
-	
-	
-	public boolean isStarted() {
-		return started;
-	}
-
-	public void setStarted(boolean started) {
-		this.started = started;
-	}
-
-	public String getLastHeartbeat() {
-		return lastHeartbeat;
-	}
-
-	public void setLastHeartbeat(String lastHeartbeat) {
-		this.lastHeartbeat = lastHeartbeat;
-	}
-
-	public String getHearbeatInterval() {
-		return hearbeatInterval;
-	}
-
-	public void setHearbeatInterval(String hearbeatInterval) {
-		this.hearbeatInterval = hearbeatInterval;
-	}
-
-	public void setInitialLoaded(boolean initialLoaded) {
-		this.initialLoaded = initialLoaded;
-	}
-
-	/**
-	 * @return boolean indicating if the node is registered with another node.
-	 */
-	public boolean getRegistered() {
+	public Boolean getRegistered() {
 		return registered;
 	}
 
 	/**
-	 * @param registered boolean indicating if the node is registered with another node.
+	 * @param registered Boolean indicating if the node is registered with another node.
 	 */
-	public void setRegistered(boolean registered) {
+	public void setRegistered(Boolean registered) {
 		this.registered = registered;
 	}
 
 	/** 
-	 * @return boolean indicating if the node is a registration server.
+	 * @return Boolean indicating if the node is a registration server.
 	 */
-	public boolean getRegistrationServer() {
+	public Boolean getRegistrationServer() {
 		return registrationServer;
 	}
 
 	/**
-	 * @param registrationServer boolean indicating if the node is a registration server.
+	 * @param registrationServer Boolean indicating if the node is a registration server.
 	 */
-	public void setRegistrationServer(boolean registrationServer) {
+	public void setRegistrationServer(Boolean registrationServer) {
 		this.registrationServer = registrationServer;
 	}
 
 	/**
-	 * @return boolean indicating if the node is initial loaded.
+	 * @return Boolean indicating if the node is initial loaded.
 	 */
-	public boolean getInitialLoaded() {
-		return initialLoaded;
+	public Boolean getIsInitialLoaded() {
+		return isInitialLoaded;
 	}
 
 	/**
-	 * @param isInitialLoaded boolean indicating if the node is initial loaded.
+	 * @param isInitialLoaded Boolean indicating if the node is initial loaded.
 	 */
-	public void setIsInitialLoaded(boolean isInitialLoaded) {
-		this.initialLoaded = isInitialLoaded;
+	public void setIsInitialLoaded(Boolean isInitialLoaded) {
+		this.isInitialLoaded = isInitialLoaded;
 	}
 
 	/**

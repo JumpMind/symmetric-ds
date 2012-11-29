@@ -70,7 +70,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
-    @Test(timeout = 240000)
+    @Test(timeout = 120000)
     public void createServer() {
         ISymmetricEngine server = getServer();
         Assert.assertNotNull(server);
@@ -78,7 +78,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    @Test(timeout = 240000)
+    @Test(timeout = 120000)
     public void registerClientWithRoot() {
         logTestRunning();
         ISymmetricEngine rootEngine = getServer();
@@ -825,15 +825,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     new Object[] { 2, "00001", "" });
             clientPush();
 
-            int status =-1;
-            
-            if (getServer().getSymmetricDialect().getPlatform().getDatabaseInfo().isBlankCharColumnSpacePadded()) {
-                status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
+            int status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
                     new Object[] { "00001", "   " });
-            } else {
-                status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
-                        new Object[] { "00001", "" });
-            }
 
             Assert.assertEquals("Wrong store status", 2, status);
         } finally {
@@ -903,7 +896,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testHeartbeat() throws Exception {
         logTestRunning();
-        final String checkHeartbeatSql = "select heartbeat_time from sym_node_host where node_id='"
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='"
                 + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
         Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
                 checkHeartbeatSql, Timestamp.class);

@@ -27,8 +27,11 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectUnroutedCountForChannelSql", ""
                 + "select count(*) from $(data) where channel_id=? and data_id >=?   ");
 
+        putSql("selectLastDataIdRoutedUsingDataRefSql", ""
+                + "select max(ref_data_id) from $(data)_ref   ");
+
         putSql("selectLastDataIdRoutedUsingDataGapSql", ""
-                + "select max(start_id) from $(data_gap)   ");
+                + "select max(end_id) from $(data_gap)   ");
 
     }
 

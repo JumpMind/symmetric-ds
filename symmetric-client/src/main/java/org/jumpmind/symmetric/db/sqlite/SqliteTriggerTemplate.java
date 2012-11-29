@@ -7,7 +7,7 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 
 public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
 
-    public SqliteTriggerTemplate(AbstractSymmetricDialect symmetricDialect) {
+    protected SqliteTriggerTemplate(AbstractSymmetricDialect symmetricDialect) {
         super(symmetricDialect);
 
         // formatter:off

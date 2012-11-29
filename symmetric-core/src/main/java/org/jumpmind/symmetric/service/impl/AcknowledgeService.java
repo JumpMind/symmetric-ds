@@ -70,7 +70,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             }
         }
 
-        if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+        if (batch.getBatchId() == BatchAck.VIRTUAL_BATCH_FOR_REGISTRATION) {
             if (batch.isOk()) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }

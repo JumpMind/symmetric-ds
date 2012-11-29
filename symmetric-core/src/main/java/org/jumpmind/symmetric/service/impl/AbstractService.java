@@ -23,10 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -57,8 +55,6 @@ abstract public class AbstractService implements IService {
     protected String tablePrefix;
 
     private ISqlMap sqlMap;
-    
-    private Set<String> logOnce = new HashSet<String>();
 
     public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
@@ -105,7 +101,7 @@ abstract public class AbstractService implements IService {
         replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
         return replacementTokens;
     }
-
+    
     protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
             String quotedIdentifier) {
         Map<String, String> map = new HashMap<String, String>();
@@ -113,7 +109,7 @@ abstract public class AbstractService implements IService {
         for (String table : tables) {
             map.put(table, String.format("%s%s%s", tablePrefix,
                     StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-        }        
+        }
         return map;
     }
 
@@ -204,13 +200,6 @@ abstract public class AbstractService implements IService {
             where.insert(0, " where ");
         }
         return where.toString();
-    }
-    
-    protected void logOnce(String message) {
-        if (!logOnce.contains(message)) {
-            logOnce.add(message);
-            log.info(message);
-        }
     }
     
 

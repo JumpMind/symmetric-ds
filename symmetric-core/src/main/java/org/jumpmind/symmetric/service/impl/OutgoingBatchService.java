@@ -40,8 +40,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
-import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -53,7 +51,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -173,10 +170,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatchesInError() {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
-    
-    public int countOutgoingBatchesUnsent() {        
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
-    }
 
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
@@ -261,7 +254,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         for (NodeChannel channel : channels) {
             if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED)
                     || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
-                keepers.addAll(getBatchesForChannelWindows(batches,
+                keepers.addAll(batches.getBatchesForChannelWindows(
                         node,
                         channel,
                         configurationService.getNodeGroupChannelWindows(
@@ -272,54 +265,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         long executeTimeInMs = System.currentTimeMillis() - ts;
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("{} took {} ms", "Selecting batches to extract", executeTimeInMs);
+            log.warn("{} took {} ms", "selecting batches to extract", executeTimeInMs);
         }
 
         return batches;
-    }
-    
-    public List<OutgoingBatch> getBatchesForChannelWindows(OutgoingBatches batches, Node targetNode, NodeChannel channel,
-            List<NodeGroupChannelWindow> windows) {
-        List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
-        List<OutgoingBatch> current = batches.getBatches();
-        if (current != null && current.size() > 0) {
-            if (inTimeWindow(windows, targetNode)) {
-                int maxBatchesToSend = channel.getMaxBatchToSend();
-                for (OutgoingBatch outgoingBatch : current) {
-                    if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && maxBatchesToSend > 0) {
-                        keeping.add(outgoingBatch);
-                        maxBatchesToSend--;
-                    }
-                }
-            }
-        }
-        return keeping;
-    }
-
-    /**
-     * If {@link NodeGroupChannelWindow}s are defined for this channel, then
-     * check to see if the time (according to the offset passed in) is within on
-     * of the configured windows.
-     */
-    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, Node targetNode) {
-        if (windows != null && windows.size() > 0) {
-            for (NodeGroupChannelWindow window : windows) {
-                String timezoneOffset = null;
-                List<NodeHost> hosts = nodeService.findNodeHosts(targetNode.getNodeId());
-                if (hosts.size() > 0) {
-                    timezoneOffset = hosts.get(0).getTimezoneOffset();
-                } else {
-                    timezoneOffset = AppUtils.getTimezoneOffset();
-                }
-                if (window.inTimeWindow(timezoneOffset)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return true;
-        }
-
     }
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {

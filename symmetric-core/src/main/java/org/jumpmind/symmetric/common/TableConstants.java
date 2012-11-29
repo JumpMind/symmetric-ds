@@ -46,7 +46,7 @@ public class TableConstants {
     public static final String SYM_DATA_EVENT = "data_event";
     public static final String SYM_TRANSFORM_TABLE = "transform_table";
     public static final String SYM_LOAD_FILTER = "load_filter";
-    public static final String SYM_TRANSFORM_COLUMN = "transform_column";    
+    public static final String SYM_TRANSFORM_COLUMN = "transform_column";
     public static final String SYM_TRIGGER_ROUTER = "trigger_router";
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_SECURITY = "node_security";
@@ -62,7 +62,7 @@ public class TableConstants {
     public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
     public static final String SYM_INCOMING_ERROR = "incoming_error";
-    public static final String SYM_SEQUENCE = "sequence";    
+    public static final String SYM_SEQUENCE = "sequence";
 
     private static List<String> tablesWithPrefix;
 

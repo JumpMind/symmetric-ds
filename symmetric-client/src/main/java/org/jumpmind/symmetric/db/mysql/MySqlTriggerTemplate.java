@@ -9,19 +9,58 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
     public MySqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        functionInstalledSql = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))" ;
-        geometryColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace(astext($(tableAlias).`$(columnName)`),'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))" ;        
+        xmlColumnTemplate = null;
+        arrayColumnTemplate = null;
         numberColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as char),'\"'))" ;
         datetimeColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as char),'\"'))" ;
+        timeColumnTemplate = null;
+        dateColumnTemplate = null;
         clobColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))" ;
         blobColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',hex($(tableAlias).`$(columnName)`),'\"'))" ;
+        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as unsigned),'\"'))" ;
         triggerConcatCharacter = "," ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
+        otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("transaction_id_post_5_1_23" ,
+"create function $(functionName)()                                                                                                                                                                      " + 
+"                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                                                                 " + 
+"                                  begin                                                                                                                                                                " + 
+"                                     declare comm_value varchar(50);                                                                                                                                   " + 
+"                                     declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';                                        " + 
+"                                     if @@autocommit = 0 then                                                                                                                                          " + 
+"                                          open comm_cur;                                                                                                                                               " + 
+"                                          fetch comm_cur into comm_value;                                                                                                                              " + 
+"                                          close comm_cur;                                                                                                                                              " + 
+"                                          return concat(concat(connection_id(), '.'), comm_value);                                                                                                     " + 
+"                                     else                                                                                                                                                              " + 
+"                                          return null;                                                                                                                                                 " + 
+"                                     end if;                                                                                                                                                           " + 
+"                                  end                                                                                                                                                                  " );
+        functionTemplatesToInstall.put("transaction_id_pre_5_1_23" ,
+"create function $(functionName)()                                                                                                                                                                      " + 
+"                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                                                                 " + 
+"                                  begin                                                                                                                                                                " + 
+"                                     declare comm_name varchar(50);                                                                                                                                    " + 
+"                                     declare comm_value varchar(50);                                                                                                                                   " + 
+"                                     declare comm_cur cursor for show status like 'Com_commit';                                                                                                        " + 
+"                                     if @@autocommit = 0 then                                                                                                                                          " + 
+"                                          open comm_cur;                                                                                                                                               " + 
+"                                          fetch comm_cur into comm_name, comm_value;                                                                                                                   " + 
+"                                          close comm_cur;                                                                                                                                              " + 
+"                                          return concat(concat(connection_id(), '.'), comm_value);                                                                                                     " + 
+"                                     else                                                                                                                                                              " + 
+"                                          return null;                                                                                                                                                 " + 
+"                                     end if;                                                                                                                                                           " + 
+"                                  end                                                                                                                                                                  " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

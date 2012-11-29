@@ -11,7 +11,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
-    
+
     public SqliteDdlBuilder() {
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_SERIALIZABLE);
         databaseInfo.setPrimaryKeyEmbedded(true);
@@ -59,7 +59,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.setDateOverridesToTimestamp(false);
         databaseInfo.setEmptyStringNulled(false);
-        databaseInfo.setBlankCharColumnSpacePadded(false);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
 
     }

@@ -325,11 +325,7 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
 <programlisting><![CDATA[
         alter user {user name} set search_path to {schema name};
 ]]></programlisting>
-        In addition, you will likely need the follow privelegdes as well:
-<programlisting><![CDATA[
-        GRANT USAGE ON SCHEMA {schema name} TO {user name};
-        GRANT CREATE ON SCHEMA {schema name} TO {user name};
-]]></programlisting>        
+        
         </para>
     </section>
     <section id="ap02-greenplum">

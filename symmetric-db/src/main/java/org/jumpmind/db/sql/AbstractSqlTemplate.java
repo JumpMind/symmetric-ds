@@ -96,7 +96,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public List<Row> query(String sql) {
-        return query(sql, (Object[])null, (int[]) null);
+        return query(sql, (Object[]) null, (int[]) null);
     }
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
@@ -247,11 +247,11 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return args;
     }
 
-    public SqlException translate(Throwable ex) {
+    public SqlException translate(Exception ex) {
         return translate(ex.getMessage(), ex);
     }
 
-    public SqlException translate(String message, Throwable ex) {
+    public SqlException translate(String message, Exception ex) {
         if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
             return new UniqueKeyException(ex);
         } else if (ex instanceof SqlException) {

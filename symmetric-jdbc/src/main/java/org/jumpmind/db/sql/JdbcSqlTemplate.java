@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -15,9 +14,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +27,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.SqlTypeValue;
-import org.springframework.jdbc.core.StatementCreatorUtils;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
@@ -116,10 +110,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(expandSql(sql, args));
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    setValues(ps, expandArgs(sql, args));
+                    JdbcUtils.setValues(ps, expandArgs(sql, args));
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = getObjectFromResultSet(rs, clazz);
+                        result = JdbcUtils.getObjectFromResultSet(rs, clazz);
                     }
                 } finally {
                     close(rs);
@@ -149,7 +143,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    setValues(ps, args);
+                    JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         result = lobHandler.getBlobAsBytes(rs, 1, jdbcTypeCode, jdbcTypeName);
@@ -177,7 +171,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    setValues(ps, args);
+                    JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         result = lobHandler.getClobAsString(rs, 1);
@@ -202,7 +196,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
                     if (args != null && args.length > 0) {
-                        setValues(ps, args);
+                        JdbcUtils.setValues(ps, args);
                     }
                     rs = ps.executeQuery();
                     if (rs.next()) {
@@ -274,10 +268,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
-                            setValues(ps, args, types, getLobHandler()
+                            JdbcUtils.setValues(ps, args, types, getLobHandler()
                                     .getDefaultHandler());
                         } else {
-                            setValues(ps, args);
+                            JdbcUtils.setValues(ps, args);
                         }
                         return ps.executeUpdate();
                     } finally {
@@ -694,7 +688,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             }
             ps.setQueryTimeout(settings.getQueryTimeout());
-            setValues(ps, args, types, lobHandler.getDefaultHandler());
+            JdbcUtils.setValues(ps, args, types, lobHandler.getDefaultHandler());
 
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {
@@ -736,7 +730,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return key;
     }
 
-    public boolean isUniqueKeyViolation(Throwable ex) {
+    public boolean isUniqueKeyViolation(Exception ex) {
         boolean primaryKeyViolation = false;
         if (primaryKeyViolationCodes != null || primaryKeyViolationSqlStates != null) {
             SQLException sqlEx = findSQLException(ex);
@@ -769,7 +763,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return primaryKeyViolation;
     }
 
-    public boolean isForeignKeyViolation(Throwable ex) {
+    public boolean isForeignKeyViolation(Exception ex) {
         boolean foreignKeyViolation = false;
         if (foreignKeyViolationCodes != null || foreignKeyViolationSqlStates != null) {
             SQLException sqlEx = findSQLException(ex);
@@ -813,79 +807,4 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         return null;
     }
-    
-    @SuppressWarnings("unchecked")
-    public <T> T getObjectFromResultSet(ResultSet rs, Class<T> clazz) throws SQLException {
-        T result;
-        if (Date.class.isAssignableFrom(clazz)) {
-            result = (T) rs.getTimestamp(1);
-        } else if (String.class.isAssignableFrom(clazz)) {
-            result = (T) rs.getString(1);
-        } else if (Long.class.isAssignableFrom(clazz)) {
-            result = (T)new Long(rs.getLong(1));
-        } else if (Integer.class.isAssignableFrom(clazz)) {
-            result = (T)new Integer(rs.getInt(1));
-        } else if (Float.class.isAssignableFrom(clazz)) {
-            result = (T)new Float(rs.getFloat(1));
-        } else if (Double.class.isAssignableFrom(clazz)) {
-            result = (T)new Double(rs.getDouble(1));            
-        } else if (BigDecimal.class.isAssignableFrom(clazz)) {
-            result = (T)rs.getBigDecimal(1);            
-        } else {
-            result = (T) rs.getObject(1);
-        }
-        return result;
-    }
-    
-    public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
-            LobHandler lobHandler) throws SQLException {
-        for (int i = 1; i <= args.length; i++) {
-            Object arg = args[i - 1];
-            int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
-                lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
-            } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
-                lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
-            } else if (argType == Types.CLOB && lobHandler != null) {
-                lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            } else {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(argType), arg);
-            }
-        }
-    }
-    
-    protected int verifyArgType(int argType) {
-        if (argType == -101 || argType == Types.OTHER) {
-            return SqlTypeValue.TYPE_UNKNOWN;
-        } else {
-            return argType;
-        }
-    }
-
-    public void setValues(PreparedStatement ps, Object[] args) throws SQLException {
-        if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-                Object arg = args[i];
-                doSetValue(ps, i + 1, arg);
-            }
-        }
-    }
-    
-    /**
-     * Set the value for prepared statements specified parameter index using the
-     * passed in value. This method can be overridden by sub-classes if needed.
-     * 
-     * @param ps
-     *            the PreparedStatement
-     * @param parameterPosition
-     *            index of the parameter position
-     * @param argValue
-     *            the value to set
-     * @throws SQLException
-     */
-    public void doSetValue(PreparedStatement ps, int parameterPosition, Object argValue)
-            throws SQLException {
-        StatementCreatorUtils.setParameterValue(ps, parameterPosition, SqlTypeValue.TYPE_UNKNOWN, argValue);
-    }
-   
 }

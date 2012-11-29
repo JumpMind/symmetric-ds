@@ -9,6 +9,8 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
 
     public GreenplumTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        functionInstalledSql = "select count(*) from information_schema.routines " + 
+"                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -27,6 +29,46 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
         otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("triggers_disabled" ,
+"CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$                                                                                                                     " + 
+"                                DECLARE                                                                                                                                                                " + 
+"                                  triggerDisabled INTEGER;                                                                                                                                             " + 
+"                                BEGIN                                                                                                                                                                  " + 
+"                                  select current_setting('symmetric.triggers_disabled') into triggerDisabled;                                                                                          " + 
+"                                  return triggerDisabled;                                                                                                                                              " + 
+"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+"                                  return 0;                                                                                                                                                            " + 
+"                                END;                                                                                                                                                                   " + 
+"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
+        functionTemplatesToInstall.put("node_disabled" ,
+"CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$                                                                                                                     " + 
+"                                DECLARE                                                                                                                                                                " + 
+"                                  nodeId VARCHAR(50);                                                                                                                                                  " + 
+"                                BEGIN                                                                                                                                                                  " + 
+"                                  select current_setting('symmetric.node_disabled') into nodeId;                                                                                                       " + 
+"                                  return nodeId;                                                                                                                                                       " + 
+"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+"                                  return '';                                                                                                                                                           " + 
+"                                END;                                                                                                                                                                   " + 
+"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
+        functionTemplatesToInstall.put("largeobject" ,
+"CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$                                                                                                            " + 
+"                                DECLARE                                                                                                                                                                " + 
+"                                  encodedBlob text;                                                                                                                                                    " + 
+"                                  encodedBlobPage text;                                                                                                                                                " + 
+"                                BEGIN                                                                                                                                                                  " + 
+"                                  encodedBlob := '';                                                                                                                                                   " + 
+"                                  FOR encodedBlobPage IN SELECT pg_catalog.encode(data, 'escape')                                                                                                                 " + 
+"                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP                                                                                                       " + 
+"                                    encodedBlob := encodedBlob || encodedBlobPage;                                                                                                                     " + 
+"                                  END LOOP;                                                                                                                                                            " + 
+"                                  RETURN pg_catalog.encode(pg_catalog.decode(encodedBlob, 'escape'), 'base64');                                                                                                              " + 
+"                                EXCEPTION WHEN OTHERS THEN                                                                                                                                             " + 
+"                                  RETURN '';                                                                                                                                                           " + 
+"                                END                                                                                                                                                                    " + 
+"                                $$ LANGUAGE plpgsql;                                                                                                                                                   " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

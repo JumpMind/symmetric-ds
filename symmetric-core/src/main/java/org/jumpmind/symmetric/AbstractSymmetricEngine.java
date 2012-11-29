@@ -1,23 +1,3 @@
-/*
- * Licensed to JumpMind Inc under one or more contributor 
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU Lesser General Public License (the
- * "License"); you may not use this file except in compliance
- * with the License. 
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
- * <http://www.gnu.org/licenses/>.
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License. 
- */
 package org.jumpmind.symmetric;
 
 import java.io.File;
@@ -27,7 +7,6 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -38,7 +17,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
@@ -53,11 +31,9 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -135,7 +111,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected ISecurityService securityService;
 
-    protected ParameterService parameterService;
+    protected IParameterService parameterService;
 
     protected ISymmetricDialect symmetricDialect;
 
@@ -357,7 +333,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public void setupDatabase(boolean force) {
         log.info("Initializing SymmetricDS database");
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            symmetricDialect.initTablesAndDatabaseObjects();
+            symmetricDialect.initTablesAndFunctions();
         } else {
             log.info("SymmetricDS is not configured to auto-create the database");
         }
@@ -524,57 +500,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         symmetricDialect.getDriverVersion() });
         return started;
     }
-    
-    
-    public synchronized void uninstall() {
-        
-        log.warn("Attempting an uninstall of all SymmetricDS database objects from the database");
-        
-        stop();
-        
-        try {
-            
-            List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                triggerRouterService.deleteTriggerRouter(triggerRouter);
-            }
-
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
-                triggerRouterService.deleteRouter(triggerRouter.getRouter());
-            }
-            
-            // remove the links so the symmetric table trigger will be removed
-            List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
-            for (NodeGroupLink nodeGroupLink : links) {
-                configurationService.deleteNodeGroupLink(nodeGroupLink);
-            }
-
-            // this should remove all triggers because we have removed all the
-            // trigger configuration
-            triggerRouterService.syncTriggers();
-
-        } catch (SqlException ex) {
-            // these tables must not exist
-        }
-
-        // remove any additional triggers that may remain because they were not in trigger history
-        symmetricDialect.cleanupTriggers();                
-        
-        symmetricDialect.dropTablesAndDatabaseObjects();
-        
-        // force cache to be cleared
-        nodeService.deleteIdentity();
-        
-        parameterService.setDatabaseHasBeenInitialized(false);
-        
-        log.warn("Finished uninstalling SymmetricDS database objects from the database");
-        
-    }    
 
     public synchronized void stop() {
-        
-        log.info("Stopping SymmetricDS externalId={} version={} database={}",
+    	
+        log.info("Closing SymmetricDS externalId={} version={} database={}",
                 new Object[] { parameterService == null ? "?" : parameterService.getExternalId(), Version.version(),
                         symmetricDialect == null? "?":symmetricDialect.getName() });
         if (jobManager != null) {
@@ -586,7 +515,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (nodeCommunicationService != null) {
         	nodeCommunicationService.stop();
         }
-        
         started = false;
         starting = false;
     }
@@ -930,10 +858,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     @SuppressWarnings("unchecked")
     public <T> T getDataSource() {
         return (T) getSymmetricDialect().getPlatform().getDataSource();
-    }
-    
-    public IDatabasePlatform getDatabasePlatform() {
-        return getSymmetricDialect().getPlatform();
     }
 
 }

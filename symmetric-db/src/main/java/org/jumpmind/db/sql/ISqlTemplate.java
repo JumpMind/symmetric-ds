@@ -74,11 +74,11 @@ public interface ISqlTemplate {
 
     public void testConnection();
 
-    public SqlException translate(Throwable ex);
+    public SqlException translate(Exception ex);
     
-    public boolean isUniqueKeyViolation(Throwable ex);
+    public boolean isUniqueKeyViolation(Exception ex);
     
-    public boolean isForeignKeyViolation(Throwable ex);
+    public boolean isForeignKeyViolation(Exception ex);
 
     public ISqlTransaction startSqlTransaction();
 

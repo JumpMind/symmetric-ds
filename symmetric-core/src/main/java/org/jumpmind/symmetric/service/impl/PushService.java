@@ -89,10 +89,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
-        
+
         Node identity = nodeService.findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {
-            long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
+        	long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
                     List<NodeCommunication> nodes = nodeCommunicationService
                             .list(CommunicationType.PUSH);
@@ -121,7 +121,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         }
                     }
             } else {
-                log.debug("Did not run the push process because it has been stopped");
+                log.info("Did not run the push process because the cluster service has it locked");
             }
         }
         return statuses;

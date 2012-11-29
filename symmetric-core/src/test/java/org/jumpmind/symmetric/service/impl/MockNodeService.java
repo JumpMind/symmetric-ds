@@ -228,8 +228,7 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-    public boolean deleteIdentity() {
-        return false;
+    public void deleteIdentity() {        
     }
 
     public void deleteNodeSecurity(String nodeId) {        

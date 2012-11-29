@@ -96,7 +96,7 @@ public interface INodeService {
     
     public Node getCachedIdentity();
 
-    public boolean deleteIdentity();
+    public void deleteIdentity();
 
     public List<Node> findAllNodes();
 
@@ -111,7 +111,7 @@ public interface INodeService {
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
     public void save(Node node);
-    
+
     public void updateNodeHostForCurrentNode();
 
     public void insertNodeIdentity(String nodeId);

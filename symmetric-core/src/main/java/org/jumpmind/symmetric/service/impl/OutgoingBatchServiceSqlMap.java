@@ -54,9 +54,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("countOutgoingBatchesErrorsSql" ,"" + 
 "select count(*) from $(outgoing_batch) where error_flag=1   " );
-        
-        putSql("countOutgoingBatchesUnsentSql" ,"" + 
-"select count(*) from $(outgoing_batch) where status != 'OK'" );        
 
         putSql("selectOutgoingBatchSummaryByStatusSql" ,"" + 
 "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time       " + 

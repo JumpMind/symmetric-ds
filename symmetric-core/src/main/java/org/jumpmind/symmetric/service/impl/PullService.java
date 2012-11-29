@@ -79,7 +79,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
-            long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
+        	long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PULL)) {
                     // register if we haven't already been registered
                     registrationService.registerWithServer();
@@ -95,7 +95,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
                                meetsMinimumTime = false; 
                             }
-                            if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
+                            if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {                               
                                 nodeCommunicationService.execute(nodeCommunication, statuses,
                                         this);
                                 availableThreads--;
@@ -103,7 +103,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         }
                     }
             } else {
-                log.debug("Did not run the pull process because it has been stopped");
+                log.info("Did not run the pull process because the cluster service has it locked");
             }
         }
 
@@ -147,7 +147,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         && status.getBatchesProcessed() > batchesProcessedCount);
             } catch (ConnectException ex) {
                 log.warn(
-                        "Failed to connect to the transport: {}",
+                        "Failed to connect to the transport: ",
                         (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
                                 .getSyncUrl()));
                 fireOffline(ex, node, status);

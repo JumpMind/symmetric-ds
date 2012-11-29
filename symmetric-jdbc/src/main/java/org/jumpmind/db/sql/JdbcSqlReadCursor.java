@@ -51,7 +51,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     java.sql.ResultSet.CONCUR_READ_ONLY);
             st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
             if (values != null) {
-                sqlTemplate.setValues(st, values, types, sqlTemplate.getLobHandler().getDefaultHandler());
+                JdbcUtils.setValues(st, values, types, sqlTemplate.getLobHandler().getDefaultHandler());
             }
             st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             try {
@@ -66,9 +66,6 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             SqlUtils.addSqlReadCursor(this);
             
         } catch (SQLException ex) {
-            close();
-            throw sqlTemplate.translate(sql, ex);
-        } catch (Throwable ex) {
             close();
             throw sqlTemplate.translate(sql, ex);
         }

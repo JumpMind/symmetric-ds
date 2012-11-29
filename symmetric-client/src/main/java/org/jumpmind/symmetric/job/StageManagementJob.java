@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class StageManagementJob extends AbstractJob {
@@ -29,6 +30,9 @@ public class StageManagementJob extends AbstractJob {
         if (stagingManager != null) {
             stagingManager.clean();
         }
+        
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        
     }
 
 }

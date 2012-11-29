@@ -30,8 +30,6 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 
-    private static final String TEST_TS_W_TZ = "test_ts_w_tz";
-
     @Test
     public void exportTableInAnotherSchemaOnH2() throws Exception {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
@@ -49,7 +47,8 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.setNoCreateInfo(false);
             export.setNoData(false);
 
-            export.exportTables(new String[] { "TEST" }).toLowerCase();
+            String output = export.exportTables(new String[] { "TEST" }).toLowerCase();
+            System.out.println(output);
             // TODO validate
         }
     }
@@ -72,8 +71,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         export.setCompatible(Compatible.H2);
         String output = export.exportTables(tables).toLowerCase();
 
-        Assert.assertEquals(output, 33, StringUtils.countMatches(output, "create table \"sym_"));
-        Assert.assertEquals(31,
+        Assert.assertEquals(output, 32, StringUtils.countMatches(output, "create table \"sym_"));
+        Assert.assertEquals(30,
                 StringUtils.countMatches(output, "varchar(" + Integer.MAX_VALUE + ")"));
     }
 
@@ -108,52 +107,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     }
 
-    @Test
-    public void testExportTimestampWithTimeZone() throws Exception {
-        if (createAndFillTimestampWithTimeZoneTable()) {
-            ISymmetricEngine engine = getSymmetricEngine();
-            DataSource ds = engine.getDataSource();
-
-            DbExport export = new DbExport(ds);
-            export.setCompatible(Compatible.POSTGRES);
-            export.setFormat(Format.SQL);
-            String sql = export.exportTables(new String[] { TEST_TS_W_TZ });
-            final String EXPECTED_POSTGRES = "insert into \"test_ts_w_tz\"(\"id\", \"tz\") (select 1,cast('1973-06-08 07:00:00.000000 -04:00' as timestamp with time zone) where (select 1 from \"test_ts_w_tz\" where  \"id\" = 1) is null);";
-            Assert.assertTrue("Expected the following sql:\n" +sql + "\n\n to contain:\n" +EXPECTED_POSTGRES, sql.contains(EXPECTED_POSTGRES));
-            
-            export.setCompatible(Compatible.ORACLE);
-            sql = export.exportTables(new String[] { TEST_TS_W_TZ });
-            final String EXPECTED_ORACLE = "insert into \"test_ts_w_tz\" (\"id\", \"tz\") values (1,TO_TIMESTAMP_TZ('1973-06-08 07:00:00.000000 -04:00', 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM'));";
-            Assert.assertTrue("Expected the following sql:\n" +sql + "\n\n to contain:\n" +EXPECTED_ORACLE, sql.contains(EXPECTED_ORACLE));
-
-        }
-    }
-
-    protected boolean createAndFillTimestampWithTimeZoneTable() {
-        ISymmetricEngine engine = getSymmetricEngine();
-        IDatabasePlatform platform = engine.getDatabasePlatform();
-        String dbName = platform.getName();
-        if (dbName.equals(DatabaseNamesConstants.ORACLE)
-                || dbName.equals(DatabaseNamesConstants.POSTGRESQL)) {
-            ISqlTemplate template = engine.getSqlTemplate();
-            try {
-                template.update(String.format("drop table \"%s\"", TEST_TS_W_TZ));
-            } catch (Exception ex) {
-            }
-            String createSql = String.format(
-                    "create table \"%s\" (\"id\" integer, \"tz\" timestamp with time zone, primary key (\"id\"))",
-                    TEST_TS_W_TZ);
-            template.update(createSql);          
-            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, platform.getTableFromCache(TEST_TS_W_TZ, true));            
-            template.update(statement.getSql(), statement.getValueArray(new Object[] {1, "1973-06-08 07:00:00.000 -04:00"}, new Object[] {1}));
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
-    protected void recreateImportTable() {
+    protected void recreateImportTable() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         DataSource ds = engine.getDataSource();
         DbImport reCreateTablesImport = new DbImport(ds);
@@ -219,7 +173,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(0);
 
         DbImport importCsv = new DbImport(ds);
-        importCsv.setFormat(DbImport.Format.SYM_XML);
+        importCsv.setFormat(DbImport.Format.SYM_XML); 
         importCsv.importTables(getClass().getResourceAsStream(FILE));
 
         assertCountDbImportTableRecords(2);
@@ -240,7 +194,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         assertCountDbImportTableRecords(2);
 
     }
-
+    
     @Test
     public void importXmlData() throws Exception {
         final String FILE = "/test-dbimport-1-xml-1.xml";
@@ -250,7 +204,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         DbImport importer = new DbImport(ds);
         importer.setFormat(DbImport.Format.XML);
         importer.setDropIfExists(true);
-        importer.setAlterCaseToMatchDatabaseDefaultCase(true);
+        importer.setAlterCaseToMatchDatabaseDefaultCase(true);       
         importer.importTables(getClass().getResourceAsStream(FILE));
 
         assertCountDbImportTableRecords(3);
@@ -260,7 +214,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         assertCountDbImportTableRecords(3);
 
-    }
+    }    
 
     @Test
     public void exportThenImportCsv() throws Exception {
@@ -308,92 +262,101 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         // TODO test force
     }
-    
+
     @Test
-    public void exportThenImportCsvWithBackslashes() throws Exception {
+    public void testExportTimestampWithTimezone() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
-        Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
-        Table table = testTables.findTable("test_db_import_1", false);
+        DataSource ds = engine.getDataSource();
+        ISqlTemplate template = platform.getSqlTemplate();
+        if (platform.getName() == DatabaseNamesConstants.ORACLE
+                || platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+            try {
+                template.update("drop table test");
+            } catch (Exception ex) {
+            }
 
-        recreateImportTable();
-        
-        DbImport importCsv = new DbImport(ds);
-        importCsv.setFormat(DbImport.Format.SQL);
-        importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-backslashes.sql"));
+            template.update("create table TEST (ID integer, LAST_UPDATE_TIME timestamp with time zone, primary key (ID))");
+            Object[] args = { 1, "2012-10-18 13:14:11.111000 -04:00" };
 
-        assertCountDbImportTableRecords(1);
+            if (platform.getName() == DatabaseNamesConstants.ORACLE) {
+                template.update(
+                        "insert into TEST (ID, LAST_UPDATE_TIME) values (?, TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM'))",
+                        args);
+            } else if (platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+                template.update(
+                        "insert into TEST (ID, LAST_UPDATE_TIME) values (?, cast(? as timestamp with time zone))",
+                        args);
+            }
+            Table table = platform.getTableFromCache("TEST", true);
 
-        DbExport export = new DbExport(ds);
-        export.setFormat(Format.CSV);
-        export.setNoCreateInfo(true);
-        export.setNoData(false);
-        String csvOutput = export.exportTables(new String[] { table.getName() });
+            DbExport export = new DbExport(ds);
+            export.setFormat(Format.CSV);
+            export.setNoCreateInfo(true);
+            export.setNoData(false);
+            String csvOutput = export.exportTables(new String[] { table.getName() });
+            if (platform.getName() == DatabaseNamesConstants.ORACLE) {
+                Assert.assertEquals(
+                        "ID,LAST_UPDATE_TIME\n" + "1,2012-10-18 13:14:11.111000 -04:00",
+                        csvOutput.trim());
+            } else if (platform.getName() == DatabaseNamesConstants.POSTGRESQL) {
+                Assert.assertEquals("id,last_update_time\n" + "1,2012-10-18 13:14:11.111000 -4:00",
+                        csvOutput.trim());
 
-        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-
-        List<Row> rowsBeforeImport = sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID);
-
-        recreateImportTable();
-
-        importCsv.setFormat(DbImport.Format.CSV);
-        importCsv.importTables(csvOutput, table.getName());
-
-        compareRows(rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
-
-    }    
-
+            }
+        }
+    }
+    
     @Test
     public void testExportCsvToDirectory() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         DataSource ds = engine.getDataSource();
-
+        
         DbImport importXml = new DbImport(ds);
         importXml.setFormat(DbImport.Format.XML);
         importXml.importTables(getClass().getResourceAsStream("/test-dbexportimport-3-tables.xml"));
-
+        
         File dir = new File("target/test");
         FileUtils.deleteDirectory(dir);
         Assert.assertFalse(dir.exists());
-
+        
         DbExport exportCsv = new DbExport(ds);
         exportCsv.setComments(true);
         exportCsv.setFormat(Format.CSV);
         exportCsv.setDir(dir.getAbsolutePath());
-        exportCsv.exportTables(new String[] { "a", "b", "c" });
-
+        exportCsv.exportTables(new String[] {"a", "b", "c"});
+        
         Assert.assertTrue(dir.exists());
-        Assert.assertTrue(dir.isDirectory());
-
+        Assert.assertTrue(dir.isDirectory());               
+        
         File a = new File(dir, platform.getTableFromCache("a", false).getName() + ".csv");
         Assert.assertTrue(a.exists());
         Assert.assertTrue(a.isFile());
         List<String> lines = FileUtils.readLines(a);
         Assert.assertEquals(9, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
-        Assert.assertEquals("\"1\",\"This is a test of a\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of a\"", lines.get(7));
-
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of a", lines.get(6));
+        Assert.assertEquals("2,This is a test of a", lines.get(7));
+        
         File b = new File(dir, platform.getTableFromCache("b", false).getName() + ".csv");
         Assert.assertTrue(b.exists());
         Assert.assertTrue(b.isFile());
         lines = FileUtils.readLines(b);
         Assert.assertEquals(10, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
-        Assert.assertEquals("\"1\",\"This is a test of b\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of b\"", lines.get(7));
-        Assert.assertEquals("\"3\",\"This is line 3 of b\"", lines.get(8));
-
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of b", lines.get(6));
+        Assert.assertEquals("2,This is a test of b", lines.get(7));
+        Assert.assertEquals("3,This is line 3 of b", lines.get(8));
+        
         File c = new File(dir, platform.getTableFromCache("c", false).getName() + ".csv");
         Assert.assertTrue(c.exists());
         Assert.assertTrue(c.isFile());
         lines = FileUtils.readLines(c);
         Assert.assertEquals(9, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
-        Assert.assertEquals("\"1\",\"This is a test of c\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of c\"", lines.get(7));
+        Assert.assertEquals("id,string_value", lines.get(5));
+        Assert.assertEquals("1,This is a test of c", lines.get(6));
+        Assert.assertEquals("2,This is a test of c", lines.get(7));
 
     }
 
