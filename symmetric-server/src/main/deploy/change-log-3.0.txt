@@ -1,7 +1,8 @@
-SymmetricDS - 3.1.11 (Released 2012-11-28) 
+SymmetricDS - 3.1.11 (Released 2012-11-29) 
 =======================================
 - 0000894: [New Feature] Add property to turn sync_on_incoming off for sym_ table triggers (chenson) - closed.
 - 0000929: [Improvement] Add oracle hint to query to select data from sym_data to force it to use the obvious index - closed.
+- 0000931: [New Feature] Add property that specifies minimum time between pushes and pulls. Default to 0 so pull and push periods have same behavior - closed.
 
 SymmetricDS - 3.1.10 (Released 2012-11-27) 
 ==========================================
