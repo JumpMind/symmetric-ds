@@ -85,30 +85,26 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        super.createTable(table, ddl, temporary, recreate);
+    public void createTable(Table table, StringBuilder ddl) {
+        super.createTable(table, ddl);
 
-        if (!temporary) {
-            // creating generator and trigger for auto-increment
-            Column[] columns = table.getAutoIncrementColumns();
+        // creating generator and trigger for auto-increment
+        Column[] columns = table.getAutoIncrementColumns();
 
-            for (int idx = 0; idx < columns.length; idx++) {
-                writeAutoIncrementCreateStmts(table, columns[idx], ddl);
-            }
+        for (int idx = 0; idx < columns.length; idx++) {
+            writeAutoIncrementCreateStmts(table, columns[idx], ddl);
         }
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
-        if (!temporary) {
-            for (int idx = 0; idx < columns.length; idx++) {
-                writeAutoIncrementDropStmts(table, columns[idx], ddl);
-            }
+        for (int idx = 0; idx < columns.length; idx++) {
+            writeAutoIncrementDropStmts(table, columns[idx], ddl);
         }
-        super.dropTable(table, ddl, temporary, recreate);
+        super.dropTable(table, ddl);
     }
 
     /*

@@ -50,71 +50,11 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
-
-    protected Boolean supportsDisableTriggers = null;
+    Boolean supportsDisableTriggers = null;
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
-    }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
-                    "  with schemabinding, returns null on null input                                                                                                                       " + 
-                    "  begin                                                                                                                                                                " + 
-                    "    return ( select [text()] = @data for xml path('') )                                                                                                                " + 
-                    "  end                                                                                                                                                                  ";
-            install(sql, encode);
-        }
-
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 " + 
-                    "  begin                                                                                                                                                                  " + 
-                    "    declare @disabled varchar(1);                                                                                                                                        " + 
-                    "    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    " + 
-                    "    if @disabled is null or @disabled != '1'                                                                                                                             " + 
-                    "      return 0;                                                                                                                                                          " + 
-                    "    return 1;                                                                                                                                                            " + 
-                    "  end                                                                                                                                                                    ";
-            install(sql, triggersDisabled);
-        }
-
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              " + 
-                    "  begin                                                                                                                                                                  " + 
-                    "    declare @node varchar(50);                                                                                                                                           " + 
-                    "    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  " + 
-                    "    return @node;                                                                                                                                                        " + 
-                    "  end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
-        }
-        
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
-            uninstall(SQL_DROP_FUNCTION, encode);
-        }
-
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, triggersDisabled);
-        }
-
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, nodeDisabled);
-        }
-
     }
 
     protected boolean supportsDisableTriggers() {
@@ -260,7 +200,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     /*
      * Nothing to do for SQL Server
      */
-    public void purgeRecycleBin() {
+    public void purge() {
     }
 
     public boolean needsToSelectLobData() {

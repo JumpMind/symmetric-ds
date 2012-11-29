@@ -21,14 +21,12 @@
 
 package org.jumpmind.symmetric.load;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -36,8 +34,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,32 +68,11 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
-    
-    final String CTX_KEY_REINITIALIZED = "Reinitialized."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
     private ISymmetricEngine engine;
 
     public ConfigurationChangedFilter(ISymmetricEngine engine) {
         this.engine = engine;
-    }
-    
-    @Override
-    public boolean beforeWrite(DataContext context, Table table, CsvData data) {
-        IParameterService parameterService = engine.getParameterService();
-        if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-            if (parameterService.is(ParameterConstants.REGISTRATION_REINITIALIZE_ENABLED)
-                    && !Boolean.TRUE.equals(context.get(CTX_KEY_REINITIALIZED))) {
-                log.info("Reinitializing the database because the {} parameter was set to true",
-                        ParameterConstants.REGISTRATION_REINITIALIZE_ENABLED);
-                engine.uninstall();
-                engine.setupDatabase(true);
-                engine.start();
-                context.put(CTX_KEY_REINITIALIZED, Boolean.TRUE);
-            }
-        }
-        
-        return true;
     }
 
     @Override
@@ -199,21 +174,6 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     @Override
     public void batchCommitted(DataContext context) {
         IParameterService parameterService = engine.getParameterService();
-        INodeService nodeService = engine.getNodeService();
-        
-        if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-               // mark registration as complete
-               String nodeId = nodeService.findIdentityNodeId();
-               if (nodeId != null) {
-                NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                if (security != null) {
-                    security.setRegistrationEnabled(false);
-                    security.setRegistrationTime(new Date());
-                    nodeService.updateNodeSecurity(security);
-                }
-               }
-        }        
-        
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data loader");
             engine.getConfigurationService().reloadChannels();

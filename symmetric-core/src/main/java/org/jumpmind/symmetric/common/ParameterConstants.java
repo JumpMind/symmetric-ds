@@ -65,7 +65,6 @@ final public class ParameterConstants {
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
-    public final static String REGISTRATION_REINITIALIZE_ENABLED = "registration.reinitialize.enable";
 
     public final static String REGISTRATION_URL = "registration.url";
     public final static String SYNC_URL = "sync.url";
@@ -79,7 +78,6 @@ final public class ParameterConstants {
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
-    public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";
@@ -214,7 +212,7 @@ final public class ParameterConstants {
     
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
     
-    public final static String SERVER_LOG_FILE = "server.log.file";
+    public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

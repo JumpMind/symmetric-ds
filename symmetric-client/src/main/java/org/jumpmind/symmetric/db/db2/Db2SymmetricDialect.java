@@ -65,14 +65,6 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
                 "select count(*) from syscat.triggers where trigname = ? and trigschema = ?",
                 new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
     }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {        
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-    }
 
     @Override
     public boolean isBlobSyncSupported() {
@@ -110,7 +102,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         return false;
     }
 
-    public void purgeRecycleBin() {
+    public void purge() {
     }
 
     @Override

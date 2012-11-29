@@ -139,8 +139,6 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.toLowerCase().startsWith("text")) {
             return Types.LONGVARCHAR;
-        } else if (typeName != null && typeName.toUpperCase().contains(TypeMap.GEOMETRY)) {
-            return Types.VARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

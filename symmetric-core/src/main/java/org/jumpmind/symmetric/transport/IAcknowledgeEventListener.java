@@ -26,6 +26,8 @@ import org.jumpmind.symmetric.model.BatchAck;
 /**
  * Listener for changes in the batch status.  This extension point 
  * is called at the point of extraction.
+ *
+ * ,
  */
 public interface IAcknowledgeEventListener extends IExtensionPoint {
 

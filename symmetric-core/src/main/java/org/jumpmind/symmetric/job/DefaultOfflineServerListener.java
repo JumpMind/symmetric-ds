@@ -55,7 +55,7 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
      * outgoing batches.
      */
     public void clientNodeOffline(Node node) {
-        log.warn("The '{}' node is offline.  Syncing will be disabled and node security deleted", new Object[] {node.getNodeId()});
+        log.warn("Node {} is offline.  Last heartbeat was {}, timezone {}.  Syncing will be disabled and node security deleted.", new Object[] {node.getNodeId(), node.getHeartbeatTime(), node.getTimezoneOffset()});
         statisticManager.incrementNodesDisabled(1);
         node.setSyncEnabled(false);
         nodeService.save(node);

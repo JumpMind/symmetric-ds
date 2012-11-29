@@ -12,16 +12,8 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         super(parameterService, platform);
         this.triggerTemplate = new SqliteTriggerTemplate(this);
     }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-    }
-    
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-    }
 
-    public void purgeRecycleBin() {
+    public void purge() {
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {

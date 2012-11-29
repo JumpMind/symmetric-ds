@@ -74,7 +74,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE ");
         printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" IF EXISTS");

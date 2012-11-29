@@ -27,8 +27,6 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +47,7 @@ class DbFill {
 
     private boolean cascading = false;
     
-    private String ignore[] = null;
+    private String ignorePrefix = "";
 
     private int inputLength = 1;
 
@@ -74,18 +72,15 @@ class DbFill {
             // If no tableNames are provided look up all tables.
             Database db = platform.readDatabase(catalog, schema, null);
             tables = db.getTables();
-            if (ignore != null) {
-                // Ignore any tables matching an ignorePrefix. (e.g., "sym_")
+            if (!StringUtils.isEmpty(ignorePrefix)) {
+                // Ignore any tables matching the ignorePrefix. (e.g., "sym_")
                 List<Table> tableList = new ArrayList<Table>(tables.length);
-                table_loop:
                 for (Table table : tables) {
-                    for (String ignoreName : ignore) {
-                        if (table.getName().startsWith(ignoreName)) {
-                            System.out.println("Ignore table " + table.getName());
-                            continue table_loop;
-                        }
+                    if (table.getName().startsWith(ignorePrefix)) {
+                        System.out.println("Ignore table " + table.getName());
+                    } else {
+                        tableList.add(table);
                     }
-                    tableList.add(table);
                 }
                 tables = tableList.toArray(new Table[tableList.size()]);
             }
@@ -168,6 +163,7 @@ class DbFill {
                 }
                 try {
                     sqlTemplate.update(statement.getSql(), statementValues);
+                    System.out.println("Succesfully inserted values in " + table.getName());
                 } catch (SqlException ex) {
                     log.error("Failed to process {} with values of {}", statement.getSql(),
                             ArrayUtils.toString(statementValues));
@@ -204,16 +200,14 @@ class DbFill {
             }
 
             int type = column.getMappedTypeCode();
-            if (column.isTimestampWithTimezone()) {
-                objectValue = String.format("%s %s",
-                        FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
-                        AppUtils.getTimezoneOffset());
-            } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+            if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME || type == -101) {
                 objectValue = randomDate();
             } else if (type == Types.CHAR) {
                 objectValue = randomChar().toString();
             } else if (type == Types.INTEGER || type == Types.BIGINT) {
                 objectValue = randomInt();
+//            } else if (type == Types.BIT) {
+//                objectValue = randomBit();
             } else if (type == Types.SMALLINT) {
                 objectValue = randomSmallInt();
             } else if (type == Types.FLOAT) {
@@ -322,6 +316,10 @@ class DbFill {
     private Integer randomInt() {
         return new Integer(new java.util.Random().nextInt(1000000));
     }
+
+    private Integer randomBit() {
+        return new Integer(new java.util.Random().nextInt(1));
+    }
     
     private String randomUUID() {
         return UUID.randomUUID().toString();
@@ -371,12 +369,12 @@ class DbFill {
         this.cascading = cascading;
     }
 
-    public String[] getIgnore() {
-        return ignore;
+    public String getIgnorePrefix() {
+        return ignorePrefix;
     }
 
-    public void setIgnore(String[] ignore) {
-        this.ignore = ignore;
+    public void setIgnorePrefix(String ignorePrefix) {
+        this.ignorePrefix = ignorePrefix;
     }
 
 }

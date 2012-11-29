@@ -9,18 +9,33 @@ public class HsqlDbTriggerTemplate extends AbstractTriggerTemplate {
 
     public HsqlDbTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect); 
+        functionInstalledSql = "select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='$(functionName)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;
+        xmlColumnTemplate = null;
+        arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',cast($(tableAlias)\"$(columnName)\" as varchar(50))),''\"'') end" ;
         datetimeColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;
+        timeColumnTemplate = null;
+        dateColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;
         blobColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;
+        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' when $(tableAlias)\"$(columnName)\" then ''\"1\"'' else ''\"0\"'' end" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "" ;
         oldTriggerValue = "" ;
         oldColumnPrefix = "OLD_" ;
         newColumnPrefix = "NEW_" ;
+        otherColumnTemplate = null;
+
+        functionTemplatesToInstall = new HashMap<String,String>();
+        functionTemplatesToInstall.put("base_64_encode" ,
+"CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\";                                                                                                    " );
+        functionTemplatesToInstall.put("set_session" ,
+"CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession\";                                                                                                      " );
+        functionTemplatesToInstall.put("get_session" ,
+"CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession\";                                                                                                      " );
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

@@ -63,9 +63,6 @@ public class CsvUtils {
         return tokens;
     }
 
-    /**
-     * This escapes backslashes but doesn't wrap the data in a text qualifier.
-     */
     public static String escapeCsvData(String data) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');

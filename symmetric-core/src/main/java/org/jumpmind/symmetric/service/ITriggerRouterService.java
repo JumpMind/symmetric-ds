@@ -39,8 +39,6 @@ public interface ITriggerRouterService {
 
     public List<TriggerHistory> getActiveTriggerHistories();
     
-    public List<TriggerHistory> getActiveTriggerHistories(String tableName);
-
     public List<TriggerRouter> getTriggerRouters();
     
     /**
@@ -101,10 +99,6 @@ public interface ITriggerRouterService {
     public void saveTrigger(Trigger trigger);
 
     public void deleteTrigger(Trigger trigger);
-    
-    public void dropTriggers();
-    
-    public void dropTriggers(Set<String> tables);
     
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
     

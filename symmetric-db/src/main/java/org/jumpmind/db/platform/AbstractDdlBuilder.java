@@ -306,7 +306,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             Table table = database.getTable(idx);
 
             writeTableComment(table, ddl);
-            createTable(table, ddl, false, false);
+            createTable(table, ddl);
         }
 
         // we're writing the external foreignkeys last to ensure that all
@@ -485,7 +485,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveTableChange change, StringBuilder ddl) {
-        dropTable(change.getChangedTable(), ddl, false, false);
+        dropTable(change.getChangedTable(), ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
@@ -501,7 +501,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             AddTableChange change, StringBuilder ddl) {
-        createTable(change.getNewTable(), ddl, false, false);
+        createTable(change.getNewTable(), ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
@@ -758,20 +758,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (canMigrateData) {
                 Table tempTable = getTemporaryTableFor(desiredModel, targetTable);
 
-                dropTemporaryTable(tempTable, ddl);
                 createTemporaryTable(desiredModel, tempTable, ddl);
                 writeCopyDataStatement(sourceTable, tempTable, ddl);
                 // Note that we don't drop the indices here because the DROP
                 // TABLE will take care of that
                 // Likewise, foreign keys have already been dropped as necessary
-                dropTable(sourceTable, ddl, false, true);
-                createTable(realTargetTable, ddl, false, true);
+                dropTable(sourceTable, ddl);
+                createTable(realTargetTable, ddl);
                 writeCopyDataStatement(tempTable, targetTable, ddl);
-                dropTemporaryTable(tempTable, ddl);
+                dropTemporaryTable(desiredModel, tempTable, ddl);
                 writeFixLastIdentityValues(targetTable, ddl);
             } else {
-                dropTable(sourceTable, ddl, false, false);
-                createTable(realTargetTable, ddl, false, false);
+                dropTable(sourceTable, ddl);
+                createTable(realTargetTable, ddl);
             }
         }
     }
@@ -890,17 +889,20 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      */
     protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
-        createTable(table, ddl, true, false);
+        createTable(table, ddl);
     }
 
     /**
      * Outputs the DDL to drop the given temporary table. Per default this is
      * simply a call to {@link #dropTable(Table)}.
+     * 
+     * @param database
+     *            The database model
      * @param table
      *            The table
      */
-    protected void dropTemporaryTable(Table table, StringBuilder ddl) {
-        dropTable(table, ddl, true, false);
+    protected void dropTemporaryTable(Database database, Table table, StringBuilder ddl) {
+        dropTable(table, ddl);
     }
 
     /**
@@ -1112,7 +1114,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     public String createTable(Table table) {
         StringBuilder ddl = new StringBuilder();
-        createTable(table, ddl, false, false);
+        createTable(table, ddl);
         return ddl.toString();
     }
 
@@ -1120,9 +1122,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Outputs the DDL to create the table along with any non-external
      * constraints as well as with external primary keys and indices (but not
      * foreign keys).
-     * @param recreate TODO
      */
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void createTable(Table table, StringBuilder ddl) {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
@@ -1168,7 +1169,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Outputs the DDL required to drop the database.
      */
     public void dropTables(Database database, StringBuilder ddl) {
-        // we're dropping the external foreign keys first
+        // we're dropping the external foreignkeys first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table table = database.getTable(idx);
 
@@ -1188,7 +1189,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
             if ((table.getName() != null) && (table.getName().length() > 0)) {
                 writeTableComment(table, ddl);
-                dropTable(table, ddl, false, false);
+                dropTable(table, ddl);
             }
         }
     }
@@ -1213,23 +1214,22 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         dropExternalForeignKeys(table, ddl);
 
         writeTableComment(table, ddl);
-        dropTable(table, ddl, false, false);
+        dropTable(table, ddl);
     }
 
     /**
      * Outputs the DDL to drop the table. Note that this method does not drop
      * foreign keys to this table. Use {@link #dropTable(Database, Table)} if
      * you want that.
-     * @param recreate TODO
      */
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE ");
         printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
     }
 
     /**
-     * Creates external foreign key drop statements.
+     * Creates external foreignkey drop statements.
      * 
      * @param table
      *            The table

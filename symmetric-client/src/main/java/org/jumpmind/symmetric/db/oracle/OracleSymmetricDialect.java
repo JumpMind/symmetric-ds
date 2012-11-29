@@ -48,14 +48,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    static final String SQL_SELECT_TRIGGERS = "from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)";
+    String selectTriggerSql = "from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)";
 
-    static final String SQL_SELECT_TRANSACTIONS = "select min(start_time) from gv$transaction";
+    String selectTransactionsSql = "select min(start_time) from gv$transaction";
 
-    static final String SQL_OBJECT_INSTALLED = "select count(*) from user_source where line = 1 and (((type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
-    
-    static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
-    
     public OracleSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new OracleTriggerTemplate(this);
@@ -73,19 +69,6 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();
         sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d,SYM_IDX_D_CHANNEL_ID) */");
-    }
-    
-    @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
-            String triggerName) {
-        return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_TRIGGERS,
-                new Object[] { triggerName, tableName }) > 0;                
-    }    
-    
-    @Override
-    protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName,
-            String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
-        return "drop trigger " + triggerName;
     }    
 
     @Override
@@ -101,7 +84,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                     log.warn(
                             "TriggerAlreadyExists",
                             platform.getSqlTemplate().queryForMap(
-                                    "select * " + SQL_SELECT_TRIGGERS,
+                                    "select * " + selectTriggerSql,
                                     new Object[] { history.getTriggerNameForDmlType(dml),
                                             history.getSourceTableName() }));
                 } catch (SqlException e) {
@@ -109,126 +92,6 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             }
             throw ex;
         }
-    }
-    
-    @Override
-    protected void createRequiredDatabaseObjects() {
-        String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
-        if (!installed(SQL_OBJECT_INSTALLED, blobToClob)) {
-            String sql = "CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)                                                                                                                                           "
-                    + "     RETURN CLOB                                                                                                                                                          "
-                    + "   AS                                                                                                                                                                     "
-                    + "       v_clob    CLOB := null;                                                                                                                                            "
-                    + "       v_varchar VARCHAR2(32767);                                                                                                                                         "
-                    + "       v_start   PLS_INTEGER := 1;                                                                                                                                        "
-                    + "       v_buffer  PLS_INTEGER := 999;                                                                                                                                      "
-                    + "   BEGIN                                                                                                                                                                  "
-                    + "       IF blob_in IS NOT NULL THEN                                                                                                                                        "
-                    + "           IF DBMS_LOB.GETLENGTH(blob_in) > 0 THEN                                                                                                                        "
-                    + "               DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);                                                                                                                    "
-                    + "               FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)                                                                                                   "
-                    + "               LOOP                                                                                                                                                       "
-                    + "                   v_varchar := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.base64_encode(DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start)));                                          "
-                    + "                   v_varchar := REPLACE(v_varchar,CHR(13)||CHR(10));                                                                                                      "
-                    + "                   DBMS_LOB.WRITEAPPEND(v_clob, LENGTH(v_varchar), v_varchar);                                                                                            "
-                    + "                   v_start := v_start + v_buffer;                                                                                                                         "
-                    + "               END LOOP;                                                                                                                                                  "
-                    + "           END IF;                                                                                                                                                        "
-                    + "       END IF;                                                                                                                                                            "
-                    + "       RETURN v_clob;                                                                                                                                                     "
-                    + "   END $(functionName);                                                                                                                                                   ";
-            install(sql, blobToClob);
-        }
-
-        String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
-        if (!installed(SQL_OBJECT_INSTALLED, transactionId)) {
-            String sql = "CREATE OR REPLACE function $(functionName)                                                                                                                                                             "
-                    + "   return varchar is                                                                                                                                                  "
-                    + "   begin                                                                                                                                                              "
-                    + "      return DBMS_TRANSACTION.local_transaction_id(false);                                                                                                            "
-                    + "   end;                                                                                                                                                               ";
-            install(sql, transactionId);
-        }
-
-        String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
-        if (!installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
-            String sql = "CREATE OR REPLACE function $(functionName) return varchar is                                                                                                                                           "
-                    + "   begin                                                                                                                                                                "
-                    + "      return sym_pkg.disable_trigger;                                                                                                                                   "
-                    + "   end;                                                                                                                                                                 ";
-            install(sql, triggerDisabled);
-        }
-
-        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
-        if (!installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
-            String sql = "CREATE OR REPLACE package $(functionName) as                                                                                                                                                                   "
-                    + "      disable_trigger pls_integer;                                                                                                                                       "
-                    + "      disable_node_id varchar(50);                                                                                                                                       "
-                    + "      procedure setValue (a IN number);                                                                                                                                  "
-                    + "      procedure setNodeValue (node_id IN varchar);                                                                                                                       "
-                    + "  end sym_pkg;                                                                                                                                                           ";
-            install(sql, pkgPackage);
-            
-            sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
-                    + "     procedure setValue(a IN number) is                                                                                                                                 "
-                    + "     begin                                                                                                                                                              "
-                    + "         $(functionName).disable_trigger:=a;                                                                                                                                   "
-                    + "     end;                                                                                                                                                               "
-                    + "     procedure setNodeValue(node_id IN varchar) is                                                                                                                      "
-                    + "     begin                                                                                                                                                              "
-                    + "         $(functionName).disable_node_id := node_id;                                                                                                                           "
-                    + "     end;                                                                                                                                                               "
-                    + " end sym_pkg;                                                                                                                                                           ";
-            install(sql, pkgPackage);
-        }
-
-        String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
-        if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
-            String sql = "  CREATE OR REPLACE                                                                                                         "
-                    + "    FUNCTION $(functionName)(                            "
-                    + "        clob_in IN CLOB)                                 "
-                    + "      RETURN SDO_GEOMETRY                                "
-                    + "    AS                                                   "
-                    + "      v_out SDO_GEOMETRY := NULL;                        "
-                    + "    BEGIN                                                "
-                    + "      IF clob_in IS NOT NULL THEN                        "
-                    + "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN          "
-                    + "          v_out := SDO_GEOMETRY(clob_in);                "
-                    + "        END IF;                                          "
-                    + "      END IF;                                            "
-                    + "      RETURN v_out;                                      "
-                    + "    END $(functionName);                                 ";
-            install(sql, wkt2geom);
-        }
-    }
-
-    @Override
-    protected void dropRequiredDatabaseObjects() {
-        String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
-        if (installed(SQL_OBJECT_INSTALLED, blobToClob)) {
-            uninstall(SQL_DROP_FUNCTION, blobToClob);
-        }
-
-        String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
-        if (installed(SQL_OBJECT_INSTALLED, transactionId)) {
-            uninstall(SQL_DROP_FUNCTION, transactionId);
-        }
-
-        String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
-        if (installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, triggerDisabled);
-        }
-        
-        String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
-        if (installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
-            uninstall(SQL_DROP_FUNCTION, wkt2geom);
-        }        
-
-        String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
-        if (installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
-            uninstall("DROP PACKAGE $(functionName)", pkgPackage);
-        }
-
     }
 
     @Override
@@ -258,7 +121,14 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return null;
     }
 
-    public void purgeRecycleBin() {
+    @Override
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+            String triggerName) {
+        return platform.getSqlTemplate().queryForInt("select count(*) " + selectTriggerSql,
+                new Object[] { triggerName, tableName }) > 0;
+    }
+
+    public void purge() {
         platform.getSqlTemplate().update("purge recyclebin");
     }
 
@@ -285,7 +155,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public boolean areDatabaseTransactionsPendingSince(long time) {
-        String returnValue = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS,
+        String returnValue = platform.getSqlTemplate().queryForObject(selectTransactionsSql,
                 String.class);
         if (returnValue != null) {
             Date date;
@@ -300,6 +170,14 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             return false;
         }
 
+    }
+
+    public void setSelectTransactionsSql(String selectTransactionSql) {
+        this.selectTransactionsSql = selectTransactionSql;
+    }
+
+    public void setSelectTriggerSql(String selectTriggerSql) {
+        this.selectTriggerSql = selectTriggerSql;
     }
 
     @Override
@@ -334,6 +212,12 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         } else {
             return "dbms_lob.compare(nvl(var_row_data,'Null'),nvl(var_old_data,'Null')) != 0 ";
         }
+    }
+
+    @Override
+    protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName,
+            String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+        return "drop trigger " + triggerName;
     }
 
     public String getTemplateNumberPrecisionSpec() {

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -108,12 +107,6 @@ public class ParameterService extends AbstractParameterService implements IParam
         }, externalId, nodeGroupId);
         return properties;
     }
-    
-    public boolean isRegistrationServer() {
-        return StringUtils.isBlank(getRegistrationUrl())
-                || getRegistrationUrl().equals(getSyncUrl());
-    }
-
 
     protected TypedProperties rereadApplicationParameters() {
         TypedProperties p = this.factory.reload();

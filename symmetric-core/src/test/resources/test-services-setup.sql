@@ -65,6 +65,10 @@ insert into sym_trigger        (trigger_id,                source_table_name,   
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(    '1000',    '1000',                  1, current_timestamp, current_timestamp);
                                                                           
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
+                         values(    '2000',                 'sym_node_group', 'testchannel', current_timestamp,current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(    '2000',    '2000',                  1, current_timestamp, current_timestamp);   
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
                          values(    '3000',       'test_sync_incoming_batch', 'testchannel', current_timestamp,current_timestamp);

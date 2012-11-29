@@ -105,13 +105,13 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void createTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
-        super.createTable(table, ddl, temporary, recreate);
+        super.createTable(table, ddl);
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+    public void dropTable(Table table, StringBuilder ddl) {
         String tableName = getTableName(table.getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
