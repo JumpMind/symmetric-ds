@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
@@ -91,8 +92,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
         Node identity = nodeService.findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {
-            if (force || clusterService.lock(ClusterConstants.PUSH)) {
-                try {
+        	long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
+            if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
                     List<NodeCommunication> nodes = nodeCommunicationService
                             .list(CommunicationType.PUSH);
                     if (nodes.size() > 0) {
@@ -102,7 +103,12 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                             int availableThreads = nodeCommunicationService
                                     .getAvailableThreads(CommunicationType.PUSH);
                             for (NodeCommunication nodeCommunication : nodes) {
-                                if (availableThreads > 0 && !nodeCommunication.isLocked()) {
+                                boolean meetsMinimumTime = true;
+                                if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
+                                   (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
+                                   meetsMinimumTime = false; 
+                                }
+                                if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
                                     nodeCommunicationService.execute(nodeCommunication, statuses,
                                             this);
                                     availableThreads--;
@@ -114,11 +120,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                     identity.getNodeId());
                         }
                     }
-                } finally {
-                    if (!force) {
-                        clusterService.unlock(ClusterConstants.PUSH);
-                    }
-                }
             } else {
                 log.info("Did not run the push process because the cluster service has it locked");
             }

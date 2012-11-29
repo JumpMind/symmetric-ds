@@ -95,6 +95,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsTransactionViews = false;
     
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
+    
+    protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;

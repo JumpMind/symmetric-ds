@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
@@ -78,8 +79,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
-            if (force || clusterService.lock(ClusterConstants.PULL)) {
-                try {
+        	long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
+            if (force || !clusterService.isInfiniteLocked(ClusterConstants.PULL)) {
                     // register if we haven't already been registered
                     registrationService.registerWithServer();
                     identity = nodeService.findIdentity(false);
@@ -89,18 +90,18 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         int availableThreads = nodeCommunicationService
                                 .getAvailableThreads(CommunicationType.PULL);
                         for (NodeCommunication nodeCommunication : nodes) {
-                            if (availableThreads > 0 && !nodeCommunication.isLocked()) {                                
+                            boolean meetsMinimumTime = true;
+                            if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
+                               (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
+                               meetsMinimumTime = false; 
+                            }
+                            if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {                               
                                 nodeCommunicationService.execute(nodeCommunication, statuses,
                                         this);
                                 availableThreads--;
                             }
                         }
                     }
-                } finally {
-                    if (!force) {
-                        clusterService.unlock(ClusterConstants.PULL);
-                    }
-                }
             } else {
                 log.info("Did not run the pull process because the cluster service has it locked");
             }
