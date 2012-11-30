@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -392,11 +391,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
-    
+        
     protected Number parseIntegerObjectValue(String value) {
-        return new BigInteger(value);
+        return Integer.parseInt(value);
     }
-
+    
     // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
     // Map<String, Object> columnValues, boolean genPlaceholders)
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row,

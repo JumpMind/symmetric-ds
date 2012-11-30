@@ -19,6 +19,8 @@ package org.jumpmind.db.platform.oracle;
  * under the License.
  */
 
+import java.math.BigInteger;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -75,6 +77,11 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
         SymmetricLobHandler symmetricLobHandler = new SymmetricLobHandler(lobHandler);
         return new OracleJdbcSqlTemplate(dataSource, settings, symmetricLobHandler, getDatabaseInfo());
+    }
+    
+    @Override
+    protected Number parseIntegerObjectValue(String value) {
+        return new BigInteger(value);
     }
 
     public String getName() {
