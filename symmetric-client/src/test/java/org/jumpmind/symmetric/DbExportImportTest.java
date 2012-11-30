@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
+import java.sql.Types;
 import java.util.List;
 import java.util.Set;
 
@@ -11,6 +12,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -32,6 +34,30 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     private static final String TEST_TS_W_TZ = "test_ts_w_tz";
 
+    @Test 
+    public void exportNullTimestampToCsv() throws Exception {       
+        ISymmetricEngine engine = getSymmetricEngine();
+        DataSource ds = engine.getDataSource();
+        IDatabasePlatform platform = engine.getDatabasePlatform();
+        
+        Table table = new Table("test_null_timestamp");
+        table.addColumn(new Column("a", false, Types.TIMESTAMP, -1, -1));
+        table.addColumn(new Column("b", false, Types.TIMESTAMP, -1, -1));
+        platform.alterCaseToMatchDatabaseDefaultCase(table);
+        platform.createTables(true, false, table);
+        
+        platform.getSqlTemplate().update("insert into test_null_timestamp values(null, null)");
+        
+        DbExport export = new DbExport(ds);
+        export.setNoCreateInfo(true);
+        export.setFormat(Format.CSV);
+        
+        String csv = export.exportTables(new Table[] {table});
+        
+        Assert.assertEquals("\"A\",\"B\"\n,", csv.trim().toUpperCase());
+        
+    }
+    
     @Test
     public void exportTableInAnotherSchemaOnH2() throws Exception {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
@@ -52,7 +78,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.exportTables(new String[] { "TEST" }).toLowerCase();
             // TODO validate
         }
-    }
+    }   
 
     @Test
     public void exportTestDatabaseSQL() throws Exception {
