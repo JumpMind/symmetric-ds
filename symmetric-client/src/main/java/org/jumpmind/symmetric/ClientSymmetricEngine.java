@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -378,13 +380,29 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             }
         }
     }
+    
+    public List<File> listSnapshots() {
+        File snapshotsDir = getSnapshotDirectory();
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"jar"}, false));
+        Collections.sort(files, new Comparator<File>() {
+            public int compare(File o1, File o2) {             
+                return -o1.compareTo(o2);
+            }
+        });
+        return files;
+    }
+    
+    protected File getSnapshotDirectory() {
+        File snapshotsDir = new File(parameterService.getTempDirectory(), "snapshots");
+        snapshotsDir.mkdirs();
+        return snapshotsDir;        
+    }
 
     public void snapshot() {
         
         String dirName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         
-        File snapshotsDir = new File(parameterService.getTempDirectory(), "snapshots");
-        snapshotsDir.mkdirs();
+        File snapshotsDir = getSnapshotDirectory();
         
         File logfile = new File(parameterService.getString(ParameterConstants.SERVER_LOG_FILE));
         
