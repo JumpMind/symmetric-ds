@@ -96,12 +96,15 @@ public interface IDatabasePlatform {
 
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
             boolean continueOnError);
+    
+    public void createTables(boolean dropTablesFirst,
+            boolean continueOnError, Table... tables);
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError);
 
     public void alterTables(boolean continueOnError, Table... desiredTables);
 
-    public void dropDatabase(Database database, boolean continueOnError);
+    public void dropDatabase(Database database, boolean continueOnError);    
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table);
 
