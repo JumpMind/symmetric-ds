@@ -19,7 +19,9 @@
  * under the License.  */
 package org.jumpmind.symmetric;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -281,5 +283,7 @@ public interface ISymmetricEngine {
     public IDatabasePlatform getDatabasePlatform();
     
     public void snapshot();
+    
+    public List<File> listSnapshots();
     
 }
