@@ -74,4 +74,9 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         return null;
     }
     
+    @Override
+    protected Number parseIntegerObjectValue(String value) {
+        return Integer.parseInt(value);
+    }
+    
 }
