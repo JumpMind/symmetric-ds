@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -136,11 +137,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         new SqlScript(sql, getSqlTemplate(), !continueOnError).execute(true);
     }
 
+    public void createTables(boolean dropTablesFirst, boolean continueOnError, Table... tables) {
+        Database database = new Database();
+        database.addTables(tables);
+        createDatabase(database, dropTablesFirst, continueOnError);
+    }
+    
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
             boolean continueOnError) {
         if (dropTablesFirst) {
             dropDatabase(targetDatabase, true);
         }
+        
         String createSql = ddlBuilder.createTables(targetDatabase, false);
 
         if (log.isDebugEnabled()) {
@@ -386,7 +394,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
     
     protected Number parseIntegerObjectValue(String value) {
-        return Integer.valueOf(value);
+        return new BigInteger(value);
     }
 
     // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
