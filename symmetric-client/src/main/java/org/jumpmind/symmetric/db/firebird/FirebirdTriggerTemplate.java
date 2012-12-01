@@ -30,7 +30,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "   begin                                                                                                                                                                  \n" + 
 "     if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" + 
 "     begin                                                                                                                                                                \n" + 
-"       select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       \n" + 
+"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" + 
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" + 
 "       (data_id, table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" + 
 "       values(                                                                                                                                                            \n" + 
@@ -53,7 +53,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "   begin                                                                                                                                                                  \n" + 
 "     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" + 
 "     begin                                                                                                                                                                \n" + 
-"       select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       \n" + 
+"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" + 
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" + 
 "       (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)            \n" + 
 "       values(                                                                                                                                                            \n" + 
@@ -78,7 +78,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "   begin                                                                                                                                                                  \n" + 
 "     if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" + 
 "     begin                                                                                                                                                                \n" + 
-"       select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       \n" + 
+"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" + 
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" + 
 "       (data_id, table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                      \n" + 
 "       values(                                                                                                                                                            \n" + 
