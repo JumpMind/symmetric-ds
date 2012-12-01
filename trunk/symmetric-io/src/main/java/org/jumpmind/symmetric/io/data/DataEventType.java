@@ -66,7 +66,10 @@ public enum DataEventType {
      * An event the indicates that the data payload is going to be a Java bean shell script that is to be run at the
      * client.
      */
-    BSH("B");
+    BSH("B"),
+    
+    
+    UNKNOWN("U");
 
     private String code;
 

@@ -114,6 +114,7 @@ final public class ParameterConstants {
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_ENABLED = "dataloader.enable";
+    public final static String DATA_LOADER_IGNORE_MISSING_TABLES = "dataloader.ignore.missing.tables";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "time.between.ack.retries.ms";
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";

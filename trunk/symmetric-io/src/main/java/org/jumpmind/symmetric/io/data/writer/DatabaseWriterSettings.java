@@ -45,6 +45,8 @@ public class DatabaseWriterSettings {
     protected boolean createTableDropFirst = false;
     
     protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
+    
+    protected boolean ignoreMissingTables = true;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
 
@@ -180,6 +182,14 @@ public class DatabaseWriterSettings {
             }
         }
         return null;
+    }
+    
+    public void setIgnoreMissingTables(boolean ignoreMissingTables) {
+        this.ignoreMissingTables = ignoreMissingTables;
+    }
+    
+    public boolean isIgnoreMissingTables() {
+        return ignoreMissingTables;
     }
     
     public void addErrorHandler(IDatabaseWriterErrorHandler handler) {
