@@ -813,7 +813,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 // set the status to ER.
                 if (this.currentBatch.getStatus() != Status.OK) {
                     this.currentBatch.setStatus(IncomingBatch.Status.ER);
-                    if (context.getTable() != null) {
+                    if (context.getTable() != null && context.getData() != null) {
                         try {
                             IncomingError error = new IncomingError();
                             error.setBatchId(this.currentBatch.getBatchId());

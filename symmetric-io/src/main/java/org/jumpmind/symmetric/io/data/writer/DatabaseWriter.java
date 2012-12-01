@@ -132,76 +132,83 @@ public class DatabaseWriter implements IDataWriter {
             String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
             this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable, quote);
             return true;
-        } else {
+        } else if (writerSettings.isIgnoreMissingTables()) {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
             if (!missingTables.contains(qualifiedName)) {
                 log.warn("Did not find the {} table in the target database", qualifiedName);
                 missingTables.add(qualifiedName);
             }
             return false;
+        } else {
+            // The first data should fail because the table will not be found
+            return true;
         }
     }
 
     public void write(CsvData data) {
-        try {
-            statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-            statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-            if (filterBefore(data)) {
-                LoadStatus loadStatus = LoadStatus.SUCCESS;
-                switch (data.getDataEventType()) {
-                    case UPDATE:
-                        loadStatus = update(data, true, true);
-                        break;
-                    case INSERT:
-                        loadStatus = insert(data);
-                        break;
-                    case DELETE:
-                        loadStatus = delete(data, true);
-                        break;
-                    case BSH:
-                        script(data);
-                        break;
-                    case SQL:
-                        sql(data);
-                        break;
-                    case CREATE:
-                        create(data);
-                        break;
-                    default:
-                        break;
+        if (targetTable != null) {
+            try {
+                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+                if (filterBefore(data)) {
+                    LoadStatus loadStatus = LoadStatus.SUCCESS;
+                    switch (data.getDataEventType()) {
+                        case UPDATE:
+                            loadStatus = update(data, true, true);
+                            break;
+                        case INSERT:
+                            loadStatus = insert(data);
+                            break;
+                        case DELETE:
+                            loadStatus = delete(data, true);
+                            break;
+                        case BSH:
+                            script(data);
+                            break;
+                        case SQL:
+                            sql(data);
+                            break;
+                        case CREATE:
+                            create(data);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (loadStatus == LoadStatus.CONFLICT) {
+                        if (conflictResolver != null) {
+                            conflictResolver.needsResolved(this, data, loadStatus);
+                        } else {
+                            throw new ConflictException(data, targetTable, false);
+                        }
+                    } else {
+                        uncommittedCount++;
+                    }
+
+                    lastData = data;
+
+                    filterAfter(data);
+
+                    checkForEarlyCommit();
+
                 }
 
-                if (loadStatus == LoadStatus.CONFLICT) {
-                    if (conflictResolver != null) {
-                        conflictResolver.needsResolved(this, data, loadStatus);
-                    } else {
-                        throw new ConflictException(data, targetTable, false);
-                    }
+            } catch (IgnoreBatchException ex) {
+                rollback();
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (filterError(data, ex)) {
+                    throw ex;
                 } else {
                     uncommittedCount++;
+                    statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+                    checkForEarlyCommit();
                 }
-
-                lastData = data;
-
-                filterAfter(data);
-
-                checkForEarlyCommit();
-
             }
-
-        } catch (IgnoreBatchException ex) {
-            rollback();
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (filterError(data, ex)) {
-                throw ex;
-            } else {
-                uncommittedCount++;
-                statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
-                checkForEarlyCommit();
-            }
+        } else {
+            throw new SqlException(String.format("Could not find the target table %s",
+                    sourceTable.getFullyQualifiedTableName()));
         }
-
     }
     
     protected void checkForEarlyCommit() {

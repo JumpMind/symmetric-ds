@@ -84,6 +84,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         settings.setMaxRowsBeforeCommit(parameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
+        settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
 

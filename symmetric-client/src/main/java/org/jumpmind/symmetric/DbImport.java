@@ -86,6 +86,8 @@ public class DbImport {
     private boolean alterTables = false;
 
     private boolean dropIfExists = false;
+    
+    private boolean ignoreMissingTables = true;
 
     protected IDatabasePlatform platform;
     
@@ -164,6 +166,7 @@ public class DbImport {
         settings.setCreateTableDropFirst(dropIfExists);
         settings.setCreateTableFailOnError(!forceImport);
         settings.setDatabaseWriterFilters(databaseWriterFilters);
+        settings.setIgnoreMissingTables(ignoreMissingTables);
         settings.setCreateTableAlterCaseToMatchDatabaseDefault(alterCaseToMatchDatabaseDefaultCase);
         if (forceImport) {
             settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
@@ -227,6 +230,14 @@ public class DbImport {
 
     public void setSchema(String schema) {
         this.schema = schema;
+    }
+    
+    public void setIgnoreMissingTables(boolean ignoreMissingTables) {
+        this.ignoreMissingTables = ignoreMissingTables;
+    }
+    
+    public boolean isIgnoreMissingTables() {
+        return ignoreMissingTables;
     }
 
     public IDatabasePlatform getPlatform() {
