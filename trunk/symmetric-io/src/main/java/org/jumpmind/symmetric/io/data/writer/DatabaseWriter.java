@@ -146,7 +146,9 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (targetTable != null) {
+        if (targetTable != null || 
+                data.getDataEventType() == DataEventType.CREATE ||
+                data.getDataEventType() == DataEventType.SQL) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
@@ -206,8 +208,12 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
         } else {
-            throw new SqlException(String.format("Could not find the target table %s",
-                    sourceTable.getFullyQualifiedTableName()));
+            if (sourceTable != null) {
+                throw new SqlException(String.format("Could not find the target table %s",
+                        sourceTable.getFullyQualifiedTableName()));
+            } else {
+                throw new SqlException("The target table was not specified");
+            }
         }
     }
     

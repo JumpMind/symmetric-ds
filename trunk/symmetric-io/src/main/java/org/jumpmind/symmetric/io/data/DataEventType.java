@@ -58,11 +58,6 @@ public enum DataEventType {
     CREATE("C"),
 
     /**
-     * An event that indicates that all SymmetricDS configuration table data should be streamed to the client.
-     */
-    CONFIG("X"),
-
-    /**
      * An event the indicates that the data payload is going to be a Java bean shell script that is to be run at the
      * client.
      */
@@ -111,8 +106,6 @@ public enum DataEventType {
             return SQL;
         } else if (s.equals(CREATE.getCode())) {
             return CREATE;
-        } else if (s.equals(CONFIG.getCode())) {
-            return CONFIG;
         } else if (s.equals(RELOAD.getCode())) {
             return RELOAD;
         } else if (s.equals(BSH.getCode())) {
