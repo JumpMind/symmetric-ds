@@ -88,4 +88,18 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
         }
     }
 
+    @Override
+    public void setValues(PreparedStatement ps, Object[] args) throws SQLException {
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                Object arg = args[i];
+                if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
+                    arg =  dateTimeFormat.format(arg);
+                    args[i]=arg;
+                }
+
+                doSetValue(ps, i + 1, arg);
+            }
+        }
+    }
 }
