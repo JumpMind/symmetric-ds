@@ -27,7 +27,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 .put("insertTriggerTemplate",
                         "create trigger $(triggerName) after insert on $(schemaName)$(tableName)    \n"
                                 + "for each row     \n"
-                                + "  when $(syncOnInsertCondition)    \n"
+                                + "  when ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition))    \n"
                                 + "  begin    \n"
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'I',    \n"
@@ -40,7 +40,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 .put("updateTriggerTemplate",
                         "create trigger $(triggerName) after update on $(schemaName)$(tableName)   \n"
                                 + "for each row    \n"
-                                + "  when $(syncOnUpdateCondition)     \n"
+                                + "  when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition))       \n"
                                 + "  begin   \n"
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)   \n"
                                 + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'U',   \n"
@@ -53,7 +53,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 .put("deleteTriggerTemplate",
                         "create trigger $(triggerName) after delete on $(schemaName)$(tableName)    \n"
                                 + "for each row     \n"
-                                + "  when $(syncOnDeleteCondition)    \n"
+                                + "  when ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition))      \n"
                                 + "  begin    \n"
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
