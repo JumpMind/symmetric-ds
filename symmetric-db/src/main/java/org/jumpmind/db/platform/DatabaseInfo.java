@@ -77,6 +77,9 @@ public class DatabaseInfo {
     /** Whether non-unique indices are supported. */
     private boolean indicesSupported = true;
 
+    /** Whether database has foreign key support */
+    private boolean foreignKeysSupported = true;
+   
     /** Whether indices are embedded inside the create table statement. */
     private boolean indicesEmbedded = false;
 
@@ -407,6 +410,26 @@ public class DatabaseInfo {
         this.indicesSupported = supportingIndices;
     }
 
+    /**
+     * Determines whether indices are supported.
+     * 
+     * @return <code>true</code> if indices are supported
+     */
+    public boolean isForeignKeysSupported() {
+        return foreignKeysSupported;
+    }
+
+    /**
+     * Specifies whether indices are supported.
+     * 
+     * @param supportingIndices
+     *            <code>true</code> if indices are supported
+     */
+    public void setForeignKeysSupported(boolean foreignKeysSupported) {
+        this.foreignKeysSupported = foreignKeysSupported;
+    }
+
+    
     /**
      * Determines whether the indices are embedded in the create table clause or
      * as seperate statements. Per default, indices are external.

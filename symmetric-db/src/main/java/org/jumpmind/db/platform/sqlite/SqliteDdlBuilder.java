@@ -61,7 +61,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
-
+        databaseInfo.setForeignKeysSupported(false);
     }
     
     @Override
@@ -92,8 +92,4 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         super.writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
     }
-    
-    @Override
-    protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
-            ForeignKey key, StringBuilder ddl) {}
 }
