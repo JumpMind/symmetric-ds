@@ -226,15 +226,20 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteDataEventSql");
                     args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId,
                             maxId };
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC};
+
                     break;
                 case OUTGOING_BATCH:
                     deleteSql = getSql("deleteOutgoingBatchSql");
                     args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId, minId,
                             maxId };
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC};
+
                     break;
                 case STRANDED_DATA:
                     deleteSql = getSql("deleteStrandedData");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC};
                     break;
             }
 

@@ -55,4 +55,8 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         return false;
     }
     
+    public boolean isTransactionIdOverrideSupported() {
+        return false;
+    }
+    
 }
