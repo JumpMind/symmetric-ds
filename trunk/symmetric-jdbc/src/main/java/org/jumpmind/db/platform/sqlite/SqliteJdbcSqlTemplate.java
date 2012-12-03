@@ -16,6 +16,7 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.jumpmind.util.FormatUtils;
 import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.StatementCreatorUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -49,18 +50,9 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
             String s = rs.getString(1);
             Date d = null;
-            try {
-                d = dateTimeFormat.parse(s);
-            } catch (ParseException e) {
-                try {
-                    d =  timeFormat.parse(s);
-                } catch (ParseException f) {
-                    try {
-                        d = dateFormat.parse(s);
-                    } catch (ParseException g) {
-                    }
-                }
-            }
+            
+            d = FormatUtils.parseDate(s,FormatUtils.TIMESTAMP_PATTERNS);
+              
             if (Timestamp.class.isAssignableFrom(clazz)) {
                 return (T) new Timestamp(d.getTime());
             } else {
@@ -87,7 +79,8 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
-                  arg = args[i-1] =  dateTimeFormat.format(arg);
+                  arg =  dateTimeFormat.format(arg);
+                  args[i-1] = arg;
                   StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             } else {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
