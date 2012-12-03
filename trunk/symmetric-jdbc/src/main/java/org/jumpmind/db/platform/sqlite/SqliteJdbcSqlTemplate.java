@@ -24,7 +24,7 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-    private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public SqliteJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
@@ -78,18 +78,17 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
         for (int i = 1; i <= args.length; i++) {
             Object arg  = args[i - 1];
             int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
+            
+            
             if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
             } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            } else if (argType == Types.DATE && arg!=null ) {
-                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, dateFormat.format(arg));
-            } else if (argType == Types.TIME && arg!=null ) {
-                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, timeFormat.format(arg));
-            } else if (argType == Types.TIMESTAMP && arg!=null ) {
-                  StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, dateTimeFormat.format(arg));
+            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
+                  arg = args[i-1] =  dateTimeFormat.format(arg);
+                  StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             } else {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
