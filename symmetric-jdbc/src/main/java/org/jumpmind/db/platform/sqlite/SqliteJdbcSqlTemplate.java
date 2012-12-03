@@ -76,7 +76,7 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
     public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
             LobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
-            Object arg = args[i - 1];
+            Object arg  = args[i - 1];
             int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
             if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
@@ -85,13 +85,13 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if (argType == Types.DATE && arg!=null ) {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(Types.VARCHAR), dateFormat.format(arg));
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, dateFormat.format(arg));
             } else if (argType == Types.TIME && arg!=null ) {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(Types.VARCHAR), timeFormat.format(arg));
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, timeFormat.format(arg));
             } else if (argType == Types.TIMESTAMP && arg!=null ) {
-                  StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(Types.VARCHAR), dateTimeFormat.format(arg));
+                  StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, dateTimeFormat.format(arg));
             } else {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(argType), arg);
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
         }
     }

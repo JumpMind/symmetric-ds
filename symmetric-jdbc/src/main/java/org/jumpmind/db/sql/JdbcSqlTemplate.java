@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -849,14 +850,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(argType), arg);
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
         }
     }
     
-    protected int verifyArgType(int argType) {
+    protected int verifyArgType(Object arg, int argType) {
         if (argType == -101 || argType == Types.OTHER) {
             return SqlTypeValue.TYPE_UNKNOWN;
+        } else if (argType == Types.INTEGER && arg instanceof BigInteger) {
+            return Types.DECIMAL;
         } else {
             return argType;
         }
