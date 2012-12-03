@@ -33,6 +33,26 @@ public class DbExportImportTest extends AbstractServiceTest {
     private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 
     private static final String TEST_TS_W_TZ = "test_ts_w_tz";
+    
+    @Test
+    public void testInsertBigIntIntoOracleIntField() {
+        if (getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
+            ISymmetricEngine engine = getSymmetricEngine();
+            DataSource ds = engine.getDataSource();
+            IDatabasePlatform platform = engine.getDatabasePlatform();
+            
+            Table table = new Table("TEST_ORACLE_INTEGER");
+            table.addColumn(new Column("A", false, Types.INTEGER, -1, -1));
+            platform.alterCaseToMatchDatabaseDefaultCase(table);
+            platform.createTables(true, false, table);
+            
+            DbImport importer = new DbImport(ds);
+            importer.setFormat(DbImport.Format.CSV);
+            importer.importTables("\"A\"\n1149140000100490", table.getName());
+            
+            Assert.assertEquals(1149140000100490l,platform.getSqlTemplate().queryForLong("select A from TEST_ORACLE_INTEGER"));
+        }
+    }
 
     @Test 
     public void exportNullTimestampToCsv() throws Exception {       
