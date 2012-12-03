@@ -83,11 +83,13 @@ public class ModelComparator {
             if (sourceTable == null) {
                 log.debug("Table {} needs to be added", targetTable.getName());
                 changes.add(new AddTableChange(targetTable));
-                for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
-                    // we have to use target table's definition here because the
-                    // complete table is new
-                    changes.add(new AddForeignKeyChange(targetTable, targetTable
-                            .getForeignKey(fkIdx)));
+                if (platformInfo.isForeignKeysSupported()) {
+                    for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
+                        // we have to use target table's definition here because the
+                        // complete table is new
+                        changes.add(new AddForeignKeyChange(targetTable, targetTable
+                                .getForeignKey(fkIdx)));
+                    }
                 }
             } else {
                 changes.addAll(compareTables(sourceModel, sourceTable, targetModel, targetTable));
@@ -109,9 +111,11 @@ public class ModelComparator {
                 // these from the compareTables method and we only need to
                 // create changes for the fks
                 // originating from this table
-                for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
-                    changes.add(new RemoveForeignKeyChange(sourceTable, sourceTable
-                            .getForeignKey(fkIdx)));
+                if (platformInfo.isForeignKeysSupported()) {
+                    for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
+                        changes.add(new RemoveForeignKeyChange(sourceTable, sourceTable
+                                .getForeignKey(fkIdx)));
+                    }
                 }
             }
         }
@@ -136,35 +140,37 @@ public class ModelComparator {
             Database targetModel, Table targetTable) {
         ArrayList<IModelChange> changes = new ArrayList<IModelChange>();
 
-        for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
-            ForeignKey sourceFk = sourceTable.getForeignKey(fkIdx);
-            ForeignKey targetFk = findCorrespondingForeignKey(targetTable, sourceFk);
+        if (platformInfo.isForeignKeysSupported()) {
 
-            if (targetFk == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Foreign key " + sourceFk + " needs to be removed from table "
-                            + sourceTable.getName());
+            for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
+                ForeignKey sourceFk = sourceTable.getForeignKey(fkIdx);
+                ForeignKey targetFk = findCorrespondingForeignKey(targetTable, sourceFk);
+    
+                if (targetFk == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Foreign key " + sourceFk + " needs to be removed from table "
+                                + sourceTable.getName());
+                    }
+                    changes.add(new RemoveForeignKeyChange(sourceTable, sourceFk));
                 }
-                changes.add(new RemoveForeignKeyChange(sourceTable, sourceFk));
+            }
+
+            for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
+                ForeignKey targetFk = targetTable.getForeignKey(fkIdx);
+                ForeignKey sourceFk = findCorrespondingForeignKey(sourceTable, targetFk);
+    
+                if (sourceFk == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Foreign key " + targetFk + " needs to be created for table "
+                                + sourceTable.getName());
+                    }
+                    // we have to use the target table here because the foreign key
+                    // might
+                    // reference a new column
+                    changes.add(new AddForeignKeyChange(targetTable, targetFk));
+                }
             }
         }
-
-        for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
-            ForeignKey targetFk = targetTable.getForeignKey(fkIdx);
-            ForeignKey sourceFk = findCorrespondingForeignKey(sourceTable, targetFk);
-
-            if (sourceFk == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Foreign key " + targetFk + " needs to be created for table "
-                            + sourceTable.getName());
-                }
-                // we have to use the target table here because the foreign key
-                // might
-                // reference a new column
-                changes.add(new AddForeignKeyChange(targetTable, targetFk));
-            }
-        }
-
         for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
             IIndex sourceIndex = sourceTable.getIndex(indexIdx);
             IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
