@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -212,12 +213,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             String deleteSql = null;
             Object[] args = null;
+            int[] argTypes = null;
 
             switch (identifier) {
                 case DATA:
                     deleteSql = getSql("deleteDataSql");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId,
                             OutgoingBatch.Status.OK.name() };
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC};
                     break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
@@ -235,7 +238,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     break;
             }
 
-            totalCount += sqlTemplate.update(deleteSql, args);
+            totalCount += sqlTemplate.update(deleteSql, args, argTypes);
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
@@ -384,5 +387,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 new Object[] { nodeId });
         log.info("Purged all {} incoming batch for node {}", count, nodeId);
     }
+    
+    
 
 }
