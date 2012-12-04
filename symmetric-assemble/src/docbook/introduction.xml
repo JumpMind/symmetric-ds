@@ -75,6 +75,10 @@
       <listitem>
         <para>Greenplum 8.2.15 and above</para>
       </listitem>
+      
+       <listitem>
+        <para>SQLite 3 and above</para>
+      </listitem>
     </itemizedlist>
 
     <para>See <xref linkend="databases"/>, for compatibility notes and other

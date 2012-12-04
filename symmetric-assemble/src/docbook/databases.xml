@@ -176,6 +176,16 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>
+                    <row>
+                        <entry>SQLite</entry>
+                        <entry>3.x</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
                 </tbody>
             </tgroup>
         </table>
@@ -542,4 +552,29 @@ ontape -s -L 0
             </listitem>
         </itemizedlist>
     </section>
+     <section id="ap02-sqlite">
+        <title>SQLite</title>
+        <para>
+            For SQLite, the implementation of sync-on-incoming back and the population of a source node if in the sym data rows relies
+            on use of a context table (by default, called sym_context) to hold a boolean and node id in place of the more common methods
+            of using temp tables (which are unaccessible from triggers) or functions (which are not available).  The context table assumes
+            there's a single thread updating the database at any one time.  If that is not the case in the future, the current implementation of 
+            sync on incoming batch will be unreliable.
+        </para>
+        <para>
+        The SQLite dialect has the following limitations:
+         <itemizedlist spacing="compact">
+            <listitem>
+                <para>
+                    There is no transaction ID recorded on data captured.
+                    Either specify a tx_id_expression on the
+                    <xref linkend="table_trigger" xrefstyle="table"/> table,
+                    or set a max_batch_size on the                        
+                    <xref linkend="table_channel" xrefstyle="table"/> table that
+                    will accommodate your transactional data.
+                </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        </section>
 </appendix>
