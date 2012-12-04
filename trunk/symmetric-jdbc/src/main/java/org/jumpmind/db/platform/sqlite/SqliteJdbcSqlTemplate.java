@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -23,8 +22,6 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
     private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public SqliteJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
