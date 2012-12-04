@@ -1049,6 +1049,10 @@ public class DatabaseWriter implements IDataWriter {
     public Table getTargetTable() {
         return targetTable;
     }
+    
+    public Table getSourceTable() {
+        return sourceTable;
+    }
 
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
