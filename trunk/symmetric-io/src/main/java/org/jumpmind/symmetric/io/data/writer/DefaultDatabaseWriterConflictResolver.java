@@ -233,15 +233,16 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     protected boolean isTimestampNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {
         IDatabasePlatform platform = writer.getPlatform();
         String columnName = conflict.getDetectExpression();
-        Table table = writer.getTargetTable();
-        String[] pkData = data.getPkData(table);
+        Table targetTable = writer.getTargetTable();
+        Table sourceTable = writer.getSourceTable();
+        String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = writer.getPlatform().getObjectValues(
-                writer.getBatch().getBinaryEncoding(), pkData, table.getPrimaryKeyColumns());
-        DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, table);
-        Column column = table.getColumnWithName(columnName);
+                writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
+        DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, targetTable);
+        Column column = targetTable.getColumnWithName(columnName);
         String sql = stmt.getColumnsSql(new Column[] { column });
 
-        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
+        Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                 CsvData.ROW_DATA);
         String loadingStr = newData.get(columnName);
         
@@ -281,15 +282,16 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
     protected boolean isVersionNewer(Conflict conflict, DatabaseWriter writer, CsvData data) {
         String columnName = conflict.getDetectExpression();
-        Table table = writer.getTargetTable();
-        String[] pkData = data.getPkData(table);
+        Table targetTable = writer.getTargetTable();
+        Table sourceTable = writer.getSourceTable();
+        String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = writer.getPlatform().getObjectValues(
-                writer.getBatch().getBinaryEncoding(), pkData, table.getPrimaryKeyColumns());
-        DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, table);
-        String sql = stmt.getColumnsSql(new Column[] { table.getColumnWithName(columnName) });
+                writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
+        DmlStatement stmt = writer.getPlatform().createDmlStatement(DmlType.FROM, targetTable);
+        String sql = stmt.getColumnsSql(new Column[] { targetTable.getColumnWithName(columnName) });
         Long existingVersion = writer.getTransaction()
                 .queryForObject(sql, Long.class, objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(),
+        Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                 CsvData.ROW_DATA);
         Long loadingVersion = Long.valueOf(newData.get(columnName));
         return loadingVersion > existingVersion;
