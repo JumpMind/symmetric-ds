@@ -199,7 +199,7 @@ public class DataService extends AbstractService implements IDataService {
                     TriggerRouter triggerRouter = iterator.previous();
                     if (triggerRouter.getInitialLoadOrder() >= 0 &&
                     		(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD) ||
-                    				StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt()))
+                    				!StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt()))
                     		) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, true);
                         if (!transactional) {
