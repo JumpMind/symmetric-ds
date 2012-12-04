@@ -188,21 +188,22 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-                for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
-                        .listIterator(triggerHistories.size()); triggerHistoryIterator
-                        .hasPrevious();) {
-                    TriggerHistory triggerHistory = triggerHistoryIterator.previous();
-                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
-                            .get(triggerHistory.getTriggerHistoryId());
-                    for (ListIterator<TriggerRouter> iterator = triggerRouters
-                            .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
-                        TriggerRouter triggerRouter = iterator.previous();
-                        if (triggerRouter.getInitialLoadOrder() >= 0) {
-                            insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, true);
-                            if (!transactional) {
-                                transaction.commit();
-                            }
+            for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
+                    .listIterator(triggerHistories.size()); triggerHistoryIterator
+                    .hasPrevious();) {
+                TriggerHistory triggerHistory = triggerHistoryIterator.previous();
+                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
+                        .get(triggerHistory.getTriggerHistoryId());
+                for (ListIterator<TriggerRouter> iterator = triggerRouters
+                        .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                    TriggerRouter triggerRouter = iterator.previous();
+                    if (triggerRouter.getInitialLoadOrder() >= 0 &&
+                    		(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD) ||
+                    				StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt()))
+                    		) {
+                        insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, true);
+                        if (!transactional) {
+                            transaction.commit();
                         }
                     }
                 }

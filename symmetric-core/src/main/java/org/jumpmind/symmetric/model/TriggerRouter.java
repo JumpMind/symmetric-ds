@@ -46,7 +46,9 @@ public class TriggerRouter implements Serializable {
     private int initialLoadOrder;
     
     private String initialLoadSelect;
-
+    
+    private String initialLoadDeleteStmt;
+        
     private Trigger trigger;
 
     private Router router;
@@ -132,8 +134,16 @@ public class TriggerRouter implements Serializable {
     public String getInitialLoadSelect() {
         return initialLoadSelect;
     }
+    
+	public String getInitialLoadDeleteStmt() {
+		return initialLoadDeleteStmt;
+	}
 
-    public boolean isRouted(DataEventType event) {
+	public void setInitialLoadDeleteStmt(String initialLoadDeleteStmt) {
+		this.initialLoadDeleteStmt = initialLoadDeleteStmt;
+	}
+
+	public boolean isRouted(DataEventType event) {
         switch (event) {
         case INSERT:
             return router.isSyncOnInsert();

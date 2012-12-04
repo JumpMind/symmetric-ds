@@ -204,9 +204,20 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
-        return String.format(
-                parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
-                triggerRouter.qualifiedTargetTableName(triggerHistory));
+    	
+    	String sql=null;    	
+    	if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
+	        sql = String.format(
+	                parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
+	                triggerRouter.qualifiedTargetTableName(triggerHistory));
+    	} else {    		
+    		sql = triggerRouter.getInitialLoadDeleteStmt();
+            sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
+            sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
+            sql = FormatUtils.replace("nodeId", node.getNodeId(), sql);
+            sql = FormatUtils.replace("tableName", triggerRouter.qualifiedTargetTableName(triggerHistory), sql);
+    	}
+        return sql;
     }
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
