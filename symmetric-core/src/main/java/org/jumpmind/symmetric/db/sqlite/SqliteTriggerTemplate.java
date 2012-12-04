@@ -16,11 +16,11 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
         oldTriggerValue = "old";
         stringColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'\"','\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
-        emptyColumnTemplate = "";
+        emptyColumnTemplate = "''''" ;
         numberColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || cast($(tableAlias).$(columnName) as varchar) || '\"') end";
         datetimeColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || convert(varchar,$(tableAlias).$(columnName),121) || '\"') end";
         booleanColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) = 1 then '\"1\"' else '\"0\"' end";
-        blobColumnTemplate = "case when $(origTableAlias).$(columnName) is null then '' else '\"' || replace(replace(hex($(origTableAlias).$(columnName)),'\\','\\\\'),'\"','\\\"') || '\"' end ";
+        blobColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace(hex($(tableAlias).$(columnName)),'\\','\\\\'),'\"','\\\"') || '\"' end ";
 
         sqlTemplates = new HashMap<String, String>();
         sqlTemplates
@@ -32,7 +32,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'I',    \n"
                                 + "      $(triggerHistoryId),                                          \n"
-                                + "      $(columns),    \n" + "      '$(channelName)', null,null,    \n"
+                                + "      $(columns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
                                 + "end");
 
@@ -46,7 +46,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'U',   \n"
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
-                                + "      '$(channelName)', null,null,   \n" + "      $(externalSelect),   \n"
+                                + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),   \n" + "      $(externalSelect),   \n"
                                 + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n" + "end  ");
 
         sqlTemplates
@@ -58,7 +58,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
-                                + "       $(oldColumns),    \n" + "      '$(channelName)', null,null,    \n"
+                                + "       $(oldColumns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );    \n"
                                 + "end");
 

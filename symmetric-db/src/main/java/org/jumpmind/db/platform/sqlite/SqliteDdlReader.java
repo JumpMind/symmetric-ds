@@ -119,6 +119,10 @@ public class SqliteDdlReader implements IDdlReader {
                 colType = TypeMap.INTEGER;
             } else if (colType.startsWith("NUM")) {
                 colType = TypeMap.NUMERIC;
+            } else if (colType.startsWith("BLOB")) {
+                colType = TypeMap.BLOB;   
+            } else if (colType.startsWith("CLOB")) {
+                colType = TypeMap.CLOB;   
             } else if (colType.startsWith("TEXT") || colType.contains("CHAR")) {
                 colType = TypeMap.VARCHAR;
             } else if (colType.startsWith("FLOAT")) {
