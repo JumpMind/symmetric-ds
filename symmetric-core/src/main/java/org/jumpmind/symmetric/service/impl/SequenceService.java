@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -30,8 +31,8 @@ public class SequenceService extends AbstractService implements ISequenceService
             maxBatchId = 1;
         }
         try {
-            create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1,
-                    9999999999l, "system", false));
+            create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
+                    "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
                     TableConstants.SYM_OUTGOING_BATCH);
@@ -39,27 +40,37 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long nextVal(String name) {
-        return nextVal(sqlTemplate.startSqlTransaction(),name);
-    }
-    
-    public long nextVal(ISqlTransaction transaction,String name) {
-        long sequenceTimeoutInMs = parameterService.getLong(ParameterConstants.SEQUENCE_TIMEOUT_MS,
-                5000);
-        long ts = System.currentTimeMillis();
-        do {
-            long nextVal = tryToGetNextVal(transaction,name);
-            if (nextVal > 0) {
-                return nextVal;
-            }
-        }  while (System.currentTimeMillis() - sequenceTimeoutInMs < ts);
-
-        throw new IllegalStateException(String.format(
-                "Timed out after %d ms trying to get the next val for %s",
-                System.currentTimeMillis() - ts, name));
+        ISqlTransaction sqlTransaction = null;
+        try {
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return nextVal(sqlTransaction, name);
+        } finally {
+            close(sqlTransaction);
+        }
     }
 
-    protected long tryToGetNextVal(ISqlTransaction transaction,String name) {
-        long currVal = currVal(transaction,name);
+    public long nextVal(ISqlTransaction transaction, String name) {
+        if (transaction == null) {
+            return nextVal(name);
+        } else {
+            long sequenceTimeoutInMs = parameterService.getLong(
+                    ParameterConstants.SEQUENCE_TIMEOUT_MS, 5000);
+            long ts = System.currentTimeMillis();
+            do {
+                long nextVal = tryToGetNextVal(transaction, name);
+                if (nextVal > 0) {
+                    return nextVal;
+                }
+            } while (System.currentTimeMillis() - sequenceTimeoutInMs < ts);
+
+            throw new IllegalStateException(String.format(
+                    "Timed out after %d ms trying to get the next val for %s",
+                    System.currentTimeMillis() - ts, name));
+        }
+    }
+
+    protected long tryToGetNextVal(ISqlTransaction transaction, String name) {
+        long currVal = currVal(transaction, name);
         Sequence sequence = sequenceDefinitionCache.get(name);
         if (sequence == null) {
             sequence = get(name);
@@ -91,8 +102,8 @@ public class SequenceService extends AbstractService implements ISequenceService
             }
         }
 
-        int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal, name,
-                currVal);
+        int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal,
+                name, currVal);
         if (updateCount != 1) {
             nextVal = -1;
         }
@@ -100,12 +111,18 @@ public class SequenceService extends AbstractService implements ISequenceService
         return nextVal;
     }
 
-    public long currVal(ISqlTransaction transaction,String name) {
+    public long currVal(ISqlTransaction transaction, String name) {
         return transaction.queryForLong(getSql("getCurrentValueSql"), name);
     }
-    
+
     public long currVal(String name) {
-        return currVal(sqlTemplate.startSqlTransaction(),name);
+        ISqlTransaction sqlTransaction = null;
+        try {
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return currVal(sqlTransaction, name);
+        } finally {
+            close(sqlTransaction);
+        }
     }
 
     public void create(Sequence sequence) {
