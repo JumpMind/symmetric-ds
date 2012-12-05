@@ -546,7 +546,12 @@ abstract public class AbstractTriggerTemplate {
                         break;
                     case Types.CHAR:
                     case Types.VARCHAR:
-                        templateToUse = stringColumnTemplate;
+                        if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
+                                .contains(TypeMap.BFILE))) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = stringColumnTemplate;
+                        }
                         break;
                     case ColumnTypes.SQLXML:
                         templateToUse = xmlColumnTemplate;

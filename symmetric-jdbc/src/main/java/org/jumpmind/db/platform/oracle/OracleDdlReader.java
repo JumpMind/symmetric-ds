@@ -145,6 +145,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             return Types.FLOAT;
         } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
             return Types.DOUBLE;
+        } else if (typeName != null && typeName.startsWith("BFILE")) {
+            return Types.VARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
