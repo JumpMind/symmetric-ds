@@ -112,7 +112,7 @@ public class TriggerHistory implements Serializable {
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
-        this.pkColumnNames = Table.getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
+        this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(table.getPrimaryKeyColumns()));
         this.triggerRowHash = trigger.toHashedValue();
         tableHash = table.calculateTableHashcode();
     }
