@@ -205,21 +205,39 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
     	
-    	String sql=null;    	
+    	String sql=null;        	
+    	
     	if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
 	        sql = String.format(
 	                parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
-	                triggerRouter.qualifiedTargetTableName(triggerHistory));
+	                formatTableName(triggerRouter.qualifiedTargetTableName(triggerHistory)));
     	} else {    		
     		sql = triggerRouter.getInitialLoadDeleteStmt();
             sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
             sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
             sql = FormatUtils.replace("nodeId", node.getNodeId(), sql);
-            sql = FormatUtils.replace("tableName", triggerRouter.qualifiedTargetTableName(triggerHistory), sql);
+            sql = FormatUtils.replace("schemaName", triggerRouter.getTargetSchema(platform.getDefaultSchema()),sql);
+            sql = FormatUtils.replace("catalogName", triggerRouter.getTargetCatalog(platform.getDefaultCatalog()),sql);
+            sql = FormatUtils.replace("tableName", 
+            		formatTableName(triggerRouter.qualifiedTargetTableName(triggerHistory)), 
+            		sql);
     	}
         return sql;
     }
 
+    private String formatTableName(String tableName) {
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+                .getDatabaseInfo().getDelimiterToken() : "";                
+        Table table = platform.getTableFromCache(tableName, false);
+        if (table != null) {
+        	return String.format("%s%s%s", quote, table.getName(), quote);
+        } else {
+            throw new RuntimeException(String.format("Could not find %s to trunate",
+                    tableName));        	
+        }        
+    }
+    
+    
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
         return triggerTemplate.createCsvDataSql(
@@ -690,8 +708,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void truncateTable(String tableName) {
-        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-                .getDatabaseInfo().getDelimiterToken() : "";
         boolean success = false;
         int tryCount = 5;
         while (!success && tryCount > 0) {
@@ -699,7 +715,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 Table table = platform.getTableFromCache(tableName, false);
                 if (table != null) {
                     platform.getSqlTemplate().update(
-                            String.format("truncate table %s%s%s", quote, table.getName(), quote));
+                            String.format("truncate table %s", formatTableName(table.getName())));
                     success = true;
                 } else {
                     throw new RuntimeException(String.format("Could not find %s to trunate",
