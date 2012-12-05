@@ -299,7 +299,7 @@ abstract public class AbstractTriggerTemplate {
                 trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
-
+;
         Column[] orderedColumns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, orderedColumns, dml, false, channel, trigger);
@@ -546,12 +546,7 @@ abstract public class AbstractTriggerTemplate {
                         break;
                     case Types.CHAR:
                     case Types.VARCHAR:
-                        if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
-                                .contains(TypeMap.BFILE))) {
-                            templateToUse = emptyColumnTemplate;
-                        } else {
-                            templateToUse = stringColumnTemplate;
-                        }
+                        templateToUse = stringColumnTemplate;
                         break;
                     case ColumnTypes.SQLXML:
                         templateToUse = xmlColumnTemplate;
