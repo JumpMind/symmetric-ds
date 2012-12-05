@@ -131,27 +131,45 @@ public class Trigger implements Serializable {
         }
     }
 
+    public Column[] filterExcludedColumns(Column[] src) {
+        if (src!=null) {
+            List<String> excludedColumnNames = getExcludedColumnNamesAsList();
+            List<Column> filtered = new ArrayList<Column>(src.length);
+            for (int i = 0; i < src.length; i++) {
+                Column col = src[i];
+                if (!excludedColumnNames.contains(col.getName().toLowerCase())) {
+                    filtered.add(col);
+                }
+            }
+            return filtered.toArray(new Column[filtered.size()]);
+        } else {
+            return new Column[0];
+        }
+    }
+    
     /**
      * When dealing with columns, always use this method to order the columns so
      * that the primary keys are first.
      */
     public Column[] orderColumnsForTable(Table table) {
         if (table != null) {
-            List<String> excludedColumnNames = getExcludedColumnNamesAsList();
+            
             Column[] pks = table.getPrimaryKeyColumns();
             Column[] cols = table.getColumns();
+            
             List<Column> orderedColumns = new ArrayList<Column>(cols.length);
+            
             for (int i = 0; i < pks.length; i++) {
                 orderedColumns.add(pks[i]);
-            }
+            }            
+            
             for (int i = 0; i < cols.length; i++) {
-                Column col = cols[i];
-                if (!col.isPrimaryKey()
-                        && !excludedColumnNames.contains(col.getName().toLowerCase())) {
-                    orderedColumns.add(col);
+                if (!cols[i].isPrimaryKey()) {
+                    orderedColumns.add(cols[i]);
                 }
             }
-            return orderedColumns.toArray(new Column[orderedColumns.size()]);
+            Column[] result = orderedColumns.toArray(new Column[orderedColumns.size()]);
+            return filterExcludedColumns(result);
         } else {
             return new Column[0];
         }
