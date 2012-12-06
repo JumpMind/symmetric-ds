@@ -858,8 +858,12 @@ public class DatabaseWriter implements IDataWriter {
 
 		String sql = data.getParsedData(CsvData.ROW_DATA)[0];
 		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
-		sql = FormatUtils.replace("catalogName", targetTable.getCatalog(),sql);
-		sql = FormatUtils.replace("schemaName", targetTable.getSchema(), sql);
+		if (targetTable.getCatalog() != null) {
+			sql = FormatUtils.replace("catalogName", targetTable.getCatalog(),sql);
+		}
+		if (targetTable.getSchema() != null) {
+			sql = FormatUtils.replace("schemaName", targetTable.getSchema(), sql);
+		}
 		sql = FormatUtils.replace("tableName", formatTableName(targetTable.getName()), sql);
 		
 //		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
