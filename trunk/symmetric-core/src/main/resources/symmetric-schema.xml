@@ -27,7 +27,9 @@
         <column name="registration_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether registration is open for this node.  Re-registration may be forced for a node if this is set back to '1' in a parent database for the node_id that should be re-registred." />
         <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
-        <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node started the initial load." />
+        <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was started for this node." />
+        <column name="rev_initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that this node should send a reverse initial load." />
+        <column name="rev_initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node last sent an initial load." />                
         <column name="created_at_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
         <foreign-key foreignTable="node" name="fk_sec_2_node">
             <reference local="node_id" foreign="node_id" />

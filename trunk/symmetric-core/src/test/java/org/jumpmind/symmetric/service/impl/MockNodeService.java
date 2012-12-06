@@ -241,4 +241,18 @@ public class MockNodeService implements INodeService {
     public boolean removeOfflineServerListener(IOfflineServerListener listener) {
         return false;
     }
+    
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
+            boolean initialLoadEnabled) {
+        return true;
+    }
+    
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+        return true;
+    }
+    
+    public List<NodeSecurity> findNodeSecurityWithLoadEnabled() {
+        return null;
+    }
+    
 }

@@ -41,8 +41,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface IDataService {
     
-    public String reloadNode(String nodeId);
-
+    public String reloadNode(String nodeId, boolean reverseLoad);
     
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
 

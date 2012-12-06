@@ -293,7 +293,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     @ManagedOperation(description = "Send an initial load of data to a node.")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
     public String reloadNode(String nodeId) {
-        return engine.getDataService().reloadNode(nodeId);
+        return engine.getDataService().reloadNode(nodeId, false);
     }
 
     @ManagedOperation(description = "Send a SQL event to a node.")

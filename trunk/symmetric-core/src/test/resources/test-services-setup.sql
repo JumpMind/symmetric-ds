@@ -42,10 +42,10 @@ insert into sym_node values ('44004', 'unit-test-only', '44001', 1, null, null, 
 insert into sym_node values ('44005', 'unit-test-only', '44001', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '44001', 'engine');
 insert into sym_node values ('44006', 'unit-test-only', '44001', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '44003', 'engine');
 
-insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
-insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null, '00000');
-insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
-insert into sym_node_security values ('00000', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, null, '00000');
+insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,created_at_node_id) values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
+insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,created_at_node_id) values ('00002', 'supersecret', 1, null, 0, null, '00000');
+insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,created_at_node_id) values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
+insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,created_at_node_id) values ('00000', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, null, '00000');
 insert into sym_node_identity values ('00000');
 
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 

@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -67,6 +68,7 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 
@@ -165,16 +167,25 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected void insertInitialLoadEvents() {
         try {
-            Node identity = engine.getNodeService().findIdentity();
+            INodeService nodeService = engine.getNodeService();
+            Node identity = nodeService.findIdentity();
             if (identity != null) {
-                Map<String, NodeSecurity> nodeSecurities = engine.getNodeService()
-                        .findAllNodeSecurity(false);
+                List<NodeSecurity> nodeSecurities = nodeService.findNodeSecurityWithLoadEnabled();
                 if (nodeSecurities != null) {
-                    for (NodeSecurity security : nodeSecurities.values()) {
-                        if (!security.getNodeId().equals(identity.getNodeId())
-                                && security.isInitialLoadEnabled()
-                                && (security.getRegistrationTime() != null || security.getNodeId()
-                                        .equals(identity.getCreatedAtNodeId()))) {
+                    boolean reverseLoadFirst = parameterService
+                            .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
+                    for (NodeSecurity security : nodeSecurities) {
+                        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
+                        boolean initialLoadQueued = security.isInitialLoadEnabled();
+                        boolean thisMySecurityRecord = security.getNodeId().equals(
+                                identity.getNodeId());
+                        boolean registered = security.getRegistrationTime() != null;
+                        boolean parent = identity.getNodeId().equals(security.getCreatedAtNodeId());
+                        if (thisMySecurityRecord && reverseLoadQueued
+                                && (reverseLoadFirst || !initialLoadQueued)) {
+                            sendReverseInitialLoad();
+                        } else if (!thisMySecurityRecord && registered && parent
+                                && initialLoadQueued && (!reverseLoadFirst || !reverseLoadQueued)) {
                             long ts = System.currentTimeMillis();
                             engine.getDataService().insertReloadEvents(
                                     engine.getNodeService().findNode(security.getNodeId()), false);
@@ -192,6 +203,23 @@ public class RouterService extends AbstractService implements IRouterService {
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
+        }
+    }
+    
+    protected void sendReverseInitialLoad() {
+        INodeService nodeService = engine.getNodeService();
+        boolean queuedLoad = false;
+        List<Node> nodes = new ArrayList<Node>();
+        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
+        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
+        for (Node node : nodes) {
+            engine.getDataService().insertReloadEvents(node, true);
+            queuedLoad = true;
+        }
+
+        if (!queuedLoad) {
+            log.info("{} was enabled but no nodes were linked to load",
+                    ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
         }
     }
 

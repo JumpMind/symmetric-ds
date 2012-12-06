@@ -601,7 +601,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String reloadNode(String nodeId) {
-        return dataService.reloadNode(nodeId);
+        return dataService.reloadNode(nodeId, false);
     }
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
