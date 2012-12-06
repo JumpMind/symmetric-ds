@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
@@ -55,6 +53,7 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
 
 /**
@@ -158,16 +157,21 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
             nodeService.save(registeredNode);
 
-            if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                // only send automatic initial load once or if the client is
-                // really
-                // re-registering
-                if ((security != null && security.getInitialLoadTime() == null)
-                        || isRequestedRegistration) {
-                    dataService.reloadNode(nodeId);
+            /**
+             * Only send automatic initial load once or if the client is really
+             * re-registering
+             */
+            if ((security != null && security.getInitialLoadTime() == null)
+                    || isRequestedRegistration) {
+                if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
+                    dataService.reloadNode(nodeId, false);
+                }
+
+                if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+                    dataService.reloadNode(nodeId, true);
                 }
             }
-
+            
             dataExtractorService.extractConfigurationStandalone(registeredNode, out);
 
             saveRegisgtrationRequest(new RegistrationRequest(registeredNode, RegistrationStatus.OK,
@@ -262,14 +266,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     private void sleepBeforeRegistrationRetry() {
-        try {
-            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
-                    * randomTimeSlot.getRandomValueSeededByExternalId();
-            log.warn("Could not register.  Sleeping for {} ms before attempting again.",
-                    sleepTimeInMs);
-            Thread.sleep(sleepTimeInMs);
-        } catch (InterruptedException e) {
-        }
+        long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
+                * randomTimeSlot.getRandomValueSeededByExternalId();
+        log.warn("Could not register.  Sleeping for {} ms before attempting again.", sleepTimeInMs);
+        AppUtils.sleep(sleepTimeInMs);
     }
 
     public boolean isRegisteredWithServer() {
@@ -303,7 +303,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());
-                    sendInitialLoadFromRegisteredNode();
                 } else {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     registered = false;
@@ -319,24 +318,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throw new RegistrationFailedException(String.format(
                     "Failed after trying to register %s times.",
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
-        }
-    }
-
-    protected void sendInitialLoadFromRegisteredNode() {
-        if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-            boolean queuedLoad = false;
-            List<Node> nodes = new ArrayList<Node>();
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
-            for (Node node : nodes) {
-                dataService.insertReloadEvents(node, true);
-                queuedLoad = true;
-            }
-
-            if (!queuedLoad) {
-                log.info("{} was enabled but no nodes were linked to load",
-                        ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
-            }
         }
     }
 
@@ -416,40 +397,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
     }
 
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
-        this.dataExtractorService = dataExtractorService;
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
     public boolean isAutoRegistration() {
         return parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
-    }
-
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        this.dataLoaderService = dataLoaderService;
-    }
-
-    public void setTransportManager(ITransportManager transportManager) {
-        this.transportManager = transportManager;
-    }
-
-    public void setRandomTimeSlot(RandomTimeSlot randomTimeSlot) {
-        this.randomTimeSlot = randomTimeSlot;
-    }
-
-    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-        this.nodePasswordFilter = nodePasswordFilter;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
 
     private String filterPasswordOnSaveIfNeeded(String password) {
@@ -458,6 +407,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
             s = nodePasswordFilter.onNodeSecuritySave(password);
         }
         return s;
+    }
+    
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+        this.nodePasswordFilter = nodePasswordFilter;        
     }
 
     public boolean isRegistrationOpen(String nodeGroupId, String externalId) {

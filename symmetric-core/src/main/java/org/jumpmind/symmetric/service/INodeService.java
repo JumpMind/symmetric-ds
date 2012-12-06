@@ -67,6 +67,8 @@ public interface INodeService {
 
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
     
+    public List<NodeSecurity> findNodeSecurityWithLoadEnabled();
+    
     public List<String> findAllExternalIds();
 
     public NodeSecurity findNodeSecurity(String nodeId);
@@ -125,6 +127,10 @@ public interface INodeService {
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
     
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
+    
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
+    
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
 
     public INodeIdCreator getNodeIdCreator();
 

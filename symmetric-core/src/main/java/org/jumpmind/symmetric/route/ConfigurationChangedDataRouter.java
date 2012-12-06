@@ -106,23 +106,49 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
 
                 if (!initialLoad && nodeIds != null) {
+                    DataEventType eventType = dataMetaData.getData().getDataEventType();
                     /*
-                     * don't route node security to it's own node. that node
+                     * Don't route node security to it's own node. That node
                      * will get node security via registration and it will be
                      * updated by initial load.  Otherwise, updates can be 
                      * unpredictable in the order they will be applied at the
                      * node because updates are on a different channel than reloads
                      */
                     if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                        nodeIds.remove(nodeIdInQuestion);
+                        if (nodeIds.contains(nodeIdInQuestion)) {
+                            boolean remove = true;
+                            if (eventType == DataEventType.UPDATE) {                               
+                                if ("1".equals(columnValues.get("REV_INITIAL_LOAD_ENABLED"))) {
+                                    boolean reverseLoadQueued = engine.getParameterService().is(
+                                            ParameterConstants.INTITAL_LOAD_REVERSE_FIRST)
+                                            || "0".equals(columnValues.get("INITIAL_LOAD_ENABLED"));
+                                    /*
+                                     * Only send the update if the client is going to be expected 
+                                     * to queue up a reverse load.  The trigger to do this is the arrival
+                                     * of sym_node_security with REV_INITIAL_LOAD_ENABLED set to 1.
+                                     */
+                                    if (reverseLoadQueued) {
+                                        remove = false;
+                                    }
+                                }
+                            }
+                            if (remove) {
+                                nodeIds.remove(nodeIdInQuestion);
+                            }
+                        }
+                        
+                        /*
+                         * The parent node never needs node_security updates.
+                         */
+                        nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
                     }
                     
                     /*
-                     * don't route insert events for a node to itself. they will
-                     * be loaded during registration.  if we route them, then an old
+                     * Don't route insert events for a node to itself. they will
+                     * be loaded during registration.  If we route them, then an old
                      * state can override the correct state
                      * 
-                     * don't send deletes to a node.  a node should be responsible for deleting
+                     * Don't send deletes to a node.  A node should be responsible for deleting
                      * itself.
                      */
                     if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT ||
