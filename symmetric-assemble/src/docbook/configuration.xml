@@ -980,7 +980,7 @@ values
         as the original table with the same data types only each column is nullable with no default 
         values.     </para>
 
-        <para>Three extra "AUDIT" columns are added: <itemizedlist>
+        <para>Three extra "AUDIT" columns are added to the table: <itemizedlist>
             <listitem>AUDIT_ID - the primary key of the table.</listitem>
             <listitem>AUDIT_TIME - the time at which the change occurred.</listitem>
             <listitem>AUDIT_EVENT - the DML type that happened to the row.</listitem>
