@@ -14,6 +14,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -37,44 +38,47 @@ public class AuditTableDataRouter extends AbstractDataRouter {
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
-        IParameterService parameterService = engine.getParameterService();
-        IDatabasePlatform platform = engine.getDatabasePlatform();
-        TriggerHistory triggerHistory = dataMetaData.getTriggerHistory();
-        Table table = dataMetaData.getTable().copyAndFilterColumns(
-                triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(),
-                true);
-        String tableName = table.getFullyQualifiedTableName();
-        Table auditTable = auditTables.get(tableName);
-        if (auditTable == null) {
-            auditTable = toAuditTable(table);
-            auditTables.put(tableName, auditTable);
-            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
-                platform.alterTables(true, auditTable);
+        DataEventType eventType = dataMetaData.getData().getDataEventType();
+        if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE
+                || eventType == DataEventType.DELETE) {
+            IParameterService parameterService = engine.getParameterService();
+            IDatabasePlatform platform = engine.getDatabasePlatform();
+            TriggerHistory triggerHistory = dataMetaData.getTriggerHistory();
+            Table table = dataMetaData.getTable().copyAndFilterColumns(
+                    triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(),
+                    true);
+            String tableName = table.getFullyQualifiedTableName();
+            Table auditTable = auditTables.get(tableName);
+            if (auditTable == null) {
+                auditTable = toAuditTable(table);
+                auditTables.put(tableName, auditTable);
+                if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
+                    platform.alterTables(true, auditTable);
+                }
             }
-        }
-        String auditTableName = auditTable.getFullyQualifiedTableName(platform.getDatabaseInfo()
-                .getDelimiterToken());
+            String auditTableName = auditTable.getFullyQualifiedTableName(platform
+                    .getDatabaseInfo().getDelimiterToken());
 
-        ISqlTemplate template = platform.getSqlTemplate();
-        Map<String, Object> values = new HashMap<String, Object>(getNewDataAsObject(null,
-                dataMetaData, engine.getSymmetricDialect()));
-        Long sequence = (Long)context.get(auditTableName);
-        if (sequence == null) {
-            sequence = 1l + template.queryForLong(String.format("select max(%s) from %s", COLUMN_AUDIT_ID,
-                    auditTableName)); 
-        } else {
-            sequence = 1l + sequence;            
+            ISqlTemplate template = platform.getSqlTemplate();
+            Map<String, Object> values = new HashMap<String, Object>(getNewDataAsObject(null,
+                    dataMetaData, engine.getSymmetricDialect()));
+            Long sequence = (Long) context.get(auditTableName);
+            if (sequence == null) {
+                sequence = 1l + template.queryForLong(String.format("select max(%s) from %s",
+                        COLUMN_AUDIT_ID, auditTableName));
+            } else {
+                sequence = 1l + sequence;
+            }
+            context.put(auditTableName, sequence);
+            values.put(COLUMN_AUDIT_ID, sequence);
+            values.put(COLUMN_AUDIT_TIME, new Date());
+            values.put(COLUMN_AUDIT_EVENT, dataMetaData.getData().getDataEventType().getCode());
+            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, auditTable);
+            int[] types = statement.getTypes();
+            Object[] args = statement.getValueArray(values);
+            String sql = statement.getSql();
+            template.update(sql, args, types);
         }
-        context.put(auditTableName, sequence);
-        values.put(COLUMN_AUDIT_ID,
-                sequence);
-        values.put(COLUMN_AUDIT_TIME, new Date());
-        values.put(COLUMN_AUDIT_EVENT, dataMetaData.getData().getDataEventType().getCode());
-        DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, auditTable);
-        int[] types = statement.getTypes();
-        Object[] args = statement.getValueArray(values);
-        String sql = statement.getSql();
-        template.update(sql, args, types);
         return null;
     }
 
