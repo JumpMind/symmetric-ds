@@ -72,7 +72,7 @@ public class AuditTableDataRouter extends AbstractDataRouter {
             context.put(auditTableName, sequence);
             values.put(COLUMN_AUDIT_ID, sequence);
             values.put(COLUMN_AUDIT_TIME, new Date());
-            values.put(COLUMN_AUDIT_EVENT, dataMetaData.getData().getDataEventType().getCode());
+            values.put(COLUMN_AUDIT_EVENT, eventType.getCode());
             DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, auditTable);
             int[] types = statement.getTypes();
             Object[] args = statement.getValueArray(values);
