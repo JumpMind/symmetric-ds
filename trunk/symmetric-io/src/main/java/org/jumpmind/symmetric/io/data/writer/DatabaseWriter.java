@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class DatabaseWriter implements IDataWriter {
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };
-
+    
     protected IDatabasePlatform platform;
 
     protected ISqlTransaction transaction;
@@ -830,13 +831,12 @@ public class DatabaseWriter implements IDataWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
-
     }
 
     protected boolean sql(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String sql = data.getParsedData(CsvData.ROW_DATA)[0];
+            String sql = preprocessSqlStatement(data);
             transaction.prepare(sql);
             if (log.isDebugEnabled()) {
                 log.debug("About to run: {}", sql);
@@ -852,9 +852,28 @@ public class DatabaseWriter implements IDataWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
-
     }
 
+    protected String preprocessSqlStatement(CsvData data) {
+
+		String sql = data.getParsedData(CsvData.ROW_DATA)[0];
+		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
+		sql = FormatUtils.replace("catalogName", targetTable.getCatalog(),sql);
+		sql = FormatUtils.replace("schemaName", targetTable.getSchema(), sql);
+		sql = FormatUtils.replace("tableName", formatTableName(targetTable.getName()), sql);
+		
+//		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
+//		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
+
+		return sql;
+    }
+
+    protected String formatTableName(String tableName) {
+		String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+				.getDatabaseInfo().getDelimiterToken() : "";				
+    	return String.format("%s%s%s", quote, tableName, quote);
+    }
+    
     protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data,
             boolean applyChangesOnly) {
         boolean needsUpdated = true;
