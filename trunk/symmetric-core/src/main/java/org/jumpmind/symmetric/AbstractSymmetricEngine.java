@@ -875,7 +875,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public INodeCommunicationService getNodeCommunicationService() {
         return nodeCommunicationService;
-    }
+    }   
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());

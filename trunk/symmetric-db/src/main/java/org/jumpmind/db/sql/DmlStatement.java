@@ -326,7 +326,7 @@ public class DmlStatement {
         return null;
     }    
 
-    public Object[] buildArgsFrom(Map<String, Object> params) {
+    public Object[] getValueArray(Map<String, Object> params) {
         Object[] args = null;
         if (params != null) {
             int index = 0;

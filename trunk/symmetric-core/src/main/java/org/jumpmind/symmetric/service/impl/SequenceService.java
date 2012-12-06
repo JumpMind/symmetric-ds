@@ -3,7 +3,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
