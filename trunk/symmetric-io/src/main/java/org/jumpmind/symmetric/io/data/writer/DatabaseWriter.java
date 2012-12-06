@@ -858,13 +858,15 @@ public class DatabaseWriter implements IDataWriter {
 
 		String sql = data.getParsedData(CsvData.ROW_DATA)[0];
 		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
-		if (targetTable.getCatalog() != null) {
-			sql = FormatUtils.replace("catalogName", targetTable.getCatalog(),sql);
+		if (targetTable != null) {
+			sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()),sql);
+			sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
+			sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
+		} else if (sourceTable != null){
+			sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()),sql);
+			sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
+			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);			
 		}
-		if (targetTable.getSchema() != null) {
-			sql = FormatUtils.replace("schemaName", targetTable.getSchema(), sql);
-		}
-		sql = FormatUtils.replace("tableName", formatTableName(targetTable.getName()), sql);
 		
 //		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
 //		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
@@ -872,10 +874,15 @@ public class DatabaseWriter implements IDataWriter {
 		return sql;
     }
 
-    protected String formatTableName(String tableName) {
-		String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-				.getDatabaseInfo().getDelimiterToken() : "";				
-    	return String.format("%s%s%s", quote, tableName, quote);
+    protected String quoteString(String string) {
+    	if (!StringUtils.isEmpty(string)) {
+			String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+					.getDatabaseInfo().getDelimiterToken() : "";
+			return String.format("%s%s%s", quote, string, quote);	
+    	} else {
+    		return string;
+    	}
+    	
     }
     
     protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data,
