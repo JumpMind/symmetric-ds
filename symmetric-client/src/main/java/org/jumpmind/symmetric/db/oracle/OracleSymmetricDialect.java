@@ -72,7 +72,9 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();
-        sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d SYM_IDX_D_CHANNEL_ID) */");
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_HINTS,  true)) {
+            sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d SYM_IDX_D_CHANNEL_ID) */");
+        }
     }
     
     @Override
