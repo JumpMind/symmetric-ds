@@ -17,6 +17,7 @@ import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -572,6 +573,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     }
 
     private String[] massageExpectectedResultsForDialect(String[] values) {
+        RoundingMode mode = RoundingMode.DOWN;
+        
         if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform || platform instanceof MsSqlDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
@@ -584,8 +587,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             if (platform instanceof MySqlDatabasePlatform) {
                 scale = 16;
             }
+            if (platform instanceof SqliteDatabasePlatform) {
+                mode = RoundingMode.HALF_EVEN;
+            }
             DecimalFormat df = new DecimalFormat("0.00####################################");
-            values[10] = df.format(new BigDecimal(values[10]).setScale(scale, RoundingMode.DOWN));
+            values[10] = df.format(new BigDecimal(values[10]).setScale(scale,mode));
         }
         return values;
     }
