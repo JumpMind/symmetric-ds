@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.postgresql;
 
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
@@ -75,6 +77,26 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         } else {
             return super.getValueArray(columnValues, keyValues);
         }
+    }
+    
+    @Override
+    public Object[] getValueArray(Map<String, Object> params) {
+        Object[] args = null;
+        int index = 0;
+        if (params != null) {
+            if (dmlType == DmlType.INSERT) {
+                args = new Object[columns.length + keys.length];
+                for (Column column : columns) {
+                    args[index++] = params.get(column.getName());
+                }
+                for (Column column : keys) {
+                    args[index++] = params.get(column.getName());
+                }
+            } else {
+                args = super.getValueArray(params);
+            }
+        }
+        return args;
     }
 
     @Override

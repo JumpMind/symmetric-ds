@@ -17,20 +17,15 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.model;
-
 
 /**
  * Identifies the action to take when the event watcher sees events in the event
  * table.
- *
- * 
  */
 public enum NodeGroupLinkAction {
     
-    P("pushes to"), W("waits for pull from");
+    P("pushes to"), W("waits for pull from"), R("only routes to");
     
     private String description;
     
@@ -44,6 +39,8 @@ public enum NodeGroupLinkAction {
                 return P;
             } else if (W.name().equals(code)) {
                 return W;
+            } else if (R.name().equals(code)) {
+                return R;
             }
         }
         return null;

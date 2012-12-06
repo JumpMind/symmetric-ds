@@ -296,6 +296,8 @@ values
     <para>A node group link can be configured to use the same node group as
     the source and the target. This configuration allows a node group to sync
     with every other node in its group.</para>
+    <para>A third type of link action of 'R' for 'Route Only' exists if you want to associate a router with a link that will not move the data.  
+    This action type might be useful when using an XML publishing router or an audit table changes router.</para>
   </section>
 
   <section id="configuration-channel">
@@ -574,6 +576,10 @@ insert into SYM_TRIGGER
           changes directly to a messaging solution instead of transmitting
           changes to registered nodes. This router must be configured manually
           in XML as an extension point.</listitem>
+          
+          <listitem>Audit Table Router - a router that inserts into an automatically created audit table.  It records captured changes
+          to tables that it is linked to.
+          </listitem>
         </itemizedlist> The mapping between the set of triggers and set of
       routers is many-to-many. This means that one trigger can capture changes
       and route to multiple locations. It also means that one router can be
@@ -963,6 +969,35 @@ values
     current_timestamp, current_timestamp);
 </programlisting></para>
       </section>
+      
+      <section id="configuration-audit-table-router">
+        <title>Audit Table Router</title>
+
+        <para>This router audits captured data by recording the change in an audit table
+        that the router creates and keeps up to date (as long as <code>auto.config.database</code> is 
+        set to true.)  The router creates a table named the same as the table for which
+        data was captured with the suffix of _AUDIT.  It will contain all of the same columns
+        as the original table with the same data types only each column is nullable with no default 
+        values.     </para>
+
+        <para>Three extra "AUDIT" columns are added: <itemizedlist>
+            <listitem>AUDIT_ID - the primary key of the table.</listitem>
+            <listitem>AUDIT_TIME - the time at which the change occurred.</listitem>
+            <listitem>AUDIT_EVENT - the DML type that happened to the row.</listitem>
+          </itemizedlist> </para>
+
+        <para>The following is an example of an audit router<programlisting>
+
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    create_time, last_update_time)
+values
+  ('audit_at_corp','corp', 'local', 'audit', current_timestamp, current_timestamp);
+</programlisting></para>
+
+      <para>Because the audit router isn't capturing data for a specific node in the system, but it still has to be 
+      associated with a node_group_link a new link action of type 'R' has been introduced.  The 'R' stands for 'only routes to'</para>
+      </section>  
       
       
       

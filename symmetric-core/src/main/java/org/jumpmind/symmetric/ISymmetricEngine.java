@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -265,6 +266,8 @@ public interface ISymmetricEngine {
     public ITransportManager getTransportManager();
     
     public INodeCommunicationService getNodeCommunicationService();
+    
+    public ISequenceService getSequenceService();
     
     public String getTablePrefix();
     

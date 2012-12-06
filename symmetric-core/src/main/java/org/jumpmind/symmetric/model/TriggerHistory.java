@@ -132,6 +132,8 @@ public class TriggerHistory implements Serializable {
             return getNameForUpdateTrigger();
         case DELETE:
             return getNameForDeleteTrigger();
+        default:
+            break;
         }
         throw new IllegalStateException();
     }
