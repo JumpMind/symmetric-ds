@@ -18,8 +18,10 @@ abstract public class DbTestUtils {
     public static final String ROOT = "root";
     public static final String CLIENT = "client";
 
-    public static IDatabasePlatform createDatabasePlatform(String name) throws Exception {        
-        FileUtils.deleteDirectory(new File(String.format("target/%sdbs", name)));
+    public static IDatabasePlatform createDatabasePlatform(String name) throws Exception {    
+        File f = new File(String.format("target/%sdbs", name));
+        FileUtils.deleteDirectory(f);
+        f.mkdir();
         DataSourceProperties properties = new DataSourceProperties(String.format("test.%s", name),
                 DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), name);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(properties.getDataSource(), new SqlTemplateSettings(), true);
