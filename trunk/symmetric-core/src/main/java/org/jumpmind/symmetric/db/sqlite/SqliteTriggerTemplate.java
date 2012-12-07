@@ -18,7 +18,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
         clobColumnTemplate = stringColumnTemplate;
         emptyColumnTemplate = "''" ;
         numberColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || cast($(tableAlias).$(columnName) as varchar) || '\"') end";
-        datetimeColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || convert(varchar,$(tableAlias).$(columnName),121) || '\"') end";
+        datetimeColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || cast($(tableAlias).$(columnName) as varchar) || '\"') end";
         booleanColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) = 1 then '\"1\"' else '\"0\"' end";
         blobColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace(hex($(tableAlias).$(columnName)),'\\','\\\\'),'\"','\\\"') || '\"' end ";
 
