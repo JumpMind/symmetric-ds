@@ -127,6 +127,8 @@ public class SqliteDdlReader implements IDdlReader {
                 colType = TypeMap.VARCHAR;
             } else if (colType.startsWith("FLOAT")) {
                 colType = TypeMap.FLOAT;
+            } else if (colType.startsWith("DOUBLE")) {
+                colType = TypeMap.DOUBLE;
             } else {
                 colType = TypeMap.VARCHAR;
             }
