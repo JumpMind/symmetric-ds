@@ -16,12 +16,13 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 
@@ -219,6 +220,10 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
                 } else if (resultObj instanceof Double) {
                     resultValue = resultObj.toString();
+                    if (platform instanceof SqliteDatabasePlatform) {
+                        expected[i] = new Double(expected[i]).toString();
+                    }
+                    
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }

@@ -587,9 +587,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             if (platform instanceof MySqlDatabasePlatform) {
                 scale = 16;
             }
-            if (platform instanceof SqliteDatabasePlatform) {
-                mode = RoundingMode.HALF_EVEN;
-            }
+            
             DecimalFormat df = new DecimalFormat("0.00####################################");
             values[10] = df.format(new BigDecimal(values[10]).setScale(scale,mode));
         }
