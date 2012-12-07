@@ -32,7 +32,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP",Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME", Types.TIME);
-        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.DATE);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.DATE);
 
         databaseInfo.addNativeTypeMapping(Types.BIT, "INTEGER", Types.INTEGER);
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "INTEGER", Types.INTEGER);
