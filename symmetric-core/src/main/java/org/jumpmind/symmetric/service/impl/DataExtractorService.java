@@ -902,18 +902,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter) {
+            final int expectedCommaCount = triggerHistory.getParsedColumnNames().length-1;
             String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, this.currentTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()));
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row rs) {
-                    Data data = new Data(0, null, rs.stringValue(), DataEventType.INSERT,
-                            triggerHistory.getSourceTableName(), null, triggerHistory, batch
-                                    .getChannelId(), null, null);
-                    data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
-                            .getRouterId());
-                    return data;
+                    String csvRow = rs.stringValue();
+                    int commaCount = StringUtils.countMatches(csvRow, ",");
+                    if (expectedCommaCount <= commaCount) {
+                        Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
+                                .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
+                                null, null);
+                        data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
+                                .getRouterId());
+                        return data;
+                    } else {
+                        throw new SymmetricException(
+                                "The extracted row data did not have the expected (%d) number of columns: %s", expectedCommaCount, csvRow);
+                    }
                 }
             });
         }
