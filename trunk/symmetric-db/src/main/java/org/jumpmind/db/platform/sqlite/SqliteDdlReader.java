@@ -129,6 +129,14 @@ public class SqliteDdlReader implements IDdlReader {
                 colType = TypeMap.FLOAT;
             } else if (colType.startsWith("DOUBLE")) {
                 colType = TypeMap.DOUBLE;
+           } else if (colType.startsWith("DECIMAL")) {
+                colType = TypeMap.DECIMAL; 
+            } else if (colType.startsWith("DATE")) {
+                colType = TypeMap.DATE; 
+            } else if (colType.startsWith("TIMESTAMP")) {
+                colType = TypeMap.TIMESTAMP; 
+            } else if (colType.startsWith("TIME")) {
+                colType = TypeMap.TIME; 
             } else {
                 colType = TypeMap.VARCHAR;
             }

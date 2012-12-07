@@ -39,7 +39,7 @@ import org.jumpmind.exception.ParseException;
 public final class FormatUtils {
     
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
-            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
+            "yyyy-MM-dd HH:mm:ss",  "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
