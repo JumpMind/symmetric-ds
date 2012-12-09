@@ -73,6 +73,14 @@ public abstract class AbstractIntegrationTest {
                 File rootDir = new File("target/root");
                 FileUtils.deleteDirectory(rootDir);
                 rootDir.mkdirs();
+                File rootdbs = new File("target/rootdbs");
+                FileUtils.deleteDirectory(rootdbs);
+                rootdbs.mkdirs();
+                
+                File clientdbs = new File("target/clientdbs");
+                FileUtils.deleteDirectory(clientdbs);
+                clientdbs.mkdirs();
+                
                 File engineDir = new File(rootDir, "engines");
                 engineDir.mkdirs();
                 File rootPropertiesFile = new File(engineDir, "root.properties");
@@ -108,7 +116,7 @@ public abstract class AbstractIntegrationTest {
         boolean pushed = false;
         while (!pushed && tries < 10) {
             RemoteNodeStatuses statuses = getClient().push();
-            statuses.waitForComplete(10000);
+            statuses.waitForComplete(15000);
             pushed = statuses.wasDataProcessed();
             AppUtils.sleep(100);
             tries++;
