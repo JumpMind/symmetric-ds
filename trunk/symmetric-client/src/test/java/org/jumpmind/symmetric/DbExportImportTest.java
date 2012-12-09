@@ -12,6 +12,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -26,6 +27,7 @@ import org.jumpmind.symmetric.DbExport.Compatible;
 import org.jumpmind.symmetric.DbExport.Format;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DbExportImportTest extends AbstractServiceTest {
@@ -33,6 +35,17 @@ public class DbExportImportTest extends AbstractServiceTest {
     private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 
     private static final String TEST_TS_W_TZ = "test_ts_w_tz";
+    
+    protected static IDatabasePlatform platform;
+
+    @BeforeClass
+    public static void setup()  throws Exception {
+        File f = new File("target/rootdbs");
+        FileUtils.deleteDirectory(f);
+        f.mkdir();
+        AbstractServiceTest.setup();
+
+    }
     
     @Test
     public void testInsertBigIntIntoOracleIntField() {
