@@ -33,7 +33,7 @@ public abstract class AbstractServiceTest {
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
     @BeforeClass
-    public static void setup() {        
+    public static void setup() throws Exception {        
         if (engine == null) {
             SqlUtils.setCaptureOwner(true);
             try {
