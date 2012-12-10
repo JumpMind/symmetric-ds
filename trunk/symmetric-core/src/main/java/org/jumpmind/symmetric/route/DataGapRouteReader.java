@@ -160,22 +160,20 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected boolean process(Data data) {
         long dataId = data.getDataId();
-        if (currentGap != null && dataId >= currentGap.getStartId()) {
+        boolean okToProcess = false;
+        while (!okToProcess && currentGap != null && dataId >= currentGap.getStartId()) {
             if (dataId <= currentGap.getEndId()) {
-                return true;
+                okToProcess = true;
             } else {
                 // past current gap. move to next gap
                 if (dataGaps.size() > 0) {
                     currentGap = dataGaps.remove(0);
-                    return process(data);
                 } else {
                     currentGap = null;
-                    return false;
                 }
             }
-        } else {
-            return false;
         }
+        return okToProcess;
     }
 
     public Data take() throws InterruptedException {
