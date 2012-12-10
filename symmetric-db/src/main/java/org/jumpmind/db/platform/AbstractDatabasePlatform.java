@@ -134,7 +134,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void dropDatabase(Database database, boolean continueOnError) {
         String sql = ddlBuilder.dropTables(database);
-        new SqlScript(sql, getSqlTemplate(), !continueOnError).execute(true);
+        new SqlScript(sql, getSqlTemplate(), !continueOnError, null).execute(true);
     }
 
     public void createTables(boolean dropTablesFirst, boolean continueOnError, Table... tables) {

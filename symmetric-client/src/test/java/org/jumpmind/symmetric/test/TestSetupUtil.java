@@ -70,7 +70,7 @@ abstract public class TestSetupUtil {
         platform.resetDataSource();
         
         String sql = builder.dropTables(db2drop);                
-        SqlScript dropScript = new SqlScript(sql, platform.getSqlTemplate(), false);
+        SqlScript dropScript = new SqlScript(sql, platform.getSqlTemplate(), false, platform.getSqlScriptReplacementTokens());
         dropScript.execute(true);
         
         platform.resetDataSource();

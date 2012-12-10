@@ -111,7 +111,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
             Assert.assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
 
-            new SqlScript(alterSql, platform.getSqlTemplate(), true).execute(true);
+            new SqlScript(alterSql, platform.getSqlTemplate(), true, platform.getSqlScriptReplacementTokens()).execute(true);
 
             tableFromDatabase = platform.getTableFromCache(table.getName(), true);
 

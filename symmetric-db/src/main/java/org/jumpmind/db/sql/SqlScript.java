@@ -69,10 +69,10 @@ public class SqlScript {
         }
     }
 
-    public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError) {
-        this(sqlScript, sqlTemplate, failOnError, SqlScriptReader.QUERY_ENDS, null);
+    public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError,Map<String, String> replacementTokens) {
+        this(sqlScript, sqlTemplate, failOnError, SqlScriptReader.QUERY_ENDS, replacementTokens);
     }
-
+    
     public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
         init(new StringReader(sqlScript), sqlTemplate, failOnError, delimiter, replacementTokens);
