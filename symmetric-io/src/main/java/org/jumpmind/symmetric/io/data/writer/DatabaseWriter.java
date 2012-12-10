@@ -220,8 +220,7 @@ public class DatabaseWriter implements IDataWriter {
     
     protected void checkForEarlyCommit() {
         if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
-            notifyFiltersEarlyCommit();
-            commit();
+            commit(true);
             /*
              * Chances are if SymmetricDS is configured to commit early in a
              * batch we want to give other threads a chance to do work and
@@ -236,12 +235,16 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    protected void commit() {
+    protected void commit(boolean earlyCommit) {
         if (transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 this.transaction.commit();
-                notifyFiltersBatchCommitted();
+                if (!earlyCommit) {
+                   notifyFiltersBatchCommitted();
+                } else {
+                    notifyFiltersEarlyCommit();
+                }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             }
@@ -999,7 +1002,7 @@ public class DatabaseWriter implements IDataWriter {
         }
         if (!inError) {
             notifyFiltersBatchComplete();
-            commit();
+            commit(false);
         } else {
             rollback();
         }
