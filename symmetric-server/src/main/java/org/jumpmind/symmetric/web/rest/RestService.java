@@ -20,6 +20,10 @@
  */
 package org.jumpmind.symmetric.web.rest;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,8 +32,11 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -210,7 +217,42 @@ public class RestService {
     }
     
     /**
-     * Loads a profile for the single engine on the node.
+     * Takes a snapshot and streams it to the client.
+     *      
+     * @param file A file stream that contains the profile itself.
+     */
+    @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
+    @ResponseStatus( HttpStatus.OK )
+    @ResponseBody
+    public final void snapshot(HttpServletResponse resp) {
+        snapshot(getSymmetricEngine().getEngineName(), resp);   
+    }
+    
+    /**
+     * Takes a snapshot for the specified engine and streams it to the client.
+     *      
+     * @param file A file stream that contains the profile itself.
+     */
+    @RequestMapping(value = "engine/{engine}/snapshot", method = RequestMethod.GET)
+    @ResponseStatus( HttpStatus.OK )
+    @ResponseBody
+    public final void snapshot(@PathVariable("engine") String engineName, HttpServletResponse resp) {
+        BufferedInputStream bis = null;
+        try {
+            ISymmetricEngine engine = getSymmetricEngine(engineName);
+            File file = engine.snapshot();
+            bis = new BufferedInputStream(new FileInputStream(file));            
+            IOUtils.copy(bis, resp.getOutputStream());
+        } catch (IOException e) {
+            throw new IoException(e);
+        } finally {
+            IOUtils.closeQuietly(bis);
+        }  
+    }    
+    
+    
+    /**
+     * Loads a configuration profile for the single engine on the node.
      *      
      * @param file A file stream that contains the profile itself.
      */
@@ -222,7 +264,7 @@ public class RestService {
     }
     
     /**
-     * Loads a profile for the specified engine on the node.
+     * Loads a configuration profile for the specified engine on the node.
      * 
      * @param engine The engine name for which the action is intended.     
      * @param file A file stream that contains the profile itself.
