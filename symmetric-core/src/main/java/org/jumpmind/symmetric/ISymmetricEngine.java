@@ -285,7 +285,7 @@ public interface ISymmetricEngine {
     
     public IDatabasePlatform getDatabasePlatform();
     
-    public void snapshot();
+    public File snapshot();
     
     public List<File> listSnapshots();
     

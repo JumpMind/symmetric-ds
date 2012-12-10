@@ -398,7 +398,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return snapshotsDir;        
     }
 
-    public void snapshot() {
+    public File snapshot() {
         
         String dirName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         
@@ -560,12 +560,14 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         }
 
         try {
-            JarBuilder builder = new JarBuilder(tmpDir, new File(snapshotsDir, tmpDir.getName()
-                    + ".jar"), new File[] { tmpDir }, Version.version());
+            File jarFile = new File(snapshotsDir, tmpDir.getName()
+                    + ".jar");
+            JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
+            return jarFile;
         } catch (IOException e) {
-            log.warn("Failed to package snapshot files into archive", e);
+            throw new IoException("Failed to package snapshot files into archive", e);
         }
 
     }
