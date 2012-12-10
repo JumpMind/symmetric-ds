@@ -964,7 +964,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected List<Trigger> getTriggersForCurrentNode() {
-        return new TriggerSelector(toList(getTriggerRoutersForCurrentNode(true).values())).select();
+        return new TriggerSelector(toList(getTriggerRoutersForCurrentNode(false).values())).select();
     }
 
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
@@ -991,7 +991,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         } else {
             Table table = symmetricDialect.getPlatform().getTableFromCache(
                     trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                    trigger.getSourceTableName(), true);
+                    trigger.getSourceTableName(), false);
             if (table != null) {
                 tables.add(table);
             }
