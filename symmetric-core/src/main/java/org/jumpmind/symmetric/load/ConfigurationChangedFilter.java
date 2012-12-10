@@ -198,21 +198,22 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     @Override
     public void batchCommitted(DataContext context) {
+        
         IParameterService parameterService = engine.getParameterService();
         INodeService nodeService = engine.getNodeService();
         
         if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-               // mark registration as complete
-               String nodeId = nodeService.findIdentityNodeId();
-               if (nodeId != null) {
+            // mark registration as complete
+            String nodeId = nodeService.findIdentityNodeId();
+            if (nodeId != null) {
                 NodeSecurity security = nodeService.findNodeSecurity(nodeId);
                 if (security != null) {
                     security.setRegistrationEnabled(false);
                     security.setRegistrationTime(new Date());
                     nodeService.updateNodeSecurity(security);
                 }
-               }
-        }        
+            }
+        }       
         
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data loader");
