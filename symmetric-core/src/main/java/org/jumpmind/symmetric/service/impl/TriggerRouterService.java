@@ -773,13 +773,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                         trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
                         trigger.getSyncOnDeleteCondition(), trigger.getTxIdExpression(),
-                        trigger.getExcludedColumnNames(), trigger.getLastUpdateBy(),
+                        trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(), 
+                        trigger.getLastUpdateBy(),
                         trigger.getLastUpdateTime(), trigger.getExternalSelect(),
                         trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR,
                         Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
@@ -795,13 +797,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
                             trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
+                            trigger.getSyncKeyNames(),
                             trigger.getCreateTime(), trigger.getLastUpdateBy(),
                             trigger.getLastUpdateTime(), trigger.getExternalSelect(),
                             trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                             Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
                             Types.VARCHAR, Types.VARCHAR });
         }
@@ -1432,6 +1435,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setLastUpdateTime(rs.getDateTime("t_last_update_time"));
             trigger.setLastUpdateBy(rs.getString("t_last_update_by"));
             trigger.setExcludedColumnNames(rs.getString("excluded_column_names"));
+            trigger.setSyncKeyNames(rs.getString("sync_key_names"));
 
             return trigger;
         }

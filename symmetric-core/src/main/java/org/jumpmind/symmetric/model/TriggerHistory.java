@@ -105,14 +105,16 @@ public class TriggerHistory implements Serializable {
     }
 
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
-        this();        
+        this();
         this.lastTriggerBuildReason = reason;
-        this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableName();
+        this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
+                .getSourceTableName();
         this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
-        this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(table.getPrimaryKeyColumns()));
+        this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(trigger
+                .getSyncKeysColumnsForTable(table)));
         this.triggerRowHash = trigger.toHashedValue();
         tableHash = table.calculateTableHashcode();
     }
