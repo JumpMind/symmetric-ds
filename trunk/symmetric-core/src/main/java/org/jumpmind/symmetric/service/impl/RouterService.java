@@ -104,7 +104,8 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
         this.routers.put("audit", new AuditTableDataRouter(engine));
-        this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(), engine.getSymmetricDialect()));
+        this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
+                engine.getSymmetricDialect()));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -205,7 +206,7 @@ public class RouterService extends AbstractService implements IRouterService {
             log.error(ex.getMessage(), ex);
         }
     }
-    
+
     protected void sendReverseInitialLoad() {
         INodeService nodeService = engine.getNodeService();
         boolean queuedLoad = false;
@@ -269,11 +270,22 @@ public class RouterService extends AbstractService implements IRouterService {
                  * data to all nodes in a node_group. We can only do 'optimal'
                  * routing if data is going to go to all nodes in a group.
                  */
-                if (dataRouter != null
-                        && (!(dataRouter instanceof DefaultDataRouter) || (triggerRouter
-                                .getTrigger().isSyncOnIncomingBatch() && triggerRouter.getRouter()
-                                .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId)))) {
+                if (!(dataRouter instanceof DefaultDataRouter)) {
                     producesCommonBatches = false;
+                    break;
+                } else {
+                    if (triggerRouter
+                                .getTrigger().isSyncOnIncomingBatch()) {
+                        String tableName = triggerRouter.getTrigger().getFullyQualifiedSourceTableName();
+                        for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
+                            if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName().equals(tableName) &&
+                                    triggerRouter2.getRouter()
+                                    .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId)) {
+                                        producesCommonBatches = false;
+                                        break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -308,14 +320,16 @@ public class RouterService extends AbstractService implements IRouterService {
             return 0;
         } catch (SyntaxParsingException ex) {
             log.error(
-                    String.format("Failed to route and batch data on '%s' channel due to an invalid router expression",
+                    String.format(
+                            "Failed to route and batch data on '%s' channel due to an invalid router expression",
                             nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
             }
             return 0;
         } catch (Throwable ex) {
-            log.error(String.format("Failed to route and batch data on '%s' channel",
+            log.error(
+                    String.format("Failed to route and batch data on '%s' channel",
                             nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
@@ -556,8 +570,8 @@ public class RouterService extends AbstractService implements IRouterService {
             log.warn(
                     "Could not find trigger routers for trigger history id of {}.  Not processing data with the data id of {}",
                     data.getTriggerHistory().getTriggerHistoryId(), data.getDataId());
-            numberOfDataEventsInserted += insertDataEvents(context, new DataMetaData(data, table, null,
-                    context.getChannel()), new HashSet<String>());
+            numberOfDataEventsInserted += insertDataEvents(context, new DataMetaData(data, table,
+                    null, context.getChannel()), new HashSet<String>());
         }
 
         context.incrementStat(numberOfDataEventsInserted,
@@ -600,7 +614,8 @@ public class RouterService extends AbstractService implements IRouterService {
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
                     TriggerRouter triggerRouter = dataMetaData.getTriggerRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            triggerRouter != null ? triggerRouter.getRouter().getRouterId() : Constants.UNKNOWN_ROUTER_ID);
+                            triggerRouter != null ? triggerRouter.getRouter().getRouterId()
+                                    : Constants.UNKNOWN_ROUTER_ID);
                     dataEventAdded = true;
                 }
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(

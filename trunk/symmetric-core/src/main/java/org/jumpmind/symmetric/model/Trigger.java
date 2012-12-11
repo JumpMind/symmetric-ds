@@ -442,6 +442,10 @@ public class Trigger implements Serializable {
             return Collections.EMPTY_LIST;
         }
     }
+    
+    public String getFullyQualifiedSourceTableName() {
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName, null);
+    }
 
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
