@@ -12,7 +12,6 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -132,7 +131,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 33, StringUtils.countMatches(output, "create table \"sym_"));
-        Assert.assertEquals(32,
+        Assert.assertEquals(33,
                 StringUtils.countMatches(output, "varchar(" + Integer.MAX_VALUE + ")"));
     }
 
