@@ -104,9 +104,8 @@
         </variablelist>
     </para>
     <para>
-        Conflict resolution is configured in the
-        <literal>resolve_type</literal>
-        column.
+        The choice of how to resolve a detected conflict is configured via the <literal>resolve_type</literal> column. Depending on the setting, two additional boolean settings
+        may also be configured, namely <literal>resolve_row_only</literal> and <literal>resolve_changes_only</literal>, as discussed in the resolution settings below.
         <variablelist>
             <varlistentry>
                 <term>
@@ -130,7 +129,7 @@
                 </term>
                 <listitem>
                     <para>
-                        Indicates that when a conflict is detected the system shoudl automatically ignore the incoming
+                        Indicates that when a conflict is detected the system should automatically ignore the incoming
                         change. The
                         <ns:literal>resolve_row_only</ns:literal>
                         column controls whether the entire batch should be ignore or just the row in conflict.
@@ -168,4 +167,42 @@
             </varlistentry>
         </variablelist>
     </para>
+     <para>
+        For each configured conflict, you also have the ability to control if and how much "resolved" data is sent back to the node who's data change is in conflict.  This "ping back" behavior
+        is specified by the setting of the <literal>ping_back</literal>
+        column and can be one of the following values:
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>NONE</command>
+                </term>
+                <listitem>
+                    <para>
+                       No data is sent back to the originating node, even if the resolved data doesn't match the data the node sent.
+                    </para>
+                </listitem>
+            </varlistentry>
+             <varlistentry>
+                <term>
+                    <command>SINGLE_ROW</command>
+                </term>
+                <listitem>
+                    <para>
+                       The resolved data of the single row in the batch that caused the conflict is sent back to the originating node.
+                    </para>
+                </listitem>
+            </varlistentry>
+              <varlistentry>
+                <term>
+                    <command>REMAINING_ROWS.</command>
+                </term>
+                <listitem>
+                    <para>
+                       The resolved data of the single row in the batch in conflict, along with the entire remainder of the batch, is sent back to the originating node.
+                    </para>
+                </listitem>
+            </varlistentry>
+            </variablelist>
+        </para>
+           
 </section>
