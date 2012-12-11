@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 -- Sample Data
 ------------------------------------------------------------------------------
-insert into "item" ("item_id", "name") values (11000001, 'Yummy Gum');
-insert into "item_selling_price" ("item_id", "store_id", "price", "cost") values (11000001, '001',0.20, 0.10);
-insert into "item_selling_price" ("item_id", "store_id", "price", "cost") values (11000001, '002',0.30, 0.20);
+insert into `item` (`item_id`, `name`) values (11000001, 'Yummy Gum');
+insert into `item_selling_price` (`item_id`, `store_id`, `price`, `cost`) values (11000001, '001',0.20, 0.10);
+insert into `item_selling_price` (`item_id`, `store_id`, `price`, `cost`) values (11000001, '002',0.30, 0.20);
 
-insert into "sale_transaction" ("tran_id", "store_id", "workstation", "day", "seq") 
+insert into `sale_transaction` (`tran_id`, `store_id`, `workstation`, `day`, `seq`) 
 values (900, '001', '3', '2012-12-01', 90);
-insert into "sale_return_line_item" ("tran_id", "item_id", "price", "quantity", "returned_quantity")
+insert into `sale_return_line_item` (`tran_id`, `item_id`, `price`, `quantity`, `returned_quantity`)
 values (900, 11000001, 0.20, 1, 0);
 
 ------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ insert into sym_trigger
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('sale_tender_line_item','sale_tender_line_item','sale_transaction',current_timestamp,current_timestamp);
 
--- Example of a "dead" trigger, which is used to only sync the table during initial load
+-- Example of a `dead` trigger, which is used to only sync the table during initial load
 insert into sym_trigger 
 (trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete, last_update_time,create_time)
 values('sale_transaction_dead','sale_transaction','sale_transaction',0,0,0,current_timestamp,current_timestamp);
@@ -106,7 +106,7 @@ values('item','corp_2_store', 100, current_timestamp, current_timestamp);
 
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,initial_load_select,last_update_time,create_time)
-values('item_selling_price','corp_2_one_store',100,'"store_id"=''$(externalId)''',current_timestamp,current_timestamp);
+values('item_selling_price','corp_2_one_store',100,'`store_id`=''$(externalId)''',current_timestamp,current_timestamp);
 
 
 insert into sym_trigger_router 

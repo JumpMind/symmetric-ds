@@ -169,6 +169,10 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                 <para>
                     <command>../bin/dbimport --engine corp-000 insert_sample.sql</command>
                 </para>
+                     <important>
+                        Please note that for MySQL, you will need to use the file <literal>insert_sample_mysql.sql</literal> in the above command.  MySql uses back ticks (i.e., ` ) instead
+                        of double quotes (") for case-sensitive table and column names.  The MySQL version of the file has the necessary change.
+                    </important>
             </step>
         </procedure>
         <para>
@@ -305,6 +309,10 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                     <command>insert into "item_selling_price" ("item_id", "store_id", "price") values (110000055, '001', 0.65);</command>
                     <command>insert into "item_selling_price" ("item_id", "store_id", "price") values (110000055, '002', 1.00);</command>
                 </para>
+                <important>
+                        Please note that for MySQL, you'll need to change the double quotes (") in the above commands to back ticks (i.e., `)
+                        since MySQL uses back ticks instead of double quotes for case-sensitive table and column names.
+                    </important>
                 <para>Once the statements are committed, the data change is captured by SymmetricDS and queued for the store node to pull.
                 </para>
             </step>
