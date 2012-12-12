@@ -92,4 +92,11 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         super.writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
     }
+    
+    @Override
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
+        ddl.append("DROP TABLE IF EXISTS ");
+        printIdentifier(getTableName(table.getName()), ddl);
+        printEndOfStatement(ddl);
+    }
 }
