@@ -147,6 +147,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             default:
                 break;
         }
+        data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         return data;
     }
 
