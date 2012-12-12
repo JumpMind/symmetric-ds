@@ -137,17 +137,17 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     protected void dropRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            uninstall(SQL_DROP_FUNCTION+ "()", triggersDisabled);
+            uninstall(SQL_DROP_FUNCTION+ "() cascade", triggersDisabled);
         }
 
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            uninstall(SQL_DROP_FUNCTION + "()", nodeDisabled);
+            uninstall(SQL_DROP_FUNCTION + "() cascade", nodeDisabled);
         }
 
         String largeObjects = this.parameterService.getTablePrefix() + "_" + "largeobject";
         if (installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
-            uninstall(SQL_DROP_FUNCTION + "(objectId oid)", largeObjects);
+            uninstall(SQL_DROP_FUNCTION + "(objectId oid) cascade", largeObjects);
         }
 
     }
@@ -184,7 +184,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String dropSql = "drop trigger " + triggerName + " on " + schemaName + tableName;
         logSql(dropSql, sqlBuffer);
-        final String dropFunction = "drop function " + schemaName + "f" + triggerName + "()";
+        final String dropFunction = "drop function " + schemaName + "f" + triggerName + "() cascade";
         logSql(dropFunction, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             String sql = null;
