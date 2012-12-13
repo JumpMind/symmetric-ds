@@ -103,7 +103,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
-        if (!temporary) {
+        if (!temporary && !recreate) {
             for (int idx = 0; idx < columns.length; idx++) {
                 writeAutoIncrementDropStmts(table, columns[idx], ddl);
             }

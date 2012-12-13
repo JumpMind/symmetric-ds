@@ -122,7 +122,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        if (!temporary) {
+        if (!temporary && !recreate) {
             // The only difference to the Oracle 8/9 variant is the purge which
             // prevents the table from being moved to the recycle bin (which is 
             // new in Oracle 10)

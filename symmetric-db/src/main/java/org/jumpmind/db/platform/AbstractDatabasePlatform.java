@@ -156,7 +156,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
 
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-        new SqlScript(createSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
+        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute();
     }
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError) {
@@ -187,7 +187,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (StringUtils.isNotBlank(alterSql.trim())) {
             log.info("Running alter sql:\n{}", alterSql);
             String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
+            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute();
         } else {
             log.info("Tables up to date.  No alters found for {}", tablesProcessed);
         }

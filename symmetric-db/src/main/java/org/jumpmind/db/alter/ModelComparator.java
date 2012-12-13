@@ -104,13 +104,13 @@ public class ModelComparator {
                     && (sourceTable.getName().length() > 0)) {
                 log.debug("Table {} needs to be removed", sourceTable.getName());
                 changes.add(new RemoveTableChange(sourceTable));
-                // we assume that the target model is sound, ie. that there are
-                // no longer any foreign
-                // keys to this table in the target model; thus we already have
-                // removeFK changes for
-                // these from the compareTables method and we only need to
-                // create changes for the fks
-                // originating from this table
+                /*
+                 * we assume that the target model is sound, ie. that there are
+                 * no longer any foreign keys to this table in the target model;
+                 * thus we already have removeFK changes for these from the
+                 * compareTables method and we only need to create changes for
+                 * the fks originating from this table
+                 */
                 if (platformInfo.isForeignKeysSupported()) {
                     for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
                         changes.add(new RemoveForeignKeyChange(sourceTable, sourceTable
@@ -164,9 +164,10 @@ public class ModelComparator {
                         log.debug("Foreign key " + targetFk + " needs to be created for table "
                                 + sourceTable.getName());
                     }
-                    // we have to use the target table here because the foreign key
-                    // might
-                    // reference a new column
+                    /*
+                     * we have to use the target table here because the foreign
+                     * key might reference a new column
+                     */
                     changes.add(new AddForeignKeyChange(targetTable, targetFk));
                 }
             }

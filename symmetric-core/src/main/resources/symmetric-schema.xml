@@ -565,7 +565,8 @@
         <column name="load_filter_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply load filters if more than one target operation occurs."/>        
         <column name="fail_on_error" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether we should fail the batch if the filter fails." />
     </table>            
-    
+
+    <!--     
     <table name="file_sync" description="A table that defines file synchronization configuration">
         <column name="file_sync_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the synchronization." />
         <column name="server_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the client during file synchronization." />
@@ -587,7 +588,6 @@
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />    
-    <!-- 
 compress_for_xfer
 package_files
 conflict_strategy
@@ -596,7 +596,7 @@ client_pre_sync_script
 client_post_sync_script
 server_pre_sync_script
 server_post_sync_script
-     -->
-    </table>         
+    </table>
+         -->    
         
 </database>

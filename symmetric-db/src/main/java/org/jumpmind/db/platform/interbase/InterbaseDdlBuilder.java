@@ -118,7 +118,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        if (!temporary) {
+        if (!temporary && !recreate) {
             // dropping generators for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
 

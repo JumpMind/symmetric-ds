@@ -295,12 +295,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public int update(boolean autoCommit, boolean failOnError, int commitRate,
             ISqlResultsListener resultsListener, String... sql) {
-        return this.update(autoCommit, failOnError, commitRate, resultsListener,
-                new ListSqlStatementSource(sql));
+        return this.update(autoCommit, failOnError, true, true,
+                commitRate, resultsListener, new ListSqlStatementSource(sql));
     }
 
-    public int update(final boolean autoCommit, final boolean failOnError, final int commitRate,
-            final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
+    public int update(final boolean autoCommit, final boolean failOnError, final boolean failOnDrops,
+            final boolean failOnSequenceCreate, final int commitRate, final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
                 int totalUpdateCount = 0;
@@ -338,20 +338,22 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 con.commit();
                             }
                         } catch (SQLException ex) {
+                            boolean isDrop = statement.toLowerCase().trim().startsWith("drop");
+                            boolean isSequenceCreate = statement.toLowerCase().trim().startsWith("create sequence");
                             if (resultsListener != null) {
                                 resultsListener.sqlErrored(statement, translate(statement, ex),
-                                        statementCount);
+                                        statementCount, isDrop, isSequenceCreate);
                             }
 
-                            if (statement.toLowerCase().startsWith("drop")) {
+                            if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
                                 log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             } else {
                                 log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
+                                if (failOnError) {
+                                    throw ex;
+                                }
                             }
 
-                            if (failOnError) {
-                                throw ex;
-                            }
                         }
                     }
 
