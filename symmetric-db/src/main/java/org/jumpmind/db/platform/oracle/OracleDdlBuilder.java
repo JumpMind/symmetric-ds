@@ -245,24 +245,25 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        if (defaultValue != null) {
-            String defaultValueStr = defaultValue.toString();
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
-                    && !defaultValueStr.startsWith("TO_DATE(")
-                    && !defaultValueStr.equalsIgnoreCase("SYSDATE")
-                    && !defaultValueStr.equalsIgnoreCase("SYSTIMESTAMP")
-                    && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
-                    && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
-                    
-            
-            if (shouldUseQuotes) {
-                // characters are only escaped when within a string literal
-                ddl.append(databaseInfo.getValueQuoteToken());
-                ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(databaseInfo.getValueQuoteToken());
-            } else {
-                ddl.append(defaultValueStr);
-            }
+        boolean isNull = defaultValue == null;
+        if (defaultValue == null) {
+            defaultValue = "NULL";
+        }
+        String defaultValueStr = defaultValue.toString();
+        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
+                && !defaultValueStr.startsWith("TO_DATE(")
+                && !defaultValueStr.equalsIgnoreCase("SYSDATE")
+                && !defaultValueStr.equalsIgnoreCase("SYSTIMESTAMP")
+                && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
+                && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
+
+        if (shouldUseQuotes) {
+            // characters are only escaped when within a string literal
+            ddl.append(databaseInfo.getValueQuoteToken());
+            ddl.append(escapeStringValue(defaultValueStr));
+            ddl.append(databaseInfo.getValueQuoteToken());
+        } else {
+            ddl.append(defaultValueStr);
         }
     }
 
@@ -408,16 +409,25 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
-        writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append(" MODIFY (");
-        Column column = change.getChangedColumn();
-        column.setDefaultValue(change.getNewDefaultValue());
-        printIdentifier(getColumnName(column), ddl);
-        ddl.append(" DEFAULT ");       
-        writeColumnDefaultValue(change.getChangedTable(), column, ddl);
-        ddl.append(" )");
-        printEndOfStatement(ddl);
-    }
+        boolean changeNeeded = true;
+        String newValue = change.getNewDefaultValue();
+        String oldValue = change.getChangedColumn().getDefaultValue();
+        if ((oldValue == null && "NULL".equals(newValue))
+                || (newValue == null && "NULL".equals(oldValue))) {
+            changeNeeded = false;
+        }
+        if (changeNeeded) {
+            writeTableAlterStmt(change.getChangedTable(), ddl);
+            ddl.append(" MODIFY (");
+            Column column = change.getChangedColumn();
+            column.setDefaultValue(change.getNewDefaultValue());
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(change.getChangedTable(), column, ddl);
+            ddl.append(" )");
+            printEndOfStatement(ddl);
+        }
+    }   
 
     protected boolean processChange(Database currentModel, Database desiredModel,
             ColumnAutoIncrementChange change, StringBuilder ddl) {
