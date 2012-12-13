@@ -704,6 +704,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             String tableName, List<TableChange> changes, StringBuilder ddl) {
+        
+        StringBuilder tableDdl = new StringBuilder();
+        
         Table sourceTable = currentModel.findTable(tableName, delimitedIdentifierModeOn);
         Table targetTable = desiredModel.findTable(tableName, delimitedIdentifierModeOn);
 
@@ -727,7 +730,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         if (!requiresFullRebuild) {
             processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
-                    changes, ddl);
+                    changes, tableDdl);
         }
 
         if (!changes.isEmpty()) {
@@ -761,9 +764,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 dropTemporaryTable(tempTable, ddl);
                 createTemporaryTable(desiredModel, tempTable, ddl);
                 writeCopyDataStatement(sourceTable, tempTable, ddl);
-                // Note that we don't drop the indices here because the DROP
-                // TABLE will take care of that
-                // Likewise, foreign keys have already been dropped as necessary
+                /*
+                 * Note that we don't drop the indices here because the DROP
+                 * TABLE will take care of that Likewise, foreign keys have
+                 * already been dropped as necessary
+                 */
                 dropTable(sourceTable, ddl, false, true);
                 createTable(realTargetTable, ddl, false, true);
                 writeCopyDataStatement(tempTable, targetTable, ddl);
@@ -773,6 +778,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 dropTable(sourceTable, ddl, false, false);
                 createTable(realTargetTable, ddl, false, false);
             }
+        } else {
+            ddl.append(tableDdl);
         }
     }
 

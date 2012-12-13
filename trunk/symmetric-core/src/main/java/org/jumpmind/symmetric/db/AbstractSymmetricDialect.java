@@ -39,6 +39,7 @@ import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.ISqlResultsListener;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
@@ -427,27 +428,45 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                ISqlResultsListener resultsListener = new ISqlResultsListener() {
+                    
+                    public void sqlErrored(String sql, SqlException ex, int lineNumber,
+                            boolean dropStatement, boolean sequenceCreate) {
+                        if (dropStatement || sequenceCreate) {
+                            log.info("DDL failed: {}", sql);
+                        } else {
+                            log.warn("DDL failed: {}", sql);
+                        }
+                    }
+                    
+                    public void sqlApplied(String sql, int rowsUpdated, int rowsRetrieved, int lineNumber) {
+                        log.info("DDL applied: {}", sql);
+                    }
+                };
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener
                             .beforeUpgrade(this, this.parameterService.getTablePrefix(),
                                     modelFromDatabase, modelFromXml);
-                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                    script.setListener(resultsListener);
+                    script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
 
-                log.info("Alter SQL generated: {}", alterSql);
+                log.debug("Alter SQL generated: {}", alterSql);
 
-                new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                        .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                script.setListener(resultsListener);
+                script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.afterUpgrade(this,
                             this.parameterService.getTablePrefix(), modelFromXml);
-                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
-                            .execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                    script.setListener(resultsListener);
+                    script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
                 log.info("Done with auto update of SymmetricDS tables");

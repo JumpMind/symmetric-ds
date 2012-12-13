@@ -64,7 +64,7 @@ public interface ISqlTemplate {
 
     public int update(boolean autoCommit, boolean failOnError, int commitRate, ISqlResultsListener listener, String... sql);
     
-    public int update(boolean autoCommit, boolean failOnError, int commitRate, ISqlResultsListener listener, ISqlStatementSource source);
+    public int update(boolean autoCommit, boolean failOnError, boolean failOnDrops, boolean failOnSequenceCreate, int commitRate, ISqlResultsListener listener, ISqlStatementSource source);
     
     public int update(boolean autoCommit, boolean failOnError, int commitRate, String... sql);
 

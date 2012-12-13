@@ -106,7 +106,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" CASCADE");
         printEndOfStatement(ddl);
-        if (!temporary) {
+        if (!temporary && !recreate) {
             Column[] columns = table.getAutoIncrementColumns();
 
             for (int idx = 0; idx < columns.length; idx++) {
