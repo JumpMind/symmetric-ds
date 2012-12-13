@@ -36,9 +36,9 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
     }
 
     @Override
-    protected void performFallbackToInsert(DatabaseWriter writer, CsvData data, Conflict conflict) {
+    protected void performFallbackToInsert(DatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
-        if (transformedData != null) {
+        if (transformedData != null && retransform) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
                     DataEventType.INSERT, writer.getContext(), transformedData.getTransformation(),
                     transformedData.getSourceKeyValues(), transformedData.getOldSourceValues(),
@@ -65,14 +65,14 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 }
             }
         } else {
-            super.performFallbackToInsert(writer, data, conflict);
+            super.performFallbackToInsert(writer, data, conflict, retransform);
         }
     }
 
     @Override
-    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict) {
+    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
-        if (transformedData != null) {
+        if (transformedData != null && retransform) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
                     DataEventType.UPDATE, writer.getContext(), transformedData.getTransformation(),
                     transformedData.getSourceKeyValues(), transformedData.getOldSourceValues(),
@@ -86,7 +86,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 }
             }
         } else {
-            super.performFallbackToUpdate(writer, data, conflict);
+            super.performFallbackToUpdate(writer, data, conflict, retransform);
         }
     }
 
