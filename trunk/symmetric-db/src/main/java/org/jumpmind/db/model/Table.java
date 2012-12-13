@@ -770,6 +770,21 @@ public class Table implements Serializable, Cloneable {
         List<Column> pkColumns = getPrimaryKeyColumnsAsList();
         return pkColumns.toArray(new Column[pkColumns.size()]);
     }
+    
+    /**
+     * Returns the columns in this table that are not a PK.
+     * 
+     */
+    public Column[] getNonPrimaryKeyColumns() {
+        List<Column> nonPkColumns = new ArrayList<Column>();
+        List<Column> pkColumns = getPrimaryKeyColumnsAsList();
+        for (Column c : columns) {
+            if (!pkColumns.contains(c)) {
+                nonPkColumns.add(c);
+            }
+        }
+        return nonPkColumns.toArray(new Column[nonPkColumns.size()]);
+    }
 
     /**
      * Returns the auto increment columns in this table. If no incrementcolumns

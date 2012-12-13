@@ -17,6 +17,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_CASCADE = "cascade";
 
     private static final String OPTION_IGNORE_TABLES = "ignore";
+    
+    private static final String OPTION_INTERVAL = "interval";
+    
+    private static final String OPTION_STATEMENT = "statement";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -51,6 +55,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COUNT, true);
         addOption(options, null, OPTION_CASCADE, false);
         addOption(options, null, OPTION_IGNORE_TABLES, true);
+        addOption(options, null, OPTION_INTERVAL, true);
+        addOption(options, null, OPTION_STATEMENT, true);
     }
 
     @Override
@@ -68,6 +74,21 @@ public class DbFillCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_CASCADE)) {
             dbFill.setCascading(true);
+        }
+        if (line.hasOption(OPTION_INTERVAL)) {
+            dbFill.setInterval(Integer.parseInt(line.getOptionValue(OPTION_INTERVAL)));
+        }
+        if (line.hasOption(OPTION_STATEMENT)) {
+            // TODO: This is just a temporary command to support update statements
+            if (line.getOptionValue(OPTION_STATEMENT).contains("u")) {
+                dbFill.setStatementType(DbFill.UPDATE);
+            }
+        }
+        if (line.hasOption(OPTION_DEBUG)) {
+            dbFill.setDebug(true);
+        }
+        if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
+            dbFill.setVerbose(true);
         }
         
         String ignore[] = null;
