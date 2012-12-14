@@ -140,6 +140,7 @@ abstract public class AbstractJob implements Runnable, IJob {
     }
 
     public boolean invoke(boolean force) {
+        IParameterService parameterService = engine.getParameterService();
         boolean ran = false;
         try {
             if (engine == null) {
@@ -160,7 +161,13 @@ abstract public class AbstractJob implements Runnable, IJob {
                                                         .getRegistrationService()
                                                         .isRegisteredWithServer())) {
                                             hasNotRegisteredMessageBeenLogged = false;
-                                            doJob(force);
+                                           if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                                                synchronized (AbstractJob.class) {
+                                                    doJob(force);
+                                                }
+                                            } else {
+                                                doJob(force);
+                                            }
                                         } else {
                                             if (!hasNotRegisteredMessageBeenLogged) {
                                                 log.warn(
