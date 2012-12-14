@@ -113,9 +113,9 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         }
     }
 
-    @ManagedOperation(description = "Force the channel settings to be read from the database")
-    public void clearChannelCache() {
-        engine.getConfigurationService().reloadChannels();
+    @ManagedOperation(description = "Force the cached objects to be reread from the database the next time they are accessed")
+    public void clearCaches() {
+        engine.clearCaches();
     }
 
     @ManagedOperation(description = "Synchronize the triggers")

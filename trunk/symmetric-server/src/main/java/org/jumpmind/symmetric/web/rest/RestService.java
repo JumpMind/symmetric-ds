@@ -468,8 +468,8 @@ public class RestService {
     @RequestMapping(value = "engine/refreshcache", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public final void postRefreshCache() {
-        refreshCacheImpl(getSymmetricEngine());
+    public final void postClearCaches() {
+        clearCacheImpl(getSymmetricEngine());
     }
 
     /**
@@ -480,8 +480,8 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/refreshcache", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public final void postRefreshCacheByEngine(@PathVariable("engine") String engineName) {
-        refreshCacheImpl(getSymmetricEngine(engineName));
+    public final void postClearCachesByEngine(@PathVariable("engine") String engineName) {
+        clearCacheImpl(getSymmetricEngine(engineName));
     }
 
     /**
@@ -623,13 +623,8 @@ public class RestService {
         engine.start();
     }
 
-    private void refreshCacheImpl(ISymmetricEngine engine) {
-        engine.getTriggerRouterService().resetCaches();
-        engine.getParameterService().rereadParameters();
-        engine.getTransformService().resetCache();
-        engine.getDataLoaderService().reloadConflictNodeGroupLinks();
-        engine.getConfigurationService().reloadChannels();
-        engine.getNodeService().flushNodeAuthorizedCache();
+    private void clearCacheImpl(ISymmetricEngine engine) {
+        engine.clearCaches();
     }
 
     private void loadProfileImpl(ISymmetricEngine engine, MultipartFile file) {
