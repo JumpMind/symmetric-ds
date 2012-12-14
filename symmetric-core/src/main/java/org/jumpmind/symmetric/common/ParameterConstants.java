@@ -220,6 +220,8 @@ final public class ParameterConstants {
     public final static String SERVER_LOG_FILE = "server.log.file";
     
     public final static String REST_API_ENABLED = "rest.api.enable";
+
+    public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
