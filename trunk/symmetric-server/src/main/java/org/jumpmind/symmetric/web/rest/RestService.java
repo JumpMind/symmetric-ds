@@ -38,6 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -46,6 +47,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
@@ -135,9 +137,12 @@ public class RestService {
     @ResponseBody
     public final EngineList getEngineList() {
         EngineList list = new EngineList();
-        Collection<String> engineNames = getSymmetricEngineHolder().getEngines().keySet();
-        for (String engine : engineNames) {
-            list.addEngine(new Engine(engine));
+        Collection<ServerSymmetricEngine> engines = getSymmetricEngineHolder().getEngines()
+                .values();
+        for (ISymmetricEngine engine : engines) {
+            if (engine.getParameterService().is(ParameterConstants.REST_API_ENABLED)) {
+                list.addEngine(new Engine(engine.getEngineName()));
+            }
         }
         return list;
     }    
@@ -239,8 +244,9 @@ public class RestService {
     public final void snapshot(@PathVariable("engine") String engineName, HttpServletResponse resp) {
         BufferedInputStream bis = null;
         try {
-            ISymmetricEngine engine = getSymmetricEngine(engineName);
+            ISymmetricEngine engine = getSymmetricEngine(engineName);            
             File file = engine.snapshot();
+            resp.setHeader("Content-Disposition", String.format("attachment; filename=%s", file.getName()));
             bis = new BufferedInputStream(new FileInputStream(file));            
             IOUtils.copy(bis, resp.getOutputStream());
         } catch (IOException e) {
@@ -769,19 +775,30 @@ public class RestService {
         }
         if (engine == null) {
             throw new NotFoundException();
+        } else if (!engine.getParameterService().is(ParameterConstants.REST_API_ENABLED)) {
+            throw new NotAllowedException("The REST API was not enabled for %s", engine.getEngineName());
         } else {
             return engine;
         }
     }
     
     protected ISymmetricEngine getSymmetricEngine() {
+        ISymmetricEngine engine = null;
         SymmetricEngineHolder holder = getSymmetricEngineHolder();
 
-        if (holder.getEngines().size() == 1) {
-            return holder.getEngines().values().iterator().next();
-        } else {
+        if (holder.getEngines().size() > 0) {
+            engine = holder.getEngines().values().iterator().next();
+        } 
+        
+        if (engine == null) {
         	throw new NotAllowedException();
-        }        
+        } else if (!engine.getParameterService().is(ParameterConstants.REST_API_ENABLED)) {
+            throw new NotAllowedException("The REST API was not enabled for %s", engine.getEngineName());
+        } else {
+            return engine;
+        }
+        
+        
     }
 
 }
