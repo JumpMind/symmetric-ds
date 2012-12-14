@@ -71,7 +71,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * REST API into the SymmetricDS Engine.
+ * This is a REST API for SymmetricDS. The API will be active only if
+ * rest.api.enable=true. The property is turned off by default. The REST API is
+ * available at http://hostname:port/api for the stand alone SymmetricDS
+ * installation.  
  * 
  * <p>
  * <b>General HTTP Responses to the methods:</b>
@@ -616,7 +619,7 @@ public class RestService {
         if (!this.isRootNode(engine, modelNode)) {
             engine.uninstall();
         }
-        
+
         engine.start();
     }
 
@@ -728,10 +731,13 @@ public class RestService {
             String channelId = nodeChannel.getChannelId();
             ChannelStatus status = new ChannelStatus();
             status.setChannelId(channelId);
-            int outgoingInError = engine.getOutgoingBatchService().countOutgoingBatchesInError(channelId);
-            int incomingInError = engine.getIncomingBatchService().countIncomingBatchesInError(channelId);
+            int outgoingInError = engine.getOutgoingBatchService().countOutgoingBatchesInError(
+                    channelId);
+            int incomingInError = engine.getIncomingBatchService().countIncomingBatchesInError(
+                    channelId);
             status.setBatchInErrorCount(outgoingInError);
-            status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent(channelId));
+            status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent(
+                    channelId));
             status.setIncomingError(incomingInError > 0);
             status.setOutgoingError(outgoingInError > 0);
             status.setEnabled(nodeChannel.isEnabled());
