@@ -174,8 +174,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
     
+    public int countOutgoingBatchesInError(String channelId) {
+        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
+    }
+    
     public int countOutgoingBatchesUnsent() {        
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
+    }
+    
+    public int countOutgoingBatchesUnsent(String channelId) {
+        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
 
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,

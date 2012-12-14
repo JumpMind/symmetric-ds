@@ -51,6 +51,10 @@ public class ChannelStatus {
 	 * The number of batches in the error state.
 	 */
 	private int batchInErrorCount;
+	
+	private boolean ignoreEnabled;
+	
+	private boolean suspendEnabled;
 
 	/**
 	 * @return The ID or name of the channel. (e.g., 'employee')
@@ -135,5 +139,21 @@ public class ChannelStatus {
 	public void setBatchInErrorCount(int batchInErrorCount) {
 		this.batchInErrorCount = batchInErrorCount;
 	}
+	
+	public void setIgnoreEnabled(boolean ignoreEnabled) {
+        this.ignoreEnabled = ignoreEnabled;
+    }
+	
+	public boolean isIgnoreEnabled() {
+        return ignoreEnabled;
+    }
+	
+	public void setSuspendEnabled(boolean suspendEnabled) {
+        this.suspendEnabled = suspendEnabled;
+    }
+	
+	public boolean isSuspendEnabled() {
+        return suspendEnabled;
+    }
 
 }
