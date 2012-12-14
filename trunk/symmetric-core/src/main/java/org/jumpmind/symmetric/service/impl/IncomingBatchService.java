@@ -65,6 +65,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public int countIncomingBatchesInError() {
         return sqlTemplate.queryForInt(getSql("countIncomingBatchesErrorsSql"));
     }
+    
+    public int countIncomingBatchesInError(String channelId) {
+        return sqlTemplate.queryForInt(getSql("countIncomingBatchesErrorsOnChannelSql"), channelId);
+    }
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return sqlTemplate.query(

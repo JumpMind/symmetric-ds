@@ -31,6 +31,9 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("countIncomingBatchesErrorsSql" ,"" + 
 "select count(*) from $(incoming_batch) where error_flag=1   " );
 
+        putSql("countIncomingBatchesErrorsOnChannelSql" ,"" + 
+"select count(*) from $(incoming_batch) where error_flag=1 and channel_id=?");
+        
         putSql("insertIncomingBatchSql" ,"" + 
 "insert into $(incoming_batch) (batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,   " + 
 "  statement_count, fallback_insert_count, fallback_update_count, ignore_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,                         " + 

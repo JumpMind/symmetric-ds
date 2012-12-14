@@ -45,6 +45,7 @@
                     <reportOutputDirectory>${docbook.target}</reportOutputDirectory>
                     <destDir>javadoc</destDir>
                     <doctitle>SymmetricDS API ${project.version}</doctitle>
+                    <show>public</show>
                 </configuration>
                 <executions>
                     <execution>

@@ -33,6 +33,8 @@ public interface IIncomingBatchService {
 
     public int countIncomingBatchesInError();
     
+    public int countIncomingBatchesInError(String channelId);
+    
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
