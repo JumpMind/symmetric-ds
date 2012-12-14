@@ -200,9 +200,9 @@ public interface ISymmetricEngine {
      * 
      * @return true if the node is starting
      */
-
     public boolean isStarting();
     
+    public void clearCaches();    
     
     /**
      * Attempt to configure the database objects that support SymmetricDS.  If they are 

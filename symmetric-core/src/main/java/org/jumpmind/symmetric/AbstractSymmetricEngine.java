@@ -731,6 +731,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         registrationService.openRegistration(nodeGroupId, externalId);
     }
+    
+    public void clearCaches() {
+        getTriggerRouterService().resetCaches();
+        getParameterService().rereadParameters();
+        getTransformService().resetCache();
+        getDataLoaderService().reloadConflictNodeGroupLinks();
+        getConfigurationService().reloadChannels();
+        getNodeService().flushNodeAuthorizedCache();
+    }
 
     public void reOpenRegistration(String nodeId) {
         MDC.put("engineName", getEngineName());
