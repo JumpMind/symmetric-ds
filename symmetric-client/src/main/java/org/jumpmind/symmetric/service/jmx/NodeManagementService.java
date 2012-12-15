@@ -33,7 +33,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -102,7 +101,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     public void purge() {
         engine.getPurgeService().purgeOutgoing(true);
     }
-    
+
     @ManagedOperation(description = "Run the purge process")
     public String snapshot() {
         File file = engine.snapshot();
@@ -171,8 +170,10 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         return out.toString();
     }
 
-    public String getCurrentNodeConcurrencyReservationsAsText() {
-        throw new NotImplementedException();
+    @ManagedOperation(description = "Clean up both incoming and outgoing resources that are older than the passed in number of milliseconds")
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "timeToLiveInMS", description = "The number of milliseconds old a resource should be before it is cleaned up") })
+    public long cleanStaging(long timeToLiveInMS) {
+        return engine.getStagingManager().clean(timeToLiveInMS);
     }
 
     @ManagedAttribute(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
@@ -344,15 +345,15 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
 
     @ManagedOperation(description = "Write a range of batches to a file in SymmetricDS Data Format.")
     @ManagedOperationParameters({
-             @ManagedOperationParameter(name = "nodeId", description = "The node id for the batches which will be written"),
+            @ManagedOperationParameter(name = "nodeId", description = "The node id for the batches which will be written"),
             @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
             @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
             @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
-    public void writeBatchRangeToFile(String nodeId, String startBatchId, String endBatchId, String fileName)
-            throws Exception {
+    public void writeBatchRangeToFile(String nodeId, String startBatchId, String endBatchId,
+            String fileName) throws Exception {
         Writer writer = new FileWriter(new File(fileName));
-        engine.getDataExtractorService().extractBatchRange(writer, nodeId, Long.valueOf(startBatchId),
-                Long.valueOf(endBatchId));
+        engine.getDataExtractorService().extractBatchRange(writer, nodeId,
+                Long.valueOf(startBatchId), Long.valueOf(endBatchId));
         IOUtils.closeQuietly(writer);
     }
 

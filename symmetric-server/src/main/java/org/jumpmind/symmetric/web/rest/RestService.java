@@ -235,8 +235,8 @@ public class RestService {
     @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final void snapshot(HttpServletResponse resp) {
-        snapshot(getSymmetricEngine().getEngineName(), resp);
+    public final void getSnapshot(HttpServletResponse resp) {
+        getSnapshot(getSymmetricEngine().getEngineName(), resp);
     }
 
     /**
@@ -248,7 +248,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final void snapshot(@PathVariable("engine") String engineName, HttpServletResponse resp) {
+    public final void getSnapshot(@PathVariable("engine") String engineName, HttpServletResponse resp) {
         BufferedInputStream bis = null;
         try {
             ISymmetricEngine engine = getSymmetricEngine(engineName);
@@ -564,13 +564,9 @@ public class RestService {
         return channelStatusImpl(getSymmetricEngine(engineName));
     }
 
-    // ***********************************************************************************************
-    // TODO: stuff that should probably get moved out to some type of delegate
-    // or implementation class
-    // ***********************************************************************************************
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public RestError handleError(Exception ex, HttpServletRequest req) {
+    protected RestError handleError(Exception ex, HttpServletRequest req) {
         int httpErrorCode = 500;
         Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
         if (annotation != null) {
