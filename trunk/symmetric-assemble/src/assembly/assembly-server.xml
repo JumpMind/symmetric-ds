@@ -36,27 +36,27 @@
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/symadmin</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/dbexport</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/dbimport</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>   
         <file>
             <source>../symmetric-server/src/main/deploy/bin/dbfill</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>                              
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
