@@ -79,10 +79,21 @@ public class StagingManager implements IStagingManager {
     }
 
     /**
-     * Clean up files that are older than {@link #timeToLiveInMs} and have been
-     * marked as done.
+     * Clean up resources that are older than {@link #timeToLiveInMs} and have
+     * been marked as done.
      */
     public long clean() {
+        return clean(this.timeToLiveInMs);
+    }
+
+    /**
+     * Clean up resources that are older than the passed in parameter.
+     * 
+     * @param ttlInMs
+     *            If resources are older than this number of milliseconds they
+     *            will be purged
+     */
+    public long clean(long ttlInMs) {
         synchronized (StagingManager.class) {
             this.refreshResourceList();
 
@@ -93,7 +104,7 @@ public class StagingManager implements IStagingManager {
             long purgedMemSize = 0;
             for (String key : keys) {
                 IStagedResource resource = resourceList.get(key);
-                boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > timeToLiveInMs;
+                boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > ttlInMs;
                 if ((resource.getState() == State.READY || resource.getState() == State.DONE)
                         && (resourceIsOld || !resource.exists())) {
                     if (resource.isFileResource()) {
@@ -109,11 +120,11 @@ public class StagingManager implements IStagingManager {
             }
             if (purgedFileCount > 0) {
                 if (purgedFileSize < 1000) {
-                    log.info("Purged {} staged files, freeing {} bytes of disk space", purgedFileCount,
-                            (int) (purgedFileSize));
+                    log.info("Purged {} staged files, freeing {} bytes of disk space",
+                            purgedFileCount, (int) (purgedFileSize));
                 } else {
-                    log.info("Purged {} staged files, freeing {} kbytes of disk space", purgedFileCount,
-                        (int) (purgedFileSize / 1000));
+                    log.info("Purged {} staged files, freeing {} kbytes of disk space",
+                            purgedFileCount, (int) (purgedFileSize / 1000));
                 }
             }
             if (purgedMemCount > 0) {
@@ -122,7 +133,7 @@ public class StagingManager implements IStagingManager {
                             purgedMemCount, (int) (purgedMemSize));
                 } else {
                     log.info("Purged {} staged memory buffers, freeing {} kbytes of memory",
-                        purgedMemCount, (int) (purgedMemSize / 1000));
+                            purgedMemCount, (int) (purgedMemSize / 1000));
                 }
             }
             return purgedFileCount + purgedMemCount;
