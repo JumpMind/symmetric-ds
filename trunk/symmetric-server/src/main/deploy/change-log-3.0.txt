@@ -1,3 +1,56 @@
+SymmetricDS - 3.2.0 (Released 2012-12-16) 
+=========================================
+- 0000880: [New Feature] Add support for cascading random data to DbFill. (abrougher) - closed.
+- 0000896: [Bug] RouterService.getUnroutedDataCount() is not accurate. Uses max(last_id) when it should use max(start_id) (chenson) - closed.
+- 0000900: [Improvement] Add grant information to User's Guide for PostreSQL when a different schema is involved. (chenson) - closed.
+- 0000902: [Bug] Don't allow an engine to service a request if that engine is not "started" (chenson) - closed.
+- 0000831: [Bug] Timeout is not set on a re-directed registration request (chenson) - closed.
+- 0000855: [Improvement] Create a new heartbeat channel for sym_node_host. Deprecate heartbeat_time on sym_node (chenson) - closed.
+- 0000872: [New Feature] Add an uninstall feature to SymmetricDS (chenson) - closed.
+- 0000890: [Improvement] The symmetricds client should always request UTF-8 character encoding. Also set -Dfile.encoding=utf-8 (chenson) - closed.
+- 0000893: [Bug] Hidden feature to override the sym_ tables virtual triggers shouldn't look at router id to see if needs to replace the trigger (chenson) - closed.
+- 0000899: [Bug] Prevent nodes from syncing with themselves (chenson) - closed.
+- 0000904: [Bug] DbExport does not respect the compatible setting for data (chenson) - closed.
+- 0000903: [Bug] dbexport not replacing ? in cases (chenson) - closed.
+- 0000906: [Bug] Altering a default value for a varchar column on oracle fails. Default value not quoted. (chenson) - closed.
+- 0000908: [Bug] Table that has a sequence for increment column fails to migrate data (chenson) - closed.
+- 0000909: [New Feature] Support GEOMETRY type on MySQL (chenson) - closed.
+- 0000911: [New Feature] Support GEOMETRY type on SQL Server (chenson) - closed.
+- 0000912: [Bug] Missing primary key columns from source at target can cause data corruption or errors. Columns misaligned. (chenson) - closed.
+- 0000914: [Improvement] Update startup scripts to explicitly use the -server option, output out of memory errors, and restart on memory errors (chenson) - closed.
+- 0000915: [Bug] backslash (\) is exported as doubule backslash (\\) in CSV format (chenson) - closed.
+- 0000916: [Bug] After registration sym_node_security does not get updated with update enabled flag and times (chenson) - closed.
+- 0000918: [Bug] Add startup parameters to support basic authentication (chenson) - closed.
+- 0000920: [Improvement] Support timestamp with time zone in dbfill (chenson) - closed.
+- 0000921: [Improvement] postgres trigger template for timestamp with time zone did not zero pad negative time zone hours (chenson) - closed.
+- 0000924: [Bug] dbexport's xml format does not export null data values correctly (chenson) - closed.
+- 0000925: [Improvement] DbFill should ignore the symmetric tables by default. (abrougher) - closed.
+- 0000936: [Bug] Oracle integer datatype has a larger precision than the java Integer datatype. (chenson) - closed.
+- 0000708: [New Feature] Add ability to exclude BFILE columns from triggers for Oracle (chenson) - closed.
+- 0000779: [New Feature] Add a symmetric parameter that tells the data loader that it is NOT ok to ignore a table if it is missing in the database (chenson) - closed.
+- 0000806: [Bug] DbFill --help argument captions are not displayed correctly. (abrougher) - closed.
+- 0000809: [Improvement] Firebird trigger template improvement for generators. (chenson) - closed.
+- 0000848: [Bug] Tutorial doesn't work for MySQL (chenson) - closed.
+- 0000852: [Improvement] Add the ability to define the "sync key" of a table versus using the actual primary key (chenson) - closed.
+- 0000892: [Bug] Common batch mode should not be detected if a channel is bidirectional with separate trigger definitions for the same table. (chenson) - closed.
+- 0000907: [Improvement] Document conflict resolution's ping-back settings, and resolve booleans (row only, changes only) (chenson) - closed.
+- 0000937: [New Feature] Provide capability to specify initial load / reverse initial load ordering (chenson) - closed.
+- 0000940: [Bug] Conflict resolution uses the target table to lookup data for timestamp and version checks. Should be using source. (chenson) - closed.
+- 0000941: [Bug] Triggers should exclude excluded columns even if column is part of primary key (mhanes) - closed.
+- 0000942: [New Feature] Add a router type of 'audit' that captures changes in an dynamically created audit table. (chenson) - closed.
+- 0000943: [Improvement] Do simple column validation of extracted initial load row during the extraction process. Log better message. (chenson) - closed.
+- 0000944: [Bug] Recursive call while processing data for routing when there are a lot of gaps can cause stack over flow error (chenson) - closed.
+- 0000945: [Bug] batchCommit was being called for earlyCommit and for normal commit. The api is suppose to only be call for a normal commit (chenson) - closed.
+- 0000947: [Bug] Bad alter statement generated on oracle upgrade: ALTER TABLE "SYM_DATA_EVENT" MODIFY ("BATCH_ID" DEFAULT ) (chenson) - closed.
+- 0000948: [Bug] Fix upgrade to sym_trigger_hist to not blow away sequences (chenson) - closed.
+- 0000021: [New Feature] Add support for Sqlite over JDBC (mhanes) - closed.
+- 0000871: [New Feature] Implement a REST API for SymmetricDS (gwilmer) - closed.
+- 0000946: [Bug] Cannot delete triggers from tables if SymmetricDS user doesn't own those tables (chenson) - closed.
+- 0000951: [Bug] use_timestamp conflict resolution with transform can get into endless loop (chenson) - closed.
+- 0000954: [Improvement] Change default file permissions for executables to 755 (vs 774) (chenson) - closed.
+- 0000955: [Improvement] Add parameter to allow SymmetricDS jobs to be synchronized (mhanes) - closed.
+- 0000935: [Bug] dbexport null timestamp values from Oracle result in empty string ("") in CSV. (chenson) - closed.
+
 SymmetricDS - 3.1.11 (Released 2012-11-29) 
 =======================================
 - 0000894: [New Feature] Add property to turn sync_on_incoming off for sym_ table triggers (chenson) - closed.
