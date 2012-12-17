@@ -61,12 +61,12 @@
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>774</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../symmetric-core/src/main/resources/symmetric-default.properties</source>
