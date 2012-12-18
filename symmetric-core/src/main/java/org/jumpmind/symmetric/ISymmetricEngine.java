@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -50,7 +51,6 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
@@ -210,6 +210,8 @@ public interface ISymmetricEngine {
      * @param force forces this action to be run regardless of the parameter settings
      */
     public void setupDatabase(boolean force);
+    
+    public void removeAndCleanupNode(String nodeId);
 
     public IConfigurationService getConfigurationService();
 

@@ -42,6 +42,8 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityService;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -76,7 +78,6 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
@@ -100,7 +101,6 @@ import org.jumpmind.symmetric.service.impl.PurgeService;
 import org.jumpmind.symmetric.service.impl.PushService;
 import org.jumpmind.symmetric.service.impl.RegistrationService;
 import org.jumpmind.symmetric.service.impl.RouterService;
-import org.jumpmind.symmetric.service.impl.SecurityService;
 import org.jumpmind.symmetric.service.impl.SequenceService;
 import org.jumpmind.symmetric.service.impl.StatisticService;
 import org.jumpmind.symmetric.service.impl.TransformService;
@@ -634,6 +634,16 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public NodeStatus getNodeStatus() {
         return nodeService.getNodeStatus();
+    }
+    
+    public void removeAndCleanupNode(String nodeId) {
+        log.warn("Removing node {}", nodeId);
+        nodeService.deleteNode(nodeId);
+        log.warn("Marking outgoing batch records as Ok for {}", nodeId);
+        outgoingBatchService.markAllAsSentForNode(nodeId);
+        log.warn("Marking incoming batch records as Ok for {}", nodeId);
+        incomingBatchService.markIncomingBatchesOk(nodeId);
+        log.warn("Done removing node {}", nodeId);        
     }
 
     public RemoteNodeStatuses pull() {

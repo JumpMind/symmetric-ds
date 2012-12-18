@@ -223,6 +223,7 @@ public class NodeService extends AbstractService implements INodeService {
             if (nodeId.equals(findIdentityNodeId())) {
                 sqlTemplate.update(getSql("deleteNodeIdentitySql"));
             }
+            deleteNodeSecurity(nodeId);
             sqlTemplate.update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
             sqlTemplate.update(getSql("deleteNodeSql"), new Object[] { nodeId });
         }

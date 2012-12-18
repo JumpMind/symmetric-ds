@@ -43,14 +43,14 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.h2.util.StringUtils;
-import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.JarBuilder;
 

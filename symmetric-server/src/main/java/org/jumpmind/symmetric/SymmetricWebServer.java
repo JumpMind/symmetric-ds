@@ -47,7 +47,7 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
@@ -286,7 +286,7 @@ public class SymmetricWebServer {
 
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
-        String keyStoreFile = System.getProperty(SystemConstants.SYSPROP_KEYSTORE);
+        String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
         String keyStoreType = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
@@ -307,7 +307,7 @@ public class SymmetricWebServer {
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
             String keyStorePassword = System
-                    .getProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD);
+                    .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword
                     : SecurityConstants.KEYSTORE_PASSWORD;
             SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory(); 

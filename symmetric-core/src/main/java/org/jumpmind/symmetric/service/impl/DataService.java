@@ -137,7 +137,7 @@ public class DataService extends AbstractService implements IDataService {
         /*
          * Outgoing data events are pointless because we are reloading all data
          */
-        engine.getOutgoingBatchService().markAllAsSentForNode(targetNode);
+        engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId());
 
         Node sourceNode = engine.getNodeService().findIdentity();
 

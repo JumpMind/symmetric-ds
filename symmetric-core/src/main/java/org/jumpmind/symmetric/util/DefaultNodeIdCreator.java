@@ -22,13 +22,13 @@
 package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.security.SecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.SecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

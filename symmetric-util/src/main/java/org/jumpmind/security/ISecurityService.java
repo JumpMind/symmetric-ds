@@ -19,7 +19,7 @@
  * under the License. 
  */
 
-package org.jumpmind.symmetric.service;
+package org.jumpmind.security;
 
 
 /**

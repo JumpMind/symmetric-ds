@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -81,10 +80,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 createSqlReplacementTokens()));
     }
 
-    public void markAllAsSentForNode(Node node) {
+    public void markAllAsSentForNode(String nodeId) {
         OutgoingBatches batches = null;
         do {
-            batches = getOutgoingBatches(node, true);
+            batches = getOutgoingBatches(nodeId, true);
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 outgoingBatch.setErrorFlag(false);
@@ -247,21 +246,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * been created by {@link #buildOutgoingBatches(String)} in channel priority
      * order.
      */
-    public OutgoingBatches getOutgoingBatches(Node node, boolean includeDisabledChannels) {
+    public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
                 maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels, true),
-                new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.name(),
+                new Object[] { nodeId, OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                         OutgoingBatch.Status.IG.name() }, null);
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
-        List<NodeChannel> channels = configurationService.getNodeChannels(node.getNodeId(), true);
+        List<NodeChannel> channels = configurationService.getNodeChannels(nodeId, true);
         batches.sortChannels(channels);
 
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
@@ -270,7 +269,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED)
                     || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
                 keepers.addAll(getBatchesForChannelWindows(batches,
-                        node,
+                        nodeId,
                         channel,
                         configurationService.getNodeGroupChannelWindows(
                                 parameterService.getNodeGroupId(), channel.getChannelId())));
@@ -286,12 +285,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batches;
     }
     
-    public List<OutgoingBatch> getBatchesForChannelWindows(OutgoingBatches batches, Node targetNode, NodeChannel channel,
+    public List<OutgoingBatch> getBatchesForChannelWindows(OutgoingBatches batches, String targetNodeId, NodeChannel channel,
             List<NodeGroupChannelWindow> windows) {
         List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
         List<OutgoingBatch> current = batches.getBatches();
         if (current != null && current.size() > 0) {
-            if (inTimeWindow(windows, targetNode)) {
+            if (inTimeWindow(windows, targetNodeId)) {
                 int maxBatchesToSend = channel.getMaxBatchToSend();
                 for (OutgoingBatch outgoingBatch : current) {
                     if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && maxBatchesToSend > 0) {
@@ -309,11 +308,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * check to see if the time (according to the offset passed in) is within on
      * of the configured windows.
      */
-    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, Node targetNode) {
+    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, String targetNodeId) {
         if (windows != null && windows.size() > 0) {
             for (NodeGroupChannelWindow window : windows) {
                 String timezoneOffset = null;
-                List<NodeHost> hosts = nodeService.findNodeHosts(targetNode.getNodeId());
+                List<NodeHost> hosts = nodeService.findNodeHosts(targetNodeId);
                 if (hosts.size() > 0) {
                     timezoneOffset = hosts.get(0).getTimezoneOffset();
                 } else {
