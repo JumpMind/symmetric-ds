@@ -58,6 +58,8 @@ import org.jumpmind.symmetric.web.rest.model.Node;
 import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
 import org.jumpmind.symmetric.web.rest.model.RestError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -116,6 +118,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Controller
 public class RestService {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+	
     @Autowired
     ServletContext context;
 
@@ -200,6 +204,7 @@ public class RestService {
      * <nodes>
      * 	<name>client01</name>
      * 	<rootNode>false</rootNode>
+     *  <syncUrl>http://localhost:8080/sync
      * </nodes>
      * </nodelist>
      *   }
@@ -227,10 +232,8 @@ public class RestService {
     }
 
     /**
-     * Takes a snapshot and streams it to the client.
+     * Takes a snapshot for this engine and streams it to the client.
      * 
-     * @param file
-     *            A file stream that contains the profile itself.
      */
     @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
@@ -241,9 +244,6 @@ public class RestService {
 
     /**
      * Takes a snapshot for the specified engine and streams it to the client.
-     * 
-     * @param file
-     *            A file stream that contains the profile itself.
      */
     @RequestMapping(value = "engine/{engine}/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
@@ -280,8 +280,6 @@ public class RestService {
     /**
      * Loads a configuration profile for the specified engine on the node.
      * 
-     * @param engine
-     *            The engine name for which the action is intended.
      * @param file
      *            A file stream that contains the profile itself.
      */
@@ -306,8 +304,6 @@ public class RestService {
 
     /**
      * Starts the specified engine on the node
-     * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/start", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -328,8 +324,6 @@ public class RestService {
 
     /**
      * Stops the specified engine on the node
-     * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/stop", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -353,8 +347,6 @@ public class RestService {
     /**
      * Creates instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
-     * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/synctriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -378,8 +370,6 @@ public class RestService {
     /**
      * Removes instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
-     * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -391,8 +381,6 @@ public class RestService {
     /**
      * Removes instances of triggers for the specified table for the single
      * engine on the node
-     * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/table/{table}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -405,7 +393,6 @@ public class RestService {
      * Removes instances of triggers for the specified table for the single
      * engine on the node
      * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/table/{table}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -430,7 +417,6 @@ public class RestService {
      * Uninstalls all SymmetricDS objects from the given node (database) for the
      * specified engine on the node
      * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/uninstall", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -453,7 +439,6 @@ public class RestService {
      * Reinitializes the given node (database) for the specified engine on the
      * node
      * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/reinitialize", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -475,7 +460,6 @@ public class RestService {
     /**
      * Refreshes cache for the specified engine on the node node
      * 
-     * @param engineName
      */
     @RequestMapping(value = "engine/{engine}/refreshcache", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -530,7 +514,6 @@ public class RestService {
     /**
      * Returns an overall status for the specified engine of the node.
      * 
-     * @param engineName
      * @return {@link NodeStatus}
      */
     @RequestMapping(value = "/engine/{engine}/status", method = RequestMethod.GET)
@@ -542,7 +525,6 @@ public class RestService {
     /**
      * Returns status of each channel for the single engine of the node.
      * 
-     * @param engineName
      * @return Set<{@link ChannelStatus}>
      */
     @RequestMapping(value = "/engine/channelstatus", method = RequestMethod.GET)
@@ -554,7 +536,6 @@ public class RestService {
     /**
      * Returns status of each channel for the specified engine of the node.
      * 
-     * @param engineName
      * @return Set<{@link ChannelStatus}>
      */
     @RequestMapping(value = "/engine/{engine}/channelstatus", method = RequestMethod.GET)
@@ -564,6 +545,27 @@ public class RestService {
         return channelStatusImpl(getSymmetricEngine(engineName));
     }
 
+    /**
+     * Removes (unregisters and cleans up) a node for the single engine 
+     */
+    @RequestMapping(value = "/engine/removenode", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRemoveNode(@RequestParam(value = "nodeId") String nodeId) {
+        removeNodeImpl(getSymmetricEngine(), nodeId);
+    }
+    
+    /**
+     * Removes (unregisters and cleans up) a node for the single engine 
+     */
+    @RequestMapping(value = "/engine/{engine}/removenode", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRemoveNodeByEngine(@RequestParam(value = "nodeId") String nodeId,
+    	    @PathVariable("engine") String engineName) {
+        removeNodeImpl(getSymmetricEngine(engineName), nodeId);
+    }    
+    
     @ExceptionHandler(Exception.class)
     @ResponseBody
     protected RestError handleError(Exception ex, HttpServletRequest req) {
@@ -585,6 +587,28 @@ public class RestService {
         engine.stop();
     }
 
+    private void removeNodeImpl(ISymmetricEngine engine, String nodeName) {
+    	
+        INodeService nodeService = engine.getNodeService();
+        org.jumpmind.symmetric.model.Node node = nodeService.findNode(nodeName);        
+        if (node != null) {
+            log.warn("Removing node " + node.getNodeId());
+            log.warn("Deleting node security record for "
+                    + node.getNodeId());
+            nodeService.deleteNodeSecurity(node.getNodeId());
+            log.warn("Deleting node record for " + node.getNodeId());
+            nodeService.deleteNode(node.getNodeId());
+            log.warn("Marking outgoing batch records as Ok for "
+                    + node.getNodeId());
+            engine.getOutgoingBatchService().markAllAsSentForNode(node);
+            log.warn("Marking incoming batch records as Ok for "
+                    + node.getNodeId());
+            engine.getIncomingBatchService().markIncomingBatchesOk(
+            		node.getNodeId());
+            log.warn("Done removing node " + node.getNodeId());
+        }
+    }
+    
     private void syncTriggersImpl(ISymmetricEngine engine, boolean force) {
 
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
