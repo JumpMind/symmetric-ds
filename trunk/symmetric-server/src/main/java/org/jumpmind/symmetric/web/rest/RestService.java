@@ -656,10 +656,27 @@ public class RestService {
             NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
             Set<NetworkedNode> childNetwork = networkedNode.getChildren();
             for (NetworkedNode child : childNetwork) {
+            	
+                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
+                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
+            	            	
                 xmlChildNode = new Node();
                 xmlChildNode.setName(child.getNode().getNodeId());
+                xmlChildNode.setExternalId(child.getNode().getExternalId());
                 xmlChildNode.setRootNode(false);
                 xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
+                
+                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
+                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
+                if (nodeHosts.size()>0) {
+                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+                }
+                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
+                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+                if (child.getNode().getCreatedAtNodeId() == null) {
+                	xmlChildNode.setRootNode(true);        	
+                }
                 children.addNode(xmlChildNode);
             }
         }
@@ -671,9 +688,22 @@ public class RestService {
         INodeService nodeService = engine.getNodeService();
         Node xmlNode = new Node();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
+        List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
         xmlNode.setName(modelNode.getNodeId());
+        xmlNode.setExternalId(modelNode.getExternalId());
         xmlNode.setRootNode(isRootNode(engine, modelNode));
         xmlNode.setSyncUrl(modelNode.getSyncUrl());
+        xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+        xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
+        xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+        xmlNode.setRegistered(nodeSecurity.hasRegistered());
+        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+        xmlNode.setRegistered(nodeSecurity.hasReverseInitialLoaded());
+        if (modelNode.getCreatedAtNodeId() == null) {
+        	xmlNode.setRootNode(true);        	
+        }
+        
         return xmlNode;
     }
 

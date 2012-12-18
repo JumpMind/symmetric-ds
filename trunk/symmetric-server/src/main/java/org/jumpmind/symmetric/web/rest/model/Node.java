@@ -20,16 +20,65 @@
  */
 package org.jumpmind.symmetric.web.rest.model;
 
+import java.util.Date;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Node {
 
     private String name;
-    private boolean isRootNode;
+    private String externalId;
+	private boolean rootNode;
     private String syncUrl;
+    private int batchToSendCount;    
+    private int batchInErrorCount;
+    private Date lastHeartbeat;
+	private boolean registered;
+    private boolean initialLoaded;
+    private boolean reverseInitialLoaded;
+    
+    public boolean isReverseInitialLoaded() {
+		return reverseInitialLoaded;
+	}
 
-    public String getSyncUrl() {
+	public void setReverseInitialLoaded(boolean reverseInitialLoaded) {
+		this.reverseInitialLoaded = reverseInitialLoaded;
+	}
+
+	public int getBatchToSendCount() {
+		return batchToSendCount;
+	}
+
+	public void setBatchToSendCount(int batchToSendCount) {
+		this.batchToSendCount = batchToSendCount;
+	}
+
+	public int getBatchInErrorCount() {
+		return batchInErrorCount;
+	}
+
+	public void setBatchInErrorCount(int batchInErrorCount) {
+		this.batchInErrorCount = batchInErrorCount;
+	}
+
+	public boolean isRegistered() {
+		return registered;
+	}
+
+	public void setRegistered(boolean registered) {
+		this.registered = registered;
+	}
+
+	public boolean isInitialLoaded() {
+		return initialLoaded;
+	}
+
+	public void setInitialLoaded(boolean initialLoaded) {
+		this.initialLoaded = initialLoaded;
+	}
+
+	public String getSyncUrl() {
 		return syncUrl;
 	}
 
@@ -38,11 +87,11 @@ public class Node {
 	}
 
 	public boolean isRootNode() {
-		return isRootNode;
+		return rootNode;
 	}
 
-	public void setRootNode(boolean isRootNode) {
-		this.isRootNode = isRootNode;
+	public void setRootNode(boolean rootNode) {
+		this.rootNode = rootNode;
 	}
 
 	public Node(String name) {
@@ -61,4 +110,19 @@ public class Node {
         this.name = name;
     }
 
+    public Date getLastHeartbeat() {
+		return lastHeartbeat;
+	}
+
+	public void setLastHeartbeat(Date lastHeartbeat) {
+		this.lastHeartbeat = lastHeartbeat;
+	}
+	
+    public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}	
 }
