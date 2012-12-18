@@ -89,6 +89,7 @@ import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
@@ -550,6 +551,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             for (ConflictNodeGroupLink conflict : conflicts) {
             	dataLoaderService.delete(conflict);
             }
+
+            // need to remove all transforms before we can remove the node group links
+            List<TransformTableNodeGroupLink> transforms =  transformService.getTransformTables();
+            for (TransformTableNodeGroupLink transformTable : transforms) {
+                transformService.deleteTransformTable(transformTable.getTransformId());
+            }
             
             // remove the links so the symmetric table trigger will be removed
             List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
@@ -562,8 +569,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             triggerRouterService.syncTriggers();      
             
         } catch (SqlException ex) {
-        	//TODO: figure out what we really want to do here...
-            log.error("SQL Exception while trying to uninstall. " + ex.getMessage() );
+            log.error("SQL Exception while trying to uninstall", ex);
         }
         
         // remove any additional triggers that may remain because they were not in trigger history
