@@ -87,6 +87,7 @@ import org.jumpmind.symmetric.service.impl.ClusterService;
 import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
@@ -542,6 +543,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
                 triggerRouterService.deleteRouter(triggerRouter.getRouter());
+            }            
+
+            // need to remove all conflicts before we can remove the node group links
+            List<ConflictNodeGroupLink> conflicts = dataLoaderService.getConflictSettingsNodeGroupLinks();
+            for (ConflictNodeGroupLink conflict : conflicts) {
+            	dataLoaderService.delete(conflict);
             }
             
             // remove the links so the symmetric table trigger will be removed
@@ -552,12 +559,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
             // this should remove all triggers because we have removed all the
             // trigger configuration
-            triggerRouterService.syncTriggers();
-
+            triggerRouterService.syncTriggers();      
+            
         } catch (SqlException ex) {
-            // these tables must not exist
+        	//TODO: figure out what we really want to do here...
+            log.error("SQL Exception while trying to uninstall. " + ex.getMessage() );
         }
-
+        
         // remove any additional triggers that may remain because they were not in trigger history
         symmetricDialect.cleanupTriggers();                
         
