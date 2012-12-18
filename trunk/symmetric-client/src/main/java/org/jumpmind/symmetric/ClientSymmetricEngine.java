@@ -28,12 +28,11 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.jumpmind.db.util.ResettableBasicDataSource;
+import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.DbExport.Format;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
@@ -44,10 +43,8 @@ import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -187,55 +184,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
         TypedProperties properties = createTypedPropertiesFactory(propsFile, null).reload();
-        return createBasicDataSource(properties, createSecurityService(properties));
-    }
-
-    public static BasicDataSource createBasicDataSource(TypedProperties properties,
-            ISecurityService securityService) {
-        ResettableBasicDataSource dataSource = new ResettableBasicDataSource();
-        dataSource.setDriverClassName(properties.get(ParameterConstants.DB_POOL_DRIVER, null));
-        dataSource.setUrl(properties.get(ParameterConstants.DB_POOL_URL, null));
-        String user = properties.get(ParameterConstants.DB_POOL_USER, "");
-        if (user != null && user.startsWith(SecurityConstants.PREFIX_ENC)) {
-            user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
-        }
-        dataSource.setUsername(user);
-
-        String password = properties.get(ParameterConstants.DB_POOL_PASSWORD, "");
-        if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
-            password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
-                    .length()));
-        }
-        dataSource.setPassword(password);
-        dataSource.setInitialSize(properties.getInt(ParameterConstants.DB_POOL_INITIAL_SIZE, 5));
-        dataSource.setMaxActive(properties.getInt(ParameterConstants.DB_POOL_MAX_ACTIVE, 20));
-        dataSource.setMaxWait(properties.getInt(ParameterConstants.DB_POOL_MAX_WAIT, 5000));
-        dataSource.setMinEvictableIdleTimeMillis(properties.getInt(
-                ParameterConstants.DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 60000));
-        dataSource.setTimeBetweenEvictionRunsMillis(120000);
-        dataSource.setNumTestsPerEvictionRun(10);
-        dataSource.setValidationQuery(properties.get(ParameterConstants.DB_POOL_VALIDATION_QUERY,
-                null));
-        dataSource.setTestOnBorrow(properties.is(ParameterConstants.DB_POOL_TEST_ON_BORROW, true));
-        dataSource.setTestOnReturn(properties.is(ParameterConstants.DB_POOL_TEST_ON_RETURN, false));
-        dataSource.setTestWhileIdle(properties
-                .is(ParameterConstants.DB_POOL_TEST_WHILE_IDLE, false));
-
-        String connectionProperties = properties.get(
-                ParameterConstants.DB_POOL_CONNECTION_PROPERTIES, null);
-        if (StringUtils.isNotBlank(connectionProperties)) {
-            String[] tokens = connectionProperties.split(";");
-            for (String property : tokens) {
-                String[] keyValue = property.split("=");
-                if (keyValue != null && keyValue.length > 1) {
-                    LoggerFactory.getLogger(ClientSymmetricEngine.class).info(
-                            "Setting database connection property %s=%s", keyValue[0], keyValue[1]);
-                    dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
-                }
-            }
-        }
-        return dataSource;
-
+        return BasicDataSourceFactory.create(properties, createSecurityService(properties));
     }
 
     @Override
@@ -252,7 +201,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
             BasicDataSource dataSource, boolean waitOnAvailableDatabase) {
         if (dataSource == null) {
-            dataSource = createBasicDataSource(properties, createSecurityService(properties));
+            dataSource = BasicDataSourceFactory.create(properties, createSecurityService(properties));
         }
         if (waitOnAvailableDatabase) {
             waitForAvailableDatabase(dataSource);

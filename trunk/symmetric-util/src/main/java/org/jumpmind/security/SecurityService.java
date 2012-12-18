@@ -19,7 +19,7 @@
  * under the License. 
  */
 
-package org.jumpmind.symmetric.service.impl;
+package org.jumpmind.security;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,9 +40,6 @@ import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.common.SecurityConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.service.ISecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +58,7 @@ public class SecurityService implements ISecurityService {
     }
     
     protected void checkThatKeystoreFileExists() {
-        String keyStoreLocation = System.getProperty(SystemConstants.SYSPROP_KEYSTORE);
+        String keyStoreLocation = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
         if (!new File(keyStoreLocation).exists()) {
             throw new IoException(
                     "Could not find the keystore file.  We expected it to exist here: "
@@ -123,7 +120,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected SecretKey getSecretKey() throws Exception {
-        String password = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD);
+        String password = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
@@ -190,7 +187,7 @@ public class SecurityService implements ISecurityService {
     protected KeyStore getKeyStore(String password) throws Exception {
         KeyStore ks = KeyStore.getInstance(SecurityConstants.KEYSTORE_TYPE);
         FileInputStream is = new FileInputStream(
-                System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
+                System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.load(is, password.toCharArray());
         is.close();
         return ks;
@@ -198,7 +195,7 @@ public class SecurityService implements ISecurityService {
 
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
         FileOutputStream os = new FileOutputStream(
-                System.getProperty(SystemConstants.SYSPROP_KEYSTORE));
+                System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();
     }

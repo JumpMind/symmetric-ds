@@ -194,14 +194,14 @@ public abstract class AbstractIntegrationTest {
     protected void assertNoPendingBatchesOnServer() {
         IOutgoingBatchService outgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE, false);        
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);        
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
     
     protected void assertNoPendingBatchesOnClient() {
         IOutgoingBatchService outgoingBatchService = getClient().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_ROOT_NODE, false);        
+                TestConstants.TEST_ROOT_NODE.getNodeId(), false);        
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
 

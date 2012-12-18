@@ -112,7 +112,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 16 : 17;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel, otherChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
@@ -120,12 +120,12 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 countBatchesForChannel(batches, testChannel));
         Assert.assertEquals(15, countBatchesForChannel(batches, otherChannel));
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false);
         filterForChannels(batches, testChannel, otherChannel);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false);
         filterForChannels(batches, testChannel, otherChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
 
@@ -140,7 +140,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         insert(TEST_TABLE_1, 50, false);
         getRouterService().routeData(true);
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false);
         filterForChannels(batches, testChannel, otherChannel);
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 3 : 17, batches.getBatches()
                 .size());
@@ -288,18 +288,18 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 550;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 1
         Assert.assertEquals(0, batches.getBatches().size());
@@ -309,19 +309,19 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
         execute("delete from " + TEST_TABLE_1, null);
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
         getRouterService().routeData(true);
         Assert.assertEquals(
                 getDbDialect().supportsTransactionId() ? 1 : 705,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -350,18 +350,18 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = 100;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 1
         Assert.assertEquals(0, batches.getBatches().size());
@@ -391,14 +391,14 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getRouterService().routeData(true);
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(
                 "Should have been 0.  We did the insert as if the data had come from node 1.", 0,
                 batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(1, batches.getBatches().size());
 
@@ -483,7 +483,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         logger.info("Just routed " + count + " rows in " + TEST_TABLE_1 + " in "
                 + (System.currentTimeMillis() - ts) + "ms");
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 510, batches.getBatches()
@@ -491,12 +491,12 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches
                 .getBatches().get(0).getDataEventCount());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 510, batches.getBatches()
                 .size());
@@ -526,17 +526,17 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         int count = getSqlTemplate().update(String.format("delete from %s", TEST_TABLE_1));
         getRouterService().routeData(true);
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(count / MAX_BATCH_SIZE + (count % MAX_BATCH_SIZE > 0 ? 1 : 0), batches
                 .getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.getBatches().size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 3
         Assert.assertEquals(0, batches.getBatches().size());
@@ -581,7 +581,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
@@ -589,17 +589,17 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -607,7 +607,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         execute("delete from " + TEST_SUBTABLE, null);
@@ -615,34 +615,34 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2.getNodeId(), false),
                         testChannel));
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -667,7 +667,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
@@ -675,7 +675,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -685,7 +685,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
@@ -693,7 +693,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
     }
@@ -716,7 +716,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
@@ -724,7 +724,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -734,7 +734,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         getRouterService().routeData(true);
@@ -742,7 +742,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
     }
@@ -767,7 +767,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         insert(TEST_TABLE_1, 1, true);
@@ -776,7 +776,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -791,7 +791,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -803,7 +803,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
         resetBatches();
@@ -815,7 +815,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(
                 1,
                 countBatchesForChannel(
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false),
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false),
                         testChannel));
 
     }
@@ -844,7 +844,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getRouterService().routeData(true);
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(),
                 false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(
@@ -868,14 +868,14 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getRouterService().routeData(true);
 
         Assert.assertEquals(1,
-                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false).getBatches()
                         .size());
 
         Node node2 = getNodeService().findNode("00030");
 
         Assert.assertNotNull(node2);
 
-        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(node2, false)
+        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(node2.getNodeId(), false)
                 .getBatches().size());
 
         resetBatches();
@@ -909,7 +909,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 getRouterService().routeData(true);
 
                 Assert.assertEquals(1,
-                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                        getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false)
                                 .getBatches().size());
 
                 List<DataGap> gaps = getDataService().findDataGaps();
@@ -954,7 +954,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             routeAndCreateGaps();
 
             Assert.assertEquals(1,
-                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false)
                             .getBatches().size());
 
             gaps = getDataService().findDataGaps();
@@ -998,7 +998,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             routeAndCreateGaps();
 
             Assert.assertEquals(1,
-                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false)
                             .getBatches().size());
 
             List<DataGap> gaps = getDataService().findDataGaps();
@@ -1048,7 +1048,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             routeAndCreateGaps();
 
             Assert.assertEquals(10,
-                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false)
                             .getBatches().size());
 
             List<DataGap> gaps = getDataService().findDataGaps();
@@ -1071,7 +1071,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
 
         Assert.assertEquals(0,
-                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false).getBatches()
                         .size());
 
         getSqlTemplate().update("delete from sym_data_gap");
@@ -1079,7 +1079,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         routeAndCreateGaps();
 
         Assert.assertEquals(0,
-                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false).getBatches()
                         .size());
 
     }

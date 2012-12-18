@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -34,13 +33,13 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
  */
 public interface IOutgoingBatchService {
 
-    public void markAllAsSentForNode(Node node);
+    public void markAllAsSentForNode(String nodeId);
 
     public void updateAbandonedRoutingBatches();
 
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId);
 
-    public OutgoingBatches getOutgoingBatches(Node node, boolean includeDisabledChannels);
+    public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels);
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
 

@@ -51,6 +51,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.slf4j.Logger;
@@ -287,7 +288,7 @@ public abstract class AbstractCommandLauncher {
 
     protected void configureCrypto(CommandLine line) throws Exception {
         if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
-            System.setProperty(SystemConstants.SYSPROP_KEYSTORE_PASSWORD,
+            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD,
                     line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
         }
 

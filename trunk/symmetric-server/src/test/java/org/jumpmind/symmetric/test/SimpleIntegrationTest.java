@@ -338,7 +338,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_ROOT_NODE, false);
+                TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be one outgoing batches.", 1, batches.getBatches().size());
 
@@ -353,7 +353,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         batches = clientOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
 
@@ -404,7 +404,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_ROOT_NODE, false);
+                TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be no outgoing batches since suspended locally", 0,
                 batches.getBatches().size());
@@ -418,7 +418,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         batches = clientOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be no outgoing batches since suspended locally", 0,
                 batches.getBatches().size());
@@ -450,7 +450,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE, false);
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
 
         Assert.assertNotNull(clientTestService.getOrder(order.getOrderId()));
 
@@ -471,7 +471,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be 1 outgoing batch", 1, batches.getBatches().size());
 
@@ -486,7 +486,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
 
         Assert.assertNull(clientTestService.getOrder(order.getOrderId()));
 
@@ -502,7 +502,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
 
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
 
@@ -526,7 +526,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
 
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE, false);
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
 
         Assert.assertNotNull(clientTestService.getOrder(order.getOrderId()));
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
@@ -553,7 +553,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
         Assert.assertNull(clientTestService.getOrder(order.getOrderId()));
 
@@ -577,7 +577,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
         Assert.assertNull(clientTestService.getOrder(order.getOrderId()));
 
@@ -629,7 +629,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE, false);
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         Assert.assertNotNull(clientTestService.getOrder(order.getOrderId()));
         Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
 
@@ -647,7 +647,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         Assert.assertNull(clientTestService.getOrder(order.getOrderId()));
         Assert.assertEquals("There should be 1 outgoing batches", 1, batches.getBatches().size());
 
@@ -988,7 +988,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         clientPull();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE, false);
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         Assert.assertEquals(0, batches.countBatches(true));
         Assert.assertTrue("Expected the testFlag static variable to have been set to true", testFlag);
     }

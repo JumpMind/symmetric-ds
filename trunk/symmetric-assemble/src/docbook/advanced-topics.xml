@@ -805,7 +805,7 @@ net stop symmetricds</programlisting>
             <filename class="directory">web/WEB-INF/lib</filename> folders.
             Then, in the <filename class="filename">symmetric.properties</filename> specify your class name for the security service.
 
-            <programlisting>security.service.class.name=org.jumpmind.symmetric.service.impl.SecurityService</programlisting>
+            <programlisting>security.service.class.name=org.jumpmind.security.SecurityService</programlisting>
 
             Remember to specify your properties file when encrypting passwords, so it will use your custom ISecurityService.
 

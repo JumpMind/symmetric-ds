@@ -552,7 +552,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public final void postRemoveNode(@RequestParam(value = "nodeId") String nodeId) {
-        removeNodeImpl(getSymmetricEngine(), nodeId);
+        postRemoveNodeByEngine(nodeId, getSymmetricEngine().getEngineName());
     }
     
     /**
@@ -563,7 +563,7 @@ public class RestService {
     @ResponseBody
     public final void postRemoveNodeByEngine(@RequestParam(value = "nodeId") String nodeId,
     	    @PathVariable("engine") String engineName) {
-        removeNodeImpl(getSymmetricEngine(engineName), nodeId);
+        getSymmetricEngine(engineName).removeAndCleanupNode(nodeId);
     }    
     
     @ExceptionHandler(Exception.class)
@@ -585,28 +585,6 @@ public class RestService {
 
     private void stopImpl(ISymmetricEngine engine) {
         engine.stop();
-    }
-
-    private void removeNodeImpl(ISymmetricEngine engine, String nodeName) {
-    	
-        INodeService nodeService = engine.getNodeService();
-        org.jumpmind.symmetric.model.Node node = nodeService.findNode(nodeName);        
-        if (node != null) {
-            log.warn("Removing node " + node.getNodeId());
-            log.warn("Deleting node security record for "
-                    + node.getNodeId());
-            nodeService.deleteNodeSecurity(node.getNodeId());
-            log.warn("Deleting node record for " + node.getNodeId());
-            nodeService.deleteNode(node.getNodeId());
-            log.warn("Marking outgoing batch records as Ok for "
-                    + node.getNodeId());
-            engine.getOutgoingBatchService().markAllAsSentForNode(node);
-            log.warn("Marking incoming batch records as Ok for "
-                    + node.getNodeId());
-            engine.getIncomingBatchService().markIncomingBatchesOk(
-            		node.getNodeId());
-            log.warn("Done removing node " + node.getNodeId());
-        }
     }
     
     private void syncTriggersImpl(ISymmetricEngine engine, boolean force) {

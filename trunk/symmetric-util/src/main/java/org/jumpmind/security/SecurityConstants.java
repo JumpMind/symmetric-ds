@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-package org.jumpmind.symmetric.common;
+package org.jumpmind.security;
 
 public class SecurityConstants {
 
@@ -42,5 +42,9 @@ public class SecurityConstants {
     public static final String ALIAS_SYM_SECRET_KEY = "sym.secret";
     
     public static final String EMBEDDED_WEBSERVER_DEFAULT_ROLE="symmetric";
+
+    public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
+
+    public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
 
 }

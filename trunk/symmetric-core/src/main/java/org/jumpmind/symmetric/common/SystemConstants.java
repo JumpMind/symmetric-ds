@@ -33,9 +33,7 @@ public class SystemConstants {
     public static final String SYSPROP_WEB_DIR = "symmetric.default.web.dir";
     public static final String SYSPROP_DEFAULT_HTTP_PORT = "symmetric.default.http.port";
     public static final String SYSPROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";
-    public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
     public static final String SYSPROP_KEYSTORE_TYPE = "sym.keystore.type";
-    public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = "sym.keystore.ssl.cert.alias";
 
 }

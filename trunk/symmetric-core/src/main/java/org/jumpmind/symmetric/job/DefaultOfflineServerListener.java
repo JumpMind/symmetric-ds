@@ -59,7 +59,7 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
         statisticManager.incrementNodesDisabled(1);
         node.setSyncEnabled(false);
         nodeService.save(node);
-        outgoingBatchService.markAllAsSentForNode(node);
+        outgoingBatchService.markAllAsSentForNode(node.getNodeId());
         nodeService.deleteNodeSecurity(node.getNodeId());
     }
     
