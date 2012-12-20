@@ -692,30 +692,30 @@ public class RestService {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
         xmlNode.setName(modelNode.getNodeId());
         xmlNode.setExternalId(modelNode.getExternalId());
-        xmlNode.setRootNode(isRootNode(engine, modelNode));
         xmlNode.setSyncUrl(modelNode.getSyncUrl());
         xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
         xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
         xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
         xmlNode.setRegistered(nodeSecurity.hasRegistered());
         xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-        xmlNode.setRegistered(nodeSecurity.hasReverseInitialLoaded());
+        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
         if (modelNode.getCreatedAtNodeId() == null) {
         	xmlNode.setRootNode(true);        	
+        } else {
+        	xmlNode.setRootNode(false);
         }
         
         return xmlNode;
     }
 
     private boolean isRootNode(ISymmetricEngine engine, org.jumpmind.symmetric.model.Node node) {
-        boolean isRootNode = false;
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-        NetworkedNode rootNode = nodeService.getRootNetworkedNode();
-        if (rootNode.getNode().equals(modelNode)) {
-            isRootNode = true;
+        if (modelNode.getCreatedAtNodeId() == null) {
+        	return true;        	
+        } else {
+        	return false;
         }
-        return isRootNode;
     }
 
     private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
@@ -742,7 +742,7 @@ public class RestService {
         status.setDeploymentType(modelNode.getDeploymentType());
 
         if (nodeHost != null && nodeHost.size() > 0) {
-            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime().toString());
+            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
         }
         return status;
     }
