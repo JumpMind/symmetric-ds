@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.db.firebird;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -133,7 +134,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     @Override
     public String getName() {
-        return super.getName().substring(0, 49);
+       return StringUtils.left(super.getName(), 50);
     }
 
     @Override
