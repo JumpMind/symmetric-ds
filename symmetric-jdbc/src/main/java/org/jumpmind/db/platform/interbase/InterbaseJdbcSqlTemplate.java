@@ -12,7 +12,7 @@ public class InterbaseJdbcSqlTemplate extends JdbcSqlTemplate {
     public InterbaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int [] {335544665};
+        primaryKeyViolationCodes = new int [] {335544665,335544349};
     }
     
     @Override
