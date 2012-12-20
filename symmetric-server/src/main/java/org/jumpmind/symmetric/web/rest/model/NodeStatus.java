@@ -20,8 +20,11 @@
  */
 package org.jumpmind.symmetric.web.rest.model;
 
-import org.jumpmind.symmetric.Version;
+import java.util.Date;
+
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.jumpmind.symmetric.Version;
 
 @XmlRootElement(name="nodestatus")
 public class NodeStatus {
@@ -106,7 +109,7 @@ public class NodeStatus {
 	/**
 	 * The last heartbeat for the given node.
 	 */
-	private String lastHeartbeat;
+	private Date lastHeartbeat;
 	
 	/**
 	 * The hearbeat interval for the given node.
@@ -122,11 +125,11 @@ public class NodeStatus {
 		this.started = started;
 	}
 
-	public String getLastHeartbeat() {
+	public Date getLastHeartbeat() {
 		return lastHeartbeat;
 	}
 
-	public void setLastHeartbeat(String lastHeartbeat) {
+	public void setLastHeartbeat(Date lastHeartbeat) {
 		this.lastHeartbeat = lastHeartbeat;
 	}
 
