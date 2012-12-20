@@ -29,7 +29,7 @@ public class Node {
 
     private String name;
     private String externalId;
-	private boolean rootNode;
+	private boolean registrationServer;
     private String syncUrl;
     private int batchToSendCount;    
     private int batchInErrorCount;
@@ -86,12 +86,12 @@ public class Node {
 		this.syncUrl = syncUrl;
 	}
 
-	public boolean isRootNode() {
-		return rootNode;
+	public boolean isRegistrationServer() {
+		return registrationServer;
 	}
 
-	public void setRootNode(boolean rootNode) {
-		this.rootNode = rootNode;
+	public void setRegistrationServer(boolean registrationServer) {
+		this.registrationServer = registrationServer;
 	}
 
 	public Node(String name) {

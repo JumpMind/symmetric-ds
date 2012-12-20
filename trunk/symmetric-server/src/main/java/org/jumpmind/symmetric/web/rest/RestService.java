@@ -157,24 +157,32 @@ public class RestService {
         return list;
     }
 
-    /**
-     * Provides Node information for the single engine
-     * 
-     * return {@link Node}<br>
-     * 
-     * <pre>
-     * Example xml reponse is as follows:<br><br>
-     *   {@code
-     * <node>
-     * 	 <name>root</name>
-     *   <rootNode>true</rootNode>
-     * </node>
-     *   }
-     * <br>
-     * Example json response is as follows:<br><br>
-     * 
-     * </pre>
-     */
+	/**
+	 * Provides Node information for the single engine
+	 * 
+	 * return {@link Node}<br>
+	 * 
+	 * <pre>
+	 * Example xml reponse is as follows:<br><br>
+	 *   {@code
+	 * <node>
+	 * <batchInErrorCount>0</batchInErrorCount>
+	 * <batchToSendCount>0</batchToSendCount>
+	 * <externalId>server01</externalId>
+	 * <initialLoaded>true</initialLoaded>
+	 * <lastHeartbeat>2012-12-20T09:15:00-05:00</lastHeartbeat>
+	 * <name>server01</name>
+	 * <registered>true</registered>
+	 * <registrationServer>true</registrationServer>
+	 * <reverseInitialLoaded>false</reverseInitialLoaded>
+	 * <syncUrl>http://gwilmer-laptop:31415/sync/servers-server01</syncUrl>
+	 * </node>
+	 *   }
+	 * <br>
+	 * Example json response is as follows:<br><br>
+	 * 
+	 * </pre>
+	 */
     @RequestMapping(value = "engine/node", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -663,7 +671,7 @@ public class RestService {
                 xmlChildNode = new Node();
                 xmlChildNode.setName(child.getNode().getNodeId());
                 xmlChildNode.setExternalId(child.getNode().getExternalId());
-                xmlChildNode.setRootNode(false);
+                xmlChildNode.setRegistrationServer(false);
                 xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
                 
                 xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
@@ -675,7 +683,7 @@ public class RestService {
                 xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
                 xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
                 if (child.getNode().getCreatedAtNodeId() == null) {
-                	xmlChildNode.setRootNode(true);        	
+                	xmlChildNode.setRegistrationServer(true);        	
                 }
                 children.addNode(xmlChildNode);
             }
@@ -700,9 +708,9 @@ public class RestService {
         xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
         xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
         if (modelNode.getCreatedAtNodeId() == null) {
-        	xmlNode.setRootNode(true);        	
+        	xmlNode.setRegistrationServer(true);       	
         } else {
-        	xmlNode.setRootNode(false);
+        	xmlNode.setRegistrationServer(false);
         }
         
         return xmlNode;
@@ -740,6 +748,11 @@ public class RestService {
         status.setBatchToSendCount(modelNode.getBatchToSendCount());
         status.setBatchInErrorCount(modelNode.getBatchInErrorCount());
         status.setDeploymentType(modelNode.getDeploymentType());
+        if (modelNode.getCreatedAtNodeId() == null) {
+        	status.setRegistrationServer(true);        	
+        } else {
+        	status.setRegistrationServer(false);
+        }
 
         if (nodeHost != null && nodeHost.size() > 0) {
             status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
