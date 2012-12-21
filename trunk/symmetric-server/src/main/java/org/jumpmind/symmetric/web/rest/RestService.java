@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -248,6 +251,25 @@ public class RestService {
     @ResponseBody
     public final void getSnapshot(HttpServletResponse resp) {
         getSnapshot(getSymmetricEngine().getEngineName(), resp);
+    }
+
+    /**
+     * Execute a select statement on the node
+     * 
+     */
+    @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final List<String> queryNode(@RequestParam(value = "query") String sql) {
+        return queryNodeImpl(getSymmetricEngine(), sql);
+    }
+
+    @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final List<String> queryNode(@PathVariable("engine") String engineName,
+    		@RequestParam(value = "query") String sql) {
+        return queryNodeImpl(getSymmetricEngine(engineName), sql);
     }
 
     /**
@@ -663,29 +685,31 @@ public class RestService {
         if (isRootNode(engine, modelNode)) {
             NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
             Set<NetworkedNode> childNetwork = networkedNode.getChildren();
-            for (NetworkedNode child : childNetwork) {
-            	
-                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
-                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
-            	            	
-                xmlChildNode = new Node();
-                xmlChildNode.setName(child.getNode().getNodeId());
-                xmlChildNode.setExternalId(child.getNode().getExternalId());
-                xmlChildNode.setRegistrationServer(false);
-                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
-                
-                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
-                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
-                if (nodeHosts.size()>0) {
-                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
-                }
-                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
-                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
-                if (child.getNode().getCreatedAtNodeId() == null) {
-                	xmlChildNode.setRegistrationServer(true);        	
-                }
-                children.addNode(xmlChildNode);
+            if (childNetwork != null) {
+	            for (NetworkedNode child : childNetwork) {
+	            	
+	                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
+	                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
+	            	            	
+	                xmlChildNode = new Node();
+	                xmlChildNode.setName(child.getNode().getNodeId());
+	                xmlChildNode.setExternalId(child.getNode().getExternalId());
+	                xmlChildNode.setRegistrationServer(false);
+	                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
+	                
+	                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
+	                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
+	                if (nodeHosts.size()>0) {
+	                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+	                }
+	                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
+	                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+	                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+	                if (child.getNode().getCreatedAtNodeId() == null) {
+	                	xmlChildNode.setRegistrationServer(true);        	
+	                }
+	                children.addNode(xmlChildNode);
+	            }
             }
         }
         return children;
@@ -783,6 +807,22 @@ public class RestService {
         return channelStatus;
     }
 
+    private List<String> queryNodeImpl(ISymmetricEngine engine, String sql) {
+    	ArrayList<String> results = new ArrayList<String>();
+    	ISqlTemplate sqlTemplate = engine.getSqlTemplate();
+    	try {
+    		List<Row> rows = sqlTemplate.query(sql);
+	    	for (Row row : rows) {
+	    		results.add(row.toString());
+	    	}
+    	} catch (Exception ex) {
+    		log.error("Exception while executing sql.", ex);
+            throw new NotAllowedException("Error while executing sql %s.  Error is %s",
+                    sql, ex.getCause().getMessage());
+    	}
+    	return results;
+    }
+    
     protected SymmetricEngineHolder getSymmetricEngineHolder() {
         SymmetricEngineHolder holder = (SymmetricEngineHolder) context
                 .getAttribute(WebConstants.ATTR_ENGINE_HOLDER);
