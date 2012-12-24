@@ -195,7 +195,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public boolean exists() {
-        return file.exists() || (memoryBuffer != null && memoryBuffer.length() > 0);
+        return (file.exists() && file.length() > 0) || (memoryBuffer != null && memoryBuffer.length() > 0);
     }
 
     public long getCreateTime() {
