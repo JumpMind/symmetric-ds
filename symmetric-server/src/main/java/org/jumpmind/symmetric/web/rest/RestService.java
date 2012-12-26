@@ -137,9 +137,9 @@ public class RestService {
      * Example xml reponse is as follows:<br><br>
      *   {@code
      *   <enginelist>
-     *     <engines>
-     *       <name>RootSugarDB-root</name>
-     *     </engines>
+     *      <engines>
+     *         <name>RootSugarDB-root</name>
+     *      </engines>
      *   </enginelist>
      *   }
      * <br>
@@ -170,22 +170,22 @@ public class RestService {
 	 * <pre>
 	 * Example xml reponse is as follows:<br><br>
 	 *   {@code
-	 * <node>
-	 * <batchInErrorCount>0</batchInErrorCount>
-	 * <batchToSendCount>0</batchToSendCount>
-	 * <externalId>server01</externalId>
-	 * <initialLoaded>true</initialLoaded>
-	 * <lastHeartbeat>2012-12-20T09:15:00-05:00</lastHeartbeat>
-	 * <name>server01</name>
-	 * <registered>true</registered>
-	 * <registrationServer>true</registrationServer>
-	 * <reverseInitialLoaded>false</reverseInitialLoaded>
-	 * <syncUrl>http://gwilmer-laptop:31415/sync/servers-server01</syncUrl>
-	 * </node>
+     *   <node>
+     *      <batchInErrorCount>0</batchInErrorCount>
+     *      <batchToSendCount>0</batchToSendCount>
+     *      <externalId>server01</externalId>
+     *      <initialLoaded>true</initialLoaded>
+     *      <lastHeartbeat>2012-12-20T09:26:02-05:00</lastHeartbeat>
+     *      <name>server01</name>
+     *      <registered>true</registered>
+     *      <registrationServer>true</registrationServer>
+     *      <reverseInitialLoaded>false</reverseInitialLoaded>
+     *      <syncUrl>http://machine-name:31415/sync/RootSugarDB-root</syncUrl>
+     *    </node>
 	 *   }
 	 * <br>
 	 * Example json response is as follows:<br><br>
-	 * 
+	 * {"name":"server01","externalId":"server01","registrationServer":true,"syncUrl":"http://machine-name:31415/sync/RootSugarDB-root","batchToSendCount":0,"batchInErrorCount":0,"lastHeartbeat":1356013562000,"registered":true,"initialLoaded":true,"reverseInitialLoaded":false}
 	 * </pre>
 	 */
     @RequestMapping(value = "engine/node", method = RequestMethod.GET)
@@ -213,17 +213,23 @@ public class RestService {
      * <pre>
      * Example xml reponse is as follows:<br><br>
      *   {@code
-     * <nodelist>
-     * <nodes>
-     * 	<name>client01</name>
-     * 	<rootNode>false</rootNode>
-     *  <syncUrl>http://localhost:8080/sync
-     * </nodes>
-     * </nodelist>
+     *   <nodelist>
+     *      <nodes>
+     *         <batchInErrorCount>0</batchInErrorCount>
+     *         <batchToSendCount>0</batchToSendCount>
+     *         <externalId>client01</externalId>
+     *         <initialLoaded>true</initialLoaded>
+     *         <name>client01</name>
+     *         <registered>true</registered>
+     *         <registrationServer>false</registrationServer>
+     *         <reverseInitialLoaded>false</reverseInitialLoaded>
+     *         <syncUrl>http://machine-name:31418/sync/ClientSugarDB-client01</syncUrl>
+     *      </nodes>
+     *   </nodelist>
      *   }
      * <br>
      * Example json response is as follows:<br><br>
-     * 
+     * {"nodes":[{"name":"client01","externalId":"client01","registrationServer":false,"syncUrl":"http://gwilmer-laptop:31418/sync/ClientSugarDB-client01","batchToSendCount":0,"batchInErrorCount":0,"lastHeartbeat":null,"registered":true,"initialLoaded":true,"reverseInitialLoaded":false}]}
      * </pre>
      */
     @RequestMapping(value = "engine/children", method = RequestMethod.GET)
@@ -245,8 +251,10 @@ public class RestService {
     }
 
     /**
-     * Takes a snapshot for this engine and streams it to the client.
-     * 
+     * Takes a snapshot for this engine and streams it to the client.  The result of this 
+     * call is a stream that should be written to a zip file.  The zip contains configuration
+     * and operational information about the installation and can be used to diagnose
+     * state of the node 
      */
     @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
@@ -256,7 +264,10 @@ public class RestService {
     }
 
     /**
-     * Execute a select statement on the node
+     * Executes a select statement on the node and returns results.
+     * <br>
+     * Example json response is as follows:<br><br>
+     * {"nbrResults":1,"results":[{"rowNum":1,"columnData":[{"ordinal":1,"name":"node_id","value":"root"}]}]}
      * 
      */
     @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
@@ -266,6 +277,9 @@ public class RestService {
         return queryNodeImpl(getSymmetricEngine(), sql);
     }
 
+    /**
+     * Executes a select statement on the node and returns results.
+     */
     @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -745,7 +759,8 @@ public class RestService {
     private boolean isRootNode(ISymmetricEngine engine, org.jumpmind.symmetric.model.Node node) {
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-        if (modelNode.getCreatedAtNodeId() == null) {
+        if (modelNode.getCreatedAtNodeId() == null ||
+        		modelNode.getCreatedAtNodeId().equalsIgnoreCase(modelNode.getExternalId())) {
         	return true;        	
         } else {
         	return false;
