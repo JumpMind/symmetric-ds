@@ -192,4 +192,12 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     final private java.util.Date getDate(String value, String[] pattern) {
         return FormatUtils.parseDate(value, pattern);
     }
+    
+    public Object[] toArray(String[] keys) {
+        Object[] values = new Object[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            values[i] = get(keys[i]);
+        }
+        return values;
+    }
 }

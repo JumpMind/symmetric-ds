@@ -1,5 +1,6 @@
 package org.jumpmind.db.platform.sqlite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -96,6 +97,15 @@ public class SqliteDdlReader implements IDdlReader {
 
         return table;
     }
+    
+    public List<String> getCatalogs() {
+        return new ArrayList<String>(0);
+    }
+    
+    
+    public List<String> getSchemas(String catalog) {
+        return new ArrayList<String>(0);
+    }
 
     static class ColumnMapper extends AbstractSqlRowMapper<Column> {
         public Column mapRow(Row row) {
@@ -165,5 +175,7 @@ public class SqliteDdlReader implements IDdlReader {
             return column;
         }
     }
+    
+    
 
 }

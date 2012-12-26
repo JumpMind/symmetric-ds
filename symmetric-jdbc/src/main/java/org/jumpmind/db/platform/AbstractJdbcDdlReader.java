@@ -421,11 +421,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     public Database getDatabase(Connection connection) throws SQLException {
         return readTables(null, null, null);
     }
-    
+
     protected String getResultSetSchemaName() {
         return "TABLE_SCHEM";
     }
-    
+
     protected String getResultSetCatalogName() {
         return "TABLE_CAT";
     }
@@ -624,19 +624,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     return null;
                 }
             }
-            
+
             table = new Table();
             table.setName(tableName);
             table.setType(type);
-            
+
             String catalog = (String) values.get(getResultSetCatalogName());
             table.setCatalog(catalog);
             metaData.setCatalog(catalog);
-            
+
             String schema = (String) values.get(getResultSetSchemaName());
             table.setSchema(schema);
             metaData.setSchemaPattern(schema);
-            
+
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
@@ -655,7 +655,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         return table;
     }
-    
+
     protected String[] getUnsupportedTableTypes() {
         return new String[0];
     }
@@ -1064,7 +1064,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             String columnName = (String) values.get("COLUMN_NAME");
             if (columnName.startsWith("\"") && columnName.endsWith("\"")) {
-                columnName = columnName.substring(1, columnName.length()-1);
+                columnName = columnName.substring(1, columnName.length() - 1);
             }
             indexColumn.setName(columnName);
             if (values.containsKey("ORDINAL_POSITION")) {
@@ -1110,7 +1110,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @param columnsToCheck The columns to check (e.g. the primary key columns)
      */
-    public void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
+    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
             final Column columnsToCheck[], String catalogSeparator) throws SQLException {
         StringBuilder query = new StringBuilder();
         try {
@@ -1149,7 +1149,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                 for (int idx = 0; idx < columnsToCheck.length; idx++) {
                     if (log.isDebugEnabled()) {
-                        log.debug(columnsToCheck[idx] + " is auto increment? " + rsMetaData.isAutoIncrement(idx + 1));
+                        log.debug(columnsToCheck[idx] + " is auto increment? "
+                                + rsMetaData.isAutoIncrement(idx + 1));
                     }
                     if (rsMetaData.isAutoIncrement(idx + 1)) {
                         columnsToCheck[idx].setAutoIncrement(true);
@@ -1220,70 +1221,50 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         return result;
     }
 
-    /*
-     * Tries to find the schema to which the given table belongs.
-     * 
-     * @param connection The database connection
-     * 
-     * @param schemaPattern The schema pattern to limit the schemas to search in
-     * 
-     * @param table The table to search for
-     * 
-     * @return The schema name or <code>null</code> if the schema of the table
-     * could not be found
-     * 
-     * @deprecated Will be removed once full schema support is in place
-     */
-    public String determineSchemaOf(Connection connection, String schemaPattern, Table table)
-            throws SQLException {
-        ResultSet tableData = null;
-        ResultSet columnData = null;
-
-        try {
-            DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-
-            metaData.setMetaData(connection.getMetaData());
-            metaData.setCatalog(getDefaultCatalogPattern());
-            metaData.setSchemaPattern(schemaPattern == null ? getDefaultSchemaPattern()
-                    : schemaPattern);
-            metaData.setTableTypes(getDefaultTableTypes());
-
-            String tablePattern = table.getName();
-
-            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
-                tablePattern = tablePattern.toUpperCase();
-            }
-
-            tableData = metaData.getTables(tablePattern);
-
-            boolean found = false;
-            String schema = null;
-
-            while (!found && tableData.next()) {
-                Map<String, Object> values = readMetaData(tableData, getColumnsForTable());
-                String tableName = (String) values.get(getResultSetCatalogName());
-
-                if ((tableName != null) && (tableName.length() > 0)) {
-                    schema = (String) values.get(getResultSetSchemaName());
-                    columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
-                    found = true;
-
-                    while (found && columnData.next()) {
-                        values = readMetaData(columnData, getColumnsForColumn());
-
-                        if (table.findColumn((String) values.get("COLUMN_NAME"), getPlatform()
-                                .getDdlBuilder().isDelimitedIdentifierModeOn()) == null) {
-                            found = false;
-                        }
+    public List<String> getCatalogs() {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+            public List<String> execute(Connection connection) throws SQLException {
+                ArrayList<String> catalogs = new ArrayList<String>();
+                DatabaseMetaData meta = connection.getMetaData();
+                ResultSet rs = null;
+                try {
+                    rs = meta.getCatalogs();
+                    while (rs.next()) {
+                        catalogs.add(rs.getString(1));
                     }
-                    columnData.close();
-                    columnData = null;
+                    return catalogs;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
                 }
             }
-            return found ? schema : null;
-        } finally {
-            close(columnData);
-            close(tableData);
-        }
+        });
     }
+
+    public List<String> getSchemas(final String catalog) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+            public List<String> execute(Connection connection) throws SQLException {
+                ArrayList<String> schemas = new ArrayList<String>();
+                DatabaseMetaData meta = connection.getMetaData();
+                ResultSet rs = null;
+                try {
+                    rs = meta.getSchemas();
+                    while (rs.next()) {
+                        String schema = rs.getString(1);
+                        String schemaCatalog = rs.getString(2);
+                        if (StringUtils.isBlank(catalog) && !schemas.contains(schema)) {
+                            schemas.add(schema);
+                        } else if (StringUtils.isNotBlank(schemaCatalog) && schemaCatalog.equals(catalog)) {
+                            schemas.add(schema);
+                        }
+                    }
+                    return schemas;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+            }
+        });
+    }
+
 }
