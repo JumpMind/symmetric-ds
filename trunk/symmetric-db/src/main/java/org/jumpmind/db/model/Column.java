@@ -35,6 +35,7 @@ import org.jumpmind.util.FormatUtils;
  * Represents a column in the database model.
  */
 public class Column implements Cloneable, Serializable {
+    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -6226348998874210093L;
 
