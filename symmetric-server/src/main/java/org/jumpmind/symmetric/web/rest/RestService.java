@@ -25,10 +25,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -60,6 +61,7 @@ import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Node;
 import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
+import org.jumpmind.symmetric.web.rest.model.QueryResults;
 import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,14 +262,14 @@ public class RestService {
     @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final List<String> queryNode(@RequestParam(value = "query") String sql) {
+    public final QueryResults queryNode(@RequestParam(value = "query") String sql) {
         return queryNodeImpl(getSymmetricEngine(), sql);
     }
 
     @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final List<String> queryNode(@PathVariable("engine") String engineName,
+    public final QueryResults queryNode(@PathVariable("engine") String engineName,
     		@RequestParam(value = "query") String sql) {
         return queryNodeImpl(getSymmetricEngine(engineName), sql);
     }
@@ -807,14 +809,34 @@ public class RestService {
         return channelStatus;
     }
 
-    private List<String> queryNodeImpl(ISymmetricEngine engine, String sql) {
-    	ArrayList<String> results = new ArrayList<String>();
+    private QueryResults queryNodeImpl(ISymmetricEngine engine, String sql) {
+    	
+    	QueryResults results = new QueryResults();
+    	org.jumpmind.symmetric.web.rest.model.Row xmlRow = null;
+    	org.jumpmind.symmetric.web.rest.model.Column xmlColumn = null;
+    	
     	ISqlTemplate sqlTemplate = engine.getSqlTemplate();
     	try {
     		List<Row> rows = sqlTemplate.query(sql);
+    		int nbrRows=0;
 	    	for (Row row : rows) {
-	    		results.add(row.toString());
+	    		xmlRow = new org.jumpmind.symmetric.web.rest.model.Row();
+	    		Iterator<Map.Entry<String, Object>> itr = row.entrySet().iterator();
+	    		int columnOrdinal=0;
+	    		while (itr.hasNext()) {
+	    			xmlColumn = new org.jumpmind.symmetric.web.rest.model.Column();
+	    			xmlColumn.setOrdinal(++columnOrdinal);
+	    			Map.Entry<String, Object> pair = (Map.Entry<String, Object>)itr.next();
+	    			xmlColumn.setName(pair.getKey());
+	    			if (pair.getValue()!= null) {
+	    				xmlColumn.setValue(pair.getValue().toString());
+	    			}
+	    			xmlRow.getColumnData().add(xmlColumn);
+	    		}
+    			xmlRow.setRowNum(++nbrRows);
+	    		results.getResults().add(xmlRow);
 	    	}
+	    	results.setNbrResults(nbrRows);
     	} catch (Exception ex) {
     		log.error("Exception while executing sql.", ex);
             throw new NotAllowedException("Error while executing sql %s.  Error is %s",
