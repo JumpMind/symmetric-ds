@@ -12,8 +12,10 @@ public interface IDdlReader {
 
     public Table readTable(String catalog, String schema, String tableName);
     
-    public List<String> getCatalogs();
+    public List<String> getCatalogNames();
     
-    public List<String> getSchemas(String catalog);
+    public List<String> getSchemaNames(String catalog);
+    
+    public List<String> getTableNames(String catalog, String schema, String[] tableTypes);
     
 }

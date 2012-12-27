@@ -54,9 +54,9 @@ public class BasicDataSourceFactory {
         }
         dataSource.setPassword(password);
         dataSource.setInitialSize(properties.getInt(
-                BasicDataSourcePropertyConstants.DB_POOL_INITIAL_SIZE, 5));
+                BasicDataSourcePropertyConstants.DB_POOL_INITIAL_SIZE, 2));
         dataSource.setMaxActive(properties.getInt(
-                BasicDataSourcePropertyConstants.DB_POOL_MAX_ACTIVE, 20));
+                BasicDataSourcePropertyConstants.DB_POOL_MAX_ACTIVE, 10));
         dataSource.setMaxWait(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_WAIT,
                 5000));
         dataSource.setMinEvictableIdleTimeMillis(properties.getInt(
