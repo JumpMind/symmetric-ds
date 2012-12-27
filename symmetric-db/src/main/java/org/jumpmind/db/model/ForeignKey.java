@@ -19,6 +19,7 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -28,10 +29,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Represents a database foreign key.
- * 
- * @version $Revision: 504014 $
  */
-public class ForeignKey implements Cloneable {
+public class ForeignKey implements Cloneable, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** The name of the foreign key, may be <code>null</code>. */
     private String name;

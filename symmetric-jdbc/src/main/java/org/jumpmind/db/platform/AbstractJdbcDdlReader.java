@@ -1221,7 +1221,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         return result;
     }
 
-    public List<String> getCatalogs() {
+    public List<String> getCatalogNames() {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
@@ -1241,7 +1241,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         });
     }
 
-    public List<String> getSchemas(final String catalog) {
+    public List<String> getSchemaNames(final String catalog) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
@@ -1251,15 +1251,42 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     rs = meta.getSchemas();
                     while (rs.next()) {
+                        int columnCount = rs.getMetaData().getColumnCount();
                         String schema = rs.getString(1);
-                        String schemaCatalog = rs.getString(2);
+                        String schemaCatalog = null;
+                        if (columnCount > 1) {
+                            schemaCatalog = rs.getString(2);
+                        }
                         if (StringUtils.isBlank(catalog) && !schemas.contains(schema)) {
                             schemas.add(schema);
-                        } else if (StringUtils.isNotBlank(schemaCatalog) && schemaCatalog.equals(catalog)) {
+                        } else if (StringUtils.isNotBlank(schemaCatalog)
+                                && schemaCatalog.equals(catalog)) {
                             schemas.add(schema);
                         }
                     }
                     return schemas;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+            }
+        });
+    }
+
+    public List<String> getTableNames(final String catalog, final String schema,
+            final String[] tableTypes) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+            public List<String> execute(Connection connection) throws SQLException {
+                ArrayList<String> list = new ArrayList<String>();
+                DatabaseMetaData meta = connection.getMetaData();
+                ResultSet rs = null;
+                try {
+                    rs = meta.getTables(catalog, schema, null, tableTypes);
+                    while (rs.next()) {
+                        String tableName = rs.getString("TABLE_NAME");
+                        list.add(tableName);
+                    }
+                    return list;
                 } finally {
                     JdbcSqlTemplate.close(rs);
                 }

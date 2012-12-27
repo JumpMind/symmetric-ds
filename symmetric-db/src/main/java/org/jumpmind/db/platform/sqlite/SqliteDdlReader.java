@@ -29,11 +29,15 @@ public class SqliteDdlReader implements IDdlReader {
     public SqliteDdlReader(IDatabasePlatform platform) {
         this.platform = platform;
     }
-
-    public Database readTables(String catalog, String schema, String[] tableTypes) {
-        List<String> tableNames = platform.getSqlTemplate()
+    
+    public List<String> getTableNames(String catalog, String schema, String[] tableTypes) {
+        return platform.getSqlTemplate()
                 .query("select tbl_name from sqlite_master where type='table'",
                         SqlConstants.STRING_MAPPER);
+    }
+
+    public Database readTables(String catalog, String schema, String[] tableTypes) {
+        List<String> tableNames = getTableNames(catalog, schema, tableTypes);
         Database database = new Database();
         for (String tableName : tableNames) {
             Table table = readTable(catalog, schema, tableName);
@@ -98,12 +102,12 @@ public class SqliteDdlReader implements IDdlReader {
         return table;
     }
     
-    public List<String> getCatalogs() {
+    public List<String> getCatalogNames() {
         return new ArrayList<String>(0);
     }
     
     
-    public List<String> getSchemas(String catalog) {
+    public List<String> getSchemaNames(String catalog) {
         return new ArrayList<String>(0);
     }
 
