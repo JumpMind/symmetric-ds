@@ -536,32 +536,52 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         try {
             
-            List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                triggerRouterService.deleteTriggerRouter(triggerRouter);
-            }
+            Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_TRIGGER_ROUTER));            
+            if (table != null) {
+                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    triggerRouterService.deleteTriggerRouter(triggerRouter);
+                }
 
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
-                triggerRouterService.deleteRouter(triggerRouter.getRouter());
-            }            
-
-            // need to remove all conflicts before we can remove the node group links
-            List<ConflictNodeGroupLink> conflicts = dataLoaderService.getConflictSettingsNodeGroupLinks();
-            for (ConflictNodeGroupLink conflict : conflicts) {
-            	dataLoaderService.delete(conflict);
-            }
-
-            // need to remove all transforms before we can remove the node group links
-            List<TransformTableNodeGroupLink> transforms =  transformService.getTransformTables();
-            for (TransformTableNodeGroupLink transformTable : transforms) {
-                transformService.deleteTransformTable(transformTable.getTransformId());
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
+                    triggerRouterService.deleteRouter(triggerRouter.getRouter());
+                }
             }
             
-            // remove the links so the symmetric table trigger will be removed
-            List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
-            for (NodeGroupLink nodeGroupLink : links) {
-                configurationService.deleteNodeGroupLink(nodeGroupLink);
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
+                    parameterService.getTablePrefix(), TableConstants.SYM_CONFLICT));
+            if (table != null) {
+                // need to remove all conflicts before we can remove the node
+                // group links
+                List<ConflictNodeGroupLink> conflicts = dataLoaderService
+                        .getConflictSettingsNodeGroupLinks();
+                for (ConflictNodeGroupLink conflict : conflicts) {
+                    dataLoaderService.delete(conflict);
+                }
+            }
+
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
+                    parameterService.getTablePrefix(), TableConstants.SYM_TRANSFORM_TABLE));
+            if (table != null) {
+                // need to remove all transforms before we can remove the node
+                // group links
+                List<TransformTableNodeGroupLink> transforms = transformService
+                        .getTransformTables();
+                for (TransformTableNodeGroupLink transformTable : transforms) {
+                    transformService.deleteTransformTable(transformTable.getTransformId());
+                }
+            }
+
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
+                    parameterService.getTablePrefix(), TableConstants.SYM_NODE_GROUP_LINK));
+            if (table != null) {
+                // remove the links so the symmetric table trigger will be
+                // removed
+                List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
+                for (NodeGroupLink nodeGroupLink : links) {
+                    configurationService.deleteNodeGroupLink(nodeGroupLink);
+                }
             }
 
             // this should remove all triggers because we have removed all the
@@ -569,7 +589,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             triggerRouterService.syncTriggers();      
             
         } catch (SqlException ex) {
-            log.error("SQL Exception while trying to uninstall", ex);
+            /*
+             * Log at debug level, because the system could be partially installed which
+             * would cause errors at this step.
+             */
+            log.debug("Error while trying to uninstall", ex);
         }
         
         // remove any additional triggers that may remain because they were not in trigger history
