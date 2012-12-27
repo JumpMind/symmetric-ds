@@ -1,5 +1,10 @@
 package org.jumpmind.symmetric;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.ArrayUtils;
@@ -79,9 +84,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
             dbFill.setInterval(Integer.parseInt(line.getOptionValue(OPTION_INTERVAL)));
         }
         if (line.hasOption(OPTION_STATEMENT)) {
-            // TODO: This is just a temporary command to support update statements
             if (line.getOptionValue(OPTION_STATEMENT).contains("u")) {
                 dbFill.setStatementType(DbFill.UPDATE);
+            } else if (line.getOptionValue(OPTION_STATEMENT).contains("d")) {
+                dbFill.setStatementType(DbFill.DELETE);
             }
         }
         if (line.hasOption(OPTION_DEBUG)) {
@@ -101,10 +107,40 @@ public class DbFillCommand extends AbstractCommandLauncher {
         String cfgPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         dbFill.setIgnore((String[])ArrayUtils.add(ignore, cfgPrefix));
         
-        String[] tables = line.getArgs();
-        dbFill.fillTables(tables);
+        Map<String,int[]> tableProperties = parseTableProperties();
+        
+        // If tables are provided in the property file, ignore the tables provided at the command line.
+        String[] tableNames = null;
+        if (tableProperties.size() != 0) {
+            tableNames = tableProperties.keySet().toArray(new String[0]);
+        } else {
+            tableNames = line.getArgs();
+        }
+
+        dbFill.fillTables(tableNames, tableProperties);
 
         return true;
+    }
+    
+    private Map<String,int[]> parseTableProperties() {
+        Map<String,int[]> tableProperties = new HashMap<String,int[]>();
+        Properties properties = engine.getProperties();
+        Enumeration<Object> keys = properties.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            String value = (String) properties.get(key);
+            if (key.startsWith("fill.")) {
+                String tableName = null;
+                tableName = key.substring(key.lastIndexOf(".") + 1);
+                int[] iudVal = new int[3];
+                int i = 0;
+                for (String str : value.split(",")) {
+                    iudVal[i++] = Integer.valueOf(str).intValue();
+                }
+                tableProperties.put(tableName, iudVal);
+            }
+        }
+        return tableProperties;
     }
 
 }
