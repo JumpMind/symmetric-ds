@@ -223,7 +223,7 @@ class DbFill {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
         for (Table table : tables) {
-            if (tableProperties.containsKey(table.getName())) {
+            if (tableProperties != null && tableProperties.containsKey(table.getName())) {
                 statementType = randomIUD(tableProperties.get(table.getName()));
             }
             switch (statementType) {
