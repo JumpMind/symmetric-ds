@@ -47,6 +47,8 @@ public interface ISqlTemplate {
 
     public List<Row> query(String sql, Object[] params, int[] types);
     
+    public List<Row> query(String sql, Object[] params);
+    
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String,Object> namedParams);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... params);

@@ -88,6 +88,10 @@ class DbFill {
     }
 
     public void fillTables(String... tableNames) {
+        fillTables(tableNames, null);
+    }
+
+    public void fillTables(String[] tableNames, Map<String,int[]> tableProperties) {
         Table[] tables;
         if (tableNames.length == 0) {
             // If no tableNames are provided look up all tables.
@@ -123,7 +127,7 @@ class DbFill {
             tables = tableList.toArray(new Table[tableList.size()]);
         }
 
-        fillTables(tables);
+        fillTables(tables, tableProperties);
     }
     
     /**
@@ -198,13 +202,13 @@ class DbFill {
      * 
      * @param tables Array of table objects.
      */
-    private void fillTables(Table... tables) {
+    private void fillTables(Table[] tables, Map<String,int[]> tableProperties) {
         for (int i = 0; i < inputLength; i++) {
             if (i > 0) {
                 // Sleep for the configured time before making another pass
                 AppUtils.sleep(interval);
             }
-            makePass(statementType, tables);
+            makePass(statementType, tables, tableProperties);
         }
     }
     
@@ -215,41 +219,56 @@ class DbFill {
      * @param tables Array of tables to perform statement on. Tables must be in 
      *          insert order.
      */
-    private void makePass(int statement, Table... tables) {
+    private void makePass(int statement, Table[] tables, Map<String,int[]> tableProperties) {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
-        Map<String, Object> deletedColumns = new HashMap<String, Object>(tables.length);
-        if (cascading) {
-            if (statement == DELETE) {
-                // Find delete dependent tables.
-                tables = addFkDeleteDependentTables(tables);    // TODO: Cache table for additional passes.
-            } else if (statement == INSERT) {
-                // Find insert or update dependent tables.
-                tables = addFkInsertDependentTables(tables);
-            }
-        }
-        // Sort the tables based on fk dependencies.
-        tables = Database.sortByForeignKeys(tables);
-        if (statement == DELETE) {
-            // Table must be deleted in reverse order.
-            ArrayUtils.reverse(tables);
-        }
-        
+
         for (Table table : tables) {
-            switch (statement) {
+            if (tableProperties.containsKey(table.getName())) {
+                statementType = randomIUD(tableProperties.get(table.getName()));
+            }
+            switch (statementType) {
                 case INSERT:
-                    insertRandomRecord(sqlTemplate, insertedColumns, table);
+                    System.out.println("Inserting into table " + table.getName());
+                    insertRandomRecordCascading(sqlTemplate, table);
                     break;
                 case UPDATE:
+                    System.out.println("Updating record in table " + table.getName());
                     updateRandomRecord(sqlTemplate, table);
                     break;
                 case DELETE:
-                    deleteRandomRecord(sqlTemplate, deletedColumns, table);
+                    System.out.println("Deleting record in table " + table.getName());
+                    deleteRandomRecordCascading(sqlTemplate, table);
                     break;
             }
         }
     }
     
+    private int randomIUD(int[] iudWeight) {
+        if (iudWeight.length != 3) {
+            throw new RuntimeException("Incorrect number of IUD weights provided.");
+        }
+        int total = iudWeight[0] + iudWeight[1] + iudWeight[2];
+        if (total == 0) {
+            return INSERT;
+        }
+        int rVal = getRand().nextInt(total);
+        if (rVal < iudWeight[0]) {
+            return INSERT;
+        } else if (rVal < iudWeight[0] + iudWeight[1]) {
+            return UPDATE;
+        } 
+        return DELETE;
+    }
+    
+    private void insertRandomRecordCascading(ISqlTemplate sqlTemplate, Table insertTable) {
+        Table[] tables = addFkInsertDependentTables(new Table[]{insertTable});
+        tables = Database.sortByForeignKeys(tables);
+        Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
+        for (Table table : tables) {
+            insertRandomRecord(sqlTemplate, insertedColumns, table);
+        }
+    }
+
     /**
      * Select a random row from the table in the connected database. Return null if there are no rows.
      * 
@@ -362,63 +381,92 @@ class DbFill {
      * @param deletedColumns
      * @param table
      */
-    private void deleteRandomRecord(ISqlTemplate sqlTemplate, Map<String, Object> deletedColumns, Table table) {
-        boolean dependentDelete = false;
-        for (Column c : table.getColumns()) {
-            if (null != deletedColumns.get(table.getName() + "." + c.getName())) {
-                // The specific row to be deleted was determined by selecting a random row in a foreign key related table.
-                // The values of the PKs in this table are in the deletedColumns map.
-                dependentDelete = true;
+    private void deleteRandomRecordCascading(ISqlTemplate sqlTemplate, Table table) {
+        System.out.println( "Deleting " + table.getName());
+        Table[] tables = addFkDeleteDependentTables(new Table[]{table});
+        
+        // Find random row and delete dependent tables recursively.
+        Row row = selectRandomRow(sqlTemplate, table);
+        
+        // Find all fk links to this table.
+        for (Table tbl : tables) {
+            if (tbl.getName().equals(table.getName()))
+            {
+                continue;
             }
-        }        
-        DmlStatement delStatement = platform.createDmlStatement(DmlType.DELETE, table);
-        Column[] keys = delStatement.getMetaData();
-        Object[] values = new Object[keys.length];
-        if (dependentDelete) {
-            for (int i=0; i<keys.length; i++) {
-                values[i] = deletedColumns.get(table.getName() + "." + keys[i].getName());
-                if (values[i] == null) {
-                    throw new RuntimeException("Could not get previously deleted column information.");
-                }
-            }
-        } else {
-            // Store the fk rows to be deleted in dependent tables later.
-            Row row = selectRandomRow(sqlTemplate, table);
-            if (row == null) {
-                System.out.println("No records to delete in table " + table.getName());
-                return;
-            }
-
-            for (int i=0; i<keys.length; i++) {
-                values[i] = row.getString(keys[i].getName());
-            }
-            for (ForeignKey fk : table.getForeignKeys()) {
-                for (Reference ref : fk.getReferences()) {
-                    deletedColumns.put(fk.getForeignTableName() + "." + ref.getForeignColumnName(), row.getString(ref.getLocalColumnName()));
+            for (ForeignKey fk : tbl.getForeignKeys()) {
+                if (fk.getForeignTableName().equals(table.getName())) {
+                    Map<Column, Object> selectValues = new HashMap<Column, Object>();
+                    for (Reference ref : fk.getReferences()) {
+                        // Create a column/value map for each column referenced by the foreign table.
+                        selectValues.put(ref.getLocalColumn(), row.getString(ref.getForeignColumnName()));
+                    }
+                    // Delete all records in the foreign table that map this row.
+                    deleteDependentRecords(sqlTemplate, selectValues, tbl, tables);
                 }
             }
         }
         
-        try {
-            platform.getSqlTemplate().update(delStatement.getSql(), values);
-            if (verbose) {
-                System.out.println("Successful deleted row in " + table.getName());
-            }
-        } catch (SqlException ex) {
-            log.error("Failed to process... {} ...with values of... {}", delStatement.getSql(),
-                    ArrayUtils.toString(values));
-            if (continueOnError) {
-                if (debug) {
-                    ex.printStackTrace();
-                }
-            } else {
-                throw ex;
-            }
+        DmlStatement delStatement = platform.createDmlStatement(DmlType.DELETE, table);
+        Column[] keys = delStatement.getMetaData();
+        Object[] keyValues = new Object[keys.length];
+        for (int i=0; i<keys.length; i++) {
+            keyValues[i] = row.get(keys[i].getName());
         }
-       
+        platform.getSqlTemplate().update(delStatement.getSql(), keyValues);
     }
     
-    
+    private void deleteDependentRecords(ISqlTemplate sqlTemplate, Map<Column, Object> selectColumns, Table table, Table[] tables) {
+
+        System.out.println( "Deleting dependent table " + table.getName());
+        
+        // select each record
+        Column[] selectColumnArray = selectColumns.keySet().toArray(new Column[0]);
+        String sqlSelect = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(), table.getName(),
+                selectColumnArray, table.getColumns(), null).getSql();
+        
+        Object[] values = new Object[selectColumnArray.length];
+        for (int i=0; i<selectColumnArray.length; i++) {
+            values[i] = selectColumns.get(selectColumnArray[i]);
+        }
+        
+        List<Row> rows = sqlTemplate.query(sqlSelect, values);
+        
+        for (Row row : rows) {
+            // delete dependent records
+            for (Table tbl : tables) {
+                if (tbl.getName().equals(table.getName()))
+                {
+                    continue;
+                }
+                for (ForeignKey fk : tbl.getForeignKeys()) {
+                    if (fk.getForeignTableName().equals(table.getName())) {
+                        Map<Column, Object> selectValues = new HashMap<Column, Object>();
+                        for (Reference ref : fk.getReferences()) {
+                            // Create a column/value map for each column referenced by the foreign table.
+                            selectValues.put(ref.getLocalColumn(), row.getString(ref.getForeignColumnName()));
+                        }
+                        // Delete all records in the foreign table that map this row.
+                        deleteDependentRecords(sqlTemplate, selectValues, tbl, tables);
+                    }
+                }
+            }
+            
+            DmlStatement delStatement = platform.createDmlStatement(DmlType.DELETE, table);
+            Column[] keys = delStatement.getMetaData();
+            Object[] keyValues = new Object[keys.length];
+            for (int i=0; i<keys.length; i++) {
+                keyValues[i] = row.get(keys[i].getName());
+            }
+            try { 
+                platform.getSqlTemplate().update(delStatement.getSql(), keyValues);
+            } catch(Throwable t) {
+                System.out.println( "Unable to delete record from table " + table.getName());
+                throw new RuntimeException(t);
+            }
+        }
+    }
+        
     /** 
      * Generates a random row for the given table. If a fk dependency exists, it is assumed
      * the foreign table has already been populated with random data. A runtime exception will
