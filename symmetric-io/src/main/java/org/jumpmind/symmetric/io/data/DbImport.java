@@ -27,11 +27,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
@@ -99,11 +96,6 @@ public class DbImport {
     public DbImport(IDatabasePlatform platform) {
         this();
         this.platform = platform;
-    }
-
-    public DbImport(DataSource dataSource) {
-        this();
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
 
     public void importTables(String importData, String tableName) {
@@ -269,10 +261,6 @@ public class DbImport {
 
     public long getCommitRate() {
         return commitRate;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
 
     public void setForceImport(boolean forceImport) {

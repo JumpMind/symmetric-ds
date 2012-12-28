@@ -5,8 +5,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
@@ -23,10 +21,10 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.io.data.DbExport;
-import org.jumpmind.symmetric.io.data.DbFill;
-import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.DbExport.Compatible;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
+import org.jumpmind.symmetric.io.data.DbFill;
+import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
 import org.junit.BeforeClass;
@@ -53,7 +51,6 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void testInsertBigIntIntoOracleIntField() {
         if (getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
             ISymmetricEngine engine = getSymmetricEngine();
-            DataSource ds = engine.getDataSource();
             IDatabasePlatform platform = engine.getDatabasePlatform();
             
             Table table = new Table("TEST_ORACLE_INTEGER");
@@ -61,7 +58,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             platform.alterCaseToMatchDatabaseDefaultCase(table);
             platform.createTables(true, false, table);
             
-            DbImport importer = new DbImport(ds);
+            DbImport importer = new DbImport(platform);
             importer.setFormat(DbImport.Format.CSV);
             importer.importTables("\"A\"\n1149140000100490", table.getName());
             
@@ -72,7 +69,6 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test 
     public void exportNullTimestampToCsv() throws Exception {       
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getDatabasePlatform();
         
         Table table = new Table("test_null_timestamp");
@@ -83,7 +79,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         
         platform.getSqlTemplate().update("insert into test_null_timestamp values(null, null)");
         
-        DbExport export = new DbExport(ds);
+        DbExport export = new DbExport(platform);
         export.setNoCreateInfo(true);
         export.setFormat(Format.CSV);
         
@@ -97,14 +93,13 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void exportTableInAnotherSchemaOnH2() throws Exception {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
             ISymmetricEngine engine = getSymmetricEngine();
-            DataSource ds = engine.getDataSource();
             ISqlTemplate template = getPlatform().getSqlTemplate();
             template.update("CREATE SCHEMA IF NOT EXISTS A");
             template.update("CREATE TABLE IF NOT EXISTS A.TEST (ID INT, NOTES VARCHAR(100), PRIMARY KEY (ID))");
             template.update("DELETE FROM A.TEST");
             template.update("INSERT INTO A.TEST VALUES(1,'test')");
 
-            DbExport export = new DbExport(ds);
+            DbExport export = new DbExport(engine.getDatabasePlatform());
             export.setSchema("A");
             export.setFormat(Format.SQL);
             export.setNoCreateInfo(false);
@@ -118,11 +113,9 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void exportTestDatabaseSQL() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
-
         Table[] tables = engine.getSymmetricDialect().readSymmetricSchemaFromXml().getTables();
 
-        DbExport export = new DbExport(ds);
+        DbExport export = new DbExport(engine.getDatabasePlatform());
         export.setFormat(Format.SQL);
         export.setNoCreateInfo(false);
         export.setNoData(true);
@@ -141,20 +134,19 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void exportThenImportXml() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
         platform.dropDatabase(testTables, true);
         Table table = testTables.findTable("test_db_import_1", false);
 
-        DbImport dbImport = new DbImport(ds);
+        DbImport dbImport = new DbImport(platform);
         dbImport.setFormat(DbImport.Format.XML);
         dbImport.setSchema(platform.getDefaultSchema());
         dbImport.setCatalog(platform.getDefaultCatalog());
         dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
         dbImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
 
-        DbExport export = new DbExport(ds);
+        DbExport export = new DbExport(platform);
         export.setFormat(Format.XML);
         export.setNoCreateInfo(false);
         export.setNoData(true);
@@ -173,9 +165,8 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void testExportTimestampWithTimeZone() throws Exception {
         if (createAndFillTimestampWithTimeZoneTable()) {
             ISymmetricEngine engine = getSymmetricEngine();
-            DataSource ds = engine.getDataSource();
 
-            DbExport export = new DbExport(ds);
+            DbExport export = new DbExport(engine.getDatabasePlatform());
             export.setCompatible(Compatible.POSTGRES);
             export.setFormat(Format.SQL);
             String sql = export.exportTables(new String[] { TEST_TS_W_TZ });
@@ -216,8 +207,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     protected void recreateImportTable() {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
-        DbImport reCreateTablesImport = new DbImport(ds);
+        DbImport reCreateTablesImport = new DbImport(engine.getDatabasePlatform());
         reCreateTablesImport.setFormat(DbImport.Format.XML);
         reCreateTablesImport.setDropIfExists(true);
         reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -237,13 +227,12 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void importSqlData() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
 
         recreateImportTable();
 
         assertCountDbImportTableRecords(0);
 
-        DbImport importCsv = new DbImport(ds);
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-good.sql"));
 
@@ -273,13 +262,12 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void importSymXmlData() throws Exception {
         final String FILE = "/test-dbimport-1-sym_xml-1.xml";
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
 
         recreateImportTable();
 
         assertCountDbImportTableRecords(0);
 
-        DbImport importCsv = new DbImport(ds);
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
         importCsv.setFormat(DbImport.Format.SYM_XML);
         importCsv.importTables(getClass().getResourceAsStream(FILE));
 
@@ -306,9 +294,8 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void importXmlData() throws Exception {
         final String FILE = "/test-dbimport-1-xml-1.xml";
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
 
-        DbImport importer = new DbImport(ds);
+        DbImport importer = new DbImport(engine.getDatabasePlatform());
         importer.setFormat(DbImport.Format.XML);
         importer.setDropIfExists(true);
         importer.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -326,7 +313,6 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void exportThenImportCsv() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
         Table table = testTables.findTable("test_db_import_1", false);
@@ -339,7 +325,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         fill.setRecordCount(RECORD_COUNT);
         fill.fillTables(table.getName());
 
-        DbExport export = new DbExport(ds);
+        DbExport export = new DbExport(platform);
         export.setFormat(Format.CSV);
         export.setNoCreateInfo(true);
         export.setNoData(false);
@@ -351,7 +337,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         recreateImportTable();
 
-        DbImport importCsv = new DbImport(ds);
+        DbImport importCsv = new DbImport(platform);
         importCsv.setFormat(DbImport.Format.CSV);
         importCsv.importTables(csvOutput, table.getName());
 
@@ -373,20 +359,19 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void exportThenImportCsvWithBackslashes() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
         Table table = testTables.findTable("test_db_import_1", false);
 
         recreateImportTable();
         
-        DbImport importCsv = new DbImport(ds);
+        DbImport importCsv = new DbImport(platform);
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-backslashes.sql"));
 
         assertCountDbImportTableRecords(1);
 
-        DbExport export = new DbExport(ds);
+        DbExport export = new DbExport(platform);
         export.setFormat(Format.CSV);
         export.setNoCreateInfo(true);
         export.setNoData(false);
@@ -409,9 +394,8 @@ public class DbExportImportTest extends AbstractServiceTest {
     public void testExportCsvToDirectory() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
-        DataSource ds = engine.getDataSource();
 
-        DbImport importXml = new DbImport(ds);
+        DbImport importXml = new DbImport(platform);
         importXml.setFormat(DbImport.Format.XML);
         importXml.importTables(getClass().getResourceAsStream("/test-dbexportimport-3-tables.xml"));
 
@@ -419,7 +403,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         FileUtils.deleteDirectory(dir);
         Assert.assertFalse(dir.exists());
 
-        DbExport exportCsv = new DbExport(ds);
+        DbExport exportCsv = new DbExport(platform);
         exportCsv.setComments(true);
         exportCsv.setFormat(Format.CSV);
         exportCsv.setDir(dir.getAbsolutePath());

@@ -33,8 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -47,15 +45,14 @@ import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.IoConstants;
+import org.jumpmind.symmetric.io.IoVersion;
 
 /**
  * Export the structure and data from database tables to file.
@@ -100,12 +97,6 @@ public class DbExport {
 
     public DbExport(IDatabasePlatform platform) {
         this.platform = platform;
-        compatible = Compatible.valueOf(platform.getName().toUpperCase());
-    }
-
-    public DbExport(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
-                new SqlTemplateSettings(), true);
         compatible = Compatible.valueOf(platform.getName().toUpperCase());
     }
 
@@ -430,6 +421,7 @@ public class DbExport {
                     }
                 }
 
+                writeComment("DbExport: " + StringUtils.defaultString(IoVersion.getVersion().version()));
                 writeComment("Catalog: " + StringUtils.defaultString(getCatalogToUse()));
                 writeComment("Schema: " + StringUtils.defaultString(getSchemaToUse()));
                 writeComment("Table: " + table.getName());
