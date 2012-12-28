@@ -60,8 +60,6 @@ final public class Constants {
     
     public static final long LONG_OPERATION_THRESHOLD = 30000;
     
-    public static final String ENCODING = "UTF-8";
-    
     public static final String SYMMETRIC_ENGINE = "symmetricEngine";
     
     public static final String MBEAN_SERVER = "mbeanserver";

@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.io.data;
 
 import java.math.BigDecimal;
 import java.sql.Types;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Generate data for populating databases.
  */
-class DbFill {
+public class DbFill {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 

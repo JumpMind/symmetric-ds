@@ -37,8 +37,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -152,7 +152,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
         pw.println(data);
         pw.flush();
     }

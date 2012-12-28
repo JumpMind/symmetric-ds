@@ -27,8 +27,9 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.DbExport.Compatible;
-import org.jumpmind.symmetric.DbExport.Format;
+import org.jumpmind.symmetric.io.data.DbExport;
+import org.jumpmind.symmetric.io.data.DbExport.Compatible;
+import org.jumpmind.symmetric.io.data.DbExport.Format;
 
 /**
  * Export the structure and data from database tables to file.

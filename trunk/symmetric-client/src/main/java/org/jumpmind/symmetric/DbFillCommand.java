@@ -9,6 +9,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class DbFillCommand extends AbstractCommandLauncher {

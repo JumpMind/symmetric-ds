@@ -19,7 +19,7 @@
  * under the License. 
  */
 
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.io.data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -54,8 +54,8 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvWriter;
+import org.jumpmind.symmetric.io.IoConstants;
 
 /**
  * Export the structure and data from database tables to file.
@@ -158,11 +158,11 @@ public class DbExport {
         exportTables(output, new Table[] { table }, sql);
     }
 
-    protected void exportTables(OutputStream output, Table[] tables) throws IOException {
+    public void exportTables(OutputStream output, Table[] tables) throws IOException {
         exportTables(output, tables, null);
     }
 
-    protected void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
+    public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
 
         for (int i = 0; i < tables.length; i++) {
             // if the table definition did not come from the database, then read
@@ -369,7 +369,7 @@ public class DbExport {
         public WriterWrapper(OutputStream os) {
             if (StringUtils.isBlank(dir) && os != null) {
                 try {
-                    writer = new OutputStreamWriter(os, Constants.ENCODING);
+                    writer = new OutputStreamWriter(os, IoConstants.ENCODING);
                 } catch (UnsupportedEncodingException e) {
                     throw new IoException(e);
                 }
@@ -430,8 +430,6 @@ public class DbExport {
                     }
                 }
 
-                writeComment("SymmetricDS " + Version.version() + " "
-                        + DbExport.class.getSimpleName());
                 writeComment("Catalog: " + StringUtils.defaultString(getCatalogToUse()));
                 writeComment("Schema: " + StringUtils.defaultString(getSchemaToUse()));
                 writeComment("Table: " + table.getName());
