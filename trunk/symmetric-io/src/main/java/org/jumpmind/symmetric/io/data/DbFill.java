@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import javax.sql.DataSource;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +20,6 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -77,14 +75,6 @@ public class DbFill {
 
     public DbFill(IDatabasePlatform platform) {
         this.platform = platform;
-    }
-
-    public DbFill(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource, null, true);
     }
 
     public void fillTables(String... tableNames) {

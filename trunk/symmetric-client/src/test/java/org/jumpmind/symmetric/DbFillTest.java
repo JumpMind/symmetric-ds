@@ -1,7 +1,5 @@
 package org.jumpmind.symmetric;
 
-import javax.sql.DataSource;
-
 import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
 
@@ -10,11 +8,9 @@ public class DbFillTest extends AbstractServiceTest {
     
 //    @Test
     public void dbFillTest() {
-
         ISymmetricEngine engine = getSymmetricEngine();
-        DataSource ds = engine.getDataSource();
         
-        DbFill dbFill = new DbFill(ds);
+        DbFill dbFill = new DbFill(engine.getDatabasePlatform());
         dbFill.setRecordCount(5);
         
         dbFill.fillTables(new String[0]);
