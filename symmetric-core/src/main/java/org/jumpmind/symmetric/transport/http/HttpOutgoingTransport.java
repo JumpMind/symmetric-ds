@@ -32,7 +32,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -171,7 +171,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                     }
                 };
             }
-            OutputStreamWriter wout = new OutputStreamWriter(out, Constants.ENCODING);
+            OutputStreamWriter wout = new OutputStreamWriter(out, IoConstants.ENCODING);
             writer = new BufferedWriter(wout);
             return writer;
         } catch (IOException ex) {

@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -128,7 +129,7 @@ abstract public class AbstractTransportManager {
                 value = "";
             }
             builder.append(name).append("=")
-                    .append(URLEncoder.encode(value.toString(), Constants.ENCODING));
+                    .append(URLEncoder.encode(value.toString(), IoConstants.ENCODING));
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -181,7 +182,7 @@ abstract public class AbstractTransportManager {
         for (String param : tokens) {
             String[] nameValuePair = param.split("=");
             if (nameValuePair.length == 2) {
-                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], Constants.ENCODING));
+                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], IoConstants.ENCODING));
             }
         }
         return parameters;

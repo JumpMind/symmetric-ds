@@ -19,7 +19,7 @@ O * Licensed to JumpMind Inc under one or more contributor
  * under the License. 
  */
 
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.io.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,7 +34,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
 import org.jumpmind.symmetric.io.data.reader.SqlDataReader;
 import org.jumpmind.symmetric.io.data.reader.SymXmlDataReader;

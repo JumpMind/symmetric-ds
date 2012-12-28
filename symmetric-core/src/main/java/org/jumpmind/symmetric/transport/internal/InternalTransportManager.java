@@ -35,7 +35,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -132,7 +132,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     public void writeAcknowledgement(OutputStream out,
         List<IncomingBatch> list, Node local, String securityToken)
         throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
         pw.println(getAcknowledgementData(local.getNodeId(), list));
         pw.close();
     }
