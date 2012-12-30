@@ -86,6 +86,8 @@ public class DbExport {
     private boolean useVariableDates;
 
     private boolean comments;
+    
+    private String whereClause;
 
     private String catalog;
 
@@ -206,6 +208,10 @@ public class DbExport {
             if (sql == null) {
                 sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
             }
+            
+            if (StringUtils.isNotBlank(whereClause)) {
+                sql = String.format("%s %s", sql, whereClause);
+            }
 
             platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
                 public Object mapRow(Row row) {
@@ -282,6 +288,14 @@ public class DbExport {
 
     public void setNoData(boolean noData) {
         this.noData = noData;
+    }
+    
+    public void setWhereClause(String whereClause) {
+        this.whereClause = whereClause;
+    }
+    
+    public String getWhereClause() {
+        return whereClause;
     }
 
     public boolean isComments() {

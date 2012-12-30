@@ -86,7 +86,7 @@ public final class FormatUtils {
      */
     public static String replaceTokens(String text, Map<String, String> replacements,
             boolean matchUsingPrefixSuffix) {
-        if (replacements != null && replacements.size() > 0) {
+        if (text != null && replacements != null && replacements.size() > 0) {
             if (matchUsingPrefixSuffix) {
                 Matcher matcher = pattern.matcher(text);
                 StringBuffer buffer = new StringBuffer();
