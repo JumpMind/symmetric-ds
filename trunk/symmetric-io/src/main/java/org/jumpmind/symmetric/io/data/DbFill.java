@@ -23,7 +23,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.util.AppUtils;
@@ -218,10 +217,9 @@ public class DbFill {
      *          in the properties file.
      */
     private void makePass(int statement, Table[] tables, Map<String,int[]> tableProperties) {
-        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
         for (Table table : tables) {
-            if (tableProperties.containsKey(table.getName())) {
+            if (tableProperties != null && tableProperties.containsKey(table.getName())) {
                 statementType = randomIUD(tableProperties.get(table.getName()));
             }
             switch (statementType) {
