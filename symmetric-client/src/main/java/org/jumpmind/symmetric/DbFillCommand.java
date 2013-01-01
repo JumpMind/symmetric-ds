@@ -26,7 +26,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_INTERVAL = "interval";
     
-    private static final String OPTION_STATEMENT = "statement";
+    private static final String OPTION_WEIGHTS = "weights";
+    
+    private static final String OPTION_CONTINUE = "continue";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -62,7 +64,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_CASCADE, false);
         addOption(options, null, OPTION_IGNORE_TABLES, true);
         addOption(options, null, OPTION_INTERVAL, true);
-        addOption(options, null, OPTION_STATEMENT, true);
+        addOption(options, null, OPTION_WEIGHTS, true);
+        addOption(options, null, OPTION_CONTINUE, false);
     }
 
     @Override
@@ -84,11 +87,14 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_INTERVAL)) {
             dbFill.setInterval(Integer.parseInt(line.getOptionValue(OPTION_INTERVAL)));
         }
-        if (line.hasOption(OPTION_STATEMENT)) {
-            if (line.getOptionValue(OPTION_STATEMENT).contains("u")) {
-                dbFill.setStatementType(DbFill.UPDATE);
-            } else if (line.getOptionValue(OPTION_STATEMENT).contains("d")) {
-                dbFill.setStatementType(DbFill.DELETE);
+        if (line.hasOption(OPTION_WEIGHTS)) {
+            int[] dmlWeight = {0,0,0};
+            String[] strWeight = line.getOptionValue(OPTION_WEIGHTS).split(",");
+            if (strWeight != null && strWeight.length == 3) {
+                for (int i=0; i<3; i++) {
+                    dmlWeight[i] = new Integer(strWeight[i]);
+                }
+                dbFill.setDmlWeight(dmlWeight);
             }
         }
         if (line.hasOption(OPTION_DEBUG)) {
@@ -101,6 +107,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
         String ignore[] = null;
         if (line.hasOption(OPTION_IGNORE_TABLES)) {
             ignore = line.getOptionValue(OPTION_IGNORE_TABLES).split(",");
+        }
+        if (line.hasOption(OPTION_CONTINUE)) {
+            dbFill.setContinueOnError(true);
         }
         // Ignore the Symmetric config tables.
         getSymmetricEngine();
