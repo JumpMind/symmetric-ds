@@ -59,14 +59,16 @@ public class DbFill {
     
     private boolean verbose = false;
     
-    // TODO: Add to command
-    private boolean continueOnError = true;
+    private boolean continueOnError = false;
     
-    private int statementType = INSERT;
+    // Weights given to insert, update, and delete commands when
+    // randomly selecting a command for any given table.
+    private int[] dmlWeight = {1,0,0};
     
     private Table[] allDbTablesCache = null;
     
-    private static final int RANDOM_SELECT_SIZE = 100; // -1 for no limit
+    // -1 for no limit
+    private static final int RANDOM_SELECT_SIZE = 100; 
     
     // Must remain 0-2 to choose randomly.
     public final static int INSERT = 0;
@@ -142,8 +144,7 @@ public class DbFill {
             for (Table table : tables) {
                 for (ForeignKey fk : table.getForeignKeys()) {
                     if (tableNames.add(fk.getForeignTableName())) {
-                        Table tableObj = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
-                                fk.getForeignTableName());
+                        Table tableObj = getDbTable(fk.getForeignTableName());
                         fkDepList.add(tableObj);
                     }
                 }
@@ -203,31 +204,33 @@ public class DbFill {
                 // Sleep for the configured time before making another pass
                 AppUtils.sleep(interval);
             }
-            makePass(statementType, tables, tableProperties);
+            makePass(tables, tableProperties);
         }
     }
     
     /**
      * Perform an INSERT, UPDATE, or DELETE on every table in tables.
      * 
-     * @param statement INSERT, UPDATE, or DELETE.
      * @param tables Array of tables to perform statement on. Tables must be in 
      *          insert order.
      * @param tableProperties Map indicating IUD weights for each table name provided
      *          in the properties file.
      */
-    private void makePass(int statement, Table[] tables, Map<String,int[]> tableProperties) {
+    private void makePass(Table[] tables, Map<String,int[]> tableProperties) {
 
         for (Table table : tables) {
+            int dmlType = INSERT;
             if (tableProperties != null && tableProperties.containsKey(table.getName())) {
-                statementType = randomIUD(tableProperties.get(table.getName()));
+                dmlType = randomIUD(tableProperties.get(table.getName()));
+            } else if (dmlWeight != null) {
+                dmlType = randomIUD(dmlWeight);
             }
-            switch (statementType) {
+            switch (dmlType) {
                 case INSERT:
                     if (verbose) {
                         System.out.println("Inserting into table " + table.getName());
                     }
-                    insertRandomRecordCascading(table);
+                    insertRandomRecord(table);
                     break;
                 case UPDATE:
                     if (verbose) {
@@ -239,7 +242,7 @@ public class DbFill {
                     if (verbose) {
                         System.out.println("Deleting record in table " + table.getName());
                     }
-                    deleteRandomRecordCascading(table);
+                    deleteRandomRecord(table);
                     break;
             }
         }
@@ -266,22 +269,6 @@ public class DbFill {
             return UPDATE;
         } 
         return DELETE;
-    }
-    
-    /**
-     * All dependent tables for the given table are determined and sorted by fk dependencies.
-     * Each table has a record inserted, dependent tables first.
-     * 
-     * @param sqlTemplate
-     * @param insertTable
-     */
-    private void insertRandomRecordCascading(Table insertTable) {
-        Table[] tables = addFkInsertDependentTables(insertTable);
-        tables = Database.sortByForeignKeys(tables);
-        Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
-        for (Table table : tables) {
-            insertRandomRecord(insertedColumns, table);
-        }
     }
 
     /**
@@ -313,35 +300,49 @@ public class DbFill {
     }
 
     /**
-     * Create a random row and insert it into the table.
+     * All dependent tables for the given table are determined and sorted by fk dependencies.
+     * Each table has a record inserted, dependent tables first.
      * 
      * @param sqlTemplate
      * @param insertedColumns
      * @param table
      */
-    private void insertRandomRecord(Map<String, Object> insertedColumns, Table table) {
-        DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, table);
-        generateRandomValues(insertedColumns, table);
-        Column[] statementColumns = statement.getMetaData();
-        Object[] statementValues = new Object[statementColumns.length];
-        for (int j = 0; j < statementColumns.length; j++) {
-            statementValues[j] = insertedColumns.get(table.getName() + "."
-                    + statementColumns[j].getName());
+    private void insertRandomRecord(Table table) {
+        
+        Table[] tables = null;
+        if (cascading) {
+            tables = addFkInsertDependentTables(table);
+            tables = Database.sortByForeignKeys(tables);
+        } else {
+            tables = new Table[] {table};
         }
-        try {
-            platform.getSqlTemplate().update(statement.getSql(), statementValues);
-            if (verbose) {
-                System.out.println("Successful insert into " + table.getName());
+        
+        Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
+        
+        for (Table tbl : tables) {
+            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, tbl);
+            generateRandomValues(insertedColumns, tbl);
+            Column[] statementColumns = statement.getMetaData();
+            Object[] statementValues = new Object[statementColumns.length];
+            for (int j = 0; j < statementColumns.length; j++) {
+                statementValues[j] = insertedColumns.get(tbl.getName() + "."
+                        + statementColumns[j].getName());
             }
-        } catch (SqlException ex) {
-            log.error("Failed to process {} with values of {}", statement.getSql(),
-                    ArrayUtils.toString(statementValues));
-            if (continueOnError) {
-                if (debug) {
-                    ex.printStackTrace();
+            try {
+                platform.getSqlTemplate().update(statement.getSql(), statementValues);
+                if (verbose) {
+                    System.out.println("Successful insert into " + tbl.getName());
                 }
-            } else {
-                throw ex;
+            } catch (SqlException ex) {
+                log.error("Failed to process {} with values of {}", statement.getSql(),
+                        ArrayUtils.toString(statementValues));
+                if (continueOnError) {
+                    if (debug) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    throw ex;
+                }
             }
         }
     }
@@ -355,7 +356,7 @@ public class DbFill {
     private void updateRandomRecord(Table table) {
         Row row = selectRandomRow(table);
         if (row == null) {
-            log.warn("Unnable to update a random record in empty table '" + table.getName() + "'.");
+            log.warn("Unable to update a random record in empty table '" + table.getName() + "'.");
             return;
         }
         DmlStatement updStatement = platform.createDmlStatement(DmlType.UPDATE, 
@@ -366,7 +367,6 @@ public class DbFill {
         
         // Get list of local fk reference columns
         List<String> localFkRefColumns = getLocalFkRefColumns(table);
-        
         for (int i=0; i < columns.length; i++) {
             if (columns[i].isPrimaryKey() || localFkRefColumns.contains(columns[i].getName())) {
                 values[i] = row.getString(columns[i].getName());
@@ -392,100 +392,61 @@ public class DbFill {
         }
     }
     
-    /**
-     * Select a random row to delete in the table.
-     * 
-     * @param sqlTemplate
-     * @param deletedColumns
-     * @param table
-     */
-    private void deleteRandomRecordCascading(Table table) {
-        Table[] tables = addFkDeleteDependentTables(table);
-        
-        // Find random row and delete dependent tables recursively.
-        Row row = selectRandomRow(table);
-        if (row == null) {
-            log.warn("Unnable to delete a random record from empty table '" + table.getName() + "'.");
-            return;
-        }
-        
-        // Find all fk links to this table.
-        for (Table tbl : tables) {
-            if (tbl.getName().equals(table.getName()))
-            {
-                continue;
-            }
-            for (ForeignKey fk : tbl.getForeignKeys()) {
-                if (fk.getForeignTableName().equals(table.getName())) {
-                    Map<Column, Object> selectValues = new HashMap<Column, Object>();
-                    for (Reference ref : fk.getReferences()) {
-                        // Create a column/value map for each column referenced by the foreign table.
-                        selectValues.put(ref.getLocalColumn(), row.getString(ref.getForeignColumnName()));
-                    }
-                    // Delete all records in the foreign table that map this row.
-                    deleteDependentRecords(selectValues, tbl, tables);
-                }
-            }
-        }
-        
-        DmlStatement statement = platform.createDmlStatement(DmlType.DELETE, table);
-        Column[] keys = statement.getMetaData();
-        Object[] keyValues = new Object[keys.length];
-        for (int i=0; i<keys.length; i++) {
-            keyValues[i] = row.get(keys[i].getName());
-        }
-        platform.getSqlTemplate().update(statement.getSql(), keyValues);
-        
-        try {
-            platform.getSqlTemplate().update(statement.getSql(), keyValues);
-            if (verbose) {
-                System.out.println("Successful delete from " + table.getName());
-            }
-        } catch (SqlException ex) {
-            log.error("Failed to process {} with values of {}", statement.getSql(),
-                    ArrayUtils.toString(keyValues));
-            if (continueOnError) {
-                if (debug) {
-                    ex.printStackTrace();
-                }
-            } else {
-                throw ex;
-            }
-        }
+    private void deleteRandomRecord(Table table) {
+        deleteRandomRecord(table, null);
     }
     
-    private void deleteDependentRecords(Map<Column, Object> selectColumns, Table table, Table[] tables) {
-        // select each record
-        Column[] selectColumnArray = selectColumns.keySet().toArray(new Column[0]);
-        String sqlSelect = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(), table.getName(),
-                selectColumnArray, table.getColumns(), null).getSql();
-        
-        Object[] values = new Object[selectColumnArray.length];
-        for (int i=0; i<selectColumnArray.length; i++) {
-            values[i] = selectColumns.get(selectColumnArray[i]);
+    /**
+     * Delete a random row in the given table or delete all rows matching selectColumns
+     * in the given table.
+     * 
+     * @param table Table to delete from.
+     * @param selectColumns If provided, the rows that match this criteria are deleted.
+     */
+    private void deleteRandomRecord(Table table, Map<Column, Object> selectColumns) {
+        List<Row> rows = null;
+        if (selectColumns != null) {
+            // Select dependent records to delete
+            Column[] selectColumnArray = selectColumns.keySet().toArray(new Column[0]);
+            String sqlSelect = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(), table.getName(),
+                    selectColumnArray, table.getColumns(), null).getSql();
+            Object[] values = new Object[selectColumnArray.length];
+            for (int i=0; i<selectColumnArray.length; i++) {
+                values[i] = selectColumns.get(selectColumnArray[i]);
+            }
+            rows = platform.getSqlTemplate().query(sqlSelect, values);
+        } else {
+            // Select new random row to delete
+            rows = new ArrayList<Row>(1);
+            Row row = selectRandomRow(table);
+            if (row == null) {
+                log.warn("Unable to delete a random record from empty table '" + table.getName() + "'.");
+                return;
+            }
+            rows.add(row);
         }
         
-        List<Row> rows = platform.getSqlTemplate().query(sqlSelect, values);
         for (Row row : rows) {
-            // delete dependent records
-            for (Table tbl : tables) {
-                if (tbl.getName().equals(table.getName()))
-                {
-                    continue;
-                }
-                for (ForeignKey fk : tbl.getForeignKeys()) {
-                    if (fk.getForeignTableName().equals(table.getName())) {
-                        Map<Column, Object> selectValues = new HashMap<Column, Object>();
-                        for (Reference ref : fk.getReferences()) {
-                            // Create a column/value map for each column referenced by the foreign table.
-                            selectValues.put(ref.getLocalColumn(), row.getString(ref.getForeignColumnName()));
+            if (cascading) {
+                // Delete dependent tables
+                for (Table tbl : getAllDbTables()) {
+                    if (tbl.getName().equals(table.getName()))
+                    {
+                        continue;
+                    }
+                    for (ForeignKey fk : tbl.getForeignKeys()) {
+                        if (fk.getForeignTableName().equals(table.getName())) {
+                            Map<Column, Object> selectValues = new HashMap<Column, Object>();
+                            for (Reference ref : fk.getReferences()) {
+                                // Create a column/value map for each column referenced by the foreign table.
+                                selectValues.put(ref.getLocalColumn(), row.getString(ref.getForeignColumnName()));
+                            }
+                            // Delete all records in the foreign table that map this row.
+                            deleteRandomRecord(tbl, selectValues);
                         }
-                        // Delete all records in the foreign table that map this row.
-                        deleteDependentRecords(selectValues, tbl, tables);
                     }
                 }
             }
-            
             DmlStatement statement = platform.createDmlStatement(DmlType.DELETE, table);
             Column[] keys = statement.getMetaData();
             Object[] keyValues = new Object[keys.length];
@@ -539,8 +500,8 @@ public class DbFill {
                             continue for_column;
                         } else {
                             throw new RuntimeException("The foreign key column, " + column.getName()
-                                    + " found in " + table.getName() + " references " + "table "
-                                    + fk.getForeignTableName() + " which was not included.");
+                                    + ", found in " + table.getName() + " references " + "table "
+                                    + fk.getForeignTableName() + " which was not included. Dependent tables will automatically be added if cascading is turned on.");
                         }
                     }
                 }
@@ -707,6 +668,18 @@ public class DbFill {
         }
         return allDbTablesCache;
     }
+    
+    protected Table getDbTable(String tableName) {
+        if (allDbTablesCache == null) {
+            allDbTablesCache = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), null).getTables();
+        }
+        for (Table table : allDbTablesCache) {
+            if (table.getName().equalsIgnoreCase(tableName)) {
+                return table;
+            }
+        }
+        return null;
+    }
 
     public void setPlatform(IDatabasePlatform platform) {
         this.platform = platform;
@@ -767,8 +740,12 @@ public class DbFill {
         this.verbose = verbose;
     }
 
-    public void setStatementType(int statementType) {
-        this.statementType = statementType;
+    public void setDmlWeight(int[] dmlWeight) {
+        this.dmlWeight = dmlWeight;
+    }
+
+    public void setContinueOnError(boolean continueOnError) {
+        this.continueOnError = continueOnError;
     }
 
 }
