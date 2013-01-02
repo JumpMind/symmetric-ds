@@ -32,7 +32,7 @@ public class DefaultParameterParserTest {
 
     @Test
     public void testParse() {
-        DefaultParameterParser parser = new DefaultParameterParser();
+        DefaultParameterParser parser = new DefaultParameterParser("/symmetric-default.properties");
         Map<String, ParameterMetaData> metaData = parser.parse();
         
         Assert.assertNotNull(metaData);

@@ -41,13 +41,17 @@ public class DefaultParameterParser {
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
     private static final String TYPE = "Type:";
+    
+    private String propertiesFilePath;
+    
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    public DefaultParameterParser() {
+    public DefaultParameterParser(String propertiesFilePath) {
+        this.propertiesFilePath = propertiesFilePath;
     }
     
     public Map<String, ParameterMetaData> parse() {
-        return parse("/symmetric-default.properties");
+        return parse(propertiesFilePath);
     }
 
     public Map<String, ParameterMetaData> parse(String fileName) {
