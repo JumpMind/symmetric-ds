@@ -145,7 +145,7 @@ public class DbExport {
         exportTables(output, tableList.toArray(new Table[tableList.size()]));
     }
 
-    public void exportTables(OutputStream output, String tableName, String sql) throws IOException {
+    public void exportTable(OutputStream output, String tableName, String sql) throws IOException {
         Table table = platform
                 .readTableFromDatabase(getCatalogToUse(), getSchemaToUse(), tableName);
         exportTables(output, new Table[] { table }, sql);
