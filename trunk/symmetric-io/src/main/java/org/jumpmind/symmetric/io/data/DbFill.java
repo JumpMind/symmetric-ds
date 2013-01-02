@@ -74,6 +74,8 @@ public class DbFill {
     public final static int INSERT = 0;
     public final static int UPDATE = 1;
     public final static int DELETE = 2;
+    
+    private boolean firstPass = true;
 
     public DbFill() {
     }
@@ -200,10 +202,6 @@ public class DbFill {
      */
     private void fillTables(Table[] tables, Map<String,int[]> tableProperties) {
         for (int i = 0; i < inputLength; i++) {
-            if (i > 0) {
-                // Sleep for the configured time before making another pass
-                AppUtils.sleep(interval);
-            }
             makePass(tables, tableProperties);
         }
     }
@@ -217,8 +215,13 @@ public class DbFill {
      *          in the properties file.
      */
     private void makePass(Table[] tables, Map<String,int[]> tableProperties) {
-
         for (Table table : tables) {
+            // Sleep for the configured time between tables
+            if (!firstPass) {
+                AppUtils.sleep(interval);
+            } else {
+                firstPass = false;
+            }
             int dmlType = INSERT;
             if (tableProperties != null && tableProperties.containsKey(table.getName())) {
                 dmlType = randomIUD(tableProperties.get(table.getName()));
