@@ -128,7 +128,7 @@ public class StagingManager implements IStagingManager {
                 }
             }
             if (purgedMemCount > 0) {
-                if (purgedFileSize < 1000) {
+                if (purgedMemSize < 1000) {
                     log.info("Purged {} staged memory buffers, freeing {} bytes of memory",
                             purgedMemCount, (int) (purgedMemSize));
                 } else {
