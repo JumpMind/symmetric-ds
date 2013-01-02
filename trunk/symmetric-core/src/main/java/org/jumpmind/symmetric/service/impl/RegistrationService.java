@@ -365,9 +365,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     
     protected String openRegistration(Node node, String remoteHost, String remoteAddress) {        
         Node me = nodeService.findIdentity();
-        if (me != null
-                || (parameterService.getExternalId().equals(node.getExternalId()) && parameterService
-                        .getNodeGroupId().equals(node.getNodeGroupId()))) {
+        if (me != null) {
             String nodeId = nodeService.getNodeIdCreator().generateNodeId(node, remoteHost, remoteAddress);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
