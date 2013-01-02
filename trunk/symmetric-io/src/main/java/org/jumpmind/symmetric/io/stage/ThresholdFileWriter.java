@@ -102,12 +102,6 @@ public class ThresholdFileWriter extends Writer {
         }
     }
     
-    public void reset() {
-        this.file = null;
-        this.fileWriter =  null;
-        buffer.setLength(0);
-    }
-    
     public void delete() {
         if (file != null && file.exists()) {
             file.delete();
