@@ -591,10 +591,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     Statistics stats = dataWriter.getStatistics().values().iterator().next();
                     statisticManager.incrementDataSent(currentBatch.getChannelId(),
                             stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                    long byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                     statisticManager.incrementDataBytesSent(currentBatch.getChannelId(),
-                            stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                            byteCount);
+                    if (byteCount == 0) {
+                        log.warn("The data writer reported sending 0 bytes for batch {}", currentBatch.getNodeBatchId());
+                    }
                 }
 
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Could not find the staged resource for batch %s",
+                        currentBatch.getNodeBatchId()));
             }
 
             currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
