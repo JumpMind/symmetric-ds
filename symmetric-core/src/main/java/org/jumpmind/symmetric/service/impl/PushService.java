@@ -24,8 +24,10 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -174,6 +176,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
+                Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
+                for (OutgoingBatch outgoingBatch : extractedBatches) {
+                    batchIds.add(outgoingBatch.getBatchId());
+                }
+                
                 log.info("Push data sent to {}", remote);
                 BufferedReader reader = transport.readResponse();
                 String ackString = reader.readLine();
@@ -198,9 +205,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         ackExtendedString);
 
                 for (BatchAck batchInfo : batches) {
+                    batchIds.remove(batchInfo.getBatchId());
                     log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
                             (batchInfo.isOk() ? "OK" : "error"));
                     acknowledgeService.ack(batchInfo);
+                }
+                
+                for (Long batchId : batchIds) {
+                    log.error("We expected but did not receive an ack for batch {}", batchId);
                 }
 
                 status.updateOutgoingStatus(extractedBatches, batches);
