@@ -37,7 +37,7 @@ final public class ParameterConstants {
 
     public static final String ALL = "ALL";
     
-    private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser().parse();
+    private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
     private ParameterConstants() {
     }
