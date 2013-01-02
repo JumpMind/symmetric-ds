@@ -166,7 +166,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
         if (args.length == 0) {
             dbExport.exportTables(System.out);
         } else if (line.hasOption(OPTION_SQL)) {
-            dbExport.exportTables(System.out, args[0], line.getOptionValue(OPTION_SQL));
+            dbExport.exportTable(System.out, args[0], line.getOptionValue(OPTION_SQL));
         } else {
             dbExport.exportTables(System.out, args);
         }
