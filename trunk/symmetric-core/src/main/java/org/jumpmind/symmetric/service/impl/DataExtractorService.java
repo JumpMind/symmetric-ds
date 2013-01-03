@@ -597,6 +597,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (byteCount == 0) {
                         log.warn("The data writer reported sending 0 bytes for batch {}", currentBatch.getNodeBatchId());
                     }
+                } else {
+                    log.warn("Could not find recorded statistics for batch {}", currentBatch.getNodeBatchId());
                 }
 
             } else {
