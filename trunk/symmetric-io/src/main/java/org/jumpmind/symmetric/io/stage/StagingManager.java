@@ -55,14 +55,6 @@ public class StagingManager implements IStagingManager {
 
     protected void refreshResourceList() {
         synchronized (StagingManager.class) {
-            Set<String> keys = new HashSet<String>(resourceList.keySet());
-            for (String key : keys) {
-                IStagedResource resource = resourceList.get(key);
-                if (resource != null && !resource.exists()) {
-                    resourceList.remove(key);
-                }
-            }
-
             Collection<File> files = FileUtils.listFiles(this.directory,
                     new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
                             State.DONE.getExtensionName() }, true);
@@ -70,7 +62,10 @@ public class StagingManager implements IStagingManager {
                 try {
                     StagedResource resource = new StagedResource(memoryThresholdInBytes, directory,
                             file, this);
-                    resourceList.put(resource.getPath(), resource);
+                    String path = resource.getPath();
+                    if (!resourceList.containsKey(path)) {
+                        resourceList.put(path, resource);
+                    }
                 } catch (IllegalStateException ex) {
                     log.warn(ex.getMessage());
                 }
@@ -95,8 +90,7 @@ public class StagingManager implements IStagingManager {
      */
     public long clean(long ttlInMs) {
         synchronized (StagingManager.class) {
-            this.refreshResourceList();
-
+            log.debug("Cleaning staging area");
             Set<String> keys = new HashSet<String>(resourceList.keySet());
             long purgedFileCount = 0;
             long purgedFileSize = 0;
