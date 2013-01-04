@@ -743,7 +743,9 @@ public class RestService {
         xmlNode.setSyncUrl(modelNode.getSyncUrl());
         xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
         xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
-        xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+        if (nodeHosts.size() > 0) {
+        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+        }
         xmlNode.setRegistered(nodeSecurity.hasRegistered());
         xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
         xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
