@@ -228,7 +228,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             nodeCommunication.setLockingServerId(clusterService.getServerId());
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
             ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
-            service.execute(new Runnable() {
+            Runnable r = new Runnable() {
                 public void run() {
                     long ts = System.currentTimeMillis();
                     boolean failed = false;
@@ -262,7 +262,12 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         save(nodeCommunication);
                     }
                 }
-            });
+            };
+            if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                    r.run();
+            } else {
+                service.execute(r);
+            }            
         }
         return locked;
     }
