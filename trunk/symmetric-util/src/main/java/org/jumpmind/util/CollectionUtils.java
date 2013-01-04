@@ -1,6 +1,7 @@
 package org.jumpmind.util;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,6 +94,22 @@ public class CollectionUtils {
         System.arraycopy(original, from, copy, 0,
                          Math.min(original.length - from, newLength));
         return copy;
-    }    
+    }
+    
+    public static String toCommaSeparatedValues(Collection<?> list) {
+        StringBuilder csv = new StringBuilder();
+        if (list != null) {
+            Object[] array = list.toArray(new Object[list.size()]);
+            for(int i = 0; i < list.size(); i++) {
+                 if (i > 0) {
+                     csv.append(",");
+                 }
+                 if (array[i] != null) {
+                     csv.append(array[i].toString());
+                 }
+            }
+        }
+        return csv.toString();
+    }
 
 }
