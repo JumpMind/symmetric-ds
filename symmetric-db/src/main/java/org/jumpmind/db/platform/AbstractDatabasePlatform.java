@@ -205,6 +205,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
         String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
                 schemaName, tableName);
+        catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
+        schemaName = schemaName == null ? getDefaultSchema() : schemaName;        
         Table table = ddlReader.readTable(catalogName, schemaName, tableName);
         if (table == null && metadataIgnoreCase) {
             if (isStoresUpperCaseIdentifiers()) {
