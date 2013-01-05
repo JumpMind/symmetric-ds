@@ -1,3 +1,12 @@
+SymmetricDS - 3.2.1 (Released 2012-12-18) 
+=========================================
+- 0000961: [Bug] Uninstall feature needs to delete conflicts and transforms before trying to delete group links (chenson) - closed.
+- 0000964: [Bug] Unchecked substring() while retrieving database name in firebird (chenson) - closed.
+- 0000965: [Bug] Firebird and Interbase report unique constraint error code of 335544349 (chenson) - closed.
+- 0000968: [Bug] Staging area clean up job can corrupt data extractions in progress (chenson) - closed.
+- 0000969: [Bug] Trying to open registration on a node that has not been configured/registered itself causes null pointer (chenson) - closed.
+- 0000971: [Bug] Push / Pull threads should run in Job's thread when jobs.synchronized.enable is true (mhanes) - closed.
+
 SymmetricDS - 3.2.0 (Released 2012-12-16) 
 =========================================
 - 0000880: [New Feature] Add support for cascading random data to DbFill. (abrougher) - closed.
