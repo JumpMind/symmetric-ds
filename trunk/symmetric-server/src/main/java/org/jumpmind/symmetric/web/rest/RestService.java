@@ -735,7 +735,7 @@ public class RestService {
 
         INodeService nodeService = engine.getNodeService();
         Node xmlNode = new Node();
-        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
+        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
         List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
         xmlNode.setName(modelNode.getNodeId());
@@ -754,7 +754,7 @@ public class RestService {
         } else {
         	xmlNode.setRegistrationServer(false);
         }
-        
+        xmlNode.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
         return xmlNode;
     }
 

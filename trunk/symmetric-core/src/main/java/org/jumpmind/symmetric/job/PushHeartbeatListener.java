@@ -49,10 +49,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
             ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
             int outgoingErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
             int outgoingUnsentCount = 0;
-            if (outgoingErrorCount > 0) {
-                // only set the unsent count if there are batches in error
-                outgoingUnsentCount = engine.getOutgoingBatchService().countOutgoingBatchesUnsent();
-            }
+            outgoingUnsentCount = engine.getOutgoingBatchService().countOutgoingBatchesUnsent();
             if (!parameterService.getExternalId().equals(me.getExternalId())
                     || !parameterService.getNodeGroupId().equals(me.getNodeGroupId())
                     || (parameterService.getSyncUrl() != null && !parameterService.getSyncUrl().equals(me.getSyncUrl()))

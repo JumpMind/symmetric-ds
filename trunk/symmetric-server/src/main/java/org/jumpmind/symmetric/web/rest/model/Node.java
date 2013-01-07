@@ -37,8 +37,17 @@ public class Node {
 	private boolean registered;
     private boolean initialLoaded;
     private boolean reverseInitialLoaded;
+    private String createdAtNodeId;
     
-    public boolean isReverseInitialLoaded() {
+    public String getCreatedAtNodeId() {
+		return createdAtNodeId;
+	}
+
+	public void setCreatedAtNodeId(String createdAtNodeId) {
+		this.createdAtNodeId = createdAtNodeId;
+	}
+
+	public boolean isReverseInitialLoaded() {
 		return reverseInitialLoaded;
 	}
 
