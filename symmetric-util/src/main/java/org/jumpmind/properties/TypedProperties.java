@@ -23,10 +23,12 @@ package org.jumpmind.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,16 @@ public class TypedProperties extends Properties {
 
     protected static Logger log = LoggerFactory.getLogger(TypedProperties.class);
 
+    public TypedProperties(InputStream is) {
+        try {
+            load(is);
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+    }
+    
     public TypedProperties() {
     }
     

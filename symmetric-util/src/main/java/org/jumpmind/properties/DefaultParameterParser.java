@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.util;
+package org.jumpmind.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,15 +41,21 @@ public class DefaultParameterParser {
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
     private static final String TYPE = "Type:";
-    
+
     private String propertiesFilePath;
-    
+
+    private InputStream inputStream;
+
     final Logger log = LoggerFactory.getLogger(getClass());
+
+    public DefaultParameterParser(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
 
     public DefaultParameterParser(String propertiesFilePath) {
         this.propertiesFilePath = propertiesFilePath;
     }
-    
+
     public Map<String, ParameterMetaData> parse() {
         return parse(propertiesFilePath);
     }
@@ -57,8 +63,10 @@ public class DefaultParameterParser {
     public Map<String, ParameterMetaData> parse(String fileName) {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
-            InputStream is = getClass().getResourceAsStream(fileName);
-            List<String> lines = IOUtils.readLines(is);
+            if (inputStream == null) {
+                inputStream = getClass().getResourceAsStream(fileName);
+            }
+            List<String> lines = IOUtils.readLines(inputStream);
 
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {
@@ -69,15 +77,13 @@ public class DefaultParameterParser {
                                 line.indexOf(DATABASE_OVERRIDABLE) + DATABASE_OVERRIDABLE.length())
                                 .trim()));
                     } else if (line.contains(TAGS)) {
-                        String[] tags = line.substring(
-                                line.indexOf(TAGS) + TAGS.length())
-                                .trim().split(",");
+                        String[] tags = line.substring(line.indexOf(TAGS) + TAGS.length()).trim()
+                                .split(",");
                         for (String tag : tags) {
                             currentMetaData.addTag(tag.trim());
                         }
                     } else if (line.contains(TYPE)) {
-                        String type = line.substring(
-                                line.indexOf(TYPE) + TYPE.length());
+                        String type = line.substring(line.indexOf(TYPE) + TYPE.length());
                         currentMetaData.setType(type.trim());
                     } else {
                         currentMetaData.appendDescription(line);
@@ -95,7 +101,7 @@ public class DefaultParameterParser {
                 }
             }
         } catch (IOException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
         return metaData;
     }
@@ -105,7 +111,7 @@ public class DefaultParameterParser {
         public static final String TYPE_BOOLEAN = "boolean";
         public static final String TYPE_INT = "integer";
         public static final String TYPE_TEXT_BOX = "textbox";
-        
+
         private static final long serialVersionUID = 1L;
         private String key;
         private String description;
@@ -113,11 +119,11 @@ public class DefaultParameterParser {
         private boolean databaseOverridable;
         private String defaultValue;
         private String type = "";
-        
+
         public void setType(String type) {
             this.type = type;
         }
-        
+
         public String getType() {
             return type;
         }
@@ -169,20 +175,20 @@ public class DefaultParameterParser {
                 description = description + value;
             }
         }
-        
+
         public boolean isBooleanType() {
             return type != null && type.equals(TYPE_BOOLEAN);
         }
-        
+
         public boolean isIntType() {
             return type != null && type.equals(TYPE_INT);
         }
-        
+
         public boolean isTextBoxType() {
             return type != null && type.equals(TYPE_TEXT_BOX);
         }
-        
-        public void addTag (String tag) {
+
+        public void addTag(String tag) {
             tags.add(tag);
         }
     }

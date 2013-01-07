@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jumpmind.properties.DefaultParameterParser;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.util.DefaultParameterParser;
-import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
 
 /**
  * Constants that represent parameters that can be retrieved or saved via the
