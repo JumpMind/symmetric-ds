@@ -58,14 +58,14 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     public String getSyncTriggersExpression() {
-        return "not $(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled()";
+        return "not $(defaultSchema)." + parameterService.getTablePrefix() + "_triggers_disabled()";
     }
     
     @Override
     protected void createRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function $(defaultSchema)$(functionName)() returning boolean;                                                                                                                                   " + 
+            String sql = "create function $(defaultSchema).$(functionName)() returning boolean;                                                                                                                                   " + 
                     "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
                     "                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
                     "                                end function;                                                                                                                                                          ";
@@ -74,7 +74,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         
         String triggersSetDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersSetDisabled)) {
-            String sql = "create function $(defaultSchema)$(functionName)(is_disabled boolean) returning boolean;                                                                                                                " + 
+            String sql = "create function $(defaultSchema).$(functionName)(is_disabled boolean) returning boolean;                                                                                                                " + 
                     "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
                     "                                   let symmetric_triggers_disabled = is_disabled;                                                                                                                      " + 
                     "                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
@@ -84,7 +84,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
 
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function $(defaultSchema)$(functionName)() returning varchar(50);                                                                                                                               " + 
+            String sql = "create function $(defaultSchema).$(functionName)() returning varchar(50);                                                                                                                               " + 
                     "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
                     "                                   return symmetric_node_disabled;                                                                                                                                     " + 
                     "                                end function;                                                                                                                                                          ";
@@ -93,7 +93,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
 
         String nodeSetDisabled = this.parameterService.getTablePrefix() + "_" + "node_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeSetDisabled)) {
-            String sql = "create function $(defaultSchema)$(functionName)(node_id varchar(50)) returning integer;                                                                                                                " + 
+            String sql = "create function $(defaultSchema).$(functionName)(node_id varchar(50)) returning integer;                                                                                                                " + 
                     "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
                     "                                   let symmetric_node_disabled = node_id;                                                                                                                              " + 
                     "                                   return 1;                                                                                                                                                           " + 
