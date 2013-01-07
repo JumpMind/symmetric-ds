@@ -24,8 +24,9 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.jumpmind.properties.DefaultParameterParser;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
 import org.junit.Test;
 
 public class DefaultParameterParserTest {

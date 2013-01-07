@@ -1,6 +1,7 @@
 package org.jumpmind.util;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -93,6 +94,15 @@ public class CollectionUtils {
             : (T[]) Array.newInstance(newType.getComponentType(), newLength);
         System.arraycopy(original, from, copy, 0,
                          Math.min(original.length - from, newLength));
+        return copy;
+    }
+    
+    public static <T> T[] add(T[] one, T[] two) {
+        int size = one.length + two.length;
+        T[] copy = Arrays.copyOf(one, size);
+        for (int i = one.length; i < size; i++) {
+            copy[i] = two[i-one.length];
+        }
         return copy;
     }
     
