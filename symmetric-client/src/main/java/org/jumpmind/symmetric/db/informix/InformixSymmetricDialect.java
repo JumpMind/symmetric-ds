@@ -58,7 +58,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     public String getSyncTriggersExpression() {
-        return "not $(defaultSchema)." + parameterService.getTablePrefix() + "_triggers_disabled()";
+        return "not $(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled()";
     }
     
     @Override
