@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service;
 import java.util.Date;
 import java.util.List;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**
@@ -42,6 +43,8 @@ public interface IIncomingBatchService {
     public boolean acquireIncomingBatch(IncomingBatch batch);
 
     public void insertIncomingBatch(IncomingBatch batch);
+    
+    public int updateIncomingBatch(ISqlTransaction transaction, IncomingBatch batch);
 
     public int updateIncomingBatch(IncomingBatch batch);
     

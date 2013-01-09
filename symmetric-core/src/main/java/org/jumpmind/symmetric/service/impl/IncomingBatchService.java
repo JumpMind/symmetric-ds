@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.DateMapper;
@@ -220,8 +221,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { Types.NUMERIC,
                         Types.VARCHAR });
     }
-
+    
     public int updateIncomingBatch(IncomingBatch batch) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            int count = updateIncomingBatch(transaction, batch);
+            transaction.commit();
+            return count;   
+        } finally {
+            close(transaction);
+        }        
+    }
+
+    public int updateIncomingBatch(ISqlTransaction transaction , IncomingBatch batch) {
         int count = 0;
         if (batch.isPersistable()) {
             if (batch.getStatus() == IncomingBatch.Status.ER) {
@@ -231,7 +244,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             }
             batch.setLastUpdatedHostName(clusterService.getServerId());
             batch.setLastUpdatedTime(new Date());
-            count = sqlTemplate.update(
+            count =  transaction.prepareAndExecute(
                     getSql("updateIncomingBatchSql"),
                     new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0,
                             batch.getNetworkMillis(), batch.getFilterMillis(),
