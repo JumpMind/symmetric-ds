@@ -448,9 +448,13 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
-                        && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                    return LoadStatus.CONFLICT;
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                    if (!platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        return LoadStatus.CONFLICT;
+                    } else {
+                        log.warn("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
+                        throw ex;
+                    }
                 } else {
                     throw ex;
                 }
