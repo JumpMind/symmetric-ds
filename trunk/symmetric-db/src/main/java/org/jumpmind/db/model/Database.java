@@ -31,6 +31,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the database model, ie. the tables in the database. It also
@@ -38,6 +40,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * objects stored in the tables.
  */
 public class Database implements Serializable, Cloneable {
+
+    protected static final Logger log = LoggerFactory.getLogger(Database.class);
 
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3160443396757573868L;
@@ -67,47 +71,57 @@ public class Database implements Serializable, Cloneable {
         }
         return tables;
     }
-    
+
     /**
-     * Implements modified topological sort of tables (@see <a href="http://en.wikipedia.org/wiki/Topological_sorting">topological sorting</a>).
-     * The 'depth-first search' is implemented in order to detect and ignore cycles.  
+     * Implements modified topological sort of tables (@see <a
+     * href="http://en.wikipedia.org/wiki/Topological_sorting">topological
+     * sorting</a>). The 'depth-first search' is implemented in order to detect
+     * and ignore cycles.
      * 
      * @param tables
      *            List of tables to sort.
-     * @return List of tables in their dependency order - if table A has a foreign key for table B then table B will precede table A in the list. 
+     * @return List of tables in their dependency order - if table A has a
+     *         foreign key for table B then table B will precede table A in the
+     *         list.
      */
     public static List<Table> sortByForeignKeys(List<Table> tables) {
         List<Table> sorted = new ArrayList<Table>(tables.size());
         List<Table> visited = new ArrayList<Table>(tables.size());
         List<Table> stack = new ArrayList<Table>();
         Map<String, Table> tableMap = new HashMap<String, Table>();
-        
+
         for (int i = 0; i < tables.size(); i++) {
             tableMap.put(tables.get(i).getName(), tables.get(i));
         }
-        
+
         for (int i = 0; i < tables.size(); i++) {
-            sortByForegnKeysVisit(tables.get(i),tableMap,sorted,visited,stack);
+            sortByForegnKeysVisit(tables.get(i), tableMap, sorted, visited, stack);
         }
-        
+
         return sorted;
     }
-    
-    private static void sortByForegnKeysVisit (Table table, Map<String, Table> tableMap, List<Table> sorted, List<Table> visited, List<Table> stack) {
-        if (visited.contains(table)) {return;}
-        if (stack.contains(table)) {return;}    // cycle detected - ignore this FK
+
+    private static void sortByForegnKeysVisit(Table table, Map<String, Table> tableMap,
+            List<Table> sorted, List<Table> visited, List<Table> stack) {
+        if (visited.contains(table)) {
+            return;
+        }
+        if (stack.contains(table)) {
+            return;
+        } // cycle detected - ignore this FK
         visited.add(table);
         stack.add(table);
-        
+
         for (ForeignKey fk : table.getForeignKeys()) {
             Table foreignTable = tableMap.get(fk.getForeignTableName());
-            if (foreignTable != null) { // ignore foreign keys to tables outside of the input set
-                sortByForegnKeysVisit(foreignTable,tableMap,sorted,visited,stack);
+            if (foreignTable != null) { // ignore foreign keys to tables outside
+                                        // of the input set
+                sortByForegnKeysVisit(foreignTable, tableMap, sorted, visited, stack);
             }
         }
-        
+
         sorted.add(table);
-        stack.remove(stack.size()-1);
+        stack.remove(stack.size() - 1);
     }
 
     /**
@@ -365,41 +379,48 @@ public class Database implements Serializable, Cloneable {
                 if (fk.getForeignTable() == null) {
                     Table targetTable = findTable(fk.getForeignTableName(), true);
 
-                    if (targetTable == null) {
-                        throw new ModelException("The foreignkey " + fkDesc + " in table "
-                                + curTable.getName() + " references the undefined table "
-                                + fk.getForeignTableName());
-                    } else {
+                    if (targetTable != null) {
                         fk.setForeignTable(targetTable);
+                    } else {
+                        log.debug("The foreignkey "
+                                + fkDesc
+                                + " in table "
+                                + curTable.getName()
+                                + " references the undefined table "
+                                + fk.getForeignTableName()
+                                + ".  This could be because the foreign key table was in another schema which is a bug that should be fixed in the future.");
                     }
                 }
-                for (int refIdx = 0; refIdx < fk.getReferenceCount(); refIdx++) {
-                    Reference ref = fk.getReference(refIdx);
+                if (fk.getForeignTable() != null) {
+                    for (int refIdx = 0; refIdx < fk.getReferenceCount(); refIdx++) {
+                        Reference ref = fk.getReference(refIdx);
 
-                    if (ref.getLocalColumn() == null) {
-                        Column localColumn = curTable.findColumn(ref.getLocalColumnName(), true);
+                        if (ref.getLocalColumn() == null) {
+                            Column localColumn = curTable
+                                    .findColumn(ref.getLocalColumnName(), true);
 
-                        if (localColumn == null) {
-                            throw new ModelException("The foreignkey " + fkDesc + " in table "
-                                    + curTable.getName()
-                                    + " references the undefined local column "
-                                    + ref.getLocalColumnName());
-                        } else {
-                            ref.setLocalColumn(localColumn);
+                            if (localColumn == null) {
+                                throw new ModelException("The foreignkey " + fkDesc + " in table "
+                                        + curTable.getName()
+                                        + " references the undefined local column "
+                                        + ref.getLocalColumnName());
+                            } else {
+                                ref.setLocalColumn(localColumn);
+                            }
                         }
-                    }
-                    if (ref.getForeignColumn() == null) {
-                        Column foreignColumn = fk.getForeignTable().findColumn(
-                                ref.getForeignColumnName(), true);
+                        if (ref.getForeignColumn() == null) {
+                            Column foreignColumn = fk.getForeignTable().findColumn(
+                                    ref.getForeignColumnName(), true);
 
-                        if (foreignColumn == null) {
-                            throw new ModelException("The foreignkey " + fkDesc + " in table "
-                                    + curTable.getName()
-                                    + " references the undefined local column "
-                                    + ref.getForeignColumnName() + " in table "
-                                    + fk.getForeignTable().getName());
-                        } else {
-                            ref.setForeignColumn(foreignColumn);
+                            if (foreignColumn == null) {
+                                throw new ModelException("The foreignkey " + fkDesc + " in table "
+                                        + curTable.getName()
+                                        + " references the undefined local column "
+                                        + ref.getForeignColumnName() + " in table "
+                                        + fk.getForeignTable().getName());
+                            } else {
+                                ref.setForeignColumn(foreignColumn);
+                            }
                         }
                     }
                 }
