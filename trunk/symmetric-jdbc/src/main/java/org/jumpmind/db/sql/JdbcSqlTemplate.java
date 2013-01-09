@@ -880,7 +880,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int verifyArgType(Object arg, int argType) {
         if (argType == -101 || argType == Types.OTHER) {
             return SqlTypeValue.TYPE_UNKNOWN;
-        } else if (argType == Types.INTEGER && arg instanceof BigInteger) {
+        } else if ((argType == Types.INTEGER && arg instanceof BigInteger) ||
+                (argType == Types.BIGINT && arg instanceof BigDecimal)) {
             return Types.DECIMAL;
         } else {
             return argType;

@@ -351,7 +351,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = parseIntegerObjectValue(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
                                     || type == Types.FLOAT || type == Types.DOUBLE
-                                    || type == Types.REAL) {
+                                    || type == Types.REAL || type == Types.BIGINT) {
                                 // The number will have either one period or one
                                 // comma for the decimal point, but we need a
                                 // period
