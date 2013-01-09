@@ -561,7 +561,7 @@ ontape -s -L 0
             there's a single thread updating the database at any one time.  If that is not the case in the future, the current implementation of 
             sync on incoming batch will be unreliable.
         </para>
-        <para>Nodes using SQLite should have the the <literal>jobs.synchronized.enable</literal> parameter set to <literal>true.</literal>  This parameter
+        <para>Nodes using SQLite should have the <literal>jobs.synchronized.enable</literal> parameter set to <literal>true</literal>.  This parameter
         causes the jobs and push/pull threads to all run in a synchronized fashion, which is needed in the case of SQLite.
         </para>
         <para>
