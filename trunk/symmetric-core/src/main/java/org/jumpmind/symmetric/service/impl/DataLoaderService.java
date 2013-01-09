@@ -576,10 +576,21 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return sqlTemplate.queryForObject(getSql("selectCurrentIncomingErrorSql"),
                 new IncomingErrorMapper(), batchId, nodeId);
     }
-
+    
     public void insertIncomingError(IncomingError incomingError) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            insertIncomingError(transaction, incomingError);
+            transaction.commit();
+        } finally {
+            close(transaction);
+        }
+    }
+
+    public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
-            sqlTemplate.update(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
+            transaction.prepareAndExecute(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
                     incomingError.getNodeId(), incomingError.getFailedRowNumber(), incomingError
                             .getFailedLineNumber(), incomingError.getTargetCatalogName(),
                     incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
@@ -830,13 +841,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setTargetCatalogName(context.getTable().getCatalog());
                             error.setTargetSchemaName(context.getTable().getSchema());
                             error.setTargetTableName(context.getTable().getName());
-                            insertIncomingError(error);
+                            ISqlTransaction transaction = context.findTransaction();
+                            if (transaction != null) {
+                                insertIncomingError(transaction, error);
+                            } else {
+                                insertIncomingError(error);
+                            }
                         } catch (UniqueKeyException e) {
                             // ignore. we already inserted an error for this row
                         }
                     }
                 }
-                incomingBatchService.updateIncomingBatch(this.currentBatch);
+                ISqlTransaction transaction = context.findTransaction();
+                if (transaction != null) {
+                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
+                } else {
+                    incomingBatchService.updateIncomingBatch(this.currentBatch);
+                }
             } catch (Exception e) {
                 log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
