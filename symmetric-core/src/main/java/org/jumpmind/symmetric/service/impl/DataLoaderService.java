@@ -818,11 +818,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     }
 
                 }
+                
+                ISqlTransaction transaction = context.findTransaction();
 
                 // If we were in the process of skipping a batch
                 // then its status would have been OK. We should not
                 // set the status to ER.
                 if (this.currentBatch.getStatus() != Status.OK) {
+                    
                     this.currentBatch.setStatus(IncomingBatch.Status.ER);
                     if (context.getTable() != null && context.getData() != null) {
                         try {
@@ -841,7 +844,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setTargetCatalogName(context.getTable().getCatalog());
                             error.setTargetSchemaName(context.getTable().getSchema());
                             error.setTargetTableName(context.getTable().getName());
-                            ISqlTransaction transaction = context.findTransaction();
                             if (transaction != null) {
                                 insertIncomingError(transaction, error);
                             } else {
@@ -849,12 +851,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             }
                         } catch (UniqueKeyException e) {
                             // ignore. we already inserted an error for this row
+                            if (transaction != null) {
+                                transaction.rollback();
+                            }
                         }
                     }
                 }
-                ISqlTransaction transaction = context.findTransaction();
+                
                 if (transaction != null) {
-                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
+                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);                    
                 } else {
                     incomingBatchService.updateIncomingBatch(this.currentBatch);
                 }
