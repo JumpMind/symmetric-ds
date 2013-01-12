@@ -1,3 +1,11 @@
+SymmetricDS - 3.2.2 (Released 2013-01-12)  
+=========================================
+- 0000976: [Bug] Using wildcards in the source_table_name in databases that have foreign keys across schemas can cause triggers to not be built (chenson) - closed.
+- 0000973: [Bug] batch_to_send_count not getting set properly unless you have batches in error (gwilmer) - closed.
+- 0000974: [Bug] Informix - Function created with the schema name as part of the function name (chenson) - closed.
+- 0000978: [Bug] int8 datatype doesn't work as a primary key for an update on postgresql (chenson) - closed.
+- 0000982: [Bug] A conflict is not recorded in sym_incoming_error for sqlite because the database is locked and we use a different connection (chenson) - closed.
+
 SymmetricDS - 3.2.1 (Released 2012-12-18) 
 =========================================
 - 0000961: [Bug] Uninstall feature needs to delete conflicts and transforms before trying to delete group links (chenson) - closed.
