@@ -193,14 +193,15 @@ public class ExtractDataReader implements IDataReader {
 
     protected String buildSelect(Table table, Column lobColumn, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
-        String quote = platform.getDatabaseInfo().getDelimiterToken();
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+                .getDatabaseInfo().getDelimiterToken() : "";
         sql.append(quote);
         sql.append(lobColumn.getName());
         sql.append(quote);
         sql.append(",");
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
-        sql.append(table.getFullyQualifiedTableName());
+        sql.append(table.getFullyQualifiedTableName(quote));
         sql.append(" where ");
         for (Column col : pkColumns) {
             sql.append(quote);
