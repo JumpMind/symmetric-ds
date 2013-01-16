@@ -109,9 +109,9 @@ public class ExtractDataReader implements IDataReader {
             if (data == null) {
                 closeCurrentSource();
             } else {
-                Table sourceTable = this.currentSource.getTargetTable();
-                if (sourceTable != null && sourceTable.equals(this.table)) {
-                    data = enhanceWithLobsFromSourceIfNeeded(table, data);
+                Table targetTable = this.currentSource.getTargetTable();
+                if (targetTable != null && targetTable.equals(this.table)) {
+                    data = enhanceWithLobsFromSourceIfNeeded(this.currentSource.getSourceTable(), data);
                 } else {
                     // the table has changed
                     return null;
