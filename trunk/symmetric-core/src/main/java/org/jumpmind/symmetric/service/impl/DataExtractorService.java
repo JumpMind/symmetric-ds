@@ -692,7 +692,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private OutgoingBatch outgoingBatch;
 
-        private Table currentTable;
+        private Table targetTable;
+        
+        private Table sourceTable;
 
         private TriggerHistory lastTriggerHistory;
 
@@ -715,9 +717,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public Batch getBatch() {
             return batch;
         }
+        
+        public Table getSourceTable() {
+            return sourceTable;
+        }
 
-        public Table getTable() {
-            return currentTable;
+        public Table getTargetTable() {
+            return targetTable;
         }
 
         public CsvData next() {
@@ -728,7 +734,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Data data = null;
             if (reloadSource != null) {
                 data = (Data) reloadSource.next();
-                currentTable = reloadSource.getTable();
+                targetTable = reloadSource.getTargetTable();
+                sourceTable = reloadSource.getSourceTable();
                 if (data == null) {
                     reloadSource.close();
                     reloadSource = null;
@@ -752,7 +759,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 triggerRouter, triggerHistory);
                         this.reloadSource = new SelectFromTableSource(outgoingBatch, batch, event);
                         data = (Data) this.reloadSource.next();
-                        this.currentTable = this.reloadSource.getTable();
+                        this.sourceTable = reloadSource.getSourceTable();
+                        this.targetTable = this.reloadSource.getTargetTable();
                         this.requiresLobSelectedFromSource = this.reloadSource
                                 .requiresLobsSelectedFromSource();
                     } else {
@@ -761,7 +769,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (trigger != null) {
                             if ((lastTriggerHistory == null || lastTriggerHistory
                                     .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId())) {
-                                this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                        routerId, triggerHistory, false);                                
+                                this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                                         routerId, triggerHistory, true);
                                 this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
                             }
@@ -808,7 +818,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private Batch batch;
 
-        private Table currentTable;
+        private Table targetTable;
+        
+        private Table sourceTable;
 
         private List<SelectFromTableEvent> selectFromTableEventsToSend;
 
@@ -845,13 +857,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         this.batch.getTargetNodeId());
             }
         }
+        
+        public Table getSourceTable() {
+            return sourceTable;
+        }
 
         public Batch getBatch() {
             return batch;
         }
 
-        public Table getTable() {
-            return currentTable;
+        public Table getTargetTable() {
+            return targetTable;
         }
 
         public CsvData next() {
@@ -861,7 +877,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } while (data != null
                     && routingContext != null
                     && !routerService.shouldDataBeRouted(routingContext, new DataMetaData(
-                            (Data) data, currentTable, triggerRouter, routingContext.getChannel()),
+                            (Data) data, targetTable, triggerRouter, routingContext.getChannel()),
                             node, true));
 
             if (data != null && outgoingBatch != null) {
@@ -880,7 +896,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (this.currentInitialLoadEvent.containsData()) {
                     data = this.currentInitialLoadEvent.getData();
                     this.currentInitialLoadEvent = null;
-                    this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                    this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                            (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, false);
+                    this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, true);
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
@@ -888,11 +906,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
                             .getTrigger().getChannelId());
                     this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(), channel);
-                    this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                    this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             triggerRouter.getRouter().getRouterId(), history, false);
+                    this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                            triggerRouter.getRouter().getRouterId(), history, true);                    
                     this.startNewCursor(history, triggerRouter);
-                    this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                            triggerRouter.getRouter().getRouterId(), history, true);
 
                 }
 
@@ -921,7 +939,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 final TriggerRouter triggerRouter) {
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
             String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
-                    this.currentInitialLoadEvent.getNode(), triggerRouter, this.currentTable,
+                    this.currentInitialLoadEvent.getNode(), triggerRouter, this.sourceTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()));
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
