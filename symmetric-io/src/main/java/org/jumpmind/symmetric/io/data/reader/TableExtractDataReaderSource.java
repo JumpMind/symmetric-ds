@@ -69,7 +69,11 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         return this.batch;
     }
 
-    public Table getTable() {
+    public Table getTargetTable() {
+        return this.table;
+    }
+   
+    public Table getSourceTable() {
         return this.table;
     }
 

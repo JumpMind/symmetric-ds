@@ -29,9 +29,14 @@ public interface IExtractDataReaderSource {
     public Batch getBatch();
     
     /**
-     * Return the table for the last {@link CsvData} retrieved by {@link #next()}
+     * Return the table with the catalog, schema, and table name of the target table for the last {@link CsvData} retrieved by {@link #next()}
      */
-    public Table getTable();
+    public Table getTargetTable();
+    
+    /**
+     * Return the table with the catalog, schema, and table name of the source table for the last {@link CsvData} retrieved by {@link #next()}
+     */
+    public Table getSourceTable();
     
     public CsvData next();
     

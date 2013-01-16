@@ -90,7 +90,7 @@ public class ExtractDataReader implements IDataReader {
                 this.data = this.currentSource.next();
             }
             if (this.data != null) {
-                this.table = this.currentSource.getTable();
+                this.table = this.currentSource.getTargetTable();
             }
         }
         
@@ -109,7 +109,7 @@ public class ExtractDataReader implements IDataReader {
             if (data == null) {
                 closeCurrentSource();
             } else {
-                Table sourceTable = this.currentSource.getTable();
+                Table sourceTable = this.currentSource.getTargetTable();
                 if (sourceTable != null && sourceTable.equals(this.table)) {
                     data = enhanceWithLobsFromSourceIfNeeded(table, data);
                 } else {
