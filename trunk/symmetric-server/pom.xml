@@ -210,7 +210,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>postgresql</groupId>
+            <groupId>org.jumpmind.symmetric.jdbc</groupId>
             <artifactId>postgresql</artifactId>
             <scope>provided</scope>
         </dependency>
