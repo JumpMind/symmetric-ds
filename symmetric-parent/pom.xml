@@ -296,7 +296,7 @@
                 <version>2.10</version>
                 <configuration>
                     <forkMode>always</forkMode>
-                    <argLine>-Xms512m -Xmx1024m</argLine>
+                    <argLine>-Xms512m -Xmx1024m -Duser.timezone=America/New_York</argLine>
                     <systemProperties>
                         <property>
                             <name>test.root</name>
