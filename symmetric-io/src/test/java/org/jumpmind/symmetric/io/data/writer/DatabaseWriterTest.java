@@ -17,7 +17,6 @@ import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
-import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -526,7 +525,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             String result = (String) platform
                     .getSqlTemplate()
                     .queryForObject(
-                            "select data from pg_largeobject where loid in (select binary_data from test_postgres_binary_types)",
+                            "select encode(data,'escape') from pg_largeobject where loid in (select binary_data from test_postgres_binary_types)",
                             String.class);
 
             // clean up the object from pg_largeobject, otherwise it becomes
