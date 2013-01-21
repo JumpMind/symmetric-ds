@@ -56,8 +56,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
 
-    private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
-
     protected List<DataGap> dataGaps;
 
     protected DataGap currentGap;
@@ -193,35 +191,60 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected ISqlReadCursor<Data> prepareCursor() {
         int numberOfGapsToQualify = parameterService.getInt(
                 ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
+        
+        int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
 
         this.dataGaps = dataService.findDataGaps();
+                
+        boolean useGreaterThanDataId = false;
+        if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
+            useGreaterThanDataId = true;
+        }
 
         String channelId = context.getChannel().getChannelId();
 
-        String sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
-                getSql(SELECT_DATA_USING_GAPS_SQL, context.getChannel().getChannel()));
+        String sql = null;
+        
+        if (useGreaterThanDataId) {
+            sql = getSql("selectDataUsingStartDataId", context.getChannel().getChannel());
+        } else {
+            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
+                    getSql("selectDataUsingGapsSql", context.getChannel().getChannel()));            
+        }
+        
+        if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+            sql = sql + routerService.getSql("orderByDataId");
+        }
 
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+        Object[] args = null;
+        int[] types = null;
+        
+        if (useGreaterThanDataId) {
+            args = new Object[] { channelId, dataGaps.get(0).getStartId() };
+            types = new int[] { Types.VARCHAR, Types.NUMERIC };
+        } else {
+            int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
+                    : dataGaps.size());
+            args = new Object[numberOfArgs];
+            types = new int[numberOfArgs];
+            args[0] = channelId;
+            types[0] = Types.VARCHAR;
 
-        int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
-                : dataGaps.size());
-        Object[] args = new Object[numberOfArgs];
-        int[] types = new int[numberOfArgs];
-        args[0] = channelId;
-        types[0] = Types.VARCHAR;
-
-        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
-            DataGap gap = dataGaps.get(i);
-            args[i * 2 + 1] = gap.getStartId();
-            types[i * 2 + 1] = Types.NUMERIC;
-            if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
-                // there were more gaps than we are going to use in the SQL. use
-                // the last gap as the end data id for the last range
-                args[i * 2 + 2] = dataGaps.get(dataGaps.size() - 1).getEndId();
-            } else {
-                args[i * 2 + 2] = gap.getEndId();
+            for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+                DataGap gap = dataGaps.get(i);
+                args[i * 2 + 1] = gap.getStartId();
+                types[i * 2 + 1] = Types.NUMERIC;
+                if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
+                    // there were more gaps than we are going to use in the SQL.
+                    // use
+                    // the last gap as the end data id for the last range
+                    args[i * 2 + 2] = dataGaps.get(dataGaps.size() - 1).getEndId();
+                } else {
+                    args[i * 2 + 2] = gap.getEndId();
+                }
+                types[i * 2 + 2] = Types.NUMERIC;
             }
-            types[i * 2 + 2] = Types.NUMERIC;
         }
 
         this.currentGap = dataGaps.remove(0);
