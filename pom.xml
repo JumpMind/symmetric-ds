@@ -1,15 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-build</artifactId>
     <packaging>pom</packaging>
     <version>3.2.3-SNAPSHOT</version>
-    
     <scm>
         <connection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/trunk</connection>
         <developerConnection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/trunk</developerConnection>
     </scm>
-    
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
@@ -27,7 +26,6 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
-    
     <build>
         <extensions>
             <extension>
@@ -35,7 +33,7 @@
                 <artifactId>wagon-webdav-jackrabbit</artifactId>
                 <version>2.2</version>
             </extension>
-        </extensions>    
+        </extensions>
         <plugins>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
@@ -69,7 +67,7 @@
                     <dependency>
                         <groupId>com.google.code.maven-scm-provider-svnjava</groupId>
                         <artifactId>maven-scm-provider-svnjava</artifactId>
-                        <version>1.15</version>
+                        <version>2.0.5</version>
                     </dependency>
                 </dependencies>
             </plugin>
