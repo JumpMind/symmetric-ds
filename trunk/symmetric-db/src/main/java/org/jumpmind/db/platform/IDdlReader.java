@@ -38,4 +38,6 @@ public interface IDdlReader {
     
     public List<String> getTableNames(String catalog, String schema, String[] tableTypes);
     
+    public List<String> getColumnNames(String catalog, String schema, String tableName);
+    
 }

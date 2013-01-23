@@ -1293,5 +1293,26 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
         });
     }
+    
+    public List<String> getColumnNames(final String catalog, final String schema, final String tableName) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+            public List<String> execute(Connection connection) throws SQLException {
+                ArrayList<String> list = new ArrayList<String>();
+                DatabaseMetaData meta = connection.getMetaData();
+                ResultSet rs = null;
+                try {                    
+                    rs = meta.getColumns(catalog, schema, tableName, null);
+                    while (rs.next()) {
+                        String tableName = rs.getString("COLUMN_NAME");
+                        list.add(tableName);
+                    }
+                    return list;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+            }
+        });
+    }
 
 }
