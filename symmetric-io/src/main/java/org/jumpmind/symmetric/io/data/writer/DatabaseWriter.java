@@ -228,7 +228,7 @@ public class DatabaseWriter implements IDataWriter {
              * that are loading big batches while an application is doing work.
              */
             try {
-                Thread.sleep(5);
+                Thread.sleep(writerSettings.getCommitSleepInterval());
             } catch (InterruptedException e) {
                 log.warn("{}", e.getMessage());
             }
