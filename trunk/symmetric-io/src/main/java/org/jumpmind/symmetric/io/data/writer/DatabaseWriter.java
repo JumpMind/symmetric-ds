@@ -221,16 +221,21 @@ public class DatabaseWriter implements IDataWriter {
     protected void checkForEarlyCommit() {
         if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
             commit(true);
-            /*
-             * Chances are if SymmetricDS is configured to commit early in a
-             * batch we want to give other threads a chance to do work and
-             * access the database.  This was added to support H2 clients
-             * that are loading big batches while an application is doing work.
-             */
-            try {
-                Thread.sleep(writerSettings.getCommitSleepInterval());
-            } catch (InterruptedException e) {
-                log.warn("{}", e.getMessage());
+            
+            long sleep = writerSettings.getCommitSleepInterval();
+            if (sleep > 0) {
+                /*
+                 * Chances are if SymmetricDS is configured to commit early in a
+                 * batch we want to give other threads a chance to do work and
+                 * access the database. This was added to support H2 clients
+                 * that are loading big batches while an application is doing
+                 * work.
+                 */
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    log.warn("{}", e.getMessage());
+                }
             }
         }
     }
