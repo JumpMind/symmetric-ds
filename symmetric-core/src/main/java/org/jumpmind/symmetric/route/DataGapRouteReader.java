@@ -23,8 +23,10 @@ package org.jumpmind.symmetric.route;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +75,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected IRouterService routerService;
 
     protected boolean reading = true;
+    
+    protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
 
     public DataGapRouteReader(IRouterService routerService, ChannelRouterContext context,
             IDataService dataService, ISymmetricDialect symmetricDialect,
@@ -84,6 +88,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         this.context = context;
         this.dataService = dataService;
         this.parameterService = parameterService;
+        
+        if (lastSelectUsedGreaterThanQueryByEngineName.get(parameterService.getEngineName()) == null) {
+            lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
+        }
     }
 
     public void run() {
@@ -205,11 +213,24 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         String sql = null;
         
-        if (useGreaterThanDataId) {
+        Boolean lastSelectUsedGreaterThanQuery = lastSelectUsedGreaterThanQueryByEngineName.get(parameterService.getEngineName());
+        if (lastSelectUsedGreaterThanQuery == null) {
+            lastSelectUsedGreaterThanQuery = Boolean.FALSE;
+        }
+        
+        if (useGreaterThanDataId) {            
             sql = getSql("selectDataUsingStartDataId", context.getChannel().getChannel());
+            if (!lastSelectUsedGreaterThanQuery) {
+                log.info("Switching to select from the data table where data_id >= start gap");
+                lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
+            }
         } else {
             sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
                     getSql("selectDataUsingGapsSql", context.getChannel().getChannel()));            
+            if (lastSelectUsedGreaterThanQuery) {
+                log.info("Switching to select from the data table where data_id between gaps");
+                lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
+            }            
         }
         
         if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
