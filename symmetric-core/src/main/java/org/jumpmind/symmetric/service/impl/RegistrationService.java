@@ -37,11 +37,13 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -76,12 +78,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
 
     private IStatisticManager statisticManager;
+    
+    private IConfigurationService configurationService;
 
     public RegistrationService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IDataExtractorService dataExtractorService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
-            IStatisticManager statisticManager) {
+            IStatisticManager statisticManager, IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
@@ -89,6 +93,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.dataLoaderService = dataLoaderService;
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
+        this.configurationService = configurationService;
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -102,58 +107,80 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
-    public boolean registerNode(Node preRegisteredNode, String remoteHost, String remoteAddress,
+    public boolean registerNode(Node nodePriorToRegistration, String remoteHost, String remoteAddress,
             OutputStream out, boolean isRequestedRegistration) throws IOException {
         try {
+            
+            Node identity = nodeService.findIdentity();
+            if (identity == null) {
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                        RegistrationStatus.RQ, remoteHost, remoteAddress));
+                log.warn("Registration is not allowed until this node has an identity");
+                return false;
+            }
+            
+            /*
+             * Check to see if there is a link that exists to service the node that is requesting registration
+             */
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+            if (link == null) {
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                        RegistrationStatus.RQ, remoteHost, remoteAddress));
+                log.warn("Registration is not allowed unless a link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
+                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+                return false;  
+            }
+            
+            
             if (!nodeService.isRegistrationServer()) {
-                // registration is not allowed until this node has an identity
-                // and
-                // an initial load
-                Node identity = nodeService.findIdentity();
-                NodeSecurity security = identity == null ? null : nodeService
+                /*
+                 * registration is not allowed until this node has an identity
+                 * and an initial load
+                 */                
+                NodeSecurity security = nodeService
                         .findNodeSecurity(identity.getNodeId());
                 if (security == null || security.getInitialLoadTime() == null) {
-                    saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode,
+                    saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.RQ, remoteHost, remoteAddress));
                     log.warn("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                     return false;
                 }
             }
 
-            String redirectUrl = getRedirectionUrlFor(preRegisteredNode.getExternalId());
+            String redirectUrl = getRedirectionUrlFor(nodePriorToRegistration.getExternalId());
             if (redirectUrl != null) {
                 log.info("Redirecting {} to {} for registration.",
-                        preRegisteredNode.getExternalId(), redirectUrl);
-                saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode,
+                        nodePriorToRegistration.getExternalId(), redirectUrl);
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
 
-            String nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService
-                    .getNodeIdCreator().selectNodeId(preRegisteredNode, remoteHost, remoteAddress)
-                    : preRegisteredNode.getNodeId();
+            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
+                    .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost, remoteAddress)
+                    : nodePriorToRegistration.getNodeId();
             Node registeredNode = nodeService.findNode(nodeId);
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
             if ((registeredNode == null || security == null || !security.isRegistrationEnabled())
                     && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
-                openRegistration(preRegisteredNode, remoteHost, remoteAddress);
-                nodeId = StringUtils.isBlank(preRegisteredNode.getNodeId()) ? nodeService
-                        .getNodeIdCreator().selectNodeId(preRegisteredNode, remoteHost,
-                                remoteAddress) : preRegisteredNode.getNodeId();
+                openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
+                nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
+                        .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
+                                remoteAddress) : nodePriorToRegistration.getNodeId();
                 security = nodeService.findNodeSecurity(nodeId);
                 registeredNode = nodeService.findNode(nodeId);
             } else if (registeredNode == null || security == null
                     || !security.isRegistrationEnabled()) {
-                saveRegisgtrationRequest(new RegistrationRequest(preRegisteredNode,
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 return false;
             }
 
             registeredNode.setSyncEnabled(true);
-            registeredNode.setSymmetricVersion(preRegisteredNode.getSymmetricVersion());
-            registeredNode.setSyncUrl(preRegisteredNode.getSyncUrl());
-            registeredNode.setDatabaseType(preRegisteredNode.getDatabaseType());
-            registeredNode.setDatabaseVersion(preRegisteredNode.getDatabaseVersion());
+            registeredNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
+            registeredNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
+            registeredNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
+            registeredNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
 
             nodeService.save(registeredNode);
 
@@ -183,7 +210,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
         } catch (RegistrationNotOpenException ex) {
             if (StringUtils.isNotBlank(ex.getMessage())) {
-                log.warn("Registration not allowed for {} because {}", preRegisteredNode.toString(), ex.getMessage());
+                log.warn("Registration not allowed for {} because {}", nodePriorToRegistration.toString(), ex.getMessage());
             }
             return false;
         }
