@@ -31,6 +31,9 @@ import org.jumpmind.symmetric.io.data.Batch;
 public class DatabaseWriterSettings {
 
     protected long maxRowsBeforeCommit = 10000;
+    
+    // Milliseconds to sleep between commits.
+    protected int commitSleepInterval = 5;
 
     protected boolean treatDateTimeFieldsAsVarchar = false;
 
@@ -230,6 +233,14 @@ public class DatabaseWriterSettings {
 
         return settings;
 
+    }
+
+    public int getCommitSleepInterval() {
+        return commitSleepInterval;
+    }
+
+    public void setCommitSleepInterval(int commitSleepInterval) {
+        this.commitSleepInterval = commitSleepInterval;
     }
 
 }

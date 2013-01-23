@@ -59,6 +59,8 @@ public class DbImport {
     private String schema;
 
     private long commitRate = 10000;
+    
+    private int interval = 5;
 
     private boolean useVariableDates = false;
 
@@ -150,7 +152,8 @@ public class DbImport {
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings() {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
-        settings.setMaxRowsBeforeCommit(commitRate);        
+        settings.setMaxRowsBeforeCommit(commitRate); 
+        settings.setCommitSleepInterval(interval);
         settings.setDefaultConflictSetting(buildConflictSettings());
         settings.setUsePrimaryKeysFromSource(false);
         settings.setAlterTable(alterTables);
@@ -311,5 +314,12 @@ public class DbImport {
         databaseWriterFilters.remove(filter);
     }
 
+    public int getInterval() {
+        return interval;
+    }
+
+    public void setInterval(int interval) {
+        this.interval = interval;
+    }
 
 }

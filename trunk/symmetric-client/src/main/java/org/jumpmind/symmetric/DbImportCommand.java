@@ -49,6 +49,8 @@ public class DbImportCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_COMMIT = "commit";
     
+    private static final String OPTION_INTERVAL = "interval";
+    
     private static final String OPTION_IGNORE = "ignore";
     
     private static final String OPTION_REPLACE = "replace";
@@ -97,6 +99,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_TABLE, true);
         addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
         addOption(options, null, OPTION_COMMIT, true);
+        addOption(options, null, OPTION_INTERVAL, true);
         addOption(options, null, OPTION_IGNORE, false);
         addOption(options, null, OPTION_REPLACE, false);
         addOption(options, null, OPTION_FORCE, false);
@@ -128,6 +131,10 @@ public class DbImportCommand extends AbstractCommandLauncher {
         
         if (line.hasOption(OPTION_COMMIT)) {
             dbImport.setCommitRate(Long.parseLong(line.getOptionValue(OPTION_COMMIT)));
+        }
+        
+        if (line.hasOption(OPTION_INTERVAL)) {
+            dbImport.setInterval((Integer.parseInt(line.getOptionValue(OPTION_INTERVAL))));
         }
         
         if (line.hasOption(OPTION_ALTER_CASE)) {
