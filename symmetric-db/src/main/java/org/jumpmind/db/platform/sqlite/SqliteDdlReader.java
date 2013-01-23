@@ -110,6 +110,10 @@ public class SqliteDdlReader implements IDdlReader {
     public List<String> getSchemaNames(String catalog) {
         return new ArrayList<String>(0);
     }
+    
+    public List<String> getColumnNames(String catalog, String schema, String tableName) {
+        return new ArrayList<String>(0);
+    }
 
     static class ColumnMapper extends AbstractSqlRowMapper<Column> {
         public Column mapRow(Row row) {
