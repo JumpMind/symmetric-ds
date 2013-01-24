@@ -1,3 +1,13 @@
+SymmetricDS - 3.2.3 (Released 2013-01-24) 
+=========================================
+- 0000983: [Bug] Table wasn't being quoted while selected lob data when stream_lobs is turned on and db.delimited.identifier.mode=true (chenson) - closed.
+- 0000988: [Bug] use_stream_lobs uses routers target schema and catalog instead of the triggers source schema and catalog (chenson) - closed.
+- 0000995: [Improvement] Upgrade to the latest postgres jdbc driver to get bug fix for retrieval of result set metadata (chenson) - closed.
+- 0000997: [Improvement] dbimport and symmetricds dataloader throttle (abrougher) - closed.
+- 0000998: [Improvement] Add parameters that allow the routing query to be optimized for large numbers of gaps with a large set of unrouted sym_data rows (chenson) - closed.
+- 0001000: [Bug] Prevent null pointer if node channel control exists and channel does not. (chenson) - closed.
+- 0001003: [Improvement] Don't allow a node to register if there are not links defined that will allow it to be part of the network (chenson) - closed.
+
 SymmetricDS - 3.2.2 (Released 2013-01-12)  
 =========================================
 - 0000976: [Bug] Using wildcards in the source_table_name in databases that have foreign keys across schemas can cause triggers to not be built (chenson) - closed.
