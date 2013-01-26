@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
@@ -312,12 +313,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             try {
-                log.info("Unregistered node is attempting to register ");
+                log.info("This node is unregistered.  It will attempt to register using the registration.url");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
-                log.warn("Connection failed while registering");
+                log.warn("The request to register failed because the client failed to connect to the server");
             } catch (UnknownHostException e) {
-                log.warn("Connection failed while registering");
+                log.warn("The request to register failed because the host was unknown");
+            } catch (ConnectionRejectedException ex) {
+                log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

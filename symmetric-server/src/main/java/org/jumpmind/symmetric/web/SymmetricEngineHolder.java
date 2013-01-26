@@ -90,6 +90,10 @@ public class SymmetricEngineHolder {
     public boolean areEnginesConfigured() {
         return enginesStarting.size() > 0 || engines.size() > 0;
     }
+    
+    public int getNumerOfEnginesStarting() {
+        return enginesStarting.size();
+    }
 
     public synchronized void stop() {
         Set<String> engineNames = engines.keySet();

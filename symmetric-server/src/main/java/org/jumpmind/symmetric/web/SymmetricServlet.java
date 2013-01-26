@@ -142,7 +142,8 @@ public class SymmetricServlet extends HttpServlet {
                 engine = holder.getEngines().get(engineName);
             }
 
-            if (engine == null && !holder.isMultiServerMode() && holder.getEngines().size() == 1) {
+            if (engine == null && holder.getNumerOfEnginesStarting() <= 1 && 
+                    holder.getEngines().size() == 1) {
                 engine = holder.getEngines().values().iterator().next();
             }
         }
