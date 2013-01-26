@@ -485,11 +485,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized boolean start(boolean startJobs) {
-        setup();
-        if (isConfigured()) {
-            if (!starting && !started) {
-                try {
-                    starting = true;
+        if (!starting && !started) {
+            try {
+                starting = true;
+
+                setup();
+                if (isConfigured()) {
                     Node node = nodeService.findIdentity();
                     if (node != null) {
                         log.info(
@@ -508,13 +509,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     log.info("Started SymmetricDS");
                     lastRestartTime = new Date();
                     started = true;
-                } finally {
-                    starting = false;
-                }
 
+                } else {
+                    log.warn("Did not start SymmetricDS.  It has not been configured properly");
+                }
+            } finally {
+                starting = false;
             }
-        } else {
-            log.warn("Did not start SymmetricDS.  It has not been configured properly");
         }
 
         log.info(
