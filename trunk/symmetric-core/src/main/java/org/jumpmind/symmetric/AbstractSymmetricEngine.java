@@ -491,24 +491,29 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
                 setup();
                 if (isConfigured()) {
-                    Node node = nodeService.findIdentity();
-                    if (node != null) {
-                        log.info(
-                                "Starting registered node [group={}, id={}, externalId={}]",
-                                new Object[] { node.getNodeGroupId(), node.getNodeId(),
-                                        node.getExternalId() });
-                    } else {
-                        log.info("Starting unregistered node [group={}, externalId={}]",
-                                parameterService.getNodeGroupId(), parameterService.getExternalId());
+                    try {
+                        Node node = nodeService.findIdentity();
+                        if (node != null) {
+                            log.info(
+                                    "Starting registered node [group={}, id={}, externalId={}]",
+                                    new Object[] { node.getNodeGroupId(), node.getNodeId(),
+                                            node.getExternalId() });
+                        } else {
+                            log.info("Starting unregistered node [group={}, externalId={}]",
+                                    parameterService.getNodeGroupId(),
+                                    parameterService.getExternalId());
+                        }
+                        triggerRouterService.syncTriggers();
+                        heartbeat(false);
+                        if (startJobs && jobManager != null) {
+                            jobManager.startJobs();
+                        }
+                        log.info("Started SymmetricDS");
+                        lastRestartTime = new Date();
+                        started = true;
+                    } catch (Throwable ex) {
+                        log.error("An error occurred while starting SymmetricDS", ex);
                     }
-                    triggerRouterService.syncTriggers();
-                    heartbeat(false);
-                    if (startJobs && jobManager != null) {
-                        jobManager.startJobs();
-                    }
-                    log.info("Started SymmetricDS");
-                    lastRestartTime = new Date();
-                    started = true;
 
                 } else {
                     log.warn("Did not start SymmetricDS.  It has not been configured properly");
