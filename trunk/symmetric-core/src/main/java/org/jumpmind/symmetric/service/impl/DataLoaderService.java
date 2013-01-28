@@ -791,7 +791,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
 
                 enableSyncTriggers(context);
-                statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
 
                 if (ex instanceof IOException || ex instanceof TransportException
                         || ex instanceof IoException) {
