@@ -531,7 +531,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             }
 
+            long dataEventCount = currentBatch.getDataEventCount();
+            long insertEventCount = currentBatch.getInsertEventCount();
             currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
+            
+            // preserve in the case of a reload event
+            if (dataEventCount > currentBatch.getDataEventCount()) {
+                currentBatch.setDataEventCount(dataEventCount);
+            }
+
+            // preserve in the case of a reload event
+            if (insertEventCount > currentBatch.getInsertEventCount()) {
+                currentBatch.setInsertEventCount(insertEventCount);
+            }
 
             // only update the current batch after we have possibly "re-queried"
             if (extractTimeInMs > 0) {
