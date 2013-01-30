@@ -1,4 +1,4 @@
-SymmetricDS - 3.3.0 (Released 2013-01-30) 
+SymmetricDS - 3.3.0.pre.1 (Released 2013-01-30) 
 =========================================
 - 0001010: [Improvement] Log better messages when server node is unavailable giving users a clue as to what action needs to be taken (admin) - closed.
 - 0001013: [Improvement] BshDatabaseWriterFilter should bind the error to use in a HANDLE_ERROR script (chenson) - closed.
