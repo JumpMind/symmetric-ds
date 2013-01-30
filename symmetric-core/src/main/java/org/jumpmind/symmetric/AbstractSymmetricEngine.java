@@ -267,7 +267,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 configurationService);
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
                 configurationService);
-        this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
+        this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect, nodeService,
                 clusterService, configurationService, statisticManager);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService, clusterService);
