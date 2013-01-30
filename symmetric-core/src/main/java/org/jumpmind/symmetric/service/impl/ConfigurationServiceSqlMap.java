@@ -11,6 +11,13 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         // @formatter:off
+        
+        putSql("selectTableReloadRequest", "select reload_select, reload_delete_stmt, reload_enabled, reload_time, create_time, last_update_by, last_update_time from $(table_reload_request) where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
+        
+        putSql("insertTableReloadRequest", "insert into $(table_reload_request) (reload_select, reload_delete_stmt, reload_enabled, reload_time, create_time, last_update_by, last_update_time, source_node_id, target_node_id, trigger_id, router_id) values (?,?,?,?,?,?,?,?,?,?,?)");
+
+        putSql("updateTableReloadRequest", "update $(table_reload_request) set reload_select=?, reload_delete_stmt=?, reload_enabled=?, reload_time=?, create_time=?, last_update_by=?, last_update_time=? where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
+        
         putSql("selectDataEventActionsByIdSql",
                 " select data_event_action from $(node_group_link) where         "
               + "   source_node_group_id = ? and target_node_group_id = ?        ");

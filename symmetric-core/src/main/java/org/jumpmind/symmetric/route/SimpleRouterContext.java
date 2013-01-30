@@ -42,6 +42,7 @@ public class SimpleRouterContext extends Context {
     protected boolean encountedTransactionBoundary = false;
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
+    protected boolean requestGapDetection = false;
 
     public SimpleRouterContext() {
     }
@@ -122,5 +123,13 @@ public class SimpleRouterContext extends Context {
             }
             incrementStat(value, key);
         }
+    }
+    
+    public void setRequestGapDetection(boolean requestGapDetection) {
+        this.requestGapDetection = requestGapDetection;
+    }
+    
+    public boolean isRequestGapDetection() {
+        return requestGapDetection;
     }
 }

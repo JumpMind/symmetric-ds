@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
@@ -63,6 +64,8 @@ public interface IDataService {
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
     public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
+    
+    public boolean insertReloadEvent(TableReloadRequest request);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect);

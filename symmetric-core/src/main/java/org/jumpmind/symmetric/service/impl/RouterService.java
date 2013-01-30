@@ -150,8 +150,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     IDataToRouteGapDetector gapDetector = new DataGapDetector(
                             engine.getDataService(), parameterService, symmetricDialect, this);
                     gapDetector.beforeRouting();
-                    dataCount = routeDataForEachChannel();
-                    gapDetector.afterRouting();
+                    dataCount = routeDataForEachChannel(gapDetector);
                     ts = System.currentTimeMillis() - ts;
                     if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
                         log.info("Routed {} data events in {} ms", dataCount, ts);
@@ -230,7 +229,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected int routeDataForEachChannel() {
+    protected int routeDataForEachChannel(IDataToRouteGapDetector gapDetector) {
         Node sourceNode = engine.getNodeService().findIdentity();
         final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
         int dataCount = 0;
@@ -244,7 +243,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         nodeChannel,
                         sourceNode,
                         producesCommonBatches(nodeChannel.getChannelId(),
-                                triggerRouters.get(nodeChannel.getChannelId())));
+                                triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Not routing the {} channel.  It is either disabled or suspended.",
@@ -302,7 +301,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode,
-            boolean produceCommonBatches) {
+            boolean produceCommonBatches, IDataToRouteGapDetector gapDetector) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -367,8 +366,12 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
-                context.logStats(log, totalTime);
+                context.logStats(log, totalTime);                
+                boolean detectGaps = context.isRequestGapDetection();
                 context.cleanup();
+                if (detectGaps) {
+                    gapDetector.beforeRouting();
+                }
             }
         }
     }

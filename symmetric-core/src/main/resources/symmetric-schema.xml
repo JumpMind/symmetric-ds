@@ -564,39 +564,30 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="load_filter_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply load filters if more than one target operation occurs."/>        
         <column name="fail_on_error" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether we should fail the batch if the filter fails." />
-    </table>            
-
-    <!--     
-    <table name="file_sync" description="A table that defines file synchronization configuration">
-        <column name="file_sync_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the synchronization." />
-        <column name="server_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the client during file synchronization." />
-        <column name="client_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the server during file synchronization." />
-        <column name="processing_order" type="INTEGER" required="true" default="1" description="Order in which to process the synchronizations."/>        
-        <column name="frequency" type="VARCHAR" size="50" required="true" description="This is a cron expression or the period in between synchronizations in milliseconds." />
-        <column name="client_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
-        <column name="server_dir" type="VARCHAR" size="255" required="true" description="The base directory on the server that will be synchronized." />
-        <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />        
-        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to include in synchronization." />
-        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to exclude from synchronization." />       
-        <column name="direction" type="VARCHAR" size="50" required="true" default="bidirectional" description="The direction to synchronize files.  Possible values are: client_to_server, server_to_client, bidirectional." />    
-        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are created." />
-        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are modified." />
-        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are deleted." />
-        <column name="transport_type" type="VARCHAR" size="50"  description="The name of a specific type of transport that will be used by the client.  Out of the box types are: local, http, ftp, symmetric" />
-        <column name="transport_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transport that is configured in transport_type  See the documentation for each transport_type for more details." />
-        <column name="conflict_strategy" type="VARCHAR" size="128" default="client_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: client_wins, server_wins, report_error" />        
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />    
-compress_for_xfer
-package_files
-conflict_strategy
-script_type
-client_pre_sync_script
-client_post_sync_script
-server_pre_sync_script
-server_post_sync_script
     </table>
-         -->    
-        
+    
+    <table name="table_reload_request" description="This table acts as a means to queue up a reload of a specific table.  Either the target or the source node may insert into this table to queue up a load.  If the target node inserts into the table, then the row will be synchronized to the source node and the reload events will be queued up during routing.">
+        <column name="target_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node to receive the table reload." />
+        <column name="source_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that will be the source of the table reload." />        
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
+        <column name="reload_select" type="LONGVARCHAR"  description="Overrides the initial load select." />
+        <column name="reload_delete_stmt" type="LONGVARCHAR"  description="Overrides the initial load delete statement." />        
+        <column name="reload_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that a reload should be queued up." />
+        <column name="reload_time" type="TIMESTAMP" required="false"  description="The timestamp when the reload was started for this node." />        
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />        
+    </table>
+    
+    <table name="selective_router_ctl" description="">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of a specific router" />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a trigger. If this id should represent all triggers, then the * wildcard character should be used" />        
+        <column name="enabled" type="BOOLEANINT" size="1" default="1"  description="" />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>
+                            
 </database>
