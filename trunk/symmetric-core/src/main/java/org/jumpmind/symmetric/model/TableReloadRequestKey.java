@@ -16,15 +16,39 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
-package org.jumpmind.symmetric.route;
-
-/**
- * 
+ * under the License. 
  */
-public interface IDataToRouteGapDetector {
+package org.jumpmind.symmetric.model;
 
-    public void beforeRouting();
-    
+public class TableReloadRequestKey {
+
+    protected String targetNodeId;
+    protected String sourceNodeId;
+    protected String triggerId;
+    protected String routerId;
+
+    public TableReloadRequestKey(String targetNodeId, String sourceNodeId, String triggerId,
+            String routerId) {
+        this.targetNodeId = targetNodeId;
+        this.sourceNodeId = sourceNodeId;
+        this.triggerId = triggerId;
+        this.routerId = routerId;
+    }
+
+    public String getRouterId() {
+        return routerId;
+    }
+
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+
+    public String getTargetNodeId() {
+        return targetNodeId;
+    }
+
+    public String getTriggerId() {
+        return triggerId;
+    }
+
 }

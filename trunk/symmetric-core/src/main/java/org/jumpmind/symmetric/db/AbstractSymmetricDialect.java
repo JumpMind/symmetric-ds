@@ -204,14 +204,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 .trim();
     }
 
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
-    	
-    	String sql=null;        	    	
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {    	
+    	String sql = null;        	    	
     	if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
-    	       sql = String.format(
+    	    sql = String.format(
 	                parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
 	                triggerRouter.qualifiedTargetTableName(triggerHistory));
-    	} else {    		
+    	} else {
     		sql = triggerRouter.getInitialLoadDeleteStmt();
     	}
         return sql;

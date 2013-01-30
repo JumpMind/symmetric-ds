@@ -99,6 +99,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     protected void clearState() {
         this.usedDataRouters.clear();
         this.encountedTransactionBoundary = false;
+        this.requestGapDetection = false;
         this.batchesByNodes.clear();
         this.availableNodes.clear();
         this.dataEventsToSend.clear();
@@ -166,6 +167,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
-    }
+    }    
 
 }

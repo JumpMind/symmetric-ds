@@ -62,10 +62,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         this.routerService = routerService;
         this.symmetricDialect = symmetricDialect;
     }
-
-    public void afterRouting() {
-    }
-
+    
     /**
      * Always make sure sym_data_gap is up to date to make sure that we don't
      * dual route data.
