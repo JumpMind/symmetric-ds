@@ -1051,6 +1051,18 @@ values
         updates.</para>
         
     </section>
+    
+        <section id="configuration-routing-source-node-ids">
+              <title>Piloting Changes for Specific Nodes</title>      
+              <para>Router has a field called source_node_ids.  The field can contain a comma separated
+              list of node ids which the router is enabled.  Most configuration will leave this field
+              empty which means that the router applies to all nodes that belong to the source node group.  
+              </para>
+              <para>This field is useful if you want to pilot new changes on a single node, even though there
+              are multiple nodes in the group.</para>
+        </section>
+    
+    
     </section>
 
     <section id="configuration-trigger-router">

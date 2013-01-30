@@ -244,6 +244,7 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="The node_group_id for nodes to route data to.  Note that routing can be further narrowed down by the configured router_type and router_expression." />
         <column name="router_type" type="VARCHAR" size="50"  description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', 'subselect' and 'audit.'  Custom routers can be configured as extension points." />
         <column name="router_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of router that is configured in router_type.  See the documentation for each router for more details." />
+        <column name="source_node_ids" type="LONGVARCHAR"  description="A comma separated list of node_id for which this router will be enabled.  If left blank, then it is enabled for all nodes." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
