@@ -150,6 +150,7 @@ public class DataService extends AbstractService implements IDataService {
                                 request.setReloadEnabled(false);
                                 request.setReloadTime(new Date());
                                 request.setLastUpdateBy("symmetricds");
+                                engine.getConfigurationService().saveTableReloadRequest(request);
 
                                 transaction.commit();
                             } finally {
