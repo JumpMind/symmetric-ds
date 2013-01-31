@@ -46,7 +46,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "  r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,                            "
                         + "  r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,        "
-                        + "  r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by, r.source_node_ids as r_source_node_ids ");
+                        + "  r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by   ");
 
         putSql("selectTriggersColumnList",
                 ""
@@ -130,15 +130,15 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "insert into $(router)                                                                                                           "
                         + "  (target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,                                "
-                        + "  router_type,router_expression,sync_on_update,sync_on_insert,sync_on_delete,create_time,last_update_by,last_update_time,source_node_ids,router_id)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                 ");
+                        + "  router_type,router_expression,sync_on_update,sync_on_insert,sync_on_delete,create_time,last_update_by,last_update_time,router_id)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                 ");
 
         putSql("updateRouterSql",
                 ""
                         + "update $(router)                                                                                           "
                         + "  set target_catalog_name=?,target_schema_name=?,target_table_name=?,source_node_group_id=?,                     "
                         + "  target_node_group_id=?,router_type=?,router_expression=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,   "
-                        + "  last_update_by=?,last_update_time=?,source_node_ids=?                                                          "
+                        + "  last_update_by=?,last_update_time=?                                                                            "
                         + "  where router_id=?                                                                                              ");
 
         putSql("deleteTriggerRouterSql", ""

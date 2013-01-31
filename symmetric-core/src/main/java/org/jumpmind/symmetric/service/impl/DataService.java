@@ -274,7 +274,7 @@ public class DataService extends AbstractService implements IDataService {
                     List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId
                             .get(triggerHistory.getTriggerHistoryId());
                     for (TriggerRouter triggerRouter : triggerRouters) {
-                        if (triggerRouter.getInitialLoadOrder() >= 0) {
+                        if (triggerRouter.getInitialLoadOrder() >= 0 && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                             String xml = symmetricDialect.getCreateTableXML(triggerHistory, triggerRouter);
                             insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, useReloadChannel);
                             if (!transactional) {
@@ -294,7 +294,8 @@ public class DataService extends AbstractService implements IDataService {
                 for (ListIterator<TriggerRouter> iterator = triggerRouters
                         .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
                     TriggerRouter triggerRouter = iterator.previous();
-                    if (triggerRouter.getInitialLoadOrder() >= 0 &&
+                    if (triggerRouter.getInitialLoadOrder() >= 0 && 
+                            engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode) &&
                     		(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD) ||
                     				!StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt()))
                     		) {
@@ -310,7 +311,8 @@ public class DataService extends AbstractService implements IDataService {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    if (triggerRouter.getInitialLoadOrder() >= 0) {
+                    if (triggerRouter.getInitialLoadOrder() >= 0  && 
+                            engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                         insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 null);
                         if (!transactional) {

@@ -35,6 +35,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -42,7 +43,6 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -54,8 +54,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
@@ -67,8 +66,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IClusterService clusterService;
 
     private IConfigurationService configurationService;
-
-    private INodeService nodeService;
 
     private Map<String, Router> routersCache;
 
@@ -87,6 +84,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private TriggerFailureListener failureListener = new TriggerFailureListener();
 
     private IStatisticManager statisticManager;
+    
+    private IGroupletService groupletService;
 
     private List<String> extraConfigTables = new ArrayList<String>();
 
@@ -96,15 +95,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
-    public TriggerRouterService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IClusterService clusterService, IConfigurationService configurationService,
-            IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
-        this.nodeService = nodeService;
-        this.clusterService = clusterService;
-        this.configurationService = configurationService;
-        this.statisticManager = statisticManager;
+    public TriggerRouterService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.clusterService = engine.getClusterService();
+        this.configurationService = engine.getConfigurationService();
+        this.statisticManager = engine.getStatisticManager();
+        this.groupletService = engine.getGroupletService();
         this.addTriggerCreationListeners(this.failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -510,7 +506,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 || refreshCache
                 || System.currentTimeMillis() - this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
             synchronized (this) {
-                String nodeId = nodeService.findIdentityNodeId();
                 this.triggerRouterCacheTime = System.currentTimeMillis();
                 Map<String, TriggerRoutersCache> newTriggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
                 List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(myNodeGroupId);
@@ -518,10 +513,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerRouters.size());
                 Map<String, Router> routers = new HashMap<String, Router>(triggerRouters.size());
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    Router router = triggerRouter.getRouter();
-                    List<String> sourceNodeIds = router.getSourceNodeIdsAsList();
-                    boolean add = sourceNodeIds.size() == 0 || sourceNodeIds.contains(nodeId);
-                    if (add) {
+                    boolean sourceEnabled = groupletService.isSourceEnabled(triggerRouter);
+                    if (sourceEnabled) {
                         String triggerId = triggerRouter.getTrigger().getTriggerId();
                         List<TriggerRouter> list = triggerRoutersByTriggerId.get(triggerId);
                         if (list == null) {
@@ -742,10 +735,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         router.getRouterExpression(), router.isSyncOnUpdate() ? 1 : 0,
                         router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
                         router.getLastUpdateBy(), router.getLastUpdateTime(),
-                        router.getSourceNodeIds(), router.getRouterId() }, new int[] {
+                        router.getRouterId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
-                        Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP, 
                         Types.VARCHAR })) {
             router.setCreateTime(router.getLastUpdateTime());
             sqlTemplate.update(
@@ -757,12 +750,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             router.getRouterType(), router.getRouterExpression(),
                             router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0,
                             router.isSyncOnDelete() ? 1 : 0, router.getCreateTime(),
-                            router.getLastUpdateBy(), router.getLastUpdateTime(),
-                            router.getSourceNodeIds(), router.getRouterId() }, new int[] {
+                            router.getLastUpdateBy(), router.getLastUpdateTime(), router.getRouterId() }, 
+                            new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                             Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
+                            Types.TIMESTAMP, Types.VARCHAR });
         }
         resetTriggerRouterCacheByNodeGroupId();
     }
@@ -1405,7 +1398,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             router.setCreateTime(rs.getDateTime("r_create_time"));
             router.setLastUpdateTime(rs.getDateTime("r_last_update_time"));
             router.setLastUpdateBy(rs.getString("r_last_update_by"));
-            router.setSourceNodeIds(rs.getString("r_source_node_ids"));
             return router;
         }
     }

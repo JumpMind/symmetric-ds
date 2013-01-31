@@ -22,9 +22,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -70,10 +68,6 @@ public class Router implements Serializable {
 
     private String lastUpdateBy;
     
-    private String sourceNodeIds;
-    
-    private transient List<String> sourceNodeIdsAsList = null;
-
     public Router() {
         routerId = Integer.toString(maxRouterId++);
     }
@@ -208,32 +202,7 @@ public class Router implements Serializable {
     
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
-    }
-    
-    public String getSourceNodeIds() {
-        return sourceNodeIds;
-    }
-    
-    public void setSourceNodeIds(String sourceNodeIds) {
-        this.sourceNodeIds = sourceNodeIds;
-        this.sourceNodeIdsAsList = null;
-    }
-    
-    public List<String> getSourceNodeIdsAsList() {
-        if (sourceNodeIdsAsList == null) {
-            sourceNodeIdsAsList = new ArrayList<String>();
-            if (sourceNodeIds != null) {
-                String[] list = sourceNodeIds.split(",");
-                for (String nodeId : list) {
-                    nodeId = nodeId.trim();
-                    if (StringUtils.isNotBlank(nodeId)) {
-                        sourceNodeIdsAsList.add(nodeId);
-                    }
-                }
-            }
-        }
-        return sourceNodeIdsAsList;
-    }
+    }    
     
     public String createDefaultName() {
         if (nodeGroupLink != null) {

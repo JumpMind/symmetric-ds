@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -67,6 +68,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
@@ -89,6 +91,7 @@ import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
+import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
@@ -190,6 +193,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected ISequenceService sequenceService;
 
     protected IExtensionPointManager extensionPointManger;
+    
+    protected IGroupletService groupletService;
 
     protected IStagingManager stagingManager;
 
@@ -267,8 +272,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 configurationService);
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
                 configurationService);
-        this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect, nodeService,
-                clusterService, configurationService, statisticManager);
+        this.groupletService = new GroupletService(this);
+        this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService, clusterService);
         this.dataService = new DataService(this);
@@ -544,6 +549,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             
             Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_TRIGGER_ROUTER));            
             if (table != null) {
+                
+                List<Grouplet> grouplets = groupletService.getGrouplets(true);
+                for (Grouplet grouplet : grouplets) {
+                    groupletService.deleteGrouplet(grouplet);
+                }
+                
                 List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     triggerRouterService.deleteTriggerRouter(triggerRouter);
@@ -938,7 +949,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public INodeCommunicationService getNodeCommunicationService() {
         return nodeCommunicationService;
-    }   
+    }
+    
+    public IGroupletService getGroupletService() {
+        return groupletService;
+    }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());
