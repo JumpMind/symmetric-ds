@@ -1,1 +1,0 @@
-mvn deploy:deploy-file -f pom.xml -DrepositoryId=dav.codehaus.org -Durl=dav:https://dav.codehaus.org/repository/symmetricds/ -Dpackaging=jar -DgeneratePom=true -Dversion=9.2-1002 -DgroupId=org.jumpmind.symmetric.jdbc -DartifactId=postgresql -Dfile=/home/cshenso/Downloads/postgresql-9.2-1002.jdbc4.jar
