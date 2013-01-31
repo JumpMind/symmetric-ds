@@ -21,10 +21,10 @@
 package org.jumpmind.symmetric.model;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -44,7 +44,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     public Set<NetworkedNode> getChildren() {
         if (children != null) {
-            return new HashSet<NetworkedNode>(children.values());
+            return new TreeSet<NetworkedNode>(children.values());
         } else {
             return null;
         }
