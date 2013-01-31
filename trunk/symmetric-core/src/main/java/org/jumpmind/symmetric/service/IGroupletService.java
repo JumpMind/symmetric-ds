@@ -52,5 +52,7 @@ public interface IGroupletService {
     public void saveTriggerRouterGrouplet(Grouplet grouplet, TriggerRouterGrouplet triggerRouterGrouplet);
     
     public void deleteTriggerRouterGrouplet(Grouplet grouplet, TriggerRouterGrouplet triggerRouterGrouplet);
+    
+    public void deleteTriggerRouterGroupletsFor(TriggerRouter triggerRouter);
 
 }
