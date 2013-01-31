@@ -58,6 +58,10 @@ public class GroupletService extends AbstractService implements IGroupletService
         setSqlMap(new GroupletServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
+    
+    public void reloadGrouplets() {
+        lastCacheTime = 0;
+    }
 
     public boolean isSourceEnabled(TriggerRouter triggerRouter) {
         boolean enabled = true;
@@ -74,7 +78,7 @@ public class GroupletService extends AbstractService implements IGroupletService
                     boolean foundMatch = false;
                     for (GroupletLink groupletLink : links) {
                         if (groupletLink.getExternalId().equals(node.getExternalId())) {
-                            enabled = true;
+                            foundMatch = true;
                         }
                     }
 

@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.TriggerRouterGrouplet;
 
 public interface IGroupletService {
     
+    public void reloadGrouplets();
     
     public List<Grouplet> getGrouplets(boolean refreshCache);
     
