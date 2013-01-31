@@ -310,6 +310,17 @@ public class GroupletService extends AbstractService implements IGroupletService
 
         }
     }
+    
+    public void deleteTriggerRouterGroupletsFor(TriggerRouter triggerRouter) {
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        sqlTemplate
+                .update(getSql("deleteTriggerRouterGroupletForSql"),
+                        new Object[] { 
+                                triggerRouter.getTrigger().getTriggerId(),
+                                triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
+                                Types.VARCHAR });
+
+    }
 
     public void deleteTriggerRouterGrouplet(Grouplet grouplet,
             TriggerRouterGrouplet triggerRouterGrouplet) {

@@ -43,6 +43,7 @@ public class GroupletServiceSqlMap extends AbstractSqlMap {
         putSql("updateTriggerRouterGroupletSql", "update $(trigger_router_grouplet) set create_time=?, last_update_by=?, last_update_time=? where grouplet_id=? and applies_when=? and trigger_id=? and router_id=?");
         putSql("insertTriggerRouterGroupletSql", "insert into $(trigger_router_grouplet) (create_time, last_update_by, last_update_time, grouplet_id, applies_when, trigger_id, router_id) values(?,?,?,?,?,?,?)");
         putSql("deleteTriggerRouterGroupletSql", "delete from $(trigger_router_grouplet) where grouplet_id=? and applies_when=? and trigger_id=? and router_id=?");
+        putSql("deleteTriggerRouterGroupletForSql", "delete from $(trigger_router_grouplet) where trigger_id=? and router_id=?");
 
     }
 
