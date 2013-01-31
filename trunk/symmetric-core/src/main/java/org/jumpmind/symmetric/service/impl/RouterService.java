@@ -420,7 +420,8 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             context.getAvailableNodes().put(triggerRouter, nodes);
         }
-        return nodes;
+        
+        return engine.getGroupletService().getTargetEnabled(triggerRouter, nodes);
     }
 
     protected IDataToRouteReader startReading(ChannelRouterContext context) {

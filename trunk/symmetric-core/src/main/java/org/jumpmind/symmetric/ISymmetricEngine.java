@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
@@ -254,6 +255,8 @@ public interface ISymmetricEngine {
     public IStatisticService getStatisticService();
     
     public ITriggerRouterService getTriggerRouterService();
+    
+    public IGroupletService getGroupletService();
     
     public IStatisticManager getStatisticManager();
     

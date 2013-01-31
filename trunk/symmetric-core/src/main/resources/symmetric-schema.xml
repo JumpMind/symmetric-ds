@@ -244,7 +244,6 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="The node_group_id for nodes to route data to.  Note that routing can be further narrowed down by the configured router_type and router_expression." />
         <column name="router_type" type="VARCHAR" size="50"  description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', 'subselect' and 'audit.'  Custom routers can be configured as extension points." />
         <column name="router_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of router that is configured in router_type.  See the documentation for each router for more details." />
-        <column name="source_node_ids" type="LONGVARCHAR"  description="A comma separated list of node_id for which this router will be enabled.  If left blank, then it is enabled for all nodes." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
@@ -581,4 +580,54 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />        
     </table>
     
+    <table name="grouplet" description="This tables defines named groups to which nodes can belong to based on their external id.  Grouplets are used to designate that synchronization should only affect an explicit subset of nodes in a node group.">
+        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
+        <column name="grouplet_link_policy" type="CHAR" size="1" required="true" default="I" description="Specified whether the external ids in the grouplet_link are included in the group or excluded from the grouplet.  In the case of excluded, the grouplet starts with all external ids and removes the excluded ones listed.  Use 'I' for inclusive and 'E' for exclusive." />        
+        <column name="description" type="VARCHAR" size="255" description="A description of this grouplet."/>
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />        
+    </table>
+    
+    <table name="grouplet_link" description="This tables defines nodes belong to a grouplet based on their external.id">
+        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
+        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Provides a means to select the nodes that belong to a grouplet. " />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="grouplet" name="fk_gpltlnk_2_gplt">
+            <reference local="grouplet_id" foreign="grouplet_id" />
+        </foreign-key>                  
+    </table>
+    
+    <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers and if they apply to source node groups or target node groups">
+        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
+        <column name="applies_when" type="CHAR" size="1" required="true" primaryKey="true" description="Indicates the side that a grouplet should be applied to.  Use 'T' for target and 'S' for source and 'B' for both source and target." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="grouplet" name="fk_trgplt_2_gplt">
+            <reference local="grouplet_id" foreign="grouplet_id" />
+        </foreign-key>           
+        <foreign-key foreignTable="trigger_router" name="fk_trgplt_2_tr">
+            <reference local="trigger_id" foreign="trigger_id" />
+            <reference local="router_id" foreign="router_id" />            
+        </foreign-key>  
+    </table>        
+    
+    <!-- 
+    <table name="grouplet_defaults" description="This tables defines what grouplets a newly registered node should be assigned to.">
+        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node group that the registering node belongs to." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="grouplet" name="fk_gpltdft_2_gplt">
+            <reference local="grouplet_id" foreign="grouplet_id" />
+        </foreign-key>                  
+    </table>
+     -->
+        
 </database>
