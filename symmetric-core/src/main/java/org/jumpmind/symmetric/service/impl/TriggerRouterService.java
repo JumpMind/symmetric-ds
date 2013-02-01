@@ -486,14 +486,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache).get(triggerId);
         for (TriggerRouter testTriggerRouter : triggerRouters) {
             if (testTriggerRouter.getRouter().getRouterId().equals(routerId) || 
-                            testTriggerRouter.getRouter().getRouterId().equals(Constants.UNKNOWN_ROUTER_ID)) {
+                            routerId.equals(Constants.UNKNOWN_ROUTER_ID)) {
                 triggerRouter = testTriggerRouter;
                 break;
             }
         }
         
         if (triggerRouter == null) {
-            log.warn("Could not find trigger router {} {} in list {}", new Object[] {triggerId, routerId, triggerRouters.toString()});
+            log.warn("Could not find trigger router [{}:{}] in list {}", new Object[] {triggerId, routerId, triggerRouters.toString()});
         }
         
         return triggerRouter;
