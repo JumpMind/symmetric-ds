@@ -163,7 +163,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     }
                 }
             } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)) {
-                String tableName = tableName(TableConstants.SYM_TABLE_RELOAD_REQUEST);
                 String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
                 String reloadEnabled = columnValues.get("RELOAD_ENABLED");
                 if (me.getNodeId().equals(sourceNodeId)) {
@@ -184,19 +183,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                                 routerId));
                     }
                 } else {
-                    boolean routed = false;
                     for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                         if (nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
                             if (nodeIds == null) {
                                 nodeIds = new HashSet<String>();
                             }
                             nodeIds.add(sourceNodeId);
-                            routed = true;
                         }
-                    }
-                    
-                    if (!routed) {
-                        log.error("{} row with a source node id of {} could not be routed because the node is not a client of this node", tableName, sourceNodeId);
                     }
                 }
                 
