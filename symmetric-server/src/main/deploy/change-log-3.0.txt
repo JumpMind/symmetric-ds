@@ -1,12 +1,16 @@
-SymmetricDS - 3.3.0.pre.1 (Released 2013-01-30) 
-=========================================
+SymmetricDS - 3.3.0.pre.1 (Released 2013-01-31) 
+===============================================
+- 0001024: [Improvement] Use the symmetric table name as the virtual trigger name instead of a hashcode of the table name (chenson) - closed.
+- 0001025: [Improvement] Don't log staging area cleanup at the info level. Change logging to debug level (chenson) - closed.
+- 0001026: [New Feature] If the minor version is upgraded, then (if you aren't the reg server) request a reload of key symmetric tables (chenson) - closed.
+- 0001027: [New Feature] Add the ability to enable or disable trigger routers with an enabled column (chenson) - closed.
+- 0001019: [New Feature] Grouplets - Add a feature to specify a subset of nodes for which a router is enabled to allow piloting of configuration. (chenson) - closed.
 - 0000967: [Bug] Unknown table "INFORMATION_SCHEMA.SESSION_STATUS" error for MySQL 5.0.XX (chenson) - closed.
 - 0001010: [Improvement] Log better messages when server node is unavailable giving users a clue as to what action needs to be taken (admin) - closed.
 - 0001013: [Improvement] BshDatabaseWriterFilter should bind the error to use in a HANDLE_ERROR script (chenson) - closed.
 - 0001014: [Improvement] Don't write STOPPED for the last server id in sym_lock when releasing an infinite lock (chenson) - closed.
 - 0001015: [Bug] Data event count and insert event count get lost for big reload batches because status is requeried and overwrites the values (chenson) - closed.
 - 0001018: [New Feature] Add a mechanism for a remote node to request a table reload. This is helpful while rolling out new tables. (chenson) - closed.
-- 0001019: [New Feature] Grouplets - Add a feature to specify a subset of nodes for which a router is enabled to allow piloting of configuration. (chenson) - closed.
 
 SymmetricDS - 3.2.3 (Released 2013-01-24) 
 =========================================

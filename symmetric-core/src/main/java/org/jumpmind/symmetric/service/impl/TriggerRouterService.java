@@ -531,17 +531,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerRouters.size());
                 Map<String, Router> routers = new HashMap<String, Router>(triggerRouters.size());
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    boolean sourceEnabled = groupletService.isSourceEnabled(triggerRouter);
-                    if (sourceEnabled) {
-                        String triggerId = triggerRouter.getTrigger().getTriggerId();
-                        List<TriggerRouter> list = triggerRoutersByTriggerId.get(triggerId);
-                        if (list == null) {
-                            list = new ArrayList<TriggerRouter>();
-                            triggerRoutersByTriggerId.put(triggerId, list);
+                    if (triggerRouter.isEnabled()) {
+                        boolean sourceEnabled = groupletService.isSourceEnabled(triggerRouter);
+                        if (sourceEnabled) {
+                            String triggerId = triggerRouter.getTrigger().getTriggerId();
+                            List<TriggerRouter> list = triggerRoutersByTriggerId.get(triggerId);
+                            if (list == null) {
+                                list = new ArrayList<TriggerRouter>();
+                                triggerRoutersByTriggerId.put(triggerId, list);
+                            }
+                            list.add(triggerRouter);
+                            routers.put(triggerRouter.getRouter().getRouterId(),
+                                    triggerRouter.getRouter());
                         }
-                        list.add(triggerRouter);
-                        routers.put(triggerRouter.getRouter().getRouterId(),
-                                triggerRouter.getRouter());
                     }
                 }
 
@@ -644,7 +646,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
-        return (List<TriggerRouter>) sqlTemplate.query(
+        return sqlTemplate.query(
                 getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(),
                 sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG);
     }
@@ -717,10 +719,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerRouter.getInitialLoadDeleteStmt(),
                         triggerRouter.isPingBackEnabled() ? 1 : 0, triggerRouter.getLastUpdateBy(),
                         triggerRouter.getLastUpdateTime(),
+                        triggerRouter.isEnabled() ? 1 : 0,
                         triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
                         Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
+                        Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerRouterSql"),
@@ -730,10 +733,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             triggerRouter.isPingBackEnabled() ? 1 : 0,
                             triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(),
                             triggerRouter.getLastUpdateTime(),
+                            triggerRouter.isEnabled() ? 1 : 0,
                             triggerRouter.getTrigger().getTriggerId(),
                             triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
                             Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -1487,6 +1491,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
             triggerRouter.setInitialLoadSelect(rs.getString("initial_load_select"));
+            triggerRouter.setEnabled(rs.getBoolean("enabled"));
             triggerRouter.setInitialLoadDeleteStmt(rs.getString("initial_load_delete_stmt"));
 
             triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));

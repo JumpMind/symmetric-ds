@@ -259,10 +259,11 @@
     <table name="trigger_router" description="Map a trigger to a router.">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this trigger router is enabled or not."/>        
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. If this value is the same for multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to a negative number, then the table will be excluded from an initial load." />
         <column name="initial_load_select" type="LONGVARCHAR"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
         <column name="initial_load_delete_stmt" type="LONGVARCHAR"  description="The expression that is used to delete data when an initial load occurs.  If this field is empty, no delete will occur before the initial load.  If this field is not empty, the text will be used as a sql statement and executed for the initial load delete." />
-        <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/> 
+        <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/>         
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
