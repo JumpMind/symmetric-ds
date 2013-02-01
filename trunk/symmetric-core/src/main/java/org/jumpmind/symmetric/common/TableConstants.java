@@ -159,11 +159,17 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_INCOMING_ERROR));
         tables.add(getTableName(tablePrefix, SYM_SEQUENCE));
         tables.add(getTableName(tablePrefix, SYM_NODE_COMMUNICATION));
-        tables.add(getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
-        tables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET));
-        tables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET_LINK));
-        tables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));
+        tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_REQUEST));
+        tables.add(getTableName(tablePrefix, SYM_GROUPLET));
+        tables.add(getTableName(tablePrefix, SYM_GROUPLET_LINK));
+        tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER_GROUPLET));
         
+        return tables;
+    }
+    
+    public static final List<String> getTablesThatSync(String tablePrefix) {
+        List<String> tables = new ArrayList<String>(getConfigTables(tablePrefix));
+        tables.removeAll(getTablesThatDoNotSync(tablePrefix));
         return tables;
     }
 

@@ -764,9 +764,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                         String triggerId = triggerHistory.getTriggerId();
 
-                        // fyi, this queries the database
-                        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(
-                                triggerId, routerId);
+                        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(triggerId, routerId, false);
                         SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
                                 triggerRouter, triggerHistory);
                         this.reloadSource = new SelectFromTableSource(outgoingBatch, batch, event);

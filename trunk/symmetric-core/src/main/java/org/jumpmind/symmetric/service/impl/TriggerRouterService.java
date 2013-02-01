@@ -322,7 +322,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 || tableName.equals(TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_TABLE_RELOAD_REQUEST));
         Trigger trigger = new Trigger();
-        trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode())));
+        trigger.setTriggerId(tableName);
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
@@ -479,6 +479,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
         return false;
+    }
+    
+    public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache) {
+        TriggerRouter triggerRouter = null;
+        List<TriggerRouter> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache).get(triggerId);
+        for (TriggerRouter testTriggerRouter : triggerRouters) {
+            if (testTriggerRouter.getRouter().getRouterId().equals(routerId) || 
+                            testTriggerRouter.getRouter().getRouterId().equals(Constants.UNKNOWN_ROUTER_ID)) {
+                triggerRouter = testTriggerRouter;
+                break;
+            }
+        }
+        
+        if (triggerRouter == null) {
+            log.warn("Could not find trigger router {} {} in list {}", new Object[] {triggerId, routerId, triggerRouters.toString()});
+        }
+        
+        return triggerRouter;
     }
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache) {

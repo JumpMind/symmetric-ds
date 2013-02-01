@@ -61,9 +61,10 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -106,8 +107,8 @@ public class DataService extends AbstractService implements IDataService {
             INodeService nodeService = engine.getNodeService();
             Node targetNode = nodeService.findNode(request.getTargetNodeId());
             if (targetNode != null) {
-                TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(
-                        request.getTriggerId(), request.getRouterId());
+                TriggerRouter triggerRouter = triggerRouterService.
+                        getTriggerRouterForCurrentNode(request.getTriggerId(), request.getRouterId(), false);
                 if (triggerRouter != null) {
                     Trigger trigger = triggerRouter.getTrigger();
                     Router router = triggerRouter.getRouter();
@@ -147,12 +148,13 @@ public class DataService extends AbstractService implements IDataService {
                                                         .getSourceNodeId(), request.getTriggerId(),
                                                 request.getRouterId()), false);
                                 
+                                transaction.commit();
+                                
                                 request.setReloadEnabled(false);
                                 request.setReloadTime(new Date());
                                 request.setLastUpdateBy("symmetricds");
-                                engine.getConfigurationService().saveTableReloadRequest(request);
+                                saveTableReloadRequest(request);
 
-                                transaction.commit();
                             } finally {
                                 close(transaction);
                             }
@@ -171,7 +173,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 } else {
                     log.error(
-                            "Could not reload table for node {} because it the trigger router ({}, {}) could not be found",
+                            "Could not reload table for node {} because the trigger router ({}, {}) could not be found",
                             new Object[] { request.getTargetNodeId(), request.getTriggerId(),
                                     request.getRouterId() });
                 }
@@ -182,6 +184,49 @@ public class DataService extends AbstractService implements IDataService {
         }
         return successful;
 
+    }
+    
+    public void saveTableReloadRequest(TableReloadRequest request) {
+        Date time = new Date();
+        request.setLastUpdateTime(time);
+        if (0 == sqlTemplate.update(
+                getSql("updateTableReloadRequest"),
+                new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
+                        request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                        request.getCreateTime(), request.getLastUpdateBy(),
+                        request.getLastUpdateTime(), request.getSourceNodeId(),
+                        request.getTargetNodeId(), request.getTriggerId(), request.getRouterId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
+            request.setCreateTime(time);
+            sqlTemplate.update(
+                    getSql("insertTableReloadRequest"),
+                    new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
+                            request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                            request.getCreateTime(), request.getLastUpdateBy(),
+                            request.getLastUpdateTime(), request.getSourceNodeId(),
+                            request.getTargetNodeId(),
+                            request.getTriggerId(),  request.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                            Types.SMALLINT, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR });
+        }
+    }
+    
+    public TableReloadRequest getTableReloadRequest(final TableReloadRequestKey key) {
+        return sqlTemplate.queryForObject(getSql("selectTableReloadRequest"), new ISqlRowMapper<TableReloadRequest>() {
+            public TableReloadRequest mapRow(Row rs) {
+                TableReloadRequest request = new TableReloadRequest(key);       
+                request.setReloadSelect(rs.getString("reload_select"));
+                request.setReloadEnabled(rs.getBoolean("reload_enabled"));
+                request.setReloadTime(rs.getDateTime("reload_time"));
+                request.setCreateTime(rs.getDateTime("create_time"));
+                request.setLastUpdateBy(rs.getString("last_update_by"));
+                request.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                return request;
+            }
+        }, key.getSourceNodeId(), key.getTargetNodeId(), key.getTriggerId(), key.getRouterId());
     }
 
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {

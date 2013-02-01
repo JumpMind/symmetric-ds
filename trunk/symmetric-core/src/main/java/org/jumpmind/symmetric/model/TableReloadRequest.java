@@ -30,10 +30,10 @@ public class TableReloadRequest {
     protected String routerId;
     protected String reloadSelect;
     protected String reloadDeleteStmt;
-    protected boolean reloadEnabled;
+    protected boolean reloadEnabled = true;
     protected Date reloadTime;
-    protected Date createTime;
-    protected Date lastUpdateTime;
+    protected Date createTime = new Date();
+    protected Date lastUpdateTime = new Date();
     protected String lastUpdateBy;
     
     public TableReloadRequest(TableReloadRequestKey key) {

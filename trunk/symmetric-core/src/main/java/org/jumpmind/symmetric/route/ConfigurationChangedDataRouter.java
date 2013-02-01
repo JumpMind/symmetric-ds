@@ -345,7 +345,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
-
         if (engine.getParameterService().is(ParameterConstants.AUTO_REFRESH_AFTER_CONFIG_CHANGED,
                 true)) {
             if (routingContext.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
@@ -395,20 +394,20 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     }
     
-    protected void insertReloadEvents(SimpleRouterContext routingContext) {
+    protected void insertReloadEvents(SimpleRouterContext routingContext) {        
         @SuppressWarnings("unchecked")
         List<TableReloadRequestKey> reloadRequestKeys = (List<TableReloadRequestKey>) routingContext
                 .get(CTX_KEY_TABLE_RELOAD_NEEDED);
         if (reloadRequestKeys != null) {
             for (TableReloadRequestKey reloadRequestKey : reloadRequestKeys) {
-                TableReloadRequest request = engine.getConfigurationService()
+                TableReloadRequest request = engine.getDataService()
                         .getTableReloadRequest(reloadRequestKey);
                 log.info(
                         "Attempting to insert table reload request from data router for node {} and trigger {}",
                         reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());
-                engine.getDataService().insertReloadEvent(request);
-                routingContext.setRequestGapDetection(true);
+                engine.getDataService().insertReloadEvent(request);               
             }
+            routingContext.setRequestGapDetection(true);
         }
     }
     
