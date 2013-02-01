@@ -53,6 +53,8 @@ public interface ITriggerRouterService {
     
     public Trigger getTriggerForCurrentNodeById(String triggerId);
     
+    public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
+    
     /**
      * Returns a list of triggers that should be active for the current node.
      * @param refreshCache Indicates that the cache should be refreshed

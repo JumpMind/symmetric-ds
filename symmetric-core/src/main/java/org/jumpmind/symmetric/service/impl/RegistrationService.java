@@ -129,7 +129,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 log.warn("Registration is not allowed unless a link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-                return false;  
+                return false;
             }
             
             

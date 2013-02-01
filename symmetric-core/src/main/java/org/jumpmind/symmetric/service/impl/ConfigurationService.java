@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,8 +39,6 @@ import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.TableReloadRequest;
-import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -74,49 +71,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
-    }
-
-    public void saveTableReloadRequest(TableReloadRequest request) {
-        Date time = new Date();
-        request.setLastUpdateTime(time);
-        if (0 == sqlTemplate.update(
-                getSql("updateTableReloadRequest"),
-                new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                        request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
-                        request.getCreateTime(), request.getLastUpdateBy(),
-                        request.getLastUpdateTime(), request.getSourceNodeId(),
-                        request.getTargetNodeId(), request.getRouterId(), request.getTriggerId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
-            request.setCreateTime(time);
-            sqlTemplate.update(
-                    getSql("insertTableReloadRequest"),
-                    new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                            request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
-                            request.getCreateTime(), request.getLastUpdateBy(),
-                            request.getLastUpdateTime(), request.getSourceNodeId(),
-                            request.getTargetNodeId(), request.getRouterId(),
-                            request.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
-                            Types.SMALLINT, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR });
-        }
-    }
-    
-    public TableReloadRequest getTableReloadRequest(final TableReloadRequestKey key) {
-        return sqlTemplate.queryForObject(getSql("selectTableReloadRequest"), new ISqlRowMapper<TableReloadRequest>() {
-            public TableReloadRequest mapRow(Row rs) {
-                TableReloadRequest request = new TableReloadRequest(key);       
-                request.setReloadSelect(rs.getString("reload_select"));
-                request.setReloadEnabled(rs.getBoolean("reload_enabled"));
-                request.setReloadTime(rs.getDateTime("reload_time"));
-                request.setCreateTime(rs.getDateTime("create_time"));
-                request.setLastUpdateBy(rs.getString("last_update_by"));
-                request.setLastUpdateTime(rs.getDateTime("last_update_time"));
-                return request;
-            }
-        }, key.getSourceNodeId(), key.getTargetNodeId(), key.getTriggerId(), key.getRouterId());
     }
 
     public void saveNodeGroupLink(NodeGroupLink link) {

@@ -29,8 +29,6 @@ import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.TableReloadRequest;
-import org.jumpmind.symmetric.model.TableReloadRequestKey;
 
 /**
  * Provides an API to configure data synchronizations.
@@ -52,10 +50,6 @@ public interface IConfigurationService {
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
     
     public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId);
-    
-    public void saveTableReloadRequest(TableReloadRequest request);
-    
-    public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
     /**
      * Check to see if the channel is currently being used in the system.
