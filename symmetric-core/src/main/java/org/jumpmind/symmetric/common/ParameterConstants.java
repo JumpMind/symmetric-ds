@@ -76,6 +76,7 @@ final public class ParameterConstants {
     
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_RELOAD_SYM_ON_UPGRADE = "auto.reload.sym.tables.on.upgrade";
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";

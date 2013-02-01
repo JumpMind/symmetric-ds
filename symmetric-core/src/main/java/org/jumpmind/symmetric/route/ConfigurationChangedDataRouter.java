@@ -395,10 +395,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             for (TableReloadRequestKey reloadRequestKey : reloadRequestKeys) {
                 TableReloadRequest request = engine.getDataService()
                         .getTableReloadRequest(reloadRequestKey);
-                log.info(
-                        "Attempting to insert table reload request from data router for node {} and trigger {}",
-                        reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());
-                engine.getDataService().insertReloadEvent(request);               
+                if (engine.getDataService().insertReloadEvent(request)) {
+                    log.info(
+                            "Inserted table reload request from config data router for node {} and trigger {}",
+                            reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());                    
+                } 
             }
             routingContext.setRequestGapDetection(true);
         }

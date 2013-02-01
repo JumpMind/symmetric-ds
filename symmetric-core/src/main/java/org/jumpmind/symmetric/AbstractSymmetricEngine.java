@@ -509,7 +509,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             triggerRouterService.syncTriggers();
                             
                             if (Version.isOlderVersion(node.getSymmetricVersion())
-                                    && !parameterService.isRegistrationServer()) {
+                                    && !parameterService.isRegistrationServer() &&
+                                    parameterService.is(ParameterConstants.AUTO_RELOAD_SYM_ON_UPGRADE, true)) {
                                 log.info("Minor version of SymmetricDS has increased.  Requesting a reload of key configuration tables");
                                 String parentNodeId = node.getCreatedAtNodeId();
                                 List<String> tableNames = new ArrayList<String>();
