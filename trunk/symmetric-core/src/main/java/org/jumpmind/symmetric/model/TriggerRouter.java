@@ -39,6 +39,8 @@ public class TriggerRouter implements Serializable {
     private static final long serialVersionUID = 1L;
 
     static final Logger logger = LoggerFactory.getLogger(TriggerRouter.class);
+    
+    private boolean enabled =  true;
 
     /**
      * This is the order in which the definitions will be processed.
@@ -70,6 +72,14 @@ public class TriggerRouter implements Serializable {
         this.router = router;
         createTime = new Date();
         lastUpdateTime = new Date();        
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public Date getCreateTime() {
