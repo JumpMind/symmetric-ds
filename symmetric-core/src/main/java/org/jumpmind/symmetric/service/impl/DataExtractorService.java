@@ -336,23 +336,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long maxBytesToSync = parameterService
                     .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
 
+            boolean streamToFileEnabled = parameterService
+                    .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
 
                 currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
-
-                boolean streamToFileEnabled = parameterService
-                        .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
-
-                currentBatch = extractOutgoingBatch(targetNode, targetTransport, currentBatch,
+                
+                if (dataWriter == null) {
+                    dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                            targetTransport.open());
+                }
+                
+                currentBatch = extractOutgoingBatch(targetNode, dataWriter, currentBatch,
                         streamToFileEnabled);
 
                 if (streamToFileEnabled) {
-                    if (dataWriter == null) {
-                        dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                                targetTransport.open());
-                    }
-
                     currentBatch = sendOutgoingBatch(targetNode, currentBatch, dataWriter);
                 }
 
@@ -435,7 +435,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
 
     protected OutgoingBatch extractOutgoingBatch(Node targetNode,
-            IOutgoingTransport targetTransport, OutgoingBatch currentBatch,
+            IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean streamToFileEnabled) {
         if (currentBatch.getStatus() != Status.OK) {
             Node sourceNode = nodeService.findIdentity();
@@ -448,9 +448,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } else {
                 transformExtractWriter = createTransformDataWriter(
                         sourceNode,
-                        targetNode,
-                        new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport
-                                .open()));
+                        targetNode, dataWriter);
             }
 
             long ts = System.currentTimeMillis();
