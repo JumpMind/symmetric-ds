@@ -28,10 +28,10 @@ import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
-import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
 import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
-import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
+import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
+import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -40,6 +40,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.sql.ConcurrencySqlException;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -105,8 +106,13 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean lock(String action, Date timeToBreakLock, Date timeLockAquired,
             String serverId) {
-        return sqlTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
-                timeLockAquired, action, timeToBreakLock, serverId }) == 1;
+        try {
+            return sqlTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
+                    timeLockAquired, action, timeToBreakLock, serverId }) == 1;
+        } catch (ConcurrencySqlException ex) {
+            log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
+            return false;
+        }
     }
 
     public Map<String, Lock> findLocks() {
