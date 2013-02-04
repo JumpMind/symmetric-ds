@@ -62,9 +62,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
-    final String CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED = "RestartNodeCommunicatorThreadPool."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-
     public final static String KEY = "symconfig";
 
     protected ISymmetricEngine engine;
@@ -80,7 +77,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             Set<Node> possibleTargetNodes, boolean initialLoad) {
 
         // the list of nodeIds that we will return
-        Set<String> nodeIds = null;
+        Set<String> nodeIds = null;        
 
         // the inbound data
         Map<String, String> columnValues = getDataMap(dataMetaData, engine != null ? engine.getSymmetricDialect() : null);
@@ -227,20 +224,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED,
                             Boolean.TRUE);
 
-                    if (dataMetaData.getData().getRowData() != null
-                            && dataMetaData.getData().getRowData().contains("job.")) {
+                    if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId()) &&
+                            (dataMetaData.getData().getRowData() != null
+                            && dataMetaData.getData().getRowData().contains("job."))) {
                         routingContext.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED,
                                 Boolean.TRUE);
                     }
 
-                    if (dataMetaData.getData().getRowData() != null
-                            && (dataMetaData.getData().getRowData()
-                                    .contains(ParameterConstants.PULL_THREAD_COUNT_PER_SERVER) || dataMetaData
-                                    .getData().getRowData()
-                                    .contains(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER))) {
-                        routingContext.put(
-                                CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED, Boolean.TRUE);
-                    }
                 }
 
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
@@ -365,11 +355,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (routingContext.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
                 log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
                 engine.getDataLoaderService().reloadConflictNodeGroupLinks();
-            }
-
-            if (routingContext.get(CTX_KEY_RESTART_NODE_COMMUNICATOR_NEEDED) != null) {
-                log.info("About to reset the thread pools used to communicate with nodes because the thread pool definition changed");
-                engine.getNodeCommunicationService().stop();
             }
             
             insertReloadEvents(routingContext);
