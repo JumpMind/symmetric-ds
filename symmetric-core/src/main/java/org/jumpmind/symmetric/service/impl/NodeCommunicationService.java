@@ -170,7 +170,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 service = executors.get(communicationType);
                 if (service == null) {
                     if (threadCount <= 0) {
-                        log.warn("{}={} is not a legal value. Defaulting to 1",
+                        log.warn("{}={} is not a valid value. Defaulting to 1",
                                 threadCountParameter, threadCount);
                         threadCount = 1;
                     } else if (threadCount > 1) {
