@@ -143,9 +143,13 @@
                 <listitem>
                     <para>
                         Indicates that when a conflict is detected the batch will remain in error until manual intervention
-                        occurs. The row in error is inserted into the
+                        occurs. A row in error is inserted into the
                         <xref linkend="table_incoming_error" xrefstyle="table" />
-                        table. In order to resolve, the
+                        table.  The conflict detection id that detected the conflict is recorded (i.e., the <literal>conflict_id</literal> value from 
+                          <xref linkend="table_conflict" xrefstyle="table" />), along with the old data, new data, and the "current data" 
+                          (by current data, we mean the unexpected data at the target which doesn't match the old data as expected)
+                            in columns <literal>old_data, new_data,</literal> and <literal>cur_data</literal>. 
+                        In order to resolve, the
                         <ns:literal>resolve_data</ns:literal>
                         column can be manually filled out which will be used on the next load attempt instead of the original
                         source data. The
