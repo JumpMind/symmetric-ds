@@ -34,12 +34,15 @@ public class ConflictException extends RuntimeException {
     protected Table table;
 
     protected boolean fallbackOperationFailed = false;
+    
+    protected Conflict conflict;
 
-    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed) {
+    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed, Conflict conflict) {
         super(message(data, table, fallbackOperationFailed));
         this.data = data;
         this.table = table;
         this.fallbackOperationFailed = fallbackOperationFailed;
+        this.conflict = conflict;
     }
 
     protected static String message(CsvData data, Table table, boolean fallbackOperationFailed) {
@@ -65,6 +68,10 @@ public class ConflictException extends RuntimeException {
 
     public Table getTable() {
         return table;
+    }
+    
+    public Conflict getConflict() {
+        return conflict;
     }
 
     public boolean isFallbackOperationFailed() {

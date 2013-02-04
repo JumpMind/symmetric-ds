@@ -182,7 +182,7 @@ public class DatabaseWriter implements IDataWriter {
                         if (conflictResolver != null) {
                             conflictResolver.needsResolved(this, data, loadStatus);
                         } else {
-                            throw new ConflictException(data, targetTable, false);
+                            throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
                         }
                     } else {
                         uncommittedCount++;

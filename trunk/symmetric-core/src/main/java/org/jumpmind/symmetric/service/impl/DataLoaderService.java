@@ -37,8 +37,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
@@ -51,6 +55,7 @@ import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -108,6 +113,7 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.CollectionUtils;
 
 /**
  * Responsible for writing batch data to the database
@@ -597,8 +603,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     incomingError.getEventType().getCode(), incomingError.getBinaryEncoding()
                             .name(), incomingError.getColumnNames(), incomingError
                             .getPrimaryKeyColumnNames(), incomingError.getRowData(), incomingError
-                            .getOldData(), incomingError.getResolveData(), incomingError
-                            .getResolveData(), incomingError.getCreateTime(), incomingError
+                            .getOldData(), incomingError.getCurData(), 
+                            incomingError.getResolveData(), incomingError
+                            .getResolveData(), incomingError.getConflictId(), 
+                            incomingError.getCreateTime(), incomingError
                             .getLastUpdateBy(), incomingError.getLastUpdateTime());
         }
     }
@@ -657,8 +665,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             incomingError.setPrimaryKeyColumnNames(rs.getString("pk_column_names"));
             incomingError.setRowData(rs.getString("row_data"));
             incomingError.setOldData(rs.getString("old_data"));
+            incomingError.setCurData(rs.getString("cur_data"));
             incomingError.setResolveData(rs.getString("resolve_data"));
             incomingError.setResolveIgnore(rs.getBoolean("resolve_ignore"));
+            incomingError.setConflictId(rs.getString("conflict_id"));
             incomingError.setCreateTime(rs.getDateTime("create_time"));
             incomingError.setLastUpdateBy(rs.getString("last_update_by"));
             incomingError.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -836,6 +846,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getPrimaryKeyColumns()));
                             error.setCsvData(context.getData());
+                            error.setCurData(getCurData(error));
                             error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
@@ -843,6 +854,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setTargetCatalogName(context.getTable().getCatalog());
                             error.setTargetSchemaName(context.getTable().getSchema());
                             error.setTargetTableName(context.getTable().getName());
+                            if (ex instanceof ConflictException) {
+                                ConflictException conflictEx = (ConflictException) ex;
+                                Conflict conflict = conflictEx.getConflict();
+                                if (conflict != null) {
+                                    error.setConflictId(conflict.getConflictId());
+                                }
+                            }
                             if (transaction != null) {
                                 insertIncomingError(transaction, error);
                             } else {
@@ -867,6 +885,55 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getSourceNodeBatchId(), e);
             }
+        }
+        
+        protected String getCurData(IncomingError error) {
+            String curVal = null;
+            if (parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false)) {
+                String[] keyNames = error.getParsedPrimaryKeyColumnNames();
+                String[] columnNames = error.getParsedColumnNames();
+
+                org.jumpmind.db.model.Table targetTable = platform.getTableFromCache(
+                        error.getTargetCatalogName(), error.getTargetSchemaName(),
+                        error.getTargetTableName(), false);
+
+                targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true);
+
+                String[] data = error.getParsedOldData();
+                if (data == null) {
+                    data = error.getParsedRowData();
+                }
+
+                Column[] columns = targetTable.getColumns();
+
+                Object[] objectValues = platform.getObjectValues(error.getBinaryEncoding(), data,
+                        columns);
+
+                Map<String, Object> columnDataMap = CollectionUtils
+                        .toMap(columnNames, objectValues);
+
+                Column[] pkColumns = targetTable.getPrimaryKeyColumns();
+                Object[] args = new Object[pkColumns.length];
+                for (int i = 0; i < pkColumns.length; i++) {
+                    args[i] = columnDataMap.get(pkColumns[i].getName());
+                }
+
+                DmlStatement sqlStatement = platform
+                        .createDmlStatement(DmlType.SELECT, targetTable);
+                ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+
+                Row row = sqlTemplate.queryForRow(sqlStatement.getSql(), args);
+
+                if (row != null) {
+                    String[] existData = platform.getStringValues(error.getBinaryEncoding(),
+                            columns, row, false);
+                    if (existData != null) {
+                        curVal =  CsvUtils.escapeCsvData(existData);
+                    }
+                }
+            }
+            return curVal;
+
         }
 
         public List<IncomingBatch> getBatchesProcessed() {

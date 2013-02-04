@@ -29,6 +29,8 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class IncomingError implements Serializable {
 
+    private static final String CUR_DATA = "curData";
+
     private static final long serialVersionUID = 1L;
 
     private long batchId;
@@ -56,6 +58,8 @@ public class IncomingError implements Serializable {
     private CsvData csvData = new CsvData();
 
     private boolean resolveIgnore = false;
+    
+    private String conflictId;
 
     private Date createTime = new Date();
 
@@ -93,6 +97,14 @@ public class IncomingError implements Serializable {
 
     public void setOldData(String oldData) {
         csvData.putCsvData(CsvData.OLD_DATA, oldData);
+    }
+    
+    public String getCurData() {
+        return csvData.getCsvData(CUR_DATA);
+    }
+    
+    public void setCurData(String curData) {
+        csvData.putCsvData(CUR_DATA, curData);
     }
 
     public String getResolveData() {
@@ -249,6 +261,14 @@ public class IncomingError implements Serializable {
 
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
+    }
+    
+    public void setConflictId(String conflictId) {
+        this.conflictId = conflictId;
+    }
+    
+    public String getConflictId() {
+        return conflictId;
     }
 
 }
