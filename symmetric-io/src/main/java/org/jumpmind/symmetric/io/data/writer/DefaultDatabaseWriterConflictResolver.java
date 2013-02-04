@@ -162,7 +162,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 }
                             }
                         } else {
-                            throw new ConflictException(data, writer.getTargetTable(), false);
+                            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
                         }
                         break;
 
@@ -226,7 +226,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 }
             }
         } else {
-            throw new ConflictException(data, writer.getTargetTable(), false);
+            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
         }
     }
 
@@ -302,7 +302,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.update(data, conflict.isResolveChangesOnly(), false);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(data, writer.getTargetTable(), true);
+                throw new ConflictException(data, writer.getTargetTable(), true, conflict);
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
@@ -317,7 +317,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.insert(csvData);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(csvData, writer.getTargetTable(), true);
+                throw new ConflictException(csvData, writer.getTargetTable(), true, conflict);
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);

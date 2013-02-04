@@ -40,12 +40,14 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectIncomingErrorSql",
         		"select batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
-        		"target_table_name, event_type, binary_encoding, column_names, pk_column_names, row_data, old_data, resolve_data, resolve_ignore, " +
+        		"target_table_name, event_type, binary_encoding, column_names, pk_column_names, row_data, " +
+        		"old_data, cur_data, resolve_data, resolve_ignore, conflict_id, " +
         		"create_time, last_update_by, last_update_time from $(incoming_error) where batch_id = ? and node_id = ?");
 
         putSql("selectCurrentIncomingErrorSql",
         		"select e.batch_id, e.node_id, e.failed_row_number, e.failed_line_number, e.target_catalog_name, e.target_schema_name, " +
-        		"e.target_table_name, e.event_type, e.binary_encoding, e.column_names, e.pk_column_names, e.row_data, e.old_data, e.resolve_data, e.resolve_ignore, " +
+        		"e.target_table_name, e.event_type, e.binary_encoding, e.column_names, e.pk_column_names, e.row_data, " +
+        		"e.old_data, e.cur_data, e.resolve_data, e.resolve_ignore, e.conflict_id, " +
         		"e.create_time, e.last_update_by, e.last_update_time " +
         		"from $(incoming_error) e inner join $(incoming_batch) b on b.batch_id = e.batch_id " +
         		"and b.node_id = e.node_id and b.failed_row_number = e.failed_row_number " +
@@ -54,8 +56,8 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         putSql("insertIncomingErrorSql", 
         		"insert into $(incoming_error) " +
         		"(batch_id, node_id, failed_row_number, failed_line_number, target_catalog_name, target_schema_name, " +
-        		"target_table_name, event_type, binary_encoding, column_names, pk_column_names, row_data, old_data, resolve_data, resolve_ignore, " +
-        		"create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        		"target_table_name, event_type, binary_encoding, column_names, pk_column_names, row_data, old_data, cur_data, resolve_data, resolve_ignore, conflict_id, " +
+        		"create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateIncomingErrorSql",
         		"update $(incoming_error) set resolve_data = ?, resolve_ignore = ? " +
