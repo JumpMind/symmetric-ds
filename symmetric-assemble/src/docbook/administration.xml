@@ -263,6 +263,16 @@ where source_table_name = 'price_changes';
             which was discussed in <xref linkend="sync-triggers" />.
         </para>
     </section>
+    
+    <section id="grouplet">
+        <title>Maintaining multiple sychronization configurations through Grouplets</title>
+        <para>
+        
+        
+    
+        </para>
+    </section>
+    
      <section id="resync-data">
         <title>Re-synchronizing Data</title>
         <para>

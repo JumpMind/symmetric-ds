@@ -1057,12 +1057,26 @@ values
     <section id="configuration-trigger-router">
       <title>Trigger / Router Mappings</title>
 
-      <para>Two important controls can be configured for a specific Trigger /
-      Router combination: Initial Loads and Ping Back. The parameters for these
-      can be found in the Trigger / Router mapping table, <xref
-      linkend="table_trigger_router" xrefstyle="table"/>.</para>
+    <para>Trigger Routers, and the corresponding <xref
+      linkend="table_trigger_router" xrefstyle="table"/> identify which triggers apply to which routers. </para>
 
+      <para>Three important controls can be configured for a specific Trigger /
+      Router combination: Enabled, Initial Loads and Ping Back. The parameters for these
+      can be found in the Trigger / Router mapping table,<xref
+      linkend="table_trigger_router" xrefstyle="table"/> .</para>
+
+      <section id="configuration-trigger-router-enabled">
+        <title>Enable / disable trigger router</title>
+        
+        <para>
+        Each individual trigger-router combination can be disabled or enabled if needed.  By default, a trigger router is enabled,
+        but if you have a reason you wish to define a trigger router combination prior to it being active, you can set
+        the <literal>enabled</literal> flag to 0.  This will cause the configuration to be sent to all nodes, but the trigger-router
+        combination will not be considered active or enabled for the purposes of routing.       
+        </para>
+    </section>
       <section id="configuration-initial-load">
+        
         <title>Initial Loads</title>
 
         <para>An initial load is the process of seeding tables at a target
