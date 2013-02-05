@@ -118,20 +118,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 log.warn("Registration is not allowed until this node has an identity");
                 return false;
-            }
-            
-            /*
-             * Check to see if there is a link that exists to service the node that is requesting registration
-             */
-            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-            if (link == null) {
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                        RegistrationStatus.RQ, remoteHost, remoteAddress));
-                log.warn("Registration is not allowed unless a link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
-                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-                return false;
-            }
-            
+            }                        
             
             if (!nodeService.isRegistrationServer()) {
                 /*
@@ -156,6 +143,19 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
+            
+            /*
+             * Check to see if there is a link that exists to service the node that is requesting registration
+             */
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+            if (link == null && 
+                    parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK, true)) {
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                        RegistrationStatus.RQ, remoteHost, remoteAddress));
+                log.warn("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
+                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+                return false;
+            }            
 
             String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
                     .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost, remoteAddress)
