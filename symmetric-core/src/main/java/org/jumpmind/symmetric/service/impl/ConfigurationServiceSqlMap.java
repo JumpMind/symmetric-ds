@@ -105,6 +105,10 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
 
         putSql("getRegistrationRedirectSql",
             "select registrant_external_id, registration_node_id from $(registration_redirect)");
+        
+        putSql("selectMaxChannelLastUpdateTime" ,"select max(last_update_time) from $(channel) where last_update_time is not null" );       
+        putSql("selectMaxNodeGroupLastUpdateTime" ,"select max(last_update_time) from $(node_group) where last_update_time is not null" );
+        putSql("selectMaxNodeGroupLinkLastUpdateTime" ,"select max(last_update_time) from $(node_group_link) where last_update_time is not null" );
 
     }
 

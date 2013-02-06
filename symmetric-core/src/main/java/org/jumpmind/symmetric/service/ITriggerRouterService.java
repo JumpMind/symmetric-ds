@@ -37,6 +37,8 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface ITriggerRouterService {
 
+    public boolean refreshFromDatabase();
+    
     public List<TriggerHistory> getActiveTriggerHistories();
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
@@ -164,6 +166,6 @@ public interface ITriggerRouterService {
 
     public Map<Trigger, Exception> getFailedTriggers();
     
-    public void resetCaches();
+    public void clearCache();
 
 }

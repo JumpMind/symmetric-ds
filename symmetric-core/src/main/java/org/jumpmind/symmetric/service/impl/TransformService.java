@@ -30,6 +30,8 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
+    
+    private Date lastUpdateTime;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IConfigurationService configurationService) {
@@ -38,6 +40,23 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
+    
+    public boolean refreshFromDatabase() {
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTransformTableLastUpdateTime"), Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxTransformColumnLastUpdateTime"), Date.class);
+        Date date = maxDate(date1, date2);
+        
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer transform settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
             TransformPoint transformPoint, boolean useCache) {
@@ -65,7 +84,7 @@ public class TransformService extends AbstractService implements ITransformServi
         return null;
     }
 
-    public void resetCache() {
+    public void clearCache() {
         synchronized (this) {
             this.transformsCacheByNodeGroupLinkByTransformPoint = null;
         }

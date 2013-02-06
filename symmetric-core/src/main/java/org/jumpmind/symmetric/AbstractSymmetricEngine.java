@@ -836,11 +836,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public void clearCaches() {
-        getTriggerRouterService().resetCaches();
+        getTriggerRouterService().clearCache();
         getParameterService().rereadParameters();
-        getTransformService().resetCache();
-        getDataLoaderService().reloadConflictNodeGroupLinks();
-        getConfigurationService().reloadChannels();
+        getTransformService().clearCache();
+        getDataLoaderService().clearCache();
+        getConfigurationService().clearCache();
         getNodeService().flushNodeAuthorizedCache();
     }
 

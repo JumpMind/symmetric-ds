@@ -45,6 +45,9 @@ public class GroupletServiceSqlMap extends AbstractSqlMap {
         putSql("deleteTriggerRouterGroupletSql", "delete from $(trigger_router_grouplet) where grouplet_id=? and applies_when=? and trigger_id=? and router_id=?");
         putSql("deleteTriggerRouterGroupletForSql", "delete from $(trigger_router_grouplet) where trigger_id=? and router_id=?");
 
+        putSql("selectMaxGroupletLastUpdateTime" ,"select max(last_update_time) from $(grouplet) where last_update_time is not null" );       
+        putSql("selectMaxGroupletLinkLastUpdateTime" ,"select max(last_update_time) from $(grouplet_link) where last_update_time is not null" );
+        putSql("selectMaxTriggerRouterGroupletLastUpdateTime" ,"select max(last_update_time) from $(trigger_router_grouplet) where last_update_time is not null" );
     }
 
 }

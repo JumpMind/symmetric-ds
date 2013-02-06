@@ -34,6 +34,8 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
  * Provides an API to configure data synchronizations.
  */
 public interface IConfigurationService {
+    
+    public boolean refreshFromDatabase();
 
     public List<NodeGroup> getNodeGroups();
     
@@ -82,7 +84,7 @@ public interface IConfigurationService {
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
-    public void reloadChannels();
+    public void clearCache();
     
     public void initDefaultChannels();
 

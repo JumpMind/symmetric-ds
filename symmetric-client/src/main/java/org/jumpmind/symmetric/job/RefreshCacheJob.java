@@ -35,7 +35,12 @@ public class RefreshCacheJob extends AbstractJob {
     
     @Override
     public void doJob(boolean force) throws Exception {
-        engine.getParameterService().checkDatabaseForNewerParameters();
+        engine.getParameterService().refreshFromDatabase();
+        engine.getTriggerRouterService().refreshFromDatabase();
+        engine.getGroupletService().refreshFromDatabase();
+        engine.getConfigurationService().refreshFromDatabase();
+        engine.getTransformService().refreshFromDatabase();
+        engine.getDataLoaderService().refreshFromDatabase();
     }
     
     public String getClusterLockName() {

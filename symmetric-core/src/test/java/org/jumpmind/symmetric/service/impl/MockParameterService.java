@@ -16,7 +16,8 @@ public class MockParameterService extends AbstractParameterService implements IP
 
     }
     
-    public void checkDatabaseForNewerParameters() {
+    public boolean refreshFromDatabase() {
+        return false;
     }
     
     public MockParameterService(Properties properties) {
