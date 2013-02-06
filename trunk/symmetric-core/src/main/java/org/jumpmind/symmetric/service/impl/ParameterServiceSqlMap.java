@@ -10,12 +10,12 @@ public class ParameterServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         putSql("updateParameterSql" ,"" + 
-"update $(parameter) set param_value=? where external_id=? and node_group_id=?   " + 
-"  and param_key=?                                                                          " );
+"update $(parameter) set param_value=?, last_update_by=?, last_update_time=current_timestamp " +
+" where external_id=? and node_group_id=? and param_key=?" );
 
         putSql("insertParameterSql" ,"" + 
-"insert into $(parameter) (external_id, node_group_id, param_key, param_value)   " + 
-"  values(?, ?, ?, ?)                                                                       " );
+"insert into $(parameter) (external_id, node_group_id, param_key, param_value, last_update_by, create_time, last_update_time)   " + 
+"  values(?, ?, ?, ?, ?, current_timestamp, current_timestamp)                                                                  " );
 
         putSql("selectParametersSql" ,"" + 
 "select param_key, param_value from $(parameter) where external_id=? and   " + 
@@ -28,6 +28,9 @@ public class ParameterServiceSqlMap extends AbstractSqlMap {
         putSql("deleteParameterSql" ,"" + 
 "delete from $(parameter) where external_id=? and   " + 
 "  node_group_id=? and param_key=?                             " );
+        
+        putSql("selectMaxLastUpdateTime" ,"" + 
+"select max(last_update_time) from $(parameter) where last_update_time is not null " );        
 
     }
 

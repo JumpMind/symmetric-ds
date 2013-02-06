@@ -55,11 +55,11 @@ public interface IParameterService {
     
     public String getString(String key, String defaultVal);
 
-    public void saveParameter(String key, Object paramValue);
+    public void saveParameter(String key, Object paramValue, String lastUpdateBy);
 
-    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue);
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy);
 
-    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters);
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy);
     
     public void deleteParameter(String externalId, String nodeGroupId, String key);
 
@@ -76,6 +76,8 @@ public interface IParameterService {
     public void setParameterFilter(IParameterFilter f);
     
     public boolean isRegistrationServer();
+    
+    public void checkDatabaseForNewerParameters();
 
     /**
      * Get the group id for this instance
