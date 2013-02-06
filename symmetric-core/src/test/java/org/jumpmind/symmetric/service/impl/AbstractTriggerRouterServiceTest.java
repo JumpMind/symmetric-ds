@@ -182,7 +182,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
                 ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY);
         try {
             getParameterService().saveParameter(
-                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true);
+                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true, "test");
             if (!Constants.ALWAYS_TRUE_CONDITION.equals(getDbDialect().getDataHasChangedCondition(
                     getTriggerRouterService().getTriggers().get(0)))) {
                 forceRebuildOfTrigers();
@@ -195,7 +195,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
             }
         } finally {
             getParameterService().saveParameter(
-                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, oldvalue);
+                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, oldvalue, "test");
             forceRebuildOfTrigers();
         }
     }

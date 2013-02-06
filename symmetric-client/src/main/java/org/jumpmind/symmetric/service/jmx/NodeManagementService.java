@@ -203,7 +203,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             + "  If the value is set to zero you are effectively disabling your transport"
             + " (wihch can be useful for maintainance")
     public void setNumOfNodeConnectionsPerInstance(int value) {
-        engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
+        engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value, "jmx");
     }
 
     @ManagedAttribute(description = "The group this node belongs to")

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,9 @@ public class TransformTable implements Cloneable {
     protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
+    protected Date createTime;    
+    protected Date lastUpdateTime;    
+    protected String lastUpdateBy;
 
     public TransformTable(String sourceTableName, String targetTableName,
             TransformPoint transformPoint, TransformColumn... columns) {
@@ -318,4 +322,29 @@ public class TransformTable implements Cloneable {
             throw new IllegalStateException(e);
         }
     }
+    
+    public Date getCreateTime() {
+        return createTime;
+    }
+    
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+    
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
+    }
+    
+    public void setLastUpdateBy(String lastUpdateBy) {
+        this.lastUpdateBy = lastUpdateBy;
+    }
+    
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+    
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+    
 }

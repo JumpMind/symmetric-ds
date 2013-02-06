@@ -857,7 +857,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // set purge in the future just in case the database time is different
         // than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
 
         int beforePurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getServer().purge();
@@ -874,13 +874,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 (beforePurge - afterPurge) > 0);
 
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-                purgeRetentionMinues);
+                purgeRetentionMinues, "test");
 
         parameterService = getClient().getParameterService();
         purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // set purge in the future just in case the database time is different
         // than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
 
         beforePurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getClient().purge();
@@ -897,7 +897,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 (beforePurge - afterPurge) > 0);
 
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-                purgeRetentionMinues);
+                purgeRetentionMinues, "test");
     }
 
     @Test(timeout = 120000)

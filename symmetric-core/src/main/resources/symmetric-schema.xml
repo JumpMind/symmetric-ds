@@ -46,12 +46,18 @@
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
         <column name="description" type="VARCHAR" size="255" description="A description of this node group."/>
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
     </table>
 
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
         <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, ) " />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
         <foreign-key foreignTable="node_group" name="fk_lnk_2_grp_src">
             <reference local="source_node_group_id" foreign="node_group_id" />
         </foreign-key>
@@ -171,6 +177,9 @@
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
     </table>
 
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
@@ -280,6 +289,9 @@
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Target the parameter at a specific node group id. To target all groups, use the value of 'ALL.'"/>
         <column name="param_key" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the parameter."/>
         <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />        
     </table>
 
     <table name="registration_redirect" description="Provides a way for a centralized registration server to redirect registering nodes to their prospective parent node in a multi-tiered deployment." >
@@ -470,6 +482,9 @@
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
         <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
         <foreign-key foreignTable="node_group_link" name="fk_tt_2_grp_lnk">
             <reference local="source_node_group_id" foreign="source_node_group_id" />
             <reference local="target_node_group_id" foreign="target_node_group_id" />            
@@ -484,7 +499,10 @@
         <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
         <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
         <column name="transform_expression" type="LONGVARCHAR" description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
-        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
+        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                        
     </table>
     
     <table name="conflict" description="Defines how conflicts in row data should be handled during the load process.">

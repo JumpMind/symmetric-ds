@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class NodeGroupLink implements Serializable {
 
@@ -32,6 +33,12 @@ public class NodeGroupLink implements Serializable {
     private String targetNodeGroupId;
 
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
+        
+    private Date createTime;
+    
+    private Date lastUpdateTime;
+    
+    private String lastUpdateBy;
 
     public NodeGroupLink() {   
     }
@@ -63,6 +70,30 @@ public class NodeGroupLink implements Serializable {
 
     public void setTargetNodeGroupId(String targetNodeGroupId) {
         this.targetNodeGroupId = targetNodeGroupId;
+    }
+        
+    public Date getCreateTime() {
+        return createTime;
+    }
+    
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+    
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
+    }
+    
+    public void setLastUpdateBy(String lastUpdateBy) {
+        this.lastUpdateBy = lastUpdateBy;
+    }
+    
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+    
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
     @Override
