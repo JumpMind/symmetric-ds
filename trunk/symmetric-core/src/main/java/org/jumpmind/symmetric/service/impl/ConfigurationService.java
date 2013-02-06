@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 /**
  * @see IConfigurationService
  */
-public class ConfigurationService extends AbstractService implements IConfigurationService {
+public class ConfigurationService extends AbstractService implements IConfigurationService {       
 
     private INodeService nodeService;
 
@@ -59,6 +59,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private long nodeChannelCacheTime;
 
     private List<Channel> defaultChannels;
+    
+    private Date lastUpdateTime;
 
     public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
             INodeService nodeService) {
@@ -71,6 +73,23 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+    }
+    
+    public boolean refreshFromDatabase() {
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"), Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLastUpdateTime"), Date.class);
+        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLinkLastUpdateTime"), Date.class);
+        Date date = maxDate(date1, date2, date3);
+        
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer channel or group settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void saveNodeGroupLink(NodeGroupLink link) {
@@ -178,7 +197,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.getLastUpdateBy(), channel.getCreateTime()});
         }
         if (reloadChannels) {
-            reloadChannels();
+            clearCache();
         }
     }
 
@@ -205,14 +224,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     nodeChannel.getLastExtractTime() });
         }
         if (reloadChannels) {
-            reloadChannels();
+            clearCache();
         }
     }
 
     public void deleteChannel(Channel channel) {
         sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
         sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
-        reloadChannels();
+        clearCache();
     }
 
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis) {
@@ -331,7 +350,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return nodeChannels;
     }
 
-    public void reloadChannels() {
+    public void clearCache() {
         synchronized (this) {
             nodeChannelCache = null;
             channelsCache = null;
@@ -347,7 +366,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void initDefaultChannels() {
         if (defaultChannels != null) {
-            reloadChannels();
+            clearCache();
             List<NodeChannel> channels = getNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
@@ -358,7 +377,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             defaultChannel.getChannelId());
                 }
             }
-            reloadChannels();
+            clearCache();
         }
     }
 

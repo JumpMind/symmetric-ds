@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +67,21 @@ abstract public class AbstractService implements IService {
         this.tablePrefix = parameterService.getTablePrefix();
         this.platform = symmetricDialect.getPlatform();
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+    }
+    
+    protected Date maxDate(Date... dates) {
+        Date date = null;
+        if (dates != null) {
+            for (Date d : dates) {
+                if (d != null) {
+                    if (date == null || d.after(date)) {
+                        date = d;
+                    }
+                }
+            }
+        }
+        
+        return date;
     }
 
     protected void setSqlMap(ISqlMap sqlMap) {

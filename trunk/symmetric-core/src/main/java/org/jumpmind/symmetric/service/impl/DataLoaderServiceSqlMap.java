@@ -52,6 +52,9 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         		"from $(incoming_error) e inner join $(incoming_batch) b on b.batch_id = e.batch_id " +
         		"and b.node_id = e.node_id and b.failed_row_number = e.failed_row_number " +
         		"where b.batch_id = ? and b.node_id = ?");
+        
+        putSql("selectMaxLastUpdateTime" ,"" + 
+"select max(last_update_time) from $(conflict) where last_update_time is not null" );       
 
         putSql("insertIncomingErrorSql", 
         		"insert into $(incoming_error) " +

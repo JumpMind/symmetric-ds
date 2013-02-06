@@ -119,6 +119,10 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  and include_on=?                      " + 
 "  and target_column_name=?              " );
 
+    
+    
+        putSql("selectMaxTransformTableLastUpdateTime" ,"select max(last_update_time) from $(transform_table) where last_update_time is not null" );       
+        putSql("selectMaxTransformColumnLastUpdateTime" ,"select max(last_update_time) from $(transform_column) where last_update_time is not null" );
+    
     }
-
 }

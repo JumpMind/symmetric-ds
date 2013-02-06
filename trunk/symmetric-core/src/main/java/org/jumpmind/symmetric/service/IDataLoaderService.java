@@ -41,6 +41,8 @@ import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLi
  * from a transport
  */
 public interface IDataLoaderService {
+    
+    public boolean refreshFromDatabase();
 
     public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException;
 
@@ -70,7 +72,7 @@ public interface IDataLoaderService {
     
     public void save(ConflictNodeGroupLink settings);
     
-    public void reloadConflictNodeGroupLinks();
+    public void clearCache();
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 

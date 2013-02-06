@@ -50,6 +50,8 @@ public class GroupletService extends AbstractService implements IGroupletService
     protected List<Grouplet> cache;
 
     protected long lastCacheTime = 0;
+    
+    private Date lastUpdateTime;
 
     public GroupletService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -59,7 +61,24 @@ public class GroupletService extends AbstractService implements IGroupletService
                 createSqlReplacementTokens()));
     }
     
-    public void reloadGrouplets() {
+    public boolean refreshFromDatabase() {
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLastUpdateTime"), Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLinkLastUpdateTime"), Date.class);
+        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxTriggerRouterGroupletLastUpdateTime"), Date.class);
+        Date date = maxDate(date1, date2, date3);
+        
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer grouplet settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void clearCache() {
         lastCacheTime = 0;
     }
 

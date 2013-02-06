@@ -77,7 +77,7 @@ public interface IParameterService {
     
     public boolean isRegistrationServer();
     
-    public void checkDatabaseForNewerParameters();
+    public boolean refreshFromDatabase();
 
     /**
      * Get the group id for this instance

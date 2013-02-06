@@ -780,7 +780,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IConfigurationService rootConfigService = getServer().getConfigurationService();
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-        rootConfigService.reloadChannels();
+        rootConfigService.clearCache();
 
         NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_EXTERNAL_ID, false);
@@ -798,13 +798,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
 
-        rootConfigService.reloadChannels();
+        rootConfigService.clearCache();
 
         clientPull();
 
         Assert.assertNull(clientTestService.getCustomer(customer.getCustomerId()));
 
-        getClient().getConfigurationService().reloadChannels();
+        getClient().getConfigurationService().clearCache();
 
     }
 

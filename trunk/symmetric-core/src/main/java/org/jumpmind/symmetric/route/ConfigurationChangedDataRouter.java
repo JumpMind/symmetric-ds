@@ -338,7 +338,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
             if (routingContext.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
                 log.info("Channels flushed because new channels came through the data router");
-                engine.getConfigurationService().reloadChannels();
+                engine.getConfigurationService().clearCache();
             }
 
             if (routingContext.get(CTX_KEY_RESYNC_NEEDED) != null
@@ -349,12 +349,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
             if (routingContext.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
                 log.info("About to refresh the cache of transformation because new configuration came through the data router");
-                engine.getTransformService().resetCache();
+                engine.getTransformService().clearCache();
             }
 
             if (routingContext.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
                 log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
-                engine.getDataLoaderService().reloadConflictNodeGroupLinks();
+                engine.getDataLoaderService().clearCache();
             }
             
             insertReloadEvents(routingContext);

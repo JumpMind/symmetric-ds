@@ -64,15 +64,17 @@ public class ParameterService extends AbstractParameterService implements IParam
         return this.tablePrefix;
     }
     
-    public void checkDatabaseForNewerParameters() {
+    public boolean refreshFromDatabase() {
         Date date = sqlTemplate.queryForObject(sql.getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 log.info("Newer database parameters were detected");
                 lastUpdateTime = date;
                 rereadParameters();
+                return true;
             }
         }
+        return false;
     }
 
     /**

@@ -32,6 +32,7 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +150,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private long lastConflictCacheResetTimeInMs = 0;
 
     private ISymmetricEngine engine = null;
+    
+    private Date lastUpdateTime;
 
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -166,6 +169,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
         this.engine = engine;
+    }
+    
+    public boolean refreshFromDatabase() {
+        Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer conflict settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addDataLoaderFactory(IDataLoaderFactory factory) {
@@ -502,7 +518,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return list;
     }
 
-    public void reloadConflictNodeGroupLinks() {
+    public void clearCache() {
         synchronized (this) {
             conflictSettingsCache.clear();
             lastConflictCacheResetTimeInMs = System.currentTimeMillis();
@@ -516,7 +532,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
             if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime
                     || refreshCache) {
-                reloadConflictNodeGroupLinks();
+                clearCache();
             }
 
             List<ConflictNodeGroupLink> list = conflictSettingsCache.get(link);

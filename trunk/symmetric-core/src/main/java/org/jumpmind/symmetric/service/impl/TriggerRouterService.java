@@ -88,6 +88,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IGroupletService groupletService;
 
     private List<String> extraConfigTables = new ArrayList<String>();
+    
+    private Date lastUpdateTime;
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -104,6 +106,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.addTriggerCreationListeners(this.failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+    }
+    
+    public boolean refreshFromDatabase() {
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTriggerLastUpdateTime"), Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
+        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxTriggerRouterLastUpdateTime"), Date.class);
+        Date date = maxDate(date1, date2, date3);
+        
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer trigger router settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Trigger> getTriggers() {
@@ -868,10 +887,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         // make sure all tables are freshly read in
                         platform.resetCachedTableModel();
 
-                        resetCaches();
+                        clearCache();
 
                         // make sure channels are read from the database
-                        configurationService.reloadChannels();
+                        configurationService.clearCache();
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer);
@@ -891,7 +910,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    public void resetCaches() {
+    public void clearCache() {
         synchronized (this.getClass()) {
             this.triggerRouterCacheTime = 0;
             this.routersCacheTime = 0;
