@@ -1024,32 +1024,35 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
         Set<Table> tables = new HashSet<Table>();
+        try {
+            if (trigger.isSourceTableNameWildCarded()) {
+                boolean ignoreCase = this.parameterService
+                        .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
 
-        if (trigger.isSourceTableNameWildCarded()) {
-            boolean ignoreCase = this.parameterService
-                    .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+                Database database = symmetricDialect.getPlatform().readDatabase(
+                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        new String[] { "TABLE" });
+                Table[] tableArray = database.getTables();
 
-            Database database = symmetricDialect.getPlatform().readDatabase(
-                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                    new String[] { "TABLE" });
-            Table[] tableArray = database.getTables();
-
-            for (Table table : tableArray) {
-                if (trigger.matches(table, platform.getDefaultCatalog(),
-                        platform.getDefaultSchema(), ignoreCase)
-                        && !containsExactMatchForSourceTableName(table.getName(), triggers,
-                                ignoreCase)
-                        && !table.getName().toLowerCase().startsWith(tablePrefix)) {
+                for (Table table : tableArray) {
+                    if (trigger.matches(table, platform.getDefaultCatalog(),
+                            platform.getDefaultSchema(), ignoreCase)
+                            && !containsExactMatchForSourceTableName(table.getName(), triggers,
+                                    ignoreCase)
+                            && !table.getName().toLowerCase().startsWith(tablePrefix)) {
+                        tables.add(table);
+                    }
+                }
+            } else {
+                Table table = symmetricDialect.getPlatform().getTableFromCache(
+                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false);
+                if (table != null) {
                     tables.add(table);
                 }
             }
-        } else {
-            Table table = symmetricDialect.getPlatform().getTableFromCache(
-                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                    trigger.getSourceTableName(), false);
-            if (table != null) {
-                tables.add(table);
-            }
+        } catch (Exception ex) {
+            log.error(String.format("Failed to retrieve tables for trigger with id of %s", trigger.getTriggerId()), ex);
         }
         return tables;
     }
@@ -1090,7 +1093,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (Trigger trigger : triggers) {
 
             Set<Table> tables = getTablesForTrigger(trigger, triggers);
-            if (tables.size() > 0) {
+            
+            if (tables != null && tables.size() > 0) {
                 for (Table table : tables) {
                     updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
                 }
