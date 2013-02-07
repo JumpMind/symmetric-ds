@@ -103,6 +103,13 @@
             </varlistentry>
         </variablelist>
     </para>
+          <important>
+            <para>Be aware that conflict detection will <emphasis>not</emphasis> detect changes to binary columns in
+            the case where <literal>use_stream_lobs</literal> is true in the trigger for the table.  In addition, some
+            databases do not allow comparisons of binary columns whether <literal>use_stream_lobs</literal> is true or not. 
+           </para>
+      </important>
+      
     <para>
         The choice of how to resolve a detected conflict is configured via the <literal>resolve_type</literal> column. Depending on the setting, two additional boolean settings
         may also be configured, namely <literal>resolve_row_only</literal> and <literal>resolve_changes_only</literal>, as discussed in the resolution settings below.
