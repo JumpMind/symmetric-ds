@@ -435,7 +435,11 @@ values
   </section>
 
   <section id="configuration-triggers-and-routers">
-    <title>Triggers and Routers</title>
+    <title>Triggers, Routers, and Trigger / Routers Mappings</title>
+
+    <para>In order to synchronize data, you must define at least one trigger, at least one router,
+    and provide at least one link between the two (known as a trigger-router). 
+    </para>
 
     <section id="configuration-trigger">
       <title>Trigger</title>
@@ -1057,9 +1061,12 @@ values
     <section id="configuration-trigger-router">
       <title>Trigger / Router Mappings</title>
 
-    <para>Trigger Routers, and the corresponding <xref
-      linkend="table_trigger_router" xrefstyle="table"/> identify which triggers apply to which routers. </para>
-
+    <para>The <xref
+      linkend="table_trigger_router" xrefstyle="table"/> table is used to define
+      which specific combinations of triggers and routers are needed for your configuration.  The relationship between
+      triggers and routers is many-to-many, so this table serves as the join table to define which combinations are valid, as well
+      as to define settings available at the trigger-router level of granularity.
+    </para>
       <para>Three important controls can be configured for a specific Trigger /
       Router combination: Enabled, Initial Loads and Ping Back. The parameters for these
       can be found in the Trigger / Router mapping table,<xref
@@ -1071,8 +1078,8 @@ values
         <para>
         Each individual trigger-router combination can be disabled or enabled if needed.  By default, a trigger router is enabled,
         but if you have a reason you wish to define a trigger router combination prior to it being active, you can set
-        the <literal>enabled</literal> flag to 0.  This will cause the configuration to be sent to all nodes, but the trigger-router
-        combination will not be considered active or enabled for the purposes of routing.       
+        the <literal>enabled</literal> flag to 0.  This will cause the trigger-router mapping to be sent to all nodes, but the trigger-router
+        mapping will not be considered active or enabled for the purposes of capturing data changes or routing.       
         </para>
     </section>
       <section id="configuration-initial-load">
