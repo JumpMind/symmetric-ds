@@ -577,6 +577,12 @@ ontape -s -L 0
                     will accommodate your transactional data.
                 </para>
                 </listitem>
+            <listitem>
+                <para>
+                    Due to the single threaded access to SQLite, the 
+                    following parameter should be set to true: <literal>jobs.synchronized.enable</literal>.
+                </para>
+                </listitem>
             </itemizedlist>
         </para>
         </section>
