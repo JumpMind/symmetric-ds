@@ -1,16 +1,29 @@
-SymmetricDS - 3.3.0.pre.1 (Released 2013-01-31) 
-===============================================
-- 0001024: [Improvement] Use the symmetric table name as the virtual trigger name instead of a hashcode of the table name (chenson) - closed.
-- 0001025: [Improvement] Don't log staging area cleanup at the info level. Change logging to debug level (chenson) - closed.
-- 0001026: [New Feature] If the minor version is upgraded, then (if you aren't the reg server) request a reload of key symmetric tables (chenson) - closed.
-- 0001027: [New Feature] Add the ability to enable or disable trigger routers with an enabled column (chenson) - closed.
-- 0001019: [New Feature] Grouplets - Add a feature to specify a subset of nodes for which a router is enabled to allow piloting of configuration. (chenson) - closed.
+SymmetricDS - 3.3.0 (Released 2013-02-08) 
+=========================================
+- 0001040: [Bug] When use_stream_lobs is on use_changed_data conflict resolution doesn't work because the lobs old data is always null (chenson) - closed.
+- 0000994: [Improvement] Update Users Guide to describe how to deploy to separate machines (tutorial is multi-homed) (chenson) - closed.
+- 0001036: [Bug] Error is not getting recorded in outgoing batch if there isn't a line number (chenson) - closed.
+- 0001037: [Improvement] Default dataloader.ignore.missing.tables to false instead of true (chenson) - closed.
+- 0001039: [Bug] syncTriggers should not abort when metadata cannot be read due to db permissions for just one trigger (chenson) - closed.
+- 0000986: [New Feature] Include conflict_id reference in sym_incoming_error table to crossreference the type of conflict that occurred (chenson) - closed.
+- 0001028: [Bug] stream.to.file.enabled=false is broken (chenson) - closed.
+- 0001031: [Bug] Documentation for outgoing_batch is missing IG and has RE instead of RT and QE instead of QY (chenson) - closed.
+- 0000987: [New Feature] Add the "current" (conflicting) data to a column in sym_incoming_error (chenson) - closed.
+- 0001033: [Improvement] Before allocating push/pull jobs check to see if thread count has changed and if so, restart thread pool (chenson) - closed.
+- 0001030: [Bug] Exception in clustered firebird environment (chenson) - closed.
+- 0001034: [New Feature] Add last_update_by, last_update_time, create_time to transform_*, parameter, channel, node_group, and node_group_link (chenson) - closed.
+- 0001035: [New Feature] Add new refresh cache job that can be turned on in a clustered environment to check for configuration changes (chenson) - closed.
 - 0000967: [Bug] Unknown table "INFORMATION_SCHEMA.SESSION_STATUS" error for MySQL 5.0.XX (chenson) - closed.
 - 0001010: [Improvement] Log better messages when server node is unavailable giving users a clue as to what action needs to be taken (admin) - closed.
 - 0001013: [Improvement] BshDatabaseWriterFilter should bind the error to use in a HANDLE_ERROR script (chenson) - closed.
 - 0001014: [Improvement] Don't write STOPPED for the last server id in sym_lock when releasing an infinite lock (chenson) - closed.
 - 0001015: [Bug] Data event count and insert event count get lost for big reload batches because status is requeried and overwrites the values (chenson) - closed.
 - 0001018: [New Feature] Add a mechanism for a remote node to request a table reload. This is helpful while rolling out new tables. (chenson) - closed.
+- 0001019: [New Feature] Grouplets - Add a feature to specify a subset of nodes for which a router is enabled to allow piloting of configuration. (chenson) - closed.
+- 0001024: [Improvement] Use the symmetric table name as the virtual trigger name instead of a hashcode of the table name (chenson) - closed.
+- 0001025: [Improvement] Don't log staging area cleanup at the info level. Change logging to debug level (chenson) - closed.
+- 0001026: [New Feature] If the minor version is upgraded, then (if you aren't the reg server) request a reload of key symmetric tables (chenson) - closed.
+- 0001027: [New Feature] Add the ability to enable or disable trigger routers with an enabled column (chenson) - closed.
 
 SymmetricDS - 3.2.3 (Released 2013-01-24) 
 =========================================
