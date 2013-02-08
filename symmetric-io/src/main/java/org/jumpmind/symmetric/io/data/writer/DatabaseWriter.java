@@ -539,7 +539,8 @@ public class DatabaseWriter implements IDataWriter {
                     lookupKeys = targetTable.getColumnsAsList();
                 }
 
-                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
+                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
+                        || data.isNoBinaryOldData()) {
                     Iterator<Column> it = lookupKeys.iterator();
                     while (it.hasNext()) {
                         Column col = it.next();
@@ -667,7 +668,8 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys = targetTable.getColumnsAsList();
                     }
 
-                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
+                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause() 
+                            || data.isNoBinaryOldData()) {
                         Iterator<Column> it = lookupKeys.iterator();
                         while (it.hasNext()) {
                             Column col = it.next();

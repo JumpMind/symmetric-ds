@@ -34,6 +34,7 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -783,6 +784,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         routerId, triggerHistory, true);
                                 this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
                             }
+                            
+                            data.setNoBinaryOldData(requiresLobSelectedFromSource || 
+                                    symmetricDialect.getName().equals(DatabaseNamesConstants.MSSQL));
                         } else {
                             log.error(
                                     "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
