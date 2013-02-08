@@ -42,15 +42,17 @@ public class CsvData {
     public static final String ATTRIBUTE_TX_ID = "transactionId";
     public static final String ATTRIBUTE_SOURCE_NODE_ID = "sourceNodeId";
     public static final String ATTRIBUTE_EXTERNAL_DATA = "externalData";
-    public static final String ATTRIBUTE_ROUTER_ID = "routerId";
+    public static final String ATTRIBUTE_ROUTER_ID = "routerId";    
     public static final String ATTRIBUTE_DATA_ID = "dataId";
     public static final String ATTRIBUTE_CREATE_TIME = "createTime";
-
+    
     private Map<String, String[]> parsedCsvData = null;
 
     private Map<String, String> csvData = null;
 
     private Map<String, Object> attributes;
+    
+    private boolean noBinaryOldData = false;
 
     protected DataEventType dataEventType;
 
@@ -235,5 +237,13 @@ public class CsvData {
 
     public boolean requiresTable() {
         return dataEventType != null && dataEventType != DataEventType.CREATE;
+    }
+    
+    public boolean isNoBinaryOldData() {
+        return noBinaryOldData;
+    }
+    
+    public void setNoBinaryOldData(boolean noBinaryOldData) {
+        this.noBinaryOldData = noBinaryOldData;
     }
 }

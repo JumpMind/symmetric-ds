@@ -58,6 +58,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected List<IProtocolDataWriterListener> listeners;
 
     protected String sourceNodeId;
+    
+    protected boolean noBinaryOldData = false;
 
     public AbstractProtocolDataWriter(String sourceNodeId,
             List<IProtocolDataWriterListener> listeners) {
@@ -124,6 +126,12 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     public void write(CsvData data) {
         if (!batch.isIgnored()) {
+            
+            if (noBinaryOldData != data.isNoBinaryOldData()) {
+                noBinaryOldData = data.isNoBinaryOldData();
+                println(CsvConstants.NO_BINARY_OLD_DATA, Boolean.toString(noBinaryOldData));
+            }
+            
             statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
             switch (data.getDataEventType()) {
