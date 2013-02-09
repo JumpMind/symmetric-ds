@@ -621,7 +621,7 @@
         </foreign-key>                  
     </table>
     
-    <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers and if they apply to source node groups or target node groups">
+    <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers.  The existence of the grouplet for a trigger_router enables nodes associated with the grouplet and at the same time it disables the trigger router for all other nodes.">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
