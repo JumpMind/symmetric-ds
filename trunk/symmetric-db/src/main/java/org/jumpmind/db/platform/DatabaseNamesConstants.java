@@ -20,6 +20,6 @@ final public class DatabaseNamesConstants {
     public final static String DB2 = "db2";
     public final static String POSTGRESQL = "postgres";
     public final static String SYBASE = "sybase";
-    
+    public final static String MARIADB = "mariadb";
     
 }

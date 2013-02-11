@@ -40,6 +40,7 @@ import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
+import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
@@ -76,6 +77,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "HsqlDb", HsqlDbDatabasePlatform.class);
         addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
+        addPlatform(platforms, "MariaDB", MariaDBDatabasePlatform.class);
         addPlatform(platforms, "MsSQL", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server11", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server", MsSqlDatabasePlatform.class);
@@ -189,6 +191,16 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 }
             }
+            
+            /*
+             * if the productName is MySQL, it could be either MysSQL or MariaDB
+             * query the metadata to determine which one it is 
+             */
+            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
+                if (isMariaDBDatabase(connection)) {
+                    nameVersion[0] = DatabaseNamesConstants.MARIADB;
+                }
+            }
 
             return nameVersion;
         } catch (SQLException ex) {
@@ -235,6 +247,37 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return isGreenplum;
+    }
+
+    private static boolean isMariaDBDatabase(Connection connection) {
+        Statement stmt = null;
+        ResultSet rs = null;
+        String productName = null;
+        boolean isMariaDB = false;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(MariaDBDatabasePlatform.SQL_GET_MARIADB_NAME);
+            while (rs.next()) {
+                productName = rs.getString(1);
+            }
+            if (productName != null && StringUtils.containsIgnoreCase(productName, DatabaseNamesConstants.MARIADB)) {
+                isMariaDB = true;
+            }
+        } catch (SQLException ex) {
+            // ignore the exception, if it is caught, then this is most likely
+            // not a mariadb database
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+            }
+        }
+        return isMariaDB;
     }
 
     private static int getGreenplumVersion(Connection connection) {
