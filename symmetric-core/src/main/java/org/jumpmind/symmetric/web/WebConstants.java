@@ -32,7 +32,7 @@ public class WebConstants {
     
     public static final String INIT_PARAM_DEPLOYMENT_TYPE = "deploymentType";
     
-    public static final String INIT_SINGLE_SERVER_PROPERTIES_FILE = "singeServerPropertiesFile";
+    public static final String INIT_SINGLE_SERVER_PROPERTIES_FILE = "singleServerPropertiesFile";
     
     public static final String ATTR_ENGINE_HOLDER = "symmetricEngineHolder";
 
