@@ -16,7 +16,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 
      <!-- To specify the name of the properties file to use in a war deployment uncomment this.
     <context-param>
-        <param-name>singeServerPropertiesFile</param-name>
+        <param-name>singleServerPropertiesFile</param-name>
         <param-value>path/to/file.properties</param-value>
     </context-param>
      -->
