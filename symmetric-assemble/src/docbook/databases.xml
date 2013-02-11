@@ -57,6 +57,16 @@
                         <entry>Y</entry>
                     </row>
                     <row>
+                        <entry>MariaDB</entry>
+                        <entry>5.1 and above</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>                    
+                    <row>
                         <entry>PostgreSQL</entry>
                         <entry>8.2.5 and above</entry>
                         <entry>Y (8.3 and above only)</entry>
@@ -293,6 +303,12 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             can be configured to treat date and time columns as varchar columns for data capture and data
             load.  To enable this feature set the <code>db.treat.date.time.as.varchar.enabled</code> property 
             to <code>true</code>.
+        </para>
+    </section>
+    <section id="ap02-mariadb">
+        <title>MariaDB</title>
+        <para>
+        	See MySQL notes.
         </para>
     </section>
     <section id="ap02-postgresql">
