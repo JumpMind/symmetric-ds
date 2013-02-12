@@ -117,6 +117,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IStatisticManager statisticManager;
 
     private IStagingManager stagingManager;
+    
+    private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
 
     public DataExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
@@ -433,8 +435,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
     }
 
-    private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
-
     protected OutgoingBatch extractOutgoingBatch(Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean streamToFileEnabled) {
@@ -477,14 +477,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     transformExtractWriter.close();
                 }
             } else {
-                if (!isPreviouslyExtracted(currentBatch)) {
+                if (currentBatch.getStatus() == Status.NE || 
+                        !isPreviouslyExtracted(currentBatch)) {
                     int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
                     Semaphore lock = null;
                     try {
                         synchronized (locks) {
                             lock = locks.get(currentBatch.getBatchId());
                             if (lock == null) {
-                                lock = new Semaphore(100);
+                                lock = new Semaphore(maxPermits);
                                 locks.put(currentBatch.getBatchId(), lock);
                             }
                             try {
@@ -523,7 +524,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         synchronized (locks) {
                             lock.release();
                             if (lock.availablePermits() == maxPermits) {
-                                locks.remove(lock);
+                                locks.remove(currentBatch.getBatchId());
                             }
                         }
                     }
@@ -1033,6 +1034,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return data != null;
         }
 
-    }
+    }    
 
 }
