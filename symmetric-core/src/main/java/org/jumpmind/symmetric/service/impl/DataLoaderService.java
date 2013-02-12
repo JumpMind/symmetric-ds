@@ -857,6 +857,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             IncomingError error = new IncomingError();
                             error.setBatchId(this.currentBatch.getBatchId());
                             error.setNodeId(this.currentBatch.getNodeId());
+                            error.setTargetCatalogName(context.getTable().getCatalog());
+                            error.setTargetSchemaName(context.getTable().getSchema());
+                            error.setTargetTableName(context.getTable().getName());                            
                             error.setColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getColumns()));
                             error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
@@ -867,9 +870,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
                             error.setFailedRowNumber(this.currentBatch.getFailedRowNumber());
-                            error.setTargetCatalogName(context.getTable().getCatalog());
-                            error.setTargetSchemaName(context.getTable().getSchema());
-                            error.setTargetTableName(context.getTable().getName());
                             if (ex instanceof ConflictException) {
                                 ConflictException conflictEx = (ConflictException) ex;
                                 Conflict conflict = conflictEx.getConflict();
