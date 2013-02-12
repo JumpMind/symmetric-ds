@@ -60,8 +60,15 @@ public class AuditTableDataRouter extends AbstractDataRouter {
                     .getDatabaseInfo().getDelimiterToken());
 
             ISqlTemplate template = platform.getSqlTemplate();
-            Map<String, Object> values = new HashMap<String, Object>(getNewDataAsObject(null,
+            
+            Map<String, Object> values = null;
+            if (eventType != DataEventType.DELETE) {
+                values = new HashMap<String, Object>(getNewDataAsObject(null,
                     dataMetaData, engine.getSymmetricDialect()));
+            } else {
+                values = new HashMap<String, Object>(getOldDataAsObject(null,
+                        dataMetaData, engine.getSymmetricDialect()));
+            }
             Long sequence = (Long) context.get(auditTableName);
             if (sequence == null) {
                 sequence = 1l + template.queryForLong(String.format("select max(%s) from %s",
