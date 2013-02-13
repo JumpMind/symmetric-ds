@@ -1,3 +1,10 @@
+SymmetricDS - 3.3.1 (Released 2013-02-12) 
+=========================================
+- 0001041: [Improvement] If an outgoing_batches status is set back to NE, then always re-extract it versus using the already staged batch. (chenson) - closed.
+- 0001042: [New Feature] MariaDB Dialect (gwilmer) - closed.
+- 0001043: [Bug] dataloader.error.save.curval=true doesn't work (chenson) - closed.
+- 0001044: [Bug] Map of semaphores used to prevent concurrent extraction of individual batches are not cleaned up (chenson) - closed.
+
 SymmetricDS - 3.3.0 (Released 2013-02-08) 
 =========================================
 - 0001040: [Bug] When use_stream_lobs is on use_changed_data conflict resolution doesn't work because the lobs old data is always null (chenson) - closed.
