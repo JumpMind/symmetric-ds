@@ -332,7 +332,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" MODIFY ");
         Column column = change.getChangedColumn();
-        printIdentifier(getColumnName(column), ddl);
+        column.setSizeAndScale(change.getNewSize(), change.getNewScale());
+        printIdentifier(getColumnName(column), ddl);        
+        ddl.append(" ");
         ddl.append(getSqlType(column));
         printEndOfStatement(ddl);
     }
