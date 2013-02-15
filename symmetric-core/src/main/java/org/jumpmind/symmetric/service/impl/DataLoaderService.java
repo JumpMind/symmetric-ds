@@ -38,12 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
@@ -56,7 +52,6 @@ import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -71,6 +66,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -114,7 +110,6 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.CollectionUtils;
 
 /**
  * Responsible for writing batch data to the database
@@ -865,7 +860,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getPrimaryKeyColumns()));
                             error.setCsvData(context.getData());
-                            error.setCurData(getCurData(error));
+                            error.setCurData((String)context.get(DatabaseWriter.CUR_DATA));
                             error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
@@ -903,54 +898,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
         
-        protected String getCurData(IncomingError error) {
-            String curVal = null;
-            if (parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false)) {
-                String[] keyNames = error.getParsedPrimaryKeyColumnNames();
-                String[] columnNames = error.getParsedColumnNames();
-
-                org.jumpmind.db.model.Table targetTable = platform.getTableFromCache(
-                        error.getTargetCatalogName(), error.getTargetSchemaName(),
-                        error.getTargetTableName(), false);
-
-                targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true);
-
-                String[] data = error.getParsedOldData();
-                if (data == null) {
-                    data = error.getParsedRowData();
-                }
-
-                Column[] columns = targetTable.getColumns();
-
-                Object[] objectValues = platform.getObjectValues(error.getBinaryEncoding(), data,
-                        columns);
-
-                Map<String, Object> columnDataMap = CollectionUtils
-                        .toMap(columnNames, objectValues);
-
-                Column[] pkColumns = targetTable.getPrimaryKeyColumns();
-                Object[] args = new Object[pkColumns.length];
-                for (int i = 0; i < pkColumns.length; i++) {
-                    args[i] = columnDataMap.get(pkColumns[i].getName());
-                }
-
-                DmlStatement sqlStatement = platform
-                        .createDmlStatement(DmlType.SELECT, targetTable);
-                ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-
-                Row row = sqlTemplate.queryForRow(sqlStatement.getSql(), args);
-
-                if (row != null) {
-                    String[] existData = platform.getStringValues(error.getBinaryEncoding(),
-                            columns, row, false);
-                    if (existData != null) {
-                        curVal =  CsvUtils.escapeCsvData(existData);
-                    }
-                }
-            }
-            return curVal;
-
-        }
 
         public List<IncomingBatch> getBatchesProcessed() {
             return batchesProcessed;

@@ -51,6 +51,8 @@ public class DatabaseWriterSettings {
     
     protected boolean ignoreMissingTables = true;
 
+    protected boolean saveCurrentValueOnError = false;
+    
     protected Map<String, Conflict> conflictSettingsByChannel;
 
     protected Map<String, Conflict> conflictSettingsByTable;
@@ -241,6 +243,14 @@ public class DatabaseWriterSettings {
 
     public void setCommitSleepInterval(long commitSleepInterval) {
         this.commitSleepInterval = commitSleepInterval;
+    }
+
+    public boolean isSaveCurrentValueOnError() {
+        return saveCurrentValueOnError;
+    }
+
+    public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
+        this.saveCurrentValueOnError = saveCurrentValueOnError;
     }
 
 }

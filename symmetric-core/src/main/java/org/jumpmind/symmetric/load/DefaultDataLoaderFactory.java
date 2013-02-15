@@ -88,7 +88,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
-
+        settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
+        
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
