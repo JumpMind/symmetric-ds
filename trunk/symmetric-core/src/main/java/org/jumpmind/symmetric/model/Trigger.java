@@ -72,6 +72,8 @@ public class Trigger implements Serializable {
     private boolean useCaptureLobs = false;
 
     private boolean useCaptureOldData = true;
+    
+    private boolean useHandleKeyUpdates = false;
 
     private String nameForInsertTrigger;
 
@@ -413,7 +415,15 @@ public class Trigger implements Serializable {
         return useCaptureLobs;
     }
 
-    public void setUseCaptureOldData(boolean useCaptureOldData) {
+    public boolean isUseHandleKeyUpdates() {
+		return useHandleKeyUpdates;
+	}
+
+	public void setUseHandleKeyUpdates(boolean useHandleKeyUpdates) {
+		this.useHandleKeyUpdates = useHandleKeyUpdates;
+	}
+
+	public void setUseCaptureOldData(boolean useCaptureOldData) {
         this.useCaptureOldData = useCaptureOldData;
     }
 
@@ -472,6 +482,8 @@ public class Trigger implements Serializable {
         hashedValue += useStreamLobs ? "useStreamLobs".hashCode() : 0;
         hashedValue += useCaptureLobs ? "useCaptureLobs".hashCode() : 0;
         hashedValue += useCaptureOldData ? "useCaptureOldData".hashCode() : 0;
+        hashedValue += useHandleKeyUpdates ? "useHandleKeyUpdates".hashCode() : 0;
+        
 
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();
