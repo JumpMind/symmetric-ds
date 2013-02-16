@@ -483,10 +483,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         newSql = newSql.replaceFirst(regex, "${curdate" + diff + "}");
                     } else if (type == Types.TIME) {
                         newSql = newSql.replaceFirst(regex,
-                                "ts {" + quote + FormatUtils.TIME_FORMATTER.format(date) + quote + "}");
+                                "{ts " + quote + FormatUtils.TIME_FORMATTER.format(date) + quote + "}");
                     } else {
                         newSql = newSql.replaceFirst(regex,
-                                "ts {" + quote + FormatUtils.TIMESTAMP_FORMATTER.format(date) + quote + "}");
+                                "{ts " + quote + FormatUtils.TIMESTAMP_FORMATTER.format(date) + quote + "}");
                     }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
