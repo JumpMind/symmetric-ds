@@ -821,16 +821,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                         trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                         trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
-                        trigger.isUseCaptureOldData() ? 1 : 0, trigger.getNameForUpdateTrigger(),
-                        trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
-                        trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                        trigger.getSyncOnDeleteCondition(), trigger.getTxIdExpression(),
-                        trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
-                        trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                        trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
+                        trigger.isUseCaptureOldData() ? 1 : 0, trigger.isUseHandleKeyUpdates() ? 1 : 0, 
+                		trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(), 
+                		trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(), 
+                		trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(), 
+                		trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), 
+                		trigger.getSyncKeyNames(), trigger.getLastUpdateBy(), 
+                		trigger.getLastUpdateTime(), trigger.getExternalSelect(), 
+                		trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                        Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR })) {
@@ -840,10 +841,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                             trigger.getSourceTableName(), trigger.getChannelId(),
                             trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
-                            trigger.isSyncOnDelete() ? 1 : 0,
-                            trigger.isSyncOnIncomingBatch() ? 1 : 0,
+                            trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                             trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
-                            trigger.isUseCaptureOldData() ? 1 : 0,
+                            trigger.isUseCaptureOldData() ? 1 : 0, trigger.isUseHandleKeyUpdates() ? 1:0,
                             trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                             trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
@@ -853,7 +853,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
@@ -1460,6 +1460,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setUseStreamLobs(rs.getBoolean("use_stream_lobs"));
             trigger.setUseCaptureLobs(rs.getBoolean("use_capture_lobs"));
             trigger.setUseCaptureOldData(rs.getBoolean("use_capture_old_data"));
+            trigger.setUseHandleKeyUpdates(rs.getBoolean("use_handle_key_updates"));
             trigger.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trigger.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trigger.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));

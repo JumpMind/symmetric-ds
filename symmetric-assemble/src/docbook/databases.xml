@@ -374,6 +374,11 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             </ulink>
             JDBC driver.
         </para>
+        <para>
+        	SQL Server allows the update of primary key fields via the SQL update statement.  If your application allows updating of the primary key
+        	field(s) for a table, and you want those updates synchronized, you will need to set the "Handle Key Updates" field on the trigger record for
+        	that specific table.  The default for Handle Key Updates is false. 
+        </para>
     </section>
     <section id="ap02-hsqldb">
         <title>HSQLDB</title>

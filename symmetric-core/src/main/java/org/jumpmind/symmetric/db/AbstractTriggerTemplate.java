@@ -30,6 +30,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -225,7 +226,11 @@ abstract public class AbstractTriggerTemplate {
     public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
             Channel channel, String tablePrefix, Table table, String defaultCatalog,
             String defaultSchema) {
-        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
+    	    	
+		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
+    	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
+    		ddl = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
+    	}    		
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
