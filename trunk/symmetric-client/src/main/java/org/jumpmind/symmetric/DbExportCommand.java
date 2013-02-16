@@ -162,11 +162,15 @@ public class DbExportCommand extends AbstractCommandLauncher {
             dbExport.setCatalog(line.getOptionValue(OPTION_CATALOG));
         }        
  
-        String[] args = line.getArgs();
-        if (args.length == 0) {
-            dbExport.exportTables(System.out);
-        } else if (line.hasOption(OPTION_SQL)) {
+        String[] args = line.getArgs();  
+        if (line.hasOption(OPTION_SQL)) {
+            if (args.length != 1) {
+                throw new ParseException(
+                        "When specifying a SQL statement, a table name argument must be provided.");
+            }
             dbExport.exportTable(System.out, args[0], line.getOptionValue(OPTION_SQL));
+        } else if (args.length == 0) {
+            dbExport.exportTables(System.out);
         } else {
             dbExport.exportTables(System.out, args);
         }
