@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 
@@ -32,6 +35,7 @@ import javax.servlet.ServletContext;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -47,7 +51,9 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
@@ -67,6 +73,9 @@ public class SymmetricWebServer {
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
             SystemConstants.SYSPROP_WEB_DIR, "../web");
+    
+    protected static final String DEFAULT_SERVER_PROPERTIES = System.getProperty(
+            SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, "../conf/symmetric-server.properties");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
@@ -92,10 +101,16 @@ public class SymmetricWebServer {
     protected String webHome = "/";
 
     protected int maxIdleTime = DEFAULT_MAX_IDLE_TIME;
+    
+    protected boolean httpEnabled = true;
 
     protected int httpPort = -1;
+    
+    protected boolean httpsEnabled = false;
 
     protected int httpsPort = -1;
+    
+    protected boolean jmxEnabled = false;
     
     protected int jmxPort = -1;
 
@@ -103,7 +118,7 @@ public class SymmetricWebServer {
 
     protected String basicAuthPassword = null;
 
-    protected String propertiesFile = null;
+    protected String propertiesFile = null;       
 
     protected String host = null;
 
@@ -116,16 +131,17 @@ public class SymmetricWebServer {
     protected String name = "SymmetricDS";
 
     public SymmetricWebServer() {
+        this(null, DEFAULT_WEBAPP_DIR);
     }
 
     public SymmetricWebServer(String propertiesUrl) {
         this(propertiesUrl, DEFAULT_WEBAPP_DIR);
     }
-
-    public SymmetricWebServer(String propertiesUrl, String webappDir) {
-        this.propertiesFile = propertiesUrl;
-        this.webAppDir = webappDir;
-    }
+    
+    public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
+        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
+        this.maxIdleTime = maxIdleTime;
+    }       
 
     public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl,
             boolean join, boolean noNio, boolean noDirectBuffer) {
@@ -136,9 +152,44 @@ public class SymmetricWebServer {
         this.noNio = noNio;
     }
 
-    public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
-        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
-        this.maxIdleTime = maxIdleTime;
+    public SymmetricWebServer(String propertiesUrl, String webappDir) {
+        this.propertiesFile = propertiesUrl;
+        this.webAppDir = webappDir;
+        initFromProperties();
+    }
+    
+    protected void initFromProperties() {
+        File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
+        if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
+            FileInputStream fis = null;
+            try {
+                TypedProperties serverProperties = new TypedProperties();
+                fis = new FileInputStream(serverPropertiesFile);
+                serverProperties.load(fis);
+
+                /* System properties always override */
+                serverProperties.merge(System.getProperties());
+
+                /*
+                 * Put server properties back into System properties so they are
+                 * available to the parameter service
+                 */
+                System.getProperties().putAll(serverProperties);
+
+                httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE, true);
+                httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE, true);
+                jmxEnabled = serverProperties.is(ServerConstants.JMX_HTTP_ENABLE, true);
+                httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT, httpPort);
+                httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT, httpsPort);
+                jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT, jmxPort);
+                host = serverProperties.get(ServerConstants.HOST_BIND_NAME, host);
+
+            } catch (IOException ex) {
+                log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
+            } finally {
+                IOUtils.closeQuietly(fis);
+            }
+        }
     }
 
     public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {
@@ -147,11 +198,11 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start() throws Exception {
-        if (httpPort > 0 && httpsPort > 0) {
+        if (httpPort > 0 && httpsPort > 0 && httpEnabled && httpsEnabled) {
             return startMixed(httpPort, httpsPort, jmxPort);
-        } else if (httpPort > 0) {
+        } else if (httpPort > 0 && httpEnabled) {
             return start(httpPort, jmxPort);
-        } else if (httpsPort > 0) {
+        } else if (httpsPort > 0 && httpsEnabled) {
             return startSecure(httpsPort, jmxPort);
         } else {
             throw new IllegalStateException(
@@ -326,7 +377,7 @@ public class SymmetricWebServer {
     }
 
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
-        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true) && jmxEnabled) {
             log.info("Starting JMX HTTP console on port {}", jmxPort);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
@@ -435,10 +486,19 @@ public class SymmetricWebServer {
     public void setNoNio(boolean noNio) {
         this.noNio = noNio;
     }
+    
+    
+    public boolean isNoNio() {
+        return noNio;
+    }    
 
     public void setNoDirectBuffer(boolean noDirectBuffer) {
         this.noDirectBuffer = noDirectBuffer;
     }
+    
+    public boolean isNoDirectBuffer() {
+        return noDirectBuffer;
+    }       
 
     public void setName(String name) {
         this.name = name;
@@ -455,5 +515,30 @@ public class SymmetricWebServer {
     public void setJmxPort(int jmxPort) {
         this.jmxPort = jmxPort;
     }
+    
+    public void setHttpEnabled(boolean httpEnabled) {
+        this.httpEnabled = httpEnabled;
+    }
+    
+    public boolean isHttpEnabled() {
+        return httpEnabled;
+    }
+    
+    public void setHttpsEnabled(boolean httpsEnabled) {
+        this.httpsEnabled = httpsEnabled;
+    }
+    
+    public boolean isHttpsEnabled() {
+        return httpsEnabled;
+    }
+    
+    public void setJmxEnabled(boolean jmxEnabled) {
+        this.jmxEnabled = jmxEnabled;
+    }
+    
+    public boolean isJmxEnabled() {
+        return jmxEnabled;
+    }
+      
 
 }
