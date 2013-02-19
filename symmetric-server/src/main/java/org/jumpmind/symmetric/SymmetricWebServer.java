@@ -79,6 +79,9 @@ public class SymmetricWebServer {
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
+    
+    public static final String DEFAULT_JMX_PORT = System.getProperty(
+            SystemConstants.SYSPROP_DEFAULT_JMX_PORT, "31416");
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
@@ -104,15 +107,15 @@ public class SymmetricWebServer {
     
     protected boolean httpEnabled = true;
 
-    protected int httpPort = -1;
+    protected int httpPort = Integer.parseInt(DEFAULT_HTTP_PORT);
     
     protected boolean httpsEnabled = false;
 
     protected int httpsPort = -1;
     
-    protected boolean jmxEnabled = false;
+    protected boolean jmxEnabled = true;
     
-    protected int jmxPort = -1;
+    protected int jmxPort = Integer.parseInt(DEFAULT_JMX_PORT);
 
     protected String basicAuthUsername = null;
 
