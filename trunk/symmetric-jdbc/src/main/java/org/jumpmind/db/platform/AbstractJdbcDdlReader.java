@@ -640,17 +640,22 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
-            table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
-            table.addIndices(readIndices(connection, metaData, tableName));
+            
+            if (table.getColumnCount() > 0) {
+                table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
+                table.addIndices(readIndices(connection, metaData, tableName));
 
-            Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
+                Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
-            for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
-                table.findColumn(it.next(), true).setPrimaryKey(true);
-            }
+                for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
+                    table.findColumn(it.next(), true).setPrimaryKey(true);
+                }
 
-            if (getPlatformInfo().isSystemIndicesReturned()) {
-                removeSystemIndices(connection, metaData, table);
+                if (getPlatformInfo().isSystemIndicesReturned()) {
+                    removeSystemIndices(connection, metaData, table);
+                }
+            } else {
+                table = null;
             }
         }
         return table;
