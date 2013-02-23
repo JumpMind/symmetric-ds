@@ -882,6 +882,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     + ParameterConstants.AUTO_SYNC_TRIGGERS
                                     + " is set to false, but the sync triggers process will run so that needed changes can be written to a file so they can be applied manually.  Once all of the triggers have been successfully applied this process should not show triggers being created";
                         }
+                        
                         log.info("Synchronizing triggers{}", additionalMessage);
 
                         // make sure all tables are freshly read in

@@ -80,6 +80,7 @@ import org.jumpmind.symmetric.load.BshDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
+import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -123,6 +124,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IConfigurationService configurationService;
 
     private ITransportManager transportManager;
+    
+    private List<ILoadSyncLifecycleListener> syncLifecycleListeners;
 
     private List<IDatabaseWriterFilter> filters;
 
@@ -159,7 +162,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.loadFilterService = engine.getLoadFilterService();
         this.stagingManager = engine.getStagingManager();
         this.filters = new ArrayList<IDatabaseWriterFilter>();
-        this.filters.add(new ConfigurationChangedFilter(engine));
+        this.syncLifecycleListeners = new ArrayList<ILoadSyncLifecycleListener>();
+        
+        ConfigurationChangedFilter configChangedFilter = new ConfigurationChangedFilter(engine);
+        this.filters.add(configChangedFilter);
+        this.syncLifecycleListeners.add(configChangedFilter);
+        
         this.errorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
@@ -292,7 +300,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
         filters.remove(filter);
     }
+
+    public void addLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
+        syncLifecycleListeners.add(listener);
+    }
     
+    public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
+        syncLifecycleListeners.remove(listener);
+    }
+        
     public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
         errorHandlers.add(errorHandler);
     }
@@ -344,11 +360,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected List<IncomingBatch> loadDataFromTransport(final Node sourceNode,
             IIncomingTransport transport) throws IOException {
         final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
+        final DataContext ctx = new DataContext();        
+        Throwable error = null;
         try {
-
-            DataContext ctx = new DataContext();
             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, nodeService.findIdentity());
             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+            
+            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
+                l.syncStarted(ctx);
+            }
 
             long totalNetworkMillis = System.currentTimeMillis();
             String targetNodeId = nodeService.findIdentityNodeId();
@@ -380,15 +400,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             incomingBatch.getBatchId());
                 }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
+            error = ex;
             logAndRethrow(sourceNode, ex);
         } finally {
             transport.close();
+            
+            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
+                l.syncEnded(ctx, listener.getBatchesProcessed(), error);
+            }
         }
         return listener.getBatchesProcessed();
     }
 
-    protected void logAndRethrow(Node remoteNode, Exception ex) throws IOException {
+    protected void logAndRethrow(Node remoteNode, Throwable ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
