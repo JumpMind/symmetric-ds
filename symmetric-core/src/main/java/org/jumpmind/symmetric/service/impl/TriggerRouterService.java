@@ -969,7 +969,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
     }
-
+    
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
 
         symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
@@ -1090,26 +1090,52 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
             boolean force) {
-
         for (Trigger trigger : triggers) {
+            updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force);           
+        }
+    }
+    
+    protected void updateOrCreateDatabaseTrigger(Trigger trigger, List<Trigger> triggers,
+            StringBuilder sqlBuffer, boolean force) {
+        Set<Table> tables = getTablesForTrigger(trigger, triggers);
 
-            Set<Table> tables = getTablesForTrigger(trigger, triggers);
+        if (tables != null && tables.size() > 0) {
+            for (Table table : tables) {
+                updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
+            }
+        } else {
+            log.error(
+                    "Could not find any database tables matching '{}' in the datasource that is configured",
+                    trigger.qualifiedSourceTableName());
+
+            if (this.triggerCreationListeners != null) {
+                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                    l.tableDoesNotExist(trigger);
+                }
+            }
+        }
+    }
+    
+    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force) {
+        StringBuilder sqlBuffer = new StringBuilder();
+        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+        try {
+            if (listener != null) {
+                addTriggerCreationListeners(listener);
+            }
             
-            if (tables != null && tables.size() > 0) {
-                for (Table table : tables) {
-                    updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
-                }
-
+            if (triggersForCurrentNode.contains(trigger)) {
+                updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
+                    force);
             } else {
-                log.error(
-                        "Could not find any database tables matching '{}' in the datasource that is configured",
-                        trigger.qualifiedSourceTableName());
-
-                if (this.triggerCreationListeners != null) {
-                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                        l.tableDoesNotExist(trigger);
-                    }
+                List<TriggerHistory> histories = findTriggerHistories(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName());
+                for (TriggerHistory triggerHistory : histories) {
+                    dropTriggers(triggerHistory, sqlBuffer);                    
                 }
+            }
+        } finally {
+            if (listener != null) {
+                this.triggerCreationListeners.remove(listener);
             }
         }
     }

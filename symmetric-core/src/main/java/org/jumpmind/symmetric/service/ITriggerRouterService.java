@@ -152,6 +152,8 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter);
     
+    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
+    
     public void syncTriggers(Table table, boolean genAlways);
     
     public void syncTriggers(boolean genAlways);
