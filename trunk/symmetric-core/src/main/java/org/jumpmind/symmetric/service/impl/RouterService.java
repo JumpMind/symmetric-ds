@@ -165,44 +165,67 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
+    /**
+     * If a load has been queued up by setting the initial load enabled or reverse initial load
+     * enabled flags, then the router service will insert the reload events.  This process will
+     * not run at the same time sync triggers is running.
+     */
     protected void insertInitialLoadEvents() {
-        try {
-            INodeService nodeService = engine.getNodeService();
-            Node identity = nodeService.findIdentity();
-            if (identity != null) {
-                List<NodeSecurity> nodeSecurities = nodeService.findNodeSecurityWithLoadEnabled();
-                if (nodeSecurities != null) {
-                    boolean reverseLoadFirst = parameterService
-                            .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
-                    for (NodeSecurity security : nodeSecurities) {
-                        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-                        boolean initialLoadQueued = security.isInitialLoadEnabled();
-                        boolean thisMySecurityRecord = security.getNodeId().equals(
-                                identity.getNodeId());
-                        boolean registered = security.getRegistrationTime() != null;
-                        boolean parent = identity.getNodeId().equals(security.getCreatedAtNodeId());
-                        if (thisMySecurityRecord && reverseLoadQueued
-                                && (reverseLoadFirst || !initialLoadQueued)) {
-                            sendReverseInitialLoad();
-                        } else if (!thisMySecurityRecord && registered && parent
-                                && initialLoadQueued && (!reverseLoadFirst || !reverseLoadQueued)) {
-                            long ts = System.currentTimeMillis();
-                            engine.getDataService().insertReloadEvents(
-                                    engine.getNodeService().findNode(security.getNodeId()), false);
-                            ts = System.currentTimeMillis() - ts;
-                            if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                log.warn("Inserted reload events for node {} in {} ms",
-                                        security.getNodeId(), ts);
-                            } else {
-                                log.info("Inserted reload events for node {} in {} ms",
-                                        security.getNodeId(), ts);
+        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
+            try {
+                synchronized (engine.getTriggerRouterService()) {
+                    INodeService nodeService = engine.getNodeService();
+                    Node identity = nodeService.findIdentity();
+                    if (identity != null) {
+                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
+                                .getNodeId());
+                        if (engine.getParameterService().isRegistrationServer() || 
+                                (identitySecurity != null && !identitySecurity.isRegistrationEnabled()
+                                && identitySecurity.getRegistrationTime() != null)) {
+                            List<NodeSecurity> nodeSecurities = nodeService
+                                    .findNodeSecurityWithLoadEnabled();
+                            if (nodeSecurities != null) {
+                                boolean reverseLoadFirst = parameterService
+                                        .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
+                                for (NodeSecurity security : nodeSecurities) {
+                                    boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
+                                    boolean initialLoadQueued = security.isInitialLoadEnabled();
+                                    boolean thisMySecurityRecord = security.getNodeId().equals(
+                                            identity.getNodeId());
+                                    boolean registered = security.getRegistrationTime() != null;
+                                    boolean parent = identity.getNodeId().equals(
+                                            security.getCreatedAtNodeId());
+                                    if (thisMySecurityRecord && reverseLoadQueued
+                                            && (reverseLoadFirst || !initialLoadQueued)) {
+                                        sendReverseInitialLoad();
+                                    } else if (!thisMySecurityRecord && registered && parent
+                                            && initialLoadQueued
+                                            && (!reverseLoadFirst || !reverseLoadQueued)) {
+                                        long ts = System.currentTimeMillis();
+                                        engine.getDataService().insertReloadEvents(
+                                                engine.getNodeService().findNode(
+                                                        security.getNodeId()), false);
+                                        ts = System.currentTimeMillis() - ts;
+                                        if (ts > Constants.LONG_OPERATION_THRESHOLD) {
+                                            log.warn("Inserted reload events for node {} in {} ms",
+                                                    security.getNodeId(), ts);
+                                        } else {
+                                            log.info("Inserted reload events for node {} in {} ms",
+                                                    security.getNodeId(), ts);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            } catch (Exception ex) {
+                log.error(ex.getMessage(), ex);
+            } finally {
+                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
             }
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+        } else {
+            log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
     }
 
