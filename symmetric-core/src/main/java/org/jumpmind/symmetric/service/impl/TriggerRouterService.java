@@ -259,6 +259,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return history;
     }
+    
+    protected List<TriggerHistory> getActiveTriggerHistories(Trigger trigger) {
+        List<TriggerHistory> active = getActiveTriggerHistories();
+        List<TriggerHistory> list = new ArrayList<TriggerHistory>();
+        for (TriggerHistory triggerHistory : active) {
+            if (triggerHistory.getTriggerId().equals(trigger.getTriggerId())) {
+                list.add(triggerHistory);
+            }
+        }
+        return list;
+    }
 
     public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
             String schemaName, String tableName) {
@@ -278,7 +289,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
         return null;
-    }
+    }    
 
     /**
      * Get a list of trigger histories that are currently active
@@ -286,7 +297,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<TriggerHistory> getActiveTriggerHistories() {
         return sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSql"),
                 new TriggerHistoryMapper());
-    }
+    }    
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
@@ -941,7 +952,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
             }
 
-            if (tables == null || trigger == null) {
+            if (tables == null || tables.size() == 0 || trigger == null) {
                 removeTrigger = true;
             } else {
                 if (!StringUtils.equals(trigger.getSourceCatalogName(),
@@ -1122,13 +1133,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         try {
             if (listener != null) {
                 addTriggerCreationListeners(listener);
-            }
+            }            
             
             if (triggersForCurrentNode.contains(trigger)) {
+                if (!trigger.isSourceTableNameWildCarded()) {
+                    List<TriggerHistory> histories = getActiveTriggerHistories(trigger);
+                    for (TriggerHistory triggerHistory : histories) {
+                        if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
+                            dropTriggers(triggerHistory, sqlBuffer);                    
+                        }
+                    }                    
+                }
                 updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
                     force);
             } else {
-                List<TriggerHistory> histories = findTriggerHistories(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName());
+                List<TriggerHistory> histories = getActiveTriggerHistories(trigger);
                 for (TriggerHistory triggerHistory : histories) {
                     dropTriggers(triggerHistory, sqlBuffer);                    
                 }
@@ -1164,11 +1183,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
             TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(),
-                    trigger.getSourceCatalogName(),
-                    trigger.getSourceSchemaName(),
-                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                            .getSourceTableName());
+                        trigger.getTriggerId(),
+                        trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(),
+                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
+                                .getSourceTableName());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
