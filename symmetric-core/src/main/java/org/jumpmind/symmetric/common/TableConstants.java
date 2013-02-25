@@ -107,7 +107,6 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_ROUTER));
