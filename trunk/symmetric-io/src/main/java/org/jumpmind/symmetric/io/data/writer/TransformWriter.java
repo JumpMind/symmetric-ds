@@ -344,7 +344,7 @@ public class TransformWriter implements IDataWriter {
                     sourceKeyValues, oldSourceValues, sourceValues);
             datas.add(data);
             DataEventType eventType = data.getSourceDmlType();
-            for (TransformColumn transformColumn : transformation.getTransformColumns()) {
+            for (TransformColumn transformColumn : columns) {
                 IncludeOnType includeOn = transformColumn.getIncludeOn();
                 if (includeOn == IncludeOnType.ALL
                         || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
