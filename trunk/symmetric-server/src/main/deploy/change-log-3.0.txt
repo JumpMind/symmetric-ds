@@ -1,5 +1,6 @@
 SymmetricDS - 3.3.2 (Released 2013-02-26) 
 =========================================
+- 0001078: [Improvement] Allow sym_load_filter.target_table_name to be left blank so that filters are applied to all tables (chenson) - closed.
 - 0000396: [Improvement] Updates of primary keys are not captured on SQL Server (gwilmer) - closed.
 - 0001045: [Bug] Upgrade from 3.0.9 to 3.3.1 fails. Fix the oracle dialect so it can run alter statements to change column sizes (chenson) - closed.
 - 0001047: [Improvement] Incoming Error's cur_data columns should reflect values at moment of conflict, not values prior to start of transaction (mhanes) - closed.
