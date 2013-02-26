@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import bsh.TargetError;
 
 public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabaseWriterErrorHandler,
         IBuiltInExtensionPoint {
@@ -146,14 +147,17 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     }
 
-    protected void processError(LoadFilter currentFilter, Table table, String errorMsg) {
+    protected void processError(LoadFilter currentFilter, Table table, Throwable ex) {
+        if (ex instanceof TargetError) {
+            ex = ((TargetError) ex).getTarget();
+        }
         String formattedMessage = String.format(
-                "Error executing beanshell script for load filter %s on table %s error %s",
+                "Error executing beanshell script for load filter %s on table %s. The error was: %s",
                 new Object[] { currentFilter != null ? currentFilter.getLoadFilterId() : "N/A",
-                        table.getName(), errorMsg });
+                        table.getName(), ex.getMessage() });
         log.error(formattedMessage);
         if (currentFilter.isFailOnError()) {
-            throw new SymmetricException(formattedMessage);
+            throw new SymmetricException(formattedMessage, ex);
         }
     }
 
@@ -252,9 +256,9 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
                         }
                     }
                 }
-            } catch (EvalError evalEx) {
-                processError(currentFilter, table, evalEx.getErrorText());
-            }
+            } catch (EvalError ex) {     
+                processError(currentFilter, table, ex);
+            } 
         }
 
         return writeRow;
