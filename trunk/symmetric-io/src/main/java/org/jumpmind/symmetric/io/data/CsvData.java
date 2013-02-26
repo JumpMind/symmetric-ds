@@ -246,4 +246,10 @@ public class CsvData {
     public void setNoBinaryOldData(boolean noBinaryOldData) {
         this.noBinaryOldData = noBinaryOldData;
     }
+    
+    public CsvData copyWithoutOldData() {
+        CsvData data = new CsvData(getDataEventType(), getParsedData(CsvData.ROW_DATA));
+        data.attributes = attributes;
+        return data;
+    }
 }
