@@ -571,7 +571,7 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The destination node group for the filter." />
         <column name="target_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in." />
         <column name="target_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in." />
-        <column name="target_table_name" type="VARCHAR" size="255" required="true"  description="The name of the target table that will trigger the bsh filter." />
+        <column name="target_table_name" type="VARCHAR" size="255" description="The name of the target table that will trigger the bsh filter." />
         <column name="filter_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an update." />
         <column name="filter_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an insert." />
         <column name="filter_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on a delete." />

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -17,6 +18,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
 
@@ -79,17 +81,20 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                         if (loadFiltersByNodeGroup == null) {
                             loadFiltersByNodeGroup = new HashMap<String, List<LoadFilter>>();
                         }
+                        String tableName = loadFilter.getTargetTableName();
+                        if (StringUtils.isBlank(tableName)) {
+                            tableName = FormatUtils.WILDCARD;
+                        }
+                        String qualifiedName = Table.getFullyQualifiedTableName(
+                                loadFilter.getTargetCatalogName(),
+                                loadFilter.getTargetSchemaName(), tableName);
                         List<LoadFilter> loadFiltersForTable = loadFiltersByNodeGroup
-                                .get(Table.getFullyQualifiedTableName(
-                                		loadFilter.getTargetCatalogName(),
-                                        loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()));
+                                .get(qualifiedName);
                         if (loadFiltersForTable == null) {
                             loadFiltersForTable = new ArrayList<LoadFilter>();
                         }
                         loadFiltersForTable.add(loadFilter);
-                        loadFiltersByNodeGroup.put(Table.getFullyQualifiedTableName(
-                                loadFilter.getTargetCatalogName(),
-                                loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()),
+                        loadFiltersByNodeGroup.put(qualifiedName,
                                 loadFiltersForTable);
                         loadFilterCacheByNodeGroupLink.put(nodeGroupLink, loadFiltersByNodeGroup);
                     }
