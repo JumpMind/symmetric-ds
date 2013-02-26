@@ -1130,6 +1130,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force) {
         StringBuilder sqlBuffer = new StringBuilder();
+        clearCache();
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         try {
             if (listener != null) {
