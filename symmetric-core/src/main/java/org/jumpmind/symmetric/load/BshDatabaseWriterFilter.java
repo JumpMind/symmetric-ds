@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.load;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.util.Context;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,9 +210,19 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         boolean writeRow = true;
         LoadFilter currentFilter = null;
 
-        List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getFullyQualifiedTableName());
+        List<LoadFilter> wildcardLoadFilters =  loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
+        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
+        int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
 
-        if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
+        if (size > 0) {
+            List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
+            if (wildcardLoadFilters != null) {
+                loadFiltersForTable.addAll(wildcardLoadFilters);
+            }
+            
+            if (tableSpecificLoadFilters != null) {
+                loadFiltersForTable.addAll(tableSpecificLoadFilters);
+            }
             try {
                 Interpreter interpreter = getInterpreter(context);
                 bind(interpreter, context, table, data, error);
