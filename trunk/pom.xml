@@ -3,10 +3,10 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-build</artifactId>
     <packaging>pom</packaging>
-    <version>3.3.2</version>
+    <version>3.3.3-SNAPSHOT</version>
     <scm>
-        <connection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/tags/symmetric-build-3.3.2</connection>
-        <developerConnection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/tags/symmetric-build-3.3.2</developerConnection>
+        <connection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/trunk</connection>
+        <developerConnection>scm:svn:https://svn.code.sf.net/p/symmetricds/code/trunk</developerConnection>
     </scm>
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
