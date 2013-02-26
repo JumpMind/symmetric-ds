@@ -1,3 +1,24 @@
+SymmetricDS - 3.3.2 (Released 2013-02-26) 
+=========================================
+- 0000396: [Improvement] Updates of primary keys are not captured on SQL Server (gwilmer) - closed.
+- 0001045: [Bug] Upgrade from 3.0.9 to 3.3.1 fails. Fix the oracle dialect so it can run alter statements to change column sizes (chenson) - closed.
+- 0001047: [Improvement] Incoming Error's cur_data columns should reflect values at moment of conflict, not values prior to start of transaction (mhanes) - closed.
+- 0001050: [Improvement] Introduce conf/symmetric-server.properties which contains http/https/jmx port/enabled settings and other server specific setting (chenson) - closed.
+- 0001051: [Bug] --jmx-port and --jmx-disabled command line help is not available (chenson) - closed.
+- 0001057: [Bug] Postgres datetime with timezone not formatted correctly when timezone offset < 0 and timezone offset has minutes (gwilmer) - closed.
+- 0001061: [Improvement] Support synchronization of Oracle Synonyms (chenson) - closed.
+- 0001067: [Bug] syncTriggers called multiple times when multiple batches have queued up for the client and at least one has config changes (chenson) - closed.
+- 0001048: [Bug] Timestamps are not exported correctly using dbexport. (abrougher) - closed.
+- 0001049: [Bug] DbExport allows --sql option without a table name argument. (abrougher) - closed.
+- 0001058: [Improvement] Provide access to include-on and source dml type in bean shell transforms (mhanes) - closed.
+- 0001066: [Bug] Reverse initial load may be computed and routed before triggers are done synchronizing when a client first registers (chenson) - closed.
+- 0001068: [Improvement] Add new extension point ILoadSyncLifecycleListener which gets callbacks before and after a load sync (chenson) - closed.
+- 0001070: [Bug] If trigger table name changes and the new trigger table name doesn't exist, the old triggers don't get remove from the old table (chenson) - closed.
+- 0001071: [Improvement] Column transforms are being called even if the includeOn does not match. Only effects custom transforms that take some action. (chenson) - closed.
+- 0001074: [Bug] sym_node_channel_ctl should not be included in the list of tables to load during registration (chenson) - closed.
+- 0001075: [Improvement] Turn on sym_trigger.use_capture_lobs and sym_channel.contains_big_lobs by default for sym tables and the config channel (chenson) - closed.
+- 0001076: [Bug] Update transform that falls back to insert does not retransform (chenson) - closed.
+
 SymmetricDS - 3.3.1 (Released 2013-02-12) 
 =========================================
 - 0001041: [Improvement] If an outgoing_batches status is set back to NE, then always re-extract it versus using the already staged batch. (chenson) - closed.
