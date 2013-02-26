@@ -60,6 +60,9 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     final String CTX_KEY_FLUSH_GROUPLETS_NEEDED = "FlushGrouplets."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
     
+    final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
     final String CTX_KEY_RESYNC_TABLE_NEEDED = "Resync.Table"
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();    
 
@@ -109,6 +112,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     public void afterWrite(DataContext context, Table table, CsvData data) {
         recordSyncNeeded(context, table, data);
         recordGroupletFlushNeeded(context, table);
+        recordLoadFilterFlushNeeded(context, table);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
         recordParametersFlushNeeded(context, table);
@@ -116,12 +120,18 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         recordConflictFlushNeeded(context, table);
     }
     
-    private  void recordGroupletFlushNeeded(DataContext context, Table table) {
+    private void recordGroupletFlushNeeded(DataContext context, Table table) {
         if (isGroupletFlushNeeded(table)) {
             context.put(CTX_KEY_FLUSH_GROUPLETS_NEEDED, true);
         }
     }
 
+    private void recordLoadFilterFlushNeeded(DataContext context, Table table) {
+        if (isLoadFilterFlushNeeded(table)) {
+            context.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED, true);
+        }
+    }
+    
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
         if (isSyncTriggersNeeded(table)) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
@@ -182,6 +192,10 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
                 matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET) ||
                 matchesTable(table, TableConstants.SYM_GROUPLET);
     }
+    
+    private boolean isLoadFilterFlushNeeded(Table table) {
+        return matchesTable(table, TableConstants.SYM_LOAD_FILTER);
+    }    
 
     private boolean isChannelFlushNeeded(Table table) {
         return matchesTable(table, TableConstants.SYM_CHANNEL);
@@ -270,6 +284,13 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             engine.getGroupletService().clearCache();
             context.remove(CTX_KEY_FLUSH_GROUPLETS_NEEDED);
         }
+        
+        if (context.get(CTX_KEY_FLUSH_LOADFILTERS_NEEDED) != null) {
+            log.info("Load filters flushed because new filter config came through the data loader");
+            engine.getLoadFilterService().clearCache();
+            context.remove(CTX_KEY_FLUSH_LOADFILTERS_NEEDED);
+        }
+        
         
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data loader");

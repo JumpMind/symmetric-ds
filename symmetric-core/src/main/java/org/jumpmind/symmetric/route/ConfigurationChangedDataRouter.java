@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -49,6 +50,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();    
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
@@ -219,6 +223,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     routingContext.put(CTX_KEY_FLUSH_CONFLICTS_NEEDED,
                             Boolean.TRUE);
                 }
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_LOAD_FILTER)) {
+                    routingContext.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED,
+                            Boolean.TRUE);
+                }                
 
                 if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
                     routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED,
@@ -355,6 +364,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (routingContext.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
                 log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
                 engine.getDataLoaderService().clearCache();
+            }
+            
+            if (routingContext.get(CTX_KEY_FLUSH_LOADFILTERS_NEEDED) != null) {
+                log.info("About to refresh the cache of load filters because new configuration came through the data router");
+                engine.getLoadFilterService().clearCache();
             }
             
             insertReloadEvents(routingContext);

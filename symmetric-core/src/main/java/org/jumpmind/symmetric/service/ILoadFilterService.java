@@ -17,6 +17,8 @@ public interface ILoadFilterService {
 
     public void deleteLoadFilter(String loadFilterId);
 
-    public void resetCache();
+    public void clearCache();
+    
+    public boolean refreshFromDatabase();
 
 }

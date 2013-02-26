@@ -25,6 +25,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
     private Map<NodeGroupLink, Map<String, List<LoadFilter>>> loadFilterCacheByNodeGroupLink;
 
     private long lastCacheTimeInMs;
+    
+    private Date lastUpdateTime;
 
     private IConfigurationService configurationService;
 
@@ -172,15 +174,28 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         if (sqlTemplate.update(getSql("updateLoadFilterSql"), args) == 0) {
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
-        resetCache();
+        clearCache();
     }
 
     public void deleteLoadFilter(String loadFilterId) {
         sqlTemplate.update(getSql("deleteLoadFilterSql"), loadFilterId);
-        resetCache();
+        clearCache();
+    }
+    
+    public boolean refreshFromDatabase() {
+        Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                log.info("Newer filter settings were detected");
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
+        return false;
     }
 
-    public void resetCache() {
+    public void clearCache() {
         synchronized (this) {
             this.loadFilterCacheByNodeGroupLink = null;
         }
