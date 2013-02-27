@@ -102,7 +102,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getPurgeService().purgeOutgoing(true);
     }
 
-    @ManagedOperation(description = "Run the purge process")
+    @ManagedOperation(description = "Create a snapshot of the current state of the system")
     public String snapshot() {
         File file = engine.snapshot();
         if (file != null) {
