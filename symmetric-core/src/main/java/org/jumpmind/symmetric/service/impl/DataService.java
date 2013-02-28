@@ -1115,9 +1115,8 @@ public class DataService extends AbstractService implements IDataService {
         if (listeners.size() > 0) {
             Node me = engine.getNodeService().findIdentity();
             if (me != null) {
-                Set<Node> children = engine.getNodeService().findNodesThatOriginatedFromNodeId(me.getNodeId());
                 for (IHeartbeatListener l : listeners) {
-                    l.heartbeat(me, children);
+                    l.heartbeat(me);
                 }
                 updateLastHeartbeatTime(listeners);
             } else {
