@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.job;
 
+
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +44,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
         this.engine = engine;
     }
 
-    public void heartbeat(Node me, Set<Node> children) {
+    public void heartbeat(Node me) {
         IParameterService parameterService = engine.getParameterService();
         if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED)) {
             ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
@@ -87,6 +88,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
             if (!engine.getNodeService().isRegistrationServer()) {
                 if (!symmetricDialect.getPlatform().getDatabaseInfo().isTriggersSupported()) {
                     engine.getDataService().insertHeartbeatEvent(me, false);
+                    Set<Node> children = engine.getNodeService().findNodesThatOriginatedFromNodeId(me.getNodeId());
                     for (Node node : children) {
                         engine.getDataService().insertHeartbeatEvent(node, false);
                     }

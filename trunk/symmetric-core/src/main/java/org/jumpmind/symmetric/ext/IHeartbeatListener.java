@@ -19,7 +19,6 @@
  * under the License.  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.Set;
 
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
@@ -36,11 +35,8 @@ public interface IHeartbeatListener extends IExtensionPoint {
      * @param me
      *            A representation of this instance. It's statistics will be
      *            updated prior to calling this method.
-     * @param children
-     *            A representation of all nodes that have been loaded from this
-     *            instance.
      */
-    public void heartbeat(Node me, Set<Node> children);
+    public void heartbeat(Node me);
 
     /**
      * @return The number of seconds between heartbeat notifications.
