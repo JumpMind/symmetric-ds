@@ -279,7 +279,9 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
-        Boolean producesCommonBatches = true;
+        Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
+                && !Constants.CHANNEL_RELOAD.equals(channelId) 
+                && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
             for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
