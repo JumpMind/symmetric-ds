@@ -178,6 +178,8 @@ public interface INodeService {
      *            checked in for until it is considered offline
      */
     public List<Node> findOfflineNodes(long minutesOffline);
+    
+    public List<String> findOfflineNodeIds(long minutesOffline);
 
     public void addOfflineServerListener(IOfflineServerListener listener);
 
