@@ -40,6 +40,10 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+    private static final String PRE_5_1_23 = "_pre_5_1_23";
+
+    private static final String POST_5_1_23 = "_post_5_1_23";
+
     private static final String TRANSACTION_ID = "transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
@@ -56,6 +60,14 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         super(parameterService, platform);
         this.triggerTemplate = new MySqlTriggerTemplate(this);
         this.parameterService = parameterService;
+        
+        int[] versions = Version.parseVersion(getProductVersion());
+        if (getMajorVersion() == 5
+                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+            this.functionTemplateKeySuffix = PRE_5_1_23;
+        } else {
+            this.functionTemplateKeySuffix = POST_5_1_23;
+        }
     }
 
     @Override
@@ -65,10 +77,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     protected void createRequiredDatabaseObjects() {
-        int[] versions = Version.parseVersion(getProductVersion());
-        if (getMajorVersion() == 5
-                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
-            this.functionTemplateKeySuffix = "_pre_5_1_23";
+        if (this.functionTemplateKeySuffix.equals(PRE_5_1_23)) {
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
                 String sql = "create function $(functionName)() " + 
@@ -90,7 +99,6 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }        
 
         } else {
-            this.functionTemplateKeySuffix = "_post_5_1_23";
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
                 String sql = "create function $(functionName)()                                                                                                                                                                      " + 
