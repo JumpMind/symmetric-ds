@@ -364,6 +364,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
         } else {
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        }
+        
+        if (!TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
+                .equals(tableName) &&
+                !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE)
+                .equals(tableName) &&
+                !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY)
+                .equals(tableName)) {
             trigger.setUseCaptureLobs(true);
         }
         // little trick to force the rebuild of SymmetricDS triggers every time
