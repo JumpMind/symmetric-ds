@@ -428,7 +428,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                                     TableConstants.SYM_NODE_HOST),
                             TableConstants.getTableName(getTablePrefix(),
                                     TableConstants.SYM_TRIGGER_HIST),
-                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_LOCK) });
+                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_LOCK),
+                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_NODE_COMMUNICATION)});
         } catch (IOException e) {
             log.warn("Failed to export table definitions", e);
         } finally {
