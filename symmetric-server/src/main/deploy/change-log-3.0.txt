@@ -1,3 +1,10 @@
+SymmetricDS - 3.3.3 (Released 2013-03-01)
+=========================================
+- 0001079: [Improvement] Children node are selected from the database each heartbeat but not necessarily used, can be time consuming w. lots of children (chenson) - closed.
+- 0001080: [Bug] Reload and config channel should never be "common" channels (chenson) - closed.
+- 0001082: [Bug] error calling unknown function sym_transaction_idnull() (chenson) - closed.
+- 0001083: [Bug] Registration slow on Oracle with lots of nodes (chenson) - closed.
+
 SymmetricDS - 3.3.2 (Released 2013-02-26) 
 =========================================
 - 0001077: [Bug] SymmetricDS has to be restarted to recognize a change in the data load filter table. (chenson) - closed.
