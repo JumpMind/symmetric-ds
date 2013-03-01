@@ -618,7 +618,6 @@ public class NodeService extends AbstractService implements INodeService {
 
             List<Row> list = sqlTemplate.query(getSql("findOfflineNodesSql"), new Object[] {
                     myNode.getNodeId(), myNode.getNodeId()}, (int[])null);
-
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
                 Date time = node.getDateTime("heartbeat_time");
@@ -640,9 +639,43 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
+        log.info("Returning offline list");
         return offlineNodeList;
     }
+    
+    public List<String> findOfflineNodeIds(long minutesOffline) {
+        List<String> offlineNodeList = new ArrayList<String>();
+        Node myNode = findIdentity();
+
+        if (myNode != null) {
+            long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
+
+            List<Row> list = sqlTemplate.query(getSql("findOfflineNodesSql"), new Object[] {
+                    myNode.getNodeId(), myNode.getNodeId()}, (int[])null);
+            for (Row node : list) {
+                String nodeId = node.getString("node_id");
+                Date time = node.getDateTime("heartbeat_time");
+                String offset = node.getString("timezone_offset");
+                // Take the timezone of the client node into account when
+                // checking the hearbeat time.
+                Date clientNodeCurrentTime = null;
+                if (offset != null) {
+                    clientNodeCurrentTime = AppUtils
+                            .getLocalDateForOffset(offset);
+                } else {
+                    clientNodeCurrentTime = new Date();
+                }
+                long cutOffTimeMillis = clientNodeCurrentTime.getTime()
+                        - offlineNodeDetectionMillis;
+                if (time == null
+                        || time.getTime() < cutOffTimeMillis) {
+                    offlineNodeList.add(nodeId);
+                }
+            }
+        }
+        log.info("Returning offline list");
+        return offlineNodeList;
+    }    
 
     public void setOfflineServerListeners(List<IOfflineServerListener> listeners) {
         this.offlineServerListeners = listeners;

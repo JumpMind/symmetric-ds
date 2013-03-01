@@ -914,11 +914,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, true);
                 } else {
-                    this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
-                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(
-                            batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
-                            .getTrigger().getChannelId());
-                    this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(), channel);
+                    this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();                    
+                    if (this.routingContext == null) {
+                        NodeChannel channel = batch != null ? configurationService.getNodeChannel(
+                                batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
+                                .getTrigger().getChannelId());
+                        this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(),
+                                channel);
+                    }
                     this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             triggerRouter.getRouter().getRouterId(), history, false);
                     this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
