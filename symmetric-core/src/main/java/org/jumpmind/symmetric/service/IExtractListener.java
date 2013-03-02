@@ -18,25 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-package org.jumpmind.symmetric.common;
+
+package org.jumpmind.symmetric.service;
+
+import java.io.IOException;
+
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * These are properties that are server wide.  They can be accessed via the parameter service or via System properties.
+ * 
  */
-public class ServerConstants {
-    
-    public final static String HOST_BIND_NAME = "host.bind.name";
+public interface IExtractListener {
 
-    public final static String HTTP_ENABLE = "http.enable";
-    public final static String HTTP_PORT = "http.port";
+    public void init() throws IOException;
 
-    public final static String HTTPS_ENABLE = "https.enable";
-    public final static String HTTPS_PORT = "https.port";
-    
-    public final static String HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
-    public final static String HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";    
-    
-    public final static String JMX_HTTP_ENABLE = "jmx.http.enable";
-    public final static String JMX_HTTP_PORT = "jmx.http.port";
+    /**
+     * Gets called when the start of a batch is found.
+     */
+    public void startBatch(OutgoingBatch batch) throws IOException;
 
+    /**
+     * Gets called only if batch has finished and is successful.
+     */
+    public void endBatch(OutgoingBatch batch) throws IOException;
+
+    public void dataExtracted(Data data, String routerId) throws IOException;
+
+    public void done() throws IOException;
 }

@@ -1,26 +1,5 @@
-/*
- * Licensed to JumpMind Inc under one or more contributor 
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU Lesser General Public License (the
- * "License"); you may not use this file except in compliance
- * with the License. 
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
- * <http://www.gnu.org/licenses/>.
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License. 
- */
 package org.jumpmind.symmetric.load;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +18,11 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.util.Context;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
-import bsh.TargetError;
 
 public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabaseWriterErrorHandler,
         IBuiltInExtensionPoint {
@@ -54,7 +31,6 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     private static final String CONTEXT = "context";
     private static final String TABLE = "table";
     private static final String DATA = "data";
-    private static final String ERROR = "error";
     private static final String ENGINE = "engine";
     private final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     private final String BATCH_COMPLETE_SCRIPTS_KEY = String.format("%d.BatchCompleteScripts",
@@ -83,15 +59,15 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     }
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
-        return processLoadFilters(context, table, data, null, WriteMethod.BEFORE_WRITE);
+        return processLoadFilters(context, table, data, WriteMethod.BEFORE_WRITE);
     }
 
     public void afterWrite(DataContext context, Table table, CsvData data) {
-        processLoadFilters(context, table, data, null, WriteMethod.AFTER_WRITE);
+        processLoadFilters(context, table, data, WriteMethod.AFTER_WRITE);
     }
 
-    public boolean handleError(DataContext context, Table table, CsvData data, Exception error) {        
-        return processLoadFilters(context, table, data, error, WriteMethod.HANDLE_ERROR);
+    public boolean handleError(DataContext context, Table table, CsvData data, Exception ex) {
+        return processLoadFilters(context, table, data, WriteMethod.HANDLE_ERROR);
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
@@ -122,14 +98,13 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         return interpreter;
     }
 
-    protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
+    protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data)
             throws EvalError {
 
         interpreter.set(ENGINE, this.symmetricEngine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
         interpreter.set(DATA, data);
-        interpreter.set(ERROR, error);
 
         if (data != null) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
@@ -147,17 +122,14 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     }
 
-    protected void processError(LoadFilter currentFilter, Table table, Throwable ex) {
-        if (ex instanceof TargetError) {
-            ex = ((TargetError) ex).getTarget();
-        }
+    protected void processError(LoadFilter currentFilter, Table table, String errorMsg) {
         String formattedMessage = String.format(
-                "Error executing beanshell script for load filter %s on table %s. The error was: %s",
+                "Error executing beanshell script for load filter %s on table %s error %s",
                 new Object[] { currentFilter != null ? currentFilter.getLoadFilterId() : "N/A",
-                        table.getName(), ex.getMessage() });
+                        table.getName(), errorMsg });
         log.error(formattedMessage);
         if (currentFilter.isFailOnError()) {
-            throw new SymmetricException(formattedMessage, ex);
+            throw new SymmetricException(formattedMessage);
         }
     }
 
@@ -190,7 +162,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         Interpreter interpreter = getInterpreter(context);
         String currentScript = null;
         try {
-            bind(interpreter, context, null, null, null);
+            bind(interpreter, context, null, null);
             if (scripts != null) {
 	            for (String script : scripts) {
 	                currentScript = script;
@@ -208,28 +180,18 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     }
 
-    protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error,
+    protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
             WriteMethod writeMethod) {
 
         boolean writeRow = true;
         LoadFilter currentFilter = null;
 
-        List<LoadFilter> wildcardLoadFilters =  loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
-        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
-        int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
+        List<LoadFilter> loadFiltersForTable = loadFilters.get(table.getFullyQualifiedTableName());
 
-        if (size > 0) {
-            List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
-            if (wildcardLoadFilters != null) {
-                loadFiltersForTable.addAll(wildcardLoadFilters);
-            }
-            
-            if (tableSpecificLoadFilters != null) {
-                loadFiltersForTable.addAll(tableSpecificLoadFilters);
-            }
+        if (loadFiltersForTable != null && loadFiltersForTable.size() > 0) {
             try {
                 Interpreter interpreter = getInterpreter(context);
-                bind(interpreter, context, table, data, error);
+                bind(interpreter, context, table, data);
                 for (LoadFilter filter : loadFiltersForTable) {
                     currentFilter = filter;
                     addBatchScriptsToContext(context, filter);
@@ -256,9 +218,9 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
                         }
                     }
                 }
-            } catch (EvalError ex) {     
-                processError(currentFilter, table, ex);
-            } 
+            } catch (EvalError evalEx) {
+                processError(currentFilter, table, evalEx.getErrorText());
+            }
         }
 
         return writeRow;

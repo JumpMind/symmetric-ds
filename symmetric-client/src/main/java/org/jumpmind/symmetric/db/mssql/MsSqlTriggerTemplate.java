@@ -97,47 +97,6 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "       set nocount off                                                                                                                                                    " + 
 "     end                                                                                                                                                                  " );
 
-        sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " + 
-"   begin                                                                                                                                                                  " + 
-"     set nocount on                                                                                                                                                       " + 
-"     declare @TransactionId varchar(1000)                                                                                                                                 " +
-"     declare @OldPk varchar(2000)                                                                                                                                         " +                                                                                                                                             
-"     declare @OldDataRow varchar(max)                                                                                                                                     " + 
-"     declare @DataRow varchar(max)                                                                                                                                        " +  
-"     $(declareOldKeyVariables)                                                                                                                                            " + 
-"     $(declareNewKeyVariables)                                                                                                                                            " + 
-"                                                                                                                                                                          " +
-"     if (@@TRANCOUNT > 0) begin                                                                                                                                           " + 
-"       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " + 
-"     end                                                                                                                                                                  " + 
-"     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
-"       declare DeleteCursor cursor local for                                                                                                                                " + 
-"          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " + 
-"       declare InsertCursor cursor local for                                                                                                                                " + 
-"          $(if:containsBlobClobColumns)                                                                                                                                      " + 
-"             select $(columns) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" + 
-"          $(else:containsBlobClobColumns)                                                                                                                                    " + 
-"             select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                   " + 
-"          $(end:containsBlobClobColumns)                                                                                                                                     " + 
-"          open DeleteCursor                                                                                                                                                 " + 
-"          open InsertCursor                                                                                                                                                 " + 
-"          fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " + 
-"          fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                    " +
-"          while @@FETCH_STATUS = 0 begin                                                                                                                                  " + 
-"            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " + 
-"              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" + 
-"            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      " + 
-"            fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                 " + 
-"          end                                                                                                                                                             " + 
-"          close DeleteCursor                                                                                                                                                " + 
-"          close InsertCursor                                                                                                                                                " + 
-"          deallocate DeleteCursor                                                                                                                                           " + 
-"          deallocate InsertCursor                                                                                                                                           " + 
-"       end                                                                                                                                                                " + 
-"       set nocount off                                                                                                                                                    " + 
-"     end                                                                                                                                                                  " );        
-        
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             " + 
 "  begin                                                                                                                                                                  " + 

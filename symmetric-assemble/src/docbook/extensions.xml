@@ -127,14 +127,6 @@
 </beans>]]></programlisting>
             </para>
         </section>
-
-        <section id="extensions-databasewriter-errorhandler">
-            <title>IDatabaseWriterErrorHandler</title>
-            <para>
-            Implement this extension point to override how errors are handled.  You can use this extension point to ignore rows that produce foreign key errors.
-            </para>
-        </section>             
-        
         <section id="extensions-dataloader-factory">
             <title>IDataLoaderFactory</title>
             <para>

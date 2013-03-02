@@ -46,18 +46,12 @@
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
         <column name="description" type="VARCHAR" size="255" description="A description of this node group."/>
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
     </table>
 
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
         <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, ) " />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
         <foreign-key foreignTable="node_group" name="fk_lnk_2_grp_src">
             <reference local="source_node_group_id" foreign="node_group_id" />
         </foreign-key>
@@ -177,9 +171,6 @@
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
     </table>
 
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
@@ -236,7 +227,6 @@
         <column name="use_stream_lobs" type="BOOLEANINT" size="1" required="true" default="0"  description="Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction. A value of 1 indicates to stream from the source via callback; a value of 0, lob data is captured by the trigger." />
         <column name="use_capture_lobs" type="BOOLEANINT" size="1" required="true" default="0" description="Provides a hint as to whether this trigger will capture big lobs data.  If set to 1 every effort will be made during data capture in trigger and during data selection for initial load to use lob facilities to extract and store data in the database.  On Oracle, this may need to be set to 1 to get around 4k concatenation errors during data capture and during initial load."/>                
         <column name="use_capture_old_data" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this trigger should capture and send the old data (previous state of the row before the change)."/>
-        <column name="use_handle_key_updates" type="BOOLEANINT" size="1" required="true" default="0" description="Allows handling of primary key updates (SQLServer dialect only)"/>
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -269,11 +259,10 @@
     <table name="trigger_router" description="Map a trigger to a router.">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
-        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this trigger router is enabled or not."/>        
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. If this value is the same for multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to a negative number, then the table will be excluded from an initial load." />
         <column name="initial_load_select" type="LONGVARCHAR"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
         <column name="initial_load_delete_stmt" type="LONGVARCHAR"  description="The expression that is used to delete data when an initial load occurs.  If this field is empty, no delete will occur before the initial load.  If this field is not empty, the text will be used as a sql statement and executed for the initial load delete." />
-        <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/>         
+        <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/> 
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -290,9 +279,6 @@
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Target the parameter at a specific node group id. To target all groups, use the value of 'ALL.'"/>
         <column name="param_key" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the parameter."/>
         <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />        
     </table>
 
     <table name="registration_redirect" description="Provides a way for a centralized registration server to redirect registering nodes to their prospective parent node in a multi-tiered deployment." >
@@ -387,7 +373,7 @@
         <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
-        <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
+        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be currently routing (RE), newly created and ready for replication (NE), being queried from the database (QE), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK) or error (ER)." />
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />               
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
@@ -483,9 +469,6 @@
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
         <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                
         <foreign-key foreignTable="node_group_link" name="fk_tt_2_grp_lnk">
             <reference local="source_node_group_id" foreign="source_node_group_id" />
             <reference local="target_node_group_id" foreign="target_node_group_id" />            
@@ -500,10 +483,7 @@
         <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
         <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
         <column name="transform_expression" type="LONGVARCHAR" description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
-        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />                        
+        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
     </table>
     
     <table name="conflict" description="Defines how conflicts in row data should be handled during the load process.">
@@ -542,11 +522,9 @@
         <column name="column_names" type="LONGVARCHAR" required="true"  description="The column names defined on the table. The column names are stored in comma-separated values (CSV) format." />
         <column name="pk_column_names" type="LONGVARCHAR" required="true"  description="The primary key column names defined on the table. The column names are stored in comma-separated values (CSV) format." />
         <column name="row_data" type="LONGVARCHAR" description="The row data from the batch as captured from the source. The column values are stored in comma-separated values (CSV) format." />
-        <column name="old_data" type="LONGVARCHAR" description="The old row data prior to update from the batch as captured from the source.  The column values are stored in CSV format." />        
-        <column name="cur_data" type="LONGVARCHAR" description="The current row data that caused the error to occur.  The column values are stored in CSV format." />
+        <column name="old_data" type="LONGVARCHAR" description="The old row data prior to update from the batch as captured from the source.  The column values are stored in CSV format." />
         <column name="resolve_data" type="LONGVARCHAR" description="The capture data change from the user that is used instead of row_data.  This is useful when resolving a conflict manually by specifying the data that should load." />
-        <column name="resolve_ignore" type="BOOLEANINT" size="1" default="0" description="Indication from the user that the row_data should be ignored and the batch can continue loading with the next row." />
-        <column name="conflict_id" type="VARCHAR" size="50" description="Unique identifier for the conflict detection setting that caused the error" />                
+        <column name="resolve_ignore" type="BOOLEANINT" size="1" default="0" description="Indication from the user that the row_data should be ignored and the batch can continue loading with the next row." />        
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />
@@ -571,7 +549,7 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The destination node group for the filter." />
         <column name="target_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in." />
         <column name="target_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in." />
-        <column name="target_table_name" type="VARCHAR" size="255" description="The name of the target table that will trigger the bsh filter." />
+        <column name="target_table_name" type="VARCHAR" size="255" required="true"  description="The name of the target table that will trigger the bsh filter." />
         <column name="filter_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an update." />
         <column name="filter_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on an insert." />
         <column name="filter_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the filter should apply on a delete." />
@@ -586,57 +564,39 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="load_filter_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply load filters if more than one target operation occurs."/>        
         <column name="fail_on_error" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether we should fail the batch if the filter fails." />
-    </table>
-    
-    <table name="table_reload_request" description="This table acts as a means to queue up a reload of a specific table.  Either the target or the source node may insert into this table to queue up a load.  If the target node inserts into the table, then the row will be synchronized to the source node and the reload events will be queued up during routing.">
-        <column name="target_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node to receive the table reload." />
-        <column name="source_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that will be the source of the table reload." />        
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
-        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
-        <column name="reload_select" type="LONGVARCHAR"  description="Overrides the initial load select." />
-        <column name="reload_delete_stmt" type="LONGVARCHAR"  description="Overrides the initial load delete statement." />        
-        <column name="reload_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that a reload should be queued up." />
-        <column name="reload_time" type="TIMESTAMP" required="false"  description="The timestamp when the reload was started for this node." />        
+    </table>            
+
+    <!--     
+    <table name="file_sync" description="A table that defines file synchronization configuration">
+        <column name="file_sync_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the synchronization." />
+        <column name="server_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the client during file synchronization." />
+        <column name="client_group_id" type="VARCHAR" size="50" required="true" description="The node group that will act as the server during file synchronization." />
+        <column name="processing_order" type="INTEGER" required="true" default="1" description="Order in which to process the synchronizations."/>        
+        <column name="frequency" type="VARCHAR" size="50" required="true" description="This is a cron expression or the period in between synchronizations in milliseconds." />
+        <column name="client_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
+        <column name="server_dir" type="VARCHAR" size="255" required="true" description="The base directory on the server that will be synchronized." />
+        <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />        
+        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to include in synchronization." />
+        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to exclude from synchronization." />       
+        <column name="direction" type="VARCHAR" size="50" required="true" default="bidirectional" description="The direction to synchronize files.  Possible values are: client_to_server, server_to_client, bidirectional." />    
+        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are created." />
+        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are modified." />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are deleted." />
+        <column name="transport_type" type="VARCHAR" size="50"  description="The name of a specific type of transport that will be used by the client.  Out of the box types are: local, http, ftp, symmetric" />
+        <column name="transport_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transport that is configured in transport_type  See the documentation for each transport_type for more details." />
+        <column name="conflict_strategy" type="VARCHAR" size="128" default="client_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: client_wins, server_wins, report_error" />        
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />        
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />    
+compress_for_xfer
+package_files
+conflict_strategy
+script_type
+client_pre_sync_script
+client_post_sync_script
+server_pre_sync_script
+server_post_sync_script
     </table>
-    
-    <table name="grouplet" description="This tables defines named groups to which nodes can belong to based on their external id.  Grouplets are used to designate that synchronization should only affect an explicit subset of nodes in a node group.">
-        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
-        <column name="grouplet_link_policy" type="CHAR" size="1" required="true" default="I" description="Specified whether the external ids in the grouplet_link are included in the group or excluded from the grouplet.  In the case of excluded, the grouplet starts with all external ids and removes the excluded ones listed.  Use 'I' for inclusive and 'E' for exclusive." />        
-        <column name="description" type="VARCHAR" size="255" description="A description of this grouplet."/>
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />        
-    </table>
-    
-    <table name="grouplet_link" description="This tables defines nodes belong to a grouplet based on their external.id">
-        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
-        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Provides a means to select the nodes that belong to a grouplet. " />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-        <foreign-key foreignTable="grouplet" name="fk_gpltlnk_2_gplt">
-            <reference local="grouplet_id" foreign="grouplet_id" />
-        </foreign-key>                  
-    </table>
-    
-    <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers.  The existence of the grouplet for a trigger_router enables nodes associated with the grouplet and at the same time it disables the trigger router for all other nodes.">
-        <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
-        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
-        <column name="applies_when" type="CHAR" size="1" required="true" primaryKey="true" description="Indicates the side that a grouplet should be applied to.  Use 'T' for target and 'S' for source and 'B' for both source and target." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-        <foreign-key foreignTable="grouplet" name="fk_trgplt_2_gplt">
-            <reference local="grouplet_id" foreign="grouplet_id" />
-        </foreign-key>           
-        <foreign-key foreignTable="trigger_router" name="fk_trgplt_2_tr">
-            <reference local="trigger_id" foreign="trigger_id" />
-            <reference local="router_id" foreign="router_id" />            
-        </foreign-key>  
-    </table>        
-            
+         -->    
+        
 </database>

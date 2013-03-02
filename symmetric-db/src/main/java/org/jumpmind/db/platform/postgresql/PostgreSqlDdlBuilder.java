@@ -379,7 +379,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" ALTER COLUMN ");
         Column column = change.getChangedColumn();
-        column.setSizeAndScale(change.getNewSize(), change.getNewScale());
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" TYPE ");
         ddl.append(getSqlType(column));

@@ -18,10 +18,9 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  target_table_name,                                          " + 
 "  transform_point,                                            " + 
 "  transform_order,                                            " + 
-"  update_first, delete_action, column_policy,                 " +
-"  last_update_time, last_update_by, create_time               " + 
+"  update_first, delete_action, column_policy                  " + 
 "  from                                                        " + 
-"  $(transform_table) order by transform_order                 " + 
+"  $(transform_table) order by transform_order           " + 
 "  asc                                                         " );
 
         putSql("selectTransformColumn" ,"" + 
@@ -29,9 +28,8 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  transform_id, include_on, target_column_name,   " + 
 "  source_column_name, pk,                         " + 
 "  transform_type, transform_expression,           " + 
-"  transform_order,                                " +
-"  last_update_time, last_update_by, create_time   " + 
-"  from $(transform_column) order                  " + 
+"  transform_order                                 " + 
+"  from $(transform_column) order            " + 
 "  by transform_order                              " + 
 "  asc                                             " );
 
@@ -40,9 +38,8 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  transform_id, include_on, target_column_name,   " + 
 "  source_column_name, pk,                         " + 
 "  transform_type, transform_expression,           " + 
-"  transform_order,                                " +
-"  last_update_time, last_update_by, create_time   " + 
-"  from $(transform_column)                        " + 
+"  transform_order                                 " + 
+"  from $(transform_column)                  " + 
 "  where                                           " + 
 "  transform_id = ?                                " + 
 "  order by transform_order asc                    " );
@@ -63,9 +60,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  update_first=?,            " + 
 "  delete_action=?,           " + 
 "  transform_order=?,         " + 
-"  column_policy=?,           " +
-"  last_update_time=?,        " +
-"  last_update_by=?           " +
+"  column_policy=?            " +
 "  where                      " + 
 "  transform_id=?             " );
 
@@ -77,9 +72,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  pk=?,                       " + 
 "  transform_type=?,           " + 
 "  transform_expression=?,     " + 
-"  transform_order=?,           " +
-"  last_update_time=?,        " +
-"  last_update_by=?           " +
+"  transform_order=?           " + 
 "  where                       " + 
 "  transform_id=?              " + 
 "  and include_on=?            " + 
@@ -92,17 +85,16 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  source_schema_name, source_table_name,                              " + 
 "  target_catalog_name, target_schema_name, target_table_name,         " + 
 "  transform_point, update_first, delete_action, transform_order,      " + 
-"  column_policy, last_update_time, last_update_by, create_time, transform_id)                                        " + 
-"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                           " );
+"  column_policy, transform_id)                                        " + 
+"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                 " );
 
         putSql("insertTransformColumnSql" ,"" + 
 "insert into $(transform_column)              " + 
 "  (transform_id, include_on, target_column_name,   " + 
 "  source_column_name,                              " + 
 "  pk, transform_type,                              " + 
-"  transform_expression, transform_order, " +
-"  last_update_time, last_update_by, create_time)           " + 
-"  values(?,?,?,?,?,?,?,?,?,?,?)                          " );
+"  transform_expression, transform_order)           " + 
+"  values(?,?,?,?,?,?,?,?)                          " );
 
         putSql("deleteTransformTableSql" ,"" + 
 "delete from $(transform_table) where   " + 
@@ -119,10 +111,6 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  and include_on=?                      " + 
 "  and target_column_name=?              " );
 
-    
-    
-        putSql("selectMaxTransformTableLastUpdateTime" ,"select max(last_update_time) from $(transform_table) where last_update_time is not null" );       
-        putSql("selectMaxTransformColumnLastUpdateTime" ,"select max(last_update_time) from $(transform_column) where last_update_time is not null" );
-    
     }
+
 }

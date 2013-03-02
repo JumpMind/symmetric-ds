@@ -39,7 +39,6 @@ import org.jumpmind.exception.SecurityException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
@@ -58,7 +57,7 @@ public class TransportManagerFactory {
                     ParameterConstants.TRANSPORT_TYPE);
             if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
                 final String httpSslVerifiedServerNames = symmetricEngine.getParameterService()
-                        .getString(ServerConstants.HTTPS_VERIFIED_SERVERS);
+                        .getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
                 if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
                     HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
                         public boolean verify(String s, SSLSession sslsession) {
@@ -84,7 +83,7 @@ public class TransportManagerFactory {
 
                 // Allow self signed certs based on the parameter value.
                 boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
-                        ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
+                        ParameterConstants.TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
                 if (allowSelfSignedCerts) {
                     HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
                 }

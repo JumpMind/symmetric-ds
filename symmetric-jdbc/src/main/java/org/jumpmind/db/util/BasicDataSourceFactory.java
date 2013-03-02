@@ -80,7 +80,7 @@ public class BasicDataSourceFactory {
                 String[] keyValue = property.split("=");
                 if (keyValue != null && keyValue.length > 1) {
                     LoggerFactory.getLogger(BasicDataSourceFactory.class).info(
-                            "Setting database connection property {}={}", keyValue[0], keyValue[1]);
+                            "Setting database connection property %s=%s", keyValue[0], keyValue[1]);
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }

@@ -98,7 +98,12 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else {
             return null;
         }
-    }    
+    }
+    
+    @Override
+    protected String[] getUnsupportedTableTypes() {
+        return new String[] {"SYNONYM"};
+    }
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {

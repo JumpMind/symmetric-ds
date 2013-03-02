@@ -67,7 +67,7 @@ public class Router implements Serializable {
     private Date lastUpdateTime;
 
     private String lastUpdateBy;
-    
+
     public Router() {
         routerId = Integer.toString(maxRouterId++);
     }
@@ -202,7 +202,7 @@ public class Router implements Serializable {
     
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
-    }    
+    }
     
     public String createDefaultName() {
         if (nodeGroupLink != null) {
@@ -236,6 +236,6 @@ public class Router implements Serializable {
         } else {
             return super.toString();
         }
-    }   
+    }
 
 }

@@ -37,8 +37,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface ITriggerRouterService {
 
-    public boolean refreshFromDatabase();
-    
     public List<TriggerHistory> getActiveTriggerHistories();
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
@@ -54,8 +52,6 @@ public interface ITriggerRouterService {
     public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
     public Trigger getTriggerForCurrentNodeById(String triggerId);
-    
-    public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
     
     /**
      * Returns a list of triggers that should be active for the current node.
@@ -152,8 +148,6 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter);
     
-    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
-    
     public void syncTriggers(Table table, boolean genAlways);
     
     public void syncTriggers(boolean genAlways);
@@ -168,6 +162,6 @@ public interface ITriggerRouterService {
 
     public Map<Trigger, Exception> getFailedTriggers();
     
-    public void clearCache();
+    public void resetCaches();
 
 }

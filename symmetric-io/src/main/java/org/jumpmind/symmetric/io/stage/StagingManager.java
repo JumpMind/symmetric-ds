@@ -114,19 +114,19 @@ public class StagingManager implements IStagingManager {
             }
             if (purgedFileCount > 0) {
                 if (purgedFileSize < 1000) {
-                    log.debug("Purged {} staged files, freeing {} bytes of disk space",
+                    log.info("Purged {} staged files, freeing {} bytes of disk space",
                             purgedFileCount, (int) (purgedFileSize));
                 } else {
-                    log.debug("Purged {} staged files, freeing {} kbytes of disk space",
+                    log.info("Purged {} staged files, freeing {} kbytes of disk space",
                             purgedFileCount, (int) (purgedFileSize / 1000));
                 }
             }
             if (purgedMemCount > 0) {
                 if (purgedMemSize < 1000) {
-                    log.debug("Purged {} staged memory buffers, freeing {} bytes of memory",
+                    log.info("Purged {} staged memory buffers, freeing {} bytes of memory",
                             purgedMemCount, (int) (purgedMemSize));
                 } else {
-                    log.debug("Purged {} staged memory buffers, freeing {} kbytes of memory",
+                    log.info("Purged {} staged memory buffers, freeing {} kbytes of memory",
                             purgedMemCount, (int) (purgedMemSize / 1000));
                 }
             }

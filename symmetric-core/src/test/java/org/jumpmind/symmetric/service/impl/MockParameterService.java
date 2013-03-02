@@ -16,10 +16,6 @@ public class MockParameterService extends AbstractParameterService implements IP
 
     }
     
-    public boolean refreshFromDatabase() {
-        return false;
-    }
-    
     public MockParameterService(Properties properties) {
         this.properties = properties;
     }
@@ -28,13 +24,13 @@ public class MockParameterService extends AbstractParameterService implements IP
         return false;
     }
     
-    public void saveParameter(String key, Object paramValue, String lastUpdateBy) {
+    public void saveParameter(String key, Object paramValue) {
     }
 
-    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy) {
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
     }
 
-    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy) {
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
     }
 
     public void deleteParameter(String externalId, String nodeGroupId, String key) {

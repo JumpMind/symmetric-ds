@@ -32,12 +32,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -642,22 +640,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
-            
-            if (table.getColumnCount() > 0) {
-                table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
-                table.addIndices(readIndices(connection, metaData, tableName));
+            table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
+            table.addIndices(readIndices(connection, metaData, tableName));
 
-                Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
+            Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
-                for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
-                    table.findColumn(it.next(), true).setPrimaryKey(true);
-                }
+            for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
+                table.findColumn(it.next(), true).setPrimaryKey(true);
+            }
 
-                if (getPlatformInfo().isSystemIndicesReturned()) {
-                    removeSystemIndices(connection, metaData, table);
-                }
-            } else {
-                table = null;
+            if (getPlatformInfo().isSystemIndicesReturned()) {
+                removeSystemIndices(connection, metaData, table);
             }
         }
         return table;
@@ -827,9 +820,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
-        ResultSet columnData = null;        
+        ResultSet columnData = null;
         try {
-            Set<String> columnNames = new HashSet<String>();
             columnData = metaData.getColumns(getTableNamePattern(tableName),
                     getDefaultColumnPattern());
 
@@ -837,11 +829,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             while (columnData.next()) {
                 Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
-                Column column = readColumn(metaData, values);
-                if (!columnNames.contains(column.getName())) {
-                    columnNames.add(column.getName());
-                    columns.add(column);
-                }
+
+                columns.add(readColumn(metaData, values));
             }
             return columns;
         } finally {

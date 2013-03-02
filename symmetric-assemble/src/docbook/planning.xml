@@ -219,9 +219,9 @@
             remaining task prior to starting your implementation is to define and document what data changes are to be
             captured (by defining SymmetricDS
             <emphasis>Triggers</emphasis>
-            ), to decide to which node(s) the data changes are to be
+            ), and to decide to which node(s) the data changes are to be
             <emphasis>routed</emphasis>
-            to, and to decide which trigger applies to which router and under what conditions. We will also, in this section, discuss the concept of an
+            to and under what conditions. We will also, in this section, discuss the concept of an
             <emphasis>initial load</emphasis>
             of data into a SymmetricDS node.
         </para>
@@ -316,18 +316,17 @@
                     </listitem>
                 </itemizedlist>
             </para>
-           
+            <para> For each of your Triggers, decide which Router matches the behavior needed for that Trigger. These Trigger
+                Router combinations will be used to define a mapping between your Triggers and Routers when you implement
+                your design.
+            </para>
         </section>
         <section id="defining-data-changes-trigger-routers">
             <title>Mapping Triggers to Routers</title>
-            
-             <para> For each of your Triggers (which specify when a data change should be captured),
-                 you will need to decide which Router(s) to pair with the Trigger such that the change is routed
-                 to the desired target nodes.   This needed mapping between Triggers and Routers, found in the table
+            <para>
+                The mapping between Triggers and Routers, found in the table
                 <xref linkend="table_trigger_router" xrefstyle="table" />
-                , defines configuration specific to a particular Trigger and Router combination that you need.
-                In addition to defining which triggers map to which routers, the table also has several
-                settings present to define various behaviors, including initial loads and ping back.
+                , defines configuration specific to a particular Trigger and Router combination.
             </para>
             <section id="defining-data-changes-trigger-routers-initial-load">
                 <title>Planning Initial Loads</title>

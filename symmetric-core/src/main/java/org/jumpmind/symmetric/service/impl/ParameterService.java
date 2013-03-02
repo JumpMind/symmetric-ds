@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,8 +47,6 @@ public class ParameterService extends AbstractParameterService implements IParam
     private ParameterServiceSqlMap sql;
 
     private ISqlTemplate sqlTemplate;
-    
-    private Date lastUpdateTime;
 
     public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
             String tablePrefix) {
@@ -63,37 +60,24 @@ public class ParameterService extends AbstractParameterService implements IParam
     public String getTablePrefix() {
         return this.tablePrefix;
     }
-    
-    public boolean refreshFromDatabase() {
-        Date date = sqlTemplate.queryForObject(sql.getSql("selectMaxLastUpdateTime"), Date.class);
-        if (date != null) {
-            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer database parameters were detected");
-                lastUpdateTime = date;
-                rereadParameters();
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Save a parameter that applies to {@link ParameterConstants#ALL} external
      * ids and all node groups.
      */
-    public void saveParameter(String key, Object paramValue, String lastUpdateBy) {
-        this.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key, paramValue, lastUpdateBy);
+    public void saveParameter(String key, Object paramValue) {
+        this.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key, paramValue);
     }
 
-    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy) {
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
+        int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue,
                 externalId, nodeGroupId, key });
 
         if (count == 0) {
             sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
-                    nodeGroupId, key, paramValue, lastUpdateBy });
+                    nodeGroupId, key, paramValue });
         }
 
         rereadParameters();
@@ -104,10 +88,10 @@ public class ParameterService extends AbstractParameterService implements IParam
         rereadParameters();
     }
 
-    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy) {
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
         Set<String> keys = parameters.keySet();
         for (String key : keys) {
-            saveParameter(externalId, nodeGroupId, key, parameters.get(key), lastUpdateBy);
+            saveParameter(externalId, nodeGroupId, key, parameters.get(key));
         }
     }
 

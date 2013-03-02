@@ -29,7 +29,6 @@ import java.util.List;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
@@ -42,8 +41,6 @@ import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLi
  * from a transport
  */
 public interface IDataLoaderService {
-    
-    public boolean refreshFromDatabase();
 
     public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException;
 
@@ -63,10 +60,6 @@ public interface IDataLoaderService {
 
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter);
     
-    public void addLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener);
-    
-    public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener);
-    
     public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
     
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
@@ -77,7 +70,7 @@ public interface IDataLoaderService {
     
     public void save(ConflictNodeGroupLink settings);
     
-    public void clearCache();
+    public void reloadConflictNodeGroupLinks();
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 

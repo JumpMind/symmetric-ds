@@ -30,7 +30,6 @@ import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
-import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -326,18 +325,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             return null;
         }
     }
-    
-    protected void processChange(Database currentModel, Database desiredModel,
-            ColumnSizeChange change, StringBuilder ddl) {
-        writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append(" MODIFY ");
-        Column column = change.getChangedColumn();
-        column.setSizeAndScale(change.getNewSize(), change.getNewScale());
-        printIdentifier(getColumnName(column), ddl);        
-        ddl.append(" ");
-        ddl.append(getSqlType(column));
-        printEndOfStatement(ddl);
-    }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
@@ -352,9 +339,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                     // we need to rebuild the full table
                     return;
                 }
-            } else if (change instanceof ColumnSizeChange) {
-                processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
-                changeIt.remove();                
             } else if (change instanceof ColumnDefaultValueChange) {
                 processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
                 changeIt.remove();

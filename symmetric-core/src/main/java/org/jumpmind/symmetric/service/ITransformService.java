@@ -8,8 +8,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
 public interface ITransformService {
-    
-    public boolean refreshFromDatabase();
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink link,
             TransformPoint transformPoint, boolean useCache);
@@ -24,6 +22,6 @@ public interface ITransformService {
 
     public void deleteTransformTable(String transformTableId);
 
-    public void clearCache();
+    public void resetCache();
 
 }

@@ -67,70 +67,39 @@ public class SymmetricServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         ServerSymmetricEngine engine = findEngine(req);
-        if (engine == null) {
-            boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
-                    .areEnginesStarting();
-            if (nodesBeingCreated) {
-                log.info(
-                        "The client node request is being rejected because the server node does not exist yet.  There are nodes being initialized.  It might be that the node is not ready or that the database is unavailable.  Please be patient.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-            } else {
-                log.error(
-                        "The client node request is being rejected because the server node does not exist.  Please check that the engine.name exists in the url.  It should be of the pattern http://host:port/sync/{engine.name}/{action}.  If it does not, then check the sync.url of this node or the registration.url of the client making the request.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-            }
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-
-        } else if (engine.isStarted()) {
-            IUriHandler handler = findMatchingHandler(engine, req);
-            if (handler != null) {
-                MDC.put("engineName", engine.getEngineName());
-                List<IInterceptor> interceptors = handler.getInterceptors();
-                try {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
-                            if (!interceptor.before(req, res)) {
-                                return;
-                            }
-                        }
-                    }
-                    handler.handle(req, res);
-                } catch (Exception e) {
-                    logException(req, e,
-                            !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
-                    if (!res.isCommitted()) {
-                        ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    }
-                } finally {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
-                            interceptor.after(req, res);
+        IUriHandler handler = findMatchingHandler(engine, req);
+        if (handler != null) {
+            MDC.put("engineName", engine.getEngineName());
+            List<IInterceptor> interceptors = handler.getInterceptors();
+            try {
+                if (interceptors != null) {
+                    for (IInterceptor interceptor : interceptors) {
+                        if (!interceptor.before(req, res)) {
+                            return;
                         }
                     }
                 }
-            } else {
-                log.error(
-                        "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-                ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
+                handler.handle(req, res);
+            } catch (Exception e) {
+                logException(req, e,
+                        !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
+                if (!res.isCommitted()) {
+                    ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
+            } finally {
+                if (interceptors != null) {
+                    for (IInterceptor interceptor : interceptors) {
+                        interceptor.after(req, res);
+                    }
+                }
             }
-        } else if (engine.isStarting()) {
-            log.info(
-                    "The client node request is being rejected because the server node is currently starting.  Please be patient.  The request was {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
+        } else {
+            log.error(
+                    "No handlers were found to handle the request {} from the host {} with an ip address of {}.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        } else if (!engine.isStarted() && !engine.isConfigured()) {
-            log.warn(
-                    "The client node request is being rejected because the server node was not started because it is not configured properly. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);
         }
-
     }
 
     protected ServerSymmetricEngine findEngine(HttpServletRequest req) {
@@ -142,12 +111,11 @@ public class SymmetricServlet extends HttpServlet {
                 engine = holder.getEngines().get(engineName);
             }
 
-            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 && 
-                    holder.getEngines().size() == 1) {
+            if (engine == null && holder.getEngines().size() > 0) {
                 engine = holder.getEngines().values().iterator().next();
             }
         }
-        return engine != null ? engine : null;
+        return engine != null && engine.isStarted() ? engine : null;
     }
 
     protected static String getEngineNameFromUrl(HttpServletRequest req) {

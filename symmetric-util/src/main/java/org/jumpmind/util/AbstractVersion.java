@@ -16,8 +16,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 package org.jumpmind.util;
 
 import java.io.IOException;
@@ -42,12 +41,13 @@ abstract public class AbstractVersion {
     public static final int PATCH_INDEX = 2;
 
     private String version = null;
-
+    
     abstract protected String getPropertiesFileLocation();
 
-    public String version() {
+    public  String version() {
         if (version == null) {
-            InputStream is = AbstractVersion.class.getResourceAsStream(getPropertiesFileLocation());
+            InputStream is = AbstractVersion.class
+                    .getResourceAsStream(getPropertiesFileLocation());
             if (is != null) {
                 Properties p = new Properties();
                 try {
@@ -86,7 +86,7 @@ abstract public class AbstractVersion {
         return versions;
     }
 
-    private int parseVersionComponent(String versionComponent) {
+    private  int parseVersionComponent(String versionComponent) {
         int version = 0;
         try {
             version = Integer.parseInt(versionComponent);
@@ -95,11 +95,11 @@ abstract public class AbstractVersion {
         return version;
     }
 
-    protected boolean isOlderMajorVersion(String version) {
+    protected  boolean isOlderMajorVersion(String version) {
         return isOlderMajorVersion(parseVersion(version));
     }
 
-    protected boolean isOlderMajorVersion(int[] versions) {
+    protected  boolean isOlderMajorVersion(int[] versions) {
         int[] softwareVersion = parseVersion(version());
         if (versions[MAJOR_INDEX] < softwareVersion[MAJOR_INDEX]) {
             return true;
@@ -107,19 +107,20 @@ abstract public class AbstractVersion {
         return false;
     }
 
-    public boolean isOlderVersion(String version) {
+    public  boolean isOlderVersion(String version) {
         return isOlderThanVersion(version, version());
     }
 
-    public boolean isOlderThanVersion(String checkVersion, String targetVersion) {
-
-        if (noVersion(targetVersion) || noVersion(checkVersion)) {
+    public  boolean isOlderThanVersion(String checkVersion,
+            String targetVersion) {
+        
+        if(noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
         }
-
+        
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
-
+        
         if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
         } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
@@ -132,26 +133,8 @@ abstract public class AbstractVersion {
         }
         return false;
     }
-
-    protected boolean noVersion(String targetVersion) {
+    
+    private  boolean noVersion(String targetVersion) {
         return StringUtils.isBlank(targetVersion);
-    }
-
-    public boolean isOlderMinorVersion(String oldVersion) {
-        String currentVersion = version();
-        if (noVersion(currentVersion) || noVersion(oldVersion)) {
-            return false;
-        }
-
-        int[] checkVersions = parseVersion(oldVersion);
-        int[] targetVersions = parseVersion(currentVersion);
-
-        if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
-            return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
-                && checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
-            return true;
-        }
-        return false;
     }
 }

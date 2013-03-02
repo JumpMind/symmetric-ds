@@ -59,10 +59,6 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
-    public List<String> findOfflineNodeIds(long minutesOffline) {
-        return null;
-    }
-    
     public boolean isRegistrationServer() {
         return false;
     }

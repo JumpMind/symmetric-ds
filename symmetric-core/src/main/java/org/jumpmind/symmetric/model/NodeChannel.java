@@ -155,18 +155,6 @@ public class NodeChannel implements Serializable {
         channel.setChannelId(id);
         nodeChannelControl.setChannelId(id);
     }
-    
-    public void setLastUpdateTime(Date date) {
-        channel.setLastUpdateTime(date);
-    }
-    
-    public void setCreateTime(Date date) {
-        channel.setCreateTime(date);
-    }
-    
-    public void setLastUpdateBy(String lastUpdateBy) {
-        channel.setLastUpdateBy(lastUpdateBy);
-    }
 
     public void setSuspendEnabled(boolean suspended) {
         nodeChannelControl.setSuspendEnabled(suspended);

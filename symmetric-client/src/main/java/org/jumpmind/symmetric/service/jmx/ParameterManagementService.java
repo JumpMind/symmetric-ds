@@ -55,7 +55,7 @@ public class ParameterManagementService implements IBuiltInExtensionPoint, ISymm
             @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameter(String key, String value) {
-        this.parameterService.saveParameter(key, value, "jmx");
+        this.parameterService.saveParameter(key, value);
     }
 
     @ManagedOperation(description = "Update a parameter for all nodes")
@@ -64,7 +64,7 @@ public class ParameterManagementService implements IBuiltInExtensionPoint, ISymm
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForAll(String key, String value) {
         this.parameterService.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key,
-                value, "jmx");
+                value);
     }
 
     @ManagedOperation(description = "Update a parameter for all nodes in a group")
@@ -73,7 +73,7 @@ public class ParameterManagementService implements IBuiltInExtensionPoint, ISymm
             @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForNodeGroup(String nodeGroup, String key, String value) {
-        this.parameterService.saveParameter(ParameterConstants.ALL, nodeGroup, key, value, "jmx");
+        this.parameterService.saveParameter(ParameterConstants.ALL, nodeGroup, key, value);
     }
 
     @ManagedOperation(description = "Update a parameter for a specific node")
@@ -83,7 +83,7 @@ public class ParameterManagementService implements IBuiltInExtensionPoint, ISymm
             @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForNode(String externalId, String nodeGroup, String key, String value) {
-        this.parameterService.saveParameter(externalId, nodeGroup, key, value, "jmx");
+        this.parameterService.saveParameter(externalId, nodeGroup, key, value);
     }
 
     @ManagedAttribute(description = "The parameters configured for this SymmetricDS instance")

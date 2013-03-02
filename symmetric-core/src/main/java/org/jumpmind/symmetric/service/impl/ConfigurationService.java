@@ -46,50 +46,31 @@ import org.jumpmind.symmetric.service.IParameterService;
 /**
  * @see IConfigurationService
  */
-public class ConfigurationService extends AbstractService implements IConfigurationService {       
+public class ConfigurationService extends AbstractService implements IConfigurationService {
 
     private INodeService nodeService;
 
     private Map<String, List<NodeChannel>> nodeChannelCache;
-
+    
     private Map<String, Channel> channelsCache;
-
+    
     private long channelCacheTime;
 
     private long nodeChannelCacheTime;
 
     private List<Channel> defaultChannels;
-    
-    private Date lastUpdateTime;
 
     public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
             INodeService nodeService) {
         super(parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0, true));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
-    }
-    
-    public boolean refreshFromDatabase() {
-        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"), Date.class);
-        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLastUpdateTime"), Date.class);
-        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLinkLastUpdateTime"), Date.class);
-        Date date = maxDate(date1, date2, date3);
-        
-        if (date != null) {
-            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer channel or group settings were detected");
-                lastUpdateTime = date;
-                clearCache();
-                return true;
-            }
-        }
-        return false;
     }
 
     public void saveNodeGroupLink(NodeGroupLink link) {
@@ -101,14 +82,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             saveNodeGroup(new NodeGroup(link.getTargetNodeGroupId()));
         }
 
-        link.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
-                link.getLastUpdateTime(), link.getLastUpdateBy(), link.getSourceNodeGroupId(),
-                link.getTargetNodeGroupId()) == 0) {
-            link.setCreateTime(new Date());
+                link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
             sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
-                    link.getSourceNodeGroupId(), link.getTargetNodeGroupId(),
-                    link.getLastUpdateTime(), link.getLastUpdateBy(), link.getCreateTime());
+                    link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
         }
     }
 
@@ -122,13 +99,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void saveNodeGroup(NodeGroup group) {
-        group.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupSql"), group.getDescription(),
-                group.getLastUpdateTime(), group.getLastUpdateBy(), group.getNodeGroupId()) == 0) {
-            group.setCreateTime(new Date());
+                group.getNodeGroupId()) == 0) {
             sqlTemplate.update(getSql("insertNodeGroupSql"), group.getDescription(),
-                    group.getNodeGroupId(), group.getLastUpdateTime(), group.getLastUpdateBy(),
-                    group.getCreateTime());
+                    group.getNodeGroupId());
         }
     }
 
@@ -171,7 +145,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
-        channel.setLastUpdateTime(new Date());
         if (0 == sqlTemplate.update(
                 getSql("updateChannelSql"),
                 new Object[] { channel.getProcessingOrder(), channel.getMaxBatchSize(),
@@ -180,10 +153,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.isUseRowDataToRoute() ? 1 : 0,
                         channel.isUsePkDataToRoute() ? 1 : 0, channel.isContainsBigLob() ? 1 : 0,
                         channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
-                        channel.getExtractPeriodMillis(), channel.getDataLoaderType(), channel.getLastUpdateTime(),
-                        channel.getLastUpdateBy(),
-                        channel.getChannelId() })) {
-            channel.setCreateTime(new Date());
+                        channel.getExtractPeriodMillis(), channel.getDataLoaderType(), channel.getChannelId() })) {
             sqlTemplate.update(
                     getSql("insertChannelSql"),
                     new Object[] { channel.getChannelId(), channel.getProcessingOrder(),
@@ -192,12 +162,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.isUseRowDataToRoute() ? 1 : 0,
                             channel.isUsePkDataToRoute() ? 1 : 0,
                             channel.isContainsBigLob() ? 1 : 0, channel.isEnabled() ? 1 : 0,
-                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(),
-                            channel.getDataLoaderType(), channel.getLastUpdateTime(), 
-                            channel.getLastUpdateBy(), channel.getCreateTime()});
+                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(), channel.getDataLoaderType() });
         }
         if (reloadChannels) {
-            clearCache();
+            reloadChannels();
         }
     }
 
@@ -216,22 +184,22 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 new Object[] { nodeChannel.isSuspendEnabled() ? 1 : 0,
                         nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractTime(),
                         nodeChannel.getNodeId(), nodeChannel.getChannelId() })) {
-            sqlTemplate
-                    .update(getSql("insertNodeChannelControlSql"),
-                            new Object[] { nodeChannel.getNodeId(), nodeChannel.getChannelId(),
-                                    nodeChannel.isSuspendEnabled() ? 1 : 0,
-                                    nodeChannel.isIgnoreEnabled() ? 1 : 0,
-                                    nodeChannel.getLastExtractTime() });
+            sqlTemplate.update(
+                    getSql("insertNodeChannelControlSql"),
+                    new Object[] { nodeChannel.getNodeId(), nodeChannel.getChannelId(),
+                            nodeChannel.isSuspendEnabled() ? 1 : 0,
+                            nodeChannel.isIgnoreEnabled() ? 1 : 0,
+                            nodeChannel.getLastExtractTime() });
         }
         if (reloadChannels) {
-            clearCache();
+            reloadChannels();
         }
     }
 
     public void deleteChannel(Channel channel) {
         sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
         sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
-        clearCache();
+        reloadChannels();
     }
 
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis) {
@@ -269,7 +237,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
                         nodeChannelCacheTime = System.currentTimeMillis();
                     }
-
+                    
                     if (nodeId != null) {
                         nodeChannels = sqlTemplate.query(getSql("selectNodeChannelsSql"),
                                 new ISqlRowMapper<NodeChannel>() {
@@ -305,9 +273,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                                 .getLong("extract_period_millis"));
                                         nodeChannel.setDataLoaderType(row
                                                 .getString("data_loader_type"));
-                                        nodeChannel.setCreateTime(row.getDateTime("create_time"));
-                                        nodeChannel.setLastUpdateBy(row.getString("last_update_by"));
-                                        nodeChannel.setLastUpdateTime(row.getDateTime("last_update_time"));
                                         return nodeChannel;
                                     };
                                 }, nodeId);
@@ -350,7 +315,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return nodeChannels;
     }
 
-    public void clearCache() {
+    public void reloadChannels() {
         synchronized (this) {
             nodeChannelCache = null;
             channelsCache = null;
@@ -366,18 +331,17 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void initDefaultChannels() {
         if (defaultChannels != null) {
-            clearCache();
+            reloadChannels();
             List<NodeChannel> channels = getNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
                     log.info("Auto-configuring {} channel", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.debug("No need to create channel {}.  It already exists",
-                            defaultChannel.getChannelId());
+                    log.debug("No need to create channel {}.  It already exists", defaultChannel.getChannelId());
                 }
             }
-            clearCache();
+            reloadChannels();
         }
     }
 
@@ -404,7 +368,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return map;
     }
-
+    
     public Map<String, Channel> getChannels(boolean refreshCache) {
         long channelCacheTimeoutInMs = parameterService.getLong(
                 ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
@@ -416,44 +380,41 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 if (System.currentTimeMillis() - channelCacheTime >= channelCacheTimeoutInMs
                         || channels == null || refreshCache) {
                     channels = new HashMap<String, Channel>();
-                    List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql"),
-                            new ISqlRowMapper<Channel>() {
-                                public Channel mapRow(Row row) {
-                                    Channel channel = new Channel();
-                                    channel.setChannelId(row.getString("channel_id"));
-                                    channel.setProcessingOrder(row.getInt("processing_order"));
-                                    channel.setMaxBatchSize(row.getInt("max_batch_size"));
-                                    channel.setEnabled(row.getBoolean("enabled"));
-                                    channel.setMaxBatchToSend(row.getInt("max_batch_to_send"));
-                                    channel.setMaxDataToRoute(row.getInt("max_data_to_route"));
-                                    channel.setUseOldDataToRoute(row
-                                            .getBoolean("use_old_data_to_route"));
-                                    channel.setUseRowDataToRoute(row
-                                            .getBoolean("use_row_data_to_route"));
-                                    channel.setUsePkDataToRoute(row
-                                            .getBoolean("use_pk_data_to_route"));
-                                    channel.setContainsBigLob(row.getBoolean("contains_big_lob"));
-                                    channel.setBatchAlgorithm(row.getString("batch_algorithm"));
-                                    channel.setExtractPeriodMillis(row
-                                            .getLong("extract_period_millis"));
-                                    channel.setDataLoaderType(row.getString("data_loader_type"));
-                                    channel.setCreateTime(row.getDateTime("create_time"));
-                                    channel.setLastUpdateBy(row.getString("last_update_by"));
-                                    channel.setLastUpdateTime(row.getDateTime("last_update_time"));
-                                    return channel;
-                                }
-                            });
+                    List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql"), new ISqlRowMapper<Channel> () {
+                        public Channel mapRow(Row row) {
+                            Channel channel = new Channel();
+                            channel.setChannelId(row.getString("channel_id"));
+                            channel.setProcessingOrder(row.getInt("processing_order"));
+                            channel.setMaxBatchSize(row.getInt("max_batch_size"));
+                            channel.setEnabled(row.getBoolean("enabled"));
+                            channel.setMaxBatchToSend(row.getInt("max_batch_to_send"));
+                            channel.setMaxDataToRoute(row.getInt("max_data_to_route"));
+                            channel.setUseOldDataToRoute(row
+                                    .getBoolean("use_old_data_to_route"));
+                            channel.setUseRowDataToRoute(row
+                                    .getBoolean("use_row_data_to_route"));
+                            channel.setUsePkDataToRoute(row
+                                    .getBoolean("use_pk_data_to_route"));
+                            channel.setContainsBigLob(row
+                                    .getBoolean("contains_big_lob"));
+                            channel.setBatchAlgorithm(row.getString("batch_algorithm"));
+                            channel.setExtractPeriodMillis(row
+                                    .getLong("extract_period_millis"));
+                            channel.setDataLoaderType(row.getString("data_loader_type"));
+                            return channel;
+                        }
+                    });
                     for (Channel channel : list) {
                         channels.put(channel.getChannelId(), channel);
                     }
                     channelsCache = channels;
                     channelCacheTime = System.currentTimeMillis();
-                }
+                }                
             }
         }
 
         return channels;
-    }
+    }    
 
     public Channel getChannel(String channelId) {
         NodeChannel nodeChannel = getNodeChannel(channelId, false);
@@ -476,7 +437,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             window.setChannelId(row.getString("channel_id"));
             window.setStartTime(row.getTime("start_time"));
             window.setEndTime(row.getTime("end_time"));
-            window.setEnabled(row.getBoolean("enabled"));            
+            window.setEnabled(row.getBoolean("enabled"));
             return window;
         }
     }
@@ -487,9 +448,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             link.setSourceNodeGroupId(row.getString("source_node_group_id"));
             link.setTargetNodeGroupId(row.getString("target_node_group_id"));
             link.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
-            link.setCreateTime(row.getDateTime("create_time"));
-            link.setLastUpdateBy(row.getString("last_update_by"));
-            link.setLastUpdateTime(row.getDateTime("last_update_time"));
             return link;
         }
     }
@@ -499,9 +457,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             NodeGroup group = new NodeGroup();
             group.setNodeGroupId(row.getString("node_group_id"));
             group.setDescription(row.getString("description"));
-            group.setCreateTime(row.getDateTime("create_time"));
-            group.setLastUpdateBy(row.getString("last_update_by"));
-            group.setLastUpdateTime(row.getDateTime("last_update_time"));
             return group;
         }
     }

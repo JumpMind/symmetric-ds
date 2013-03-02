@@ -103,13 +103,6 @@
             </varlistentry>
         </variablelist>
     </para>
-          <important>
-            <para>Be aware that conflict detection will <emphasis>not</emphasis> detect changes to binary columns in
-            the case where <literal>use_stream_lobs</literal> is true in the trigger for the table.  In addition, some
-            databases do not allow comparisons of binary columns whether <literal>use_stream_lobs</literal> is true or not. 
-           </para>
-      </important>
-      
     <para>
         The choice of how to resolve a detected conflict is configured via the <literal>resolve_type</literal> column. Depending on the setting, two additional boolean settings
         may also be configured, namely <literal>resolve_row_only</literal> and <literal>resolve_changes_only</literal>, as discussed in the resolution settings below.
@@ -150,13 +143,9 @@
                 <listitem>
                     <para>
                         Indicates that when a conflict is detected the batch will remain in error until manual intervention
-                        occurs. A row in error is inserted into the
+                        occurs. The row in error is inserted into the
                         <xref linkend="table_incoming_error" xrefstyle="table" />
-                        table.  The conflict detection id that detected the conflict is recorded (i.e., the <literal>conflict_id</literal> value from 
-                          <xref linkend="table_conflict" xrefstyle="table" />), along with the old data, new data, and the "current data" 
-                          (by current data, we mean the unexpected data at the target which doesn't match the old data as expected)
-                            in columns <literal>old_data, new_data,</literal> and <literal>cur_data</literal>. 
-                        In order to resolve, the
+                        table. In order to resolve, the
                         <ns:literal>resolve_data</ns:literal>
                         column can be manually filled out which will be used on the next load attempt instead of the original
                         source data. The

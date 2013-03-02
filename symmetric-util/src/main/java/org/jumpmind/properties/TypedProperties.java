@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
@@ -171,15 +170,6 @@ public class TypedProperties extends Properties {
         } catch (Exception ex) {
             log.warn(ex.getMessage(), ex);
             return objects;
-        }
-    }
-    
-    public void merge(Properties properties) {
-        Set<Object> keys = properties.keySet();
-        for (Object key : keys) {
-            if (containsKey(key)) {
-                setProperty((String) key, properties.getProperty((String) key));
-            }
         }
     }
 

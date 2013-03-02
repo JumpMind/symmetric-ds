@@ -62,13 +62,14 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
     protected DataContext context;
+    protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
     protected Batch batch;
+    protected Table table;
     protected String channelId;
     protected String sourceNodeId;
     protected String targetNodeId;
     protected BinaryEncoding binaryEncoding;
-    protected boolean noBinaryOldData = false;
     protected BatchType batchType;
     protected int lineNumber = 0;
 
@@ -80,13 +81,12 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         this(batchType, targetNodeId, toReader(is));
     }
 
-    public ProtocolDataReader(BatchType batchType, String targetNodeId,
-            IStagedResource stagedResource) {
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, IStagedResource stagedResource) {
         this.stagedResource = stagedResource;
         this.targetNodeId = targetNodeId;
         this.batchType = batchType;
     }
-
+    
     public ProtocolDataReader(BatchType batchType, String targetNodeId, String input) {
         this(batchType, targetNodeId, new BufferedReader(new StringReader(input)));
     }
@@ -136,48 +136,15 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 String[] tokens = csvReader.getValues();
                 bytesRead += logDebugAndCountBytes(tokens);
                 if (batch != null) {
-                    statistics.get(batch)
-                            .increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);
+                    statistics.get(batch).increment(DataReaderStatistics.READ_BYTE_COUNT,
+                            bytesRead);
                     bytesRead = 0;
                 }
-                if (tokens[0].equals(CsvConstants.INSERT)) {
-                    CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
-                    data.setDataEventType(DataEventType.INSERT);
-                    data.putParsedData(CsvData.ROW_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
-                    return data;
-                } else if (tokens[0].equals(CsvConstants.OLD)) {
-                    parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
-                } else if (tokens[0].equals(CsvConstants.UPDATE)) {
-                    CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
-                    data.setDataEventType(DataEventType.UPDATE);
-                    // TODO check for invalid range and print results
-                    data.putParsedData(CsvData.ROW_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, context.getLastParsedTable().getColumnCount() + 1));
-                    data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
-                            context.getLastParsedTable().getColumnCount() + 1, tokens.length));
-                    data.putParsedData(CsvData.OLD_DATA, parsedOldData);
-                    return data;
-                } else if (tokens[0].equals(CsvConstants.DELETE)) {
-                    CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
-                    data.setDataEventType(DataEventType.DELETE);
-                    data.putParsedData(CsvData.PK_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
-                    data.putParsedData(CsvData.OLD_DATA, parsedOldData);
-                    return data;
-
-                } else if (tokens[0].equals(CsvConstants.BATCH)) {
-                    Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId,
-                            binaryEncoding, sourceNodeId, targetNodeId, false);
+                if (tokens[0].equals(CsvConstants.BATCH)) {
+                    Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding,
+                            sourceNodeId, targetNodeId, false);
                     statistics.put(batch, new DataReaderStatistics());
                     return batch;
-                } else if (tokens[0].equals(CsvConstants.NO_BINARY_OLD_DATA)) {
-                    if (tokens.length > 1) {
-                        noBinaryOldData = Boolean.parseBoolean(tokens[1]);
-                    }
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
                     this.sourceNodeId = tokens[1];
                 } else if (tokens[0].equals(CsvConstants.BINARY)) {
@@ -192,14 +159,12 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                             : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    Table table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName,
                             tableName));
                     if (table != null) {
-                        context.setLastParsedTable(table);
                         return table;
                     } else {
                         table = new Table(catalogName, schemaName, tableName);
-                        context.setLastParsedTable(table);
                     }
                 } else if (tokens[0].equals(CsvConstants.KEYS)) {
                     if (keys == null) {
@@ -209,35 +174,56 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         keys.add(tokens[i]);
                     }
                 } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
-                    Table table = context.getLastParsedTable();
                     table.removeAllColumns();
                     for (int i = 1; i < tokens.length; i++) {
                         Column column = new Column(tokens[i], keys != null
                                 && keys.contains(tokens[i]));
                         table.addColumn(column);
                     }
-                    context.getParsedTables().put(table.getFullyQualifiedTableName(), table);
+                    tables.put(table.getFullyQualifiedTableName(), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     if (batch != null) {
                         batch.setComplete(true);
                     }
                     return null;
+                } else if (tokens[0].equals(CsvConstants.INSERT)) {
+                    CsvData data = new CsvData();
+                    data.setDataEventType(DataEventType.INSERT);
+                    data.putParsedData(CsvData.ROW_DATA,
+                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
+                    return data;
+                } else if (tokens[0].equals(CsvConstants.OLD)) {
+                    parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
+                } else if (tokens[0].equals(CsvConstants.UPDATE)) {
+                    CsvData data = new CsvData();
+                    data.setDataEventType(DataEventType.UPDATE);
+                    // TODO check for invalid range and print results
+                    data.putParsedData(CsvData.ROW_DATA,
+                            CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
+                    data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
+                            table.getColumnCount() + 1, tokens.length));
+                    data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    return data;
+                } else if (tokens[0].equals(CsvConstants.DELETE)) {
+                    CsvData data = new CsvData();
+                    data.setDataEventType(DataEventType.DELETE);
+                    data.putParsedData(CsvData.PK_DATA,
+                            CollectionUtils.copyOfRange(tokens, 1, tokens.length));
+                    data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    return data;
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
                     CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.SQL);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
                 } else if (tokens[0].equals(CsvConstants.BSH)) {
                     CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.BSH);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
                 } else if (tokens[0].equals(CsvConstants.CREATE)) {
                     CsvData data = new CsvData();
-                    data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.CREATE);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
                     return data;
@@ -277,16 +263,14 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
 
     public Table nextTable() {
         if (next instanceof Table) {
-            Table table = (Table) next;
-            context.setLastParsedTable(table);
+            this.table = (Table) next;
             next = null;
             return table;
         } else {
             do {
                 next = readNext();
                 if (next instanceof Table) {
-                    Table table = (Table) next;
-                    context.setLastParsedTable(table);
+                    this.table = (Table) next;
                     next = null;
                     return table;
                 }
@@ -326,6 +310,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
 
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
-    }
+    }    
 
 }

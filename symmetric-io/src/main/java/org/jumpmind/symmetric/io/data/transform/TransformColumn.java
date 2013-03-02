@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-import java.util.Date;
-
 public class TransformColumn {
 
     public enum IncludeOnType {
@@ -60,10 +58,6 @@ public class TransformColumn {
     protected String transformExpression;
     protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;
-    protected Date createTime;    
-    protected Date lastUpdateTime;    
-    protected String lastUpdateBy;
-
 
     public TransformColumn(String transformId) {
         this.transformId = transformId;
@@ -148,29 +142,4 @@ public class TransformColumn {
     public String getTransformId() {
         return transformId;
     }
-    
-    public Date getCreateTime() {
-        return createTime;
-    }
-    
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-    
-    public String getLastUpdateBy() {
-        return lastUpdateBy;
-    }
-    
-    public void setLastUpdateBy(String lastUpdateBy) {
-        this.lastUpdateBy = lastUpdateBy;
-    }
-    
-    public Date getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-    
-    public void setLastUpdateTime(Date lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
-    
 }

@@ -62,12 +62,7 @@ public class TableConstants {
     public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
     public static final String SYM_INCOMING_ERROR = "incoming_error";
-    public static final String SYM_SEQUENCE = "sequence";
-    public static final String SYM_TABLE_RELOAD_REQUEST = "table_reload_request";
-    public static final String SYM_GROUPLET = "grouplet";
-    public static final String SYM_GROUPLET_LINK = "grouplet_link";
-    public static final String SYM_TRIGGER_ROUTER_GROUPLET = "trigger_router_grouplet";
-    
+    public static final String SYM_SEQUENCE = "sequence";    
 
     private static List<String> tablesWithPrefix;
 
@@ -107,6 +102,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_ROUTER));
@@ -115,10 +111,6 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_LOAD_FILTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_CONFLICT));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET_LINK));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));        
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         return configTables;
     }
@@ -158,17 +150,6 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_INCOMING_ERROR));
         tables.add(getTableName(tablePrefix, SYM_SEQUENCE));
         tables.add(getTableName(tablePrefix, SYM_NODE_COMMUNICATION));
-        tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_REQUEST));
-        tables.add(getTableName(tablePrefix, SYM_GROUPLET));
-        tables.add(getTableName(tablePrefix, SYM_GROUPLET_LINK));
-        tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER_GROUPLET));
-        
-        return tables;
-    }
-    
-    public static final List<String> getTablesThatSync(String tablePrefix) {
-        List<String> tables = new ArrayList<String>(getConfigTables(tablePrefix));
-        tables.removeAll(getTablesThatDoNotSync(tablePrefix));
         return tables;
     }
 

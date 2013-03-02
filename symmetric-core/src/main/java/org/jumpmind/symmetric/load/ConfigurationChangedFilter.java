@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.load;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.db.model.Table;
@@ -37,7 +36,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -50,17 +48,11 @@ import org.slf4j.LoggerFactory;
  * configuration change to the current node.
  */
 public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter implements
-        IBuiltInExtensionPoint, ILoadSyncLifecycleListener {
+        IBuiltInExtensionPoint {
 
     static final Logger log = LoggerFactory.getLogger(ConfigurationChangedFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
-    
-    final String CTX_KEY_FLUSH_GROUPLETS_NEEDED = "FlushGrouplets."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
-    
-    final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_RESYNC_TABLE_NEEDED = "Resync.Table"
@@ -111,27 +103,13 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     @Override
     public void afterWrite(DataContext context, Table table, CsvData data) {
         recordSyncNeeded(context, table, data);
-        recordGroupletFlushNeeded(context, table);
-        recordLoadFilterFlushNeeded(context, table);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
         recordParametersFlushNeeded(context, table);
         recordJobManagerRestartNeeded(context, table, data);
         recordConflictFlushNeeded(context, table);
     }
-    
-    private void recordGroupletFlushNeeded(DataContext context, Table table) {
-        if (isGroupletFlushNeeded(table)) {
-            context.put(CTX_KEY_FLUSH_GROUPLETS_NEEDED, true);
-        }
-    }
 
-    private void recordLoadFilterFlushNeeded(DataContext context, Table table) {
-        if (isLoadFilterFlushNeeded(table)) {
-            context.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED, true);
-        }
-    }
-    
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
         if (isSyncTriggersNeeded(table)) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
@@ -182,20 +160,8 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         return matchesTable(table, TableConstants.SYM_TRIGGER)
                 || matchesTable(table, TableConstants.SYM_ROUTER)
                 || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)
-                || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET)
-                || matchesTable(table, TableConstants.SYM_GROUPLET_LINK)
                 || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK);
     }
-    
-    private boolean isGroupletFlushNeeded(Table table) {
-        return matchesTable(table, TableConstants.SYM_GROUPLET_LINK) ||
-                matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET) ||
-                matchesTable(table, TableConstants.SYM_GROUPLET);
-    }
-    
-    private boolean isLoadFilterFlushNeeded(Table table) {
-        return matchesTable(table, TableConstants.SYM_LOAD_FILTER);
-    }    
 
     private boolean isChannelFlushNeeded(Table table) {
         return matchesTable(table, TableConstants.SYM_CHANNEL);
@@ -229,36 +195,6 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             return false;
         }
     }
-    
-    public void syncStarted(DataContext context) {
-    }
-    
-    public void syncEnded(DataContext context, List<IncomingBatch> batchesProcessed, Throwable ex) {
-
-        IParameterService parameterService = engine.getParameterService();
-        
-        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
-            IJobManager jobManager = engine.getJobManager();
-            if (jobManager != null) {
-                log.info("About to restart jobs because a new schedule came through the data loader");
-                jobManager.stopJobs();
-                jobManager.startJobs();
-            }
-            context.remove(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
-        }
-        
-        /**
-         * No need to sync triggers until the entire sync process has finished just in case there
-         * are multiple batches that contain configuration changes
-         */
-        if (context.get(CTX_KEY_RESYNC_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("About to syncTriggers because new configuration came through the data loader");
-            engine.getTriggerRouterService().syncTriggers();
-            context.remove(CTX_KEY_RESYNC_NEEDED);
-        }
-        
-    }
 
     @Override
     public void batchCommitted(DataContext context) {
@@ -279,43 +215,17 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             }
         }       
         
-        if (context.get(CTX_KEY_FLUSH_GROUPLETS_NEEDED) != null) {
-            log.info("Grouplets flushed because new grouplet config came through the data loader");
-            engine.getGroupletService().clearCache();
-            context.remove(CTX_KEY_FLUSH_GROUPLETS_NEEDED);
-        }
-        
-        if (context.get(CTX_KEY_FLUSH_LOADFILTERS_NEEDED) != null) {
-            log.info("Load filters flushed because new filter config came through the data loader");
-            engine.getLoadFilterService().clearCache();
-            context.remove(CTX_KEY_FLUSH_LOADFILTERS_NEEDED);
-        }
-        
-        
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("Channels flushed because new channels came through the data loader");
-            engine.getConfigurationService().clearCache();
-            context.remove(CTX_KEY_FLUSH_CHANNELS_NEEDED);
+            engine.getConfigurationService().reloadChannels();
         }
         
-        if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
-            log.info("About to refresh the cache of transformation because new configuration came through the data loader");
-            engine.getTransformService().clearCache();
-            context.remove(CTX_KEY_FLUSH_PARAMETERS_NEEDED);
+        if (context.get(CTX_KEY_RESYNC_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("About to syncTriggers because new configuration came through the data loader");
+            engine.getTriggerRouterService().syncTriggers();
         }
 
-        if (context.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
-            log.info("About to refresh the cache of conflict settings because new configuration came through the data loader");
-            engine.getDataLoaderService().clearCache();
-            context.remove(CTX_KEY_FLUSH_CONFLICTS_NEEDED);
-        }
-
-        if (context.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null) {
-            log.info("About to refresh the cache of parameters because new configuration came through the data loader");
-            parameterService.rereadParameters();
-            context.remove(CTX_KEY_FLUSH_PARAMETERS_NEEDED);
-        }
-                
         if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             @SuppressWarnings("unchecked")
@@ -323,8 +233,30 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             for (Table table : tables) {
                 engine.getTriggerRouterService().syncTriggers(table, false);   
             }
-            context.remove(CTX_KEY_RESYNC_TABLE_NEEDED);
-        }        
+        }
+        
+        if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
+            log.info("About to refresh the cache of transformation because new configuration came through the data loader");
+            engine.getTransformService().resetCache();
+        }
 
+        if (context.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
+            log.info("About to refresh the cache of conflict settings because new configuration came through the data loader");
+            engine.getDataLoaderService().reloadConflictNodeGroupLinks();
+        }
+
+        if (context.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null) {
+            log.info("About to refresh the cache of parameters because new configuration came through the data loader");
+            parameterService.rereadParameters();
+        }
+
+        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
+            IJobManager jobManager = engine.getJobManager();
+            if (jobManager != null) {
+                log.info("About to restart jobs because a new schedule came through the data loader");
+                jobManager.stopJobs();
+                jobManager.startJobs();
+            }
+        }
     }
 }

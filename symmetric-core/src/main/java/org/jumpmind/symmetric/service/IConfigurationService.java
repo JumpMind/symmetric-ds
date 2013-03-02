@@ -17,6 +17,8 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
+
+
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
@@ -34,8 +36,6 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
  * Provides an API to configure data synchronizations.
  */
 public interface IConfigurationService {
-    
-    public boolean refreshFromDatabase();
 
     public List<NodeGroup> getNodeGroups();
     
@@ -84,7 +84,7 @@ public interface IConfigurationService {
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
-    public void clearCache();
+    public void reloadChannels();
     
     public void initDefaultChannels();
 

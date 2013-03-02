@@ -25,8 +25,6 @@ final public class CsvConstants {
     private CsvConstants() {
     }
     
-    public static final String NO_BINARY_OLD_DATA = "no_binary_old_data";
-    
     public static final String BINARY = "binary";
 
     public static final String NODEID = "nodeid";

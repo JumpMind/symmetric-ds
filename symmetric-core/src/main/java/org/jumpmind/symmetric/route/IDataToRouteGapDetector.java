@@ -27,4 +27,6 @@ public interface IDataToRouteGapDetector {
 
     public void beforeRouting();
     
+    public void afterRouting();
+    
 }

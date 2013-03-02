@@ -66,10 +66,6 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             interpreter.set("sourceNodeId", context.getBatch().getSourceNodeId());
             interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
             interpreter.set("channelId", context.getBatch().getChannelId());
-            interpreter.set("includeOn", column.getIncludeOn());
-            interpreter.set("sourceDmlType", data.getSourceDmlType());
-            interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
-            
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
             }

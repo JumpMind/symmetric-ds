@@ -1192,18 +1192,6 @@ public class Table implements Serializable, Cloneable {
         }
     }
     
-    public static String[] getArrayColumns(Column[] cols) {
-        if (cols!=null) {
-            String[] columns = new String[cols.length];
-            for (int i=0;i<cols.length;i++) {
-                columns[i] =cols[i].getName();
-            }
-            return columns;
-        } else {
-            return null;
-        }
-    }
-    
     public void setPrimaryKeyConstraintName(String primaryKeyConstraintName) {
         this.primaryKeyConstraintName = primaryKeyConstraintName;
     }

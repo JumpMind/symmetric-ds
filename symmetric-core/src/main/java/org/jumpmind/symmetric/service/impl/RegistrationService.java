@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
@@ -118,7 +117,20 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 log.warn("Registration is not allowed until this node has an identity");
                 return false;
-            }                        
+            }
+            
+            /*
+             * Check to see if there is a link that exists to service the node that is requesting registration
+             */
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+            if (link == null) {
+                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                        RegistrationStatus.RQ, remoteHost, remoteAddress));
+                log.warn("Registration is not allowed unless a link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
+                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+                return false;  
+            }
+            
             
             if (!nodeService.isRegistrationServer()) {
                 /*
@@ -143,19 +155,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
-            
-            /*
-             * Check to see if there is a link that exists to service the node that is requesting registration
-             */
-            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-            if (link == null && 
-                    parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK, true)) {
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                        RegistrationStatus.RQ, remoteHost, remoteAddress));
-                log.warn("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
-                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-                return false;
-            }            
 
             String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
                     .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost, remoteAddress)
@@ -313,14 +312,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             try {
-                log.info("This node is unregistered.  It will attempt to register using the registration.url");
+                log.info("Unregistered node is attempting to register ");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
-                log.warn("The request to register failed because the client failed to connect to the server");
+                log.warn("Connection failed while registering");
             } catch (UnknownHostException e) {
-                log.warn("The request to register failed because the host was unknown");
-            } catch (ConnectionRejectedException ex) {
-                log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                log.warn("Connection failed while registering");
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

@@ -39,7 +39,6 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -179,13 +178,6 @@ public class ExtensionPointManager implements IExtensionPointManager {
                     ITriggerCreationListener.class, true));
             engine.getTriggerRouterService().addTriggerCreationListeners(
                     (ITriggerCreationListener) ext);
-        }
-        
-        if (ext instanceof ILoadSyncLifecycleListener) {
-            installed = true;
-            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
-                    ILoadSyncLifecycleListener.class, true));
-            engine.getDataLoaderService().addLoadSyncLifecycleListener((ILoadSyncLifecycleListener) ext);
         }
 
         if (ext instanceof IDatabaseWriterFilter) {

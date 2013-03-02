@@ -110,8 +110,8 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     protected boolean executeWithOptions(CommandLine line) throws Exception {
 
         String host = null;
-        int httpPort = 0;
-        int httpSecurePort = 0;
+        int httpPort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
+        int httpSecurePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
         int jmxPort = 0;
         
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
@@ -158,13 +158,9 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                 jmxPort = new Integer(line.getOptionValue(OPTION_JMX_PORT));
             } else {
                 if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    if (httpSecurePort > 0) {
-                        jmxPort = httpSecurePort + 1;
-                    }
+                    jmxPort = httpSecurePort + 1;
                 } else {
-                    if (httpPort > 0) {
-                        jmxPort = httpPort + 1;
-                    }
+                    jmxPort = httpPort + 1;
                 }
             }
         }
@@ -179,36 +175,13 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             webServer.setHost(host);
             webServer.setBasicAuthUsername(httpBasicAuthUser);
             webServer.setBasicAuthPassword(httpBasicAuthPassword);
-            
-            if (jmxPort > 0) {
-                webServer.setJmxPort(jmxPort);
-            }
-            
             if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                webServer.setHttpEnabled(true);
-                webServer.setHttpsEnabled(true);
-                if (httpPort > 0) {
-                    webServer.setHttpPort(httpPort);
-                }
-                if (httpSecurePort > 0) {
-                    webServer.setHttpsPort(httpSecurePort);
-                }
+                webServer.startMixed(httpPort, httpSecurePort, jmxPort);
             } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                webServer.setHttpEnabled(false);
-                webServer.setHttpsEnabled(true);
-                if (httpSecurePort > 0) {
-                    webServer.setHttpsPort(httpSecurePort);
-                }
+                webServer.startSecure(httpSecurePort, jmxPort);
             } else {
-                webServer.setHttpEnabled(true);
-                webServer.setHttpsEnabled(false);
-                if (httpPort > 0) {
-                    webServer.setHttpPort(httpPort);
-                }
+                webServer.start(httpPort, jmxPort);
             }
-            
-            webServer.start();
-
             return true;
         }
 

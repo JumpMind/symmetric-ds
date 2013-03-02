@@ -283,11 +283,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             }
 
             protected Resource[] buildLocations(File propertiesFile) {
-                /*
-                 * System properties always override the properties found in
-                 * these files. System properties are merged in the parameter
-                 * service.
-                 */
                 List<Resource> resources = new ArrayList<Resource>();
                 resources.add(new ClassPathResource("/symmetric-default.properties"));
                 resources.add(new ClassPathResource("/symmetric-console-default.properties"));
@@ -428,8 +423,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                                     TableConstants.SYM_NODE_HOST),
                             TableConstants.getTableName(getTablePrefix(),
                                     TableConstants.SYM_TRIGGER_HIST),
-                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_LOCK),
-                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_NODE_COMMUNICATION)});
+                            TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_LOCK) });
         } catch (IOException e) {
             log.warn("Failed to export table definitions", e);
         } finally {

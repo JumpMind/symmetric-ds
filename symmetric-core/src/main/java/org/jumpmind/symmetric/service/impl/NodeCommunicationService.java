@@ -147,30 +147,23 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected ThreadPoolExecutor getExecutor(final CommunicationType communicationType) {
         ThreadPoolExecutor service = executors.get(communicationType);
-        
-        String threadCountParameter = "";
-        switch (communicationType) {
-            case PULL:
-                threadCountParameter = ParameterConstants.PULL_THREAD_COUNT_PER_SERVER;
-                break;
-            case PUSH:
-                threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-        }
-        int threadCount = parameterService.getInt(threadCountParameter, 1);
-        
-        if (service != null && service.getCorePoolSize() != threadCount) {
-            log.info("{} has changed from {} to {}.  Restarting thread pool", new Object[] { threadCountParameter, service.getCorePoolSize(), threadCount });
-            stop();
-            service = null;
-        }
-        
         if (service == null) {
             synchronized (this) {
                 service = executors.get(communicationType);
                 if (service == null) {
+                    String threadCountParameter = "";
+                    switch (communicationType) {
+                        case PULL:
+                            threadCountParameter = ParameterConstants.PULL_THREAD_COUNT_PER_SERVER;
+                            break;
+                        case PUSH:
+                            threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
+                            break;
+                    }
+                    int threadCount = parameterService.getInt(threadCountParameter, 1);
+
                     if (threadCount <= 0) {
-                        log.warn("{}={} is not a valid value. Defaulting to 1",
+                        log.warn("{}={} is not a legal value. Defaulting to 1",
                                 threadCountParameter, threadCount);
                         threadCount = 1;
                     } else if (threadCount > 1) {

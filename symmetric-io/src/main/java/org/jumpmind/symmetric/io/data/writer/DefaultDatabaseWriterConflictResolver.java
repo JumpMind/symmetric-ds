@@ -89,7 +89,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
                         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
-                            CsvData withoutOldData =  data.copyWithoutOldData();
+                            CsvData withoutOldData = 
+                                    new CsvData(data.getDataEventType(), data.getParsedData(CsvData.ROW_DATA));
                             try {
                                 // we already tried to update using the pk
                                 performFallbackToInsert(writer, withoutOldData, conflict, true);
@@ -161,7 +162,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                                 }
                             }
                         } else {
-                            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
+                            throw new ConflictException(data, writer.getTargetTable(), false);
                         }
                         break;
 
@@ -225,7 +226,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 }
             }
         } else {
-            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
+            throw new ConflictException(data, writer.getTargetTable(), false);
         }
     }
 
@@ -301,7 +302,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.update(data, conflict.isResolveChangesOnly(), false);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(data, writer.getTargetTable(), true, conflict);
+                throw new ConflictException(data, writer.getTargetTable(), true);
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
@@ -316,7 +317,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.insert(csvData);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(csvData, writer.getTargetTable(), true, conflict);
+                throw new ConflictException(csvData, writer.getTargetTable(), true);
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);

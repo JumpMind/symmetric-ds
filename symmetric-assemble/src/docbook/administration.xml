@@ -263,65 +263,6 @@ where source_table_name = 'price_changes';
             which was discussed in <xref linkend="sync-triggers" />.
         </para>
     </section>
-    
-    <section id="grouplet">
-        <title>Maintaining multiple sychronization configurations through Grouplets</title>
-        
-        <para>
-        As you probably know by now, SymmetricDS stores its single configuration centrally and distributes it to all nodes.   By default, a trigger-router is in effect for all nodes in the source node group or target node group.  Triggers will be established 
-        on each node that is a member of the source node, and changes will be routed to all relevant nodes that are members of the target node group.  If, for example, the router routes to "all" nodes,
-        "all" means every node that is in the target node group.  This is the default behavior of SymmetricDS.
-        </para>
-        <para>
-        Once in production, however, you will likely find you need or want to make configuration changes to triggers and routers as new features are rolled out to your network of SymmetricDS nodes.
-        You may, for example, wish to "pilot" a new configuration, containing new synchronizations, only on specific nodes initially, and then increase the size of the pilot over time.
-        SymmetricDS' does provide the ability to specify that only particular trigger-router combinations are applicableto particular nodes for this purpose.  It does this
-        by allowing you to define an arbitray collection of nodes, called a "grouplet", and then choosing which trigger-routers apply to the normal set of nodes (the default behavior)
-        and which apply just to nodes in one or more "grouplets".  This allows you, essentially, to filter the list of nodes that would otherwise be included as source nodes and/or target nodes.
-        Through the use of grouplets, you can, for example, specify a subset of nodes on which a given trigger would be created.  It also allows you to
-        specify a subset of the normal set of nodes a change would be routed to.  This behaviour is in addition to, and occurs before, any subsetting or filtering the router might otherwise do.
-        </para>
-        <para>
-        In its simplest form, a grouplet is just an arbitrary collection of nodes.  To define a grouplet, you start by creating a grouplet with a unique id, a description, and a link policy, 
-        as defined in  <xref linkend="table_grouplet" xrefstyle="table"/>.  To defined which nodes are members of (or are not members of) a grouplet, you provide a list of external ids of the nodes
-        in <xref linkend="table_grouplet_link" xrefstyle="table"/>.  How those external ids are used varies based on the grouplet link policy.    
-        The <literal>grouplet_link_policy</literal> can be either I or E, representing an "inclusive" list of nodes or an "exclusive" list of
-        nodes, respectively.  In the case of "inclusive", you'll be listing each external id to be included in the grouplet.  In the case of exclusive, all nodes will be included in
-        the grouplet <emphasis>except</emphasis> ones which have an external id in the list of external ids.
-        </para>
-       
-        <para>
-        Once you have defined your grouplet and which nodes are members of a grouplet, you can tie a grouplet to a given trigger-router through 
-        the use of <xref linkend="table_trigger_router_grouplet" xrefstyle="table"/>.  
-        If a particular trigger-router does not appear in this table, SymmetricDS behaves as normal.
-        If, however, an entry for a particular trigger-router appears in this table,  the default behavior is overridden based on the <literal>grouplet_id</literal> and <literal>applies_when</literal> settings.
-        The grouplet id provides the node list, and the <literal>applies_when</literal> indicates whether the grouplet nodes are to be used to filter the source node list, the target node list,
-        or both (settings are "S", "T", and "B", respectively).  Nodes that survive the filtering process on as a source will have a trigger defined, and nodes that survive the filtering process
-        as a target are eligible nodes that can be routed to.</para>
-         <section id="grouplet-example">
-            <title>Grouplet Example</title>
-        
-        <para>
-        
-        At this point, an example would probably be useful.  Picture the case where you have 100 retail stores (each containing one database, and each a member of the "store" node group) 
-        and a central office database (external id of corp, and a member of the "corp" node group ). You wish to pilot two new trigger and routers
-        for a new feature on your point-of-sale software (one which moves data from corp to store, and one which moves data from store to corp), but you only want the triggers to be installed on 10 specific stores that represent your "pilot" stores.  In this case,
-        the simplest approach would be to define a grouplet with, say, a grouplet id of "pilot".  We'd use a grouplet link policy of "inclusive", and list each of the 10 external ids
-        in the <xref linkend="table_grouplet_link" xrefstyle="table"/> table.
-        </para>
-        <para>
-        For the trigger-router meant to send data from corp to store, we'd create an entry in <xref linkend="table_trigger_router_grouplet" xrefstyle="table"/> for
-        our grouplet id of "pilot", and we'd specify "T" (target) as the applies-when setting.  In this way, the source node list is not filtered, but the target node list used during routing
-        will filter the potential target nodes to just our pilot stores.  For the trigger-router meant to send data from a pilot store back to corp, we would have the grouplet apply when
-        the node is in the source node list (i.e., <literal>applies_when</literal> will be "S").  This will cause the trigger to only be created for stores in the pilot list and not other stores.
-        </para>
-        <para>An important thing to mention in this example:  Since your grouplet only included the store nodes, you can't simply specify "both" for the applies when setting.  For the corp-to-store trigger, 
-        for example, if you had said "both", no trigger would have been installed in corp since the grouplet nodes represent all possible source nodes as well as target nodes, and "corp" is not in the list!
-        The same is true for the store to corp trigger-router as well.  You could, however, use "both" as the applies when if you had included the "corp" external id in with the list of the 10 pilot store external ids.
-        </para>
-     </section>
-    </section>
-    
      <section id="resync-data">
         <title>Re-synchronizing Data</title>
         <para>

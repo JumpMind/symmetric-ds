@@ -51,7 +51,6 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -254,36 +253,28 @@ public class TransformWriter implements IDataWriter {
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
         try {
-            DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-                IncludeOnType includeOn = transformColumn.getIncludeOn();
-                if (includeOn == IncludeOnType.ALL
-                        || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
-                        || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
-                        || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
-                    if (transformColumn.getSourceColumnName() == null
-                            || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                        IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
-                                .get(transformColumn.getTransformType()) : null;
-                        if (transform == null || transform instanceof ISingleValueColumnTransform) {
-                            try {
-                                String value = (String) transformColumn(context, data,
-                                        transformColumn, sourceValues, oldSourceValues);
-                                data.put(transformColumn, value, false);
-                            } catch (IgnoreColumnException e) {
-                                // Do nothing. We are ignoring the column
-                                if (log.isDebugEnabled()) {
-                                    log.debug(
-                                            "A transform indicated we should ignore the target column {}",
-                                            transformColumn.getTargetColumnName());
-                                }
+                if (transformColumn.getSourceColumnName() == null
+                        || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
+                    IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
+                            .get(transformColumn.getTransformType()) : null;
+                    if (transform == null || transform instanceof ISingleValueColumnTransform) {
+                        try {
+                            String value = (String) transformColumn(context, data, transformColumn,
+                                    sourceValues, oldSourceValues);
+                            data.put(transformColumn, value, false);
+                        } catch (IgnoreColumnException e) {
+                            // Do nothing. We are ignoring the column
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                        "A transform indicated we should ignore the target column {}",
+                                        transformColumn.getTargetColumnName());
                             }
                         }
-                    } else {
-                        log.warn("Could not find a source column of {} for the transformation: {}",
-                                transformColumn.getSourceColumnName(),
-                                transformation.getTransformId());
                     }
+                } else {
+                    log.warn("Could not find a source column of {} for the transformation: {}",
+                            transformColumn.getSourceColumnName(), transformation.getTransformId());
                 }
             }
 
@@ -343,46 +334,39 @@ public class TransformWriter implements IDataWriter {
             TransformedData data = new TransformedData(transformation, dataEventType,
                     sourceKeyValues, oldSourceValues, sourceValues);
             datas.add(data);
-            DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : columns) {
-                IncludeOnType includeOn = transformColumn.getIncludeOn();
-                if (includeOn == IncludeOnType.ALL
-                        || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
-                        || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
-                        || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
-                    List<TransformedData> newDatas = null;
-                    try {
-                        Object columnValue = transformColumn(context, data, transformColumn,
-                                sourceValues, oldSourceValues);
-                        if (columnValue instanceof List) {
-                            @SuppressWarnings("unchecked")
-                            List<String> values = (List<String>) columnValue;
-                            if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), true);
-                                if (values.size() > 1) {
-                                    if (newDatas == null) {
-                                        newDatas = new ArrayList<TransformedData>(values.size() - 1);
-                                    }
-                                    for (int i = 1; i < values.size(); i++) {
-                                        TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), true);
-                                        newDatas.add(newData);
-                                    }
+                List<TransformedData> newDatas = null;
+                try {
+                    Object columnValue = transformColumn(context, data, transformColumn,
+                            sourceValues, oldSourceValues);
+                    if (columnValue instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> values = (List<String>) columnValue;
+                        if (values.size() > 0) {
+                            data.put(transformColumn, values.get(0), true);
+                            if (values.size() > 1) {
+                                if (newDatas == null) {
+                                    newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                 }
-                            } else {
-                                throw new IgnoreRowException();
+                                for (int i = 1; i < values.size(); i++) {
+                                    TransformedData newData = data.copy();
+                                    newData.put(transformColumn, values.get(i), true);
+                                    newDatas.add(newData);
+                                }
                             }
                         } else {
-                            data.put(transformColumn, (String) columnValue, true);
+                            throw new IgnoreRowException();
                         }
-                    } catch (IgnoreColumnException e) {
-                        // Do nothing. We are suppose to ignore the column.
+                    } else {
+                        data.put(transformColumn, (String) columnValue, true);
                     }
+                } catch (IgnoreColumnException e) {
+                    // Do nothing. We are suppose to ignore the column.
+                }
 
-                    if (newDatas != null) {
-                        datas.addAll(newDatas);
-                        newDatas = null;
-                    }
+                if (newDatas != null) {
+                    datas.addAll(newDatas);
+                    newDatas = null;
                 }
             }
 

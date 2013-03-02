@@ -780,7 +780,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IConfigurationService rootConfigService = getServer().getConfigurationService();
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-        rootConfigService.clearCache();
+        rootConfigService.reloadChannels();
 
         NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_EXTERNAL_ID, false);
@@ -798,13 +798,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
 
-        rootConfigService.clearCache();
+        rootConfigService.reloadChannels();
 
         clientPull();
 
         Assert.assertNull(clientTestService.getCustomer(customer.getCustomerId()));
 
-        getClient().getConfigurationService().clearCache();
+        getClient().getConfigurationService().reloadChannels();
 
     }
 
@@ -857,7 +857,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // set purge in the future just in case the database time is different
         // than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
 
         int beforePurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getServer().purge();
@@ -874,13 +874,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 (beforePurge - afterPurge) > 0);
 
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-                purgeRetentionMinues, "test");
+                purgeRetentionMinues);
 
         parameterService = getClient().getParameterService();
         purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // set purge in the future just in case the database time is different
         // than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
 
         beforePurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getClient().purge();
@@ -897,7 +897,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 (beforePurge - afterPurge) > 0);
 
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-                purgeRetentionMinues, "test");
+                purgeRetentionMinues);
     }
 
     @Test(timeout = 120000)

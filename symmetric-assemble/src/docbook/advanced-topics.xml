@@ -569,6 +569,20 @@
                 <literal>registration.url</literal> would be <literal>http://server:port/sync</literal>.
             </para>            
         </section>
+        <section id="deployment-options-standalone">
+            <title>Standalone</title>
+            <para>
+                A standalone service can use the <literal>sym</literal> command line options to start
+                a server.  An embedded instance of Jetty is used to service web
+                requests for all the servlets.
+            </para>
+            <programlisting><![CDATA[/symmetric/bin/sym --properties root.properties --port 8080 --server
+]]></programlisting>
+            <para>
+                This example starts the SymmetricDS server on port 8080 with the startup
+                properties found in the <filename>root.properties</filename> file.
+            </para>
+        </section>
         <section id="deployment-options-embedded">
             <title>Embedded</title>
             <para>
@@ -599,34 +613,10 @@ public class StartSymmetricEngine {
                 is packaged in the application to provide properties that override the SymmetricDS 
                 default values.  The second parameter to the constructor points to the web directory.
                 The default location is <code>../web</code>.  In this example the web directory is located
-                at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>. 
+                at conf/web_dir.  The web.xml is expected to be found at conf/web_dir/WEB-INF/web.xml. 
             </para>
         </section>
-    </section>         
-        <section id="deployment-options-standalone">
-            <title>Standalone</title>
-            <para>
-                The <literal>sym</literal> command line utility starts a standalone web server with 
-                SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the 
-                Jetty application server to handle web requests.  The web server can be configured 
-                using command line options or the web server can be configured by changing properties in the 
-                <code>conf/symmetric-server.properties</code> file.
-            </para>
-            <para>
-                The following example starts the SymmetricDS server on port 8080 with the startup
-                properties found in the <filename>root.properties</filename> file.
-            </para>            
-            <programlisting><![CDATA[/symmetric/bin/sym --properties root.properties --port 8080 --server
-]]></programlisting>
-            <para>
-                Even though the port and properties settings can be passed in on the command line, the preferred 
-                configuration approach is to put each hosted node's properties file in the <code>engines</code> directory
-                and to modify port settings and enable secure mode using the <code>conf/symmetric-server.properties</code>.
-            </para>
-            <para>
-                It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
-            </para>
-        </section>
+    </section> 
     
     <section id="running-service">
     <title>Running SymmetricDS as a Service</title>

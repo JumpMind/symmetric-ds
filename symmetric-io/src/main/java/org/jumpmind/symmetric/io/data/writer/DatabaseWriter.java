@@ -41,19 +41,15 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
-import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
-import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
@@ -69,8 +65,6 @@ public class DatabaseWriter implements IDataWriter {
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };
-    
-    public static final String CUR_DATA="DatabaseWriter.CurData";
     
     protected IDatabasePlatform platform;
 
@@ -131,9 +125,6 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public boolean start(Table table) {
-        if (table == null) {
-            throw new NullPointerException("Cannot load a null table");
-        }
         this.lastData = null;
         this.currentDmlStatement = null;
         this.sourceTable = table;
@@ -156,12 +147,9 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && targetTable == null) {
-            // if we cross batches and the table isn't specified, then
-            // use the last table we used
-            start(context.getLastParsedTable());
-        }
-        if (targetTable != null || !data.requiresTable()) {
+        if (targetTable != null || 
+                data.getDataEventType() == DataEventType.CREATE ||
+                data.getDataEventType() == DataEventType.SQL) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
@@ -194,7 +182,7 @@ public class DatabaseWriter implements IDataWriter {
                         if (conflictResolver != null) {
                             conflictResolver.needsResolved(this, data, loadStatus);
                         } else {
-                            throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
+                            throw new ConflictException(data, targetTable, false);
                         }
                     } else {
                         uncommittedCount++;
@@ -463,16 +451,10 @@ public class DatabaseWriter implements IDataWriter {
                         getLookupKeyData(getLookupDataMap(data), this.currentDmlStatement));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
-                if (count > 0) {
-                        return LoadStatus.SUCCESS;
-                } else {
-                    context.put(CUR_DATA,getCurData(transaction));
-                    return LoadStatus.CONFLICT;
-                }
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     if (!platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                        context.put(CUR_DATA,getCurData(transaction));
                         return LoadStatus.CONFLICT;
                     } else {
                         log.warn("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
@@ -557,8 +539,7 @@ public class DatabaseWriter implements IDataWriter {
                     lookupKeys = targetTable.getColumnsAsList();
                 }
 
-                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
-                        || data.isNoBinaryOldData()) {
+                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
                     Iterator<Column> it = lookupKeys.iterator();
                     while (it.hasNext()) {
                         Column col = it.next();
@@ -589,16 +570,10 @@ public class DatabaseWriter implements IDataWriter {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
                 long count = execute(data, getLookupKeyData(lookupDataMap, currentDmlStatement));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
-                if (count > 0) {
-                        return LoadStatus.SUCCESS;
-                } else {
-                    context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
-                    return LoadStatus.CONFLICT;
-                }
+                return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
                         && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                    context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -692,8 +667,7 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys = targetTable.getColumnsAsList();
                     }
 
-                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause() 
-                            || data.isNoBinaryOldData()) {
+                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()) {
                         Iterator<Column> it = lookupKeys.iterator();
                         while (it.hasNext()) {
                             Column col = it.next();
@@ -739,16 +713,10 @@ public class DatabaseWriter implements IDataWriter {
                     long count = execute(data, values);
                     statistics.get(batch)
                             .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
-                    if (count > 0) {
-                        return LoadStatus.SUCCESS;
-                    } else {
-                        context.put(CUR_DATA,getCurData(transaction)); 
-                        return LoadStatus.CONFLICT;
-                    }
+                    return count > 0 ? LoadStatus.SUCCESS : LoadStatus.CONFLICT;
                 } catch (SqlException ex) {
                     if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
                             && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                        context.put(CUR_DATA,getCurData(transaction)); 
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
@@ -1144,65 +1112,4 @@ public class DatabaseWriter implements IDataWriter {
         return writerSettings;
     }
 
-    
-
-    protected String getCurData(ISqlTransaction transaction) {
-        String curVal = null;
-        if (writerSettings.isSaveCurrentValueOnError()) {
-            String[] keyNames = Table.getArrayColumns(context.getTable().getPrimaryKeyColumns());
-            String[] columnNames = Table.getArrayColumns(context.getTable().getColumns());
-
-            org.jumpmind.db.model.Table targetTable = platform.getTableFromCache(
-                    context.getTable().getCatalog(), context.getTable().getSchema(),
-                    context.getTable().getName(), false);
-
-            targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true);
-
-            String[] data = context.getData().getParsedData(CsvData.OLD_DATA);
-            if (data == null) {
-                data = context.getData().getParsedData(CsvData.ROW_DATA);
-            }
-
-            Column[] columns = targetTable.getColumns();
-
-            Object[] objectValues = platform.getObjectValues(context.getBatch().getBinaryEncoding(), data,
-                    columns);
-
-            Map<String, Object> columnDataMap = CollectionUtils
-                    .toMap(columnNames, objectValues);
-
-            Column[] pkColumns = targetTable.getPrimaryKeyColumns();
-            Object[] args = new Object[pkColumns.length];
-            for (int i = 0; i < pkColumns.length; i++) {
-                args[i] = columnDataMap.get(pkColumns[i].getName());
-            }
-
-            DmlStatement sqlStatement = platform
-                    .createDmlStatement(DmlType.SELECT, targetTable);
-            
-            
-            Row row = null;
-            List<Row> list =  transaction.query(sqlStatement.getSql(), 
-                    new ISqlRowMapper<Row>() {
-                        public Row mapRow(Row row) {
-                            return row;
-                        }
-            }
-                    , args, null);
-            
-            if (list != null && list.size() > 0) {
-                row=list.get(0);
-            } 
-        
-            if (row != null) {
-                String[] existData = platform.getStringValues(context.getBatch().getBinaryEncoding(),
-                        columns, row, false);
-                if (existData != null) {
-                    curVal =  CsvUtils.escapeCsvData(existData);
-                }
-            }
-        }
-        return curVal;
-
-    }
 }

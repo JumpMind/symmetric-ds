@@ -97,9 +97,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
-                outgoingBatch.setSqlCode(batch.getSqlCode());
-                outgoingBatch.setSqlState(batch.getSqlState());
-                outgoingBatch.setSqlMessage(batch.getSqlMessage());
 
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
                     List<Number> ids = sqlTemplate.query(getSql("selectDataIdSql"),
@@ -108,6 +105,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         outgoingBatch.setFailedDataId(ids.get((int) batch.getErrorLine() - 1)
                                 .longValue());
                     }
+                    outgoingBatch.setSqlCode(batch.getSqlCode());
+                    outgoingBatch.setSqlState(batch.getSqlState());
+                    outgoingBatch.setSqlMessage(batch.getSqlMessage());
                 }
 
                 if (status == Status.ER) {

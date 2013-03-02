@@ -102,7 +102,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getPurgeService().purgeOutgoing(true);
     }
 
-    @ManagedOperation(description = "Create a snapshot of the current state of the system")
+    @ManagedOperation(description = "Run the purge process")
     public String snapshot() {
         File file = engine.snapshot();
         if (file != null) {
@@ -203,7 +203,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             + "  If the value is set to zero you are effectively disabling your transport"
             + " (wihch can be useful for maintainance")
     public void setNumOfNodeConnectionsPerInstance(int value) {
-        engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value, "jmx");
+        engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
     }
 
     @ManagedAttribute(description = "The group this node belongs to")

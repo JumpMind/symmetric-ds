@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -18,15 +17,12 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
 
     private Map<NodeGroupLink, Map<String, List<LoadFilter>>> loadFilterCacheByNodeGroupLink;
 
     private long lastCacheTimeInMs;
-    
-    private Date lastUpdateTime;
 
     private IConfigurationService configurationService;
 
@@ -83,20 +79,17 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                         if (loadFiltersByNodeGroup == null) {
                             loadFiltersByNodeGroup = new HashMap<String, List<LoadFilter>>();
                         }
-                        String tableName = loadFilter.getTargetTableName();
-                        if (StringUtils.isBlank(tableName)) {
-                            tableName = FormatUtils.WILDCARD;
-                        }
-                        String qualifiedName = Table.getFullyQualifiedTableName(
-                                loadFilter.getTargetCatalogName(),
-                                loadFilter.getTargetSchemaName(), tableName);
                         List<LoadFilter> loadFiltersForTable = loadFiltersByNodeGroup
-                                .get(qualifiedName);
+                                .get(Table.getFullyQualifiedTableName(
+                                		loadFilter.getTargetCatalogName(),
+                                        loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()));
                         if (loadFiltersForTable == null) {
                             loadFiltersForTable = new ArrayList<LoadFilter>();
                         }
                         loadFiltersForTable.add(loadFilter);
-                        loadFiltersByNodeGroup.put(qualifiedName,
+                        loadFiltersByNodeGroup.put(Table.getFullyQualifiedTableName(
+                                loadFilter.getTargetCatalogName(),
+                                loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName()),
                                 loadFiltersForTable);
                         loadFilterCacheByNodeGroupLink.put(nodeGroupLink, loadFiltersByNodeGroup);
                     }
@@ -174,28 +167,15 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         if (sqlTemplate.update(getSql("updateLoadFilterSql"), args) == 0) {
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
-        clearCache();
+        resetCache();
     }
 
     public void deleteLoadFilter(String loadFilterId) {
         sqlTemplate.update(getSql("deleteLoadFilterSql"), loadFilterId);
-        clearCache();
-    }
-    
-    public boolean refreshFromDatabase() {
-        Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
-        if (date != null) {
-            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer filter settings were detected");
-                lastUpdateTime = date;
-                clearCache();
-                return true;
-            }
-        }
-        return false;
+        resetCache();
     }
 
-    public void clearCache() {
+    public void resetCache() {
         synchronized (this) {
             this.loadFilterCacheByNodeGroupLink = null;
         }

@@ -57,16 +57,6 @@
                         <entry>Y</entry>
                     </row>
                     <row>
-                        <entry>MariaDB</entry>
-                        <entry>5.1 and above</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                    </row>                    
-                    <row>
                         <entry>PostgreSQL</entry>
                         <entry>8.2.5 and above</entry>
                         <entry>Y (8.3 and above only)</entry>
@@ -305,12 +295,6 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             to <code>true</code>.
         </para>
     </section>
-    <section id="ap02-mariadb">
-        <title>MariaDB</title>
-        <para>
-        	See MySQL notes.
-        </para>
-    </section>
     <section id="ap02-postgresql">
         <title>PostgreSQL</title>
         <para>
@@ -373,11 +357,6 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
                 jTDS
             </ulink>
             JDBC driver.
-        </para>
-        <para>
-        	SQL Server allows the update of primary key fields via the SQL update statement.  If your application allows updating of the primary key
-        	field(s) for a table, and you want those updates synchronized, you will need to set the "Handle Key Updates" field on the trigger record for
-        	that specific table.  The default for Handle Key Updates is false. 
         </para>
     </section>
     <section id="ap02-hsqldb">
@@ -596,12 +575,6 @@ ontape -s -L 0
                     or set a max_batch_size on the                        
                     <xref linkend="table_channel" xrefstyle="table"/> table that
                     will accommodate your transactional data.
-                </para>
-                </listitem>
-            <listitem>
-                <para>
-                    Due to the single threaded access to SQLite, the 
-                    following parameter should be set to true: <literal>jobs.synchronized.enable</literal>.
                 </para>
                 </listitem>
             </itemizedlist>
