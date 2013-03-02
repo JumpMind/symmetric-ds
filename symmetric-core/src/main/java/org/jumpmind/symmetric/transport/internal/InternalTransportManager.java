@@ -116,7 +116,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
-                String ackData = getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list);
+                String ackData = getAcknowledgementData(local.getNodeId(), list);
                 List<BatchAck> batches = readAcknowledgement(ackData);                
                 for (BatchAck batchInfo : batches) {
                     remoteEngine.getAcknowledgeService().ack(batchInfo);
@@ -129,11 +129,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         }
     }
 
-    public void writeAcknowledgement(OutputStream out, Node remote, 
+    public void writeAcknowledgement(OutputStream out,
         List<IncomingBatch> list, Node local, String securityToken)
         throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
-        pw.println(getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list));
+        pw.println(getAcknowledgementData(local.getNodeId(), list));
         pw.close();
     }
 

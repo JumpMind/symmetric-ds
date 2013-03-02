@@ -230,7 +230,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 source);
 
         ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                writer, targetNode.requires13Compatiblity());
+                writer);
         DataProcessor processor = new DataProcessor(dataReader, dataWriter);
         DataContext ctx = new DataContext();
         ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
@@ -349,7 +349,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 
                 if (dataWriter == null) {
                     dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                            targetTransport.open(), targetNode.requires13Compatiblity());
+                            targetTransport.open());
                 }
                 
                 currentBatch = extractOutgoingBatch(targetNode, dataWriter, currentBatch,
@@ -635,18 +635,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             if (batch != null) {
                 Node targetNode = nodeService.findNode(nodeId);
-                if (targetNode != null) {
-                    IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(batch, sourceNode, targetNode));
-                    DataContext ctx = new DataContext();
-                    ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
-                    ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
-                    new DataProcessor(dataReader, createTransformDataWriter(
-                            nodeService.findIdentity(), targetNode,
-                            new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer,
-                                    targetNode.requires13Compatiblity()))).process(ctx);
-                    foundBatch = true;
-                }
+                IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
+                        new SelectFromSymDataSource(batch, sourceNode, targetNode));
+                DataContext ctx = new DataContext();
+                ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
+                new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
+                        targetNode,
+                        new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer)))
+                        .process(ctx);
+                foundBatch = true;
             }
         }
         return foundBatch;

@@ -289,7 +289,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 in));
         Node local = nodeService.findIdentity();
         NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-        transportManager.writeAcknowledgement(out, sourceNode, list, local,
+        transportManager.writeAcknowledgement(out, list, local,
                 security != null ? security.getNodePassword() : null);
     }
 
@@ -506,6 +506,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IDataLoaderFactory factory = null;
         if (channel != null) {
             dataLoaderType = channel.getDataLoaderType();
+        } else if (!channelId.equals(Constants.CHANNEL_CONFIG)) {
+            log.warn(
+                    "Could not locate the channel with the id of '{}'.  Using the 'default' data loader.",
+                    channelId);
         }
 
         factory = dataLoaderFactories.get(dataLoaderType);

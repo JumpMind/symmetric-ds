@@ -32,12 +32,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -827,9 +825,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
-        ResultSet columnData = null;        
+        ResultSet columnData = null;
         try {
-            Set<String> columnNames = new HashSet<String>();
             columnData = metaData.getColumns(getTableNamePattern(tableName),
                     getDefaultColumnPattern());
 
@@ -837,11 +834,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             while (columnData.next()) {
                 Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
-                Column column = readColumn(metaData, values);
-                if (!columnNames.contains(column.getName())) {
-                    columnNames.add(column.getName());
-                    columns.add(column);
-                }
+
+                columns.add(readColumn(metaData, values));
             }
             return columns;
         } finally {
