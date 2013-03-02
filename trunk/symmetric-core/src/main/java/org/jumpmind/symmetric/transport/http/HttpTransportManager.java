@@ -70,15 +70,15 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
             String securityToken, String registrationUrl) throws IOException {
         if (list != null && list.size() > 0) {
-            String data = getAcknowledgementData(local.getNodeId(), list);
+            String data = getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list);
             return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
         }
         return HttpURLConnection.HTTP_OK;
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local,
+    public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local,
             String securityToken) throws IOException {
-        writeMessage(out, getAcknowledgementData(local.getNodeId(), list));
+        writeMessage(out, getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list));
     }
 
     protected int sendMessage(String action, Node remote, Node local, String data,

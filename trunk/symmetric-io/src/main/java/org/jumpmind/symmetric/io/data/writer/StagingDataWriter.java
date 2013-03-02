@@ -45,7 +45,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
 
     public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
             List<IProtocolDataWriterListener> listeners) {
-        super(sourceNodeId, listeners);
+        super(sourceNodeId, listeners, false);
         this.category = category;
         this.stagingManager = stagingManager;
     }

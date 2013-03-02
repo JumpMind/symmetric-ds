@@ -62,10 +62,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
     protected DataContext context;
-    protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
     protected Batch batch;
-    protected Table table;
     protected String channelId;
     protected String sourceNodeId;
     protected String targetNodeId;
@@ -157,9 +155,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.setDataEventType(DataEventType.UPDATE);
                     // TODO check for invalid range and print results
                     data.putParsedData(CsvData.ROW_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
+                            CollectionUtils.copyOfRange(tokens, 1, context.getLastParsedTable().getColumnCount() + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
-                            table.getColumnCount() + 1, tokens.length));
+                            context.getLastParsedTable().getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
@@ -194,12 +192,14 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                             : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    Table table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName,
                             tableName));
                     if (table != null) {
+                        context.setLastParsedTable(table);
                         return table;
                     } else {
                         table = new Table(catalogName, schemaName, tableName);
+                        context.setLastParsedTable(table);
                     }
                 } else if (tokens[0].equals(CsvConstants.KEYS)) {
                     if (keys == null) {
@@ -209,13 +209,14 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         keys.add(tokens[i]);
                     }
                 } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
+                    Table table = context.getLastParsedTable();
                     table.removeAllColumns();
                     for (int i = 1; i < tokens.length; i++) {
                         Column column = new Column(tokens[i], keys != null
                                 && keys.contains(tokens[i]));
                         table.addColumn(column);
                     }
-                    tables.put(table.getFullyQualifiedTableName(), table);
+                    context.getParsedTables().put(table.getFullyQualifiedTableName(), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     if (batch != null) {
@@ -276,14 +277,16 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
 
     public Table nextTable() {
         if (next instanceof Table) {
-            this.table = (Table) next;
+            Table table = (Table) next;
+            context.setLastParsedTable(table);
             next = null;
             return table;
         } else {
             do {
                 next = readNext();
                 if (next instanceof Table) {
-                    this.table = (Table) next;
+                    Table table = (Table) next;
+                    context.setLastParsedTable(table);
                     next = null;
                     return table;
                 }

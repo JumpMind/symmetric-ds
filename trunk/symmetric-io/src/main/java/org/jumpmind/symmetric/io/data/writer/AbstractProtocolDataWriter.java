@@ -60,11 +60,14 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected String sourceNodeId;
     
     protected boolean noBinaryOldData = false;
+    
+    protected boolean backwardsCompatible = false;
 
     public AbstractProtocolDataWriter(String sourceNodeId,
-            List<IProtocolDataWriterListener> listeners) {
+            List<IProtocolDataWriterListener> listeners, boolean backwardsCompatible) {
         this.listeners = listeners;
         this.sourceNodeId = sourceNodeId;
+        this.backwardsCompatible = backwardsCompatible;
     }
 
     public void open(DataContext context) {
@@ -92,25 +95,42 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             if (StringUtils.isNotBlank(sourceNodeId)) {
                 println(CsvConstants.NODEID, sourceNodeId);
             }
-            BinaryEncoding binaryEncoding = batch.getBinaryEncoding();
-            if (binaryEncoding != null) {
-                println(CsvConstants.BINARY, binaryEncoding.name());
+            if (!backwardsCompatible) {
+                printBinary();
             }
             flushNodeId = false;
         }
-        if (StringUtils.isNotBlank(batch.getChannelId())) {
+        
+        if (!backwardsCompatible && StringUtils.isNotBlank(batch.getChannelId())) {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }
+        
         println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
+        
+        if (backwardsCompatible) {
+            printBinary();
+        }
+    }
+    
+    private void printBinary() {
+        BinaryEncoding binaryEncoding = batch.getBinaryEncoding();
+        if (binaryEncoding != null) {
+            println(CsvConstants.BINARY, binaryEncoding.name());
+        }
     }
 
     public boolean start(Table table) {
         if (!batch.isIgnored()) {
             this.table = table;
-            String catalogName = table.getCatalog();
-            println(CsvConstants.CATALOG, StringUtils.isNotBlank(catalogName) ? catalogName : "");
-            String schemaName = table.getSchema();
-            println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
+            
+            if (!backwardsCompatible) {
+                String catalogName = table.getCatalog();
+                println(CsvConstants.CATALOG, StringUtils.isNotBlank(catalogName) ? catalogName
+                        : "");
+                String schemaName = table.getSchema();
+                println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
+            }
+            
             println(CsvConstants.TABLE, table.getName());
             if (!processedTables.containsKey(table.getName()) || 
                     !processedTables.get(table.getName()).equals(table)) {
@@ -127,7 +147,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     public void write(CsvData data) {
         if (!batch.isIgnored()) {
             
-            if (noBinaryOldData != data.isNoBinaryOldData()) {
+            if (noBinaryOldData != data.isNoBinaryOldData() && !backwardsCompatible) {
                 noBinaryOldData = data.isNoBinaryOldData();
                 println(CsvConstants.NO_BINARY_OLD_DATA, Boolean.toString(noBinaryOldData));
             }
@@ -140,18 +160,22 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     break;
 
                 case UPDATE:
-                    String oldData = data.getCsvData(CsvData.OLD_DATA);
-                    if (StringUtils.isNotBlank(oldData)) {
-                        println(CsvConstants.OLD, oldData);
+                    if (!backwardsCompatible) {
+                        String oldData = data.getCsvData(CsvData.OLD_DATA);
+                        if (StringUtils.isNotBlank(oldData)) {
+                            println(CsvConstants.OLD, oldData);
+                        }
                     }
                     println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
                             data.getCsvData(CsvData.PK_DATA));
                     break;
 
                 case DELETE:
-                    oldData = data.getCsvData(CsvData.OLD_DATA);
-                    if (StringUtils.isNotBlank(oldData)) {
-                        println(CsvConstants.OLD, oldData);
+                    if (!backwardsCompatible) {
+                        String oldData = data.getCsvData(CsvData.OLD_DATA);
+                        if (StringUtils.isNotBlank(oldData)) {
+                            println(CsvConstants.OLD, oldData);
+                        }
                     }
                     println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
                     break;
@@ -180,7 +204,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     final public void end(Batch batch, boolean inError) {
         
-        if (batch.isIgnored()) {
+        if (batch.isIgnored() && !backwardsCompatible) {
             println(CsvConstants.IGNORE);
         }
         

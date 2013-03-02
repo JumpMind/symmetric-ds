@@ -131,6 +131,9 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public boolean start(Table table) {
+        if (table == null) {
+            throw new NullPointerException("Cannot load a null table");
+        }
         this.lastData = null;
         this.currentDmlStatement = null;
         this.sourceTable = table;
@@ -153,9 +156,12 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (targetTable != null || 
-                data.getDataEventType() == DataEventType.CREATE ||
-                data.getDataEventType() == DataEventType.SQL) {
+        if (data.requiresTable() && targetTable == null) {
+            // if we cross batches and the table isn't specified, then
+            // use the last table we used
+            start(context.getLastParsedTable());
+        }
+        if (targetTable != null || !data.requiresTable()) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);

@@ -60,6 +60,8 @@ public class SymmetricEngineHolder {
     private String singleServerPropertiesFile;
 
     private static Date createTime = new Date();
+    
+    private int engineCount;
 
     private String deploymentType = "server";
 
@@ -124,6 +126,7 @@ public class SymmetricEngineHolder {
             
             if (files!=null) {
                 for (int i = 0; i < files.length; i++) {
+                    engineCount++;
                     File file = files[i];
                     if (file.getName().endsWith(".properties")) {
                         enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
@@ -134,6 +137,7 @@ public class SymmetricEngineHolder {
             }
 
         } else {
+            engineCount++;            
             enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
         }
 
@@ -141,6 +145,10 @@ public class SymmetricEngineHolder {
             starter.start();
         }
 
+    }
+    
+    public int getEngineCount() {
+        return engineCount;
     }
 
     protected ISymmetricEngine create(String propertiesFile) {
