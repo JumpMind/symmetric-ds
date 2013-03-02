@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book version="5.0" xml:id="user-guide" xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:ns="http://docbook.org/ns/docbook"
+      xmlns:mml="http://www.w3.org/1998/Math/MathML"
+      xmlns:html="http://www.w3.org/1999/xhtml">
+    <bookinfo>
+        <title>SymmetricDS User Guide</title>
+        <authorgroup>
+            <author>
+                <firstname>Eric</firstname>
+                <surname>Long</surname>
+            </author>
+            <author>
+                <firstname>Chris</firstname>
+                <surname>Henson</surname>
+            </author>
+            <author>
+                <firstname>Mark</firstname>
+                <surname>Hanes</surname>
+            </author>
+            <author>
+                <firstname>Greg</firstname>
+                <surname>Wilmer</surname>
+            </author>
+        </authorgroup>
+        <edition>Version 3.2 for SymmetricDS</edition>
+        <copyright>
+            <year>2007 - 2012</year>
+            <holder>JumpMind, Inc</holder>
+        </copyright>
+        <releaseinfo>
+            v3.2
+        </releaseinfo>
+        <legalnotice>
+            <para>
+                Permission to use, copy, modify, and distribute the SymmetricDS User Guide Version
+                3.2 for any purpose and without fee is hereby granted in perpetuity, provided that
+                the above copyright notice and this paragraph appear in all copies.
+            </para>
+        </legalnotice>
+    </bookinfo>
+    <preface>
+        <title>Preface</title>
+        <para>
+            SymmetricDS is an open-source, web-enabled, database independent, data synchronization software application. It uses
+            web and database technologies to replicate tables between relational databases in near
+            real time. The software was designed to scale for a large number of databases, work
+            across low-bandwidth connections, and withstand periods of network outages.
+        </para>
+        <para>
+            This User Guide introduces SymmetricDS and its uses for data synchronization. It is
+            intended for users who want to be quickly familiarized with the software, configure it,
+            and use its many features.  This version of the guide was generated on <?dbtimestamp format="Y-m-d"?> at <?dbtimestamp format="H:M:S"?>.
+        </para>
+        
+    </preface>
+
+    <xi:include href="introduction.xml" />
+    <xi:include href="tutorial.xml" />
+    <xi:include href="planning.xml" />
+    <xi:include href="configuration.xml" />
+    <xi:include href="advanced-topics.xml" />    
+    <xi:include href="administration.xml" />
+    <xi:include href="symmetric-schema.xml" />
+    <xi:include href="parameters.xml" />
+    <xi:include href="databases.xml" />
+    <xi:include href="data-format.xml" />
+    <xi:include href="upgrade.xml" />
+    <xi:include href="version-numbering.xml" />
+</book>
