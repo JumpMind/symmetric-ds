@@ -29,6 +29,8 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a node who has registered for sync updates. 
@@ -36,6 +38,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class Node implements Serializable {
     
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger log = LoggerFactory.getLogger(Node.class);
 
     private int MAX_VERSION_SIZE = 50;
 
@@ -74,7 +78,7 @@ public class Node implements Serializable {
     private int batchInErrorCount;
     
     private String deploymentType;
-
+    
     public Node() {
     }
     
@@ -222,6 +226,24 @@ public class Node implements Serializable {
     
     public String getDeploymentType() {
         return deploymentType;
+    }
+    
+    public boolean requires13Compatiblity() {
+        if (symmetricVersion != null) {
+            if (symmetricVersion.equals("development")) {
+                return false;
+            }
+            try {
+                int[] currentVersion = Version.parseVersion(symmetricVersion);
+                return currentVersion != null && currentVersion.length > 0 && currentVersion[0] <= 1;
+            } catch (Exception ex) {
+                log.warn(
+                        "Could not parse the version {} for node {}.  Setting backwards compatibility mode to true",
+                        symmetricVersion, nodeId);
+                return true;
+            }
+        }
+        return false;
     }
     
     public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {

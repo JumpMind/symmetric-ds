@@ -60,7 +60,7 @@ public class MockTransportManager implements ITransportManager {
         return HttpURLConnection.HTTP_OK;
     }
 
-    public void writeAcknowledgement(OutputStream out,
+    public void writeAcknowledgement(OutputStream out, Node remote,
             List<IncomingBatch> list, Node local, String securityToken)
             throws IOException {
     }

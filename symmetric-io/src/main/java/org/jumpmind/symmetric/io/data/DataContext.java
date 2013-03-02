@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.io.data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
@@ -39,6 +42,10 @@ public class DataContext extends Context {
     protected CsvData data;
     
     protected Throwable lastError;
+    
+    protected Map<String, Table> parsedTables = new HashMap<String, Table>();
+    
+    protected Table lastParsedTable = null;
 
     public DataContext(Batch batch) {
         this.batch = batch;
@@ -97,6 +104,18 @@ public class DataContext extends Context {
     
     public Throwable getLastError() {
         return lastError;
+    }
+    
+    public Map<String, Table> getParsedTables() {
+        return parsedTables;
+    }
+    
+    public Table getLastParsedTable() {
+        return lastParsedTable;
+    }
+    
+    public void setLastParsedTable(Table lastParsedTable) {
+        this.lastParsedTable = lastParsedTable;
     }
 
     public ISqlTransaction findTransaction() {
