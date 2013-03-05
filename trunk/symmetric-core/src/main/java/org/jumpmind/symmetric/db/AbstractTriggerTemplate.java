@@ -105,8 +105,12 @@ abstract public class AbstractTriggerTemplate {
         this.symmetricDialect = symmetricDialect;
     }
 
-    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table table,
+    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
             TriggerHistory triggerHistory, Channel channel) {
+        
+        Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                triggerHistory.getParsedPkColumnNames(), true);
+        
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
@@ -169,11 +173,15 @@ abstract public class AbstractTriggerTemplate {
         return sql;
     }
 
-    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table table,
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
+        
+        Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                triggerHistory.getParsedPkColumnNames(), true);        
+        
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
-        Column[] columns = trigger.orderColumnsForTable(table);
+        Column[] columns = table.getColumns();
         String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                 symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                 false, channel, trigger).columnString;
@@ -224,8 +232,16 @@ abstract public class AbstractTriggerTemplate {
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
-            Channel channel, String tablePrefix, Table table, String defaultCatalog,
+            Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
+        
+        Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
+                history.getParsedPkColumnNames(), true);
+        
+        System.out.println("exclude '" + trigger.getExcludedColumnNames() + "'");
+        if ("BOOLEAN_VALUE".equals(trigger.getExcludedColumnNames())) {
+            System.out.println("break");
+        }
     	    	
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
@@ -235,15 +251,19 @@ abstract public class AbstractTriggerTemplate {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
         }
-        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
     }
 
     public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
-            Channel channel, String tablePrefix, Table table, String defaultCatalog,
+            Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
+        
+        Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
+                history.getParsedPkColumnNames(), true);
+        
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
     }
 
@@ -257,8 +277,8 @@ abstract public class AbstractTriggerTemplate {
         return targetTableName;
     }
 
-    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table table,
+    protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
         ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history),
@@ -305,7 +325,7 @@ abstract public class AbstractTriggerTemplate {
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 ;
-        Column[] orderedColumns = trigger.orderColumnsForTable(table);
+        Column[] orderedColumns = table.getColumns();
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, orderedColumns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
@@ -313,7 +333,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = replaceDefaultSchemaAndCatalog(ddl);
 
         ddl = FormatUtils.replace("virtualOldNewTable",
-                buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, table.getColumns()), ddl);
+                buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, originalTable.getColumns()), ddl);
         ddl = FormatUtils.replace(
                 "oldColumns",
                 trigger.isUseCaptureOldData() ? buildColumnString(ORIG_TABLE_ALIAS,
