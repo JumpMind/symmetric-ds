@@ -104,10 +104,10 @@ public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
     }
     
     @Override
-    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table table,
+    protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
-        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
         Column[] columns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace("declareOldKeyVariables",

@@ -106,13 +106,6 @@ public class TriggerRouter implements Serializable {
         this.lastUpdateBy = updatedBy;
     }
 
-    /**
-     * When dealing with columns, always use this method to order the columns so that the primary keys are first.
-     */
-    public Column[] orderColumnsForTable(Table table) {
-        return trigger.orderColumnsForTable(table);
-    }
-
     public int getInitialLoadOrder() {
         return initialLoadOrder;
     }
