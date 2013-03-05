@@ -238,11 +238,6 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
         
-        System.out.println("exclude '" + trigger.getExcludedColumnNames() + "'");
-        if ("BOOLEAN_VALUE".equals(trigger.getExcludedColumnNames())) {
-            System.out.println("break");
-        }
-    	    	
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
     		ddl = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
