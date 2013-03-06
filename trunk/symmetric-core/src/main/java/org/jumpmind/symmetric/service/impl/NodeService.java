@@ -639,8 +639,9 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-        log.info("Returning offline list");
+
         return offlineNodeList;
+        
     }
     
     public List<String> findOfflineNodeIds(long minutesOffline) {
