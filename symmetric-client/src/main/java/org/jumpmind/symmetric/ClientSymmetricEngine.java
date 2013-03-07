@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -53,6 +54,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.jndi.JndiObjectFactoryBean;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
@@ -66,7 +68,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     protected Properties properties;
 
-    protected BasicDataSource dataSource;
+    protected DataSource dataSource;
 
     protected ApplicationContext springContext;
 
@@ -200,9 +202,28 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
-            BasicDataSource dataSource, boolean waitOnAvailableDatabase) {
+            DataSource dataSource, boolean waitOnAvailableDatabase) {
         if (dataSource == null) {
-            dataSource = BasicDataSourceFactory.create(properties, createSecurityService(properties));
+            String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
+            if (StringUtils.isBlank(jndiName)) {
+                dataSource = BasicDataSourceFactory.create(properties, createSecurityService(properties));
+            } else {
+                try {
+                    log.info("Looking up datasource in jndi.  The jndi name is {}", jndiName);
+                    JndiObjectFactoryBean jndiFactory = new JndiObjectFactoryBean();
+                    jndiFactory.setJndiName(jndiName);
+                    jndiFactory.afterPropertiesSet();
+                    dataSource = (DataSource)jndiFactory.getObject();
+                    
+                    if (dataSource == null) {
+                        throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", jndiName);
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
+                } catch (NamingException e) {
+                    throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
+                }
+            }
         }
         if (waitOnAvailableDatabase) {
             waitForAvailableDatabase(dataSource);
@@ -328,9 +349,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     public synchronized void destroy() {
         super.destroy();
-        if (dataSource != null) {
+        if (dataSource != null && dataSource instanceof BasicDataSource) {
             try {
-                dataSource.close();
+                ((BasicDataSource)dataSource).close();
             } catch (SQLException e) {
             }
         }
