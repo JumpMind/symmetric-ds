@@ -39,7 +39,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.PlatformUtils;
 
@@ -242,30 +241,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
-    }
-
-    @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        boolean isNull = defaultValue == null;
-        if (defaultValue == null) {
-            defaultValue = "NULL";
-        }
-        String defaultValueStr = defaultValue.toString();
-        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
-                && !defaultValueStr.startsWith("TO_DATE(")
-                && !defaultValueStr.equalsIgnoreCase("SYSDATE")
-                && !defaultValueStr.equalsIgnoreCase("SYSTIMESTAMP")
-                && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
-                && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
-
-        if (shouldUseQuotes) {
-            // characters are only escaped when within a string literal
-            ddl.append(databaseInfo.getValueQuoteToken());
-            ddl.append(escapeStringValue(defaultValueStr));
-            ddl.append(databaseInfo.getValueQuoteToken());
-        } else {
-            ddl.append(defaultValueStr);
-        }
     }
 
     @Override

@@ -1853,19 +1853,32 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Prints the default value of the column.
      */
     protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        if (defaultValue != null) {
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
+        boolean isNull = defaultValue == null;
+        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode) && 
+                !(TypeMap.isDateTimeType(typeCode)                 
+                && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
+                || defaultValueStr.toUpperCase().startsWith("SYSDATE")
+                || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")));
 
-            if (shouldUseQuotes) {
-                // characters are only escaped when within a string literal
-                ddl.append(databaseInfo.getValueQuoteToken());
-                ddl.append(escapeStringValue(defaultValue.toString()));
-                ddl.append(databaseInfo.getValueQuoteToken());
-            } else {
-                ddl.append(defaultValue.toString());
-            }
+        if (shouldUseQuotes) {
+            // characters are only escaped when within a string literal
+            ddl.append(databaseInfo.getValueQuoteToken());
+            ddl.append(escapeStringValue(defaultValueStr));
+            ddl.append(databaseInfo.getValueQuoteToken());
+        } else {
+            ddl.append(defaultValueStr);
         }
     }
+    
+    protected String mapDefaultValue(Object defaultValue, int typeCode) {
+        if (defaultValue == null) {
+            defaultValue = "NULL";
+        }
+        return defaultValue.toString();
+    }    
 
     /**
      * Prints that the column is an auto increment column.

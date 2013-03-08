@@ -845,6 +845,8 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
+            transaction.commit();
+            
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);

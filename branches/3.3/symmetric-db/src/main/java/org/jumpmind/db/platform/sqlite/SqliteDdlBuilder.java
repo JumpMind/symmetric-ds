@@ -6,6 +6,7 @@ import java.sql.Types;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
@@ -97,4 +98,32 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
     }
+    
+    @Override
+    protected String mapDefaultValue(Object defaultValue, int typeCode) {
+        if (TypeMap.isDateTimeType(typeCode) && defaultValue != null) {
+            String defaultValueStr = defaultValue.toString();
+            if (defaultValueStr.toUpperCase().startsWith("SYSDATE")
+                    || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")) {
+                return "CURRENT_DATE";
+            } else if (defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
+                    || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")) {
+                return "CURRENT_TIMESTAMP";
+            } else if (defaultValueStr.toUpperCase().startsWith("SYSTIME")
+                    || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")) {
+                return "CURRENT_TIME";
+            } else if(defaultValueStr.contains("('")) {
+                int beginIndex = defaultValueStr.indexOf("('");
+                int lastIndex = defaultValueStr.lastIndexOf(")");
+                if (lastIndex > beginIndex) {
+                    return defaultValueStr.substring(beginIndex, lastIndex);
+                } else {
+                    return defaultValueStr.substring(beginIndex);
+                }
+            }
+        }
+        return super.mapDefaultValue(defaultValue, typeCode);
+    }
+    
+    
 }
