@@ -42,7 +42,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
@@ -170,26 +169,6 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         } else if (!StringUtils.isBlank(column.getDefaultValue())) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
-        }
-    }
-
-    @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        if (defaultValue != null) {
-            String defaultValueStr = defaultValue.toString();
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
-                    && !defaultValueStr.startsWith("TO_DATE(")
-                    && !defaultValue.equals("CURRENT_TIMESTAMP")
-                    && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");            
-
-            if (shouldUseQuotes) {
-                // characters are only escaped when within a string literal
-                ddl.append(databaseInfo.getValueQuoteToken());
-                ddl.append(escapeStringValue(defaultValueStr));
-                ddl.append(databaseInfo.getValueQuoteToken());
-            } else {
-                ddl.append(defaultValueStr);
-            }
         }
     }
 
