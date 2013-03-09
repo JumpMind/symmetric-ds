@@ -22,7 +22,7 @@
                 <exclude>bin/symadmin</exclude>
                 <exclude>bin/dbexport</exclude>
                 <exclude>bin/dbimport</exclude>
-                <exclude>bin/dbfill</exclude>                
+                <exclude>bin/dbfill</exclude>
                 <exclude>bin/sym_service</exclude>
                 <exclude>bin/sym_service.initd</exclude>
             </excludes>
@@ -52,12 +52,12 @@
             <source>../symmetric-server/src/main/deploy/bin/dbimport</source>
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
-        </file>   
+        </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/dbfill</source>
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
-        </file>                              
+        </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
             <outputDirectory>/bin</outputDirectory>
@@ -91,12 +91,20 @@
                         <outputDirectory>/web/WEB-INF/lib</outputDirectory>
                         <unpack>false</unpack>
                         <scope>runtime</scope>
+                        <useTransitiveFiltering>true</useTransitiveFiltering>
+                        <excludes>
+                            <exclude>log4j:log4j</exclude>
+                        </excludes>                        
                     </dependencySet>
                     <dependencySet>
                         <outputDirectory>/lib</outputDirectory>
                         <unpack>false</unpack>
                         <scope>provided</scope>
                         <useProjectArtifact>false</useProjectArtifact>
+                        <useTransitiveFiltering>true</useTransitiveFiltering>
+                        <excludes>
+                            <exclude>junit:junit</exclude>
+                        </excludes>                        
                     </dependencySet>
                 </dependencySets>
             </binaries>
