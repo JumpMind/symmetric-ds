@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +187,15 @@ public class TriggerRouter implements Serializable {
         } else {
             return null;
         }
-    }   
+    }
+    
+    public String qualifiedSourceTableName() {
+        return trigger.qualifiedSourceTableName();
+    }
+    
+    public String qualifiedSourceTablePrefix() {
+        return trigger.qualifiedSourceTablePrefix();
+    }
 
     public String qualifiedTargetTableName(TriggerHistory triggerHistory) {
         String catalog = getTargetCatalog(null);

@@ -639,9 +639,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
         return offlineNodeList;
-        
     }
     
     public List<String> findOfflineNodeIds(long minutesOffline) {

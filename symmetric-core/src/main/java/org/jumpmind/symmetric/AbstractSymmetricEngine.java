@@ -780,12 +780,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn(
                     "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables",
                     ParameterConstants.REGISTRATION_URL);
-        } else if (Constants.PLEASE_SET_ME.equals(registrationUrl)) {
-            log.warn("Please set the registration.url for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
-            log.warn("Please set the group.id for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
-            log.warn("Please set the external.id for the node");            
+        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())
+                || Constants.PLEASE_SET_ME.equals(registrationUrl)
+                || Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
+            log.warn("Please set the registration.url, node.group.id, and external.id for the node");
         } else if (node != null
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
                         .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
