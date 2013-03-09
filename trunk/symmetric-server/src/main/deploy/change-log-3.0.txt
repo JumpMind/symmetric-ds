@@ -1,3 +1,10 @@
+SymmetricDS - 3.3.4 (Released 2013-03-09) 
+=========================================
+- 0001087: [Bug] If engine.name isn't used, then some services are not available. Should be available as long as there is only one node deployed (chenson) - closed.
+- 0001094: [Bug] sync_keys isn't used to create triggers which causes a SQL Server table w/out primary keys and sync_keys to not capture updates (chenson) - closed.
+- 0001100: [Bug] sqlite create tables quotes create_timestamp default values (chenson) - closed.
+- 0001101: [Bug] sqlite create tables doesn't work because a transaction is in process and the database is locked (chenson) - closed.
+
 SymmetricDS - 3.3.3 (Released 2013-03-01)
 =========================================
 - 0001079: [Improvement] Children node are selected from the database each heartbeat but not necessarily used, can be time consuming w. lots of children (chenson) - closed.
