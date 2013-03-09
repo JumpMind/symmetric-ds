@@ -214,7 +214,10 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         boolean writeRow = true;
         LoadFilter currentFilter = null;
 
-        List<LoadFilter> wildcardLoadFilters =  loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
+        List<LoadFilter> wildcardLoadFilters = null;
+        if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix())) {
+            wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
+        }
         List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
         int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
 
