@@ -29,6 +29,9 @@ public class SymmetricContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         SymmetricEngineHolder engineHolder = new SymmetricEngineHolder();
         ServletContext ctx = sce.getServletContext();
+        String autoStart = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_START); 
+        engineHolder.setAutoStart(autoStart == null ? true : autoStart.equalsIgnoreCase("true"));
+        
         String multiServerMode = ctx.getInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE);
         engineHolder.setMultiServerMode(multiServerMode != null
                 && multiServerMode.equalsIgnoreCase("true"));
