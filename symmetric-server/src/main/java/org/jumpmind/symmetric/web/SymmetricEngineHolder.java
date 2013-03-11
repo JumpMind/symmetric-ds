@@ -56,6 +56,8 @@ public class SymmetricEngineHolder {
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
     private boolean multiServerMode = false;
+    
+    private boolean autoStart = true;
 
     private String singleServerPropertiesFile;
 
@@ -95,6 +97,14 @@ public class SymmetricEngineHolder {
     
     public int getNumerOfEnginesStarting() {
         return enginesStarting.size();
+    }
+    
+    public void setAutoStart(boolean autoStart) {
+        this.autoStart = autoStart;
+    }
+    
+    public boolean isAutoStart() {
+        return autoStart;
     }
 
     public synchronized void stop() {
@@ -233,7 +243,7 @@ public class SymmetricEngineHolder {
             }
 
             engine = create(symmetricProperties.getAbsolutePath());
-            if (engine != null) {
+            if (engine != null && autoStart) {
                 engine.start();
             } else {
                 log.warn("The engine could not be created.  It will not be started");
@@ -329,7 +339,7 @@ public class SymmetricEngineHolder {
         @Override
         public void run() {
             ISymmetricEngine engine = create(propertiesFile);
-            if (engine != null) {
+            if (engine != null && autoStart) {                
                 engine.start();
             }
             enginesStarting.remove(this);
