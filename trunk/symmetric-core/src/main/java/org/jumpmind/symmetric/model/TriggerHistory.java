@@ -146,6 +146,20 @@ public class TriggerHistory implements Serializable {
         }
         return parsedColumnNames;
     }
+    
+    public int indexOfColumnName(String columnName, boolean ignoreCase) {
+        String[] columnNames = getParsedColumnNames();
+        int i = 0;
+        for (String col : columnNames) {
+            if (ignoreCase && col.equalsIgnoreCase(columnName)) {
+                return i;
+            } else if (col.equals(columnName)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
 
     public String[] getParsedPkColumnNames() {
         if (parsedPkColumnNames == null && pkColumnNames != null) {

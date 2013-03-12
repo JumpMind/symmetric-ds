@@ -642,7 +642,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    protected void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
+    public void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
             String nodeId, String routerId, boolean isLoad) {
         long dataId = insertData(transaction, data);
         insertDataEventAndOutgoingBatch(transaction, dataId, data.getChannelId(), nodeId,
@@ -1059,15 +1059,15 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class, dataId);
     }
 
-    public Map<String, String> getRowDataAsMap(Data data) {
-        Map<String, String> map = new HashMap<String, String>();
-        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
-        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
-        for (int i = 0; i < columnNames.length; i++) {
-            map.put(columnNames[i].toLowerCase(), columnData[i]);
-        }
-        return map;
-    }
+//    public Map<String, String> getRowDataAsMap(Data data) {
+//        Map<String, String> map = new HashMap<String, String>();
+//        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
+//        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
+//        for (int i = 0; i < columnNames.length; i++) {
+//            map.put(columnNames[i].toLowerCase(), columnData[i]);
+//        }
+//        return map;
+//    }
 
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat

@@ -21,7 +21,6 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -92,6 +91,9 @@ public interface IDataService {
     public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
     
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad);
+    
+    public void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
+            String nodeId, String routerId, boolean isLoad);
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
 
@@ -124,8 +126,8 @@ public interface IDataService {
     public Data createData(String catalogName, String schemaName, String tableName);
 
     public Data createData(String catalogName, String schemaName, String tableName, String whereClause);
-
-    public Map<String, String> getRowDataAsMap(Data data);
+    
+    public Data createData(ISqlTransaction transaction, String catalogName, String schemaName, String tableName, String whereClause);
 
     public void addReloadListener(IReloadListener listener);
     
