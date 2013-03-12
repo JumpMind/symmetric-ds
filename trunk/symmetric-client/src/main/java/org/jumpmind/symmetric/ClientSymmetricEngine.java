@@ -143,9 +143,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
             if (springContext == null) {
                 PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-                Properties properties = new Properties();
-                properties.setProperty("engine.name", getEngineName());
-                configurer.setProperties(properties);
+                configurer.setProperties(parameterService.getAllParameters());
 
                 ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext();
                 ctx.addBeanFactoryPostProcessor(configurer);
