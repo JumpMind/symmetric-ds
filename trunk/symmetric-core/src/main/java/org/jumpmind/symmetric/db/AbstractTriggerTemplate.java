@@ -319,7 +319,7 @@ abstract public class AbstractTriggerTemplate {
                 trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
-;
+
         Column[] orderedColumns = table.getColumns();
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, orderedColumns, dml, false, channel, trigger);
