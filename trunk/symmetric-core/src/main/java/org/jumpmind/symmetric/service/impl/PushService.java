@@ -131,7 +131,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl())) {
+        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
+                !parameterService.isRegistrationServer()) {
             try {
                 startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
                 long reloadBatchesProcessed = 0;
