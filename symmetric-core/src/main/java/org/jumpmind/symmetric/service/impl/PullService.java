@@ -112,7 +112,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl())) {
+        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
+                !parameterService.isRegistrationServer()) {
             try {
                 int pullCount = 0;
                 long batchesProcessedCount = 0;
