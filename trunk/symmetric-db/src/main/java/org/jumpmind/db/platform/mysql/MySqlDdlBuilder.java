@@ -28,7 +28,6 @@ import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnChange;
-import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
