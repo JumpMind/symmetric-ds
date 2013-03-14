@@ -28,6 +28,7 @@ import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnChange;
+import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -209,14 +210,14 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             } else if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
-                changeIt.remove();
+                changeIt.remove();               
             } else if (change instanceof ColumnChange) {
                 /*
                  * we gather all changed columns because we can use the ALTER
                  * TABLE MODIFY COLUMN statement for them
                  */
                 Column column = ((ColumnChange) change).getChangedColumn();
-                if (changedColumns.contains(column)) {
+                if (!changedColumns.contains(column)) {
                     changedColumns.add(column);
                 }
                 changeIt.remove();
@@ -229,7 +230,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
-    }
+    } 
 
     /*
      * Processes the addition of a column to a table.
