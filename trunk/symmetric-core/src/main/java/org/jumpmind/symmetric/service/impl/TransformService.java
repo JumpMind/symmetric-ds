@@ -48,7 +48,9 @@ public class TransformService extends AbstractService implements ITransformServi
         
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer transform settings were detected");
+                if (lastUpdateTime != null) {
+                   log.info("Newer transform settings were detected");
+                }
                 lastUpdateTime = date;
                 clearCache();
                 return true;

@@ -68,7 +68,9 @@ public class ParameterService extends AbstractParameterService implements IParam
         Date date = sqlTemplate.queryForObject(sql.getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer database parameters were detected");
+                if (lastUpdateTime != null) {
+                  log.info("Newer database parameters were detected");
+                }
                 lastUpdateTime = date;
                 rereadParameters();
                 return true;
