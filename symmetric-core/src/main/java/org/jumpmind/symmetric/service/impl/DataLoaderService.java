@@ -178,7 +178,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer conflict settings were detected");
+                if (lastUpdateTime != null) {
+                   log.info("Newer conflict settings were detected");
+                }
                 lastUpdateTime = date;
                 clearCache();
                 return true;

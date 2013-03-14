@@ -406,13 +406,12 @@ public class DataService extends AbstractService implements IDataService {
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                trigger.getTriggerId(), trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName());
+                trigger.getTriggerId());
 
         if (history == null) {
             engine.getTriggerRouterService().syncTriggers();
             history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(), null, null, null);
+                    trigger.getTriggerId());
         }
 
         if (history == null) {
@@ -952,8 +951,7 @@ public class DataService extends AbstractService implements IDataService {
         Data data = null;
         if (trigger != null) {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(), trigger.getSourceCatalogName(),
-                    trigger.getSourceSchemaName(), trigger.getSourceTableName());
+                    trigger.getTriggerId());
             if (triggerHistory == null) {
                 triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger

@@ -186,7 +186,9 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer filter settings were detected");
+                if (lastUpdateTime != null) {
+                   log.info("Newer filter settings were detected");
+                }
                 lastUpdateTime = date;
                 clearCache();
                 return true;

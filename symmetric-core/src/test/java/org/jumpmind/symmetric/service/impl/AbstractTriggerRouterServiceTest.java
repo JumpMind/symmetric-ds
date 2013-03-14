@@ -161,9 +161,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
                 new Node("1", null, "1.0"),
                 triggerRouter,
                 table,
-                triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName()),
+                triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId()),
                 getConfigurationService().getChannel(triggerRouter.getTrigger().getChannelId()));
         List<String> csvStrings = getSqlTemplate().query(sql, new StringMapper());
         assertTrue(csvStrings.size() > 0);

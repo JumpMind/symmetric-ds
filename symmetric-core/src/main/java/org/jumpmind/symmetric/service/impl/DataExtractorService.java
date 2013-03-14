@@ -174,8 +174,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
             TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
-                    triggerRouter.getTrigger().getTriggerId(), null, null, triggerRouter
-                            .getTrigger().getSourceTableName());
+                    triggerRouter.getTrigger().getTriggerId());
             if (triggerHistory == null) {
                 Trigger trigger = triggerRouter.getTrigger();
                 Table table = symmetricDialect.getPlatform().getTableFromCache(
@@ -203,7 +202,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
             TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
-                    triggerRouter.getTrigger().getTriggerId(), null, null, null);
+                    triggerRouter.getTrigger().getTriggerId());
             if (triggerHistory == null) {
                 Trigger trigger = triggerRouter.getTrigger();
                 triggerHistory = new TriggerHistory(
@@ -1009,9 +1008,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.triggerRouter = triggerRouter;
             Trigger trigger = triggerRouter.getTrigger();
             this.triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            trigger.getSourceTableName());
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         }
 
         public SelectFromTableEvent(Data data) {

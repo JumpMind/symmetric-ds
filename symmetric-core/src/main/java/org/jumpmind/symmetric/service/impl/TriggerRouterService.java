@@ -116,7 +116,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                log.info("Newer trigger router settings were detected");
+                if (lastUpdateTime != null) {
+                   log.info("Newer trigger router settings were detected");
+                }
                 lastUpdateTime = date;
                 clearCache();
                 return true;
@@ -129,7 +131,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return sqlTemplate.query("select "
                 + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
     }
-
+    
     public boolean isTriggerBeingUsed(String triggerId) {
         return sqlTemplate.queryForInt(getSql("countTriggerRoutersByTriggerIdSql"), triggerId) > 0;
     }
@@ -271,24 +273,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return list;
     }
 
-    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
-            String schemaName, String tableName) {
-        List<TriggerHistory> triggerHistories = sqlTemplate.query(getSql("latestTriggerHistSql"),
-                new TriggerHistoryMapper(), triggerId, tableName);
-        for (TriggerHistory triggerHistory : triggerHistories) {
-            if ((StringUtils.isBlank(catalogName) && StringUtils.isBlank(triggerHistory
-                    .getSourceCatalogName()))
-                    || (StringUtils.isNotBlank(catalogName) && catalogName.equals(triggerHistory
-                            .getSourceCatalogName()))) {
-                if ((StringUtils.isBlank(schemaName) && StringUtils.isBlank(triggerHistory
-                        .getSourceSchemaName()))
-                        || (StringUtils.isNotBlank(schemaName) && schemaName.equals(triggerHistory
-                                .getSourceSchemaName()))) {
-                    return triggerHistory;
-                }
-            }
-        }
-        return null;
+    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId) {
+        return sqlTemplate.queryForObject(getSql("latestTriggerHistSql"),
+                new TriggerHistoryMapper(), triggerId);
     }    
 
     /**
@@ -699,6 +686,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         } else {
             return null;
         }
+    }
+    
+    public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId) {
+        List<TriggerRouter> results = new ArrayList<TriggerRouter>();
+        List<TriggerRouter> all = getTriggerRouters();
+        for (TriggerRouter triggerRouter : all) {
+            if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId().equals(sourceNodeGroupId) &&
+                    triggerRouter.getTrigger().getSourceTableName().equals(tableName)) {
+                results.add(triggerRouter);
+            }
+        }
+        return results;
     }
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId) {
@@ -1193,11 +1192,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
             TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                        trigger.getTriggerId(),
-                        trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(),
-                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                                .getSourceTableName());
+                        trigger.getTriggerId());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
@@ -1331,11 +1326,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
             insert(newTriggerHist);
             hist = getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(),
-                    trigger.getSourceCatalogName(),
-                    trigger.getSourceSchemaName(),
-                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                            .getSourceTableName());
+                    trigger.getTriggerId());
         }
 
         try {

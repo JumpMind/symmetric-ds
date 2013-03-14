@@ -45,6 +45,8 @@ public interface ITriggerRouterService {
 
     public List<TriggerRouter> getTriggerRouters();
     
+    public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId);
+    
     /**
      * Return a list of triggers used when extraction configuration data during 
      * the registration process.
@@ -130,7 +132,7 @@ public interface ITriggerRouterService {
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
-    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName, String schemaName, String tableName);
+    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId);
 
     public TriggerHistory getTriggerHistory(int historyId);
     
