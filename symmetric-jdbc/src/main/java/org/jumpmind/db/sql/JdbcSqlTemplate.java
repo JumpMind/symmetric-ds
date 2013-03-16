@@ -723,7 +723,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {
-                ps.executeUpdate();
+                ps.execute();
                 try {
                     rs = ps.getGeneratedKeys();
                     if (rs.next()) {
@@ -743,7 +743,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             } else {
                 Statement st = null;
-                ps.executeUpdate();
+                ps.execute();
                 try {
                     st = conn.createStatement();
                     rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));

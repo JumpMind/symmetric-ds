@@ -69,7 +69,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
                   		"   declare @length int\r\n" + 
                   		"   declare @hexstring char(16)\r\n" + 
                   		"\r\n" + 
-                  		"   select @charvalue = '0x'\r\n" + 
+                  		"   select @charvalue = ''\r\n" + 
                   		"   select @i = 1\r\n" + 
                   		"   select @length = datalength(@binvalue)\r\n" + 
                   		"   select @hexstring = '0123456789abcdef'\r\n" + 
