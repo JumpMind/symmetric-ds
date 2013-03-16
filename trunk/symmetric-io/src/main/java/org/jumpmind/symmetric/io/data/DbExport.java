@@ -94,6 +94,8 @@ public class DbExport {
     private String schema;
 
     private String dir;
+    
+    private boolean useQuotedIdentifiers = true;
 
     private IDatabasePlatform platform;
 
@@ -290,6 +292,14 @@ public class DbExport {
         this.noData = noData;
     }
     
+    public void setUseQuotedIdentifiers(boolean useQuotedIdentifiers) {
+        this.useQuotedIdentifiers = useQuotedIdentifiers;
+    }
+    
+    public boolean isUseQuotedIdentifiers() {
+        return useQuotedIdentifiers;
+    }
+    
     public void setWhereClause(String whereClause) {
         this.whereClause = whereClause;
     }
@@ -421,7 +431,7 @@ public class DbExport {
                     targetTable.setSchema(schema);
                     targetTable.setCatalog(catalog);
                     insertSql = DmlStatementFactory.createDmlStatement(
-                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable)
+                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers)
                             .getSql();
                 }
 
