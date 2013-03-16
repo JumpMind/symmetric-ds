@@ -29,15 +29,13 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
 
         sqlTemplates.put("insertTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after insert as                                                                                                                             " + 
-            "   begin                                                                                                                                                                  " + 
+            "   begin                                                                                                                                                                  " +
+            "     set nocount on;                                                                                                                                                             " +                     
             "     declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "     declare @DataRow varchar(8000)                                                                                                                                        " + 
             "     $(declareNewKeyVariables)                                                                                                                                            " + 
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
-            
-            
             "       execute sp_getbindtoken @TransactionId output; " +
-            "       select @TransactionId; " +
             "     end                                                                                                                                                                  " + 
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
             "       declare DataCursor cursor local for                                                                                                                                " + 
@@ -61,7 +59,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
 
         sqlTemplates.put("updateTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " + 
-            "   begin                                                                                                                                                                  " + 
+            "   begin     " +
+            "     set nocount on;                                                                                                                                                             " + 
             "     declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "     declare @DataRow varchar(8000)                                                                                                                                        " + 
             "     declare @OldPk varchar(2000)                                                                                                                                         " + 
@@ -92,7 +91,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " + 
-            "   begin                                                                                                                                                                  " + 
+            "   begin                                                                                                                                                                  " +
+            "     set nocount on;                                                                                                                                                             " +                     
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @OldPk varchar(2000)                                                                                                                                         " +                                                                                                                                             
             "     declare @OldDataRow varchar(8000)                                                                                                                                     " + 
@@ -130,7 +130,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         
         sqlTemplates.put("deleteTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             " + 
-            "  begin                                                                                                                                                                  " + 
+            "  begin                                                                                                                                                                  " +
+            "    set nocount on;                                                                                                                                                             " +                                         
             "    declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "    declare @OldPk varchar(2000)                                                                                                                                         " + 
             "    declare @OldDataRow varchar(8000)                                                                                                                                     " + 
