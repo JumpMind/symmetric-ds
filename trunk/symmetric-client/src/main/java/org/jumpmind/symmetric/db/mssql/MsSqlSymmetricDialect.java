@@ -125,7 +125,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         if (supportsDisableTriggers == null) {
             try {
                 getPlatform().getSqlTemplate().update("set context_info 0x0");
-                log.warn("This database DOES support disabling triggers during a symmetricds data load");
+                log.info("This database DOES support disabling triggers during a symmetricds data load");
                 supportsDisableTriggers = true;
             } catch (Exception ex) {
                 log.warn("This database does NOT support disabling triggers during a symmetricds data load");
