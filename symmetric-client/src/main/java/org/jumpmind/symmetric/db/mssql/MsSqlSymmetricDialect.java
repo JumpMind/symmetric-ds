@@ -50,10 +50,14 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
+    static final protected String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
+    static final protected String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
 
     protected Boolean supportsDisableTriggers = null;
+
+    public MsSqlSymmetricDialect() {
+        super();
+    }
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -263,6 +267,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public void purgeRecycleBin() {
     }
 
+    @Override
     public boolean needsToSelectLobData() {
         return true;
     }
