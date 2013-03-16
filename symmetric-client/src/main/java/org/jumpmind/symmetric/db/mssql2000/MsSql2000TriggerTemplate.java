@@ -30,7 +30,6 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after insert as                                                                                                                             " + 
             "   begin                                                                                                                                                                  " + 
-//            "     set nocount on                                                                                                                                                       " + 
             "     declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "     declare @DataRow varchar(8000)                                                                                                                                        " + 
             "     $(declareNewKeyVariables)                                                                                                                                            " + 
@@ -39,9 +38,6 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             
             "       execute sp_getbindtoken @TransactionId output; " +
             "       select @TransactionId; " +
-//            "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " +
-            
-
             "     end                                                                                                                                                                  " + 
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
             "       declare DataCursor cursor local for                                                                                                                                " + 
@@ -66,7 +62,6 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " + 
             "   begin                                                                                                                                                                  " + 
-//            "     set nocount on                                                                                                                                                       " + 
             "     declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "     declare @DataRow varchar(8000)                                                                                                                                        " + 
             "     declare @OldPk varchar(2000)                                                                                                                                         " + 
@@ -74,16 +69,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     $(declareOldKeyVariables)                                                                                                                                            " + 
             "     $(declareNewKeyVariables)                                                                                                                                            " + 
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
-            
-            
-            
-            
-            
             "       execute sp_getbindtoken @TransactionId output; " +
-//            "       select @TransactionId; " +
-//            "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " +
-            
-            
             "     end                                                                                                                                                                  " + 
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
             "       declare DataCursor cursor local for                                                                                                                                " + 
@@ -102,30 +88,19 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          close DataCursor                                                                                                                                                " + 
             "          deallocate DataCursor                                                                                                                                           " + 
             "       end                                                                                                                                                                " + 
-//            "       set nocount off                                                                                                                                                    " + 
             "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " + 
             "   begin                                                                                                                                                                  " + 
-//            "     set nocount on                                                                                                                                                       " + 
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @OldPk varchar(2000)                                                                                                                                         " +                                                                                                                                             
             "     declare @OldDataRow varchar(8000)                                                                                                                                     " + 
             "     declare @DataRow varchar(8000)                                                                                                                                        " +  
             "     $(declareOldKeyVariables)                                                                                                                                            " + 
             "     $(declareNewKeyVariables)                                                                                                                                            " + 
-            "                                                                                                                                                                          " +
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
-            
-            
-            
             "       execute sp_getbindtoken @TransactionId output; " +
-//            "       select @TransactionId; " +
-//            "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            " +
-            
-
-            
             "     end                                                                                                                                                                  " + 
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
             "       declare DeleteCursor cursor local for                                                                                                                                " + 
@@ -151,27 +126,17 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          deallocate DeleteCursor                                                                                                                                           " + 
             "          deallocate InsertCursor                                                                                                                                           " + 
             "       end                                                                                                                                                                " + 
-//            "       set nocount off                                                                                                                                                    " + 
             "     end                                                                                                                                                                  " );        
         
         sqlTemplates.put("deleteTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             " + 
             "  begin                                                                                                                                                                  " + 
-//            "    set nocount on                                                                                                                                                       " + 
             "    declare @TransactionId varchar(1000)                                                                                                                                 " + 
             "    declare @OldPk varchar(2000)                                                                                                                                         " + 
             "    declare @OldDataRow varchar(8000)                                                                                                                                     " + 
             "    $(declareOldKeyVariables)                                                                                                                                            " + 
             "    if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
-            
-            
-            
             "       execute sp_getbindtoken @TransactionId output; " +
-//            "       select @TransactionId; " +
-//            "       select @TransactionId = convert(VARCHAR(1000),transaction_id)    from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                           " +
-            
-
-            
             "    end                                                                                                                                                                  " + 
             "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
             "      declare DataCursor cursor local for                                                                                                                                " + 
@@ -186,17 +151,11 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "         close DataCursor                                                                                                                                                " + 
             "         deallocate DataCursor                                                                                                                                           " + 
             "    end                                                                                                                                                                  " + 
-//            "    set nocount off                                                                                                                                                      " + 
             "  end                                                                                                                                                                    " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
                 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause) " );
 
     }
-
-
-    
-    
-    
     
 }
