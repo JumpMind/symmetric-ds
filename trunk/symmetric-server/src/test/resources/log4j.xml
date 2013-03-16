@@ -30,7 +30,7 @@
     </category>    
      
     <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver">
-        <priority value="DEBUG" />
+        <priority value="INFO" />
     </category>    
     
     <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
