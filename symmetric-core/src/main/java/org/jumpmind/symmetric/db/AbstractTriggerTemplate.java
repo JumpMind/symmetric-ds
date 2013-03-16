@@ -101,6 +101,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected ISymmetricDialect symmetricDialect;
 
+    protected AbstractTriggerTemplate() {
+    }
+    
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
@@ -857,6 +860,7 @@ abstract public class AbstractTriggerTemplate {
             this.isBlobClob = isBlobClob;
         }
 
+        @Override
         public String toString() {
             return StringUtils.isBlank(columnString) ? "null" : columnString;
         }
