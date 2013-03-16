@@ -370,7 +370,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     rowsUpdated = flush();
                 }
             } else {
-                rowsUpdated = pstmt.executeUpdate();
+                pstmt.execute();
+                rowsUpdated = pstmt.getUpdateCount();
             }
         } catch (SQLException ex) {
             throw jdbcSqlTemplate.translate(ex);
