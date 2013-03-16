@@ -285,7 +285,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     try {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
-                        return stmt.executeUpdate(sql);
+                        stmt.execute(sql);
+                        return stmt.getUpdateCount();
                     } finally {
                         close(stmt);
                     }
@@ -300,7 +301,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         } else {
                             setValues(ps, args);
                         }
-                        return ps.executeUpdate();
+                        ps.execute();
+                        return ps.getUpdateCount();
                     } finally {
                         close(ps);
                     }
