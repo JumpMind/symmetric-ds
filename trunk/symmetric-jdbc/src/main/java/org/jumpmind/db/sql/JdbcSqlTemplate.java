@@ -286,7 +286,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
                         stmt.execute(sql);
-                        return stmt.getUpdateCount();
+                        int updateCount = stmt.getUpdateCount();
+                        return updateCount > 0 ? updateCount : 0;
                     } finally {
                         close(stmt);
                     }
@@ -302,7 +303,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             setValues(ps, args);
                         }
                         ps.execute();
-                        return ps.getUpdateCount();
+                        int updateCount = ps.getUpdateCount();
+                        return updateCount > 0 ? updateCount : 0;
                     } finally {
                         close(ps);
                     }
@@ -338,6 +340,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         try {
                             boolean hasResults = stmt.execute(statement);
                             int updateCount = stmt.getUpdateCount();
+                            updateCount = updateCount > 0 ? updateCount : 0;
                             totalUpdateCount += updateCount;
                             int rowsRetrieved = 0;
                             if (hasResults) {
