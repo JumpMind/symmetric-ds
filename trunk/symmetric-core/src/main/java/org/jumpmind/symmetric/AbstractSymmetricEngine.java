@@ -793,11 +793,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "The configured state does not match recorded database state.  The recorded external id is {} while the configured external id is {}. The recorded node group id is {} while the configured node group id is {}",
                     new Object[] { node.getExternalId(), getParameterService().getExternalId(),
                             node.getNodeGroupId(), getParameterService().getNodeGroupId() });
-
-        } else if (node != null && StringUtils.isBlank(getParameterService().getRegistrationUrl())
-                && StringUtils.isBlank(getParameterService().getSyncUrl())) {
-            log.warn("The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it");
-
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
@@ -829,7 +824,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void heartbeat(boolean force) {
         MDC.put("engineName", getEngineName());
-        dataService.heartbeat(true);
+        dataService.heartbeat(force);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {
