@@ -1281,12 +1281,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
-        newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                maxTriggerNameLength, trigger, table).toUpperCase());
-        newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                maxTriggerNameLength, trigger, table).toUpperCase());
-        newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                maxTriggerNameLength, trigger, table).toUpperCase());
+        if (trigger.isSyncOnInsert()) {
+            newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
+                    maxTriggerNameLength, trigger, table).toUpperCase());
+        }
+
+        if (trigger.isSyncOnUpdate()) {
+            newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
+                    maxTriggerNameLength, trigger, table).toUpperCase());
+        }
+
+        if (trigger.isSyncOnDelete()) {
+            newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
+                    maxTriggerNameLength, trigger, table).toUpperCase());
+        }
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -1303,8 +1311,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
             oldCatalogName = trigger.getSourceCatalogName();
-            triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
-                    trigger.getSourceTableName(), oldTriggerName);
+            if (StringUtils.isNotBlank(oldTriggerName)) {                
+                triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
+                        trigger.getSourceTableName(), oldTriggerName);
+            }
         }
 
         if (!triggerExists && forceRebuild) {
