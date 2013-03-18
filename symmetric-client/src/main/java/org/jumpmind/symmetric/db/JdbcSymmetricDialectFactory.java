@@ -33,6 +33,7 @@ import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -49,6 +50,7 @@ import org.jumpmind.symmetric.db.informix.InformixSymmetricDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseSymmetricDialect;
 import org.jumpmind.symmetric.db.mariadb.MariaDBSymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
+import org.jumpmind.symmetric.db.mssql2000.MsSql2000SymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
 import org.jumpmind.symmetric.db.oracle.OracleSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
@@ -86,6 +88,8 @@ public class JdbcSymmetricDialectFactory {
                 dialect = new MySqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof OracleDatabasePlatform) {
             dialect = new OracleSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof MsSql2000DatabasePlatform) {
+            dialect = new MsSql2000SymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSqlDatabasePlatform) {
             dialect = new MsSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof GreenplumPlatform) {

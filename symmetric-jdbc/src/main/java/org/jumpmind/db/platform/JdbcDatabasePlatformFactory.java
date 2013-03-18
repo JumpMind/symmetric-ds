@@ -42,6 +42,7 @@ import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -79,6 +80,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
         addPlatform(platforms, "MariaDB", MariaDBDatabasePlatform.class);
         addPlatform(platforms, "MsSQL", MsSqlDatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server8", MsSql2000DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server11", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
@@ -96,6 +98,7 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
                 InterbaseDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSqlDatabasePlatform.JDBC_SUBPROTOCOL, MsSqlDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 OracleDatabasePlatform.class);

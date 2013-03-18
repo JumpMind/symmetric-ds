@@ -285,7 +285,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     try {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
-                        return stmt.executeUpdate(sql);
+                        stmt.execute(sql);
+                        int updateCount = stmt.getUpdateCount();
+                        return updateCount > 0 ? updateCount : 0;
                     } finally {
                         close(stmt);
                     }
@@ -300,7 +302,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         } else {
                             setValues(ps, args);
                         }
-                        return ps.executeUpdate();
+                        ps.execute();
+                        int updateCount = ps.getUpdateCount();
+                        return updateCount > 0 ? updateCount : 0;
                     } finally {
                         close(ps);
                     }
@@ -336,6 +340,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         try {
                             boolean hasResults = stmt.execute(statement);
                             int updateCount = stmt.getUpdateCount();
+                            updateCount = updateCount > 0 ? updateCount : 0;
                             totalUpdateCount += updateCount;
                             int rowsRetrieved = 0;
                             if (hasResults) {
@@ -721,7 +726,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {
-                ps.executeUpdate();
+                ps.execute();
                 try {
                     rs = ps.getGeneratedKeys();
                     if (rs.next()) {
@@ -741,7 +746,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             } else {
                 Statement st = null;
-                ps.executeUpdate();
+                ps.execute();
                 try {
                     st = conn.createStatement();
                     rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
