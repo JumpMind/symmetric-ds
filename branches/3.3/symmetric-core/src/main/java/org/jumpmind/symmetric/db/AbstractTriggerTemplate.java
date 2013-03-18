@@ -101,6 +101,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected ISymmetricDialect symmetricDialect;
 
+    protected AbstractTriggerTemplate() {
+    }
+    
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
@@ -319,7 +322,7 @@ abstract public class AbstractTriggerTemplate {
                 trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
-;
+
         Column[] orderedColumns = table.getColumns();
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, orderedColumns, dml, false, channel, trigger);
@@ -857,6 +860,7 @@ abstract public class AbstractTriggerTemplate {
             this.isBlobClob = isBlobClob;
         }
 
+        @Override
         public String toString() {
             return StringUtils.isBlank(columnString) ? "null" : columnString;
         }

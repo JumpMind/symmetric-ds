@@ -14,6 +14,10 @@ import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     
+    public MsSqlTriggerTemplate() { 
+        super();
+    }
+    
     public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
