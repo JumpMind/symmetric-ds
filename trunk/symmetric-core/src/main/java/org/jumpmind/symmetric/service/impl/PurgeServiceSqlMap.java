@@ -35,7 +35,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteStrandedData" ,
 "delete from $(data) where                                       " + 
 "  data_id between ? and ? and                                   " + 
-"  data_id < (select min(start_id) from sym_data_gap) and      " + 
+"  data_id < (select min(start_id) from $(data_gap)) and      " + 
 "  create_time < ? and                                           " + 
 "  data_id not in (select e.data_id from $(data_event) e where   " + 
 "  e.data_id between ? and ?)                                    " );
