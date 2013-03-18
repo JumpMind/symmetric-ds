@@ -329,7 +329,21 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
             if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
                 registered = isRegisteredWithServer();
-            } else {
+                if (registered) {
+                    log.info("We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
+                    Node identity = nodeService.findIdentity();
+                    Node parentNode = nodeService.findNode(identity.getCreatedAtNodeId());
+                    dataService
+                            .insertSqlEvent(
+                                    parentNode,
+                                    "update "
+                                            + tablePrefix
+                                            + "_node_security set registration_enabled=1,registration_time=current_timestamp where node_id='"
+                                            + identity.getNodeId() + "'", false);
+                }
+            }
+            
+            if (registered) {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());
