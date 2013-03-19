@@ -26,10 +26,12 @@ import org.jumpmind.symmetric.model.DataEvent;
  */
 final public class Constants {
 
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
-
     private Constants() {
     }
+    
+    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;   
+    
+    public static final String NONE_TOKEN = "$(none)";
     
     public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
     
