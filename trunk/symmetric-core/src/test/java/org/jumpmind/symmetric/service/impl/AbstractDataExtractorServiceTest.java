@@ -57,7 +57,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         assertNumberOfLinesThatStartWith(20, "keys,", content);
         assertNumberOfLinesThatStartWith(20, "sql,", content);
         assertNumberOfLinesThatStartWith(0, "update,", content);
-        assertNumberOfLinesThatStartWith(66, "insert,", content, false, true);
+        assertNumberOfLinesThatStartWith(65, "insert,", content, false, true);
         assertNumberOfLinesThatStartWith(1, "commit,-9999", content);
         assertNumberOfLinesThatStartWith(1, "batch,-9999", content);
         assertNumberOfLinesThatStartWith(1, "nodeid,", content);
