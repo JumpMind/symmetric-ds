@@ -83,9 +83,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                if (lastUpdateTime != null) {
-                    log.info("Newer channel or group settings were detected");
-                }
+                log.info("Newer channel or group settings were detected");
                 lastUpdateTime = date;
                 clearCache();
                 return true;

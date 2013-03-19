@@ -329,9 +329,9 @@
         <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="source_catalog_name" type="VARCHAR" size="255"  description="The catalog name where the source table resides." />
         <column name="source_schema_name" type="VARCHAR" size="255"  description="The schema name where the source table resides." />
-        <column name="name_for_update_trigger" type="VARCHAR" size="255" required="false"  description="The name used when the insert trigger was created." />
-        <column name="name_for_insert_trigger" type="VARCHAR" size="255" required="false"  description="The name used when the update trigger was created." />
-        <column name="name_for_delete_trigger" type="VARCHAR" size="255" required="false"  description="The name used when the delete trigger was created." />
+        <column name="name_for_update_trigger" type="VARCHAR" size="255" required="true"  description="The name used when the insert trigger was created." />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="255" required="true"  description="The name used when the update trigger was created." />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="255" required="true"  description="The name used when the delete trigger was created." />
         <column name="table_hash" type="BIGINT" required="true"  description=" A hash of the table definition, used to detect changes in the definition." />
         <column name="trigger_row_hash" type="BIGINT" required="true"  description="A hash of the trigger definition.  If changes are detected to the values that affect a trigger definition, then the trigger will be regenerated." />
         <column name="column_names" type="LONGVARCHAR" required="true"  description="The column names defined on the table. The column names are stored in comma-separated values (CSV) format." />

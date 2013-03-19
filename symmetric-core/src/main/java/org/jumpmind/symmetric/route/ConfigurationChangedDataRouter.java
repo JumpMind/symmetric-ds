@@ -100,8 +100,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 String nodeIdInQuestion = columnValues.get("NODE_ID");
                 List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!nodeThatMayBeRoutedTo.requires13Compatiblity() && 
-                            isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
+                    if (isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
                             nodeGroupLinks)
                             && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
                                     rootNetworkedNode, me)
@@ -186,8 +185,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     }
                 } else {
                     for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                        if (!nodeThatMayBeRoutedTo.requires13Compatiblity() &&
-                                nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
+                        if (nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
                             if (nodeIds == null) {
                                 nodeIds = new HashSet<String>();
                             }
@@ -198,10 +196,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
             } else {
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!nodeThatMayBeRoutedTo.requires13Compatiblity() && (
-                            !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode,
+                    if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode,
                             me)
-                            || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad))) {
+                            || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                         if (nodeIds == null) {
                             nodeIds = new HashSet<String>();
                         }

@@ -421,7 +421,6 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
 
-        nodeLeaf = leaves.get(findIdentityNodeId());
         if (nodeLeaf != null) {
             NetworkedNode root = nodeLeaf.getRoot();
             root.setAllNetworkedNodes(leaves);
@@ -640,9 +639,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
         return offlineNodeList;
-        
     }
     
     public List<String> findOfflineNodeIds(long minutesOffline) {

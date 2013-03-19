@@ -3,12 +3,12 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-server</artifactId>
     <packaging>jar</packaging>
-    <version>3.4.0-SNAPSHOT</version>
+    <version>3.3.5</version>
     <name>server</name>
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.3.5</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <build>

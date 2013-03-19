@@ -134,7 +134,7 @@ abstract public class AbstractVersion {
     }
 
     protected boolean noVersion(String targetVersion) {
-        return StringUtils.isBlank(targetVersion) || "development".equals(targetVersion);
+        return StringUtils.isBlank(targetVersion);
     }
 
     public boolean isOlderMinorVersion(String oldVersion) {

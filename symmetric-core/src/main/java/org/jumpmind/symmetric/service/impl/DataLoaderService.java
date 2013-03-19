@@ -178,9 +178,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                if (lastUpdateTime != null) {
-                   log.info("Newer conflict settings were detected");
-                }
+                log.info("Newer conflict settings were detected");
                 lastUpdateTime = date;
                 clearCache();
                 return true;
@@ -260,8 +258,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
         } catch (RegistrationRequiredException e) {
-            if (StringUtils.isBlank(remote.getSyncUrl()) || remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
-                log.warn("Node information missing on the server.  Attempting to re-register");
+            if (remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
+                log.warn("Registration was lost. Attempting to re-register.");
                 loadDataFromPull(null, status);
                 nodeService.findIdentity(false);
             } else {
@@ -291,7 +289,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 in));
         Node local = nodeService.findIdentity();
         NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-        transportManager.writeAcknowledgement(out, sourceNode, list, local,
+        transportManager.writeAcknowledgement(out, list, local,
                 security != null ? security.getNodePassword() : null);
     }
 
@@ -508,6 +506,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IDataLoaderFactory factory = null;
         if (channel != null) {
             dataLoaderType = channel.getDataLoaderType();
+        } else if (!channelId.equals(Constants.CHANNEL_CONFIG)) {
+            log.warn(
+                    "Could not locate the channel with the id of '{}'.  Using the 'default' data loader.",
+                    channelId);
         }
 
         factory = dataLoaderFactories.get(dataLoaderType);

@@ -2,7 +2,7 @@ SymmetricDS - 3.3.5 (Released 2013-03-18)
 =========================================
 - 0001122: [Improvement] Add support for Sql Server 2000 (abrougher) - closed.
 
-SymmetricDS - 3.3.4 (Released 2013-03-09) 
+SymmetricDS - 3.3.4 (Released 2013-03-09)  
 =========================================
 - 0001087: [Bug] If engine.name isn't used, then some services are not available. Should be available as long as there is only one node deployed (chenson) - closed.
 - 0001094: [Bug] sync_keys isn't used to create triggers which causes a SQL Server table w/out primary keys and sync_keys to not capture updates (chenson) - closed.

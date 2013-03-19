@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -78,7 +77,6 @@ public class TransformWriter implements IDataWriter {
         columnTransforms.put(SubstrColumnTransform.NAME, new SubstrColumnTransform());
         columnTransforms.put(VariableColumnTransform.NAME, new VariableColumnTransform());
         columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
-        columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
     }
 
     public static void addColumnTransform(IColumnTransform<?> columnTransform) {

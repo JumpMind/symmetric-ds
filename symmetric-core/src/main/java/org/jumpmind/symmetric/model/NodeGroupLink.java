@@ -48,11 +48,6 @@ public class NodeGroupLink implements Serializable {
         this.targetNodeGroupId = targetNodeGroupId;
     }
     
-    public NodeGroupLink(String sourceNodeGroupId, String targetNodeGroupId, NodeGroupLinkAction action) {
-        this(sourceNodeGroupId, targetNodeGroupId);
-        this.dataEventAction = action;
-    }
-    
     public NodeGroupLinkAction getDataEventAction() {
         return dataEventAction;
     }
