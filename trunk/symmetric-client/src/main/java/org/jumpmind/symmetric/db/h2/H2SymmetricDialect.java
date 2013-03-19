@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.h2;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -53,7 +54,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                 && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
 
-        if (!exists) {
+        if (!exists && !StringUtils.isBlank(triggerName)) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
         }
         return exists;
