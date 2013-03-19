@@ -540,7 +540,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
                             }
                             
-                            heartbeat(false);
+                            if (parameterService.is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)) {
+                                heartbeat(false);
+                            }
                             
                         } else {
                             log.info("Starting unregistered node [group={}, externalId={}]",
