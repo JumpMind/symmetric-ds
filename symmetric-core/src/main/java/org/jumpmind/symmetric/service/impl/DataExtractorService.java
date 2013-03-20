@@ -770,14 +770,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         String triggerId = triggerHistory.getTriggerId();
 
                         TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(triggerId, routerId, false);
-                        SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
-                                triggerRouter, triggerHistory);
-                        this.reloadSource = new SelectFromTableSource(outgoingBatch, batch, event);
-                        data = (Data) this.reloadSource.next();
-                        this.sourceTable = reloadSource.getSourceTable();
-                        this.targetTable = this.reloadSource.getTargetTable();
-                        this.requiresLobSelectedFromSource = this.reloadSource
-                                .requiresLobsSelectedFromSource();
+                        if (triggerRouter != null) {
+                            SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
+                                    triggerRouter, triggerHistory);
+                            this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
+                                    event);
+                            data = (Data) this.reloadSource.next();
+                            this.sourceTable = reloadSource.getSourceTable();
+                            this.targetTable = this.reloadSource.getTargetTable();
+                            this.requiresLobSelectedFromSource = this.reloadSource
+                                    .requiresLobsSelectedFromSource();
+                        } else {
+                            log.warn("Could not find trigger router definition for {}:{}.  Skipping reload event with the data id of {}", new Object[] {triggerId, routerId, data.getDataId()});
+                            return next();
+                        }
                     } else {
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
