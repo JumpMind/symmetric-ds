@@ -101,6 +101,10 @@ public class DataService extends AbstractService implements IDataService {
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
     
     public boolean insertReloadEvent(TableReloadRequest request) {
+        return insertReloadEvent(request, true);
+    }
+    
+    public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest) {
         boolean successful = false;
         if (request.isReloadEnabled()) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -135,25 +139,32 @@ public class DataService extends AbstractService implements IDataService {
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
                                         triggerHistory, request.getReloadSelect(), false);
 
-                                insertSqlEvent(
-                                        transaction,
-                                        triggerHistory,
-                                        trigger.getChannelId(),
-                                        targetNode,
-                                        String.format(
-                                                "update %s set reload_enabled=0, reload_time=current_timestamp where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
-                                                TableConstants.getTableName(tablePrefix,
-                                                        TableConstants.SYM_TABLE_RELOAD_REQUEST),
-                                                request.getTargetNodeId(), request
-                                                        .getSourceNodeId(), request.getTriggerId(),
-                                                request.getRouterId()), false);
+                                if (updateTableReloadRequest) {
+                                    insertSqlEvent(
+                                            transaction,
+                                            triggerHistory,
+                                            trigger.getChannelId(),
+                                            targetNode,
+                                            String.format(
+                                                    "update %s set reload_enabled=0, reload_time=current_timestamp where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
+                                                    TableConstants
+                                                            .getTableName(
+                                                                    tablePrefix,
+                                                                    TableConstants.SYM_TABLE_RELOAD_REQUEST),
+                                                    request.getTargetNodeId(), request
+                                                            .getSourceNodeId(), request
+                                                            .getTriggerId(), request.getRouterId()),
+                                            false);
+                                }
                                 
                                 transaction.commit();
                                 
                                 request.setReloadEnabled(false);
                                 request.setReloadTime(new Date());
                                 request.setLastUpdateBy("symmetricds");
-                                saveTableReloadRequest(request);
+                                if (updateTableReloadRequest) {
+                                    saveTableReloadRequest(request);
+                                }
 
                             } finally {
                                 close(transaction);

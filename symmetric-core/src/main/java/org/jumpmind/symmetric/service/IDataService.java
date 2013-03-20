@@ -69,6 +69,8 @@ public interface IDataService {
 
     public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
     
+    public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest);
+    
     public boolean insertReloadEvent(TableReloadRequest request);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
