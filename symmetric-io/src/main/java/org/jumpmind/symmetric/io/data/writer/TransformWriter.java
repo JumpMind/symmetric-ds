@@ -152,7 +152,8 @@ public class TransformWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && sourceTable == null) {
+        if (data.requiresTable() && sourceTable == null && 
+                context.getLastParsedTable() != null) {
             // if we cross batches and the table isn't specified, then
             // use the last table we used
             start(context.getLastParsedTable());
