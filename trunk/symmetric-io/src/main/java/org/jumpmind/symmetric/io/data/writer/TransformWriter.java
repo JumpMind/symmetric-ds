@@ -152,6 +152,11 @@ public class TransformWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
+        if (data.requiresTable() && sourceTable == null) {
+            // if we cross batches and the table isn't specified, then
+            // use the last table we used
+            start(context.getLastParsedTable());
+        }        
         DataEventType eventType = data.getDataEventType();
         if (activeTransforms != null && activeTransforms.size() > 0 && isTransformable(eventType)) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
