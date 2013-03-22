@@ -788,8 +788,8 @@ public class RestService {
         status.setDatabaseVersion(modelNode.getDatabaseVersion());
         status.setSyncEnabled(modelNode.isSyncEnabled());
         status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
-        status.setBatchToSendCount(modelNode.getBatchToSendCount());
-        status.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+        status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent());
+        status.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
         status.setDeploymentType(modelNode.getDeploymentType());
         if (modelNode.getCreatedAtNodeId() == null) {
         	status.setRegistrationServer(true);        	
