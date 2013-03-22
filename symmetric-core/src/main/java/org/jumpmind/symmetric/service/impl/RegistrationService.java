@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -192,11 +193,38 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                    dataService.reloadNode(nodeId, false);
+                    ISqlTransaction transaction = null;
+                    try {
+                        transaction = sqlTemplate.startSqlTransaction();
+                        symmetricDialect.disableSyncTriggers(transaction,
+                                nodeId);
+
+                        nodeService.setInitialLoadEnabled(transaction, nodeId,
+                                true);
+                        transaction.commit();
+                    } finally {
+                        symmetricDialect.enableSyncTriggers(transaction);
+                        close(transaction);
+                    }
+
                 }
 
-                if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    dataService.reloadNode(nodeId, true);
+                if (parameterService
+                        .is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+                    ISqlTransaction transaction = null;
+                    try {
+                        transaction = sqlTemplate.startSqlTransaction();
+                        symmetricDialect.disableSyncTriggers(transaction,
+                                nodeId);
+
+                        nodeService.setReverseInitialLoadEnabled(transaction,
+                                nodeId, true);
+                        transaction.commit();
+                    } finally {
+                        symmetricDialect.enableSyncTriggers(transaction);
+                        close(transaction);
+                    }
+
                 }
             }
             
