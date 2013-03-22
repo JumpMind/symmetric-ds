@@ -318,6 +318,18 @@ public class DataService extends AbstractService implements IDataService {
              * that an initial load is currently happening
              */
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), useReloadChannel);
+            
+            /*
+             * Mark incoming batches as OK at the target node because we marked
+             * outgoing batches as OK at the source
+             */
+            insertSqlEvent(
+                    transaction,
+                    targetNode,
+                    String.format(
+                            "update %s_incoming_batch set status='OK' where node_id='%s' and status != 'OK'",
+                            tablePrefix, engine.getNodeService()
+                                    .findIdentityNodeId()), true);            
 
             List<TriggerHistory> triggerHistories = engine.getTriggerRouterService()
                     .getActiveTriggerHistories();
