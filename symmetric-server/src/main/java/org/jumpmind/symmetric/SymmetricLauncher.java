@@ -184,6 +184,14 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                 webServer.setJmxPort(jmxPort);
             }
             
+            if (httpPort > 0) {
+                webServer.setHttpPort(httpPort);
+            }     
+
+            if (httpSecurePort > 0) {
+                webServer.setHttpsPort(httpSecurePort);
+            }
+            
             if (line.hasOption(OPTION_START_MIXED_SERVER)) {
                 webServer.setHttpEnabled(true);
                 webServer.setHttpsEnabled(true);
@@ -199,12 +207,9 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                 if (httpSecurePort > 0) {
                     webServer.setHttpsPort(httpSecurePort);
                 }
-            } else {
+            } else if (line.hasOption(OPTION_START_SERVER)) {
                 webServer.setHttpEnabled(true);
-                webServer.setHttpsEnabled(false);
-                if (httpPort > 0) {
-                    webServer.setHttpPort(httpPort);
-                }
+                webServer.setHttpsEnabled(false);                
             }
             
             webServer.start();
