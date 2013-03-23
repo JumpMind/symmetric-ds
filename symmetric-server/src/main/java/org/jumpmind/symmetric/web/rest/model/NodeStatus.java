@@ -47,6 +47,11 @@ public class NodeStatus {
 	boolean initialLoaded;
 
 	/**
+	 * Is the node reverse initial loaded.
+	 */
+	boolean reverseInitialLoaded;
+
+	/**
 	 * The node's ID.
 	 */
 	private String nodeId;
@@ -66,6 +71,11 @@ public class NodeStatus {
 	 */
 	private String syncUrl;
 
+	/**
+	 * The registrationUrl for this node (who this node is pointing to for registration)
+	 */
+    private String registrationUrl;	
+	
 	/**
 	 * The type of database the node connects to. (e.g., 'PostgreSQL')
 	 */
@@ -114,8 +124,7 @@ public class NodeStatus {
 	/**
 	 * The hearbeat interval for the given node.
 	 */
-	private String hearbeatInterval;
-	
+	private int heartbeatInterval;
 	
 	public boolean isStarted() {
 		return started;
@@ -132,13 +141,13 @@ public class NodeStatus {
 	public void setLastHeartbeat(Date lastHeartbeat) {
 		this.lastHeartbeat = lastHeartbeat;
 	}
-
-	public String getHearbeatInterval() {
-		return hearbeatInterval;
+	
+	public int getHeartbeatInterval() {
+		return heartbeatInterval;
 	}
 
-	public void setHearbeatInterval(String hearbeatInterval) {
-		this.hearbeatInterval = hearbeatInterval;
+	public void setHeartbeatInterval(int heartbeatInterval) {
+		this.heartbeatInterval = heartbeatInterval;
 	}
 
 	public void setInitialLoaded(boolean initialLoaded) {
@@ -353,6 +362,34 @@ public class NodeStatus {
 	 */
 	public void setDeploymentType(String deploymentType) {
 		this.deploymentType = deploymentType;
+	}
+
+	/**
+	 * @return boolean indicating if this node has completed reverse initial load.
+	 */
+	public boolean isReverseInitialLoaded() {
+		return reverseInitialLoaded;
+	}
+
+	/**
+	 * @param reverseInitialLoaded boolean indicating reverse initial load has completed.
+	 */
+	public void setReverseInitialLoaded(boolean reverseInitialLoaded) {
+		this.reverseInitialLoaded = reverseInitialLoaded;
+	}
+
+	/**
+	 * @return The registration URL that this node points to for registration.
+	 */
+	public String getRegistrationUrl() {
+		return registrationUrl;
+	}
+
+	/**
+	 * @param registrationUrl The node's registration URL
+	 */
+	public void setRegistrationUrl(String registrationUrl) {
+		this.registrationUrl = registrationUrl;
 	}
 
 }
