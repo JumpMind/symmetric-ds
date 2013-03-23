@@ -708,7 +708,7 @@ public class RestService {
 	                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
 	            	            	
 	                xmlChildNode = new Node();
-	                xmlChildNode.setName(child.getNode().getNodeId());
+	                xmlChildNode.setNodeId(child.getNode().getNodeId());
 	                xmlChildNode.setExternalId(child.getNode().getExternalId());
 	                xmlChildNode.setRegistrationServer(false);
 	                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
@@ -732,20 +732,22 @@ public class RestService {
     }
 
     private Node nodeImpl(ISymmetricEngine engine) {
-
+    	    	
         INodeService nodeService = engine.getNodeService();
         Node xmlNode = new Node();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
         List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-        xmlNode.setName(modelNode.getNodeId());
+        xmlNode.setNodeId(modelNode.getNodeId());
         xmlNode.setExternalId(modelNode.getExternalId());
         xmlNode.setSyncUrl(modelNode.getSyncUrl());
+        xmlNode.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
         xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
         xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
         if (nodeHosts.size() > 0) {
         	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
         }
+        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
         xmlNode.setRegistered(nodeSecurity.hasRegistered());
         xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
         xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
@@ -775,30 +777,34 @@ public class RestService {
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
         List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
-
         NodeStatus status = new NodeStatus();
         status.setStarted(engine.isStarted());
         status.setRegistered(nodeSecurity.getRegistrationTime() != null);
         status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
+        status.setReverseInitialLoaded(nodeSecurity.getRevInitialLoadTime() != null);
         status.setNodeId(modelNode.getNodeId());
         status.setNodeGroupId(modelNode.getNodeGroupId());
         status.setExternalId(modelNode.getExternalId());
         status.setSyncUrl(modelNode.getSyncUrl());
+        status.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
         status.setDatabaseType(modelNode.getDatabaseType());
         status.setDatabaseVersion(modelNode.getDatabaseVersion());
         status.setSyncEnabled(modelNode.isSyncEnabled());
         status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
-        status.setBatchToSendCount(modelNode.getBatchToSendCount());
-        status.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+        status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent());
+        status.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
         status.setDeploymentType(modelNode.getDeploymentType());
         if (modelNode.getCreatedAtNodeId() == null) {
         	status.setRegistrationServer(true);        	
         } else {
         	status.setRegistrationServer(false);
         }
-
         if (nodeHost != null && nodeHost.size() > 0) {
             status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
+        }
+        status.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
+        if (status.getHeartbeatInterval() == 0) {
+        	status.setHeartbeatInterval(300000);
         }
         return status;
     }
