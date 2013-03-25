@@ -39,16 +39,15 @@
             As shown in <xref linkend="organizing-nodes"/>, there may be
             scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
-            you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
+            you may have a system where the lowest tier may be a computer or device located in a store.  Those devices 
             may connect to a server located physically at that store.  Then the store server may communicate with 
             a corporate server for example.  In this case, the three tiers would be device, store, and corporate.
             Each tier is typically represented by a node group.  Each node in 
             the tier would belong to the node group representing that tier.   
         </para>
         <para>
-            A node will always push and pull data to other node groups according to the node group link configuration.
-            A node can only pull and push data to other nodes that are represented <literal>node</literal> table in its database and 
-            having <literal>sync_enabled = 1</literal>.
+            A node can only pull and push data to other nodes that are represented in the node's <xref linkend="table_node" xrefstyle="table"/> 
+            table and in cases where that node's <literal>sync_enabled</literal> column is set to 1.
             Because of this, a tree-like 
             hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.  
         </para>
