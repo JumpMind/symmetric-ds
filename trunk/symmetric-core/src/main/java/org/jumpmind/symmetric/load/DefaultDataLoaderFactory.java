@@ -47,7 +47,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
                             DatabaseWriter writer = (DatabaseWriter) transformWriter
-                                    .getTargetWriter();
+                                    .getNestedWriter();
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.enableSyncTriggers(transaction);
@@ -59,7 +59,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
                             DatabaseWriter writer = (DatabaseWriter) transformWriter
-                                    .getTargetWriter();
+                                    .getNestedWriter();
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);

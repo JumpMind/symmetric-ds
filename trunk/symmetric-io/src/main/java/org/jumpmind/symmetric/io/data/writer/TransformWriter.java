@@ -28,7 +28,6 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -48,23 +47,23 @@ import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
-import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TransformWriter implements IDataWriter {
+public class TransformWriter extends NestedDataWriter {
 
     protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
 
-    protected IDataWriter targetWriter;
     protected TransformPoint transformPoint;
     protected IDatabasePlatform platform;
     protected Map<String, List<TransformTable>> transformsBySourceTable;
+    protected Table sourceTable;
+    protected List<TransformTable> activeTransforms;
 
     static protected Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
 
@@ -89,20 +88,12 @@ public class TransformWriter implements IDataWriter {
         return columnTransforms;
     }
 
-    protected Table sourceTable;
-    protected List<TransformTable> activeTransforms;
-    protected DataContext context;
-
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, TransformTable... transforms) {
+        super(targetWriter);
         this.platform = platform;
         this.transformPoint = transformPoint == null ? TransformPoint.LOAD : transformPoint;
         this.transformsBySourceTable = toMap(transforms);
-        this.targetWriter = targetWriter;
-    }
-
-    public void setTargetWriter(IDataWriter targetWriter) {
-        this.targetWriter = targetWriter;
     }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
@@ -123,26 +114,13 @@ public class TransformWriter implements IDataWriter {
         return transformsByTable;
     }
 
-    public void open(DataContext context) {
-        this.context = context;
-        this.targetWriter.open(context);
-    }
-
-    public void close() {
-        this.targetWriter.close();
-    }
-
-    public void start(Batch batch) {
-        this.targetWriter.start(batch);
-    }
-
     public boolean start(Table table) {
         activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName());
         if (activeTransforms != null && activeTransforms.size() > 0) {
             this.sourceTable = table;
             return true;
         } else {
-            return this.targetWriter.start(table);
+            return super.start(table);
         }
     }
 
@@ -200,14 +178,14 @@ public class TransformWriter implements IDataWriter {
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
                 Table table = transformedData.buildTargetTable();
                 CsvData csvData = transformedData.buildTargetCsvData();
-                if (this.targetWriter.start(table) || !csvData.requiresTable()) {
-                    this.targetWriter.write(csvData);
-                    this.targetWriter.end(table);
+                if (this.nestedWriter.start(table) || !csvData.requiresTable()) {
+                    this.nestedWriter.write(csvData);
+                    this.nestedWriter.end(table);
                 }
             }
 
         } else {
-            this.targetWriter.write(data);
+            super.write(data);
         }
 
     }
@@ -419,21 +397,9 @@ public class TransformWriter implements IDataWriter {
         if (activeTransforms != null && activeTransforms.size() > 0) {
             activeTransforms = null;
         } else {
-            this.targetWriter.end(table);
+            super.end(table);
         }
 
-    }
-
-    public void end(Batch batch, boolean inError) {
-        this.targetWriter.end(batch, inError);
-    }
-
-    public Map<Batch, Statistics> getStatistics() {
-        return this.targetWriter.getStatistics();
-    }
-
-    public IDataWriter getTargetWriter() {
-        return targetWriter;
     }
 
 }

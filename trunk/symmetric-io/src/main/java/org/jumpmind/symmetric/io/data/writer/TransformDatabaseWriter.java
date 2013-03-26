@@ -34,7 +34,7 @@ public class TransformDatabaseWriter extends TransformWriter {
     }
 
     public DatabaseWriter getDatabaseWriter() {
-        return (DatabaseWriter) this.targetWriter;
+        return getNestedWriterOfType(DatabaseWriter.class);
     }
 
 }

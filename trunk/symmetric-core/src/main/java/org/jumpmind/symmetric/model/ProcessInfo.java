@@ -30,7 +30,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
-        NEW, EXTRACTING, LOADING, TRANSFERRING, DONE, ERROR
+        NEW, EXTRACTING, LOADING, TRANSFERRING, ACKING, DONE, ERROR
     };
 
     private ProcessInfoKey key;
@@ -91,6 +91,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
     public void setStatus(Status status) {
         this.status = status;
         this.lastStatusChangeTime = new Date();
+        if (status == Status.DONE || status == Status.ERROR) {
+            this.endTime = new Date();
+        }
     }
 
     public long getDataCount() {
