@@ -94,7 +94,7 @@ public class StatisticManager implements IStatisticManager {
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         ProcessInfo process = new ProcessInfo(key);
         ProcessInfo old = processInfos.get(key);
-        if (old != null && old.getStatus() != Status.DONE) {
+        if (old != null && (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR)) {
             log.warn("Starting a new process even though the previous one ({}) had not finished", old.toString());
         }
         processInfos.put(key, process);

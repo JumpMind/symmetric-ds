@@ -20,38 +20,26 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.util.Map;
-
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.util.Statistics;
+import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 
-public class ProcessInfoDataWriter implements IDataWriter {
-
-    private IDataWriter targetWriter;
+public class ProcessInfoDataWriter extends NestedDataWriter {
 
     private ProcessInfo processInfo;
 
     public ProcessInfoDataWriter(IDataWriter targetWriter, ProcessInfo processInfo) {
-        this.targetWriter = targetWriter;
+        super(targetWriter);
         this.processInfo = processInfo;
     }
 
     public void open(DataContext context) {
-        targetWriter.open(context);
+        super.open(context);
         processInfo.setDataCount(0);
         processInfo.setBatchCount(0);
-    }
-
-    public void close() {
-        targetWriter.close();
-    }
-
-    public Map<Batch, Statistics> getStatistics() {
-        return targetWriter.getStatistics();
     }
 
     public void start(Batch batch) {
@@ -60,29 +48,21 @@ public class ProcessInfoDataWriter implements IDataWriter {
             processInfo.setCurrentChannelId(batch.getChannelId());
             processInfo.incrementBatchCount();
         }
-        targetWriter.start(batch);
+        super.start(batch);
     }
 
     public boolean start(Table table) {
         if (table != null) {
             processInfo.setCurrentTableName(table.getFullyQualifiedTableName());
         }
-        return targetWriter.start(table);
+        return super.start(table);
     }
 
     public void write(CsvData data) {
         if (data != null) {
             processInfo.incrementDataCount();
         }
-        targetWriter.write(data);        
-    }
-
-    public void end(Table table) {
-        targetWriter.end(table);
-    }
-
-    public void end(Batch batch, boolean inError) {
-        targetWriter.end(batch, inError);
+        super.write(data);        
     }
 
 }

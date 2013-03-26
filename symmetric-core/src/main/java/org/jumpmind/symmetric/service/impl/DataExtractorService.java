@@ -514,7 +514,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
                                 new DataProcessor(dataReader, transformExtractWriter).process(ctx);
                                 extractTimeInMs = System.currentTimeMillis() - ts;
-                                Statistics stats = transformExtractWriter.getTargetWriter()
+                                Statistics stats = transformExtractWriter.getNestedWriter()
                                         .getStatistics().values().iterator().next();
                                 byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             }

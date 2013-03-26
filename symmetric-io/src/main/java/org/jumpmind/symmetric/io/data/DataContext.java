@@ -26,7 +26,7 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
-import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 import org.jumpmind.util.Context;
 
 public class DataContext extends Context {
@@ -120,10 +120,10 @@ public class DataContext extends Context {
 
     public ISqlTransaction findTransaction() {
         ISqlTransaction transaction = null;
-        if (writer instanceof TransformWriter) {
-            IDataWriter targetWriter = ((TransformWriter) writer).getTargetWriter();
-            if (targetWriter instanceof DatabaseWriter) {
-                transaction = ((DatabaseWriter) targetWriter).getTransaction();
+        if (writer instanceof NestedDataWriter) {
+            DatabaseWriter dbWriter = ((NestedDataWriter)writer).getNestedWriterOfType(DatabaseWriter.class);
+            if (dbWriter != null) {
+                transaction = dbWriter.getTransaction();
             }
         } else if (writer instanceof DatabaseWriter) {
             transaction = ((DatabaseWriter) writer).getTransaction();
