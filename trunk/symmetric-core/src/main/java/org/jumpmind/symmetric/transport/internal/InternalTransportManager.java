@@ -40,6 +40,10 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -61,18 +65,29 @@ public class InternalTransportManager extends AbstractTransportManager implement
         this.symmetricEngine = engine;
     }
 
-    public IIncomingTransport getPullTransport(Node remote, final Node local,
-            String securityToken, Map<String, String> requestProperties, String registrationUrl)
-            throws IOException {
+    public IIncomingTransport getPullTransport(Node remote, final Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService().getSuspendIgnoreChannelLists(remote.getNodeId());
+        final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService()
+                .getSuspendIgnoreChannelLists(remote.getNodeId());
 
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
-                IOutgoingTransport transport = new InternalOutgoingTransport(respOs, suspendIgnoreChannels);
-                engine.getDataExtractorService().extract(local, transport);
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
+                    throws Exception {
+                IOutgoingTransport transport = new InternalOutgoingTransport(respOs,
+                        suspendIgnoreChannels);
+                ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
+                        new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
+                                .getNodeId(), ProcessType.PULL_HANDLER));
+                try {
+                    engine.getDataExtractorService().extract(processInfo, local, transport);
+                    processInfo.setStatus(Status.DONE);
+                } catch (RuntimeException ex) {
+                    processInfo.setStatus(Status.ERROR);
+                    throw ex;
+                }
                 transport.close();
             }
         });

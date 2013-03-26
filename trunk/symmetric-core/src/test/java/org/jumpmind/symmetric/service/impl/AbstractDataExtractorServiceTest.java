@@ -13,6 +13,7 @@ import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -99,7 +100,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         StringWriter writer = new StringWriter();
         InternalOutgoingTransport transport = new InternalOutgoingTransport(new BufferedWriter(
                 writer));
-        List<OutgoingBatch> batches = service.extract(TestConstants.TEST_CLIENT_NODE, transport);
+        List<OutgoingBatch> batches = service.extract(new ProcessInfo(), TestConstants.TEST_CLIENT_NODE, transport);
         return new ExtractResults(batches, writer.getBuffer().toString());
     }
 

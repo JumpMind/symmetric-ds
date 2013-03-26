@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
@@ -38,9 +39,10 @@ public interface IDataExtractorService {
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
     
     /**
+     * @param processInfo TODO
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport);
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);
 
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
 

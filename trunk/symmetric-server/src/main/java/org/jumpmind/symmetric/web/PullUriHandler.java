@@ -29,6 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -106,7 +110,16 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                 } else {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream,
                             map);
-                    dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);
+                    ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
+                            nodeService.findIdentityNodeId(), nodeId, ProcessType.PULL_HANDLER));
+                    try {
+                        dataExtractorService.extract(processInfo, nodeService.findNode(nodeId),
+                                outgoingTransport);
+                        processInfo.setStatus(Status.DONE);
+                    } catch (RuntimeException ex) {
+                        processInfo.setStatus(Status.ERROR);
+                        throw ex;
+                    }
                     outgoingTransport.close();
                 }
             } else {
