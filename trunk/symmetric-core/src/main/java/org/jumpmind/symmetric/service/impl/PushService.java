@@ -189,7 +189,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             if (extractedBatches.size() > 0) {
                 Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
                 for (OutgoingBatch outgoingBatch : extractedBatches) {
-                    batchIds.add(outgoingBatch.getBatchId());
+                    if (outgoingBatch.getStatus() == OutgoingBatch.Status.LD) {
+                       batchIds.add(outgoingBatch.getBatchId());
+                    }
                 }
                 
                 log.info("Push data sent to {}", remote);
