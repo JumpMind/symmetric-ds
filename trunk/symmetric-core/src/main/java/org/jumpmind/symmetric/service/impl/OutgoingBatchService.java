@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +86,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = null;
         do {
             batches = getOutgoingBatches(nodeId, true);
+            List<OutgoingBatch> list = batches.getBatches();
+            /* Sort in reverse order so we don't get fk errors for 
+             * batches that are currently processing.  We don't 
+             * make the update transactional to prevent contention 
+             * in highly loaded systems
+             */
+            Collections.sort(list, new Comparator<OutgoingBatch>() {
+                public int compare(OutgoingBatch o1, OutgoingBatch o2) {
+                    return -new Long(o1.getBatchId()).compareTo(o2.getBatchId());
+                }
+            });
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 outgoingBatch.setErrorFlag(false);
