@@ -373,10 +373,10 @@
         </index>
      </table>    
     
-    <table name="data_event" description="Represents routing of a data row to one or more nodes. Entries in data_event are created by database triggers. ">
+    <table name="data_event" description="Each row represents the mapping between a data change that was captured and the batch that contains it. Entries in data_event are created as part of the routing process. ">
         <column name="data_id" type="BIGINT" required="true" primaryKey="true"  description="Id of the data to be routed." />
-        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="The node_id of the node that is to receive the data." />
-        <column name="router_id" type="VARCHAR" size="50" required="true"  primaryKey="true"  description="The router_id of the router that routed this data_event." />
+        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="Id of the batch containing the data." />
+        <column name="router_id" type="VARCHAR" size="50" required="true"  primaryKey="true"  description="Id of the router that routed this data_event." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_de_batchid">
             <index-column name="batch_id"/>
