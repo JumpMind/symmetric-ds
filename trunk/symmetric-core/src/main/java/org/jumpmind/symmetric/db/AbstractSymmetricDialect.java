@@ -179,10 +179,15 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
             String triggerName) {
-        try {
-            return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
-        } catch (Exception ex) {
-            log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
+        if (StringUtils.isNotBlank(triggerName)) {
+            try {
+                return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
+            } catch (Exception ex) {
+                log.warn("Could not figure out if the trigger exists.  Assuming that is does not",
+                        ex);
+                return false;
+            }
+        } else {
             return false;
         }
     }
