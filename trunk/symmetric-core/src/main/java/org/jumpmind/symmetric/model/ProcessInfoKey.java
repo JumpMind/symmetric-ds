@@ -27,7 +27,7 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        MANUAL_LOAD, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, ROUTER_READER, OUTGOING_PURGE_JOB, INCOMING_PURGE_JOB, TEST
+        MANUAL_LOAD, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, OUTGOING_PURGE_JOB, INCOMING_PURGE_JOB, TEST
     };
 
     private String sourceNodeId;
