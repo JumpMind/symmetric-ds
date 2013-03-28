@@ -141,14 +141,7 @@ public interface ISymmetricDialect {
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args);
 
     @Deprecated
-    public Column[] orderColumns(String[] columnNames, Table table);
-    
-    /*
-     * Get the max number of data objects to load before processing.  This parameter typically comes
-     * from the {@link ParameterConstants#ROUTING_PEEK_AHEAD_WINDOW} parameter, unless the dialect chooses
-     * to override how it is retrieved.
-     */
-    public int getRouterDataPeekAheadCount();
+    public Column[] orderColumns(String[] columnNames, Table table);   
 
     public boolean supportsOpenCursorsAcrossCommit();
 

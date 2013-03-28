@@ -1109,8 +1109,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         ChannelRouterContext context = new ChannelRouterContext(
                 TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getSqlTemplate()
                         .startSqlTransaction());
-        DataGapRouteReader reader = new DataGapRouteReader(getRouterService(), context,
-                getDataService(), getDbDialect(), getParameterService());
+        DataGapRouteReader reader = new DataGapRouteReader(context, engine);
         reader.run();
 
         List<Data> list = new ArrayList<Data>();

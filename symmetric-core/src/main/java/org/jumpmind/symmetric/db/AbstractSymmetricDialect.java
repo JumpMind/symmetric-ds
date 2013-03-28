@@ -707,10 +707,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return sqlClause;
     }
 
-    public int getRouterDataPeekAheadCount() {
-        return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
-    }
-
     public void truncateTable(String tableName) {
 	   String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
                .getDatabaseInfo().getDelimiterToken() : "";

@@ -30,7 +30,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
-        NEW, EXTRACTING, LOADING, TRANSFERRING, ACKING, DONE, ERROR
+        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, DONE, ERROR
     };
 
     private ProcessInfoKey key;
