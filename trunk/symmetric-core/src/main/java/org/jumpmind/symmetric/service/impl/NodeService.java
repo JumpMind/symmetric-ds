@@ -459,25 +459,35 @@ public class NodeService extends AbstractService implements INodeService {
                         Types.VARCHAR }) == 1;
     }
     
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
-        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-        if (nodeSecurity != null) {
-            nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
-            if (initialLoadEnabled) {
-                nodeSecurity.setInitialLoadTime(null);
-            } else {
-                nodeSecurity.setInitialLoadTime(new Date());
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
+            boolean initialLoadEnabled, boolean syncChange) {
+        try {
+            if (!syncChange) {
+                symmetricDialect.disableSyncTriggers(transaction, nodeId);
             }
-            return updateNodeSecurity(transaction, nodeSecurity);
+            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+            if (nodeSecurity != null) {
+                nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
+                if (initialLoadEnabled) {
+                    nodeSecurity.setInitialLoadTime(null);
+                } else {
+                    nodeSecurity.setInitialLoadTime(new Date());
+                }
+                return updateNodeSecurity(transaction, nodeSecurity);
+            }
+            return false;
+        } finally {
+            if (!syncChange) {
+                symmetricDialect.enableSyncTriggers(transaction);
+            }
         }
-        return false;        
     }
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
+            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange);
             transaction.commit();
             return updated;
         } finally {
@@ -485,28 +495,39 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
     
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
-        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-        if (nodeSecurity != null) {
-            nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
-            if (initialLoadEnabled) {
-                nodeSecurity.setRevInitialLoadTime(null);
-            } else {
-                nodeSecurity.setRevInitialLoadTime(new Date());
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
+            boolean initialLoadEnabled, boolean syncChange) {
+        try {
+            if (!syncChange) {
+                symmetricDialect.disableSyncTriggers(transaction, nodeId);
             }
-            return updateNodeSecurity(transaction, nodeSecurity);
+
+            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+            if (nodeSecurity != null) {
+                nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
+                if (initialLoadEnabled) {
+                    nodeSecurity.setRevInitialLoadTime(null);
+                } else {
+                    nodeSecurity.setRevInitialLoadTime(new Date());
+                }
+                return updateNodeSecurity(transaction, nodeSecurity);
+            }
+            return false;
+        } finally {
+            if (!syncChange) {
+                symmetricDialect.enableSyncTriggers(transaction);
+            }
         }
-        return false;        
-    }    
+    } 
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
+            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange);
             transaction.commit();
             return updated;
-        } finally {
+        } finally {      
             close(transaction);
         }
     }    

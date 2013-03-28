@@ -193,38 +193,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                    ISqlTransaction transaction = null;
-                    try {
-                        transaction = sqlTemplate.startSqlTransaction();
-                        symmetricDialect.disableSyncTriggers(transaction,
-                                nodeId);
-
-                        nodeService.setInitialLoadEnabled(transaction, nodeId,
-                                true);
-                        transaction.commit();
-                    } finally {
-                        symmetricDialect.enableSyncTriggers(transaction);
-                        close(transaction);
-                    }
-
+                    nodeService.setInitialLoadEnabled(nodeId, true, false);
                 }
 
-                if (parameterService
-                        .is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    ISqlTransaction transaction = null;
-                    try {
-                        transaction = sqlTemplate.startSqlTransaction();
-                        symmetricDialect.disableSyncTriggers(transaction,
-                                nodeId);
-
-                        nodeService.setReverseInitialLoadEnabled(transaction,
-                                nodeId, true);
-                        transaction.commit();
-                    } finally {
-                        symmetricDialect.enableSyncTriggers(transaction);
-                        close(transaction);
-                    }
-
+                if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false);
                 }
             }
             

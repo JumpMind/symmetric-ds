@@ -124,13 +124,13 @@ public interface INodeService {
     
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security);
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange);
     
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange);
     
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange);
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange);
 
     public INodeIdCreator getNodeIdCreator();
 
