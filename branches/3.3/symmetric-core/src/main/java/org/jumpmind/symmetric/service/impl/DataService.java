@@ -388,11 +388,25 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
+            INodeService nodeService = engine.getNodeService();
             if (!reverse) {
-                engine.getNodeService().setInitialLoadEnabled(transaction, nodeIdRecord, false);
+				try {
+					symmetricDialect.disableSyncTriggers(transaction,
+							nodeIdRecord);
+					nodeService.setInitialLoadEnabled(transaction, nodeIdRecord,
+							false);
+				} finally {
+					symmetricDialect.enableSyncTriggers(transaction);
+				}            	
             } else {
-                engine.getNodeService().setReverseInitialLoadEnabled(transaction, nodeIdRecord,
-                        false);
+				try {
+					symmetricDialect.disableSyncTriggers(transaction,
+							nodeIdRecord);
+					nodeService.setReverseInitialLoadEnabled(transaction,
+							nodeIdRecord, false);
+				} finally {
+					symmetricDialect.enableSyncTriggers(transaction);
+				}            	
             }
             
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
