@@ -316,7 +316,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#markNodeAsRegistered(Node)
      */
     public void markNodeAsRegistered(String nodeId) {
-        sqlTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            symmetricDialect.disableSyncTriggers(transaction, nodeId);
+            transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
+            transaction.commit();
+        } finally {
+            symmetricDialect.enableSyncTriggers(transaction);
+            close(transaction);
+        }
     }
 
     private void sleepBeforeRegistrationRetry() {
