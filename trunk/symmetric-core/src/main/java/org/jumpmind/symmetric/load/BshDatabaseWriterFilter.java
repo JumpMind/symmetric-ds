@@ -215,7 +215,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         LoadFilter currentFilter = null;
 
         List<LoadFilter> wildcardLoadFilters = null;
-        if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix())) {
+        if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
             wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
         }
         List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
