@@ -444,9 +444,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
-        flushNodeAuthorizedCache();
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        return transaction.prepareAndExecute(
+        boolean updated = transaction.prepareAndExecute(
                 getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
@@ -457,6 +456,8 @@ public class NodeService extends AbstractService implements INodeService {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
                         Types.VARCHAR }) == 1;
+        flushNodeAuthorizedCache();
+        return updated;
     }
     
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
