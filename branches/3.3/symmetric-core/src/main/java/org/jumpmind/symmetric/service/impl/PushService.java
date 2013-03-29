@@ -178,7 +178,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             if (extractedBatches.size() > 0) {
                 Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
                 for (OutgoingBatch outgoingBatch : extractedBatches) {
-                    batchIds.add(outgoingBatch.getBatchId());
+                    if (outgoingBatch.getStatus() == OutgoingBatch.Status.LD) {
+                       batchIds.add(outgoingBatch.getBatchId());
+                    }
                 }
                 
                 log.info("Push data sent to {}", remote);
@@ -204,17 +206,23 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 List<BatchAck> batches = transportManager.readAcknowledgement(ackString,
                         ackExtendedString);
 
+                long batchIdInError = Long.MAX_VALUE;
                 for (BatchAck batchInfo : batches) {
                     batchIds.remove(batchInfo.getBatchId());
+                    if (!batchInfo.isOk()) {
+                        batchIdInError = batchInfo.getBatchId();
+                    }
                     log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
-                            (batchInfo.isOk() ? "OK" : "error"));
+                            (batchInfo.isOk() ? "OK" : "ER"));
                     acknowledgeService.ack(batchInfo);
                 }
                 
                 for (Long batchId : batchIds) {
-                    log.error("We expected but did not receive an ack for batch {}", batchId);
+                    if (batchId < batchIdInError) {
+                        log.error("We expected but did not receive an ack for batch {}", batchId);
+                    }
                 }
-
+                
                 status.updateOutgoingStatus(extractedBatches, batches);
             }
         } catch (Exception ex) {
