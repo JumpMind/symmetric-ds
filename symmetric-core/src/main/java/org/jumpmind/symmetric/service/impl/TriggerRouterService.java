@@ -524,7 +524,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         TriggerRouter triggerRouter = null;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache).get(triggerId);
         for (TriggerRouter testTriggerRouter : triggerRouters) {
-            if (testTriggerRouter.getRouter().getRouterId().equals(routerId) || 
+            if ("configurationChanged".equals(testTriggerRouter.getRouter().getRouterType()) ||
+            		testTriggerRouter.getRouter().getRouterId().equals(routerId) || 
                             routerId.equals(Constants.UNKNOWN_ROUTER_ID)) {
                 triggerRouter = testTriggerRouter;
                 break;
