@@ -420,8 +420,10 @@ public class DataService extends AbstractService implements IDataService {
         }
 
         if (!reverse) {
-            // remove all incoming events from the node are starting a reload
-            // for
+            /*
+             * Remove all incoming events for the node that we are starting a
+             * reload for
+             */
             engine.getPurgeService().purgeAllIncomingEventsForNode(targetNode.getNodeId());
         }
 
