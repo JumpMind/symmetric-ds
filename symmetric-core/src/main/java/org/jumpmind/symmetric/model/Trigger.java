@@ -43,7 +43,7 @@ public class Trigger implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger logger = LoggerFactory.getLogger(Trigger.class);
+    static final Logger log = LoggerFactory.getLogger(Trigger.class);
 
     private static int maxTriggerId;
 
@@ -159,9 +159,16 @@ public class Trigger implements Serializable {
                 Column col = table.getColumnWithName(syncKey);
                 if (col != null) {
                     columns.add(col);
+                } else {
+                    log.error("The sync key column '{}' was specified for the '{}' trigger but was not found in the table", syncKey, triggerId);
                 }
             }
-            return columns.toArray(new Column[columns.size()]);
+            
+            if (columns.size() > 0) {
+                return columns.toArray(new Column[columns.size()]);
+            } else {
+                return table.getPrimaryKeyColumns();
+            }
         } else {
             return table.getPrimaryKeyColumns();
         }
