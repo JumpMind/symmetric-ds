@@ -775,7 +775,9 @@ net stop symmetricds</programlisting>
             against casual observation.  The text is prefixed with <literal>enc:</literal> to indicate
             that it is encrypted.  To encrypt text, use the following command:
 
-            <programlisting>sym -e secret</programlisting>
+            <programlisting>symadmin -e {engine name} encrypt-text text-to-encrypt</programlisting>
+            or
+            <programlisting>symadmin -p {properties file} encrypt-text text-to-encrypt</programlisting>
 
             The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file. 
             By default, the keystore is located in <filename class="filename">security/keystore</filename>.
