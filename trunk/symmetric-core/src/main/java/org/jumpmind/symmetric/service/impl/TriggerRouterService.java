@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -391,7 +392,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         triggerRouter.setTrigger(trigger);
 
         Router router = triggerRouter.getRouter();
-        router.setRouterType("configurationChanged");
+        router.setRouterType(ConfigurationChangedDataRouter.ROUTER_TYPE);
         router.setNodeGroupLink(nodeGroupLink);
         router.setLastUpdateTime(trigger.getLastUpdateTime());
 
@@ -512,7 +513,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache).get(triggerId);
         if (triggerRouters != null) {
             for (TriggerRouter testTriggerRouter : triggerRouters) {
-                if (testTriggerRouter.getRouter().getRouterId().equals(routerId)
+                if (ConfigurationChangedDataRouter.ROUTER_TYPE.equals(testTriggerRouter.getRouter().getRouterType()) || 
+                        testTriggerRouter.getRouter().getRouterId().equals(routerId)
                         || routerId.equals(Constants.UNKNOWN_ROUTER_ID)) {
                     triggerRouter = testTriggerRouter;
                     break;
@@ -993,15 +995,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
 
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForInsertTrigger(),
-                history.getSourceTableName(), history);
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
-                history.getSourceTableName(), history);
-        symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
-                history.getSourceTableName(), history);
+        if (StringUtils.isNotBlank(history.getNameForInsertTrigger())) {
+            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getNameForInsertTrigger(),
+                    history.getSourceTableName(), history);
+        }
+
+        if (StringUtils.isNotBlank(history.getNameForDeleteTrigger())) {
+            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
+                    history.getSourceTableName(), history);
+        }
+
+        if (StringUtils.isNotBlank(history.getNameForUpdateTrigger())) {
+            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
+                    history.getSourceTableName(), history);
+        }
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             if (this.triggerCreationListeners != null) {

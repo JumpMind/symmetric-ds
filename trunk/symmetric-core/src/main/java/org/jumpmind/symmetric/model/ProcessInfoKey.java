@@ -27,7 +27,30 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        MANUAL_LOAD, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, OUTGOING_PURGE_JOB, INCOMING_PURGE_JOB, TEST
+        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD;
+        
+        public String toString() {
+            switch (this) {
+                case MANUAL_LOAD:
+                    return "Manual Load";
+                case PUSH_JOB:
+                    return "Push";
+                case PULL_JOB:
+                    return "Pull";
+                case PUSH_HANDLER:
+                    return "Service Push";
+                case PULL_HANDLER:
+                    return "Service Pull";
+                case ROUTER_JOB:
+                    return "Routing";
+                case ROUTER_READER:
+                    return "Routing Reader";
+                case GAP_DETECT:
+                    return "Gap Detection";
+                default:
+                    return name();
+            }
+        }
     };
 
     private String sourceNodeId;

@@ -143,7 +143,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                             dataWithSameTransactionIdCount++;
                             datas.remove();
                             copyToQueue(data);
-                            dataCount++;
+                            dataCount++;                            
                             processInfo.incrementDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
                         }

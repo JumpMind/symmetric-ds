@@ -21,6 +21,9 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
@@ -30,7 +33,33 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
-        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, DONE, ERROR
+        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, DONE, ERROR;
+
+        public String toString() {
+            switch (this) {
+                case NEW:
+                    return "New";
+                case QUERYING:
+                    return "Querying";
+                case EXTRACTING:
+                    return "Extracting";
+                case LOADING:
+                    return "Loading";
+                case TRANSFERRING:
+                    return "Transferring";
+                case ACKING:
+                    return "Acking";
+                case PROCESSING:
+                    return "Processing";
+                case DONE:
+                    return "Done";
+                case ERROR:
+                    return "Error";
+
+                default:
+                    return name();
+            }
+        }
     };
 
     private ProcessInfoKey key;
@@ -56,7 +85,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
     private Date endTime;
 
     public ProcessInfo() {
-        this(new ProcessInfoKey("", "", ProcessInfoKey.ProcessType.TEST));
+        this(new ProcessInfoKey("", "", null));
     }
 
     public ProcessInfo(ProcessInfoKey key) {
@@ -187,6 +216,59 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
             return 1;
         } else {
             return startTime.compareTo(o.startTime);
+        }
+    }
+
+    public ThreadData getThreadData() {
+        if (thread != null && thread.isAlive()) {
+            return getThreadData(thread.getId());
+        } else {
+            return null;
+        }
+    }
+
+    public static ThreadData getThreadData(long threadId) {
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+        ThreadInfo info = threadBean.getThreadInfo(threadId, 100);
+        if (info != null) {
+            String threadName = info.getThreadName();
+            StringBuilder formattedTrace = new StringBuilder();
+            StackTraceElement[] trace = info.getStackTrace();
+            for (StackTraceElement stackTraceElement : trace) {
+                formattedTrace.append(stackTraceElement.getClassName());
+                formattedTrace.append(".");
+                formattedTrace.append(stackTraceElement.getMethodName());
+                formattedTrace.append("()");
+                int lineNumber = stackTraceElement.getLineNumber();
+                if (lineNumber > 0) {
+                    formattedTrace.append(": ");
+                    formattedTrace.append(stackTraceElement.getLineNumber());
+                }
+                formattedTrace.append("\n");
+            }
+
+            return new ThreadData(threadName, formattedTrace.toString());
+        } else {
+            return null;
+        }
+    }
+
+    static public class ThreadData {
+
+        public ThreadData(String threadName, String stackTrace) {
+            this.threadName = threadName;
+            this.stackTrace = stackTrace;
+        }
+
+        private String threadName;
+        private String stackTrace;
+
+        public String getStackTrace() {
+            return stackTrace;
+        }
+
+        public String getThreadName() {
+            return threadName;
         }
     }
 }
