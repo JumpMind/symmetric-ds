@@ -100,7 +100,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.batchAlgorithms.put("transactional", new TransactionalBatchAlgorithm());
 
         this.routers = new HashMap<String, IDataRouter>();
-        this.routers.put("configurationChanged", new ConfigurationChangedDataRouter(engine));
+        this.routers.put(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
         this.routers.put("bsh", new BshDataRouter(engine));
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
@@ -517,6 +517,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     data = nextData;
                     nextData = reader.take();
                     if (data != null) {
+                        processInfo.setCurrentTableName(data.getTableName());
                         processInfo.incrementDataCount();
                         boolean atTransactionBoundary = false;
                         if (nextData != null) {

@@ -41,6 +41,8 @@ import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
+    
+    public static final String ROUTER_TYPE = "configurationChanged";
 
     final String CTX_KEY_TABLE_RELOAD_NEEDED = "Reload.Table."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
