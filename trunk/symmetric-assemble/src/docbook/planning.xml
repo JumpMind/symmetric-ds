@@ -280,7 +280,7 @@
             <para>
                 Now we are ready to discuss Routers. The router itself is what defines the configuration of where to send a
                 data change. Each Router you define can be associated with or assigned to any number of Triggers through a
-                join table that defines the relationship. Routers are defined the SymmetricDS table named
+                join table that defines the relationship. Routers are defined in the SymmetricDS table named
                 <xref linkend="table_router" xrefstyle="table" />
                 . For each router you define, you will need to specify:
                 <itemizedlist>
@@ -309,18 +309,18 @@
                         can be passed values of old and new column values.
                     </listitem>
                     <listitem>execute a Bean Shell expression in order to select nodes to route to. The Bean Shell expression
-                        can use the the old and new column values.
+                        can use the old and new column values.
                     </listitem>
                     <listitem>publish data changes directly to a messaging solution instead of transmitting changes to
                         registered nodes. (This router must be configured manually in XML as an extension point.)
                     </listitem>
                 </itemizedlist>
             </para>
-           
+
         </section>
         <section id="defining-data-changes-trigger-routers">
             <title>Mapping Triggers to Routers</title>
-            
+
              <para> For each of your Triggers (which specify when a data change should be captured),
                  you will need to decide which Router(s) to pair with the Trigger such that the change is routed
                  to the desired target nodes.   This needed mapping between Triggers and Routers, found in the table
@@ -340,7 +340,7 @@
                     <emphasis>Initial Loads</emphasis>
                     will work. Using our retail example, consider a new store being opened. Initially, you would like to
                     pre-populate a store database with all the item, pricing, and tax data for that specific store. This is
-                    achieved through an initial load. A part of your planning, be sure to consider which tables, if any, will
+                    achieved through an initial load. As part of your planning, be sure to consider which tables, if any, will
                     need to be loaded initially. SymmetricDS can also perform an initial load on a table with just a subset
                     of data. Initial Loads are further discussed in
                     <xref linkend="configuration-initial-load" />.
@@ -372,7 +372,7 @@
                 <itemizedlist>
                     <listitem>The tutorial uses the command line utility to register each individual node.</listitem>
                     <listitem>A JMX interface provides the same interface that the command line utility does. JMX can be
-                        invoked programatically or via a web console.</listitem>
+                        invoked programmatically or via a web console.</listitem>
                     <listitem>Both the utility and the JMX method register a node by inserting into two tables. A script can
                         be written to directly register nodes by directly inserting into the database.</listitem>
                     <listitem>SymmetricDS can be configured to auto register nodes. This means that any node that asks for a
@@ -384,7 +384,7 @@
     <section id="defining-transformation">
         <title>Planning Data Transformations</title>
         <para>
-            SymmetricDS also provides the abilty to
+            SymmetricDS also provides the ability to
             <emphasis>transform</emphasis>
             synchronized data instead of simply synchronizing it. Your application might, for example require a particular
             column in your source data to be mapped to two different target tables with possibly different column names. Or,

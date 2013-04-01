@@ -79,7 +79,7 @@
       <listitem>
         <para>Greenplum 8.2.15 and above</para>
       </listitem>
-      
+
        <listitem>
         <para>SQLite 3 and above</para>
       </listitem>
@@ -105,7 +105,7 @@
       a network.</para>
 
       <para>The SymmetricDS engine is also referred to as a
-      <emphasis>node</emphasis> . SymmetricDS is designed to be able to scale
+      <emphasis>node</emphasis>. SymmetricDS is designed to be able to scale
       out to many thousands of nodes. The database connection is configured by
       providing a database connection string, database user, and database
       password in a properties file. SymmetricDS can synchronize any table
@@ -138,7 +138,7 @@
       node ids of “1-1” and “1-2.”</para>
 
       <para>SymmetricDS can be deployed in a number of ways. The most common
-      option is to deploy it as a standalone process running as a service on
+      option is to deploy it as a stand alone process running as a service on
       your chosen server platform. When deployed in this manner SymmetricDS
       can act as either a client, a multi-tenant server or both depending on
       where the SymmetricDS database fits into the overall network of
@@ -309,11 +309,11 @@
     </section>
 
     <section id="data-channels">
-       
+
 
       <title>Data Channels</title>
 
-       
+
 
       <para>SymmetricDS supports the concept of <emphasis>channels</emphasis>
       of data. Data synchronization is defined at the table (or table subset)
@@ -330,11 +330,11 @@
       processed independently so inventory can get through despite the large
       amount of item data.</para>
 
-       Channels are discussed in more detail in 
+       Channels are discussed in more detail in
 
       <xref linkend="choosing-channels"/>
 
-       . 
+       .
     </section>
 
     <section id="notification">
@@ -391,7 +391,7 @@
           <listitem>
             <para>As data changes are loaded in the target database, data can
             be filtered, either by a simple bean shell load filter (see
-            <xref linkend="data-load-filter" xrefstyle="select: label"/> 
+            <xref linkend="data-load-filter" xrefstyle="select: label"/>
             data-load-filter) or by a class implementing <xref
             linkend="extensions-data-loader-filter" xrefstyle="table"/>. You
             can change the data in a column, route it somewhere else, trigger
@@ -546,7 +546,7 @@
   </section>
 
   <section>
-    <title>Whats New in SymmetricDS 3</title>
+    <title>What's New in SymmetricDS 3</title>
 
     <para>SymmetricDS 3 builds upon the existing SymmetricDS 2.x software base
     and incorporates a number of architectural changes and performance

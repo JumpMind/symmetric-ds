@@ -8,7 +8,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Topics</title>
     <para>
-       This chapter focuses on a variety of topics, including deployment options, jobs, clustering, encryptions, synchronization control, 
+       This chapter focuses on a variety of topics, including deployment options, jobs, clustering, encryptions, synchronization control,
        and configuration of SymmetricDS.
     </para>
 
@@ -17,75 +17,75 @@
  <section id="bi-direction-sync">
         <title>Bi-Directional Synchronization</title>
         <para>
-            SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
-            synchronization does not process changes during an incoming synchronization on the same node unless the trigger 
+            SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing
+            synchronization does not process changes during an incoming synchronization on the same node unless the trigger
             was created with the <literal>sync_on_incoming_batch</literal> flag set.  If the <literal>sync_on_incoming_batch</literal> flag
-            is set, then update loops are prevented by a feature that is available in most database dialects.  
-            More specifically, during an incoming synchronization the source <literal>node_id</literal> is put into a database session variable that is 
-            available to the database trigger.  Data events are not generated if the target <literal>node_id</literal> 
-            on an outgoing synchronization is equal to the source <literal>node_id</literal>.  
-        </para>     
+            is set, then update loops are prevented by a feature that is available in most database dialects.
+            More specifically, during an incoming synchronization the source <literal>node_id</literal> is put into a database session variable that is
+            available to the database trigger.  Data events are not generated if the target <literal>node_id</literal>
+            on an outgoing synchronization is equal to the source <literal>node_id</literal>.
+        </para>
         <para>
             By default, only the columns that changed will be updated in the target system.
-        </para>  
+        </para>
         <para>
             Conflict resolution strategies can be configured for specific links and/or sets of tables.
-        </para>         
-    </section>     
-      
+        </para>
+    </section>
+
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
             As shown in <xref linkend="organizing-nodes"/>, there may be
             scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
-            you may have a system where the lowest tier may be a computer or device located in a store.  Those devices 
-            may connect to a server located physically at that store.  Then the store server may communicate with 
+            you may have a system where the lowest tier may be a computer or device located in a store.  Those devices
+            may connect to a server located physically at that store.  Then the store server may communicate with
             a corporate server for example.  In this case, the three tiers would be device, store, and corporate.
-            Each tier is typically represented by a node group.  Each node in 
-            the tier would belong to the node group representing that tier.   
+            Each tier is typically represented by a node group.  Each node in
+            the tier would belong to the node group representing that tier.
         </para>
         <para>
-            A node can only pull and push data to other nodes that are represented in the node's <xref linkend="table_node" xrefstyle="table"/> 
+            A node can only pull and push data to other nodes that are represented in the node's <xref linkend="table_node" xrefstyle="table"/>
             table and in cases where that node's <literal>sync_enabled</literal> column is set to 1.
-            Because of this, a tree-like 
-            hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.  
+            Because of this, a tree-like
+            hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.
         </para>
         <para>
-            If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
+            If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration
             for the desired nodes at the desired parent node and by configuring each node's <literal>registration.url</literal>
-             to be the parent node's URL.  
-            The parent node is always tracked by the setting of the parent's <literal>node_id</literal> in the <literal>created_at_node_id</literal> column of the new node.  
-            When a node registers and downloads its configuration it is always provided the configuration for nodes 
+             to be the parent node's URL.
+            The parent node is always tracked by the setting of the parent's <literal>node_id</literal> in the <literal>created_at_node_id</literal> column of the new node.
+            When a node registers and downloads its configuration it is always provided the configuration for nodes
             that might register with the node itself based on the Node Group Links defined in the parent node.
         </para>
-                
- 
+
+
     <section id='registration-redirect'>
-        <title>Registration Redirect</title>    
+        <title>Registration Redirect</title>
         <para>
             When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
-            could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The 
+            could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The
             <xref linkend="table_registration_redirect" xrefstyle="table"/> table allows a single node, usually the root server in the network, to
-            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node 
+            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node
             id (<literal>registration_node_id</literal>).
         </para>
         <para>
             For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their <literal>external_id</literal>, the store number, then
             you might insert into <xref linkend="table_registration_redirect" xrefstyle="table"/> the store number as the <literal>registrant_external_id</literal> and the <literal>node_id</literal> of
-            the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server send an HTTP redirect to the <literal>sync_url</literal> of the node 
-            that matches the <literal>registration_node_id</literal>. 
+            the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server sends an HTTP redirect to the <literal>sync_url</literal> of the node
+            that matches the <literal>registration_node_id</literal>.
         </para>
         <important>
             <para>Please see <xref linkend="configuration-initial-load" /> for important details around initial loads
             and registration when using registration redirect.
             </para>
             </important>
-            
+
     </section>
     </section>
 </section>
-          
+
     <!--  Jobs? -->
     <section id="jobs">
      <title>Jobs</title>
@@ -99,17 +99,17 @@
     <para>
         The SymmetricDS software consists of a series of background jobs, managers, Servlets, and services wired together
         via dependency injection using the <ulink url="http://springframework.org">Spring Framework</ulink>.
-    </para>    
-     
+    </para>
+
     <para>
-        As a client, the node runs the router job, push job and pull job on a timer thread.  
-        The router job uses services to create batches that are targeted at certain nodes.  
+        As a client, the node runs the router job, push job and pull job on a timer thread.
+        The router job uses services to create batches that are targeted at certain nodes.
         The push job uses services to extract and stream data to
         another node (that is, it pushes data).  The response from a push is a list
-        of batch acknowlegements to indicate that data was loaded.
+        of batch acknowledgements to indicate that data was loaded.
         The pull job uses services to load data that is streamed from another node
         (<emphasis>i.e.</emphasis>, it pulls data).  After loading data, a second connection is made to send a list
-        of batch acknowlegements.
+        of batch acknowledgements.
     </para>
     <para>
         As a host, the node waits for incoming connections that pull, push, or acknowledge data changes.
@@ -121,21 +121,21 @@
     </para>
     <para>
         By default, data is extracted from the source database into memory until a threshold size is reached.
-        If the threshold size is reached, data is streamed to a temporary file in the JVM's default temporary 
+        If the threshold size is reached, data is streamed to a temporary file in the JVM's default temporary
         directory.  Next, the data is streamed to the target node across the transport layer.  The receiving
         node will cache the data in memory until the threshold size is reached, writing to a temporary file if
         necessary.  At last, the data is loaded into the target database by the data loader.  This step by step
-        approach allows for extract time, transport time, and load time to all be measured independently.  It 
+        approach allows for extract time, transport time, and load time to all be measured independently.  It
         also allows database resources to be used most optimally.
-    </para>    
+    </para>
     <para>
         The transport manager handles the incoming and outgoing streams of data between nodes.
         The default transport is based on a simple implementation over HTTP.  An internal transport
         is also provided.  It is possible to add other implementations, such as a socket-based transport manager.
-    </para> 
+    </para>
     <para>
         Node communication over HTTP is represented in the following figure.
-    </para> 
+    </para>
     <para>
         <figure>
             <title>Node Communication</title>
@@ -145,13 +145,13 @@
                 </imageobject>
             </mediaobject>
         </figure>
-    </para>    
+    </para>
     <para>
-        The <literal>StandaloneSymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The 
+        The <literal>StandaloneSymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The
         <literal>SymmetricWebServer</literal> is a wrapper API that can be used to directly start <emphasis>both</emphasis> the
-        client and host services inside a Jetty web container.  The <literal>SymmetricLauncher</literal> provides command line tools to work 
+        client and host services inside a Jetty web container.  The <literal>SymmetricLauncher</literal> provides command line tools to work
         with and start SymmetricDS.
-    </para>   
+    </para>
     <!-- TODO
     <section id="ch04-components">
         <title>Software Components</title>
@@ -204,7 +204,7 @@
                     </imageobject>
                 </mediaobject>
             </figure>
-        </para>        
+        </para>
     </section>
      -->
   <section id="routing-job">
@@ -215,21 +215,21 @@
         The SymmetricDS-created database triggers cause data to be capture in the <xref linkend="table_data" xrefstyle="table"/> table.
         The next step in the synchronization process is to process the change data to determine which nodes, if any, the data should
         be routed to.  This step is performed by the <emphasis>Route Job</emphasis>.  In addition to determining which nodes data will
-        be sent to, the Route Job is also responsible for determing how much data will be batched together for transport. 
-        It is a single background task that inserts into <xref linkend="table_data_event" xrefstyle="table"/> 
-        and <xref linkend="table_outgoing_batch" xrefstyle="table"/>.  
+        be sent to, the Route Job is also responsible for determining how much data will be batched together for transport.
+        It is a single background task that inserts into <xref linkend="table_data_event" xrefstyle="table"/>
+        and <xref linkend="table_outgoing_batch" xrefstyle="table"/>.
      </para>
      <para>
-         At a high level, the Route Job is straightforward.  It collects a list of data ids from <xref linkend="table_data" xrefstyle="table"/> 
-         which haven't yet been routed (see <xref linkend="data-gaps" /> for much more detail about this step), 
+         At a high level, the Route Job is straightforward.  It collects a list of data ids from <xref linkend="table_data" xrefstyle="table"/>
+         which haven't yet been routed (see <xref linkend="data-gaps" /> for much more detail about this step),
          one channel at a time, up to a limit specified by the channel configuration
          (<literal>max_data_to_route</literal>, on  <xref linkend="table_channel" xrefstyle="table"/>).
-         The data is then batched based on the <literal>batch_algorithm</literal> defined for the channel and as documented in 
+         The data is then batched based on the <literal>batch_algorithm</literal> defined for the channel and as documented in
           <xref linkend="configuration-channel"/>.  Note that, for the default batching algorithm, there may actually be more than <literal>max_data_to_route</literal> included depending
-         on the transaction boundaries.  The mapping of data to specific nodes, organized into batches, is then 
+         on the transaction boundaries.  The mapping of data to specific nodes, organized into batches, is then
          recorded in    <xref linkend="table_outgoing_batch" xrefstyle="table"/> with a status of "RT" in each case (representing the
          fact that the Route Job is still running).
-         Once the routing algorithms and batching are completed, the batches are organized with their corresponding data ids 
+         Once the routing algorithms and batching are completed, the batches are organized with their corresponding data ids
          and saved in <xref linkend="table_data_event" xrefstyle="table"/>.  Once <xref linkend="table_data_event" xrefstyle="table"/> is
          updated, the rows in <xref linkend="table_outgoing_batch" xrefstyle="table"/> are updated to a status of New "NE".
     </para>
@@ -238,7 +238,7 @@
         <title>Data Gaps</title>
       <para>
       On the surface, the first Route Job step of collecting unrouted data ids seems simple: assign
-     sequential data ids for each data row as it's inserted and keep track of which data id was last routed and start from there.  The difficulty arises, however, due to the fact that 
+     sequential data ids for each data row as it's inserted and keep track of which data id was last routed and start from there.  The difficulty arises, however, due to the fact that
      there can be multiple transactions inserting into <xref linkend="table_data" xrefstyle="table"/> simultaneously.
      As such, a given section of rows in the  <xref linkend="table_data" xrefstyle="table"/> table may actually contain "gaps" in the data ids when the Route Job is executing.
      Most of these gaps are only temporarily and fill in at some point after routing and need to be picked up with the next run of the Route Job.  Thus, the Route Job needs to
@@ -262,26 +262,26 @@
      all gaps.  If the very last gap contained data, a new gap starting from the highest data id and ending at (highest data id + <literal>routing.largest.gap.size</literal>) is then created.
      This process has resulted in an updated list of gaps which may contain new data to be routed.
      </para>
-   
+
      </section>
      </section>
      <section id='controlling-synchronization'>
         <title>Synchronization Frequency</title>
         <para>
-        The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.   
-        </para>    
+        The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.
+        </para>
         <para>
         The route job determines which nodes
-        data will be sent to, and batches it together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
-        <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  
+        data will be sent to, and batches it together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to
+        <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.
         </para>
         <para>
         After data is routed, it awaits transport to the target nodes.  Transport can occur when a client node is configured to pull data or when the host node is configured to push data.  These
-        events are controlled by the <emphasis>push</emphasis> and the <emphasis>pull jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to 
-        <literal>true</literal>, the frequency that data is pulled is controlled by the <literal>job.pull.period.time.ms</literal>.  When the <literal>start.push.job</literal> SymmetricDS property is set to 
-        <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's 
-        <xref linkend="table_data" xrefstyle="table"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
-        <xref linkend="table_channel" xrefstyle="table"/> table.  The <literal>last_extract_time</literal> is 
+        events are controlled by the <emphasis>push</emphasis> and the <emphasis>pull jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to
+        <literal>true</literal>, the frequency that data is pulled is controlled by the <literal>job.pull.period.time.ms</literal>.  When the <literal>start.push.job</literal> SymmetricDS property is set to
+        <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's
+        <xref linkend="table_data" xrefstyle="table"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the
+        <xref linkend="table_channel" xrefstyle="table"/> table.  The <literal>last_extract_time</literal> is
         always recorded, by channel, on the <xref linkend="table_node_channel_ctl" xrefstyle="table"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
         has not passed according to the last extract time, then the channel will be skipped for this run.  If the <literal>extract_period_millis</literal> is set to zero, data extraction will happen every time the jobs run.
         </para>
@@ -290,22 +290,22 @@
         <literal>pull.thread.per.server.count</literal> or <literal>push.thread.per.server.count</literal> should be adjusted (from their default value of 10) to the number
         to the number of concurrent push/pulls you want to occur per period on each SymmetricDS instance.  Push and pull activity is recorded in the
         <xref linkend="table_node_communication" xrefstyle="table"/> table.  This table is also used to lock push and pull activity across
-        multiple servers in a cluster.  
-        </para>        
+        multiple servers in a cluster.
+        </para>
         <para>
         SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the
-        <xref linkend="table_node_group_channel_window" xrefstyle="table"/> 
+        <xref linkend="table_node_group_channel_window" xrefstyle="table"/>
         table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
         of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the <literal>start_time</literal> is greater than the <literal>end_time</literal>, then the window crosses
         over to the next day.
         </para>
         <para>
         All data loading may be disabled by setting the <literal>dataloader.enable</literal> property to false.  This has the effect of not allowing incoming synchronizations, while allowing outgoing
-        synchronizations.  All data extractions may be disabled by setting the <literal>dataextractor.enable</literal> property to false.  These properties can be controlled by inserting into the 
-        root server's <xref linkend="table_parameter" xrefstyle="table"/> table.  These properties affect every channel with the exception of the 'config' channel.  
+        synchronizations.  All data extractions may be disabled by setting the <literal>dataextractor.enable</literal> property to false.  These properties can be controlled by inserting into the
+        root server's <xref linkend="table_parameter" xrefstyle="table"/> table.  These properties affect every channel with the exception of the 'config' channel.
         </para>
-    </section>         
-       
+    </section>
+
     <section id="sync-triggers">
         <title>Sync Triggers Job</title>
         <para>
@@ -331,15 +331,15 @@
 
             A configuration entry in Trigger without any history in Trigger Hist results in a new
             trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
-            any alteration to the table causes the trigger to be rebuilt (S).  When the 
+            any alteration to the table causes the trigger to be rebuilt (S).  When the
             <literal>last_update_time</literal> is changed on the Trigger entry, the configuration change causes
             the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
             corresponding database trigger, the trigger is created (T).
         </para>
         <para>
             The process of examining triggers and rebuilding them is automatically run during startup and
-            each night by the SyncTriggersJob.  The user can also manually run the process at any time 
-            by invoking the <literal>syncTriggers()</literal> method over JMX.  The SyncTriggersJob is enabled by default 
+            each night by the SyncTriggersJob.  The user can also manually run the process at any time
+            by invoking the <literal>syncTriggers()</literal> method over JMX.  The SyncTriggersJob is enabled by default
             to run at 15 minutes past midnight.  If SymmetricDS is being run from a collection of servers
             (multiple instances of the same Node running against the same database), then locking
             should be enable to prevent database contention.  The following runtime properties
@@ -366,7 +366,7 @@
                             that job will run. [&#xA0;Default:&#xA0;15&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>           
+                </varlistentry>
                 <varlistentry>
                     <term>
                         <command>cluster.lock.during.sync.triggers</command>
@@ -380,38 +380,38 @@
                 </varlistentry>
             </variablelist>
         </para>
-    </section> 
+    </section>
      </section>
      <section id='jms-publishing'>
-        <title>JMS Publishing</title>    
+        <title>JMS Publishing</title>
         <para>
-            With the proper configuration SymmetricDS can publish XML messages of captured data changes to 
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to
             JMS during routing or transactionally while data loading synchronized data into a target database.
-            The following explains how to publish to JMS during synchronization to the target database. 
+            The following explains how to publish to JMS during synchronization to the target database.
        </para>
-       <para>     
+       <para>
             The XmlPublisherDatabaseWriterFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
+            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
             publish specific tables as an XML message to a JMS provider.
-            See <xref linkend="extensions"/> for information on how 
-            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
+            See <xref linkend="extensions"/> for information on how
+            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
             the loaded data for the batch will be rolled back
-            and the batch will be retried during the next synchronization run.            
+            and the batch will be retried during the next synchronization run.
         </para>
         <para>
-        The following is an example extension point configuration that will publish four tables in XML with a root 
+        The following is an example extension point configuration that will publish four tables in XML with a root
         tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
         the groupByColumnNames property which have the same values.
                 <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
- 
-    <bean id="configuration-publishingFilter" 
+
+    <bean id="configuration-publishingFilter"
       class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
         <property name="xmlTagNameToUseForGroup" value="sale"/>
         <property name="tableNamesToPublishAsGroup">
@@ -420,7 +420,7 @@
                <value>SALE_LINE_ITEM</value>
                <value>SALE_TAX</value>
                <value>SALE_TOTAL</value>
-            </list>            
+            </list>
         </property>
         <property name="groupByColumnNames">
             <list>
@@ -428,26 +428,26 @@
                <value>BUSINESS_DAY</value>
                <value>WORKSTATION_ID</value>
                <value>TRANSACTION_ID</value>
-            </list>                      
+            </list>
         </property>
         <property name="publisher">
            <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
                <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
            </bean>
-        </property>        
-    </bean>     
-</beans>]]></programlisting>        
+        </property>
+    </bean>
+</beans>]]></programlisting>
         </para>
         <para>
           The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
-          demonstrated here is an implementation that publishes to JMS using Spring's 
+          demonstrated here is an implementation that publishes to JMS using Spring's
           <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
           Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
         </para>
         <para>
-          The above configuration will publish XML similiar to the following:
+          The above configuration will publish XML similar to the following:
             <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   id="0012010-01-220031234" nodeid="00001" time="1264187704155">
   <row entity="SALE_TX" dml="I">
     <data key="STORE_ID">001</data>
@@ -455,22 +455,22 @@
     <data key="WORKSTATION_ID">003</data>
     <data key="TRANSACTION_ID">1234</data>
     <data key="CASHIER_ID">010110</data>
-  </row>        
+  </row>
   <row entity="SALE_LINE_ITEM" dml="I">
     <data key="STORE_ID">001</data>
     <data key="BUSINESS_DAY">2010-01-22</data>
     <data key="WORKSTATION_ID">003</data>
     <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>  
+    <data key="SKU">9999999</data>
     <data key="PRICE">10.00</data>
     <data key="DESC" xsi:nil="true"/>
-  </row>        
+  </row>
   <row entity="SALE_LINE_ITEM" dml="I">
     <data key="STORE_ID">001</data>
     <data key="BUSINESS_DAY">2010-01-22</data>
     <data key="WORKSTATION_ID">003</data>
     <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>  
+    <data key="SKU">9999999</data>
     <data key="PRICE">10.00</data>
     <data key="DESC" xsi:nil="true"/>
   </row>
@@ -479,24 +479,24 @@
     <data key="BUSINESS_DAY">2010-01-22</data>
     <data key="WORKSTATION_ID">003</data>
     <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">1.33</data>  
+    <data key="AMOUNT">1.33</data>
   </row>
   <row entity="SALE_TOTAL" dml="I">
     <data key="STORE_ID">001</data>
     <data key="BUSINESS_DAY">2010-01-22</data>
     <data key="WORKSTATION_ID">003</data>
     <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">21.33</data>  
+    <data key="AMOUNT">21.33</data>
   </row>
 </sale>
-            ]]></programlisting>     
+            ]]></programlisting>
             To publish JMS messages during routing
-            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
             would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
             name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
-            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.                  
+            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
         </para>
-    </section>     
+    </section>
 <section id="deployment-options">
         <title>Deployment Options</title>
         <para>An instance of SymmetricDS can be deployed in several ways:</para>
@@ -506,15 +506,15 @@
                 <para>
                     This option means packaging a WAR file and deploying to your favorite
                     web server, like Apache Tomcat.  It's a little more work, but you
-                    can configure the web server to do whatever you need.  SymmetricDS can also 
+                    can configure the web server to do whatever you need.  SymmetricDS can also
                     be embedded in an existing web application, if desired.
-                </para>                
+                </para>
             </listitem>
             <listitem>
                 <para>Standalone service that embeds Jetty web server</para>
                 <para>
-                    This option means running the <emphasis>sym</emphasis> command line, which launches the built-in Jetty web server.  
-                    This is a simple option because it is already provided, but you lose the flexibility to configure 
+                    This option means running the <emphasis>sym</emphasis> command line, which launches the built-in Jetty web server.
+                    This is a simple option because it is already provided, but you lose the flexibility to configure
                     the web server any further.
                 </para>
             </listitem>
@@ -551,22 +551,22 @@
                 </imageobject>
             </mediaobject>
             <para>
-                A war file can be generated using the standalone installation's <literal>symadmin</literal> utility and the 
-                <literal>create-war</literal> subcommand.  The command requires the name of the war file to generate.  It 
+                A war file can be generated using the standalone installation's <literal>symadmin</literal> utility and the
+                <literal>create-war</literal> subcommand.  The command requires the name of the war file to generate.  It
                 essentially packages up the web directory, the conf directory and includes an optional
-                properties file.  Note that if a properties file is included, it will be copied to 
+                properties file.  Note that if a properties file is included, it will be copied to
                 WEB-INF/classes/symmetric.properties.  This is the same location conf/symmetric.properties
                 would have been copied to.  The generated war distribution uses the same web.xml as the standalone
-                deployment. 
+                deployment.
             </para>
             <para>
                 <command>../bin/symadmin -p my-symmetric-ds.properties create-war /some/path/to/symmetric-ds.war</command>
             </para>
             <para>
                 The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
-                coexist with other Servlets.  By default, the value is blank.  If you set it to, say, <literal>web.base.servlet.path=sync</literal> for exmaple,
+                coexist with other Servlets.  By default, the value is blank.  If you set it to, say, <literal>web.base.servlet.path=sync</literal> for example,
                 <literal>registration.url</literal> would be <literal>http://server:port/sync</literal>.
-            </para>            
+            </para>
         </section>
         <section id="deployment-options-embedded">
             <title>Embedded</title>
@@ -580,45 +580,45 @@ import org.jumpmind.symmetric.SymmetricWebServer;
 public class StartSymmetricEngine {
 
     public static void main(String[] args) throws Exception {
-    
+
         SymmetricWebServer node = new SymmetricWebServer(
                                    "classpath://my-application.properties", "conf/web_dir");
 
         // this will create the database, sync triggers, start jobs running
         node.start(8080);
-        
+
         // this will stop the node
         node.stop();
-    }   
+    }
 
 }]]></programlisting>
             <para>
-                This example starts the SymmetricDS server on port 8080.  
+                This example starts the SymmetricDS server on port 8080.
                 The configuration properties file, <filename>my-application.properties</filename>,
-                is packaged in the application to provide properties that override the SymmetricDS 
+                is packaged in the application to provide properties that override the SymmetricDS
                 default values.  The second parameter to the constructor points to the web directory.
                 The default location is <code>../web</code>.  In this example the web directory is located
-                at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>. 
+                at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>.
             </para>
         </section>
-    </section>         
+    </section>
         <section id="deployment-options-standalone">
             <title>Standalone</title>
             <para>
-                The <literal>sym</literal> command line utility starts a standalone web server with 
-                SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the 
-                Jetty application server to handle web requests.  The web server can be configured 
-                using command line options or the web server can be configured by changing properties in the 
+                The <literal>sym</literal> command line utility starts a standalone web server with
+                SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the
+                Jetty application server to handle web requests.  The web server can be configured
+                using command line options or the web server can be configured by changing properties in the
                 <code>conf/symmetric-server.properties</code> file.
             </para>
             <para>
                 The following example starts the SymmetricDS server on port 8080 with the startup
                 properties found in the <filename>root.properties</filename> file.
-            </para>            
+            </para>
             <programlisting><![CDATA[/symmetric/bin/sym --properties root.properties --port 8080 --server
 ]]></programlisting>
             <para>
-                Even though the port and properties settings can be passed in on the command line, the preferred 
+                Even though the port and properties settings can be passed in on the command line, the preferred
                 configuration approach is to put each hosted node's properties file in the <code>engines</code> directory
                 and to modify port settings and enable secure mode using the <code>conf/symmetric-server.properties</code>.
             </para>
@@ -626,7 +626,7 @@ public class StartSymmetricEngine {
                 It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
             </para>
         </section>
-    
+
     <section id="running-service">
     <title>Running SymmetricDS as a Service</title>
         <para>
@@ -654,12 +654,12 @@ public class StartSymmetricEngine {
             <filename class="directory">logs</filename> directory.
         </para>
         <para>
-            Most configuration changes do not require the service to be re-installed. 
+            Most configuration changes do not require the service to be re-installed.
             To un-install the service, use the provided script:
             <programlisting>bin\uninstall_service.bat</programlisting>
         </para>
         <para>
-            Use the <command>net</command> command to start and stop the service: 
+            Use the <command>net</command> command to start and stop the service:
             <programlisting>net start symmetricds
 net stop symmetricds</programlisting>
         </para>
@@ -680,7 +680,7 @@ net stop symmetricds</programlisting>
             An init script is provided to work with standard Unix run configuration levels.
             The <filename class="file">sym_service.initd</filename> file follows the
             Linux Standard Base specification, which should work on many systems, including
-            Fedora and Debian-based distributions.  
+            Fedora and Debian-based distributions.
             To install the script, copy it into the system init directory:
         </para>
         <para>
@@ -713,31 +713,31 @@ net stop symmetricds</programlisting>
           <listitem>
             Using <literal>sysv-rc-conf</literal> command (Ubuntu Linux):
         <para>
-            On Ubuntu Linux, you might need to use sysv-rc-conf instead of chkconfig.  
+            On Ubuntu Linux, you might need to use sysv-rc-conf instead of chkconfig.
             Try running sys-rc-conf as a super user (consider utilizing apt-get to install sysv-rc-conf
             if it is not present:  <literal>sudo apt-get install sysv-rc-conf</literal>).
             Run sysv-rc-conf with the following command:
             <programlisting>sudo sysv-rc-conf </programlisting>
-            You should see a list of the scripts residing in your /etc/init.d folder.  
+            You should see a list of the scripts residing in your /etc/init.d folder.
             Use control-N to navigate through the list to locate sym_service, then activate the service
             for the desired run-levels (most likely 2-5).
         </para>
-        </listitem>       
-        </orderedlist>  
+        </listitem>
+        </orderedlist>
         <para>
             Finally, you can use the <command>service</command> command to start, stop, and query
-            the status of the service: 
+            the status of the service:
             <programlisting>/sbin/service sym_service start
 /sbin/service sym_service stop
 /sbin/service sym_service status</programlisting>
-        </para>  
+        </para>
         <para>
             Alternatively, call the init.d script directly:
             <programlisting>/etc/init.d/sym_service start
 /etc/init.d/sym_service stop
 /etc/init.d/sym_service status
             </programlisting>
-        </para>    
+        </para>
     </section>
     </section>
         <section id="clustering">
@@ -747,27 +747,27 @@ net stop symmetricds</programlisting>
         </para>
         <para>
         When clustered, a hardware load balancer is typically used
-        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
+        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
         Also, the <literal>sync.url</literal> (discussed in <xref linkend="configuration-node-properties"/>)
-        SymmetricDS property should be set to the URL of the load balancer.  
+        SymmetricDS property should be set to the URL of the load balancer.
         </para>
         <para>
-        If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>. 
+        If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>.
         By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="table"/> table as a semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
-        when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an 
-        instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be 
+        when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an
+        instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be
         broken after a period of time, specified by the <literal>cluster.lock.timeout.ms</literal> property, has expired.  Note that if the job is still running and the lock
-        expires, two jobs could be running at the same time which could cause database deadlocks. 
+        expires, two jobs could be running at the same time which could cause database deadlocks.
         </para>
         <para>
-        By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <literal>cluster.server.id</literal> property 
+        By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <literal>cluster.server.id</literal> property
         may be set to indicate the name that the instance should use for its server id.
         </para>
         <para>
-        When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.  
+        When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.
         </para>
-    </section>   
+    </section>
       <section id="encrypted-passwords">
         <title>Encrypted Passwords</title>
         <para>
@@ -779,7 +779,7 @@ net stop symmetricds</programlisting>
             or
             <programlisting>symadmin -p {properties file} encrypt-text text-to-encrypt</programlisting>
 
-            The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file. 
+            The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file.
             By default, the keystore is located in <filename class="filename">security/keystore</filename>.
             The location and filename of the keystore can be overridden by setting the "sym.keystore.file" system property.
             If the secret key is not found, the system will generate and install a secret key for use with Triple DES cipher.
@@ -797,7 +797,7 @@ net stop symmetricds</programlisting>
             <programlisting>keytool -keystore keystore -storepass changeit -storetype jceks \
    -alias sym.secret -genseckey -keyalg aes -keysize 128</programlisting>
 
-            If using an alternative provider, place the provider JAR file in the SymmetricDS <filename class="directory">lib</filename> folder. 
+            If using an alternative provider, place the provider JAR file in the SymmetricDS <filename class="directory">lib</filename> folder.
             The provider class name should be installed in the JRE security properties or specified on the command line.
             To install in the JRE, edit the JRE <filename class="filename">lib/security/java.security</filename> file
             and set a <literal>security.provider.i</literal> property for the provider class name.
@@ -847,7 +847,7 @@ net stop symmetricds</programlisting>
                     </term>
                     <listitem>
                         <para>
-                            This is the URL where the node will connect for registration when it 
+                            This is the URL where the node will connect for registration when it
                             first starts up.  To protect the registration with SSL, you specify
                             "https" in the URL.
                         </para>
@@ -856,14 +856,14 @@ net stop symmetricds</programlisting>
             </variablelist>
             For incoming HTTPS connections, SymmetricDS depends on the webserver where
             it is deployed, so the webserver must be configured for HTTPS.
-            As a standalone deployment, the "sym" launcher command provides options for 
+            As a standalone deployment, the "sym" launcher command provides options for
             enabling HTTPS support.
         </para>
         <section id="secure-transport-sym">
             <title>Sym Launcher</title>
             <para>
                 The "sym" launch command uses Jetty as an embedded web server.
-                Using command line options, the web server can be told to listen for 
+                Using command line options, the web server can be told to listen for
                 HTTP, HTTPS, or both.
             </para>
             <para>
@@ -883,10 +883,10 @@ net stop symmetricds</programlisting>
                 <filename class="filename">TOMCAT_HOME/conf/server.xml</filename>
                 configuration file.  There is already a line that can be uncommented
                 and changed to the following:
-                
+
                 <programlisting>
-<![CDATA[<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true" 
-  maxThreads="150" scheme="https" secure="true" 
+<![CDATA[<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+  maxThreads="150" scheme="https" secure="true"
   clientAuth="false" sslProtocol="TLS"
   keystoreFile="/symmetric-ds-1.x.x/security/keystore" />]]></programlisting>
             </para>
@@ -901,7 +901,7 @@ net stop symmetricds</programlisting>
                 trusted keystore instead, which is located at
                 <filename class="filename">security/cacerts</filename>.
                 This keystore contains the certificate aliased as "sym" for use in testing
-                and easing deployments.                
+                and easing deployments.
                 The trusted keystore can be overridden
                 by specifying the <literal>javax.net.ssl.trustStore</literal> system property.
             </para>
@@ -988,10 +988,10 @@ Enter key password for <sym>
     <section id="basic-auth">
         <title>Basic Authentication</title>
         <para>
-            SymmetricDS supports basic authentication for client and server nodes. 
+            SymmetricDS supports basic authentication for client and server nodes.
         </para>
         <para>
-            To configure a client node to use basic authentication when communicating with a server node, 
+            To configure a client node to use basic authentication when communicating with a server node,
             specify the following startup parameters:
         </para>
             <variablelist>
@@ -1019,7 +1019,7 @@ Enter key password for <sym>
                 </varlistentry>
             </variablelist>
         <para>
-            The SymmetricDS Standalone Web Server also supports Basic Authentication.  It can be enabled by 
+            The SymmetricDS Standalone Web Server also supports Basic Authentication.  It can be enabled by
             passing the following arguments to the startup program
         </para>
             <variablelist>
@@ -1047,8 +1047,8 @@ Enter key password for <sym>
                 </varlistentry>
             </variablelist>
         <para>
-            If the server node is deployed to Tomcat or another application server as a WAR or EAR file, then 
-            basic authentication is setup with the standard configuration in the WEB.xml file. 
+            If the server node is deployed to Tomcat or another application server as a WAR or EAR file, then
+            basic authentication is setup with the standard configuration in the WEB.xml file.
         </para>
     </section>
     <xi:include href="extensions.xml" />
