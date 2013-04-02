@@ -412,9 +412,12 @@ public class DataService extends AbstractService implements IDataService {
             engine.getStatisticManager().incrementNodesLoaded(1);
 
             transaction.commit();
-        } catch (RuntimeException ex) {
+        } catch (Error ex) {
             transaction.rollback();
             throw ex;
+        } catch (RuntimeException ex) {
+            transaction.rollback();
+            throw ex;            
         } finally {
             close(transaction);
         }
