@@ -60,7 +60,7 @@ public class AuditTableDataRouter extends AbstractDataRouter {
                     .getDatabaseInfo().getDelimiterToken());
 
             ISqlTemplate template = platform.getSqlTemplate();
-            
+
             Map<String, Object> values = null;
             if (eventType != DataEventType.DELETE) {
                 values = new HashMap<String, Object>(getNewDataAsObject(null,
@@ -95,9 +95,15 @@ public class AuditTableDataRouter extends AbstractDataRouter {
         auditTable.setName(String.format("%s_AUDIT", tableName));
         Column[] columns = auditTable.getColumns();
         auditTable.removeAllColumns();
-        auditTable.addColumn(new Column(COLUMN_AUDIT_ID, true, Types.BIGINT, 0, 0));
-        auditTable.addColumn(new Column(COLUMN_AUDIT_TIME, false, Types.TIMESTAMP, 0, 0));
-        auditTable.addColumn(new Column(COLUMN_AUDIT_EVENT, false, Types.CHAR, 1, 0));
+        Column idColumn = new Column(COLUMN_AUDIT_ID, true, Types.BIGINT, 0, 0);
+        idColumn.setJdbcTypeName("BIGINT");
+        auditTable.addColumn(idColumn);
+        Column timeColumn = new Column(COLUMN_AUDIT_TIME, false, Types.TIMESTAMP, 0, 0);
+        timeColumn.setJdbcTypeName("TIMESTAMP");
+        auditTable.addColumn(timeColumn);
+        Column eventColumn = new Column(COLUMN_AUDIT_EVENT, false, Types.CHAR, 1, 0);
+        eventColumn.setJdbcTypeName("CHAR");
+        auditTable.addColumn(eventColumn);
         for (Column column : columns) {
             column.setRequired(false);
             column.setPrimaryKey(false);
