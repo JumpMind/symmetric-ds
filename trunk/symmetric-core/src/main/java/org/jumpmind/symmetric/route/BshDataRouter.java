@@ -111,7 +111,7 @@ public class BshDataRouter extends AbstractDataRouter {
         interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect());
+        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(), true);
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));

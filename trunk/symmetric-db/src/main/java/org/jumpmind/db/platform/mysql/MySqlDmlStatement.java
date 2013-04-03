@@ -17,7 +17,7 @@ public class MySqlDmlStatement extends DmlStatement {
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
                     sql.append("geomfromtext(?)").append(",");
                 } else {
                     sql.append("?").append(",");

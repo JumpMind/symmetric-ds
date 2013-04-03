@@ -121,25 +121,25 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData,
-            ISymmetricDialect symmetricDialect) {
+            ISymmetricDialect symmetricDialect, boolean upperCase) {
         Map<String, Object> data = null;
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
             case UPDATE:
                 data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
-                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
+                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
+                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect, upperCase));
                 break;
             case INSERT:
                 data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
+                data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
                 Map<String, Object> map = getNullData(OLD_, dataMetaData);
                 data.putAll(map);
                 break;
             case DELETE:
                 data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-                data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect));
-                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
+                data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
+                data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect, upperCase));
                 if (data.size() == 0) {
                     data.putAll(getPkDataAsObject(dataMetaData, symmetricDialect));
                 }
@@ -152,15 +152,15 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getNewDataAsObject(String prefix, DataMetaData dataMetaData,
-            ISymmetricDialect symmetricDialect) {
+            ISymmetricDialect symmetricDialect, boolean upperCase) {
         return getDataAsObject(prefix, dataMetaData, symmetricDialect, dataMetaData.getData()
-                .toParsedRowData());
+                .toParsedRowData(), upperCase);
     }
 
     protected Map<String, Object> getOldDataAsObject(String prefix, DataMetaData dataMetaData,
-            ISymmetricDialect symmetricDialect) {
+            ISymmetricDialect symmetricDialect, boolean upperCase) {
         return getDataAsObject(prefix, dataMetaData, symmetricDialect, dataMetaData.getData()
-                .toParsedOldData());
+                .toParsedOldData(), upperCase);
     }
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {
@@ -173,7 +173,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getDataAsObject(String prefix, DataMetaData dataMetaData,
-            ISymmetricDialect symmetricDialect, String[] rowData) {
+            ISymmetricDialect symmetricDialect, String[] rowData, boolean upperCase) {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
@@ -182,8 +182,8 @@ public abstract class AbstractDataRouter implements IDataRouter {
                     rowData);
             testColumnNamesMatchValues(dataMetaData, symmetricDialect, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
-                String upperCase = columnNames[i].toUpperCase();
-                data.put(prefix != null ? (prefix + upperCase) : upperCase, objects[i]);
+                String colName = upperCase ? columnNames[i].toUpperCase() : columnNames[i];
+                data.put(prefix != null ? (prefix + colName) : colName, objects[i]);
             }
             return data;
         } else {
