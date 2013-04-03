@@ -29,7 +29,7 @@ public class NotFoundException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     public NotFoundException() {
-        super("The requested engine could not be located");
+        super("The requested entity could not be located");
     }
 
 }
