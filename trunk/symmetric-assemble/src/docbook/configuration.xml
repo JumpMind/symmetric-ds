@@ -999,8 +999,10 @@ values
   ('audit_at_corp','corp', 'local', 'audit', current_timestamp, current_timestamp);
 </programlisting></para>
 
-      <para>Because the audit router isn't capturing data for a specific node in the system, but it still has to be
-      associated with a node_group_link a new link action of type 'R' has been introduced.  The 'R' stands for 'only routes to'</para>
+      <para>The audit router captures data for a group link. For the audit router to work it must be associated with a node_group_link
+      with an action of type 'R'. The 'R' stands for 'only routes to'. In the above example, we refer to a 'corp to local' group link.
+      Here, local is a new node_group created for the audit router. No nodes belong to the 'local' node_group. If a trigger linked to an
+      audit router fires on the corp node, a new audit table will be created at the corp node with the new data inserted.</para>
       </section>
 
 
