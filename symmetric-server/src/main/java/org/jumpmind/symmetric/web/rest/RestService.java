@@ -697,66 +697,74 @@ public class RestService {
 
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-
-        if (isRootNode(engine, modelNode)) {
-            NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
-            Set<NetworkedNode> childNetwork = networkedNode.getChildren();
-            if (childNetwork != null) {
-	            for (NetworkedNode child : childNetwork) {
-	            	
-	                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
-	                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
-	            	            	
-	                xmlChildNode = new Node();
-	                xmlChildNode.setNodeId(child.getNode().getNodeId());
-	                xmlChildNode.setExternalId(child.getNode().getExternalId());
-	                xmlChildNode.setRegistrationServer(false);
-	                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
-	                
-	                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
-	                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
-	                if (nodeHosts.size()>0) {
-	                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
-	                }
-	                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
-	                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-	                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
-	                if (child.getNode().getCreatedAtNodeId() == null) {
-	                	xmlChildNode.setRegistrationServer(true);        	
-	                }
-	                children.addNode(xmlChildNode);
+        
+        if (isRegistered(engine)) {
+	        if (isRootNode(engine, modelNode)) {
+	            NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
+	            Set<NetworkedNode> childNetwork = networkedNode.getChildren();
+	            if (childNetwork != null) {
+		            for (NetworkedNode child : childNetwork) {
+		            	
+		                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
+		                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
+		            	            	
+		                xmlChildNode = new Node();
+		                xmlChildNode.setNodeId(child.getNode().getNodeId());
+		                xmlChildNode.setExternalId(child.getNode().getExternalId());
+		                xmlChildNode.setRegistrationServer(false);
+		                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
+		                
+		                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
+		                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
+		                if (nodeHosts.size()>0) {
+		                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+		                }
+		                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
+		                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+		                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+		                if (child.getNode().getCreatedAtNodeId() == null) {
+		                	xmlChildNode.setRegistrationServer(true);        	
+		                }
+		                children.addNode(xmlChildNode);
+		            }
 	            }
-            }
+	        }
+        } else {
+        	throw new NotFoundException();
         }
         return children;
     }
 
     private Node nodeImpl(ISymmetricEngine engine) {
-    	    	
-        INodeService nodeService = engine.getNodeService();
+    	
         Node xmlNode = new Node();
-        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
-        List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
-        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-        xmlNode.setNodeId(modelNode.getNodeId());
-        xmlNode.setExternalId(modelNode.getExternalId());
-        xmlNode.setSyncUrl(modelNode.getSyncUrl());
-        xmlNode.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
-        xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
-        xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
-        if (nodeHosts.size() > 0) {
-        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
-        }
-        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
-        xmlNode.setRegistered(nodeSecurity.hasRegistered());
-        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
-        if (modelNode.getCreatedAtNodeId() == null) {
-        	xmlNode.setRegistrationServer(true);       	
-        } else {
-        	xmlNode.setRegistrationServer(false);
-        }
-        xmlNode.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
+    	if (isRegistered(engine)) {
+	        INodeService nodeService = engine.getNodeService();
+	        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+	        List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
+	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+	        xmlNode.setNodeId(modelNode.getNodeId());
+	        xmlNode.setExternalId(modelNode.getExternalId());
+	        xmlNode.setSyncUrl(modelNode.getSyncUrl());
+	        xmlNode.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
+	        xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+	        xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
+	        if (nodeHosts.size() > 0) {
+	        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+	        }
+	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
+	        xmlNode.setRegistered(nodeSecurity.hasRegistered());
+	        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+	        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+	        if (modelNode.getCreatedAtNodeId() == null) {
+	        	xmlNode.setRegistrationServer(true);       	
+	        } else {
+	        	xmlNode.setRegistrationServer(false);
+	        }
+	        xmlNode.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
+    	} else {
+    		throw new NotFoundException();
+    	}
         return xmlNode;
     }
 
@@ -771,41 +779,60 @@ public class RestService {
         }
     }
 
+    private boolean isRegistered(ISymmetricEngine engine) {
+    	boolean registered = true;
+    	INodeService nodeService = engine.getNodeService();
+		org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+		if (modelNode == null) {
+			registered = false;    			
+		} else {
+	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+			if (nodeSecurity == null) {
+				registered = false;
+			}
+		}    		
+    	return registered;
+    }
+    
     private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
 
-        INodeService nodeService = engine.getNodeService();
-        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
-        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-        List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
         NodeStatus status = new NodeStatus();
-        status.setStarted(engine.isStarted());
-        status.setRegistered(nodeSecurity.getRegistrationTime() != null);
-        status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
-        status.setReverseInitialLoaded(nodeSecurity.getRevInitialLoadTime() != null);
-        status.setNodeId(modelNode.getNodeId());
-        status.setNodeGroupId(modelNode.getNodeGroupId());
-        status.setExternalId(modelNode.getExternalId());
-        status.setSyncUrl(modelNode.getSyncUrl());
-        status.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
-        status.setDatabaseType(modelNode.getDatabaseType());
-        status.setDatabaseVersion(modelNode.getDatabaseVersion());
-        status.setSyncEnabled(modelNode.isSyncEnabled());
-        status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
-        status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent());
-        status.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
-        status.setDeploymentType(modelNode.getDeploymentType());
-        if (modelNode.getCreatedAtNodeId() == null) {
-        	status.setRegistrationServer(true);        	
-        } else {
-        	status.setRegistrationServer(false);
-        }
-        if (nodeHost != null && nodeHost.size() > 0) {
-            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
-        }
-        status.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
-        if (status.getHeartbeatInterval() == 0) {
-        	status.setHeartbeatInterval(300000);
-        }
+    	if (isRegistered(engine)) {
+	        INodeService nodeService = engine.getNodeService();
+	        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+	        List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
+	        status.setStarted(engine.isStarted());
+	        status.setRegistered(nodeSecurity.getRegistrationTime() != null);
+	        status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
+	        status.setReverseInitialLoaded(nodeSecurity.getRevInitialLoadTime() != null);
+	        status.setNodeId(modelNode.getNodeId());
+	        status.setNodeGroupId(modelNode.getNodeGroupId());
+	        status.setExternalId(modelNode.getExternalId());
+	        status.setSyncUrl(modelNode.getSyncUrl());
+	        status.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
+	        status.setDatabaseType(modelNode.getDatabaseType());
+	        status.setDatabaseVersion(modelNode.getDatabaseVersion());
+	        status.setSyncEnabled(modelNode.isSyncEnabled());
+	        status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
+	        status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent());
+	        status.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
+	        status.setDeploymentType(modelNode.getDeploymentType());
+	        if (modelNode.getCreatedAtNodeId() == null) {
+	        	status.setRegistrationServer(true);        	
+	        } else {
+	        	status.setRegistrationServer(false);
+	        }
+	        if (nodeHost != null && nodeHost.size() > 0) {
+	            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
+	        }
+	        status.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
+	        if (status.getHeartbeatInterval() == 0) {
+	        	status.setHeartbeatInterval(300000);
+	        }
+    	} else {
+    		throw new NotFoundException();
+    	}
         return status;
     }
 
