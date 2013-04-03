@@ -1,3 +1,17 @@
+SymmetricDS - 3.3.6 (Released 2013-04-03) 
+=========================================
+- 0001140: [Bug] SQL Server 2000 triggers are being created using the 'max' keyword, which 2000 does not support. (abrougher) - closed.
+- 0001131: [Bug] NPE in conflict resolution when detecting a conflict using TIMESTAMP and existing row doesn't exist (gwilmer) - closed.
+- 0001133: [Bug] Multiple reverse reloads can be queued up because of timing issues (chenson) - closed.
+- 0001134: [Bug] An incoming batch can be left stranded in the ER state after an initial load sets the outgoing batch to OK (chenson) - closed.
+- 0001135: [Bug] symmetric-server.properties enable flags for ssl are not working (chenson) - closed.
+- 0001141: [Bug] Prevent invalid warning that expected ack was not received (chenson) - closed.
+- 0001144: [Bug] When a reload is queued up the outgoing batches should be marked as OK in reverse order so as to not cause FK issues (chenson) - closed.
+- 0001151: [Bug] NullPointerException can happen on reload events queued up by sym_table_reload_request during an upgrade (chenson) - closed.
+- 0001155: [Bug] Audit router causes NPE on MySQL. (chenson) - closed.
+- 0001156: [Bug] Fatal Error (like OOM) could possibly cause a reload event to be stranded in sym_data and routed to all child nodes (chenson) - closed.
+- 0001157: [Bug] Don't allow api status methods if the engine isn't registered (gwilmer) - closed.
+
 SymmetricDS - 3.3.5 (Released 2013-03-18) 
 =========================================
 - 0001122: [Improvement] Add support for Sql Server 2000 (abrougher) - closed.
