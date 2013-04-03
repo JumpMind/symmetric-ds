@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.util.FormatUtils;
 
 public class AuditTableDataRouter extends AbstractDataRouter {
 
@@ -64,10 +65,10 @@ public class AuditTableDataRouter extends AbstractDataRouter {
             Map<String, Object> values = null;
             if (eventType != DataEventType.DELETE) {
                 values = new HashMap<String, Object>(getNewDataAsObject(null,
-                    dataMetaData, engine.getSymmetricDialect()));
+                    dataMetaData, engine.getSymmetricDialect(), false));
             } else {
                 values = new HashMap<String, Object>(getOldDataAsObject(null,
-                        dataMetaData, engine.getSymmetricDialect()));
+                        dataMetaData, engine.getSymmetricDialect(), false));
             }
             Long sequence = (Long) context.get(auditTableName);
             if (sequence == null) {
@@ -75,11 +76,11 @@ public class AuditTableDataRouter extends AbstractDataRouter {
                         COLUMN_AUDIT_ID, auditTableName));
             } else {
                 sequence = 1l + sequence;
-            }
-            context.put(auditTableName, sequence);
-            values.put(COLUMN_AUDIT_ID, sequence);
-            values.put(COLUMN_AUDIT_TIME, new Date());
-            values.put(COLUMN_AUDIT_EVENT, eventType.getCode());
+            }            
+            context.put(auditTable.getName(), sequence);
+            values.put(auditTable.getColumnWithName(COLUMN_AUDIT_ID).getName(), sequence);
+            values.put(auditTable.getColumnWithName(COLUMN_AUDIT_TIME).getName(), new Date());
+            values.put(auditTable.getColumnWithName(COLUMN_AUDIT_EVENT).getName(), eventType.getCode());
             DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, auditTable);
             int[] types = statement.getTypes();
             Object[] args = statement.getValueArray(values);
@@ -92,6 +93,9 @@ public class AuditTableDataRouter extends AbstractDataRouter {
     protected Table toAuditTable(Table table) {
         Table auditTable = table.copy();
         String tableName = table.getName();
+        if (!FormatUtils.isMixedCase(tableName)) {
+            tableName = tableName.toUpperCase();
+        }
         auditTable.setName(String.format("%s_AUDIT", tableName));
         Column[] columns = auditTable.getColumns();
         auditTable.removeAllColumns();

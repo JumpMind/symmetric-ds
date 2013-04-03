@@ -80,7 +80,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         if (!StringUtils.isBlank(subSelect) && 
                 !(initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect()))) {
             try {
-                Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
+                Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect, true);
                 sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
                         .getTargetNodeGroupId());
                 sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
