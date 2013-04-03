@@ -28,8 +28,6 @@ public class WebConstants {
     
     public static final String METHOD_HEAD = "HEAD";
     
-    public static final String INIT_PARAM_AUTO_START = "autoStart";
-    
     public static final String INIT_PARAM_MULTI_SERVER_MODE = "multiServerMode";
     
     public static final String INIT_PARAM_DEPLOYMENT_TYPE = "deploymentType";

@@ -20,23 +20,10 @@
  */
 package org.jumpmind.symmetric.statistic;
 
-import java.util.List;
 import java.util.Map;
-
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
 
 public class MockStatisticManager implements IStatisticManager {
 
-    public List<ProcessInfo> getProcessInfos() {
-        return null;
-    }
-    
-    public ProcessInfo newProcessInfo(ProcessInfoKey key) {
-        return null;
-    }
-    
-    
     public void flush() {
     }
 

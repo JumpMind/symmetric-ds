@@ -47,9 +47,6 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.AuditTableDataRouter;
@@ -63,6 +60,7 @@ import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IDataToRouteGapDetector;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.route.LookupTableDataRouter;
 import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
@@ -79,15 +77,15 @@ import org.jumpmind.symmetric.statistic.StatisticConstants;
  */
 public class RouterService extends AbstractService implements IRouterService {
 
-    protected  Map<String, IDataRouter> routers;
+    private Map<String, IDataRouter> routers;
 
-    protected  Map<String, IBatchAlgorithm> batchAlgorithms;
+    private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    protected  Map<String, Boolean> defaultRouterOnlyLastState = new HashMap<String, Boolean>();
+    private Map<String, Boolean> defaultRouterOnlyLastState = new HashMap<String, Boolean>();
 
-    protected transient ExecutorService readThread = null;
+    transient ExecutorService readThread = null;
 
-    protected ISymmetricEngine engine;
+    private ISymmetricEngine engine;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -100,7 +98,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.batchAlgorithms.put("transactional", new TransactionalBatchAlgorithm());
 
         this.routers = new HashMap<String, IDataRouter>();
-        this.routers.put(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
+        this.routers.put("configurationChanged", new ConfigurationChangedDataRouter(engine));
         this.routers.put("bsh", new BshDataRouter(engine));
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
@@ -149,9 +147,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
                     insertInitialLoadEvents();
                     long ts = System.currentTimeMillis();
-                    DataGapDetector gapDetector = new DataGapDetector(
-                            engine.getDataService(), parameterService, symmetricDialect, 
-                            this, engine.getStatisticManager(), engine.getNodeService());
+                    IDataToRouteGapDetector gapDetector = new DataGapDetector(
+                            engine.getDataService(), parameterService, symmetricDialect, this);
                     gapDetector.beforeRouting();
                     dataCount = routeDataForEachChannel(gapDetector);
                     ts = System.currentTimeMillis() - ts;
@@ -255,38 +252,27 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected int routeDataForEachChannel(DataGapDetector gapDetector) {
-        int dataCount = 0;
+    protected int routeDataForEachChannel(IDataToRouteGapDetector gapDetector) {
         Node sourceNode = engine.getNodeService().findIdentity();
-        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
-        try {
-            final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
-                    false);
+        final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
+        int dataCount = 0;
 
-            Map<String, List<TriggerRouter>> triggerRouters = engine.getTriggerRouterService()
-                    .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
+        Map<String, List<TriggerRouter>> triggerRouters = engine.getTriggerRouterService()
+                .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
 
-            for (NodeChannel nodeChannel : channels) {
-                if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
-                    processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    dataCount += routeDataForChannel(processInfo,
-                            nodeChannel,
-                            sourceNode,
-                            producesCommonBatches(nodeChannel.getChannelId(),
-                                    triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug(
-                                "Not routing the {} channel.  It is either disabled or suspended.",
-                                nodeChannel.getChannelId());
-                    }
+        for (NodeChannel nodeChannel : channels) {
+            if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
+                dataCount += routeDataForChannel(
+                        nodeChannel,
+                        sourceNode,
+                        producesCommonBatches(nodeChannel.getChannelId(),
+                                triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not routing the {} channel.  It is either disabled or suspended.",
+                            nodeChannel.getChannelId());
                 }
             }
-            processInfo.setStatus(ProcessInfo.Status.DONE);
-        } catch (RuntimeException ex) {
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
-            throw ex;
         }
         return dataCount;
     }
@@ -339,8 +325,8 @@ public class RouterService extends AbstractService implements IRouterService {
         return producesCommonBatches;
     }
 
-    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode,
-            boolean produceCommonBatches, DataGapDetector gapDetector) {
+    protected int routeDataForChannel(final NodeChannel nodeChannel, final Node sourceNode,
+            boolean produceCommonBatches, IDataToRouteGapDetector gapDetector) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -348,7 +334,7 @@ public class RouterService extends AbstractService implements IRouterService {
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
             context.setProduceCommonBatches(produceCommonBatches);
-            dataCount = selectDataAndRoute(processInfo, context);
+            dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
@@ -484,7 +470,8 @@ public class RouterService extends AbstractService implements IRouterService {
             });
         }
 
-        IDataToRouteReader reader = new DataGapRouteReader(context, engine);
+        IDataToRouteReader reader = new DataGapRouteReader(this, context, engine.getDataService(),
+                symmetricDialect, parameterService);
         readThread.execute(reader);
         return reader;
     }
@@ -500,7 +487,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(ProcessInfo processInfo, ChannelRouterContext context) throws InterruptedException {
+    protected int selectDataAndRoute(ChannelRouterContext context) throws InterruptedException {
         IDataToRouteReader reader = startReading(context);
         Data data = null;
         Data nextData = null;
@@ -517,8 +504,6 @@ public class RouterService extends AbstractService implements IRouterService {
                     data = nextData;
                     nextData = reader.take();
                     if (data != null) {
-                        processInfo.setCurrentTableName(data.getTableName());
-                        processInfo.incrementDataCount();
                         boolean atTransactionBoundary = false;
                         if (nextData != null) {
                             String nextTxId = nextData.getTransactionId();
@@ -528,7 +513,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.setEncountedTransactionBoundary(atTransactionBoundary);
                         statsDataCount++;
                         totalDataCount++;
-                        int dataEventsInserted = routeData(processInfo, data, context);
+                        int dataEventsInserted = routeData(data, context);
                         statsDataEventCount += dataEventsInserted;
                         totalDataEventCount += dataEventsInserted;
                         long insertTs = System.currentTimeMillis();
@@ -579,7 +564,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected int routeData(ProcessInfo processInfo, Data data, ChannelRouterContext context) {
+    protected int routeData(Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
@@ -607,14 +592,14 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
 
-                numberOfDataEventsInserted += insertDataEvents(processInfo, context, dataMetaData, nodeIds);
+                numberOfDataEventsInserted += insertDataEvents(context, dataMetaData, nodeIds);
             }
 
         } else {
             log.warn(
                     "Could not find trigger routers for trigger history id of {}.  Not processing data with the data id of {}",
                     data.getTriggerHistory().getTriggerHistoryId(), data.getDataId());
-            numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
+            numberOfDataEventsInserted += insertDataEvents(context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>());
         }
 
@@ -624,7 +609,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected int insertDataEvents(ProcessInfo processInfo, ChannelRouterContext context, DataMetaData dataMetaData,
+    protected int insertDataEvents(ChannelRouterContext context, DataMetaData dataMetaData,
             Collection<String> nodeIds) {
         int numberOfDataEventsInserted = 0;
         if (nodeIds == null || nodeIds.size() == 0) {
@@ -644,7 +629,6 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.setBatchId(batchIdToReuse);
                     batch.setCommonFlag(context.isProduceCommonBatches());
                     engine.getOutgoingBatchService().insertOutgoingBatch(batch);
-                    processInfo.incrementBatchCount();
                     context.getBatchesByNodes().put(nodeId, batch);
 
                     // if in reuse mode, then share the batch id

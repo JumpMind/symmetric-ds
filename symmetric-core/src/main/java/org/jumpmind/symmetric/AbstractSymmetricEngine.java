@@ -294,7 +294,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService, nodeCommunicationService, statisticManager);
+                clusterService, nodeCommunicationService);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService, nodeCommunicationService);
         this.jobManager = createJobManager();
@@ -540,9 +540,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
                             }
                             
-                            if (parameterService.is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)) {
-                                heartbeat(false);
-                            }
+                            heartbeat(false);
                             
                         } else {
                             log.info("Starting unregistered node [group={}, externalId={}]",
@@ -782,12 +780,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn(
                     "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables",
                     ParameterConstants.REGISTRATION_URL);
-        } else if (Constants.PLEASE_SET_ME.equals(registrationUrl)) {
-            log.warn("Please set the registration.url for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
-            log.warn("Please set the group.id for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
-            log.warn("Please set the external.id for the node");            
+        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())
+                || Constants.PLEASE_SET_ME.equals(registrationUrl)
+                || Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
+            log.warn("Please set the registration.url, node.group.id, and external.id for the node");
         } else if (node != null
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
                         .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
@@ -795,6 +791,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "The configured state does not match recorded database state.  The recorded external id is {} while the configured external id is {}. The recorded node group id is {} while the configured node group id is {}",
                     new Object[] { node.getExternalId(), getParameterService().getExternalId(),
                             node.getNodeGroupId(), getParameterService().getNodeGroupId() });
+
+        } else if (node != null && StringUtils.isBlank(getParameterService().getRegistrationUrl())
+                && StringUtils.isBlank(getParameterService().getSyncUrl())) {
+            log.warn("The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it");
+
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
@@ -826,7 +827,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void heartbeat(boolean force) {
         MDC.put("engineName", getEngineName());
-        dataService.heartbeat(force);
+        dataService.heartbeat(true);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {

@@ -2,13 +2,13 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Quick Start Tutorial</title>
-    <para>Now that an overview of SymmetricDS has been presented, a quick working example of SymmetricDS is in order.
-        This section contains a hands-on tutorial that demonstrates how to synchronize two databases with a similar schema between two nodes of SymmetricDS. This example models a retail business that has a
-        central office database (which we'll call the "root" or "corp" node) and multiple retail store databases (which we'll call the "client" or "store" nodes).
+    <para>Now that an overview of SymmetricDS has been presented, a quick working example of SymmetricDS is in order. 
+        This section contains a hands-on tutorial that demonstrates how to synchronize two databases with a similar schema between two nodes of SymmetricDS. This example models a retail business that has a 
+        central office database (which we'll call the "root" or "corp" node) and multiple retail store databases (which we'll call the "client" or "store" nodes).  
         For the tutorial, we will have only one "client" or store node, as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>, although by the end of the tutorial
         you could extend the example and configure a second store, if desired.
         </para>
-
+        
         <para>
                 <figure id="figure-tutorial">
                     <title>Simplified Two-Tier Retail Store Tutorial Example</title>
@@ -18,16 +18,16 @@
                         </imageobject>
                     </mediaobject>
                 </figure>
-            </para>
-         <para>
+            </para>     
+         <para>       
          For this tutorial, we will install two separate copies of SymmetricDS to represent the two different servers.  One will represent the store server and one will represent the
          corp server.  Each installed copy of SymmetricDS will be responsible for one database, and thus each copy acts as a single "node" in SymmetricDS terminology.
-         This is the most common configuration of SymmetricDS - one installed copy of the software is responsible for one single database and represents one node.
+         This is the most common configuration of SymmetricDS - one installed copy of the software is responsible for one single database and represents one node.  
          (Incidentally, there is also an option to configure a single installed copy of SymmetricDS to be responsible for both nodes.  This is called "multi-homing" and will be discussed  at the very
          end of the tutorial.)
-         Since you are most likely going to run both SymmetricDS copies on a single machine, we will run the two copies of SymmetricDS on two separate ports.
+         Since you are most likely going to run both SymmetricDS copies on a single machine, we will run the the two copies of SymmetricDS on two separate ports.
          We will use port 8080 for the corp server and 9090 for the store server, as shown in  <xref linkend="figure-tutorial-separate" xrefstyle="select: label"/>.
-         </para>
+         </para> 
             <para>
                 <figure id="figure-tutorial-separate">
                     <title>Two SymmetricDS applications - one for corp, one for store</title>
@@ -37,11 +37,11 @@
                         </imageobject>
                     </mediaobject>
                 </figure>
-            </para>
+            </para>  
         <para>
         Functionally, the corp SymmetricDS application will be responsible for capturing item data changes for the client, such as
-        item number, description, and prices by store. The client SymmetricDS application (our store, specifically our first store, store # 001) captures sale transaction data
-        changes for the root, such as time of sale and items sold.  The pricing information is sent
+        item number, description, and prices by store. The client SymmetricDS application (our store, specifically our first store, store # 001) captures sale transaction data 
+        changes for the root, such as time of sale and items sold.  The pricing information is sent 
         only to the specific store for which the price is relevant, thereby minimizing the amount of pricing data sent to each store.
         In other words, item pricing specific to store 001 will only be sent to the database
         for store 001 and not to store 002's database, for example.
@@ -62,12 +62,12 @@
       <step><para>Verifying information about the batches that were sent and received.</para></step>
       </procedure>
        </para>
-
+         
      <section id="tutorial-install">
         <title>Installing SymmetricDS</title>
-        <para>
-        First, we will install two copies of the SymmetricDS software and configure it with your database
-        connection information:
+        <para> 
+        First, we will install two copies of the SymmetricDS software and configure it with your database 
+        connection information:        
         </para>
         <procedure>
             <step>
@@ -80,17 +80,17 @@
             </step>
             <step>
                 <para>
-                    Create two directories to represent your two "machines". One will hold the corp installation of SymmetricDS and one
-                    to hold the store installation.
+                    Create two directories to represent your two "machines". One will hold the corp installation of SymmetricDS and one 
+                    to hold the store installation.  
                     For example, you could name the directories <literal>sym-corp</literal> and <literal>sym-store001</literal>, and we'll assume you used these names
                     below (but feel free to update the steps below with your directory names as needed).
                     Unzip the above zip file into both directories.
                     This will create a <filename class="directory">symmetric-ds-3.x.x</filename>
-                    directory, which corresponds to the version you downloaded.
+                    directory, which corresponds to the version you downloaded.  
                 </para>
             </step>
             <step>
-                <para>Properties files are use to store the minimal configuration information needed to start SymmetricDS.  Copy the corp sample properties file to the corp engines directory, and the store one to the store engines directory.  If you
+                <para>Properties files are use to store the minimal configuration information needed to start SymmetricDS.  Copy the corp sample properties file to the corp engines directory, and the store one to the store engines directory.  If you 
                 used the suggested directory names above, you would do the following copies:
                 </para>
                             <para>
@@ -133,12 +133,12 @@ db.password=secret]]></programlisting>
 registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                 <tip>
                     <para>
-                       Note that the  URL for an engine is in the following general format:
-                       <programlisting><![CDATA[http://{hostname}:{port}/sync/{engine.name}]]></programlisting>
-                       where the engine.name portion of the URL comes from a node's properties file.
+                       Note that the  URL for an engine is in the following general format:  
+                       <programlisting><![CDATA[http://{hostname}:{port}/sync/{engine.name}]]></programlisting>  
+                       where the engine.name portion of the URL comes from a node's properties file. 
                     </para>
                 </tip>
-
+              
             </step>
         </procedure>
     </section>
@@ -234,7 +234,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                 <para> Find the sales tables that sync from store to corp: <literal>sale_transaction</literal> and <literal>sale_return_line_item</literal>.</para>
             </step>
             <step>
-                <para> Find the SymmetricDS system tables, which have a prefix of "sym_", such as <literal>sym_channel</literal>,
+                <para> Find the SymmetricDS system tables, which have a prefix of "sym_", such as <literal>sym_channel</literal>, 
                 <literal>sym_trigger</literal>, <literal>sym_router</literal>, and <literal>sym_trigger_router</literal>.</para>
             </step>
              <step>
@@ -268,7 +268,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                 <para>This command starts the store node server for the first time and uses the auto-creation feature to create the SymmetricDS system
                     tables.  It begins polling the corp node to try to register (it knows where to contact the corp node via the registration URL you configured in the previous steps).
                      Since registration is not yet open, the store
-                    node receives an authorization failure (HTTP response of 403).  We discuss registration next.</para>
+                    node receives an authorization failure (HTTP response of 403).  We discuss registration next.</para>                    
             </step>
         </procedure>
     </section>
@@ -279,7 +279,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                     the network by allowing registration and returning configuration to a node once it has registered. In this tutorial, the registration node is
                     the root node or 'corp' node, and it also participates in synchronization with other nodes.</para>
         <para> So, we next need to open registration for the store node so that it may receive its initial load of
-         data and so that it may receive and send data from and to the corp node.
+         data and so that it may receive and send data from and to the corp node. 
          There are several ways to do this.  We will use an administration feature available in SymmetricDS and issue a command on the corp node (since it is the node responsible
          for registration).</para>
         <procedure>
@@ -316,7 +316,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                 <para>
                     Open a command prompt and navigate to the corp
                     <filename class="directory">samples</filename>
-                    subdirectory of the corp SymmetricDS installation. (Note that, in general, most system commands are issued using the corp server directly.
+                    subdirectory of the corp SymmetricDS installation. (Note that, in general, most system commands are issued using the corp server directly. 
                     All configuration, for example, is entered at the corp and synchronized to any clients.)
                 </para>
             </step>
@@ -365,7 +365,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                     the corp every minute.</para>
             </step>
             <step>
-                <para>Since <literal>item_selling_price</literal> is configured with a
+                <para>Since <literal>item_selling_price</literal> is configured with a 
                 column match router in this tutorial, specific pricing data changes will be sent (or "routed", in SymmetricDS terms) only to nodes whose <literal>store_id</literal> matches the node's external ID
                 (see <xref linkend="configuration-router" /> for details of the various routing options available).
                 Verify that the new data arrives in the store database using another interactive SQL session.  In this case,
@@ -405,7 +405,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
         <title>Verifying Outgoing Batches</title>
         <para>Now that we have pushed and pulled data, we will demonstrate how you can obtain information about what data has been batched and sent.
          A batch is used for tracking and sending one or more data changes to a given node. The sending node creates a batch and the receiving
-            node receives and then acknowledges it.
+            node receives and then acknowledges it. 
             </para><para>In addition, in SymmetricDS tables are grouped into data "Channels" for, among many reasons, the purpose of allowing different types of data to synchronize
             even when other types of data might be in error.  For example, if a batch for a given channel is in error, that batch will be retried with each synchronization for
             that channel until the batch is no longer in error.  Only after the batch is no longer in error will additional batches for that channel be sent.  In this way, the order of the data changes that have
@@ -475,12 +475,12 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
             </step>
         </procedure>
     </section>
-
+    
     <section id="multi-homing">
       <title>Multi-Homing</title>
-        <para>
-          Our Quick Start Tutorial is finished.
-          We have successfully set up and performed synchronization between two databases.
+        <para> 
+          Our Quick Start Tutorial is finished.  
+          We have succesfully set up and performed synchronization between two databases. 
           However, we did want to go back and discuss one of the first steps you did in the tutorial; namely, the step where you
           installed two copies of SymmetricDS when doing the tutorial.  Feel free to skip this section until a later time if you wish.
         </para>
@@ -489,7 +489,7 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
         When SymmetricDS was started in the examples above, the application initialized, and then created a "SymmetricDS engine"
         based on the provided property file (again, each engine serves as a SymmetricDS node and is responsible for one particular database).
         </para>
-
+             
         <para>
         In reality, though, the SymmetricDS application is capable of starting more than one engine at a time.   When SymmetricDS starts,
         it looks in the <literal>engines</literal> directory for any files that end in <literal>.properties</literal>.  It will start a SymmetricDS engine for each and every
@@ -506,22 +506,22 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
                         </imageobject>
                     </mediaobject>
                 </figure>
-            </para>
+            </para>  
         <para>
         So, for our tutorial above, how could we have "multi-homed" the corp and store such that we only had to install a single copy of SymmetricDS?
         It's fairly simple.  The following changes to the above would be needed:
-
+        
         </para>
          <procedure>
             <step>
             <para>Install a single copy of the SymmetricDS software instead of two copies.  You no longer need a directory to represent the two machines.</para>
             </step>
             <step>
-           <para> Instead of copying a single property file from <literal>samples</literal> to each separate <literal>engines</literal> directory, copy both files
+           <para> Instead of copying a single property file from <literal>samples</literal> to each separate <literal>engines</literal> directory, copy both files 
             to just the one engines directory. </para></step>
             <step>
            <para>All commands in the tutorial are run from the one single <literal>samples</literal> directory.</para></step>
-
+            
             <step>
             <para>When you start SymmetricDS, you will no longer specify a specific engine, as you want both engines to start.  The command, still run
             from the <literal>samples</literal> directory, would now be:</para>
@@ -536,6 +536,6 @@ registration.url=http://localhost:8080/sync/corp-000]]></programlisting>
             itself to a specific node (engine) of SymmetricDS to open registration, set up the corp server to issue an initial load to store, etc.</para>
             </step>
             </procedure>
-
+            
     </section>
 </chapter>

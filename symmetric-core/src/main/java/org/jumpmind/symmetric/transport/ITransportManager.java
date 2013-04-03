@@ -37,7 +37,7 @@ public interface ITransportManager {
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException;
 
-    public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
 

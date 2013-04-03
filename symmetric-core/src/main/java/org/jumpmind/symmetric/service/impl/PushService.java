@@ -36,12 +36,8 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -53,7 +49,6 @@ import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicati
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
@@ -74,15 +69,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private IClusterService clusterService;
 
     private INodeCommunicationService nodeCommunicationService;
-    
-    private IStatisticManager statisticManager;
 
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager) {
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService) {
         super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
@@ -90,7 +83,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         this.nodeService = nodeService;
         this.clusterService = clusterService;
         this.nodeCommunicationService = nodeCommunicationService;
-        this.statisticManager = statisticManager;
     }
 
     public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
@@ -139,8 +131,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
+        if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
                 long reloadBatchesProcessed = 0;
@@ -179,13 +170,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         Node identity = nodeService.findIdentity(false);
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
         IOutgoingWithResponseTransport transport = null;
-        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                .getNodeId(), remote.getNodeId(), ProcessType.PUSH_JOB));
         try {
             transport = transportManager.getPushTransport(remote, identity,
                     identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, transport);
+            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
                 Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
                 for (OutgoingBatch outgoingBatch : extractedBatches) {
@@ -233,13 +222,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         log.error("We expected but did not receive an ack for batch {}", batchId);
                     }
                 }
-
+                
                 status.updateOutgoingStatus(extractedBatches, batches);
             }
-            
-            processInfo.setStatus(Status.DONE);
         } catch (Exception ex) {
-            processInfo.setStatus(Status.ERROR);
             fireOffline(ex, remote, status);
         } finally {
             try {

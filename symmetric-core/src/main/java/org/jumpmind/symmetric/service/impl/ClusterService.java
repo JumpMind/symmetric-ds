@@ -45,7 +45,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -143,30 +142,20 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (StringUtils.isBlank(serverId)) {
             serverId = parameterService.getString(ParameterConstants.CLUSTER_SERVER_ID);
             if (StringUtils.isBlank(serverId)) {
-                serverId = System.getProperty(SystemConstants.SYSPROP_CLUSTER_SERVER_ID, null);
+                serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
+                if (StringUtils.isBlank(serverId)) {
+                    // JBoss uses this system property to identify a server in a
+                    // cluster
+                    serverId = System.getProperty("bind.address", null);
+                    if (StringUtils.isBlank(serverId)) {
+                        try {
+                            serverId = AppUtils.getHostName();
+                        } catch (Exception ex) {
+                            serverId = "unknown";
+                        }
+                    }
+                }                
             }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("jboss.bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                try {
-                    serverId = AppUtils.getHostName();
-                } catch (Exception ex) {
-                    serverId = "unknown";
-                }
-            }
-            
-            log.info("This node picked a server id of {}", serverId);
         }
         return serverId;
     }

@@ -179,15 +179,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
             String triggerName) {
-        if (StringUtils.isNotBlank(triggerName)) {
-            try {
-                return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
-            } catch (Exception ex) {
-                log.warn("Could not figure out if the trigger exists.  Assuming that is does not",
-                        ex);
-                return false;
-            }
-        } else {
+        try {
+            return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
+        } catch (Exception ex) {
+            log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
             return false;
         }
     }
@@ -705,6 +700,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String preProcessTriggerSqlClause(String sqlClause) {
         return sqlClause;
+    }
+
+    public int getRouterDataPeekAheadCount() {
+        return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
     }
 
     public void truncateTable(String tableName) {

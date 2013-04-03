@@ -250,7 +250,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         if (column.getMappedTypeCode() == -101) {
             // Get the existingTs with timezone
             String existingStr = writer.getTransaction().queryForObject(sql, String.class,
-                    objectValues);            
+                    objectValues);
             // If you are in this situation because of an instance where the conflict exists
             // because the row doesn't exist, then existing simply needs to be null
             if (existingStr != null) {
@@ -259,6 +259,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 	                    FormatUtils.TIMESTAMP_PATTERNS,
 	                    TimeZone.getTimeZone(existingStr.substring(split).trim()));
             }
+
             // Get the loadingTs with timezone
             int split = loadingStr.lastIndexOf(" ");
             loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),

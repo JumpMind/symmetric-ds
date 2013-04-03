@@ -237,7 +237,7 @@
 
     <para>The following SQL statements set up a top-level registration server
     as a node identified as "00000" in the "corp" node group. <programlisting>
-insert into SYM_NODE
+insert into SYM_NODE 
   (node_id, node_group_id, external_id, sync_enabled)
 values
   ('00000', 'corp', '00000', 1);
@@ -263,12 +263,12 @@ insert into SYM_NODE_IDENTITY values ('00000');</programlisting></para>
     <xref linkend="table_node_group" xrefstyle="table"/> table. The following
     SQL statements would create node groups for "corp" and "store" based on
     our retail store example. <programlisting>
-insert into SYM_NODE_GROUP
+insert into SYM_NODE_GROUP 
   (node_group_id, description)
 values
   ('store', 'A retail store node');
 
-insert into SYM_NODE_GROUP
+insert into SYM_NODE_GROUP 
   (node_group_id, description)
 values
   ('corp', 'A corporate node');</programlisting></para>
@@ -296,7 +296,7 @@ values
     <para>A node group link can be configured to use the same node group as
     the source and the target. This configuration allows a node group to sync
     with every other node in its group.</para>
-    <para>A third type of link action of 'R' for 'Route Only' exists if you want to associate a router with a link that will not move the data.
+    <para>A third type of link action of 'R' for 'Route Only' exists if you want to associate a router with a link that will not move the data.  
     This action type might be useful when using an XML publishing router or an audit table changes router.</para>
   </section>
 
@@ -314,17 +314,17 @@ values
     "item" channel includes data for items and their prices, while a
     "sale_transaction" channel includes data for ringing sales at a register.
     <programlisting>
-insert into SYM_CHANNEL
-  (channel_id, processing_order, max_batch_size, max_batch_to_send,
+insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
    extract_period_millis, batch_algorithm, enabled, description)
 values
   ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
 
-insert into SYM_CHANNEL
-  (channel_id, processing_order, max_batch_size, max_batch_to_send,
+insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
    extract_period_millis, batch_algorithm, enabled, description)
 values
-  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1,
+  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
    'retail sale transactions from register');</programlisting></para>
 
     <para>Batching is the grouping of data, by channel, to be transferred and
@@ -413,7 +413,7 @@ values
           </term>
 
           <listitem>
-            <para>Specifies the maximum number of data rows to route for a
+            <para>Specifices the maximum number of data rows to route for a
             channel at a time.</para>
           </listitem>
         </varlistentry>
@@ -438,7 +438,7 @@ values
     <title>Triggers, Routers, and Trigger / Routers Mappings</title>
 
     <para>In order to synchronize data, you must define at least one trigger, at least one router,
-    and provide at least one link between the two (known as a trigger-router).
+    and provide at least one link between the two (known as a trigger-router). 
     </para>
 
     <section id="configuration-trigger">
@@ -485,7 +485,7 @@ values
       data for a table named "item" whenever data is inserted, updated, or
       deleted. The trigger is assigned to a channel also called 'item'.
       <programlisting>
-insert into SYM_TRIGGER
+insert into SYM_TRIGGER 
     (trigger_id,source_table_name,channel_id,last_update_time,create_time)
   values
     ('item', 'item', 'item', current_timestamp, current_timestamp);
@@ -534,14 +534,14 @@ insert into SYM_TRIGGER
           </varlistentry>
         </variablelist></para>
         </section>
-
+        
             <section id="configuration-trigger-external-select">
                 <title>External Select</title>
-
+            
                 <para>Occasionally, you may find that you need to capture and save away a piece of data present in another table when a trigger is firing.
                 This data is typically needed for
                 the purposes of determining where to 'route' the data to once routing takes place.  Each trigger definition contains an optional
-                <literal>external_select</literal> field which can be used to specify the data to be captured.
+                <literal>external_select</literal> field which can be used to specify the data to be captured.  
                 Once captured, this data is available during routing in <xref
                 linkend="table_data" xrefstyle="table"/>'s <literal>external_data</literal> field.
                 For these cases, place a SQL select statement which returns the data item you need for routing in <literal>external_select</literal>.
@@ -574,13 +574,13 @@ insert into SYM_TRIGGER
 
           <listitem>Scripted Router - a router that executes a Bean Shell
           script expression in order to select nodes to route to. The script
-          can use the old and new column values.</listitem>
+          can use the the old and new column values.</listitem>
 
           <listitem>Xml Publishing Router - a router the publishes data
           changes directly to a messaging solution instead of transmitting
           changes to registered nodes. This router must be configured manually
           in XML as an extension point.</listitem>
-
+          
           <listitem>Audit Table Router - a router that inserts into an automatically created audit table.  It records captured changes
           to tables that it is linked to.
           </listitem>
@@ -601,8 +601,8 @@ insert into SYM_TRIGGER
 
         <para>The following SQL statement defines a router that will send data
         from the 'corp' group to the 'store' group. <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, 
     create_time, last_update_time)
 values
   ('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
@@ -611,7 +611,7 @@ values
 
         <para>The following SQL statement maps the 'corp-2-store' router to
         the item trigger. <programlisting>
-insert into SYM_TRIGGER_ROUTER
+insert into SYM_TRIGGER_ROUTER 
   (trigger_id, router_id, initial_load_order,  create_time, last_update_time)
 values
   ('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
@@ -645,11 +645,11 @@ values
         target group only when a status column is set to 'READY TO SEND.' The
         following SQL statement will insert a column router to accomplish
         that. <programlisting>
-insert into SYM_ROUTER
-(router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
  router_expression, create_time, last_update_time)
 values
-('corp-2-store-ok','corp', 'store', 'column',
+('corp-2-store-ok','corp', 'store', 'column', 
  'STATUS=READY TO SEND', current_timestamp, current_timestamp);
 
 </programlisting></para>
@@ -659,11 +659,11 @@ values
         SQL statement will insert a column router to accomplish that. Note the
         use of OLD_STATUS, where the OLD_ prefix gives access to the old
         column value. <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-status','corp', 'store', 'column',
+  ('corp-2-store-status','corp', 'store', 'column', 
     'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
 
 </programlisting></para>
@@ -672,11 +672,11 @@ values
         target group whose STORE_ID column matches the external id of a node.
         The following SQL statement will insert a column router to accomplish
         that. <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-id','corp', 'store', 'column',
+  ('corp-2-store-id','corp', 'store', 'column', 
     'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 </programlisting> Attributes on a <xref linkend="table_node"
@@ -696,11 +696,11 @@ values
         linkend="table_registration_redirect" xrefstyle="table"/> table. The
         following SQL statement will insert a column router to accomplish
         that. <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-redirect','corp', 'store', 'column',
+  ('corp-2-store-redirect','corp', 'store', 'column', 
     'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -710,11 +710,11 @@ values
         STORE_ID column may contain the STORE_ID to route to or the constant
         of ALL which indicates that all nodes should receive the update.
         <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-multiple-matches','corp', 'store', 'column',
+  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
    'STORE_ID=ALL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -723,11 +723,11 @@ values
         for the update. This following is an example where the STORE_ID column
         is used to route to a set of nodes who have a STORE_ID equal to their
         EXTERNAL_ID, or to all nodes if the STORE_ID is null. <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-multiple-matches','corp', 'store', 'column',
+  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
    'STORE_ID=NULL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 </programlisting></para>
       </section>
@@ -799,11 +799,11 @@ values
         but the data in the changing table only contains brand information. In
         this case, the STORE table may be used as a lookup table.
         <programlisting>
-insert into SYM_ROUTER
-(router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
  router_expression, create_time, last_update_time)
 values
-('corp-2-store-ok','corp', 'store', 'lookuptable',
+('corp-2-store-ok','corp', 'store', 'lookuptable', 
  'LOOKUP_TABLE=STORE
 KEY_COLUMN=BRAND_ID
 LOOKUP_KEY_COLUMN=BRAND_ID
@@ -816,7 +816,7 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
         <title>Subselect Router</title>
 
         <para>Sometimes routing decisions need to be made based on data that
-        is not in the current row being synchronized.  A 'subselect' router can be used
+        is not in the current row being synchronized.  A 'subselect' router can be used 
         in these cases.  A 'subselect' is configured with a <literal>router_expression</literal> that is a
         SQL select statement which returns a result set of the node ids that
         need routed to. Column tokens can be used in the SQL expression and
@@ -824,29 +824,29 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
         router type is high because the 'subselect' statement runs for each
         row that is routed. It should not be used for tables that have a lot
         of rows that are updated. It also has the disadvantage that if the
-        data being relied on to determine the node id has been deleted before
+        data being relied on to determine the node id has been deleted before 
         routing takes place, then no results would be returned and
-        routing would not happen.</para>
+        routing would not happen.</para> 
         <para>The <literal>router_expression</literal> you specify is appended to the
         following SQL statement in order to select the node ids:
-        <programlisting>select c.node_id from sym_node c where
+        <programlisting>select c.node_id from sym_node c where 
   c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and ...
 </programlisting>
     <para>As you can see, you have access to information about the node currently under consideration for routing
     through the 'c' alias, for example <literal>c.external_id</literal>.
-
+    
     There are two node-related tokens you can use in your expression:
             <itemizedlist>
             <listitem>:NODE_GROUP_ID</listitem>
             <listitem>:EXTERNAL_DATA</listitem>
           </itemizedlist></para>
-    Column names representing data for the row in question are prefixed with a colon as well, for example:
-
+    Column names representing data for the row in question are prefixed with a colon as well, for example:         
+         
         <literal>:EMPLOYEE_ID</literal>, or <literal>:OLD_EMPLOYEE_ID</literal>.  Here, the OLD_ prefix indicates the value before
         the change in cases where the old data has been captured.
-
+          
     </para><para>
-        For an example, consider the case where an Order table and an OrderLineItem table need to be routed to a
+        For an example, consider the case where an Order table and a OrderLineItem table need to be routed to a
         specific store. The Order table has a column named order_id and
         STORE_ID. A store node has an external_id that is equal to the
         STORE_ID on the Order table. OrderLineItem, however, only has a
@@ -866,12 +866,12 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
  of the current node with the store id from the Order table where the order id matches
  the order id of the current row being routed:
         <programlisting>
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store','corp', 'store', 'subselect',
-    'c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)',
+  ('corp-2-store','corp', 'store', 'subselect', 
+    'c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', 
     current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -920,12 +920,12 @@ child rows (OrderLineItem) to route, since the select statement is run when rout
         STORE_ID and WORKSTATION_NUMBER, both of which are columns on the
         table that is being routed. <programlisting>
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'bsh',
-    'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);',
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+    'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
     current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -933,12 +933,12 @@ values
         id. The last line of a bsh script is always the return value.
         <programlisting>
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'bsh',
-    'STORE_ID + "-" + WORKSTATION_NUMBER',
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+    'STORE_ID + "-" + WORKSTATION_NUMBER', 
     current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -947,12 +947,12 @@ values
         here we make use of OLD_, which provides access to the old column
         value. <programlisting>
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-flag-changed','corp', 'store', 'bsh',
-    'FLAG != null &amp;&amp; !FLAG.equals(OLD_FLAG)',
+  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
+    'FLAG != null &amp;&amp; !FLAG.equals(OLD_FLAG)', 
     current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -960,28 +960,28 @@ values
         node and checks to see if the trimmed value of the column named
         STATION equals the external_id. <programlisting>
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-trimmed-station','corp', 'store', 'bsh',
+  ('corp-2-store-trimmed-station','corp', 'store', 'bsh', 
     'for (org.jumpmind.symmetric.model.Node node : nodes) {
          if (STATION != null &amp;&amp; node.getExternalId().equals(STATION.trim())) {
              targetNodes.add(node.getNodeId());
          }
-      }',
+      }', 
     current_timestamp, current_timestamp);
 </programlisting></para>
       </section>
-
+      
       <section id="configuration-audit-table-router">
         <title>Audit Table Router</title>
 
         <para>This router audits captured data by recording the change in an audit table
-        that the router creates and keeps up to date (as long as <code>auto.config.database</code> is
+        that the router creates and keeps up to date (as long as <code>auto.config.database</code> is 
         set to true.)  The router creates a table named the same as the table for which
         data was captured with the suffix of _AUDIT.  It will contain all of the same columns
-        as the original table with the same data types only each column is nullable with no default
+        as the original table with the same data types only each column is nullable with no default 
         values.     </para>
 
         <para>Three extra "AUDIT" columns are added to the table: <itemizedlist>
@@ -992,52 +992,52 @@ values
 
         <para>The following is an example of an audit router<programlisting>
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     create_time, last_update_time)
 values
   ('audit_at_corp','corp', 'local', 'audit', current_timestamp, current_timestamp);
 </programlisting></para>
 
-      <para>Because the audit router isn't capturing data for a specific node in the system, but it still has to be
+      <para>Because the audit router isn't capturing data for a specific node in the system, but it still has to be 
       associated with a node_group_link a new link action of type 'R' has been introduced.  The 'R' stands for 'only routes to'</para>
-      </section>
-
-
-
-
+      </section>  
+      
+      
+      
+      
     <section id="configuration-routing-external-select">
               <title>Utilizing External Select when Routing</title>
-
+      
 
 
 <para>There may be times when you wish to route based on a piece of data that exists in
-a table other than the one being routed.  The approach, first discussed in
+a table other than the one being routed.  The approach, first discussed in 
 <xref linkend="configuration-subselect-router"/>,
-is to utilize an <literal>external_select</literal> to save away data in <literal>external_data</literal>, which can then
+is to utlize an <literal>external_select</literal> to save away data in <literal>external_data</literal>, which can then
 be referenced during routing.
 </para>
 <para>
 Reconsider subselect's Order / OrderLineItem example (found in <xref linkend="configuration-subselect-router"/>), where
-routing for the line item is accomplished by linking to the "header" Order row.  As an alternate way of solving the problem,
-we will now use External Select combined with a column match router.
+routing for the line item is accomplished by linking to the "header" Order row.  As an alternate way of solving the problem, 
+we will now use External Select combined with a column match router.  
 </para><para>In this version of the solution, the STORE_ID is captured from the
         Order table in the EXTERNAL_DATA column when the trigger fires.  The
         router is configured to route based on the captured EXTERNAL_DATA to
         all nodes whose external id matches the captured external data.
-        <programlisting>insert into SYM_TRIGGER
+        <programlisting>insert into SYM_TRIGGER 
   (trigger_id,source_table_name,channel_id,external_select,
     last_update_time,create_time)
 values
-  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID
+  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
     from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
     current_timestamp, current_timestamp);
 
-insert into SYM_ROUTER
-  (router_id, source_node_group_id, target_node_group_id, router_type,
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-ext','corp', 'store', 'column',
+  ('corp-2-store-ext','corp', 'store', 'column', 
     'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
 </programlisting></para>
 
@@ -1046,16 +1046,16 @@ values
         the case of Insert or Update, it's NEW_. For Delete, it's OLD_ (since
         there is no new data). In this way, you can access the DML-appropriate
         value for your select statement.</para>
-
+     
        <para>The advantage of this approach over the 'subselect' approach is that it guards against the (somewhat unlikely)
         possibility that the master Order table row might have been deleted before routing has taken place.   This external select solution
         also is a bit more efficient
         than the 'subselect' approach, although the triggers produced do run
         the extra external_select SQL inline with application database
         updates.</para>
-
+        
     </section>
-
+    
     </section>
 
     <section id="configuration-trigger-router">
@@ -1074,16 +1074,16 @@ values
 
       <section id="configuration-trigger-router-enabled">
         <title>Enable / disable trigger router</title>
-
+        
         <para>
         Each individual trigger-router combination can be disabled or enabled if needed.  By default, a trigger router is enabled,
         but if you have a reason you wish to define a trigger router combination prior to it being active, you can set
         the <literal>enabled</literal> flag to 0.  This will cause the trigger-router mapping to be sent to all nodes, but the trigger-router
-        mapping will not be considered active or enabled for the purposes of capturing data changes or routing.
+        mapping will not be considered active or enabled for the purposes of capturing data changes or routing.       
         </para>
     </section>
       <section id="configuration-initial-load">
-
+        
         <title>Initial Loads</title>
 
         <para>An initial load is the process of seeding tables at a target
@@ -1098,13 +1098,13 @@ values
         provided to pair down the data that is selected out of the
         database.</para>
 
-        <para>An initial load cannot occur until after a node is registered.
+        <para>An initial load can not occur until after a node is registered.
         An initial load is requested by setting the
         <literal>initial_load_enabled</literal> column on <xref
         linkend="table_node_security" xrefstyle="table"/> to
         <emphasis>1</emphasis> on the row for the target node in the parent
         node's database.  You can configure SymmetricDS to automatically perform an initial load
-        when a node registers by setting the parameter <literal>auto.reload</literal> to true.
+        when a node registers by setting the parameter <literal>auto.reload</literal> to true. 
         Regardless of how the initial load is initiated, the next time the source node routes data, reload
         batches will be inserted. At the same time reload batches are
         inserted, all previously pending batches for the node are marked as
@@ -1120,7 +1120,7 @@ values
           <literal>initial_load_time</literal>. Nodes can't be registered to
           non-registration-server nodes without this value being set one way
           or another (i.e., manually, or as a result of an initial load
-          occurring at the parent node).</para>
+          occuring at the parent node).</para>
         </important>
 
         <para>SymmetricDS recognizes that an initial load has completed when
@@ -1155,14 +1155,14 @@ values
              before loading the data.  If a delete is desired, the parameter
              <literal>initial.load.delete.first</literal> can be set to true.  If true,
              the command found in <literal>initial.load.delete.first.sql</literal> will be run on each table prior to loading the data.
-             The default value for  <literal>initial.load.delete.first.sql</literal> is <literal>delete from %s</literal>,
+             Thd default value for  <literal>initial.load.delete.first.sql</literal> is <literal>delete from %s</literal>,
              but could be changed if needed.
                 Note that additional reload batches are created, in the correct order, to achieve the delete.
              </para>
              </listitem>
              <listitem><literal>initial.load.create.first</literal>
               <para>
-              By default, an initial load will not create the table on the target if it doesn't alleady exist.
+              By default, an initial load will not create the table on the target if it doesn't aleady exist.
               If the desired behavior is to create the table on the target if it is not present,
               set the parameter <literal>intial.load.create.first</literal> to true. SymmetricDS will
               attempt to create the table and indexes on the target database before doing the initial load. (Additional batches
@@ -1173,7 +1173,7 @@ values
         </section>
       <section id="configuration-initial-load-select">
         <title>Loading subsets of data</title>
-
+        
         <para>An efficient way to select a subset of data from a table for an
         initial load is to provide an <literal>initial_load_select</literal>
         clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.
@@ -1209,17 +1209,17 @@ values
           indexes.</para>
         </important>
       </section>
-
+      
        <section id="configuration-initial-load-reverse">
         <title>Reverse Initial Loads</title>
         <para>
         The default behavior for initial loads is to load data from the registration server or parent node, to a client node.
         Occasionally, there may be need to do a one-time intial load of data in the opposite or "reverse" direction, namely from a client
         node to the registration node.  To achieve this, set the parameter <literal>auto.reload.reverse</literal> to be true, <emphasis>but only for the specific
-        node group representing the client nodes</emphasis>.  This will cause a onetime reverse load of data, for tables configured with non-negative initial load orders, to be
+        node group representing the client nodes</emphasis>.  This will cause a one time reverse load of data, for tables configured with non-negative initial load orders, to be 
         batched at the point when registration of the client node is occurring.  These batches are then sent to the parent or registration node.
-        This capability might be needed, for example, if there is data already present in the client that doesn't exist in the parent but needs to.
-        </para>
+        This capability might be needed, for example, if there is data already present in the client that doesn't exist in the parent but needs to.        
+        </para>     
      </section>
  </section>
       <section id="configuration-dead-triggers">
@@ -1241,7 +1241,7 @@ values
         to load a table that needs populated with example or default data.
         Another use is a recovery load of data for tables that have a single
         direction of synchronization. For example, a retail store records
-        sales transactions that synchronize in one direction by trickling back
+        sales transaction that synchronize in one direction by trickling back
         to the central office. If the retail store needs to recover all the
         sales transactions from the central office, they can be sent are part
         of an initial load from the central office by setting up dead Triggers
@@ -1260,7 +1260,7 @@ insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
   SYNC_ON_UPDATE_CONDITION,SYNC_ON_INSERT_CONDITION,
   SYNC_ON_DELETE_CONDITION,EXTERNAL_SELECT,
   TX_ID_EXPRESSION,EXCLUDED_COLUMN_NAMES,
-  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME)
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
   values ('SALE_TRANSACTION_DEAD',null,null,
   'SALE_TRANSACTION','transaction',
   0,0,0,0,null,null,null,null,null,null,null,null,null,
@@ -1269,13 +1269,13 @@ insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
 insert into sym_router (ROUTER_ID,TARGET_CATALOG_NAME,TARGET_SCHEMA_NAME,
   TARGET_TABLE_NAME,SOURCE_NODE_GROUP_ID,TARGET_NODE_GROUP_ID,ROUTER_TYPE,
   ROUTER_EXPRESSION,SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
-  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME)
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
   values ('CORP_2_STORE',null,null,null,
   'corp','store',null,null,1,1,1,
   current_timestamp,'demo',current_timestamp);
-
+   
 insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
-  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME)
+  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
   values ('SALE_TRANSACTION_DEAD','CORP_2_REGION',100,null,
    current_timestamp,'demo',current_timestamp);
    </programlisting></para>
@@ -1364,7 +1364,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     the transformation is initiated due to existence of a source
     synchronization trigger. The source trigger creates the synchronization
     data, while the transformation configuration decides what to do with the
-    synchronization data as it is either being extracted from the source or
+    sychronization data as it is either being extracted from the source or
     loaded into the target. You have the flexibility of defining different
     transformation behavior depending on whether the source change that
     triggered the synchronization was an Insert, Update, or Delete. In the
@@ -1393,7 +1393,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     key or other required data in the target table if the source operation was
     an Insert, for example.</para>
 
-    <para>Finally, please note that the transformation engine relies on a
+    <para>Finally, please note that the tranformation engine relies on a
     source trigger / router existing to supply the source data for the
     transformation. The transform configuration will never be used if the
     source table and target node group does not have a defined trigger /
@@ -1447,7 +1447,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
               is useful if you just want to map a table from one name to
               anther or from one schema to another. It is also useful if you
               want to transform a table, but also want to pass it through. You
-              would define an implied transform from the source to the target
+              would define and implied transform from the source to the target
               and would not have to configure each column.</listitem>
             </itemizedlist></listitem>
 
@@ -1594,7 +1594,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <title>Transformation Examples</title>
             <para>
             To be done.
-            </para>
+            </para>        
     </section> -->
  </section>
     <section id="data-load-filter">
@@ -1725,17 +1725,17 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
       on a table named "TABLE_TO_RELOAD" for KEY_FIELD on the reload table
       equal to a column named KEY_FIELD on the TABLE_TO_WATCH table.
       <programlisting>
-insert into sym_load_filter
+insert into sym_load_filter 
    (LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID, TARGET_NODE_GROUP_ID,
-    TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME, TARGET_TABLE_NAME,
-    FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE,
-    BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT,
-    BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT,
+    TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME, TARGET_TABLE_NAME, 
+    FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE, 
+    BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT, 
+    BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT, 
     CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME,
     LOAD_FILTER_ORDER, FAIL_ON_ERROR)
 values ('TABLE_TO_RELOAD','BSH','Client','Server',NULL,NULL,
     'TABLE_TO_WATCH',1,1,0,null,
-    'engine.getDataService().reloadTable(context.getBatch().getSourceNodeId(),
+    'engine.getDataService().reloadTable(context.getBatch().getSourceNodeId(), 
     table.getCatalog(), table.getSchema(),
     "TABLE_TO_RELOAD","KEY_FIELD=''" + KEY_FIELD + "''");'
     ,null,null,null,null,sysdate,'userid',sysdate,1,1);

@@ -421,7 +421,6 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
 
-        nodeLeaf = leaves.get(findIdentityNodeId());
         if (nodeLeaf != null) {
             NetworkedNode root = nodeLeaf.getRoot();
             root.setAllNetworkedNodes(leaves);
@@ -444,8 +443,9 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
+        flushNodeAuthorizedCache();
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        boolean updated = transaction.prepareAndExecute(
+        return transaction.prepareAndExecute(
                 getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
@@ -456,39 +456,27 @@ public class NodeService extends AbstractService implements INodeService {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
                         Types.VARCHAR }) == 1;
-        flushNodeAuthorizedCache();
-        return updated;
     }
     
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange) {
-        try {
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+        if (nodeSecurity != null) {
+            nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
+            if (initialLoadEnabled) {
+                nodeSecurity.setInitialLoadTime(null);
+            } else {
+                nodeSecurity.setInitialLoadTime(new Date());
             }
-            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-            if (nodeSecurity != null) {
-                nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
-                if (initialLoadEnabled) {
-                    nodeSecurity.setInitialLoadTime(null);
-                } else {
-                    nodeSecurity.setInitialLoadTime(new Date());
-                }
-                return updateNodeSecurity(transaction, nodeSecurity);
-            }
-            return false;
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
+            return updateNodeSecurity(transaction, nodeSecurity);
         }
+        return false;        
     }
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange);
+            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
             transaction.commit();
             return updated;
         } finally {
@@ -496,39 +484,28 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
     
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange) {
-        try {
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+        if (nodeSecurity != null) {
+            nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
+            if (initialLoadEnabled) {
+                nodeSecurity.setRevInitialLoadTime(null);
+            } else {
+                nodeSecurity.setRevInitialLoadTime(new Date());
             }
-
-            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-            if (nodeSecurity != null) {
-                nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
-                if (initialLoadEnabled) {
-                    nodeSecurity.setRevInitialLoadTime(null);
-                } else {
-                    nodeSecurity.setRevInitialLoadTime(new Date());
-                }
-                return updateNodeSecurity(transaction, nodeSecurity);
-            }
-            return false;
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
+            return updateNodeSecurity(transaction, nodeSecurity);
         }
-    } 
+        return false;        
+    }    
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange);
+            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
             transaction.commit();
             return updated;
-        } finally {      
+        } finally {
             close(transaction);
         }
     }    
@@ -662,9 +639,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
         return offlineNodeList;
-        
     }
     
     public List<String> findOfflineNodeIds(long minutesOffline) {

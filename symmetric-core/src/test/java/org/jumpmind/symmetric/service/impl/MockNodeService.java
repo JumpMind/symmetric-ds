@@ -163,12 +163,12 @@ public class MockNodeService implements INodeService {
         return false;
     }
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         return false;
     }
     
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange) {
+            boolean initialLoadEnabled) {
         return false;
     }
 
@@ -247,11 +247,11 @@ public class MockNodeService implements INodeService {
     }
     
     public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange) {
+            boolean initialLoadEnabled) {
         return true;
     }
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange) {
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         return true;
     }
     
