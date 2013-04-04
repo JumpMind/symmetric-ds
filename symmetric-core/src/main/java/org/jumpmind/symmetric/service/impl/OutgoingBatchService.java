@@ -171,10 +171,22 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId) {
-        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
-                new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId }, new int[] {
-                        Types.NUMERIC, Types.VARCHAR });
+        List<OutgoingBatch> list = null;
+        if (StringUtils.isNotBlank(nodeId)) {
+            list = (List<OutgoingBatch>) sqlTemplate.query(
+                    getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
+                    new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
+                    new int[] { Types.NUMERIC, Types.VARCHAR });
+        } else {
+            /*
+             * Pushing to an older version of symmetric might result in a batch
+             * without the node id
+             */
+            list = (List<OutgoingBatch>) sqlTemplate.query(
+                    getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
+                    new OutgoingBatchMapper(true, false), new Object[] { batchId },
+                    new int[] { Types.NUMERIC });
+        }
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {
