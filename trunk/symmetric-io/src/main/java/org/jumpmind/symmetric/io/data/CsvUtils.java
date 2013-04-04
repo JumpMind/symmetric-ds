@@ -99,9 +99,13 @@ public class CsvUtils {
     }
     
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
+        return escapeCsvData(data, recordDelimiter, textQualifier, CsvWriter.ESCAPE_MODE_BACKSLASH);
+    }
+    
+    public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        writer.setEscapeMode(escapeMode);
         writer.setRecordDelimiter(recordDelimiter);
         writer.setTextQualifier(textQualifier);
         writer.setUseTextQualifier(true);
