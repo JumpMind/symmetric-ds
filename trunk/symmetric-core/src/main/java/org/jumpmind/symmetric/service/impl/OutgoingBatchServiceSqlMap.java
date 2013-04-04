@@ -31,8 +31,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "  load_millis=?, extract_millis=?, sql_state=?, sql_code=?, sql_message=?,                                       " + 
 "  failed_data_id=?, last_update_hostname=?, last_update_time=? where batch_id=? and node_id=?                    " );
 
-        putSql("findOutgoingBatchSql" ,"" + 
-"where batch_id=? and node_id=?  " );
+        putSql("findOutgoingBatchSql" , "where batch_id=? and node_id=?  " );
+
+        putSql("findOutgoingBatchByIdOnlySql" , "where batch_id=? " );        
 
         putSql("selectOutgoingBatchSql" ,"" + 
 "where node_id = ? and status in (?, ?, ?, ?, ?, ?) order by batch_id asc   " );
