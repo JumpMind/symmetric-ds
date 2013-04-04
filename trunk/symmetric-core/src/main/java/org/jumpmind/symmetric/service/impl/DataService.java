@@ -327,7 +327,7 @@ public class DataService extends AbstractService implements IDataService {
                     transaction,
                     targetNode,
                     String.format(
-                            "update %s_incoming_batch set status='OK' where node_id='%s' and status != 'OK'",
+                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
                             tablePrefix, engine.getNodeService()
                                     .findIdentityNodeId()), true);            
 
