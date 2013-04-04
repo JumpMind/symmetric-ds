@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data;
 
 import junit.framework.Assert;
 
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.junit.Test;
 
@@ -35,8 +36,8 @@ public class CsvUtilsTest {
     }
     
     @Test
-    public void testEscapeSingleQuote() {
-        Assert.assertEquals("'L\\'' Hospitalet',,'277000043'", CsvUtils.escapeCsvData(new String[] {"L\\' Hospitalet",null,"277000043"}, '\n', '\''));
+    public void testEscapeDoubledSingleQuote() {
+        Assert.assertEquals("'L\\'' Hospitalet',,'277000043'\n", CsvUtils.escapeCsvData(new String[] {"L\\' Hospitalet",null,"277000043"}, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED));
         
     }
     
