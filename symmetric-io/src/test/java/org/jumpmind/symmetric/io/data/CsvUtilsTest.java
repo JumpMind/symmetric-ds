@@ -35,6 +35,12 @@ public class CsvUtilsTest {
     }
     
     @Test
+    public void testEscapeSingleQuote() {
+        Assert.assertEquals("'L\\'' Hospitalet',,'277000043'", CsvUtils.escapeCsvData(new String[] {"L\\' Hospitalet",null,"277000043"}, '\n', '\''));
+        
+    }
+    
+    @Test
     public void testLineFeedsInCsv() {
         String line = "\"test\",\"line\nfeed\"";
         String[] tokens = CsvUtils.tokenizeCsvData(line);
