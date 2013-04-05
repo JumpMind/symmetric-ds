@@ -51,13 +51,14 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
         final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
+        final boolean autoRegisterEnabled = parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
         if (StringUtils.isBlank(node.getNodeId())) {
             String nodeId = evaluateScript(node, remoteHost, remoteAddress);
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
                 for (int sequence = 0; sequence < maxTries; sequence++) {
                     NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                    if (security != null && security.isRegistrationEnabled()) {
+                    if ((security != null && security.isRegistrationEnabled()) || autoRegisterEnabled) {
                         return nodeId;
                     }
                     nodeId = buildNodeId(nodeService, node) + "-" + sequence;
@@ -70,6 +71,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }
 
     public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
+        final boolean autoRegisterEnabled = parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
         final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
         String nodeId = node.getNodeId();
         if (StringUtils.isBlank(nodeId)) {
@@ -77,13 +79,13 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
                 for (int sequence = 0; sequence < maxTries; sequence++) {
-                    if (nodeService.findNode(nodeId) == null) {                        
+                    if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
                         break;
                     }
                     nodeId = buildNodeId(nodeService, node) + "-" + sequence;
                 }
                 
-                if (nodeService.findNode(nodeId) != null) {
+                if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
                     nodeId = null;
                 }
             }
