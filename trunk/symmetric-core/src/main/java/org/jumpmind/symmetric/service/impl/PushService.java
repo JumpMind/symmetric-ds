@@ -144,9 +144,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             try {
                 startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
                 long reloadBatchesProcessed = 0;
-                int pushCount = 0;
+                long lastBatchCount = 0;
                 do {
-                    if (pushCount > 0) {
+                    if (lastBatchCount > 0) {
                         log.info(
                                 "Pushing to {} again because the last push contained reload batches",
                                 node);
@@ -154,17 +154,15 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
                     log.debug("Push requested for {}", node);
                     pushToNode(node, status);
-                    if (status.getBatchesProcessed() > 0) {
+                    if (status.getBatchesProcessed() > 0 && status.getBatchesProcessed() != lastBatchCount) {
                         log.info(
-                                "Pushed data to {}. {} data and {} batches were processed",
+                                "Pushed data to {}. {} data and {} batches were processed{}",
                                 new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed() });
-                    } else if (status.failed()) {
-                        log.warn("There was an error while pushing data to the server");
+                                        status.getBatchesProcessed(), status.failed() ? ".  There was at least one failure" : "" });
                     }
                     log.debug("Push completed for {}", node);
-                    pushCount++;
-                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed);
+                    lastBatchCount = status.getBatchesProcessed();
+                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
             }
