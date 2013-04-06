@@ -105,13 +105,17 @@ public class RemoteNodeStatus implements Serializable {
                 }
             }
         }
-
+        
         if (outgoingBatches != null) {
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 dataProcessed += batch.totalEventCount();
                 if (Constants.CHANNEL_RELOAD.equals(batch.getChannelId())) {
                     reloadBatchesProcessed++;
+                }
+                
+                if (batch.getStatus() == OutgoingBatch.Status.ER) {
+                    status = Status.DATA_ERROR;
                 }
             }
         }
