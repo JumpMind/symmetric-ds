@@ -154,11 +154,17 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
                     log.debug("Push requested for {}", node);
                     pushToNode(node, status);
-                    if (status.getBatchesProcessed() > 0 && status.getBatchesProcessed() != lastBatchCount) {
+                    if (!status.failed() && status.getBatchesProcessed() > 0 
+                            && status.getBatchesProcessed() != lastBatchCount) {
                         log.info(
-                                "Pushed data to {}. {} data and {} batches were processed{}",
+                                "Pushed data to {}. {} data and {} batches were processed",
                                 new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed(), status.failed() ? ".  There was at least one failure" : "" });
+                                        status.getBatchesProcessed()});
+                    } else if (status.failed()) {
+                        log.warn(
+                                "There was a failure while pushing data to {}. {} data and {} batches were processed",
+                                new Object[] { node, status.getDataProcessed(),
+                                        status.getBatchesProcessed()});                        
                     }
                     log.debug("Push completed for {}", node);
                     lastBatchCount = status.getBatchesProcessed();
