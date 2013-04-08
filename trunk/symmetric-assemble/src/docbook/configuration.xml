@@ -2085,7 +2085,7 @@ requires a lock before running. [&#xA0;Default:&#xA0;false&#xA0;] </para>
 </para>
 </section>
     <section id="purge-job">
-        <title>Purge Job</title>
+        <title>Purge Jobs</title>
         <para>
             Purging is the act of cleaning up captured data that is no longer needed in SymmetricDS's runtime tables.
             Data is purged through
