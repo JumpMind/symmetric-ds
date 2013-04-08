@@ -22,7 +22,7 @@ public class OracleDmlStatement extends DmlStatement {
                 if (columns[i].getMappedTypeCode() == -101) {
                     sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                             .append(",");
-                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
                     sql.append("SYM_WKT2GEOM(?)").append(",");
                 } else {
                     sql.append("?").append(",");
