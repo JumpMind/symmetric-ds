@@ -511,8 +511,8 @@ public class DbFill {
             }
             objectValue = generateRandomValueForColumn(column);
             if (objectValue == null) {
-                throw new RuntimeException("No random value generated for the object " + table.getName() + "." + 
-                        column.getName() + " of type " + column.getMappedTypeCode());
+                throw new RuntimeException("No random value generated for the object " + table.getName() + "." +
+                        column.getName() + " of code " + column.getMappedTypeCode() + " jdbc name " + column.getJdbcTypeName());
             }
             
             columnValues.put(table.getName() + "." + column.getName(), objectValue);
@@ -553,10 +553,20 @@ public class DbFill {
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR) {
-            objectValue = randomString(column.getSizeAsInt()>100?100:column.getSizeAsInt());
+            int size = 0;
+            // Assume if the size is 0 there is no max size configured.
+            if (column.getSizeAsInt() != 0) {
+                size = column.getSizeAsInt()>50?50:column.getSizeAsInt();
+            } else {
+                // No max length so default to 50
+                size = 50;
+            }
+            objectValue = randomString(size);
         } else if (type == Types.OTHER) {
             if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();
+            } else if ("active_inactive".equalsIgnoreCase(column.getJdbcTypeName())) {
+                objectValue = randomBoolean() ? "Active" : "Inactive";
             }
         }
         return objectValue;
