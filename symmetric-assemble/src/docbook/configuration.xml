@@ -1747,4 +1747,395 @@ values ('TABLE_TO_RELOAD','BSH','Client','Server',NULL,NULL,
   </section>
 
   <xi:include href="conflicts.xml"/>
+  
+<section id="jobs">
+<title>Jobs</title>
+<para>
+Work done by SymmetricDS is initiated by jobs. Jobs are tasks that are
+started and scheduled by a job manager. Jobs are enabled by the
+<literal>start.{name}.job</literal>
+property. Most jobs are enabled by default. The frequency at which a job
+runs in controlled by one of two properties:
+<literal>job.{name}.period.time.ms</literal>
+or
+<literal>job.{name}.cron</literal>
+. If a valid cron property exists in the configuration, then it will be
+used to schedule the job. Otherwise, the job manager will attempt to use
+the period.time.ms property.
+</para>
+<para>
+The frequency of jobs can be configured in either the engines properties
+file or in
+<xref linkend="table_parameter" xrefstyle="table" />
+. When managed in
+<xref linkend="table_parameter" xrefstyle="table" />
+the frequency properties can be changed in the registration server and
+when the updated settings sync to the nodes in the system the job
+manager will restart the jobs at the new frequency settings.
+</para>
+<para>
+SymmetricDS utilizes Spring's CRON support, which includes seconds as
+the first parameter. This differs from the typical Unix-based
+implementation, where the first parameter is usually minutes. For
+example,
+<literal>*/15 * * * * *</literal>
+means every 15 seconds, not every 15 minutes. See
+<ulink
+    url="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">Spring's
+documentation</ulink>
+for more details.
+</para>
+<para>Some jobs cannot be run in parallel against a single node.  When running on a cluster these jobs use the 
+<xref linkend="table_lock" xrefstyle="table" /> table to get an exclusive semaphore to run the job.  In order to use this table the 
+<ns:literal>cluster.lock.enabled</ns:literal> must be set to true.
+</para>
+<para> The three main jobs in SymmetricDS are the route, push and
+pull jobs. The route job decides what captured data changes should be
+sent to which nodes. It also decides what captured data changes should
+be transported and loaded together in a batch. The push and pull jobs
+are responsible for initiating HTTP communication with linked nodes to
+push or pull data changes that have been routed. </para>
+
+<section id="routing-job">
+<title>Route Job</title>
+<para>
+After data is captured in the
+<xref linkend="table_data" xrefstyle="table" />
+table, it is routed to specific nodes in batches by the
+<emphasis>Route Job</emphasis>
+. It is a single background task that inserts into
+<xref linkend="table_data_event" xrefstyle="table" />
+and
+<xref linkend="table_outgoing_batch" xrefstyle="table" />
+.
+</para>
+<para>
+The job processes each enabled channel, one at a time, collecting a list of
+data ids from
+<xref linkend="table_data" xrefstyle="table" />
+which have not been routed (see
+<xref linkend="data-gaps" />
+for much more detail about this step), up to a
+limit specified by the channel configuration (
+<literal>max_data_to_route</literal>
+, on
+<xref linkend="table_channel" xrefstyle="table" />
+). The data is then batched based on the
+<literal>batch_algorithm</literal>
+defined for the channel and as documented in
+<xref linkend="configuration-channel" />
+. Note that, for the <ns:literal>default</ns:literal> and <ns:literal>transactional</ns:literal> algorithm, there may actually be
+more than
+<literal>max_data_to_route</literal>
+included depending on the transaction boundaries. The mapping of data to
+specific nodes, organized into batches, is then recorded in
+<xref linkend="table_outgoing_batch" xrefstyle="table" />
+with a status of "RT" in each case (representing the fact that the Route
+Job is still running). Once the routing algorithms and batching are
+completed, the batches are organized with their corresponding data ids
+and saved in
+<xref linkend="table_data_event" xrefstyle="table" />
+. Once
+<xref linkend="table_data_event" xrefstyle="table" />
+is updated, the rows in
+<xref linkend="table_outgoing_batch" xrefstyle="table" />
+are updated to a status of New "NE".
+</para>
+<para>
+The route job will respect the <literal>max_batch_size</literal> on <xref linkend="table_outgoing_batch" xrefstyle="table" />.  If the max
+batch size is reached before the end of a database tranaction and the batch algorithm is set to something other than 
+<ns:literal>nontransactional</ns:literal> the batch may exceed the specified max size. 
+</para>
+<para>
+The route job delegates to a router defined by the <literal>router_type</literal> and configured by the <literal>router_expression</literal> in the 
+<xref linkend="table_router" xrefstyle="table" /> table.  Each router that has a <ns:literal>source_node_group_id</ns:literal> 
+that matches the current node's source node group id and is linked to the <xref linkend="table_trigger" xrefstyle="table" /> that captured the data gets an
+opportunity to choose a list of nodes the data should be sent to.  Data can only be routed to nodes that belong to the 
+router's <ns:literal>target_node_group_id</ns:literal>.
+</para>
+<section id="data-gaps">
+<title>Data Gaps</title>
+<para>
+On the surface, the first Route Job step of collecting unrouted data ids
+seems simple: assign sequential data ids for each data row as it's
+inserted and keep track of which data id was last routed and start from
+there. The difficulty arises, however, due to the fact that there can be
+multiple transactions inserting into
+<xref linkend="table_data" xrefstyle="table" />
+simultaneously. As such, a given section of rows in the
+<xref linkend="table_data" xrefstyle="table" />
+table may actually contain "gaps" in the data ids when the Route Job is
+executing. Most of these gaps are only temporarily and fill in at some
+point after routing and need to be picked up with the next run of the
+Route Job. Thus, the Route Job needs to remember to route the filled-in
+gaps. Worse yet, some of these gaps are actually permanent and result
+from a transaction that is rolled back for some reason. In this case,
+the Route Job must continue to watch for the gap to fill in and, at some
+point, eventually gives up and assumes the gap is permanent and can be
+skipped. All of this must be done in some fashion that guarantees that
+gaps are routed when they fill in while also keeping routing as
+efficient as possible.
+</para>
+<para>
+SymmetricDS handles the issue of data gaps by making use of a table,
+<xref linkend="table_data_gap" xrefstyle="table" />
+, to record gaps found in the data ids. In fact, this table completely
+defines the entire range of data tha can be routed at any point in time.
+For a brand new instance of SymmetricDS, this table is empty and
+SymmetricDS creates a gap starting from data id of zero and ending with
+a very large number (defined by
+<literal>routing.largest.gap.size</literal>
+). At the start of a Route Job, the list of valid gaps (gaps with status
+of 'GP') is collected, and each gap is evaluated in turn. If a gap is
+sufficiently old (as defined by
+<literal>routing.stale.dataid.gap.time.ms</literal>
+, the gap is marked as skipped (status of 'SK') and will no longer be
+evaluated in future Route Jobs (note that the 'last' gap (the one with
+the highest starting data id) is never skipped). If not skipped, then
+<xref linkend="table_data_event" xrefstyle="table" />
+is searched for data ids present in the gap. If one or more data ids is
+found in
+<xref linkend="table_data_event" xrefstyle="table" />
+, then the current gap is marked with a status of OK, and new gap(s) are
+created to represent the data ids still missing in the gap's range. This
+process is done for all gaps. If the very last gap contained data, a new
+gap starting from the highest data id and ending at (highest data id +
+<literal>routing.largest.gap.size</literal>
+) is then created. This process has resulted in an updated list of gaps
+which may contain new data to be routed.
+</para>
+</section>
+</section>
+<section id="push-pull-job">
+<title>Push and Pull Jobs</title>
+<para>
+After data is routed, it awaits transport to the target nodes. Transport
+can occur when a client node is configured to pull data or when the host
+node is configured to push data. These events are controlled by the
+<emphasis>push</emphasis>
+and the
+<emphasis>pull jobs</emphasis>
+. When the
+<literal>start.pull.job</literal>
+SymmetricDS property is set to
+<literal>true</literal>
+, the frequency that data is pulled is controlled by the
+<literal>job.pull.period.time.ms</literal>
+. When the
+<literal>start.push.job</literal>
+SymmetricDS property is set to
+<literal>true</literal>
+, the frequency that data is pushed is controlled by the
+<literal>job.push.period.time.ms</literal>
+. 
+</para>
+<para>
+Data is extracted by channel from the source database's
+<xref linkend="table_data" xrefstyle="table" />
+table at an interval controlled by the
+<literal>extract_period_millis</literal>
+column on the
+<xref linkend="table_channel" xrefstyle="table" />
+table. The
+<literal>last_extract_time</literal>
+is always recorded, by channel, on the
+<xref linkend="table_node_channel_ctl" xrefstyle="table" />
+table for the host node's id. When the Pull and Push Job run, if the
+extract period has not passed according to the last extract time, then
+the channel will be skipped for this run. If the
+<literal>extract_period_millis</literal>
+is set to zero, data extraction will happen every time the jobs run.
+</para>
+<para>
+The maximum number of batches to extract per synchronization is controlled by 
+<ns:literal>max_batch_to_send</ns:literal> on the <xref linkend="table_channel" xrefstyle="table" /> table.  There is also 
+a setting that controls the max number of bytes to send in one synchronization.  If SymmetricDS has extracted the more than the
+number of bytes configured by the <ns:literal>transport.max.bytes.to.sync</ns:literal> parameter, then it will finish extracting the 
+current batch and finish synchronization so the client has a chance to process and acknowlege the "big" batch.  This may happen before
+the configured max number of batches has been reached.  
+</para>
+<para>
+Both the push and pull jobs can be configured to push and pull 
+multiple nodes in parallel. In order to take advantage of this the
+<literal>pull.thread.per.server.count</literal>
+or
+<literal>push.thread.per.server.count</literal>
+should be adjusted (from their default value of 10) to the number to the
+number of concurrent push/pulls you want to occur per period on each
+SymmetricDS instance. Push and pull activity is recorded in the
+<xref linkend="table_node_communication" xrefstyle="table" />
+table. This table is also used to lock push and pull activity across
+multiple servers in a cluster.
+</para>
+<para>
+SymmetricDS also provides the ability to configure windows of time when
+synchronization is allowed. This is done using the
+<xref linkend="table_node_group_channel_window" xrefstyle="table" />
+table. A list of allowed time windows can be specified for a node group
+and a channel. If one or more windows exist, then data will only be
+extracted and transported if the time of day falls within the window of
+time specified. The configured times are always for the target node's
+local time. If the
+<literal>start_time</literal>
+is greater than the
+<literal>end_time</literal>
+, then the window crosses over to the next day.
+</para>
+<para>
+All data loading may be disabled by setting the
+<literal>dataloader.enable</literal>
+property to false. This has the effect of not allowing incoming
+synchronizations, while allowing outgoing synchronizations. All data
+extractions may be disabled by setting the
+<literal>dataextractor.enable</literal>
+property to false. These properties can be controlled by inserting into
+the root server's
+<xref linkend="table_parameter" xrefstyle="table" />
+table. These properties affect every channel with the exception of the
+'config' channel.
+</para>
+<para> Node communication over HTTP is represented in the
+following figure. </para>
+<para>
+<figure>
+<title>Node Communication</title>
+<mediaobject>
+<imageobject>
+<imagedata fileref="images/seq-node-communication.gif" format="GIF" />
+</imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
+<section id="sync-triggers">
+<title>Sync Triggers Job</title>
+<para>
+SymmetricDS examines the current configuration, corresponding database
+triggers, and the underlying tables to determine if database triggers
+need created or updated. The change activity is recorded on the
+<xref linkend="table_trigger_hist" xrefstyle="table" />
+table with a reason for the change. The following reasons for a change
+are possible:
+
+<itemizedlist>
+<listitem>
+<para>N - New trigger that has not been created before</para>
+</listitem>
+<listitem>
+<para>S - Schema changes in the table were detected</para>
+</listitem>
+<listitem>
+<para>C - Configuration changes in Trigger</para>
+</listitem>
+<listitem>
+<para>T - Trigger was missing</para>
+</listitem>
+</itemizedlist>
+
+A configuration entry in Trigger without any history in Trigger Hist
+results in a new trigger being created (N). The Trigger Hist stores a
+hash of the underlying table, so any alteration to the table causes the
+trigger to be rebuilt (S). When the
+<literal>last_update_time</literal>
+is changed on the Trigger entry, the configuration change causes the
+trigger to be rebuilt (C). If an entry in Trigger Hist is missing the
+corresponding database trigger, the trigger is created (T).
+</para>
+<para>
+The process of examining triggers and rebuilding them is automatically
+run during startup and each night by the SyncTriggersJob. The user can
+also manually run the process at any time by invoking the
+<literal>syncTriggers()</literal>
+method over JMX. The SyncTriggersJob is enabled by default to run at 15
+minutes past midnight. If SymmetricDS is being run from a collection of
+servers (multiple instances of the same Node running against the same
+database), then locking should be enable to prevent database contention.
+The following runtime properties control the behavior of the process.
+<variablelist>
+<varlistentry>
+<term>
+<command>start.synctriggers.job</command>
+</term>
+<listitem>
+<para> Whether the sync triggers job is enabled for this node.
+[&#xA0;Default:&#xA0;true&#xA0;] </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<command>job.synctriggers.aftermidnight.minutes</command>
+</term>
+<listitem>
+<para> If scheduled, the sync triggers job will run nightly. This
+is how long after midnight that job will run.
+[&#xA0;Default:&#xA0;15&#xA0;] </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<command>cluster.lock.during.sync.triggers</command>
+</term>
+<listitem>
+<para> Indicate if the sync triggers job is clustered and
+requires a lock before running. [&#xA0;Default:&#xA0;false&#xA0;] </para>
+</listitem>
+</varlistentry>
+</variablelist>
+</para>
+</section>
+    <section id="purge-job">
+        <title>Purge Job</title>
+        <para>
+            Purging is the act of cleaning up captured data that is no longer needed in SymmetricDS's runtime tables.
+            Data is purged through
+            delete statements by the <emphasis>Purge Job</emphasis>.  Only data that has been successfully synchronized will be purged.  Purged tables include:
+            <itemizedlist>
+                <listitem>
+                   <xref linkend="table_data" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                    <xref linkend="table_data_event" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                  <xref linkend="table_outgoing_batch" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                    <xref linkend="table_incoming_batch" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                    <xref linkend="table_data_gap" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                   <xref linkend="table_node_host_stats" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                   <xref linkend="table_node_host_channel_stats" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                   <xref linkend="table_node_host_job_stats" xrefstyle="table"/>
+                </listitem>
+            </itemizedlist>
+            The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The timing of the three purge jobs (incoming, outgoing, and data gaps) is controlled
+            by a cron expression as specified by the following properties:  <literal>job.purge.outgoing.cron</literal>,  <literal>job.purge.incoming.cron</literal>,
+            and  <literal>job.purge.datagaps.cron</literal>. The default is <literal>0 0 0 * * *</literal>, or once per day at midnight.
+        </para>
+
+        <para>
+            Two retention period properties
+            indicate how much history SymmetricDS will retain before purging.  The <literal>purge.retention.minutes</literal> property indicates the period
+            of history to keep for synchronization tables.  The default value is 5 days.
+            The <literal>statistic.retention.minutes</literal> property
+            indicates the period of history to keep for statistics.  The default value is also 5 days.
+        </para>
+        <para>
+            The purge properties should be adjusted according to how much data is flowing through the system and the amount of storage space the database has.
+            For an initial deployment it is recommended that the purge properties be kept at the defaults, since it is often helpful to be able to look at
+            the captured data in order to triage problems and profile the synchronization patterns.  When scaling up to more nodes, it is recomended that the
+            purge parameters be scaled back to 24 hours or less.
+        </para>
+    </section>
+
+</section>
+  
 </chapter>
