@@ -78,7 +78,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             return super.getValueArray(columnValues, keyValues);
         }
     }
-    
+
     @Override
     public Object[] getValueArray(Map<String, Object> params) {
         Object[] args = null;
@@ -109,19 +109,19 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             return super.buildTypes(keys, columns, isDateOverrideToTimestamp);
         }
     }
-    
+
     @Override
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (columns[i].getMappedTypeCode() == -101) {
                     sql.append("cast(? as timestamp with time zone)").append(",");
-                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
                     sql.append("cast(? as uuid)").append(",");
-                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
                     sql.append("cast(? as bit varying)").append(",");
-                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-                    sql.append("cast(? as interval)").append(",");                    
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append("cast(? as interval)").append(",");
                 } else {
                     sql.append("?").append(",");
                 }
@@ -151,7 +151,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                             .append(" = cast(? as bit varying)").append(separator);
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
-                          .append(" = cast(? as interval)").append(separator);                      
+                          .append(" = cast(? as interval)").append(separator);
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
                             .append(separator);
@@ -163,7 +163,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
     }
-    
+
     @Override
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
         String columnName = column.getName();
@@ -181,7 +181,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             "   end as ").append(columnName);
         } else {
             super.appendColumnNameForSql(sql, column, select);
-        }        
+        }
     }
 
 }
