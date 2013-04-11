@@ -346,12 +346,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                     objectValue = StringUtils.rightPad(value.toString(),
                                             column.getSizeAsInt(), ' ');
                                 }
+                            } else if (type == Types.BIGINT) {
+                                objectValue = parseBigInteger(value);                                
                             } else if (type == Types.INTEGER || type == Types.SMALLINT
                                     || type == Types.BIT) {
                                 objectValue = parseIntegerObjectValue(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
                                     || type == Types.FLOAT || type == Types.DOUBLE
-                                    || type == Types.REAL || type == Types.BIGINT) {
+                                    || type == Types.REAL) {
                                 // The number will have either one period or one
                                 // comma for the decimal point, but we need a
                                 // period
@@ -394,6 +396,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
+    
+    protected Number parseBigInteger(String value) {
+        try {
+            return new Long(value);
+        } catch (NumberFormatException ex) {
+            return new BigInteger(value);        
+        }
+    }        
         
     protected Number parseIntegerObjectValue(String value) {
         try {
