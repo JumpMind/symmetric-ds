@@ -45,7 +45,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             appendColumns(sql, columns, false);
             sql.append(") (select ");
             appendColumnQuestions(sql, columns);
-            sql.append(" where (select 1 from ");
+            sql.append(" where (select distinct 1 from ");
             sql.append(tableName);
             sql.append(" where  ");
             if (keyColumns == null || keyColumns.length == 0) {
