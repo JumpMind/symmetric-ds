@@ -170,7 +170,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.setCompatible(Compatible.POSTGRES);
             export.setFormat(Format.SQL);
             String sql = export.exportTables(new String[] { TEST_TS_W_TZ });
-            final String EXPECTED_POSTGRES = "insert into \"test_ts_w_tz\"(\"id\", \"tz\") (select 1,cast('1973-06-08 07:00:00.000000 -04:00' as timestamp with time zone) where (select 1 from \"test_ts_w_tz\" where  \"id\" = 1) is null);";
+            final String EXPECTED_POSTGRES = "insert into \"test_ts_w_tz\"(\"id\", \"tz\") (select 1,cast('1973-06-08 07:00:00.000000 -04:00' as timestamp with time zone) where (select distinct 1 from \"test_ts_w_tz\" where  \"id\" = 1) is null);";
             Assert.assertTrue("Expected the following sql:\n" +sql + "\n\n to contain:\n" +EXPECTED_POSTGRES, sql.contains(EXPECTED_POSTGRES));
             
             export.setCompatible(Compatible.ORACLE);
