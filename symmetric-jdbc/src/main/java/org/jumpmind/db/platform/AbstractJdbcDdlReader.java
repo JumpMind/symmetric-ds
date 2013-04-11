@@ -1268,7 +1268,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                         if (columnCount > 1) {
                             schemaCatalog = rs.getString(2);
                         }
-                        if (StringUtils.isBlank(catalog) && !schemas.contains(schema)) {
+                        if ((StringUtils.isBlank(schemaCatalog) || StringUtils.isBlank(catalog)) && !schemas.contains(schema)) {
                             schemas.add(schema);
                         } else if (StringUtils.isNotBlank(schemaCatalog)
                                 && schemaCatalog.equals(catalog)) {
