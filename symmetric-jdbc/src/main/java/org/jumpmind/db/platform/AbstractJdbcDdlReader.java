@@ -976,12 +976,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             fkData = metaData.getForeignKeys(tableName);
 
             while (fkData.next()) {
-                int count = fkData.getMetaData().getColumnCount();
-                for (int i = 1; i <= count; i++) {
-                    System.out.println(fkData.getMetaData().getColumnName(i) + "=" + fkData.getObject(i));
-                }
                 Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
-
                 readForeignKey(metaData, values, fks);
             }
         } finally {
