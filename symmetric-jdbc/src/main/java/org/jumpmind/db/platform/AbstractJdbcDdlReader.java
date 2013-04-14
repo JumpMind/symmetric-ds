@@ -181,6 +181,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         // first to be read)
         // See also DDLUTILS-29
         result.add(new MetaDataColumnDescriptor("COLUMN_DEF", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", Types.VARCHAR));
+
         // we're also reading the table name so that a model reader impl can
         // filter manually
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
@@ -764,8 +766,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             return false;
         }
         for (int columnIdx = 0; columnIdx < index.getColumnCount(); columnIdx++) {
+            try {
             if (!columnsToSearchFor.get(columnIdx).equals(index.getColumn(columnIdx).getName())) {
                 return false;
+            }
+            } catch (NullPointerException ex) {
+                ex.printStackTrace();
             }
         }
         return true;
@@ -868,6 +874,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
         String defaultValue = (String) values.get("COLUMN_DEF");
+        if (defaultValue == null) {
+            defaultValue = (String) values.get("COLUMN_DEFAULT");
+        }
         if (defaultValue != null) {
             column.setDefaultValue(defaultValue.trim());
         }
@@ -967,6 +976,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             fkData = metaData.getForeignKeys(tableName);
 
             while (fkData.next()) {
+                int count = fkData.getMetaData().getColumnCount();
+                for (int i = 1; i <= count; i++) {
+                    System.out.println(fkData.getMetaData().getColumnName(i) + "=" + fkData.getObject(i));
+                }
                 Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
 
                 readForeignKey(metaData, values, fks);

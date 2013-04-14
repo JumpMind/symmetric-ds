@@ -174,18 +174,26 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return executeCallback(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {
                 T result = null;
-                PreparedStatement ps = null;
+                Statement stmt = null;
                 ResultSet rs = null;
                 try {
-                    ps = con.prepareStatement(sql);
-                    jdbcSqlTemplate.setValues(ps, args);
-                    rs = ps.executeQuery();
+                    if (args != null && args.length > 0) {
+                        PreparedStatement ps = con.prepareStatement(sql);
+                        stmt = ps;
+                        stmt.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
+                        jdbcSqlTemplate.setValues(ps, args);
+                        rs = ps.executeQuery();                        
+                    } else {
+                        stmt = con.createStatement();
+                        stmt.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
+                        rs = stmt.executeQuery(sql);
+                    }
                     if (rs.next()) {
                         result = jdbcSqlTemplate.getObjectFromResultSet(rs, clazz);
                     }
                 } finally {
                     JdbcSqlTemplate.close(rs);
-                    JdbcSqlTemplate.close(ps);
+                    JdbcSqlTemplate.close(stmt);
                 }
                 return result;
             }

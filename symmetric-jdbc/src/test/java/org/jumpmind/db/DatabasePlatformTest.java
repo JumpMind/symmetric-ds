@@ -14,6 +14,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
     }
 
-    // @Before
+    @Before
     public void turnOnDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         originalLevel = logger.getLevel();
@@ -90,9 +91,9 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
             Table tableFromDatabase = dropCreateAndThenReadTable(table);
 
-            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
-
             Assert.assertNotNull(tableFromDatabase);
+            
+            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
 
             String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
             insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
@@ -105,9 +106,6 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
             IDdlBuilder builder = platform.getDdlBuilder();
             String alterSql = builder.alterTable(tableFromDatabase, table);
-
-            Logger logger = Logger.getLogger("org.jumpmind.db");
-            logger.info(alterSql);
 
             Assert.assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
 
