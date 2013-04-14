@@ -95,6 +95,11 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>provided</scope>
+		</dependency>		
+		<dependency>
+            <groupId>org.jumpmind.symmetric.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jumpmind.symmetric.jdbc</groupId>

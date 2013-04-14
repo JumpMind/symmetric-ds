@@ -353,7 +353,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void testLargeDouble() throws Exception {
         String[] values = new String[TEST_COLUMNS.length];
         values[0] = getNextId();
-        values[10] = "-0.07476635514018691588785046728971962617";
+        values[10] = "-0.0747663551401869";
         String[] expectedValues = (String[]) ArrayUtils.clone(values);
         massageExpectectedResultsForDialect(expectedValues);
         writeData(new CsvData(DataEventType.INSERT, values), expectedValues);

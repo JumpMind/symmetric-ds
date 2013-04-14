@@ -20,13 +20,18 @@ package org.jumpmind.db.platform.mysql;
  */
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -36,6 +41,8 @@ import org.jumpmind.db.platform.IDatabasePlatform;
  * Reads a database model from a MySql database.
  */
 public class MySqlDdlReader extends AbstractJdbcDdlReader {
+    
+    private Boolean mariaDbDriver = null;
 
     public MySqlDdlReader(IDatabasePlatform platform) {
         super(platform);
@@ -108,5 +115,54 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         // MySql defines a non-unique index of the same name as the fk
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
+    }
+    
+    protected boolean isMariaDbDriver(Connection connection) throws SQLException {
+        if (mariaDbDriver == null) {
+            mariaDbDriver = "mariadb-jdbc".equals(connection.getMetaData().getDriverName());
+        }
+        return mariaDbDriver;
+    }
+    
+    @Override
+    protected Collection<ForeignKey> readForeignKeys(Connection connection,
+            DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
+        if (!isMariaDbDriver(connection)) {
+            return super.readForeignKeys(connection, metaData, tableName);
+        } else {
+            Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
+            ResultSet fkData = null;
+            try {
+                fkData = metaData.getForeignKeys(tableName);
+                while (fkData.next()) {
+                    int count = fkData.getMetaData().getColumnCount();
+                    Map<String, Object> values = new HashMap<String, Object>();
+                    for (int i = 1; i <= count; i++) {
+                        values.put(fkData.getMetaData().getColumnName(i), fkData.getObject(i));
+                    }
+                    String fkName = (String) values.get("CONSTRAINT_NAME");
+                    ForeignKey fk = (ForeignKey) fks.get(fkName);
+
+                    if (fk == null) {
+                        fk = new ForeignKey(fkName);
+                        fk.setForeignTableName((String) values.get("REFERENCED_TABLE_NAME"));
+                        fks.put(fkName, fk);
+                    }
+
+                    Reference ref = new Reference();
+
+                    ref.setForeignColumnName((String) values.get("REFERENCED_COLUMN_NAME"));
+                    ref.setLocalColumnName((String) values.get("COLUMN_NAME"));
+                    if (values.containsKey("POSITION_IN_UNIQUE_CONSTRAINT")) {
+                        ref.setSequenceValue(((Number) values.get("POSITION_IN_UNIQUE_CONSTRAINT"))
+                                .intValue());
+                    }
+                    fk.addReference(ref);
+                }
+            } finally {
+                close(fkData);
+            }
+            return fks.values();
+        }
     }
 }

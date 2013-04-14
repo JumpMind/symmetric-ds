@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     
@@ -32,7 +33,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     protected ResultSet rs;
 
-    protected PreparedStatement st;
+    protected Statement st;
 
     protected boolean autoCommitFlag;
 
@@ -62,19 +63,32 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 c.setAutoCommit(false);
             }
 
-            st = c.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                    java.sql.ResultSet.CONCUR_READ_ONLY);
-            st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
-            if (values != null) {
-                sqlTemplate.setValues(st, values, types, sqlTemplate.getLobHandler().getDefaultHandler());
-            }
-            st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             try {
-                rs = st.executeQuery();
+                if (values != null) {
+                    PreparedStatement pstmt = c.prepareStatement(sql,
+                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    sqlTemplate.setValues(pstmt, values, types, sqlTemplate.getLobHandler()
+                            .getDefaultHandler());
+                    st = pstmt;                    
+                    st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
+                    st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
+                    rs = pstmt.executeQuery();
+
+                } else {
+                    st = c.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
+                    st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
+                    rs = st.executeQuery(sql);
+                }
             } catch (SQLException e) {
-                // The Xerial SQLite JDBC driver throws an exception if a query returns an empty set
-                // This gets around that
-                if (e.getMessage()==null || !e.getMessage().equals("query does not return results")) {
+                /*
+                 * The Xerial SQLite JDBC driver throws an exception if a query
+                 * returns an empty set This gets around that
+                 */
+                if (e.getMessage() == null
+                        || !e.getMessage().equals("query does not return results")) {
                     throw e;
                 }
             }
