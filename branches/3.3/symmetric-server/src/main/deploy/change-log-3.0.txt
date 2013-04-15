@@ -1,3 +1,9 @@
+SymmetricDS - 3.3.7 (Released 2013-04-15) 
+=========================================
+- 0001178: [Improvement] Performance Improvement: Many calls are being made to the file system to check if file exists while extracting big batches (chenson) - resolved.
+- 0001172: [Bug] postgres - Syncing slow for tables with bigint keys (chenson) - resolved.
+- 0001170: [Bug] postgres - Inserts fail on reverse reload events when a table contains duplicate rows. (chenson) - resolved.
+
 SymmetricDS - 3.3.6 (Released 2013-04-03) 
 =========================================
 - 0001140: [Bug] SQL Server 2000 triggers are being created using the 'max' keyword, which 2000 does not support. (abrougher) - closed.
