@@ -112,8 +112,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
+        if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 int pullCount = 0;
                 long batchesProcessedCount = 0;
@@ -127,16 +126,15 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     
                     dataLoaderService.loadDataFromPull(node, status);
                     
-                    if (!status.failed() && 
-                            (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
+                    if (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0) {
                         log.info(
                                 "Pull data received from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
 
-                    } else if (status.failed()) {
-                        log.warn(
-                                "There was a failure while pulling data from {}.  {} rows and {} batches were processed",
+                    } else {
+                        log.debug(
+                                "Pull data received from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
                     }

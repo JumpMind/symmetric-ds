@@ -347,7 +347,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                             column.getSizeAsInt(), ' ');
                                 }
                             } else if (type == Types.BIGINT) {
-                                objectValue = parseBigInteger(value);
+                                objectValue = parseBigInteger(value);                                
                             } else if (type == Types.INTEGER || type == Types.SMALLINT
                                     || type == Types.BIT) {
                                 objectValue = parseIntegerObjectValue(value);
@@ -403,7 +403,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } catch (NumberFormatException ex) {
             return new BigInteger(value);        
         }
-    }    
+    }        
         
     protected Number parseIntegerObjectValue(String value) {
         try {

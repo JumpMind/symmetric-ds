@@ -69,8 +69,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private IDataExtractorService dataExtractorService;
 
-    private IDataService dataService;
-
     private IDataLoaderService dataLoaderService;
 
     private ITransportManager transportManager;
@@ -91,7 +89,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
-        this.dataService = dataService;
         this.dataLoaderService = dataLoaderService;
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
@@ -190,16 +187,44 @@ public class RegistrationService extends AbstractService implements IRegistratio
              * Only send automatic initial load once or if the client is really
              * re-registering
              */
-            if ((security != null && security.getInitialLoadTime() == null)
-                    || isRequestedRegistration) {
-                if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                    nodeService.setInitialLoadEnabled(nodeId, true, false);
-                }
+			if ((security != null && security.getInitialLoadTime() == null)
+					|| isRequestedRegistration) {
+				if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
+					ISqlTransaction transaction = null;
+					try {
+						transaction = sqlTemplate.startSqlTransaction();
+						symmetricDialect.disableSyncTriggers(transaction,
+								nodeId);
 
-                if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false);
-                }
-            }
+						nodeService.setInitialLoadEnabled(transaction, nodeId,
+								true);
+						transaction.commit();
+					} finally {
+						symmetricDialect.enableSyncTriggers(transaction);
+						close(transaction);
+					}
+
+				}
+
+				if (parameterService
+						.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+					ISqlTransaction transaction = null;
+					try {
+						transaction = sqlTemplate.startSqlTransaction();
+						symmetricDialect.disableSyncTriggers(transaction,
+								nodeId);
+
+						nodeService.setReverseInitialLoadEnabled(transaction,
+								nodeId, true);
+						transaction.commit();
+					} finally {
+						symmetricDialect.enableSyncTriggers(transaction);
+						close(transaction);
+					}
+
+				}
+
+			}
             
             dataExtractorService.extractConfigurationStandalone(registeredNode, out);
 
@@ -339,21 +364,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
             if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
                 registered = isRegisteredWithServer();
-                if (registered) {
-                    log.info("We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
-                    Node identity = nodeService.findIdentity();
-                    Node parentNode = nodeService.findNode(identity.getCreatedAtNodeId());
-                    dataService
-                            .insertSqlEvent(
-                                    parentNode,
-                                    "update "
-                                            + tablePrefix
-                                            + "_node_security set registration_enabled=1,registration_time=current_timestamp where node_id='"
-                                            + identity.getNodeId() + "'", false);
-                }
-            }
-            
-            if (registered) {
+            } else {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());

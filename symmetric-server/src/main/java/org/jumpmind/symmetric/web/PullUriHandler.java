@@ -29,10 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -68,6 +64,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         this.statisticManager = statisticManager;
     }
 
+
     public void handleWithCompression(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
         // request has the "other" nodes info
@@ -85,14 +82,17 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
 
         // pull out headers and pass to pull() method
+
         pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), map);
 
         log.debug("Done with Pull request from {}", nodeId);
 
     }
-        
+    
+    
     public void pull(String nodeId, String remoteHost, String remoteAddress,
             OutputStream outputStream, ChannelMap map) throws IOException {
+        INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         long ts = System.currentTimeMillis();
         try {
@@ -110,16 +110,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                 } else {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream,
                             map);
-                    ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
-                            nodeService.findIdentityNodeId(), nodeId, ProcessType.PULL_HANDLER));
-                    try {
-                        dataExtractorService.extract(processInfo, nodeService.findNode(nodeId),
-                                outgoingTransport);
-                        processInfo.setStatus(Status.DONE);
-                    } catch (RuntimeException ex) {
-                        processInfo.setStatus(Status.ERROR);
-                        throw ex;
-                    }
+                    dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);
                     outgoingTransport.close();
                 }
             } else {
@@ -131,4 +122,31 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
 
+    private INodeService getNodeService() {
+        return nodeService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public IConfigurationService getConfigurationService() {
+        return configurationService;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
+
+    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
+        this.dataExtractorService = dataExtractorService;
+    }
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
 }

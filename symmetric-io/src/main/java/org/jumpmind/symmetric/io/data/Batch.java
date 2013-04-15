@@ -29,8 +29,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 public class Batch {
     
     public static final long UNKNOWN_BATCH_ID = -9999;
-    
-    public static final String DEFAULT_CHANNEL_ID = "default";
 
     public enum BatchType { EXTRACT, LOAD };
     
@@ -38,7 +36,7 @@ public class Batch {
     protected String sourceNodeId;
     protected String targetNodeId;
     protected boolean initialLoad;    
-    protected String channelId = DEFAULT_CHANNEL_ID;
+    protected String channelId;
     protected BinaryEncoding binaryEncoding;   
     protected Date startTime;
     protected long lineCount;
@@ -54,9 +52,7 @@ public class Batch {
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;
         this.batchId = batchId;
-        if (channelId != null) {
-            this.channelId = channelId;
-        }
+        this.channelId = channelId;
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.binaryEncoding = binaryEncoding;

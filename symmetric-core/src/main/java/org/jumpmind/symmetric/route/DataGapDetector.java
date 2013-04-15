@@ -30,15 +30,9 @@ import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,33 +40,27 @@ import org.slf4j.LoggerFactory;
  * Responsible for managing gaps in data ids to ensure that all captured data is
  * routed for delivery to other nodes.
  */
-public class DataGapDetector {
+public class DataGapDetector implements IDataToRouteGapDetector {
 
     private static final Logger log = LoggerFactory.getLogger(DataGapDetector.class);
 
-    protected IDataService dataService;
+    private IDataService dataService;
 
-    protected IParameterService parameterService;
+    private IParameterService parameterService;
 
-    protected ISymmetricDialect symmetricDialect;
+    private ISymmetricDialect symmetricDialect;
 
-    protected IRouterService routerService;
-    
-    protected IStatisticManager statisticManager;
-    
-    protected INodeService nodeService;
+    private IRouterService routerService;
 
     public DataGapDetector() {
     }
 
     public DataGapDetector(IDataService dataService, IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
+            ISymmetricDialect symmetricDialect, IRouterService routerService) {
         this.dataService = dataService;
         this.parameterService = parameterService;
         this.routerService = routerService;
         this.symmetricDialect = symmetricDialect;
-        this.statisticManager = statisticManager;
-        this.nodeService = nodeService;
     }
     
     /**
@@ -80,125 +68,109 @@ public class DataGapDetector {
      * dual route data.
      */
     public void beforeRouting() {
-        ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
-                nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-        try {
-            boolean deleteImmediately = isDeleteFilledGapsImmediately();
-            long ts = System.currentTimeMillis();
-            final List<DataGap> gaps = removeAbandonedGaps(dataService.findDataGaps());
-            long lastDataId = -1;
-            final int dataIdIncrementBy = parameterService
-                    .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
-            final long maxDataToSelect = parameterService
-                    .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
-            for (final DataGap dataGap : gaps) {
-                final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
-                String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
-                ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
-                Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
-                lastDataId = -1;
-                processInfo.setStatus(Status.QUERYING);
-                List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
-                processInfo.setStatus(Status.PROCESSING);
-                for (Number number : ids) {
-                    long dataId = number.longValue();
-                    processInfo.incrementDataCount();
-                    if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
-                        // there was a new gap at the start
-                        dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
-                    } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
-                            && lastDataId != dataId) {
-                        // found a gap somewhere in the existing gap
-                        dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
-                    }
-                    lastDataId = dataId;
+        boolean deleteImmediately = isDeleteFilledGapsImmediately();
+        long ts = System.currentTimeMillis();
+        final List<DataGap> gaps = removeAbandonedGaps(dataService.findDataGaps());
+        long lastDataId = -1;
+        final int dataIdIncrementBy = parameterService
+                .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
+        final long maxDataToSelect = parameterService
+                .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+        for (final DataGap dataGap : gaps) {
+            final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
+            String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
+            ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+            Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
+            lastDataId = -1;
+            List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
+            for (Number number : ids) {
+                long dataId = number.longValue();
+                if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
+                    // there was a new gap at the start
+                    dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
+                } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
+                        && lastDataId != dataId) {
+                    // found a gap somewhere in the existing gap
+                    dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
+                }
+                lastDataId = dataId;
+            }
+
+            // if we found data in the gap
+            if (lastDataId != -1) {
+                if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
+                    dataService.insertDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap
+                            .getEndId()));
                 }
 
-                // if we found data in the gap
-                if (lastDataId != -1) {
-                    if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
-                        dataService.insertDataGap(new DataGap(lastDataId + dataIdIncrementBy,
-                                dataGap.getEndId()));
-                    }
+                if (deleteImmediately) {
+                    dataService.deleteDataGap(dataGap);
+                } else {
+                    dataService.updateDataGap(dataGap, DataGap.Status.OK);
+                }
 
-                    if (deleteImmediately) {
-                        dataService.deleteDataGap(dataGap);
-                    } else {
-                        dataService.updateDataGap(dataGap, DataGap.Status.OK);
-                    }
+                // if we did not find data in the gap and it was not the
+                // last gap
+            } else if (!lastGap) {
+                if (dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0) {
+                    if (symmetricDialect.supportsTransactionViews()) {
+                        long transactionViewClockSyncThresholdInMs = parameterService
+                                .getLong(
+                                        ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
+                                        60000);
+                        Date createTime = dataService.findCreateTimeOfData(dataGap.getEndId() + 1);
+                        if (createTime != null
+                                && !symmetricDialect.areDatabaseTransactionsPendingSince(createTime
+                                        .getTime() + transactionViewClockSyncThresholdInMs)) {
+                            if (dataService.countDataInRange(dataGap.getStartId() - 1,
+                                    dataGap.getEndId() + 1) == 0) {
+                                if (dataGap.getStartId() == dataGap.getEndId()) {
+                                    log.info(
+                                            "Found a gap in data_id at {}.  Skipping it because there are no pending transactions in the database",
+                                            dataGap.getStartId());
+                                } else {
+                                    log.info(
+                                            "Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database",
+                                            dataGap.getStartId(), dataGap.getEndId());
+                                }
 
-                    // if we did not find data in the gap and it was not the
-                    // last gap
-                } else if (!lastGap) {
-                    if (dataService.countDataInRange(dataGap.getStartId() - 1,
-                            dataGap.getEndId() + 1) == 0) {
-                        if (symmetricDialect.supportsTransactionViews()) {
-                            long transactionViewClockSyncThresholdInMs = parameterService
-                                    .getLong(
-                                            ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
-                                            60000);
-                            Date createTime = dataService
-                                    .findCreateTimeOfData(dataGap.getEndId() + 1);
-                            if (createTime != null
-                                    && !symmetricDialect
-                                            .areDatabaseTransactionsPendingSince(createTime
-                                                    .getTime()
-                                                    + transactionViewClockSyncThresholdInMs)) {
-                                if (dataService.countDataInRange(dataGap.getStartId() - 1,
-                                        dataGap.getEndId() + 1) == 0) {
-                                    if (dataGap.getStartId() == dataGap.getEndId()) {
-                                        log.info(
-                                                "Found a gap in data_id at {}.  Skipping it because there are no pending transactions in the database",
-                                                dataGap.getStartId());
-                                    } else {
-                                        log.info(
-                                                "Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database",
-                                                dataGap.getStartId(), dataGap.getEndId());
-                                    }
-
-                                    if (deleteImmediately) {
-                                        dataService.deleteDataGap(dataGap);
-                                    } else {
-                                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                                    }
+                                if (deleteImmediately) {
+                                    dataService.deleteDataGap(dataGap);
+                                } else {
+                                    dataService.updateDataGap(dataGap, DataGap.Status.SK);
                                 }
                             }
-                        } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
-                            if (dataGap.getStartId() == dataGap.getEndId()) {
-                                log.info(
-                                        "Found a gap in data_id at {}.  Skipping it because the gap expired",
-                                        dataGap.getStartId());
-                            } else {
-                                log.info(
-                                        "Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
-                                        dataGap.getStartId(), dataGap.getEndId());
-                            }
-                            if (deleteImmediately) {
-                                dataService.deleteDataGap(dataGap);
-                            } else {
-                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                            }
                         }
-                    } else {
-                        dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
-                                dataGap.getEndId() + 1);
+                    } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
+                        if (dataGap.getStartId() == dataGap.getEndId()) {
+                            log.info(
+                                    "Found a gap in data_id at {}.  Skipping it because the gap expired",
+                                    dataGap.getStartId());
+                        } else {
+                            log.info(
+                                    "Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
+                                    dataGap.getStartId(), dataGap.getEndId());
+                        }
+                        if (deleteImmediately) {
+                            dataService.deleteDataGap(dataGap);
+                        } else {
+                            dataService.updateDataGap(dataGap, DataGap.Status.SK);
+                        }
                     }
+                } else {
+                    dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
+                            dataGap.getEndId() + 1);
                 }
             }
+        }
 
-            if (lastDataId != -1) {
-                dataService
-                        .insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
-            }
+        if (lastDataId != -1) {
+            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
+        }
 
-            long updateTimeInMs = System.currentTimeMillis() - ts;
-            if (updateTimeInMs > 10000) {
-                log.info("Detecting gaps took {} ms", updateTimeInMs);
-            }
-            processInfo.setStatus(Status.DONE);
-        } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
-            throw ex;
+        long updateTimeInMs = System.currentTimeMillis() - ts;
+        if (updateTimeInMs > 10000) {
+            log.info("Detecting gaps took {} ms", updateTimeInMs);
         }
 
     }

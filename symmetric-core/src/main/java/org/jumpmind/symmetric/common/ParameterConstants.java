@@ -130,6 +130,8 @@ final public class ParameterConstants {
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
+    public final static String DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE = "dataextractor.keepalive.period.ms";
+    public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
     public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
 
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
@@ -169,7 +171,6 @@ final public class ParameterConstants {
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
     public final static String DB_DELIMITED_IDENTIFIER_MODE = "db.delimited.identifier.mode";
-    public final static String DB_JNDI_NAME = "db.jndi.name";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
     
@@ -194,13 +195,10 @@ final public class ParameterConstants {
 
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
-    public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
     
     public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
-    
-    public final static String CURRENT_ACTIVITY_HISTORY_KEEP_COUNT = "statistic.activity.history.keep.count";
     
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     

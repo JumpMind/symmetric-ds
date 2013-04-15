@@ -5,11 +5,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     version="2.5">
 
     <display-name>SymmetricDS</display-name>
-    
-    <context-param>
-        <param-name>autoStart</param-name>
-        <param-value>true</param-value>
-    </context-param>    
 
     <!-- To turn on multi server mode in a war deployment uncomment this.  The engines directory
          is controlled by -Dsymmetric.engines.dir=/path/to/dir.  The default value is ../engines

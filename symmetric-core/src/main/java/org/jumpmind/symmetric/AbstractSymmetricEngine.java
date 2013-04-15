@@ -294,7 +294,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService, nodeCommunicationService, statisticManager);
+                clusterService, nodeCommunicationService);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService, nodeCommunicationService);
         this.jobManager = createJobManager();
@@ -495,85 +495,72 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!starting && !started) {
             try {
                 starting = true;
+
                 setup();
                 if (isConfigured()) {
-                    Node node = nodeService.findIdentity();
-                    if (node != null) {
-                        log.info(
-                                "Starting registered node [group={}, id={}, externalId={}]",
-                                new Object[] { node.getNodeGroupId(), node.getNodeId(),
-                                        node.getExternalId() });
+                    try {
+                        Node node = nodeService.findIdentity();
+                        if (node != null) {
+                            log.info(
+                                    "Starting registered node [group={}, id={}, externalId={}]",
+                                    new Object[] { node.getNodeGroupId(), node.getNodeId(),
+                                            node.getExternalId() });
+                            
+                            triggerRouterService.syncTriggers();
+                            
+                            if (Version.isOlderVersion(node.getSymmetricVersion())
+                                    && !parameterService.isRegistrationServer() &&
+                                    parameterService.is(ParameterConstants.AUTO_RELOAD_SYM_ON_UPGRADE, true)) {
+                                log.info("Minor version of SymmetricDS has increased.  Requesting a reload of key configuration tables");
+                                String parentNodeId = node.getCreatedAtNodeId();
+                                List<String> tableNames = new ArrayList<String>();
+                                String tablePrefix = getTablePrefix();
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_ROUTER));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOAD_FILTER));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONFLICT));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_GROUPLET));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_GROUPLET_LINK));
+                                tableNames.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));        
 
-                        triggerRouterService.syncTriggers();
+                                for (String tableName : tableNames) {
+                                    TableReloadRequest request = new TableReloadRequest();
+                                    request.setSourceNodeId(parentNodeId);
+                                    request.setTargetNodeId(node.getNodeId());
+                                    request.setTriggerId(tableName);
+                                    request.setRouterId(Constants.UNKNOWN_ROUTER_ID);
+                                    request.setLastUpdateBy(node.getSymmetricVersion() + " to " + Version.version());
+                                    dataService.saveTableReloadRequest(request);
+                                }
 
-                        if (Version.isOlderVersion(node.getSymmetricVersion())
-                                && !parameterService.isRegistrationServer()
-                                && parameterService.is(
-                                        ParameterConstants.AUTO_RELOAD_SYM_ON_UPGRADE, true)) {
-                            log.info("Minor version of SymmetricDS has increased.  Requesting a reload of key configuration tables");
-                            String parentNodeId = node.getCreatedAtNodeId();
-                            List<String> tableNames = new ArrayList<String>();
-                            String tablePrefix = getTablePrefix();
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_PARAMETER));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_CHANNEL));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRIGGER));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_ROUTER));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRIGGER_ROUTER));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRANSFORM_TABLE));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_LOAD_FILTER));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRANSFORM_COLUMN));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_CONFLICT));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_GROUPLET));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_GROUPLET_LINK));
-                            tableNames.add(TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));
-
-                            for (String tableName : tableNames) {
-                                TableReloadRequest request = new TableReloadRequest();
-                                request.setSourceNodeId(parentNodeId);
-                                request.setTargetNodeId(node.getNodeId());
-                                request.setTriggerId(tableName);
-                                request.setRouterId(Constants.UNKNOWN_ROUTER_ID);
-                                request.setLastUpdateBy(node.getSymmetricVersion() + " to "
-                                        + Version.version());
-                                dataService.saveTableReloadRequest(request);
                             }
-
-                        }
-
-                        if (parameterService
-                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)) {
+                            
                             heartbeat(false);
+                            
+                        } else {
+                            log.info("Starting unregistered node [group={}, externalId={}]",
+                                    parameterService.getNodeGroupId(),
+                                    parameterService.getExternalId());
                         }
-
-                    } else {
-                        log.info("Starting unregistered node [group={}, externalId={}]",
-                                parameterService.getNodeGroupId(), parameterService.getExternalId());
+                        
+                        if (startJobs && jobManager != null) {
+                            jobManager.startJobs();
+                        }
+                        log.info("Started SymmetricDS");
+                        lastRestartTime = new Date();
+                        started = true;
+                    } catch (Throwable ex) {
+                        log.error("An error occurred while starting SymmetricDS", ex);
                     }
-
-                    if (startJobs && jobManager != null) {
-                        jobManager.startJobs();
-                    }
-                    log.info("Started SymmetricDS");
-                    lastRestartTime = new Date();
-                    started = true;
 
                 } else {
                     log.warn("Did not start SymmetricDS.  It has not been configured properly");
                 }
-            } catch (Throwable ex) {
-                log.error("An error occurred while starting SymmetricDS", ex);
             } finally {
                 starting = false;
             }
@@ -793,12 +780,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn(
                     "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables",
                     ParameterConstants.REGISTRATION_URL);
-        } else if (Constants.PLEASE_SET_ME.equals(registrationUrl)) {
-            log.warn("Please set the registration.url for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
-            log.warn("Please set the group.id for the node");
-        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
-            log.warn("Please set the external.id for the node");            
+        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())
+                || Constants.PLEASE_SET_ME.equals(registrationUrl)
+                || Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
+            log.warn("Please set the registration.url, node.group.id, and external.id for the node");
         } else if (node != null
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
                         .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
@@ -806,6 +791,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "The configured state does not match recorded database state.  The recorded external id is {} while the configured external id is {}. The recorded node group id is {} while the configured node group id is {}",
                     new Object[] { node.getExternalId(), getParameterService().getExternalId(),
                             node.getNodeGroupId(), getParameterService().getNodeGroupId() });
+
+        } else if (node != null && StringUtils.isBlank(getParameterService().getRegistrationUrl())
+                && StringUtils.isBlank(getParameterService().getSyncUrl())) {
+            log.warn("The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it");
+
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
@@ -837,7 +827,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void heartbeat(boolean force) {
         MDC.put("engineName", getEngineName());
-        dataService.heartbeat(force);
+        dataService.heartbeat(true);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {

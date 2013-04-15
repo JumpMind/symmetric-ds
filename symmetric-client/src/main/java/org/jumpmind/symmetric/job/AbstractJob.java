@@ -121,7 +121,7 @@ abstract public class AbstractJob implements Runnable, IJob {
             success = this.scheduledJob.cancel(true);
             this.scheduledJob = null;
             if (success) {
-                log.info("The {} job has been cancelled", jobName);
+                log.info("The {} job has been cancelled.", jobName);
                 started = false;
             } else {
                 log.warn("Failed to cancel this job, {}", jobName);

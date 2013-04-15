@@ -21,40 +21,29 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
 
-    protected Logger log = LoggerFactory.getLogger(getClass());
-    
     private static final String UNKNOWN = "Unknown";
 
-    private static final int NUMBER_OF_PERMITS = 1000;
-
-    private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
+    private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
     private List<JobStats> jobStats = new ArrayList<JobStats>();
 
@@ -70,13 +59,13 @@ public class StatisticManager implements IStatisticManager {
     
     protected IClusterService clusterService;
 
-    protected Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    private static final int NUMBER_OF_PERMITS = 1000;
 
-    protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
-    protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-    
-    protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
+    Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+
+    Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     public StatisticManager(IParameterService parameterService, INodeService nodeService,
             IConfigurationService configurationService, IStatisticService statisticsService, IClusterService clusterService) {
@@ -89,22 +78,6 @@ public class StatisticManager implements IStatisticManager {
 
     protected void init() {
         incrementRestart();
-    }
-    
-    public ProcessInfo newProcessInfo(ProcessInfoKey key) {
-        ProcessInfo process = new ProcessInfo(key);
-        ProcessInfo old = processInfos.get(key);
-        if (old != null && (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR)) {
-            log.warn("Starting a new process even though the previous one ({}) had not finished", old.toString());
-        }
-        processInfos.put(key, process);
-        return process;
-    }
-    
-    public List<ProcessInfo> getProcessInfos() {
-        List<ProcessInfo> list = new ArrayList<ProcessInfo>(processInfos.values());
-        Collections.sort(list);
-        return list;
     }
 
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {

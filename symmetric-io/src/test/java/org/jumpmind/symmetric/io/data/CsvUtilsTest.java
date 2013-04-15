@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.io.data;
 
 import junit.framework.Assert;
 
-import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.junit.Test;
 
@@ -33,12 +32,6 @@ public class CsvUtilsTest {
         String[] tokens = CsvUtils.tokenizeCsvData("\"01493931\",\"0\",\"01493931\",,\"UktNQzIxMAD/////AAAABXV1aWQAAAAAEG3jUZmt5UvpiUdFsbLEkJT/////AAAAA2l2AAAAABClDAHak0h0ENSr3PGH8qIU/////wAAAAVjc3VtAAAAACBjkvrLppvDkY1EbaURqm2kpvmcg/j9eUxztrCe4JHXpH0suPSRvgP6LtpJMaH1HZc=\",\"Trevor Lewis\",\"Lewis\",\"Trevorr\",,\"02\",,\"1\",\"16\",,\"0\",,\"0\",\"30683\",\"0\",\"2010-05-18 15:43:21\",\"0\",\"1987-09-24 00:00:00\",\"0\",,\"PS\",\"2009-11-14 21:49:35\",\"2009-11-14 21:49:35\",\"0023\",,\"1\",");
         String expectedNull = tokens[tokens.length-1];
         Assert.assertNull("Expected null.  Instead received: " + expectedNull, expectedNull);
-    }
-    
-    @Test
-    public void testEscapeDoubledSingleQuote() {
-        Assert.assertEquals("'L\\'' Hospitalet',,'277000043'\n", CsvUtils.escapeCsvData(new String[] {"L\\' Hospitalet",null,"277000043"}, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED));
-        
     }
     
     @Test

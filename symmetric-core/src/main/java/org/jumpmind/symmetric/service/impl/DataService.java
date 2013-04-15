@@ -101,10 +101,6 @@ public class DataService extends AbstractService implements IDataService {
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
     
     public boolean insertReloadEvent(TableReloadRequest request) {
-        return insertReloadEvent(request, true);
-    }
-    
-    public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest) {
         boolean successful = false;
         if (request.isReloadEnabled()) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -139,32 +135,25 @@ public class DataService extends AbstractService implements IDataService {
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
                                         triggerHistory, request.getReloadSelect(), false);
 
-                                if (updateTableReloadRequest) {
-                                    insertSqlEvent(
-                                            transaction,
-                                            triggerHistory,
-                                            trigger.getChannelId(),
-                                            targetNode,
-                                            String.format(
-                                                    "update %s set reload_enabled=0, reload_time=current_timestamp where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
-                                                    TableConstants
-                                                            .getTableName(
-                                                                    tablePrefix,
-                                                                    TableConstants.SYM_TABLE_RELOAD_REQUEST),
-                                                    request.getTargetNodeId(), request
-                                                            .getSourceNodeId(), request
-                                                            .getTriggerId(), request.getRouterId()),
-                                            false);
-                                }
+                                insertSqlEvent(
+                                        transaction,
+                                        triggerHistory,
+                                        trigger.getChannelId(),
+                                        targetNode,
+                                        String.format(
+                                                "update %s set reload_enabled=0, reload_time=current_timestamp where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
+                                                TableConstants.getTableName(tablePrefix,
+                                                        TableConstants.SYM_TABLE_RELOAD_REQUEST),
+                                                request.getTargetNodeId(), request
+                                                        .getSourceNodeId(), request.getTriggerId(),
+                                                request.getRouterId()), false);
                                 
                                 transaction.commit();
                                 
                                 request.setReloadEnabled(false);
                                 request.setReloadTime(new Date());
                                 request.setLastUpdateBy("symmetricds");
-                                if (updateTableReloadRequest) {
-                                    saveTableReloadRequest(request);
-                                }
+                                saveTableReloadRequest(request);
 
                             } finally {
                                 close(transaction);
@@ -319,17 +308,17 @@ public class DataService extends AbstractService implements IDataService {
              */
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), useReloadChannel);
             
-            /*
-             * Mark incoming batches as OK at the target node because we marked
-             * outgoing batches as OK at the source
-             */
-            insertSqlEvent(
-                    transaction,
-                    targetNode,
-                    String.format(
-                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
-                            tablePrefix, engine.getNodeService()
-                                    .findIdentityNodeId()), true);            
+			/**
+			 * Mark incoming batches as OK at the target node because we marked
+			 * outgoing batches as OK at the source
+			 */
+			insertSqlEvent(
+					transaction,
+					targetNode,
+					String.format(
+							"update %s_incoming_batch set status='OK' where node_id='%s' and status != 'OK'",
+							tablePrefix, engine.getNodeService()
+									.findIdentityNodeId()), true);
 
             List<TriggerHistory> triggerHistories = engine.getTriggerRouterService()
                     .getActiveTriggerHistories();
@@ -401,9 +390,23 @@ public class DataService extends AbstractService implements IDataService {
 
             INodeService nodeService = engine.getNodeService();
             if (!reverse) {
-                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false);
+				try {
+					symmetricDialect.disableSyncTriggers(transaction,
+							nodeIdRecord);
+					nodeService.setInitialLoadEnabled(transaction, nodeIdRecord,
+							false);
+				} finally {
+					symmetricDialect.enableSyncTriggers(transaction);
+				}            	
             } else {
-                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false);
+				try {
+					symmetricDialect.disableSyncTriggers(transaction,
+							nodeIdRecord);
+					nodeService.setReverseInitialLoadEnabled(transaction,
+							nodeIdRecord, false);
+				} finally {
+					symmetricDialect.enableSyncTriggers(transaction);
+				}            	
             }
             
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
@@ -414,19 +417,17 @@ public class DataService extends AbstractService implements IDataService {
             transaction.commit();
         } catch (Error ex) {
             transaction.rollback();
-            throw ex;
+            throw ex;            
         } catch (RuntimeException ex) {
             transaction.rollback();
-            throw ex;            
+            throw ex;
         } finally {
             close(transaction);
         }
 
         if (!reverse) {
-            /*
-             * Remove all incoming events for the node that we are starting a
-             * reload for
-             */
+            // remove all incoming events from the node are starting a reload
+            // for
             engine.getPurgeService().purgeAllIncomingEventsForNode(targetNode.getNodeId());
         }
 
@@ -434,12 +435,13 @@ public class DataService extends AbstractService implements IDataService {
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                trigger.getTriggerId());
+                trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName());
 
         if (history == null) {
             engine.getTriggerRouterService().syncTriggers();
             history = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId());
+                    trigger.getTriggerId(), null, null, null);
         }
 
         if (history == null) {
@@ -669,7 +671,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
+    protected void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
             String nodeId, String routerId, boolean isLoad) {
         long dataId = insertData(transaction, data);
         insertDataEventAndOutgoingBatch(transaction, dataId, data.getChannelId(), nodeId,
@@ -694,9 +696,9 @@ public class DataService extends AbstractService implements IDataService {
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
             return String.format("Unknown node %s", nodeId);
-        } else if (reverseLoad && nodeService.setReverseInitialLoadEnabled(nodeId, true, true)) {
+        } else if (reverseLoad && nodeService.setReverseInitialLoadEnabled(nodeId, true)) {
             return String.format("Successfully enabled reverse initial load for node %s", nodeId);
-        } else if (nodeService.setInitialLoadEnabled(nodeId, true, true)) {
+        } else if (nodeService.setInitialLoadEnabled(nodeId, true)) {
             return String.format("Successfully enabled initial load for node %s", nodeId);
         } else {
             return String.format("Could not enable initial load for %s", nodeId);
@@ -979,7 +981,8 @@ public class DataService extends AbstractService implements IDataService {
         Data data = null;
         if (trigger != null) {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId());
+                    trigger.getTriggerId(), trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(), trigger.getSourceTableName());
             if (triggerHistory == null) {
                 triggerHistory = engine.getTriggerRouterService().findTriggerHistory(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger
@@ -1085,15 +1088,15 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class, dataId);
     }
 
-//    public Map<String, String> getRowDataAsMap(Data data) {
-//        Map<String, String> map = new HashMap<String, String>();
-//        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
-//        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
-//        for (int i = 0; i < columnNames.length; i++) {
-//            map.put(columnNames[i].toLowerCase(), columnData[i]);
-//        }
-//        return map;
-//    }
+    public Map<String, String> getRowDataAsMap(Data data) {
+        Map<String, String> map = new HashMap<String, String>();
+        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
+        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
+        for (int i = 0; i < columnNames.length; i++) {
+            map.put(columnNames[i].toLowerCase(), columnData[i]);
+        }
+        return map;
+    }
 
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat

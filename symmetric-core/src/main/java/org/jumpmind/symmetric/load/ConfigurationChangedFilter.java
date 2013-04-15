@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -270,9 +271,10 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             String nodeId = nodeService.findIdentityNodeId();
             if (nodeId != null) {
                 NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                if (security != null && 
-                        (security.isRegistrationEnabled() || security.getRegistrationTime() == null)) {
-                    engine.getRegistrationService().markNodeAsRegistered(nodeId);
+                if (security != null) {
+                    security.setRegistrationEnabled(false);
+                    security.setRegistrationTime(new Date());
+                    nodeService.updateNodeSecurity(security);
                 }
             }
         }       

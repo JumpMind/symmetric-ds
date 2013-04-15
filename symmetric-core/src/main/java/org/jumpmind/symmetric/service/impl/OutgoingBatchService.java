@@ -87,16 +87,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         do {
             batches = getOutgoingBatches(nodeId, true);
             List<OutgoingBatch> list = batches.getBatches();
-            /* Sort in reverse order so we don't get fk errors for 
-             * batches that are currently processing.  We don't 
-             * make the update transactional to prevent contention 
-             * in highly loaded systems
-             */
             Collections.sort(list, new Comparator<OutgoingBatch>() {
-                public int compare(OutgoingBatch o1, OutgoingBatch o2) {
-                    return -new Long(o1.getBatchId()).compareTo(o2.getBatchId());
-                }
-            });
+            	public int compare(OutgoingBatch o1, OutgoingBatch o2) {
+            		return -new Long(o1.getBatchId()).compareTo(o2.getBatchId());
+            	}
+			});
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 outgoingBatch.setErrorFlag(false);
@@ -171,22 +166,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId) {
-        List<OutgoingBatch> list = null;
-        if (StringUtils.isNotBlank(nodeId)) {
-            list = (List<OutgoingBatch>) sqlTemplate.query(
-                    getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
-                    new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
-                    new int[] { Types.NUMERIC, Types.VARCHAR });
-        } else {
-            /*
-             * Pushing to an older version of symmetric might result in a batch
-             * without the node id
-             */
-            list = (List<OutgoingBatch>) sqlTemplate.query(
-                    getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
-                    new OutgoingBatchMapper(true, false), new Object[] { batchId },
-                    new int[] { Types.NUMERIC });
-        }
+        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
+                getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
+                new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId }, new int[] {
+                        Types.NUMERIC, Types.VARCHAR });
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {

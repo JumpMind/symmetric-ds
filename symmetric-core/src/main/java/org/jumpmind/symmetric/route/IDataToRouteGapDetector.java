@@ -16,25 +16,15 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
+ * under the License.  */
+
+package org.jumpmind.symmetric.route;
+
+/**
+ * 
  */
-package org.jumpmind.symmetric.io.data.writer;
+public interface IDataToRouteGapDetector {
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.io.data.transform.TransformPoint;
-import org.jumpmind.symmetric.io.data.transform.TransformTable;
-
-public class TransformDatabaseWriter extends TransformWriter {
-
-    public TransformDatabaseWriter(IDatabasePlatform platform,
-            DatabaseWriterSettings defaultSettings, TransformTable[] transforms) {
-        super(platform, TransformPoint.LOAD,
-                new DatabaseWriter(platform, defaultSettings), transforms);
-        getDatabaseWriter().setConflictResolver(new DefaultTransformWriterConflictResolver(this));
-    }
-
-    public DatabaseWriter getDatabaseWriter() {
-        return (DatabaseWriter) this.targetWriter;
-    }
-
+    public void beforeRouting();
+    
 }

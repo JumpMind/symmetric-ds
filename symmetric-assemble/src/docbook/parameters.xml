@@ -646,8 +646,8 @@
                             the batch ID already existing in the incoming batch table. If this happens, it means an
                             acknowledgement was lost due to failure or there is a bug. Accepting a duplicate batch in this
                             case can mean overwriting data with old data. Another cause of duplicates is when the batch
-                            sequence number is reset, which might happen in a lab environment. Skipping a duplicate batch in
-                            this case would prevent data changes from loading. Generally, in a production environment, this
+                            sequence number is reset, which might happen in a lab environement. Skipping a duplicate batch in
+                            this case would prevent data changes from loading. Generally, in a production envionment, this
                             setting should be true. [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
