@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -34,9 +36,11 @@ import org.jumpmind.util.FormatUtils;
 
 public class StagingDataWriter extends AbstractProtocolDataWriter {
 
-    protected IStagingManager stagingManager;
+    private IStagingManager stagingManager;
     
-    protected String category;
+    private String category;
+    
+    private Map<Batch, IStagedResource> stagedResources = new HashMap<Batch, IStagedResource>();
 
     public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
             IProtocolDataWriterListener... listeners) {
@@ -62,14 +66,19 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     @Override
     protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener) {
         listener.end(context, batch, getStagedResource(batch));
+        stagedResources.remove(batch);
     }
 
     protected IStagedResource getStagedResource(Batch batch) {
-        String location = batch.getStagedLocation();
-        IStagedResource resource = stagingManager.find(category, location, batch.getBatchId());
-        if (resource == null || resource.getState() == State.DONE) {
-            log.debug("Creating staged resource for batch {}", batch.getSourceNodeBatchId());
-            resource = stagingManager.create(category, location, batch.getBatchId());
+        IStagedResource resource = stagedResources.get(batch);
+        if (resource == null) {
+            String location = batch.getStagedLocation();
+            resource = stagingManager.find(category, location, batch.getBatchId());
+            if (resource == null || resource.getState() == State.DONE) {
+                log.debug("Creating staged resource for batch {}", batch.getSourceNodeBatchId());
+                resource = stagingManager.create(category, location, batch.getBatchId());
+            }
+            stagedResources.put(batch, resource);
         }
         return resource;
     }
