@@ -23,22 +23,21 @@ package org.jumpmind.symmetric.map;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
-import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.jumpmind.util.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.springframework.scripting.ScriptCompilationException;
 
-public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, INodeGroupExtensionPoint {
+/**
+ * 
+ */
+public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtensionPoint {
 
-    final Logger log = LoggerFactory.getLogger(getClass());
+    final ILog log = LogFactory.getLog(getClass());
+
+    private boolean autoRegister = true;
 
     private String[] nodeGroupIdsToApplyTo;
 
@@ -47,41 +46,31 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
     private boolean ignoreCase = true;
 
     private boolean enabled = true;
-    
-    @Override
-    public boolean beforeWrite(
-            DataContext context, Table table, CsvData data) {
-        filterColumnValues(context, table, data);
-        return true;
-    }
 
-    protected void filterColumnValues(Context context, Table table, CsvData data) {
+    protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
         if (enabled && filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
                 try {
                     if (filteredColumn.isEnabled()
                             && ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
-                                    table.getName())) || (!ignoreCase && filteredColumn
-                                    .getTableName().equals(table.getName())))) {
+                                    context.getTableName())) || (!ignoreCase && filteredColumn
+                                    .getTableName().equals(context.getTableName())))) {
                         String columnName = filteredColumn.getColumnName();
-                        int index = table.getColumnIndex(columnName);
+                        int index = context.getColumnIndex(columnName);
                         if (index < 0 && ignoreCase) {
                             columnName = columnName.toUpperCase();
-                            index = table.getColumnIndex(columnName);
+                            index = context.getColumnIndex(columnName);
                             if (index < 0) {
                                 columnName = columnName.toLowerCase();
-                                index = table.getColumnIndex(columnName);
+                                index = context.getColumnIndex(columnName);
                             }
                         }
                         if (index >= 0) {
                             try {
-                                String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
-                                if (columnValues != null && columnValues.length > index) {
                                 columnValues[index] = filteredColumn.getFilter().filter(
                                         filteredColumn.getTableName(),
                                         filteredColumn.getColumnName(), columnValues[index],
-                                        context);
-                                }
+                                        context.getContextCache());
                             } catch (RuntimeException ex) {
                                 // Try to log script errors so they are more
                                 // readable
@@ -89,7 +78,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                                 do {
                                     causedBy = ExceptionUtils.getCause(causedBy);
                                     if (causedBy instanceof ScriptCompilationException) {
-                                        log.error("{}", causedBy.getMessage());
+                                        log.error("Message", causedBy.getMessage());
                                         throw new RuntimeException(causedBy.getMessage());
                                     }
                                 } while (causedBy != null);
@@ -98,7 +87,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                         }
                     }
                 } catch (RuntimeException ex) {
-                    log.error("Failed to transform value for column {} on table {}", filteredColumn.getColumnName(),
+                    log.error("ColumnDataFilterError", filteredColumn.getColumnName(),
                             filteredColumn.getTableName());
                     throw ex;
                 }
@@ -106,8 +95,31 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
         }
     }
 
+    public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
+        return true;
+    }
+
+    public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
+        filterColumnValues(context, columnValues);
+        return true;
+    }
+
+    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues,
+            String[] keyValues) {
+        filterColumnValues(context, columnValues);
+        return true;
+    }
+
     public void setFilters(List<TableColumnValueFilter> filters) {
         this.filters = filters;
+    }
+
+    public boolean isAutoRegister() {
+        return autoRegister;
+    }
+
+    public void setAutoRegister(boolean autoRegister) {
+        this.autoRegister = autoRegister;
     }
 
     public String[] getNodeGroupIdsToApplyTo() {

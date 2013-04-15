@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.Lock;
  */
 public interface IClusterService {
 
-    public void init();    
+    public void initLockTable();
     
     public void initLockTable(final String action);
 
@@ -42,6 +42,8 @@ public interface IClusterService {
     
     public String getServerId();
     
+    public void setServerId(String serverId);
+    
     public boolean isClusteringEnabled();
     
     public Map<String,Lock> findLocks();
@@ -49,7 +51,5 @@ public interface IClusterService {
     public void aquireInfiniteLock(String action);
     
     public void clearInfiniteLock(String action);
-    
-    public boolean isInfiniteLocked(String action);
 
 }

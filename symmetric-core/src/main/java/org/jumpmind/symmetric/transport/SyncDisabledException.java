@@ -16,14 +16,16 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.transport;
 
-import org.jumpmind.exception.IoException;
+import java.io.IOException;
 
-public class SyncDisabledException extends IoException {
+/**
+ * 
+ */
+public class SyncDisabledException extends IOException {
 
     private static final long serialVersionUID = 8646739179107142193L;
 }

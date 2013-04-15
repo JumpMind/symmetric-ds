@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.transport;
 
@@ -29,25 +29,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.IoConstants;
+import org.jumpmind.symmetric.common.Constants;
 
+/**
+ * 
+ */
 public class TransportUtils {
 
-    public static BufferedReader toReader(InputStream is) {
-        try {
-            return new BufferedReader(new InputStreamReader(is, IoConstants.ENCODING));
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
+    public static BufferedReader toReader(InputStream is) throws IOException {
+        return new BufferedReader(new InputStreamReader(is, Constants.ENCODING));
     }
-
-    public static BufferedWriter toWriter(OutputStream os) {
-        try {
-            return new BufferedWriter(new OutputStreamWriter(os, IoConstants.ENCODING));
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
-
+    
+    public static BufferedWriter toWriter(OutputStream os) throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(os, Constants.ENCODING));
     }
 }

@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
@@ -55,14 +54,6 @@ public class Channel implements Serializable {
     private String batchAlgorithm = "default";
 
     private long extractPeriodMillis = 0;
-    
-    private String dataLoaderType = "default";
-    
-    private Date createTime;
-    
-    private Date lastUpdateTime;
-    
-    private String lastUpdateBy;
 
     public Channel() {
     }
@@ -73,13 +64,12 @@ public class Channel implements Serializable {
     }
 
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
-            long extractPeriodMillis, boolean containsBigLobs) {
+            long extractPeriodMillis) {
         this(id, processingOrder);
         this.maxBatchSize = maxBatchSize;
         this.maxBatchToSend = maxBatchToSend;
         this.enabled = enabled;
         this.extractPeriodMillis = extractPeriodMillis;
-        this.containsBigLob = containsBigLobs;
     }
 
     public String getChannelId() {
@@ -193,68 +183,5 @@ public class Channel implements Serializable {
     
     public boolean isContainsBigLob() {
         return containsBigLob;
-    }
-    
-    public void setDataLoaderType(String dataloader) {
-        this.dataLoaderType = dataloader;
-    }
-    
-    public String getDataLoaderType() {
-        return dataLoaderType;
-    }
-    
-    public Date getCreateTime() {
-        return createTime;
-    }
-    
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-    
-    public String getLastUpdateBy() {
-        return lastUpdateBy;
-    }
-    
-    public void setLastUpdateBy(String lastUpdateBy) {
-        this.lastUpdateBy = lastUpdateBy;
-    }
-    
-    public Date getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-    
-    public void setLastUpdateTime(Date lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
-    
-    @Override
-    public int hashCode() {
-        if (channelId != null) {
-            return channelId.hashCode();
-        } else {
-            return super.hashCode();
-        }
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (channelId != null) {
-            if (obj instanceof Channel) {
-                return channelId.equals(((Channel) obj).channelId);
-            } else {
-                return false;
-            }
-        } else {
-            return super.equals(obj);
-        }
-    }
-
-    @Override
-    public String toString() {
-        if (channelId != null) {
-            return channelId;
-        } else {
-            return super.toString();
-        }        
     }
 }

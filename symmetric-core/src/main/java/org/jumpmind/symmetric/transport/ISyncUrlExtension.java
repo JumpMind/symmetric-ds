@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.transport;
 
 import java.net.URI;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector;
 
 /**

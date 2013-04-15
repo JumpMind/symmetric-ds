@@ -58,8 +58,10 @@ public interface IJob {
 
     public String getCronExpression();
 
-    public long getTimeBetweenRunsInMs();  
+    public long getTimeBetweenRunsInMs();
     
-    public boolean invoke(boolean force);
+    public void setCronExpression(String cronExpression);
+    
+    public void setTimeBetweenRunsInMs(long timeBetweenRunsInMs);    
 
 }

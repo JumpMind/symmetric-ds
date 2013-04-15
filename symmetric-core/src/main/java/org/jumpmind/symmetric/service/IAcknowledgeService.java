@@ -21,7 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.model.BatchAck;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
  */
 public interface IAcknowledgeService {
 
-    public void ack(BatchAck batch);
+    public void ack(BatchInfo batch);
     
     public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner);
 

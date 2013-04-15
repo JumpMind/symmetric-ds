@@ -27,40 +27,41 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.util.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-public class SimpleRouterContext extends Context {
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+/**
+ * 
+ */
+public class SimpleRouterContext implements IRouterContext {
 
     protected NodeChannel channel;
+    protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
+    protected Map<String, Object> contextCache = new HashMap<String, Object>();
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
-    protected boolean requestGapDetection = false;
 
-    public SimpleRouterContext() {
+    public SimpleRouterContext(String nodeId, JdbcTemplate jdbcTemplate, NodeChannel channel) {
+        this.init(jdbcTemplate, channel, nodeId);
     }
 
-    public SimpleRouterContext(String nodeId, NodeChannel channel) {
-        this.nodeId = nodeId;
+    protected SimpleRouterContext() {
+    }
+
+    protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel, String nodeId) {
         this.channel = channel;
+        this.jdbcTemplate = jdbcTemplate;
+        this.nodeId = nodeId;
     }
-
-    public BinaryEncoding getBinaryEncoding() {
-        return null;
-    }
-
+    
     public long getBatchId() {
         return -1;
     }
 
-    public String getSourceNodeId() {
+    public String getNodeId() {
         return nodeId;
     }
 
@@ -69,7 +70,11 @@ public class SimpleRouterContext extends Context {
     }
 
     public Map<String, Object> getContextCache() {
-        return this.context;
+        return this.contextCache;
+    }
+
+    public JdbcTemplate getJdbcTemplate() {
+        return this.jdbcTemplate;
     }
 
     public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary) {
@@ -97,21 +102,20 @@ public class SimpleRouterContext extends Context {
         return val;
     }
 
-    synchronized public void logStats(Logger log, long totalTimeInMs) {
+    synchronized public void logStats(ILog log, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
-        if ((infoLevel && log.isInfoEnabled()) || log.isDebugEnabled()) {
-            Set<String> keys = new TreeSet<String>(stats.keySet());
-            StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());
-            for (String key : keys) {
-                statsPrintout.append(", " + key + "=" + stats.get(key));
-            }
-
-            if (infoLevel) {
-                log.info("Routing {}", statsPrintout);
-            } else {
-                log.debug("Routing {}", statsPrintout);
-            }
+        Set<String> keys = new TreeSet<String>(stats.keySet());
+        StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());
+        for (String key : keys) {
+            statsPrintout.append(", " + key + "=" + stats.get(key));
         }
+        
+        if (infoLevel) {
+            log.info("RouterStats", statsPrintout);
+        } else {
+            log.debug("RouterStats", statsPrintout);
+        }
+
     }
 
     synchronized public void transferStats(SimpleRouterContext ctx) {
@@ -123,13 +127,5 @@ public class SimpleRouterContext extends Context {
             }
             incrementStat(value, key);
         }
-    }
-    
-    public void setRequestGapDetection(boolean requestGapDetection) {
-        this.requestGapDetection = requestGapDetection;
-    }
-    
-    public boolean isRequestGapDetection() {
-        return requestGapDetection;
     }
 }

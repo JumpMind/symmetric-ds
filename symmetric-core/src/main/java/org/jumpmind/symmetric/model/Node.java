@@ -22,15 +22,13 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
-import java.util.Properties;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a node who has registered for sync updates. 
@@ -38,8 +36,6 @@ import org.slf4j.LoggerFactory;
 public class Node implements Serializable {
     
     private static final long serialVersionUID = 1L;
-    
-    private static final Logger log = LoggerFactory.getLogger(Node.class);
 
     private int MAX_VERSION_SIZE = 50;
 
@@ -69,7 +65,11 @@ public class Node implements Serializable {
      */
     private String databaseVersion;
 
-    private boolean syncEnabled = true;
+    private boolean syncEnabled;
+
+    private String timezoneOffset;
+
+    private Date heartbeatTime = new Date();
 
     private String createdAtNodeId;
     
@@ -78,7 +78,7 @@ public class Node implements Serializable {
     private int batchInErrorCount;
     
     private String deploymentType;
-    
+
     public Node() {
     }
     
@@ -87,19 +87,12 @@ public class Node implements Serializable {
         this.externalId = nodeId;
         this.nodeGroupId = nodeGroupId;
     }    
-    
-    public Node(Properties properties) {
-        setNodeGroupId(properties.getProperty(ParameterConstants.NODE_GROUP_ID));
-        setExternalId(properties.getProperty(ParameterConstants.EXTERNAL_ID));
-        setSyncUrl(properties.getProperty(ParameterConstants.SYNC_URL));
-        setSchemaVersion(properties.getProperty(ParameterConstants.SCHEMA_VERSION));
-    }
 
-    public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+    public Node(IParameterService parameterService, IDbDialect dbDialect) {
         setNodeGroupId(parameterService.getNodeGroupId());
         setExternalId(parameterService.getExternalId());
-        setDatabaseType(symmetricDialect.getName());
-        setDatabaseVersion(symmetricDialect.getVersion());
+        setDatabaseType(dbDialect.getName());
+        setDatabaseVersion(dbDialect.getVersion());
         setSyncUrl(parameterService.getSyncUrl());
         setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
     }
@@ -196,6 +189,22 @@ public class Node implements Serializable {
         return nodeGroupId + ":" + externalId + ":" + (nodeId == null ? "?" : nodeId);
     }
 
+    public Date getHeartbeatTime() {
+        return heartbeatTime;
+    }
+
+    public void setHeartbeatTime(Date heartbeatTime) {
+        this.heartbeatTime = heartbeatTime;
+    }
+
+    public String getTimezoneOffset() {
+        return timezoneOffset;
+    }
+
+    public void setTimezoneOffset(String timezoneOffset) {
+        this.timezoneOffset = timezoneOffset;
+    }
+
     public String getCreatedAtNodeId() {
         return createdAtNodeId;
     }
@@ -226,24 +235,6 @@ public class Node implements Serializable {
     
     public String getDeploymentType() {
         return deploymentType;
-    }
-    
-    public boolean requires13Compatiblity() {
-        if (symmetricVersion != null) {
-            if (symmetricVersion.equals("development")) {
-                return false;
-            }
-            try {
-                int[] currentVersion = Version.parseVersion(symmetricVersion);
-                return currentVersion != null && currentVersion.length > 0 && currentVersion[0] <= 1;
-            } catch (Exception ex) {
-                log.warn(
-                        "Could not parse the version {} for node {}.  Setting backwards compatibility mode to true",
-                        symmetricVersion, nodeId);
-                return true;
-            }
-        }
-        return false;
     }
     
     public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {

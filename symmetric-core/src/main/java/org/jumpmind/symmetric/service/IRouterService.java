@@ -22,12 +22,13 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
-import org.jumpmind.symmetric.route.SimpleRouterContext;
+import org.jumpmind.symmetric.route.IRouterContext;
 
 
 /**
@@ -36,14 +37,13 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
  * 
  * @since 2.0
  */
-public interface IRouterService extends IService {
+public interface IRouterService extends ISqlProvider {
 
-    public long routeData(boolean force);
+    public long routeData();
  
     public long getUnroutedDataCount();
     
-    public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
-            Node node, boolean initialLoad);
+    public boolean shouldDataBeRouted(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
  
     public void addDataRouter(String name, IDataRouter dataRouter);
     
@@ -57,5 +57,6 @@ public interface IRouterService extends IService {
     public Map<String, IDataRouter> getRouters();
     
     public void stop ();
-
+    
+    public void destroy();
 }

@@ -25,8 +25,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Metadata about how and when to route data to a node group or a specific node
@@ -35,7 +35,7 @@ public class Router implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger logger = LoggerFactory.getLogger(Router.class);
+    static final Log logger = LogFactory.getLog(Router.class);
 
     private static int maxRouterId;
 
@@ -67,26 +67,9 @@ public class Router implements Serializable {
     private Date lastUpdateTime;
 
     private String lastUpdateBy;
-    
+
     public Router() {
         routerId = Integer.toString(maxRouterId++);
-    }
-    
-    public Router(String id, NodeGroupLink link) {
-        this.routerId = id;
-        this.nodeGroupLink = link;
-        this.createTime = new Date();
-        this.lastUpdateBy = "symmetricds";
-        this.lastUpdateTime = this.createTime;
-    }
-    
-    public void nullOutBlankFields() {
-        if (StringUtils.isBlank(targetCatalogName)) {
-            targetCatalogName = null;
-        } 
-        if (StringUtils.isBlank(targetSchemaName)) {
-            targetSchemaName = null;
-        } 
     }
 
     public Date getCreateTime() {
@@ -123,6 +106,9 @@ public class Router implements Serializable {
     }
     
     public NodeGroupLink getNodeGroupLink() {
+        if (nodeGroupLink == null) {
+            nodeGroupLink = new NodeGroupLink();
+        }
         return nodeGroupLink;
     }
 
@@ -202,7 +188,7 @@ public class Router implements Serializable {
     
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
-    }    
+    }
     
     public String createDefaultName() {
         if (nodeGroupLink != null) {
@@ -219,6 +205,7 @@ public class Router implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof Router && routerId != null) {
             return routerId.equals(((Router) obj).routerId);
+
         } else {
             return false;
         }
@@ -228,14 +215,5 @@ public class Router implements Serializable {
     public int hashCode() {
         return routerId != null ? routerId.hashCode() : super.hashCode();
     }
-    
-    @Override
-    public String toString() {
-        if (routerId != null) {
-            return routerId;
-        } else {
-            return super.toString();
-        }
-    }   
 
 }

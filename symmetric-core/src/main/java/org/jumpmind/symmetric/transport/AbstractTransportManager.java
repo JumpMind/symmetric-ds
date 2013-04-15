@@ -33,19 +33,20 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.io.IoConstants;
-import org.jumpmind.symmetric.model.BatchAck;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 abstract public class AbstractTransportManager {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
 
@@ -57,7 +58,7 @@ abstract public class AbstractTransportManager {
             extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
         }
         if (extensionSyncUrlHandlers.containsKey(name)) {
-            log.warn("Overriding an existing '{}' extension sync url handler with a second one.", name);
+            log.warn("TransportSyncURLOverriding", name);
         }
         extensionSyncUrlHandlers.put(name, handler);
     }
@@ -68,20 +69,20 @@ abstract public class AbstractTransportManager {
      */
     public String resolveURL(String syncUrl, String registrationUrl) {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
-            log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
+            log.debug("TransportSyncURLBlank");
             return registrationUrl;
         } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
             try {
                 URI uri = new URI(syncUrl);
                 ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
                 if (handler == null) {
-                    log.error("Could not find a registered extension sync url handler with the name of {} using the url {}", uri.getHost(), syncUrl);
+                    log.error("TransportSyncURLMissing", uri.getHost(), syncUrl);
                     return syncUrl;
                 } else {
                     return handler.resolveUrl(uri);
                 }
             } catch (URISyntaxException e) {
-                log.error(e.getMessage(),e);
+                log.error(e);
                 return syncUrl;
             }
         } else {
@@ -89,99 +90,78 @@ abstract public class AbstractTransportManager {
         }
     }
 
-    protected String getAcknowledgementData(boolean requires13Format, String nodeId,
-            List<IncomingBatch> list) throws IOException {
+    protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
-        if (!requires13Format) {
-            for (IncomingBatch batch : list) {
-                long batchId = batch.getBatchId();
-                Object value = null;
-                if (batch.getStatus() == Status.OK) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
-                append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
-                append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
-                append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
-                append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
-                        batch.getDatabaseMillis());
-                append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
-
-                if (batch.getIgnoreCount() > 0) {
-                    append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
-                }
-
-                if (batch.getStatus() == Status.ER) {
-                    append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
-                    append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
-                    append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
-                }
+        for (IncomingBatch batch : list) {
+            Object value = null;
+            if (batch.getStatus() == Status.OK || batch.getStatus() == Status.SK) {
+                value = WebConstants.ACK_BATCH_OK;
+            } else {
+                value = batch.getFailedRowNumber();
             }
-        } else {
-            for (IncomingBatch batch : list) {
-                Object value = null;
-                if (batch.getStatus() == Status.OK || batch.getStatus() == Status.IG) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
+        }
+
+        // For backwards compatibility with 1.3 and earlier, the first line is
+        // the original acknowledgment data and the second line contains more
+        // information
+        builder.append("\n");
+        for (IncomingBatch batch : list) {
+            long batchId = batch.getBatchId();
+            append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
+            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
+            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
+            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getDatabaseMillis());
+            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
+
+            if (batch.getStatus() == Status.ER) {
+                append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
+                append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
+                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
             }
         }
         return builder.toString();
     }
 
-    protected static void append(StringBuilder builder, String name, Object value) {
-        try {
-            int len = builder.length();
-            if (len > 0 && builder.charAt(len - 1) != '?') {
-                builder.append("&");
-            }
-            if (value == null) {
-                value = "";
-            }
-            builder.append(name).append("=")
-                    .append(URLEncoder.encode(value.toString(), IoConstants.ENCODING));
-        } catch (IOException ex) {
-            throw new IoException(ex);
+    protected static void append(StringBuilder builder, String name, Object value) throws IOException {
+        int len = builder.length();
+        if (len > 0 && builder.charAt(len - 1) != '?') {
+            builder.append("&");
         }
+        if (value == null) {
+            value = "";
+        }
+        builder.append(name).append("=").append(URLEncoder.encode(value.toString(), Constants.ENCODING));
     }
 
-    public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
+    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return readAcknowledgement(parameterString1 + "&" + parameterString2);
     }
 
-    public List<BatchAck> readAcknowledgement(String parameterString) throws IOException {
+    public List<BatchInfo> readAcknowledgement(String parameterString) throws IOException {
         Map<String, Object> parameters = getParametersFromQueryUrl(parameterString.replace("\n", ""));
         return readAcknowledgement(parameters);
     }
 
-    public static List<BatchAck> readAcknowledgement(Map<String, ? extends Object> parameters) {
-        List<BatchAck> batches = new ArrayList<BatchAck>();
+    public static List<BatchInfo> readAcknowledgement(Map<String, ? extends Object> parameters) {
+        List<BatchInfo> batches = new ArrayList<BatchInfo>();
         for (String parameterName : parameters.keySet()) {
             if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
                 long batchId = NumberUtils.toLong(parameterName.substring(WebConstants.ACK_BATCH_NAME.length()));
-                BatchAck batchInfo = getBatchInfo(parameters, batchId);
+                BatchInfo batchInfo = getBatchInfo(parameters, batchId);
                 batches.add(batchInfo);
             }
         }
         return batches;
     }
 
-    private static BatchAck getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
-        BatchAck batchInfo = new BatchAck(batchId);
-        String nodeId = getParam(parameters, WebConstants.ACK_NODE_ID + batchId);
-        if (StringUtils.isBlank(nodeId)) {
-            nodeId = getParam(parameters, WebConstants.NODE_ID);
-        }
-        batchInfo.setNodeId(nodeId);
+    private static BatchInfo getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
+        BatchInfo batchInfo = new BatchInfo(batchId);
+        batchInfo.setNodeId(getParam(parameters, WebConstants.ACK_NODE_ID + batchId));
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
         batchInfo.setDatabaseMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
-        batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
 
@@ -200,7 +180,7 @@ abstract public class AbstractTransportManager {
         for (String param : tokens) {
             String[] nameValuePair = param.split("=");
             if (nameValuePair.length == 2) {
-                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], IoConstants.ENCODING));
+                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], Constants.ENCODING));
             }
         }
         return parameters;
@@ -209,10 +189,6 @@ abstract public class AbstractTransportManager {
     private static long getParamAsNum(Map<String, ? extends  Object> parameters, String parameterName) {
         return NumberUtils.toLong(getParam(parameters, parameterName));
     }
-    
-    private static boolean getParamAsBoolean(Map<String, ? extends  Object> parameters, String parameterName) {
-        return getParamAsNum(parameters, parameterName) > 0;
-    }    
 
     private static String getParam(Map<String, ? extends  Object> parameters, String parameterName, String defaultValue) {
         String value = getParam(parameters, parameterName);

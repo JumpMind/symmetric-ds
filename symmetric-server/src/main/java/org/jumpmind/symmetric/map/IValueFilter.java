@@ -20,10 +20,13 @@
 
 package org.jumpmind.symmetric.map;
 
-import org.jumpmind.util.Context;
+import java.util.Map;
 
+/**
+ * 
+ */
 public interface IValueFilter {
 
-    public String filter (String tableName, String columnName, String originalValue, Context context);
+    public String filter (String tableName, String columnName, String originalValue, Map<String,Object> contextCache);
     
 }

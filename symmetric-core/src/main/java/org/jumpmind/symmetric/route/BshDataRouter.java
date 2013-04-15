@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 
@@ -43,15 +43,11 @@ import bsh.Interpreter;
  */
 public class BshDataRouter extends AbstractDataRouter {
 
-    protected ISymmetricEngine engine;
+    protected IDbDialect dbDialect;
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
-       
-    public BshDataRouter(ISymmetricEngine engine) {
-        this.engine = engine;
-    }
 
-    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
+    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         try {
             long ts = System.currentTimeMillis();
@@ -66,12 +62,12 @@ public class BshDataRouter extends AbstractDataRouter {
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
-            log.error("Error in data router.  Routing to nobody.", e);
+            log.error("RouterGeneralError", e);
             return Collections.emptySet();
         }
-    }    
+    }
 
-    protected Interpreter getInterpreter(SimpleRouterContext context) {
+    protected Interpreter getInterpreter(IRouterContext context) {
         Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
         if (interpreter == null) {
             interpreter = new Interpreter();
@@ -80,12 +76,11 @@ public class BshDataRouter extends AbstractDataRouter {
         return interpreter;
     }
 
-    protected Set<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
-        targetNodes.remove(null);
+    protected Collection<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
         if (targetNodes.size() > 0) {
             return targetNodes;
-        } else if (value instanceof Set<?>) {
-            Set<?> values = (Set<?>) value;
+        } else if (value instanceof Collection<?>) {
+            Collection<?> values = (Collection<?>) value;
             Set<String> nodeIds = new HashSet<String>(values.size());
             for (Object v : values) {
                 if (v != null) {
@@ -106,16 +101,17 @@ public class BshDataRouter extends AbstractDataRouter {
 
     protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes)
             throws EvalError {
-        interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
-        interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
-        interpreter.set("engine", engine);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(), true);
+        Map<String, Object> params = getDataObjectMap(dataMetaData, dbDialect);
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));
             }
         }
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 }

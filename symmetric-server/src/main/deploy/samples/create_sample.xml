@@ -3,24 +3,24 @@
 
 <database name="sample">
 
-    <table name="item">
-        <column name="item_id" type="INTEGER" required="true" primaryKey="true" />
-        <column name="name" type="VARCHAR" size="100" />
-    </table>
-    
     <table name="item_selling_price">
-        <column name="item_id" type="INTEGER" required="true" primaryKey="true" />
-        <column name="store_id" type="VARCHAR" size="5" required="true" primaryKey="true"  />
+        <column name="price_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="price" type="DECIMAL" size="10,2" required="true" />
         <column name="cost" type="DECIMAL" size="10,2" required="false" />
-        <foreign-key name="fk_price_item_id" foreignTable="item">
-            <reference local="item_id" foreign="item_id" />
+    </table>
+
+    <table name="item">
+        <column name="item_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="price_id" type="INTEGER" required="true" />
+        <column name="name" type="VARCHAR" size="100" />
+        <foreign-key name="fk_item_price_id" foreignTable="item_selling_price">
+            <reference local="price_id" foreign="price_id" />
         </foreign-key>
     </table>
 
     <table name="sale_transaction">
         <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
-        <column name="store_id" type="VARCHAR" size="5" required="true" />
+        <column name="store" type="VARCHAR" size="5" required="true" />
         <column name="workstation" type="VARCHAR" size="3" required="true" />
         <column name="day" type="VARCHAR" size="10" required="true" />
         <column name="seq" type="INTEGER" required="true" />
@@ -40,4 +40,14 @@
         </foreign-key>
     </table>
     
+    <table name="sale_tender_line_item">
+        <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="tender_type" type="VARCHAR" required="true" />
+        <column name="tender_amount" type="DECIMAL" size="10,2" required="true" />
+         <column name="account_number" type="VARCHAR" size="255" required="true" />
+        <foreign-key name="fk_tndr_tran_id" foreignTable="sale_transaction">
+            <reference local="tran_id" foreign="tran_id" />
+        </foreign-key>
+    </table>
+
 </database>

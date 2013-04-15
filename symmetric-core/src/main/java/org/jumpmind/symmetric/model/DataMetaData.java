@@ -20,8 +20,11 @@
 
 package org.jumpmind.symmetric.model;
 
-import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.ddl.model.Table;
 
+/**
+ * 
+ */
 public class DataMetaData {
 
     private Data data;
@@ -29,10 +32,10 @@ public class DataMetaData {
     private TriggerRouter triggerRouter;
     private NodeChannel nodeChannel;
 
-    public DataMetaData(Data data, Table table, TriggerRouter triggerRouter, NodeChannel nodeChannel) {
+    public DataMetaData(Data data, Table table, TriggerRouter trigger, NodeChannel nodeChannel) {
         this.data = data;
         this.table = table;
-        this.triggerRouter = triggerRouter;
+        this.triggerRouter = trigger;
         this.nodeChannel = nodeChannel;
     }
 

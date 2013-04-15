@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric;
 
-import org.jumpmind.util.AbstractVersion;
+import org.jumpmind.symmetric.util.AbstractVersion;
 
 /**
  * Follow the Apache versioning scheme documented <a
@@ -45,7 +45,7 @@ final public class Version {
 
     public static int[] parseVersion(String version) {
         return Version.version.parseVersion(version);
-    }    
+    }
 
     public static boolean isOlderVersion(String version) {
         return isOlderThanVersion(version, version());
@@ -54,11 +54,5 @@ final public class Version {
     public static boolean isOlderThanVersion(String checkVersion, String targetVersion) {
         return version.isOlderThanVersion(checkVersion, targetVersion);
     }
-       
-    public static boolean hasOlderMinorVersion(String version) {
-        return Version.version.isOlderMinorVersion(version);
-    }
-
-
 
 }

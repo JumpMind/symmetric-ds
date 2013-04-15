@@ -20,9 +20,10 @@
 
 package org.jumpmind.symmetric.route;
 
+import java.util.Collection;
 import java.util.Set;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -44,10 +45,10 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
     
-    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch);
+    public void completeBatch(IRouterContext context, OutgoingBatch batch);
     
-    public void contextCommitted(SimpleRouterContext context);
+    public void contextCommitted(IRouterContext context);
 
 }

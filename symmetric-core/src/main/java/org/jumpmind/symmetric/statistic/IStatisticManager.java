@@ -20,22 +20,13 @@
 
 package org.jumpmind.symmetric.statistic;
 
-import java.util.List;
 import java.util.Map;
-
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
 
 
 /**
  * This manager provides an API record statistics
  */
 public interface IStatisticManager {    
-    
-    public ProcessInfo newProcessInfo(ProcessInfoKey key);
-    
-    public List<ProcessInfo> getProcessInfos();
-    
     public void flush();
     
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount);

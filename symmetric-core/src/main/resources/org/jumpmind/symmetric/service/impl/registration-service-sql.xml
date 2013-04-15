@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+  default-lazy-init="true">
+
+  <util:map id="registrationServiceSql">                        
+    <entry key="findNodeToRegisterSql">
+      <value>
+        select min(c.node_id) from $[sym.sync.table.prefix]_node c inner join
+        $[sym.sync.table.prefix]_node_security s on c.node_id = s.node_id where s.registration_enabled =
+        1 and c.node_group_id = ? and c.external_id = ?
+      </value>
+    </entry>
+    <entry key="registerNodeSql">
+      <value>
+        update $[sym.sync.table.prefix]_node set sync_enabled = 1, heartbeat_time = current_timestamp, sync_url = ?, schema_version = ?,
+        database_type = ?, database_version = ?, symmetric_version = ? where node_id = ?
+      </value>
+    </entry>
+    <entry key="registerNodeSecuritySql">
+      <value>
+        update $[sym.sync.table.prefix]_node_security set registration_enabled = 0, registration_time =
+        current_timestamp where node_id = ?
+      </value>
+    </entry>
+    <entry key="reopenRegistrationSql">
+      <value>
+        update $[sym.sync.table.prefix]_node_security set node_password = ?, registration_enabled = 1,
+        registration_time = null where node_id = ?
+      </value>
+    </entry>
+    <entry key="openRegistrationNodeSecuritySql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_security (node_id, node_password,
+        registration_enabled, created_at_node_id) values (?, ?, 1, ?)
+      </value>
+    </entry>
+    <entry key="getRegistrationRedirectUrlSql">
+      <value>
+        select sync_url from $[sym.sync.table.prefix]_node n inner join $[sym.sync.table.prefix]_registration_redirect r on n.node_id=r.registration_node_id where r.registrant_external_id=?
+      </value>
+    </entry>
+     <entry key="insertRegistrationRedirectUrlSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_registration_redirect (registration_node_id, registrant_external_id) values (?, ?)
+      </value>
+    </entry>
+    <entry key="updateRegistrationRedirectUrlSql">
+      <value>
+        update $[sym.sync.table.prefix]_registration_redirect set registration_node_id=? where registrant_external_id=?
+      </value>
+    </entry>    
+    <entry key="getRegistrationRedirectSql">
+      <value>
+        select registrant_external_id, registration_node_id from $[sym.sync.table.prefix]_registration_redirect
+      </value>
+    </entry>
+    <entry key="insertRegistrationRequestSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_registration_request 
+            (last_update_by, last_update_time, attempt_count, registered_node_id, status,
+            node_group_id, external_id, ip_address, host_name, create_time) 
+          values (?,?,1,?,?,?,?,?,?,current_timestamp)
+      </value>
+    </entry>
+    <entry key="updateRegistrationRequestSql">
+      <value>
+          update $[sym.sync.table.prefix]_registration_request 
+            set 
+              last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=? 
+            where
+              node_group_id=? and external_id=? and ip_address=? and host_name=? and status=? 
+      </value>
+    </entry>    
+    <entry key="selectRegistrationRequestSql">
+      <value>
+          select node_group_id, external_id, status, host_name, ip_address,
+            attempt_count, registered_node_id, create_time, last_update_by, last_update_time
+            from $[sym.sync.table.prefix]_registration_request 
+            where status=? 
+      </value>
+    </entry>                 
+  </util:map>
+
+</beans>

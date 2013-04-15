@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 
@@ -55,11 +54,11 @@ public interface IParameterService {
     
     public String getString(String key, String defaultVal);
 
-    public void saveParameter(String key, Object paramValue, String lastUpdateBy);
+    public void saveParameter(String key, Object paramValue);
 
-    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy);
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue);
 
-    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy);
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters);
     
     public void deleteParameter(String externalId, String nodeGroupId, String key);
 
@@ -69,15 +68,11 @@ public interface IParameterService {
     
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
     
-    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId);
+    public Map<String,String> getDatabaseParametersByNodeGroupId(String nodeGroupId);
 
-    public TypedProperties getAllParameters();
+    public Map<String, String> getAllParameters();
 
     public void setParameterFilter(IParameterFilter f);
-    
-    public boolean isRegistrationServer();
-    
-    public boolean refreshFromDatabase();
 
     /**
      * Get the group id for this instance
@@ -102,10 +97,4 @@ public interface IParameterService {
      */
     public String getSyncUrl();
 
-    public String getTablePrefix();
-    
-    public String getEngineName();
-    
-    public String getTempDirectory();
-    
 }

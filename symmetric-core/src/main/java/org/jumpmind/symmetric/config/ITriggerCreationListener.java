@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.config;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 

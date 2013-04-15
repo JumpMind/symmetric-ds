@@ -16,86 +16,58 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import javax.sql.DataSource;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.service.ISqlProvider;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
-abstract public class AbstractService implements IService {
+abstract public class AbstractService implements IService, ISqlProvider {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     protected IParameterService parameterService;
 
-    protected ISymmetricDialect symmetricDialect;
+    protected JdbcTemplate jdbcTemplate;
 
-    protected ISqlTemplate sqlTemplate;
+    protected TransactionTemplate newTransactionTemplate;
 
-    protected IDatabasePlatform platform;
+    protected DataSource dataSource;
+
+    protected IDbDialect dbDialect;
 
     protected String tablePrefix;
 
-    private ISqlMap sqlMap;
-    
-    private Set<String> logOnce = new HashSet<String>();
+    private Map<String, String> sql;
 
-    public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
-        this.parameterService = parameterService;
-        this.tablePrefix = parameterService.getTablePrefix();
-        this.platform = symmetricDialect.getPlatform();
-        this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
-    }
-    
-    protected Date maxDate(Date... dates) {
-        Date date = null;
-        if (dates != null) {
-            for (Date d : dates) {
-                if (d != null) {
-                    if (date == null || d.after(date)) {
-                        date = d;
-                    }
-                }
-            }
-        }
-        
-        return date;
+    public void setJdbcTemplate(JdbcTemplate jdbc) {
+        this.jdbcTemplate = jdbc;
     }
 
-    protected void setSqlMap(ISqlMap sqlMap) {
-        this.sqlMap = sqlMap;
-    }
-
-    public ISqlTemplate getJdbcTemplate() {
-        return symmetricDialect.getPlatform().getSqlTemplate();
+    protected SimpleJdbcTemplate getSimpleTemplate() {
+        return new SimpleJdbcTemplate(jdbcTemplate);
     }
 
     synchronized public void synchronize(Runnable runnable) {
         runnable.run();
     }
-
+    
     protected boolean isSet(Object value) {
         if (value != null && value.toString().equals("1")) {
             return true;
@@ -115,119 +87,45 @@ abstract public class AbstractService implements IService {
         return null;
     }
 
-    protected Map<String, String> createSqlReplacementTokens() {
-        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getDatabaseInfo().getDelimiterToken());
-        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
-        return replacementTokens;
-    }
-
-    protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
-            String quotedIdentifier) {
-        Map<String, String> map = new HashMap<String, String>();
-        List<String> tables = TableConstants.getTablesWithoutPrefix();
-        for (String table : tables) {
-            map.put(table, String.format("%s%s%s", tablePrefix,
-                    StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-        }        
-        return map;
+    public void setSql(Map<String, String> sql) {
+        this.sql = sql;
     }
 
     public String getSql(String... keys) {
-        if (sqlMap != null) {
-            return sqlMap.getSql(keys);
-        } else {
-            return null;
-        }
-    }
-
-    public IParameterService getParameterService() {
-        return parameterService;
-    }
-
-    public ISymmetricDialect getSymmetricDialect() {
-        return symmetricDialect;
-    }
-
-    public String getTablePrefix() {
-        return tablePrefix;
-    }
-
-    protected void close(ISqlTransaction transaction) {
-        if (transaction != null) {
-            transaction.close();
-        }
-    }
-
-    protected String getRootMessage(Exception ex) {
-        Throwable cause = ExceptionUtils.getRootCause(ex);
-        if (cause == null) {
-            cause = ex;
-        }
-        return cause.getMessage();
-    }
-
-    protected boolean isCalledFromSymmetricAdminTool() {
-        boolean adminTool = false;
-        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-        for (StackTraceElement stackTraceElement : trace) {
-            adminTool |= stackTraceElement.getClassName().equals(
-                    "org.jumpmind.symmetric.SymmetricAdmin");
-        }
-        return adminTool;
-    }
-    
-    protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
-            List<?> statuses) {
-        boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
-                || statuses.contains(IncomingBatch.Status.ER);
-        boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)
-                || statuses.contains(IncomingBatch.Status.IG);
-
-        StringBuilder where = new StringBuilder();
-        boolean needsAnd = false;
-        if (nodeIds.size() > 0) {
-            where.append("node_id in (:NODES)");
-            needsAnd = true;
-        }
-        if (channels.size() > 0) {
-            if (needsAnd) {
-                where.append(" and ");
+        StringBuilder sqlBuffer = new StringBuilder();
+        if (keys != null) {
+            for (String key : keys) {
+                if (key != null) {
+                    String value = sql.get(key);
+                    sqlBuffer.append(value == null ? key : value);
+                }
             }
-            where.append("channel_id in (:CHANNELS)");
-            needsAnd = true;
-        }
-        if (statuses.size() > 0) {
-            if (needsAnd) {
-                where.append(" and ");
-            }
-            where.append("(status in (:STATUSES)");
-            
-            if (containsErrorStatus) {
-                where.append(" or error_flag = 1 ");   
-            }
-            
-            if (containsIgnoreStatus) {
-                where.append(" or ignore_count > 0 ");   
-            }
-            
-            where.append(")");
 
-            needsAnd = true;
+            if (dbDialect != null) {
+               sqlBuffer = dbDialect.scrubSql(sqlBuffer);
+            }
         }
-        
-        if (where.length() > 0) {
-            where.insert(0, " where ");
-        }
-        return where.toString();
+        return sqlBuffer.toString();
     }
-    
-    protected void logOnce(String message) {
-        if (!logOnce.contains(message)) {
-            logOnce.add(message);
-            log.info(message);
-        }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
-    
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
+
+    public void setNewTransactionTemplate(TransactionTemplate transactionTemplate) {
+        this.newTransactionTemplate = transactionTemplate;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
+    }
 
 }

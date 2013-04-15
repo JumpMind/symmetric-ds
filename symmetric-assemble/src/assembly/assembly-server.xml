@@ -5,7 +5,7 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>.</directory>
+            <directory>../symmetric-parent</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>COPYING</include>
@@ -19,16 +19,12 @@
             <outputDirectory>/</outputDirectory>
             <excludes>
                 <exclude>bin/sym</exclude>
-                <exclude>bin/symadmin</exclude>
-                <exclude>bin/dbexport</exclude>
-                <exclude>bin/dbimport</exclude>
-                <exclude>bin/dbfill</exclude>
                 <exclude>bin/sym_service</exclude>
                 <exclude>bin/sym_service.initd</exclude>
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>target/doc</directory>
+            <directory>target/site/guide</directory>
             <outputDirectory>/doc</outputDirectory>
         </fileSet>
     </fileSets>
@@ -36,37 +32,17 @@
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
-        </file>
-        <file>
-            <source>../symmetric-server/src/main/deploy/bin/symadmin</source>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
-        </file>
-        <file>
-            <source>../symmetric-server/src/main/deploy/bin/dbexport</source>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
-        </file>
-        <file>
-            <source>../symmetric-server/src/main/deploy/bin/dbimport</source>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
-        </file>
-        <file>
-            <source>../symmetric-server/src/main/deploy/bin/dbfill</source>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
+            <fileMode>774</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
+            <fileMode>774</fileMode>
         </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service</source>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
+            <fileMode>774</fileMode>
         </file>
         <file>
             <source>../symmetric-core/src/main/resources/symmetric-default.properties</source>
@@ -91,20 +67,12 @@
                         <outputDirectory>/web/WEB-INF/lib</outputDirectory>
                         <unpack>false</unpack>
                         <scope>runtime</scope>
-                        <useTransitiveFiltering>true</useTransitiveFiltering>
-                        <excludes>
-                            <exclude>log4j:log4j</exclude>
-                        </excludes>                        
                     </dependencySet>
                     <dependencySet>
                         <outputDirectory>/lib</outputDirectory>
                         <unpack>false</unpack>
                         <scope>provided</scope>
                         <useProjectArtifact>false</useProjectArtifact>
-                        <useTransitiveFiltering>true</useTransitiveFiltering>
-                        <excludes>
-                            <exclude>junit:junit</exclude>
-                        </excludes>                        
                     </dependencySet>
                 </dependencySets>
             </binaries>

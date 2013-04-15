@@ -16,8 +16,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.model;
 
@@ -33,8 +32,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+
 /**
- * A container for {@link OutgoingBatch}s.
+ * 
  */
 public class OutgoingBatches implements Serializable {
 
@@ -52,9 +53,9 @@ public class OutgoingBatches implements Serializable {
     }
 
     public boolean containsBatches() {
-        return batches != null && batches.size() > 0;
+        return batches != null && batches.size() > 0;    
     }
-
+    
     public Set<NodeChannel> getActiveChannels() {
         return activeChannels;
     }
@@ -93,12 +94,12 @@ public class OutgoingBatches implements Serializable {
         batches.removeAll(filtered);
         return filtered;
     }
-
+    
     public int countBatches(boolean includeOnlyErrors) {
         int count = 0;
         if (batches != null) {
             for (OutgoingBatch batch : batches) {
-                if (includeOnlyErrors && batch.isErrorFlag()) {
+                if (includeOnlyErrors && batch.getStatus() == OutgoingBatch.Status.ER) {
                     count++;
                 } else {
                     count++;
@@ -119,7 +120,7 @@ public class OutgoingBatches implements Serializable {
         batches.removeAll(filtered);
         return filtered;
     }
-
+    
     public void removeNonLoadBatches() {
         for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
             OutgoingBatch b = iterator.next();
@@ -128,7 +129,7 @@ public class OutgoingBatches implements Serializable {
             }
         }
     }
-
+    
     public boolean containsLoadBatches() {
         for (OutgoingBatch b : batches) {
             if (b.isLoadFlag()) {
@@ -137,15 +138,15 @@ public class OutgoingBatches implements Serializable {
         }
         return false;
     }
-
+    
     public boolean containsBatchesInError() {
         for (OutgoingBatch b : batches) {
-            if (b.isErrorFlag()) {
+            if (b.getStatus() == Status.ER) {
                 return true;
             }
         }
         return false;
-    }
+    }    
 
     public List<OutgoingBatch> getBatchesForChannel(Channel channel) {
         List<OutgoingBatch> batchList = new ArrayList<OutgoingBatch>();
@@ -177,7 +178,47 @@ public class OutgoingBatches implements Serializable {
             }
         }
         return batchList;
-    }    
+    }
+
+    public List<OutgoingBatch> getBatchesForChannelWindows(Node targetNode, NodeChannel channel,
+            List<NodeGroupChannelWindow> windows) {
+        List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
+
+        if (windows != null) {
+            if (batches != null && batches.size() > 0) {
+                if (channel.isEnabled() && inTimeWindow(windows, targetNode.getTimezoneOffset())) {
+                    int max = channel.getMaxBatchToSend();
+                    int count = 0;
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && count < max) {
+                            keeping.add(outgoingBatch);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        return keeping;
+    }
+
+    /**
+     * If {@link NodeGroupChannelWindow}s are defined for this channel, then
+     * check to see if the time (according to the offset passed in) is within on
+     * of the configured windows.
+     */
+    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, String timezoneOffset) {
+        if (windows != null && windows.size() > 0) {
+            for (NodeGroupChannelWindow window : windows) {
+                if (window.inTimeWindow(timezoneOffset)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+
+    }
 
     /**
      * Removes all batches that are not associated with an 'activeChannel'.
@@ -202,7 +243,7 @@ public class OutgoingBatches implements Serializable {
 
         final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
         for (OutgoingBatch batch : batches) {
-            if (batch.isErrorFlag()) {
+            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
                 errorChannels.put(batch.getChannelId(), batch.getLastUpdatedTime());
             }
         }
@@ -214,8 +255,7 @@ public class OutgoingBatches implements Serializable {
                 if (!isError1 && !isError2) {
                     return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (isError1 && isError2) {
-                    return errorChannels.get(b1.getChannelId()).compareTo(
-                            errorChannels.get(b2.getChannelId()));
+                    return errorChannels.get(b1.getChannelId()).compareTo(errorChannels.get(b2.getChannelId()));
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
@@ -226,10 +266,9 @@ public class OutgoingBatches implements Serializable {
 
         for (NodeChannel nodeChannel : channels) {
             long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
-            Date lastExtractedTime = nodeChannel.getLastExtractTime();
+            Date lastExtractedTime = nodeChannel.getLastExtractedTime();
 
-            if ((extractPeriodMillis < 1)
-                    || (lastExtractedTime == null)
+            if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
                     || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
                 addActiveChannel(nodeChannel);
             }

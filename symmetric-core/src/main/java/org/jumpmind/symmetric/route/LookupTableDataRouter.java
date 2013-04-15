@@ -16,34 +16,35 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.route;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.Row;
-import org.jumpmind.symmetric.SyntaxParsingException;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 
 /**
  * A data router that uses a lookup table to map data to nodes
+ *
+ * 
  */
 public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter {
 
-    final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
+    final static ILog log = LogFactory.getLog(LookupTableDataRouter.class);
 
     public final static String PARAM_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";
@@ -53,41 +54,40 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     final static String EXPRESSION_KEY = String.format("%s.Expression.",
             LookupTableDataRouter.class.getName());
 
-    final static String LOOKUP_TABLE_KEY = String.format("%s.Table.",
-            LookupTableDataRouter.class.getName());
+    final static String LOOKUP_TABLE_KEY = String.format("%s.Table.", LookupTableDataRouter.class
+            .getName());
 
-    private ISymmetricDialect symmetricDialect;
+    private JdbcTemplate jdbcTemplate;
 
-    public LookupTableDataRouter(ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
-    }
-
-    public LookupTableDataRouter() {
-    }
-
-    public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+    public Collection<String> routeToNodes(IRouterContext routingContext,
+            DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
 
         Set<String> nodeIds = null;
         Router router = dataMetaData.getTriggerRouter().getRouter();
-        Map<String, String> params = null;
-        
-        params = getParams(router, routingContext);
-    
-        Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
-        Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
-        String column = params.get(PARAM_KEY_COLUMN);
-        String keyData = dataMap.get(column);
-        Set<String> externalIds = lookupTable.get(keyData);
-        if (externalIds != null) {
-            for (Node node : nodes) {
-                if (externalIds.contains(node.getExternalId())) {
-                    nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+        Map<String, String> params = getParams(router, routingContext);
+        Map<String, String> dataMap = getDataMap(dataMetaData);
+        boolean validExpression = params.containsKey(PARAM_TABLE)
+                && params.containsKey(PARAM_KEY_COLUMN) && params.containsKey(PARAM_MAPPED_KEY_COLUMN)
+                && params.containsKey(PARAM_EXTERNAL_ID_COLUMN);
+        if (validExpression) {
+            Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
+            String column = params.get(PARAM_KEY_COLUMN);
+            String keyData = dataMap.get(column);
+            Set<String> externalIds = lookupTable.get(keyData);
+            if (externalIds != null) {
+                for (Node node : nodes) {
+                    if (externalIds.contains(node.getExternalId())) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+                    }
                 }
             }
+
+        } else {
+            log.warn("RouterIllegalLookupTableExpression", router.getRouterExpression());
         }
 
         return nodeIds;
+
     }
 
     /**
@@ -95,80 +95,60 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
      * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getParams(Router router, SimpleRouterContext routingContext) {
+    protected Map<String, String> getParams(Router router, IRouterContext routingContext) {
         final String KEY = EXPRESSION_KEY + router.getRouterId();
         Map<String, String> params = (Map<String, String>) routingContext.getContextCache()
                 .get(KEY);
         if (params == null) {
-            params = parse(router.getRouterExpression());
+            params = new HashMap<String, String>();
             routingContext.getContextCache().put(KEY, params);
-        }
-        return params;
-    }
-    
-    public Map<String, String> parse(String routerExpression) throws SyntaxParsingException {
-        boolean valid = true;
-        Map<String, String> params =  new HashMap<String, String>();
-        if (!StringUtils.isBlank(routerExpression)) {
-            String[] expTokens = routerExpression.split("\r\n|\r|\n");
-            if (expTokens != null) {
-                for (String t : expTokens) {
-                    if (!StringUtils.isBlank(t)) {
-                        String[] tokens = t.split("=");
-                        if (tokens.length == 2 && !params.containsKey(tokens[0])) {
-                            params.put(tokens[0], tokens[1]);
-                        } else {
-                            valid = false;
-                            break;
+            String routerExpression = router.getRouterExpression();
+            if (!StringUtils.isBlank(routerExpression)) {
+                String[] expTokens = routerExpression.split("\r\n|\r|\n");
+                if (expTokens != null) {
+                    for (String t : expTokens) {
+                        if (!StringUtils.isBlank(t)) {
+                            String[] tokens = t.split("=");
+                            if (tokens.length >= 2) {
+                                params.put(tokens[0], tokens[1]);
+                            }
                         }
                     }
                 }
-                if (!valid ||
-                    params.size() != 4 || 
-                    !params.containsKey(PARAM_TABLE) ||
-                    !params.containsKey(PARAM_KEY_COLUMN) ||
-                    !params.containsKey(PARAM_MAPPED_KEY_COLUMN) ||
-                    !params.containsKey(PARAM_EXTERNAL_ID_COLUMN)) {
-                    
-                    log.warn("The provided lookup table router expression was invalid. The full expression is " + routerExpression + ".");
-                    throw new SyntaxParsingException("The provided lookup table router expression was invalid. The full expression is " + routerExpression + ".");
-                }
             }
-        }
-        else {
-            log.warn("The provided lookup table router expression is empty");
         }
         return params;
     }
-    
+
     @SuppressWarnings("unchecked")
-    protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
-            SimpleRouterContext routingContext) {
+    protected Map<String, Set<String>> getLookupTable(Map<String, String> params, Router router,
+            IRouterContext routingContext) {
         final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
-        Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
-                .getContextCache().get(CTX_CACHE_KEY);
+        Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext.getContextCache().get(
+                CTX_CACHE_KEY);
         if (lookupMap == null) {
-            ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
             final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
-            template.query(String.format("select %s, %s from %s",
-                    params.get(PARAM_MAPPED_KEY_COLUMN), params.get(PARAM_EXTERNAL_ID_COLUMN),
-                    params.get(PARAM_TABLE)), new ISqlRowMapper<Object>() {
-                public Object mapRow(Row rs) {
-                    String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
-                    String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
-                    Set<String> ids = fillMap.get(key);
-                    if (ids == null) {
-                        ids = new HashSet<String>();
-                        fillMap.put(key, ids);
-                    }
-                    ids.add(value);
-                    return value;
-                }
-            });
+            jdbcTemplate.query(String.format("select %s, %s from %s", params.get(PARAM_MAPPED_KEY_COLUMN),
+                    params.get(PARAM_EXTERNAL_ID_COLUMN), params.get(PARAM_TABLE)),
+                    new RowCallbackHandler() {
+                        public void processRow(ResultSet rs) throws SQLException {
+                            String key = rs.getString(1);
+                            Set<String> set = fillMap.get(key);
+                            if (set == null) {
+                                set = new HashSet<String>();
+                                fillMap.put(key, set);
+                            }
+                            set.add(rs.getString(2));
+                        }
+                    });
             lookupMap = fillMap;
             routingContext.getContextCache().put(CTX_CACHE_KEY, lookupMap);
         }
         return lookupMap;
+    }
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
 }

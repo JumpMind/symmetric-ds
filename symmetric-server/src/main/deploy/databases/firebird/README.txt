@@ -1,6 +1,6 @@
-Symmetric UDF for Interbase
-----------------------------
-This folder contains a user defined function (UDF) library that must be installed in the Interbase 9.0
+Symmetric UDF for Firebird
+--------------------------
+This folder contains a user defined function (UDF) library that must be installed in the Firebird 2.0
 database for SymmetricDS to work properly.  It includes the sym_escape() and sym_hex() functions used
 by the database triggers to escape strings and BLOBs.
 
@@ -10,11 +10,11 @@ The sym_udf library is copied to the UDF folder under the Firebird installation 
 
 For Linux users:
 
-   Copy sym_udf.so to /opt/interbase/UDF
+   Copy sym_udf.so to /opt/firebird/UDF
 
 For Windows users:
 
-   Copy sym_udf.dll to C:\CodeGear\InterBase\UDF
+   Copy sym_udf.dll to C:\Program Files\Firebird\Firebird_2_1\UDF
 
 When SymmetricDS starts up for the first time, it will enable the functions (using the
 "create external function" command) and test that they are working.

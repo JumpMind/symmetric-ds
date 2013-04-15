@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.route;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -27,16 +28,16 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * This data router will route data to all of the nodes that are passed to it.
+ * This data router will route data to all nodes that belong to the target node group
  */
 public class DefaultDataRouter extends AbstractDataRouter {
 
-    public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
+    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         return toNodeIds(nodes, null);
     }
 
-    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
+    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
 
     }
 

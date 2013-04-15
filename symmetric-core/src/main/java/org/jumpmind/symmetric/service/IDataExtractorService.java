@@ -20,13 +20,17 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
 
+import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
@@ -34,16 +38,25 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  */
 public interface IDataExtractorService {
 
-    public void extractConfigurationStandalone(Node node, OutputStream out);
-
-    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
+    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx, String... tablesToExclude) throws IOException;
     
+    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude) throws IOException;
+
+    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToExclude) throws IOException;
+    
+    public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, Writer writer,
+            DataExtractorContext ctx, TriggerHistory triggerHistory);
+
     /**
-     * @param processInfo TODO
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);
+    public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport) throws IOException;
 
-    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
+            throws IOException;
+
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws IOException;
+
+    public void addExtractorFilter(IExtractorFilter extractorFilter);
 
 }

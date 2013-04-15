@@ -26,11 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.config.INodeIdCreator;
+import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
-import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -67,8 +65,6 @@ public interface INodeService {
 
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
     
-    public List<NodeSecurity> findNodeSecurityWithLoadEnabled();
-    
     public List<String> findAllExternalIds();
 
     public NodeSecurity findNodeSecurity(String nodeId);
@@ -76,7 +72,7 @@ public interface INodeService {
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
 
     public void deleteNodeSecurity(String nodeId);
-    
+
     public void deleteNode(String nodeId); 
     
     public String findSymmetricVersion();
@@ -98,7 +94,7 @@ public interface INodeService {
     
     public Node getCachedIdentity();
 
-    public boolean deleteIdentity();
+    public void deleteIdentity();
 
     public List<Node> findAllNodes();
 
@@ -112,8 +108,11 @@ public interface INodeService {
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
-    public void save(Node node);
-    
+    public void insertNode(String nodeId, String nodeGroupdId, String externalId,
+            String createdAtNodeId);
+
+    public boolean updateNode(Node node);
+
     public void updateNodeHostForCurrentNode();
 
     public void insertNodeIdentity(String nodeId);
@@ -121,20 +120,12 @@ public interface INodeService {
     public void insertNodeGroup(String groupId, String description);
 
     public boolean updateNodeSecurity(NodeSecurity security);
-    
-    public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security);
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange);
-    
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange);
-    
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange);
-    
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange);
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
 
-    public INodeIdCreator getNodeIdCreator();
+    public INodeIdGenerator getNodeIdGenerator();
 
-    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator);
+    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
 
@@ -178,12 +169,8 @@ public interface INodeService {
      *            checked in for until it is considered offline
      */
     public List<Node> findOfflineNodes(long minutesOffline);
-    
-    public List<String> findOfflineNodeIds(long minutesOffline);
 
     public void addOfflineServerListener(IOfflineServerListener listener);
 
     public boolean removeOfflineServerListener(IOfflineServerListener listener);
-    
-    public NetworkedNode getRootNetworkedNode();
 }

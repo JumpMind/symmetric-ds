@@ -20,12 +20,13 @@
 
 package org.jumpmind.symmetric.io;
 
-import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.service.impl.NodeService;
 
 /**
  * Default implementation of an {@link IOfflineClientListener}.  When the listener detects
@@ -33,44 +34,47 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
     protected IParameterService parameterService;
     protected INodeService nodeService;
-    
-    public DefaultOfflineClientListener(IParameterService parameterService,
-            INodeService nodeService) {
-        this.parameterService = parameterService;
-        this.nodeService = nodeService;
-    }
+
 
     public void busy(Node remoteNode) {
-        log.warn("Node '{}' was too busy to accept the connection", remoteNode.getNodeId());
+        log.warn("TransportFailedConnectionBusy");
     }
 
     public void notAuthenticated(Node remoteNode) {
-        log.warn("Could not authenticate with node '{}'", remoteNode.getNodeId());
+        log.warn("AuthenticationFailed");
     }
     
     public void unknownError(Node remoteNode, Exception ex) {
     }
 
     public void offline(Node remoteNode) {
-        log.warn("Could not connect to the transport: {}",
+        log.warn("TransportFailedConnectionUnavailable",
                 (remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl()));
     }
 
     public void syncDisabled(Node remoteNode) {
-        Node identity = nodeService.findIdentity();
-        if (identity != null && identity.getCreatedAtNodeId() != null
-                && identity.getCreatedAtNodeId().equals(remoteNode.getNodeId())) {
-            log.warn("Removing identity because sync has been disabled");
-            nodeService.deleteIdentity();
-        }
+        log.warn("SyncDisabled");
+        nodeService.deleteIdentity();
     }
     
     public void registrationRequired(Node remoteNode) {
-        log.warn("Registration is required before this operation can complete");
+        log.warn("RegistrationRequired");
+        nodeService.deleteIdentity();
+    }
+
+    public boolean isAutoRegister() {
+        return true;
     }
     
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+    
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
 }

@@ -16,8 +16,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.integrate;
 
@@ -30,32 +29,30 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.ICacheContext;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.util.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.model.DataEventType;
 
 /**
  * An abstract class that accumulates data to publish.
  */
-abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
-        INodeGroupExtensionPoint {
+public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 
     protected final String XML_CACHE = "XML_CACHE_" + this.hashCode();
 
     private String[] nodeGroups;
+
+    private boolean autoRegister = true;
 
     protected IPublisher publisher;
 
@@ -83,43 +80,38 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, Element> getXmlCache(Context context) {
-        Map<String, Element> xmlCache = (Map<String, Element>) context.get(XML_CACHE);
+    protected Map<String, Element> getXmlCache(ICacheContext ctx) {
+        Map<String, Object> cache = ctx.getContextCache();
+        Map<String, Element> xmlCache = (Map<String, Element>) cache.get(XML_CACHE);
         if (xmlCache == null) {
             xmlCache = new HashMap<String, Element>();
-            context.put(XML_CACHE, xmlCache);
+            cache.put(XML_CACHE, xmlCache);
         }
         return xmlCache;
     }
 
     @SuppressWarnings("unchecked")
-    protected boolean doesXmlExistToPublish(Context context) {
-        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) context.get(XML_CACHE);
+    protected boolean doesXmlExistToPublish(ICacheContext ctx) {
+        Map<String, Object> cache = ctx.getContextCache();
+        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) cache.get(XML_CACHE);
         return xmlCache != null && xmlCache.size() > 0;
     }
 
-    protected void finalizeXmlAndPublish(Context context) {
-        Map<String, Element> contextCache = getXmlCache(context);
-        Collection<Element> buffers = contextCache.values();
+    protected void finalizeXmlAndPublish(ICacheContext ctx) {
+        Map<String, Element> ctxCache = getXmlCache(ctx);
+        Collection<Element> buffers = ctxCache.values();
         for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
             String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
-            log.debug("Sending XML to IPublisher: {}", xml);
+            log.debug("XMLSending", xml);
             iterator.remove();
-            publisher.publish(context, xml.toString());
+            publisher.publish(ctx, xml.toString());
         }
     }
 
-    protected void toXmlElement(DataEventType dml, Element xml, String catalogName,
-            String schemaName, String tableName, String[] columnNames, String[] data,
+    protected void toXmlElement(DataEventType dml, Element xml, String tableName, String[] columnNames, String[] data,
             String[] keyNames, String[] keys) {
         Element row = new Element("row");
         xml.addContent(row);
-        if (StringUtils.isNotBlank(catalogName)) {
-            row.setAttribute("catalog", catalogName);
-        }
-        if (StringUtils.isNotBlank(schemaName)) {
-            row.setAttribute("schema", schemaName);
-        }
         row.setAttribute("entity", tableName);
         row.setAttribute("dml", dml.getCode());
 
@@ -148,44 +140,39 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     /**
      * Give the opportunity for the user of this publisher to add in additional
      * attributes. The default implementation adds in the nodeId from the
-     * {@link Context}.
+     * {@link ICacheContext}.
      * 
-     * @param context
+     * @param ctx
      * @param xml
      *            append XML attributes to this buffer
      */
-    protected void addFormattedExtraGroupAttributes(Context context, Element xml) {
-        if (context instanceof DataContext) {
-            DataContext dataContext = (DataContext) context;
-            xml.setAttribute("nodeid", dataContext.getBatch().getSourceNodeId());
-            xml.setAttribute("batchid", Long.toString(dataContext.getBatch().getBatchId()));
-        }
+    protected void addFormattedExtraGroupAttributes(ICacheContext ctx, Element xml) {
+        xml.setAttribute("nodeid", ctx.getNodeId());
+        xml.setAttribute("batchid", Long.toString(ctx.getBatchId()));
         if (timeStringGenerator != null) {
             xml.setAttribute("time", timeStringGenerator.getTime());
         }
     }
 
-    protected Element getXmlFromCache(Context context, BinaryEncoding binaryEncoding, String[] columnNames, String[] data,
-            String[] keyNames, String[] keys) {
-        Map<String, Element> xmlCache = getXmlCache(context);
+    protected Element getXmlFromCache(ICacheContext ctx, String[] columnNames, String[] data, String[] keyNames,
+            String[] keys) {
         Element xml = null;
+        Map<String, Element> ctxCache = getXmlCache(ctx);
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
         if (txId != null) {
-            xml = (Element) xmlCache.get(txId);
+            xml = ctxCache.get(txId);
             if (xml == null) {
                 xml = new Element(xmlTagNameToUseForGroup);
                 xml.addNamespaceDeclaration(getXmlNamespace());
                 xml.setAttribute("id", txId);
-                xml.setAttribute("binary", binaryEncoding.name());
-                addFormattedExtraGroupAttributes(context, xml);
-                xmlCache.put(txId, xml);
+                addFormattedExtraGroupAttributes(ctx, xml);
+                ctxCache.put(txId, xml);
             }
         }
         return xml;
     }
 
-    protected String toXmlGroupId(String[] columnNames, String[] data, String[] keyNames,
-            String[] keys) {
+    protected String toXmlGroupId(String[] columnNames, String[] data, String[] keyNames, String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
 
@@ -218,9 +205,14 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 return id.toString().replaceAll("-", "");
             }
         } else {
-            log.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
+            log
+                    .warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
+    }
+
+    public boolean isAutoRegister() {
+        return autoRegister;
     }
 
     public String[] getNodeGroupIdsToApplyTo() {
@@ -230,9 +222,13 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     public void setNodeGroups(String[] nodeGroups) {
         this.nodeGroups = nodeGroups;
     }
-
+    
     public void setNodeGroup(String nodeGroup) {
         this.nodeGroups = new String[] { nodeGroup };
+    }
+
+    public void setAutoRegister(boolean autoRegister) {
+        this.autoRegister = autoRegister;
     }
 
     public void setPublisher(IPublisher publisher) {

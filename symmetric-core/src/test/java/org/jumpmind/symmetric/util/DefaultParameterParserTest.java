@@ -24,16 +24,15 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.jumpmind.properties.DefaultParameterParser;
-import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
 import org.junit.Test;
 
 public class DefaultParameterParserTest {
 
     @Test
     public void testParse() {
-        DefaultParameterParser parser = new DefaultParameterParser("/symmetric-default.properties");
+        DefaultParameterParser parser = new DefaultParameterParser();
         Map<String, ParameterMetaData> metaData = parser.parse();
         
         Assert.assertNotNull(metaData);

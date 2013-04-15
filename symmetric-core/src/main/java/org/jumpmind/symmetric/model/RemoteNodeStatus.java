@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jumpmind.symmetric.common.Constants;
-
 /**
  * Indicates the status of an attempt to transport data from or to a remove
  * node.
@@ -41,8 +39,6 @@ public class RemoteNodeStatus implements Serializable {
     private Status status;
     private long dataProcessed;
     private long batchesProcessed;
-    private long reloadBatchesProcessed;
-    private boolean complete = false;
 
     public RemoteNodeStatus(String nodeId) {
         this.status = Status.NO_DATA;
@@ -76,10 +72,6 @@ public class RemoteNodeStatus implements Serializable {
     public long getBatchesProcessed() {
         return batchesProcessed;
     }
-    
-    public long getReloadBatchesProcessed() {
-        return reloadBatchesProcessed;
-    }
 
     public void updateIncomingStatus(List<IncomingBatch> incomingBatches) {
         if (incomingBatches != null) {
@@ -97,40 +89,25 @@ public class RemoteNodeStatus implements Serializable {
         }
     }
 
-    public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchAck> batches) {
+    public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchInfo> batches) {
         if (batches != null) {
-            for (BatchAck batch : batches) {
+            for (BatchInfo batch : batches) {
                 if (!batch.isOk()) {
                     status = Status.DATA_ERROR;
                 }
             }
         }
-        
+
         if (outgoingBatches != null) {
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 dataProcessed += batch.totalEventCount();
-                if (Constants.CHANNEL_RELOAD.equals(batch.getChannelId())) {
-                    reloadBatchesProcessed++;
-                }
-                
-                if (batch.getStatus() == OutgoingBatch.Status.ER) {
-                    status = Status.DATA_ERROR;
-                }
             }
         }
 
         if (status != Status.DATA_ERROR && dataProcessed > 0) {
             status = Status.DATA_PROCESSED;
         }
-    }
-    
-    public void setComplete(boolean complete) {
-        this.complete = complete;
-    }
-    
-    public boolean isComplete() {
-        return complete;
     }
 
 }

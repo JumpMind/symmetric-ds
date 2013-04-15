@@ -36,13 +36,9 @@ public class InternalIncomingTransport implements IIncomingTransport {
 
     BufferedReader reader = null;
 
-    public InternalIncomingTransport(InputStream pullIs)  {
+    public InternalIncomingTransport(InputStream pullIs) throws IOException {
         reader = TransportUtils.toReader(pullIs);
     }
-    
-    public InternalIncomingTransport(BufferedReader reader)  {
-        this.reader = reader;
-    }    
 
     public void close() throws IOException {
         IOUtils.closeQuietly(reader);
@@ -59,10 +55,6 @@ public class InternalIncomingTransport implements IIncomingTransport {
     
     public String getRedirectionUrl() {
         return null;
-    }
-    
-    public String getUrl() {
-        return "";
     }
 
 }

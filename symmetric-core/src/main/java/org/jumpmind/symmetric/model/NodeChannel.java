@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * A composite parent for {@link Channel} and {@link NodeChannelControl}
+ * 
  */
 public class NodeChannel implements Serializable {
 
@@ -135,11 +135,11 @@ public class NodeChannel implements Serializable {
         nodeChannelControl.setNodeId(nodeId);
     }
 
-    public void setLastExtractTime(Date lastExtractedTime) {
+    public void setLastExtractedTime(Date lastExtractedTime) {
         nodeChannelControl.setLastExtractTime(lastExtractedTime);
     }
 
-    public Date getLastExtractTime() {
+    public Date getLastExtractedTime() {
         return nodeChannelControl.getLastExtractTime();
     }
 
@@ -154,18 +154,6 @@ public class NodeChannel implements Serializable {
     public void setChannelId(String id) {
         channel.setChannelId(id);
         nodeChannelControl.setChannelId(id);
-    }
-    
-    public void setLastUpdateTime(Date date) {
-        channel.setLastUpdateTime(date);
-    }
-    
-    public void setCreateTime(Date date) {
-        channel.setCreateTime(date);
-    }
-    
-    public void setLastUpdateBy(String lastUpdateBy) {
-        channel.setLastUpdateBy(lastUpdateBy);
     }
 
     public void setSuspendEnabled(boolean suspended) {
@@ -194,14 +182,6 @@ public class NodeChannel implements Serializable {
 
     public boolean isContainsBigLob() {
         return this.channel.isContainsBigLob();
-    }
-    
-    public void setDataLoaderType(String type) {
-        channel.setDataLoaderType(type);
-    }
-    
-    public String getDataLoaderType() {
-        return channel.getDataLoaderType();
     }
 
 }

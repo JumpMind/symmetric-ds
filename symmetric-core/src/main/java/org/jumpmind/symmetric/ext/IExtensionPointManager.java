@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.List;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.springframework.beans.BeansException;
 
 /**
  * An API that is responsible for finding and registering available
@@ -30,10 +30,8 @@ import org.jumpmind.extension.IExtensionPoint;
  */
 public interface IExtensionPointManager {
 
-    public void register();
+    public void register() throws BeansException;
     
     public List<ExtensionPointMetaData> getExtensionPoints();
-    
-    public <T extends IExtensionPoint> T getExtensionPoint(String name);
     
 }
