@@ -308,7 +308,7 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
     <section id="ap02-mariadb">
         <title>MariaDB</title>
         <para>
-        	See MySQL notes.
+        	See MySQL notes.  In addition, you will need to use a MySQL driver for this dialect.
         </para>
     </section>
     <section id="ap02-postgresql">
