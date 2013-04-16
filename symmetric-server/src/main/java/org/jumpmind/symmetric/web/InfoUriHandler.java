@@ -77,7 +77,6 @@ public class InfoUriHandler extends AbstractUriHandler {
             if (node.getDatabaseType() != null) {
                 properties.setProperty(InfoConstants.DATABASE_TYPE, node.getDatabaseType());
             }
-
             if (node.getDatabaseVersion() != null) {
                 properties.setProperty(InfoConstants.DATABASE_VERSION, node.getDatabaseVersion());
             }
