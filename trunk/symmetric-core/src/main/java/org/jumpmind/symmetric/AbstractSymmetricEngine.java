@@ -93,9 +93,8 @@ import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
-import org.jumpmind.symmetric.service.impl.GroupletService;
-import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
+import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
@@ -110,6 +109,7 @@ import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.service.impl.SequenceService;
 import org.jumpmind.symmetric.service.impl.StatisticService;
 import org.jumpmind.symmetric.service.impl.TransformService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
@@ -553,7 +553,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         }
 
                         if (parameterService
-                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)) {
+                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || StringUtils.isBlank(node.getDatabaseType())) {
                             heartbeat(false);
                         }
 

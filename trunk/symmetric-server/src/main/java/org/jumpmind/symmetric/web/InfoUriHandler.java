@@ -74,10 +74,20 @@ public class InfoUriHandler extends AbstractUriHandler {
 
         if (node != null) {
             properties.setProperty(InfoConstants.NODE_ID, node.getNodeId());
-            properties.setProperty(InfoConstants.DATABASE_TYPE, node.getDatabaseType());
-            properties.setProperty(InfoConstants.DATABASE_VERSION, node.getDatabaseVersion());
-            properties.setProperty(InfoConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
-            properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+            if (node.getDatabaseType() != null) {
+                properties.setProperty(InfoConstants.DATABASE_TYPE, node.getDatabaseType());
+            }
+
+            if (node.getDatabaseVersion() != null) {
+                properties.setProperty(InfoConstants.DATABASE_VERSION, node.getDatabaseVersion());
+            }
+            if (node.getDeploymentType() != null) {
+                properties.setProperty(InfoConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
+            }
+
+            if (node.getSymmetricVersion() != null) {
+                properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+            }
         }
 
         properties.store(res.getOutputStream(), "SymmetricDS");
