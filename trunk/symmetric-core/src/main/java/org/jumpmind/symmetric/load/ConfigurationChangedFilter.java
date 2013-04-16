@@ -299,7 +299,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             engine.getTransformService().clearCache();
-            context.remove(CTX_KEY_FLUSH_PARAMETERS_NEEDED);
+            context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         }
 
         if (context.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
