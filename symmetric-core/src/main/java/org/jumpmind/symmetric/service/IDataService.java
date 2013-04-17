@@ -46,7 +46,7 @@ public interface IDataService {
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
-    public String reloadNode(String nodeId, boolean reverseLoad);
+    public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
     
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
 
@@ -67,14 +67,12 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
-    public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
-    
     public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest);
     
     public boolean insertReloadEvent(TableReloadRequest request);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
-            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect);
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, long loadId, String createBy);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
     
@@ -92,23 +90,23 @@ public interface IDataService {
     
     public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
     
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad, long loadId, String createBy);
     
     public void insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
-            String nodeId, String routerId, boolean isLoad);
+            String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
 
-    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad);
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy);
     
-    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad);
+    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
     public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
-            boolean isLoad);
+            boolean isLoad, long loadId, String createBy);
 
-    public void insertSqlEvent(Node targetNode, String sql, boolean isLoad);
+    public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
-    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, String xml, boolean isLoad);
+    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, String xml, boolean isLoad, long loadId, String createBy);
     
     /**
      * Count the number of data ids in a range

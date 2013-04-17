@@ -193,11 +193,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                    nodeService.setInitialLoadEnabled(nodeId, true, false);
+                    nodeService.setInitialLoadEnabled(nodeId, true, false, "registration");
                 }
 
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false);
+                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, "registration");
                 }
             }
             
@@ -349,7 +349,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                                     "update "
                                             + tablePrefix
                                             + "_node_security set registration_enabled=1,registration_time=current_timestamp where node_id='"
-                                            + identity.getNodeId() + "'", false);
+                                            + identity.getNodeId() + "'", false, -1, null);
                 }
             }
             

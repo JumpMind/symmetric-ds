@@ -28,8 +28,12 @@
         <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
         <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was started for this node." />
+        <column name="initial_load_id" type="BIGINT" description="A reference to the load_id in outgoing_batch for the last load that occurred." />
+        <column name="initial_load_create_by" type="VARCHAR" size="255" description="The user that created the initial load.  A null value means that the system created the batch." />
         <column name="rev_initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that this node should send a reverse initial load." />
         <column name="rev_initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node last sent an initial load." />
+        <column name="rev_initial_load_id" type="BIGINT" description="A reference to the load_id in outgoing_batch for the last reverse load that occurred." />
+        <column name="rev_initial_load_create_by" type="VARCHAR" size="255" description="The user that created the reverse initial load.  A null value means that the system created the batch." />        
         <column name="created_at_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
         <foreign-key foreignTable="node" name="fk_sec_2_node">
             <reference local="node_id" foreign="node_id" />
@@ -388,6 +392,7 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
+        <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />        
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
@@ -415,6 +420,7 @@
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
+        <column name="create_by" type="VARCHAR" size="255" description="The user that created the batch.  A null value means that the system created the batch." />
         <index name="idx_ob_node_status">
             <index-column name="node_id" />
             <index-column name="status" />
@@ -638,5 +644,54 @@
             <reference local="router_id" foreign="router_id" />
         </foreign-key>
     </table>
+    
+    <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="frequency" type="VARCHAR" size="50" required="true" description="This is a cron expression or the period in between synchronizations in milliseconds." />
+        <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
+        <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />        
+        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to include in synchronization." />
+        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to exclude from synchronization." />       
+        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are created." />
+        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are modified." />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are deleted." />
+        <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether or not an incoming batch that loads data into this table should cause the triggers to capture data_events. Be careful turning this on, because an update loop is possible." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="channel" name="fk_ftrg_2_chnl">
+            <reference local="channel_id" foreign="channel_id" />
+        </foreign-key>
+    </table>
+    
+    <table name="file_trigger_router" description="Map a file trigger to a router.">
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger router is enabled or not."/>
+        <column name="target_base_dir" type="VARCHAR" size="255" description="The base directory on the destination that will be synchronized." />
+        <column name="conflict_strategy" type="VARCHAR" size="128" default="client_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: client_wins, server_wins, report_error" />                
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="file_trigger" name="fk_ftr_2_ftrg">
+            <reference local="trigger_id" foreign="trigger_id" />
+        </foreign-key>
+        <foreign-key foreignTable="router" name="fk_ftr_2_rtr">
+            <reference local="router_id" foreign="router_id" />
+        </foreign-key>
+    </table>
+    
+    <table name="file_event" description="">
+        <column name="file_event_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a file event" />        
+        <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
+        <column name="file_name" type="VARCHAR" size="255" required="true" description="" />
+        <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry." />        
+        <column name="file_size" type="BIGINT" description="" />
+        <column name="file_modified_time" type="TIMESTAMP" description="" />        
+        <column name="target_base_dir" type="VARCHAR" size="255" required="true" description="" />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+    </table>
+        
 
 </database>

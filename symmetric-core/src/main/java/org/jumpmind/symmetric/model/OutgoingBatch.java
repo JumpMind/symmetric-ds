@@ -59,6 +59,8 @@ public class OutgoingBatch implements Serializable {
     private String nodeId;
 
     private String channelId;
+    
+    private long loadId = -1;
 
     private Status status = Status.RT;
 
@@ -113,6 +115,8 @@ public class OutgoingBatch implements Serializable {
     private Date lastUpdatedTime;
 
     private Date createTime;
+    
+    private String createBy;
 
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
@@ -456,6 +460,22 @@ public class OutgoingBatch implements Serializable {
     @Override
     public String toString() {
         return getNodeBatchId();
+    }
+    
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
+    
+    public String getCreateBy() {
+        return createBy;
+    }
+    
+    public void setLoadId(long loadId) {
+        this.loadId = loadId;
+    }
+
+    public long getLoadId() {
+        return loadId;
     }
 
 }

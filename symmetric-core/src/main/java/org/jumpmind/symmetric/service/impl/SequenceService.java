@@ -7,6 +7,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -30,12 +31,21 @@ public class SequenceService extends AbstractService implements ISequenceService
             maxBatchId = 1;
         }
         try {
-            create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
                     "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
-                    TableConstants.SYM_OUTGOING_BATCH);
+                    Constants.SEQUENCE_OUTGOING_BATCH);
         }
+        
+        try {
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 1, 1, 9999999999l,
+                    "system", false));
+        } catch (UniqueKeyException ex) {
+            log.debug("Failed to create sequence {}.  Must be initialized already.",
+                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+        }
+
     }
 
     public long nextVal(String name) {

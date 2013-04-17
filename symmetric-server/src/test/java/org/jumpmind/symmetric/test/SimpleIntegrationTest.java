@@ -117,7 +117,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         String nodeId = rootNodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
 
-        getServer().reloadNode(nodeId);
+        getServer().reloadNode(nodeId, "test");
         
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         Assert.assertFalse(rootOutgoingBatchService.isInitialLoadComplete(nodeId));
@@ -235,7 +235,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getServer()
 
         .getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
-                "update sym_node set schema_version='test'", false);
+                "update sym_node set schema_version='test'", false, -1, null);
         clientPull();
         Assert.assertTrue(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from sym_node where schema_version='test'") > 0);

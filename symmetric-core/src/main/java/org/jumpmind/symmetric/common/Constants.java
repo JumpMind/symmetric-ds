@@ -117,4 +117,8 @@ final public class Constants {
     public static final String TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL="all";
     
     public static final String TRANSFORM_SERVICE = "transformService";
+    
+    public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
+    
+    public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "OUTGOING_BATCH_LOAD_ID";
 }
