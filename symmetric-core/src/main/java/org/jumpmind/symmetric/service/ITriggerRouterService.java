@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ext.IExtraConfigTables;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -37,40 +38,16 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface ITriggerRouterService {
 
-    public boolean refreshFromDatabase();
-    
-    public List<TriggerHistory> getActiveTriggerHistories();
-    
-    public List<TriggerHistory> getActiveTriggerHistories(String tableName);
-
-    public List<TriggerRouter> getTriggerRouters();
-    
-    public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId);
-    
     /**
      * Return a list of triggers used when extraction configuration data during 
      * the registration process.
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
-    public Trigger getTriggerForCurrentNodeById(String triggerId);
-    
-    public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
-    
-    /**
-     * Returns a list of triggers that should be active for the current node.
-     * @param refreshCache Indicates that the cache should be refreshed
-     */
-    public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
-    
-    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId);
+    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
 
-    /**
-     * Returns a map of trigger routers keyed by trigger id.
-     * @param refreshCache Indicates that the cache should be refreshed
-     */
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
 
     /**
@@ -81,8 +58,6 @@ public interface ITriggerRouterService {
     public Router getActiveRouterByIdForCurrentNode(String routerId, boolean refreshCache);
     
     public Router getRouterById(String routerId);
-    
-    public Router getRouterById(String routerId, boolean refreshCache);
     
     public List<Router> getRouters();
     
@@ -108,13 +83,7 @@ public interface ITriggerRouterService {
 
     public void deleteTrigger(Trigger trigger);
     
-    public void dropTriggers();
-    
-    public void dropTriggers(Set<String> tables);
-    
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
-    
-    public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
     
     public boolean isTriggerBeingUsed(String triggerId);
     
@@ -136,13 +105,9 @@ public interface ITriggerRouterService {
 
     public TriggerHistory getTriggerHistory(int historyId);
     
-    public List<TriggerHistory> findTriggerHistories(String catalogName, String schemaName, String tableName);
-    
-    public TriggerHistory findTriggerHistory(String catalogName, String schemaName, String tableName);
+    public TriggerHistory findTriggerHistory(String sourceTableName);
     
     public Trigger getTriggerById(String triggerId);
-    
-    public Trigger getTriggerById(String triggerId, boolean refreshCache);
 
     public void insert(TriggerHistory newAuditRecord);
 
@@ -152,24 +117,16 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
     
-    public void saveTriggerRouter(TriggerRouter triggerRouter);
-    
-    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
-    
-    public void syncTriggers(Table table, boolean genAlways);
-    
-    public void syncTriggers(boolean genAlways);
+    public void saveTriggerRouter(TriggerRouter trigger);
         
     public void syncTriggers();
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
+    public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
     
     public void addTriggerCreationListeners(ITriggerCreationListener l);
     
-    public void addExtraConfigTable(String table);
+    public void addExtraConfigTables(IExtraConfigTables extension);
 
     public Map<Trigger, Exception> getFailedTriggers();
-    
-    public void clearCache();
 
 }

@@ -19,7 +19,7 @@
  * under the License.  */
 package org.jumpmind.symmetric.security;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 /**
  * Used to intercept the saving and rendering of the node password.

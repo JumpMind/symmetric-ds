@@ -19,18 +19,17 @@
  * under the License.  */
 package org.jumpmind.symmetric;
 
-import java.io.File;
-import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.security.ISecurityService;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.IExtensionPointManager;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
+import javax.sql.DataSource;
+
+import org.jumpmind.symmetric.common.DeploymentType;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.job.PullJob;
+import org.jumpmind.symmetric.job.OutgoingPurgeJob;
+import org.jumpmind.symmetric.job.PushJob;
+import org.jumpmind.symmetric.job.RouterJob;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -40,10 +39,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
-import org.jumpmind.symmetric.service.ILoadFilterService;
-import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -52,22 +48,18 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ISequenceService;
+import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
-import org.jumpmind.symmetric.transport.ITransportManager;
-import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 public interface ISymmetricEngine {
 
     public void stop();
     
     public void destroy();
-    
-    public void uninstall();
 
     /**
      * @return the URL that represents this engine
@@ -99,21 +91,18 @@ public interface ISymmetricEngine {
      * @return true if successfully started
      */
     public boolean start();
-    
-    public boolean start(boolean startJobs);
 
     /**
      * Queue up an initial load or a reload to a node.
-     * @param createBy TODO
      */
-    public String reloadNode(String nodeId, String createBy);
+    public String reloadNode(String nodeId);
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
     /**
      * Will perform a push the same way the {@link PushJob} would have.
      * 
-     * @see IPushService#pushData(boolean)
+     * @see IPushService#pushData()
      * @return {@link RemoteNodeStatuses} 
      */
     public RemoteNodeStatuses push();
@@ -124,13 +113,6 @@ public interface ISymmetricEngine {
      * @see ITriggerRouterService#syncTriggers()
      */
     public void syncTriggers();
-    
-    /**
-     * Call this to force all triggers to be rebuilt
-     * 
-     * @see ITriggerRouterService#forceTriggerRebuild()
-     */
-    public void forceTriggerRebuild();
 
     /**
      * Get the current status of this node.
@@ -142,7 +124,7 @@ public interface ISymmetricEngine {
     /**
      * Will perform a pull the same way the {@link PullJob} would have.
      * 
-     * @see IPullService#pullData(boolean)
+     * @see IPullService#pullData()
      * @return {@link RemoteNodeStatuses} 
      */
     public RemoteNodeStatuses pull();
@@ -156,7 +138,7 @@ public interface ISymmetricEngine {
      * This can be called to do a purge. It may be called only if the
      * {@link OutgoingPurgeJob} has not been enabled.
      * 
-     * @see IPurgeService#purgeOutgoing(boolean)
+     * @see IPurgeService#purgeOutgoing()
      */
     public void purge();
 
@@ -202,18 +184,15 @@ public interface ISymmetricEngine {
      * 
      * @return true if the node is starting
      */
+
     public boolean isStarting();
-    
-    public void clearCaches();    
-    
+
     /**
-     * Attempt to configure the database objects that support SymmetricDS.  If they are 
-     * out of date this method will attempt to alter the tables to bring them up to date.
-     * @param force forces this action to be run regardless of the parameter settings
+     * Expose access to the Spring context. This is for advanced use only.
+     * 
+     * @return the Spring application context that SymmetricDS runs in
      */
-    public void setupDatabase(boolean force);
-    
-    public void removeAndCleanupNode(String nodeId);
+    public ApplicationContext getApplicationContext();
 
     public IConfigurationService getConfigurationService();
 
@@ -223,13 +202,15 @@ public interface ISymmetricEngine {
 
     public IRegistrationService getRegistrationService();
 
+    public IUpgradeService getUpgradeService();
+
     public IClusterService getClusterService();
 
     public IPurgeService getPurgeService();
 
     public IDataService getDataService();
 
-    public ISymmetricDialect getSymmetricDialect();
+    public IDbDialect getDbDialect();
 
     public IJobManager getJobManager();
     
@@ -257,42 +238,10 @@ public interface ISymmetricEngine {
     
     public ITriggerRouterService getTriggerRouterService();
     
-    public IGroupletService getGroupletService();
-    
     public IStatisticManager getStatisticManager();
     
-    public String getDeploymentType();
+    public DataSource getDataSource();
     
-    public IConcurrentConnectionManager getConcurrentConnectionManager();
-    
-    public ITransformService getTransformService();
-    
-    public ILoadFilterService getLoadFilterService();
-    
-    public ITransportManager getTransportManager();
-    
-    public INodeCommunicationService getNodeCommunicationService();
-    
-    public ISequenceService getSequenceService();
-    
-    public String getTablePrefix();
-    
-    public Logger getLog();
-    
-    public IExtensionPointManager getExtensionPointManager();
-    
-    public IStagingManager getStagingManager();
-    
-    public ISqlTemplate getSqlTemplate();
-    
-    public Date getLastRestartTime();
-    
-    public <T> T getDataSource();
-    
-    public IDatabasePlatform getDatabasePlatform();
-    
-    public File snapshot();
-    
-    public List<File> listSnapshots();
-    
+    public DeploymentType getDeploymentType();
+
 }

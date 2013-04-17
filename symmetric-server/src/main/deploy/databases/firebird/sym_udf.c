@@ -87,7 +87,7 @@ char *sym_hex(BLOBCALLBACK blob)
       bytes_left = blob->blob_total_length;
       while (bytes_left > 0)
       {
-         if (!blob->blob_get_segment(blob->blob_handle, (char *)result + total_bytes_read,
+         if (!blob->blob_get_segment(blob->blob_handle, (ISC_UCHAR *)result + total_bytes_read,
                  blob->blob_total_length, &bytes_read))
          {
             break;

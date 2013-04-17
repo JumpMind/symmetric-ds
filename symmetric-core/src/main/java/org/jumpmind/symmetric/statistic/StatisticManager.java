@@ -21,40 +21,34 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
 
-    protected Logger log = LoggerFactory.getLogger(getClass());
-    
     private static final String UNKNOWN = "Unknown";
 
-    private static final int NUMBER_OF_PERMITS = 1000;
+    static final ILog log = LogFactory.getLog(StatisticManager.class);
 
-    private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
+    private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
     private List<JobStats> jobStats = new ArrayList<JobStats>();
 
@@ -64,47 +58,25 @@ public class StatisticManager implements IStatisticManager {
 
     protected IStatisticService statisticService;
 
+    protected INotificationService notificationService;
+
     protected IParameterService parameterService;
 
     protected IConfigurationService configurationService;
-    
-    protected IClusterService clusterService;
 
-    protected Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    private static final int NUMBER_OF_PERMITS = 1000;
 
-    protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
-    protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-    
-    protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
+    Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
-    public StatisticManager(IParameterService parameterService, INodeService nodeService,
-            IConfigurationService configurationService, IStatisticService statisticsService, IClusterService clusterService) {
-        this.parameterService = parameterService;
-        this.nodeService = nodeService;
-        this.configurationService = configurationService;
-        this.statisticService = statisticsService;
-        this.clusterService = clusterService;
+    Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+
+    public StatisticManager() {
     }
 
     protected void init() {
         incrementRestart();
-    }
-    
-    public ProcessInfo newProcessInfo(ProcessInfoKey key) {
-        ProcessInfo process = new ProcessInfo(key);
-        ProcessInfo old = processInfos.get(key);
-        if (old != null && (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR)) {
-            log.warn("Starting a new process even though the previous one ({}) had not finished", old.toString());
-        }
-        processInfos.put(key, process);
-        return process;
-    }
-    
-    public List<ProcessInfo> getProcessInfos() {
-        List<ProcessInfo> list = new ArrayList<ProcessInfo>(processInfos.values());
-        Collections.sort(list);
-        return list;
     }
 
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {
@@ -370,8 +342,7 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
-        boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
-                false);
+        boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE, false);
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -427,7 +398,7 @@ public class StatisticManager implements IStatisticManager {
                 Node node = nodeService.getCachedIdentity();
                 if (node != null) {
                     String nodeId = node.getNodeId();
-                    String serverId = clusterService.getServerId();
+                    String serverId = AppUtils.getServerId();
                     for (JobStats stats : toFlush) {
                         stats.setNodeId(nodeId);
                         stats.setHostName(serverId);
@@ -474,11 +445,11 @@ public class StatisticManager implements IStatisticManager {
         if (stats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                stats = new ChannelStats(node.getNodeId(), clusterService.getServerId(), new Date(),
+                stats = new ChannelStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
                         null, channelId);
                 channelStats.put(channelId, stats);
             } else {
-                stats = new ChannelStats(UNKNOWN, clusterService.getServerId(), new Date(), null,
+                stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null,
                         channelId);
             }
 
@@ -490,14 +461,34 @@ public class StatisticManager implements IStatisticManager {
         if (hostStats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                hostStats = new HostStats(node.getNodeId(), clusterService.getServerId(), new Date(),
+                hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
                         null);
             } else {
-                hostStats = new HostStats(UNKNOWN, clusterService.getServerId(), new Date(), null);
+                hostStats = new HostStats(UNKNOWN, AppUtils.getServerId(), new Date(), null);
             }
 
         }
         return hostStats;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setStatisticService(IStatisticService statisticService) {
+        this.statisticService = statisticService;
+    }
+
+    public void setNotificationService(INotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
 }

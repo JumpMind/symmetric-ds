@@ -16,75 +16,66 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
-import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
-import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingError;
+import org.jumpmind.symmetric.load.IBatchListener;
+import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.load.IDataLoader;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
-import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
+import org.jumpmind.symmetric.transport.ITransportManager;
 
 /**
- * This service provides an API to load data into a SymmetricDS node's database
- * from a transport
+ * This service provides an API to load data into a SymmetricDS node's
+ * database from a transport
  */
 public interface IDataLoaderService {
     
-    public boolean refreshFromDatabase();
-
     public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException;
+    
+    public void loadDataFromPull(Node remote, RemoteNodeStatus status) throws IOException;
 
-    public void loadDataFromPull(Node sourceNode, RemoteNodeStatus status) throws IOException;
+    public void loadData(InputStream in, OutputStream out) throws IOException;
 
-    public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out) throws IOException;
-    
-    public void addDataLoaderFactory(IDataLoaderFactory factory);
-    
-    public List<String> getAvailableDataLoaderFactories();
-    
-    public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler handler);
-    
-    public void removeDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler handler);
+    /**
+     * This is a convenience method for a client that might need to load CSV
+     * formatted data using SymmetricDS's {@link IDataLoader}.
+     * 
+     * @param batchData
+     *                Data string formatted for the configured loader (the only
+     *                supported data loader today is the {@link CsvLoader})
+     * @throws IOException
+     */
+    public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException;
 
-    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);            
+    public void addDataLoaderFilter(IDataLoaderFilter filter);
 
-    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter);
-    
-    public void addLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener);
-    
-    public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener);
-    
-    public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
-    
-    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
-    
-    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks();
-    
-    public void delete(ConflictNodeGroupLink settings);
-    
-    public void save(ConflictNodeGroupLink settings);
-    
-    public void clearCache();
+    public void setDataLoaderFilters(List<IDataLoaderFilter> filters);
 
-    public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
+    public void removeDataLoaderFilter(IDataLoaderFilter filter);
 
-    public IncomingError getCurrentIncomingError(long batchId, String nodeId);
-    
-    public void insertIncomingError(IncomingError incomingError);
-    
-    public void updateIncomingError(IncomingError incomingError);
+    public void setTransportManager(ITransportManager transportManager);
 
+    public void addColumnFilter(String tableName, IColumnFilter filter);
+
+    /**
+     * Remove all instances of the filter and re-register under the tables passed in.
+     */
+    public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter);
+    
+    public void addBatchListener(IBatchListener listener);
+
+    public IDataLoader openDataLoader(BufferedReader reader) throws IOException;
 }

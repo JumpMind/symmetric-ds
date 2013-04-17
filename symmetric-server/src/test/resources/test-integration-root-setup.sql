@@ -1,9 +1,9 @@
 insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, description) values('testchannel', 1, 50, 50, 1, 1, null);
 
-insert into sym_node_group (node_group_id, description) values ('test-root-group','a test config');
-insert into sym_node_group (node_group_id, description) values ('test-node-group','a test config');
-insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-node-group','test-root-group', 'P');
-insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-root-group','test-node-group', 'W');
+insert into sym_node_group values ('test-root-group','a test config');
+insert into sym_node_group values ('test-node-group','a test config');
+insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
+insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
 
 insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine');
 insert into sym_node_identity values ('00000');
@@ -70,12 +70,12 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          values(    '9000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(  '10000',               'one_column_table', 'testchannel', current_timestamp,current_timestamp);
+                         values(  '10000',               'ONE_COLUMN_TABLE', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '10000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(  '11000',           'no_primary_key_table', 'testchannel', current_timestamp,current_timestamp);
+                         values(  '11000',           'NO_PRIMARY_KEY_TABLE', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '11000',    '1000',                  1, current_timestamp, current_timestamp);
 
@@ -85,31 +85,20 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          values(  '12000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, last_update_time,      create_time)
-                         values(  '13000',            'test_target_table_a', 'testchannel',  current_timestamp,current_timestamp);                         
+                         values(  '13000',            'TEST_TARGET_TABLE_A', 'testchannel',  current_timestamp,current_timestamp);
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,     target_table_name,       create_time,  last_update_time) 
-                  values( '13000',   'test-root-group',    'test-node-group', 'test_target_table_b', current_timestamp, current_timestamp);  
+                  values( '13000',   'test-root-group',    'test-node-group', 'TEST_TARGET_TABLE_B', current_timestamp, current_timestamp);  
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '13000',  '13000',                  1, current_timestamp, current_timestamp);
-                         
-insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,    use_stream_lobs, last_update_time,      create_time)
-                         values(  'test_use_stream_lob', 'test_use_stream_lob', 'testchannel',  1,            current_timestamp,current_timestamp);
-insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
-                         values(    'test_use_stream_lob',    '1000',                  100, current_timestamp, current_timestamp);                                                                     
 
-                         
-insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,    use_capture_lobs, last_update_time,      create_time)
-                         values(  'test_use_capture_lob', 'test_use_capture_lob', 'testchannel',  1,            current_timestamp,current_timestamp);
-insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
-                         values(    'test_use_capture_lob',    '1000',                  100, current_timestamp, current_timestamp);                                                                     
 
-                         
 insert into test_customer
 (customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time)
-values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, current_timestamp, null);
+values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '2007-01-02 11:30:00'}, null);
 
 insert into test_order_header
 (order_id, customer_id, status, deliver_date)
-values('1', 100, null, null);
+values('1', 100, null, {d '2007-01-02'});
 
 insert into test_order_detail
 (order_id, line_number, item_type, item_id, quantity, price)
@@ -117,4 +106,4 @@ values('1', 1, 'STCK', '110000055', 5, 1.29);
 
 insert into test_sync_column_level
 (id, string_value, time_value, date_value, bigint_value, decimal_value)
-values (1, 'data',current_timestamp, null, 100, 123.45);
+values (1, 'data', {ts '2008-01-02 03:04:05'}, {d '2008-01-02'}, 100, 123.45);

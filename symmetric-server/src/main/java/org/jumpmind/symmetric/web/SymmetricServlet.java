@@ -16,28 +16,36 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.jumpmind.symmetric.common.DeploymentType;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
- * This servlet handles web requests to SymmetricDS.
+ * The SymmetricServlet manages all of the other Servlets. This allows for
+ * easier configuration since Spring manages the individual Servlets.
  * 
  * Configured within web.xml
  * 
@@ -57,130 +65,79 @@ import org.slf4j.MDC;
  * 
  * @since 1.4.0
  */
-public class SymmetricServlet extends HttpServlet {
+public class SymmetricServlet extends AbstractServlet {
 
     private static final long serialVersionUID = 1L;
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private static final ILog log = LogFactory.getLog(SymmetricServlet.class);
+
+    private List<IServletExtension> servlets;    
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException {
-        ServerSymmetricEngine engine = findEngine(req);
-        if (engine == null) {
-            boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
-                    .areEnginesStarting();
-            if (nodesBeingCreated) {
-                log.info(
-                        "The client node request is being rejected because the server node does not exist yet.  There are nodes being initialized.  It might be that the node is not ready or that the database is unavailable.  Please be patient.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-            } else {
-                log.error(
-                        "The client node request is being rejected because the server node does not exist.  Please check that the engine.name exists in the url.  It should be of the pattern http://host:port/sync/{engine.name}/{action}.  If it does not, then check the sync.url of this node or the registration.url of the client making the request.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-            }
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-
-        } else if (engine.isStarted()) {
-            IUriHandler handler = findMatchingHandler(engine, req);
-            if (handler != null) {
-                MDC.put("engineName", engine.getEngineName());
-                List<IInterceptor> interceptors = handler.getInterceptors();
-                try {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
-                            if (!interceptor.before(req, res)) {
-                                return;
-                            }
-                        }
-                    }
-                    handler.handle(req, res);
-                } catch (Exception e) {
-                    logException(req, e,
-                            !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
-                    if (!res.isCommitted()) {
-                        ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    }
-                } finally {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
-                            interceptor.after(req, res);
-                        }
-                    }
-                }
-            } else {
-                log.error(
-                        "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-                ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
-            }
-        } else if (engine.isStarting()) {
-            log.info(
-                    "The client node request is being rejected because the server node is currently starting.  Please be patient.  The request was {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        } else if (!engine.isStarted() && !engine.isConfigured()) {
-            log.warn(
-                    "The client node request is being rejected because the server node was not started because it is not configured properly. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        }
-
+    protected ILog getLog() {
+        return log;
     }
 
-    protected ServerSymmetricEngine findEngine(HttpServletRequest req) {
-        String engineName = getEngineNameFromUrl((HttpServletRequest) req);
-        ServerSymmetricEngine engine = null;
-        SymmetricEngineHolder holder = ServletUtils.getSymmetricEngineHolder(getServletContext());
-        if (holder != null) {
-            if (engineName != null) {
-                engine = holder.getEngines().get(engineName);
-            }
-
-            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 && 
-                    holder.getEngines().size() == 1) {
-                engine = holder.getEngines().values().iterator().next();
-            }
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        servlets = new ArrayList<IServletExtension>();
+        ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+        DeploymentType deploymentType = ctx.getBean(DeploymentType.class);
+        deploymentType.setServletRegistered(true);
+        final Map<String, IServletExtension> servletBeans = new LinkedHashMap<String, IServletExtension>();
+        servletBeans.putAll(ctx.getBeansOfType(IServletExtension.class));
+        if (ctx.getParent() != null) {
+            servletBeans.putAll(ctx.getParent().getBeansOfType(IServletExtension.class));
         }
-        return engine != null ? engine : null;
-    }
-
-    protected static String getEngineNameFromUrl(HttpServletRequest req) {
-        String engineName = null;
-        String normalizedUri = ServletUtils.normalizeRequestUri(req);
-        int startIndex = normalizedUri.startsWith("/") ? 1 : 0;
-        int endIndex = normalizedUri.indexOf("/", startIndex);
-        if (endIndex > 0) {
-            engineName = normalizedUri.substring(startIndex, endIndex);
+        // TODO order using initOrder
+        for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans.entrySet()) {
+            log.debug("ServletInitializing", servletEntry.getKey());
+            final IServletExtension extension = servletEntry.getValue();
+            extension.getServlet().init(config);
+            servlets.add(extension);
         }
-        return engineName;
-    }
 
-    protected Collection<IUriHandler> getUriHandlersFrom(ServerSymmetricEngine engine) {
-        if (engine != null) {
-            return engine.getUriHandlers();
-        } else {
-            return null;
+        if (servlets.size() == 0) {
+            log.error("ServletNoneFound");            
         }
     }
 
-    protected IUriHandler findMatchingHandler(ServerSymmetricEngine engine, HttpServletRequest req)
-            throws ServletException {
-        Collection<IUriHandler> handlers = getUriHandlersFrom(engine);
-        if (handlers != null) {
-            for (IUriHandler handler : handlers) {
-                if (matchesUriPattern(normalizeUri(engine, req), handler.getUriPattern())
-                        && handler.isEnabled()) {
-                    return handler;
-                }
+    public void destroy() {
+        for (final IServletExtension extension : servlets) {
+            extension.getServlet().destroy();
+        }
+    }
+
+    protected Servlet findMatchingServlet(ServletRequest req, ServletResponse resp) {
+        Servlet retVal = null;
+        for (Iterator<IServletExtension> iterator = servlets.iterator(); retVal == null && iterator.hasNext();) {
+            IServletExtension extension = iterator.next();
+            if (!extension.isDisabled() && matches(extension, req)) {
+                retVal = extension.getServlet();
             }
         }
-        return null;
+        return retVal;
+    }
+
+    public boolean matches(IServletExtension ext, ServletRequest request) {
+        boolean retVal = true;
+        if (request instanceof HttpServletRequest) {
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            final String uri = normalizeRequestUri(httpRequest);
+            if (!ArrayUtils.isEmpty(ext.getUriPatterns())) {
+                retVal = matchesUriPatterns(uri, ext.getUriPatterns());
+            }
+        }
+        return retVal;
+    }
+
+    protected boolean matchesUriPatterns(String uri, String[] uriPatterns) {
+        boolean retVal = false;
+        for (int i = 0; !retVal && i < uriPatterns.length; i++) {
+            retVal = matchesUriPattern(uri, uriPatterns[i]);
+        }
+        return retVal;
     }
 
     protected boolean matchesUriPattern(String uri, String uriPattern) {
@@ -202,35 +159,64 @@ public class SymmetricServlet extends HttpServlet {
         return retVal;
     }
 
-    protected String normalizeUri(ISymmetricEngine engine, HttpServletRequest req) {
-        String uri = ServletUtils.normalizeRequestUri((HttpServletRequest) req);
-        if (engine != null) {
-            String removeString = "/" + engine.getEngineName();
-            if (uri.startsWith(removeString)) {
-                uri = uri.substring(removeString.length());
-            }
+    /**
+     * Returns the part of the path we are interested in when doing pattern
+     * matching. This should work whether or not the servlet or filter is
+     * explicitly mapped inside of the web.xml since it always strips off the
+     * contextPath.
+     * 
+     * @param httpRequest
+     * @return
+     */
+    protected String normalizeRequestUri(HttpServletRequest httpRequest) {
+        String retVal = httpRequest.getRequestURI();
+        String contextPath = httpRequest.getContextPath();
+        if (retVal.startsWith(contextPath)) {
+            retVal = retVal.substring(contextPath.length());
         }
-        return uri;
+        return retVal;
     }
 
-    protected void logException(HttpServletRequest req, Exception ex, boolean isError) {
+    @Override
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        Servlet servlet = findMatchingServlet(req, res);
+        if (servlet != null) {
+            try {
+                if (res instanceof HttpServletResponse) {
+                    // let the client and web server know that we don't know the content length
+                    ((HttpServletResponse) res).setHeader("Transfer-Encoding", "chunked");
+                }
+                servlet.service(req, res);
+            } catch (Exception e) {
+                logException(req, e, !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
+                if (!res.isCommitted()) {
+                    if (res instanceof HttpServletResponse) {
+                        ((HttpServletResponse) res).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    }
+                }
+            }
+        } else {
+            if (req instanceof HttpServletRequest) {
+                HttpServletRequest httpRequest = (HttpServletRequest) req;
+                log.error("ServletNotFoundToHandleRequest", normalizeRequestUri(httpRequest));
+                if (res instanceof HttpServletResponse) {
+                    ((HttpServletResponse) res).sendRedirect("/");
+                }
+            }
+        }
+    }
+
+    protected void logException(ServletRequest req, Exception ex, boolean isError) {
         String nodeId = req.getParameter(WebConstants.NODE_ID);
         String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
         String address = req.getRemoteAddr();
         String hostName = req.getRemoteHost();
-        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
-                : "";
-        if (isError) {
-            log.error(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName,
-                            ServletUtils.normalizeRequestUri(req) });
-            log.error(ex.getMessage(), ex);
-        } else {
-            log.warn(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod() : "";
+        if (getLog().isErrorEnabled() && isError) {
+            getLog().error("ServletProcessingFailedError", ex, method, externalId, nodeId, address, hostName);
+        } else if (getLog().isWarnEnabled()) {
+            getLog().warn("ServletProcessingFailedWarning", method, externalId, nodeId, address, hostName,
+                    ex.getMessage());
         }
     }
-
 }

@@ -24,9 +24,6 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.DataEventType;
-
 /**
  * Used for tracking the sending a collection of data to a node in the system. A
  * new outgoing_batch is created and given a status of 'NE'. After sending the
@@ -40,35 +37,31 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK("Ok"), ER("Error"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"),;
-
+        RT("Routing"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), ER("Error"), OK("Ok"), IG("Ignored");
+        
         private String description;
-
+        
         Status(String description) {
             this.description = description;
         }
-
+        
         @Override
         public String toString() {
             return description;
         }
     }
 
-    private long batchId = -1;
+    private long batchId;
 
     private String nodeId;
 
     private String channelId;
-    
-    private long loadId = -1;
 
     private Status status = Status.RT;
 
     private boolean loadFlag;
 
     private boolean errorFlag;
-    
-    private boolean commonFlag;
 
     private long routerMillis;
 
@@ -87,8 +80,6 @@ public class OutgoingBatch implements Serializable {
     private long extractCount;
 
     private long loadCount;
-    
-    private long ignoreCount;
 
     private long dataEventCount;
 
@@ -115,15 +106,6 @@ public class OutgoingBatch implements Serializable {
     private Date lastUpdatedTime;
 
     private Date createTime;
-    
-    private String createBy;
-
-    private long oldDataEventCount = 0;
-    private long oldByteCount = 0;
-    private long oldFilterMillis = 0;
-    private long oldExtractMillis = 0;
-    private long oldLoadMillis = 0;
-    private long oldNetworkMillis = 0;
 
     public OutgoingBatch() {
     }
@@ -136,33 +118,12 @@ public class OutgoingBatch implements Serializable {
     }
 
     public void resetStats() {
-        // save off old stats in case there
-        // is an error and we want to be able to
-        // restore the previous stats
-        this.oldByteCount = this.byteCount;
-        this.oldDataEventCount = this.dataEventCount;
-        this.oldExtractMillis = this.extractMillis;
-        this.oldLoadMillis = this.loadMillis;
-        this.oldNetworkMillis = this.networkMillis;
-        this.oldFilterMillis = this.filterMillis;
-
         this.dataEventCount = 0;
         this.byteCount = 0;
         this.filterMillis = 0;
         this.extractMillis = 0;
         this.loadMillis = 0;
         this.networkMillis = 0;
-    }
-
-    public void revertStatsOnError() {
-        if (this.oldDataEventCount > 0) {
-            this.byteCount = this.oldByteCount;
-            this.dataEventCount = this.oldDataEventCount;
-            this.extractMillis = this.oldExtractMillis;
-            this.loadMillis = this.oldLoadMillis;
-            this.networkMillis = this.oldNetworkMillis;
-            this.filterMillis = this.oldFilterMillis;
-        }
     }
 
     public void setErrorFlag(boolean errorFlag) {
@@ -243,6 +204,10 @@ public class OutgoingBatch implements Serializable {
 
     public void setStatus(String status) {
         this.status = Status.valueOf(status);
+    }
+
+    public BatchInfo getBatchInfo() {
+        return new BatchInfo(this.batchId);
     }
 
     public long getRouterMillis() {
@@ -429,53 +394,8 @@ public class OutgoingBatch implements Serializable {
         this.createTime = createTime;
     }
     
-    public void setIgnoreCount(long ignoreCount) {
-        this.ignoreCount = ignoreCount;
-    }
-    
-    public long getIgnoreCount() {
-        return ignoreCount;
-    }
-    
-    public void incrementIgnoreCount() {
-        ignoreCount++;
-    }
-
     public long totalEventCount() {
-        return insertEventCount + updateEventCount + deleteEventCount + otherEventCount;
-    }
-    
-    public void setCommonFlag(boolean commonFlag) {
-        this.commonFlag = commonFlag;
-    }
-    
-    public boolean isCommonFlag() {
-        return commonFlag;
-    }
-    
-    public String getStagedLocation() {
-        return Batch.getStagedLocation(commonFlag, nodeId);
-    }
-    
-    @Override
-    public String toString() {
-        return getNodeBatchId();
-    }
-    
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-    
-    public String getCreateBy() {
-        return createBy;
-    }
-    
-    public void setLoadId(long loadId) {
-        this.loadId = loadId;
-    }
-
-    public long getLoadId() {
-        return loadId;
+        return insertEventCount + updateEventCount + deleteEventCount + otherEventCount; 
     }
 
 }

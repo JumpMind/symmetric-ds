@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.ext;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.job.WatchdogJob;
 import org.jumpmind.symmetric.model.Node;
 
 /**

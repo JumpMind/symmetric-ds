@@ -21,18 +21,17 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
-import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
  * This data router is invoked when the router_type='column'. The
@@ -76,26 +75,16 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     private static final String NULL_VALUE = "NULL";
 
-    private IConfigurationService configurationService;
-    
-    private ISymmetricDialect symmetricDialect;
+    private IRegistrationService registrationService;
 
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
-            .getName());        
-    
-    public ColumnMatchDataRouter() {
-    }
+            .getName());
 
-    public ColumnMatchDataRouter(IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
-        this.configurationService = configurationService;
-        this.symmetricDialect = symmetricDialect;
-    }
-
-    public Set<String> routeToNodes(SimpleRouterContext routingContext,
+    public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
-        Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
+        Map<String, String> columnValues = getDataMap(dataMetaData);
 
         if (columnValues != null) {
             for (Expression e : expressions) {
@@ -150,11 +139,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
             }
         } else {
-            log.warn("There were no columns to match for the data_id of {}", dataMetaData.getData().getDataId());
-        }
-        
-        if(nodeIds != null) {
-            nodeIds.remove(null);
+            log.warn("RouterNoColumnsToMatch", dataMetaData.getData().getDataId());
         }
 
         return nodeIds;
@@ -166,103 +151,65 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
      * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
-    protected List<Expression> getExpressions(Router router, SimpleRouterContext context) {
+    protected List<Expression> getExpressions(Router router, IRouterContext context) {
         final String KEY = EXPRESSION_KEY + router.getRouterId();
         List<Expression> expressions = (List<Expression>) context.getContextCache().get(
                 KEY);
         if (expressions == null) {
-            expressions = parse(router.getRouterExpression());
-            context.getContextCache().put(KEY, expressions);
-        }
-        return expressions;
-    }
-    
-    public List<Expression> parse(String routerExpression) throws SyntaxParsingException {
-        List<Expression> expressions = new ArrayList<Expression>();       
-        if (!StringUtils.isBlank(routerExpression)) {           
-            
-            String[] expTokens = routerExpression.split("\\s*(\\s+or|\\s+OR)?(\r\n|\r|\n)(or\\s+|OR\\s+)?\\s*" +
-            		                                    "|\\s+or\\s+" +
-            		                                    "|\\s+OR\\s+");
-            
-            if (expTokens != null) {
-                for (String t : expTokens) {
-                    if (!StringUtils.isBlank(t)) {
-                        String[] tokens = null;
-                        boolean equals = !t.contains("!=");
-                        if (!equals) {
-                            tokens = t.split("!=");
-                        } else {
-                            tokens = t.split("=");
-                        }
-                        if (tokens.length == 2) {
-                            tokens[0] = parseColumn(tokens[0]);
-                            tokens[1] = parseValue(tokens[1]);
-                            expressions.add(new Expression(equals, tokens));
-                        } else {
-                            log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", t, routerExpression);
-                            throw new SyntaxParsingException("The provided column match expression was invalid: " + t + ".  The full expression is " + routerExpression + ".");
-                        }
+            expressions = new ArrayList<Expression>();
+            String routerExpression = router.getRouterExpression();
+            if (!StringUtils.isBlank(routerExpression)) {
+                context.getContextCache().put(KEY, expressions);
+                String[] expTokens = routerExpression.split("\r\n|\r|\n");
+                if (expTokens != null) {
+                    for (String t : expTokens) {
+                        if (!StringUtils.isBlank(t)) {
+                            String[] tokens = null;
+                            boolean equals = !t.contains("!=");
+                            if (!equals) {
+                                tokens = t.split("!=");
+                            } else {
+                                tokens = t.split("=");
+                            }
+                            if (tokens.length == 2) {
+                                expressions.add(new Expression(equals, tokens));
+                            } else {
+                                log.warn("RouterIllegalColumnMatchExpression", t, routerExpression);
+                            }
 
+                        }
                     }
                 }
+            } else {
+                log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
             }
-        } else {
-            log.warn("The provided column match expression is empty");
         }
         return expressions;
-    }
-
-    /**
-     * Parse a column (the first half of a column match expression).
-     */
-    private String parseColumn(String value) {
-        return value.trim();
-    }
-    
-    /**
-     * Parse a value (the second half of a column match expression).
-     */
-    private String parseValue(String value) {
-        value = value.trim();
-        // Check for ticks around the value.
-        if (value.charAt(0) == '\''
-                && value.charAt(value.length() - 1) == '\'') {
-            // remove first and last tick
-            value = value.substring(1,value.length()-1);
-            // replace all double ticks with a single tick only if value was surrounded with ticks
-            value = value.replaceAll("''", "'");
-        }
-        return value;
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getRedirectMap(SimpleRouterContext ctx) {
+    protected Map<String, String> getRedirectMap(IRouterContext ctx) {
         final String CTX_CACHE_KEY = ColumnMatchDataRouter.class.getSimpleName() + "RouterMap";
         Map<String, String> redirectMap = (Map<String, String>) ctx.getContextCache().get(
                 CTX_CACHE_KEY);
         if (redirectMap == null) {
-            redirectMap = configurationService.getRegistrationRedirectMap();
+            redirectMap = registrationService.getRegistrationRedirectMap();
             ctx.getContextCache().put(CTX_CACHE_KEY, redirectMap);
         }
         return redirectMap;
     }
 
-    public class Expression {
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
+
+    class Expression {
         boolean equals;
         String[] tokens;
 
         public Expression(boolean equals, String[] tokens) {
             this.equals = equals;
             this.tokens = tokens;
-        }
-        
-        public String[] getTokens() {
-            return tokens;
-        }
-        
-        public boolean getEquals() {
-            return equals;
         }
     }
 }

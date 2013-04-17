@@ -19,35 +19,17 @@
  * under the License.  */
 package org.jumpmind.symmetric.common;
 
-import org.jumpmind.symmetric.model.DataEvent;
-
 /**
- * General purpose constants used by SymmetricDS
+ * 
  */
 final public class Constants {
 
     private Constants() {
     }
     
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;   
-    
-    public static final String NONE_TOKEN = "$(none)";
-    
-    public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
-    
-    public static final String DATA_CONTEXT_SOURCE_NODE = "sourceNode";
-        
-    public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
+    public static final String PROP_STANDALONE_WEB = "standalone.web";
 
-    public static final String STAGING_CATEGORY_INCOMING = "incoming";
-
-    public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
-    
-    public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
-    
     public static final String PLEASE_SET_ME = "please set me";
-    
-    public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
     
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
@@ -56,23 +38,126 @@ final public class Constants {
     
     public static final String UNKNOWN_STRING = "unknown";
     
-    public static final String ALWAYS_TRUE_CONDITION = "1=1";    
+    public static final String ALWAYS_TRUE_CONDITION = "1=1";
+    
+    /**
+     * Use this value if data is not to be routed anywhere.
+     */
+    public static final int UNROUTED_BATCH_ID = -1;
     
     public static final String UNROUTED_NODE_ID = "-1";
     
     public static final long LONG_OPERATION_THRESHOLD = 30000;
     
+    public static final String ENCODING = "UTF-8";
+    
+    public static final String OVERRIDE_PROPERTIES_FILE_PREFIX = "symmetric.override.properties.file.";
+    
+    public static final String OVERRIDE_PROPERTIES_FILE_1 = OVERRIDE_PROPERTIES_FILE_PREFIX + "1";
+    
+    public static final String OVERRIDE_PROPERTIES_FILE_2 = OVERRIDE_PROPERTIES_FILE_PREFIX + "2";
+    
+    public static final String OVERRIDE_PROPERTIES_FILE_TEMP = OVERRIDE_PROPERTIES_FILE_PREFIX + "temp";
+    
+    public static final String NA = "NA";
+    
     public static final String SYMMETRIC_ENGINE = "symmetricEngine";
     
     public static final String MBEAN_SERVER = "mbeanserver";
     
-    public static final String CHANNEL_HEARTBEAT = "heartbeat";
+    public static final String PROPERTIES = "symmetricProperties";
 
     public static final String CHANNEL_CONFIG = "config";
     
     public static final String CHANNEL_RELOAD = "reload";
+
+    public static final String DATA_SOURCE = "dataSource";
+
+    public static final String NODE_SERVICE = "nodeService";
     
-    public static final String CHANNEL_DEFAULT = "default";
+    public static final String ROUTER_SERVICE = "routingService";
+
+    public static final String DATALOADER_SERVICE = "dataLoaderService";
+
+    public static final String CLUSTER_SERVICE = "clusterService";
+
+    public static final String PARAMETER_SERVICE = "parameterService";
+    
+    public static final String TRIGGER_ROUTER_SERVICE = "triggerRouterService";
+
+    public static final String DATALOADER = "dataLoader";
+
+    public static final String INCOMING_BATCH_SERVICE = "incomingBatchService";
+
+    public static final String DATAEXTRACTOR_SERVICE = "dataExtractorService";
+
+    public static final String CONFIG_SERVICE = "configurationService";
+
+    public static final String TRANSPORT_MANAGER = "transportManager";
+    
+    public static final String EXTENSION_MANAGER = "extensionManager";
+
+    public static final String ACKNOWLEDGE_SERVICE = "acknowledgeService";
+
+    public static final String REGISTRATION_SERVICE = "registrationService";
+    
+    public static final String UPGRADE_SERVICE = "upgradeService";
+
+    public static final String DATA_SERVICE = "dataService";
+
+    public static final String PUSH_SERVICE = "pushService";
+
+    public static final String PULL_SERVICE = "pullService";
+    
+    public static final String BANDWIDTH_SERVICE = "bandwidthService";
+
+    public static final String ACK_RESOURCE_HANDLER = "ackResourceHandler";
+
+    public static final String ALERT_RESOURCE_HANDLER = "alertResourceHandler";
+
+    public static final String STATISTIC_MANAGER = "statisticManager";
+    
+    public static final String STATISTIC_SERVICE = "statisticService";
+    
+    public static final String SECURITY_SERVICE = "securityService";
+
+    public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
+
+    public static final String PULL_RESOURCE_HANDLER = "pullResourceHandler";
+
+    public static final String PUSH_RESOURCE_HANDLER = "pushResourceHandler";
+
+    public static final String REGISTRATION_RESOURCE_HANDLER = "registrationResourceHandler";
+
+    public static final String ACK_SERVLET = "ackResourceHandler";
+
+    public static final String ALERT_SERVLET = "alertResourceHandler";
+
+    public static final String PULL_SERVLET = "pullResourceServlet";
+
+    public static final String INET_ADDRESS_FILTER = "inetAddressFilter";
+
+    public static final String INET_ADDRESS_RESOURCE_HANDLER = "inetAddressResourceHandler";
+
+    public static final String PUSH_SERVLET = "pushResourceServlet";
+
+    public static final String REGISTRATION_SERVLET = "registrationServlet";
+
+    public static final String AUTHENTICATION_FILTER = "authenticationFilter";
+
+    public static final String THROTTLE_FILTER = "throttleFilter";
+
+    public static final String COMPRESSION_FILTER = "compressionFilter";
+
+    public static final String NODE_CONCURRENCY_FILTER = "nodeConcurrencyFilter";
+    
+    public static final String DEPLOYMENT_TYPE = "deploymentType";
+
+    public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
+
+    public static final String DB_DIALECT = "dbDialect";
+    
+    public static final String JOB_MANAGER = "jobManager";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 
@@ -115,10 +200,4 @@ final public class Constants {
     public static final String PROTOCOL_EXT = "ext";
     
     public static final String TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL="all";
-    
-    public static final String TRANSFORM_SERVICE = "transformService";
-    
-    public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
-    
-    public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "OUTGOING_BATCH_LOAD_ID";
 }

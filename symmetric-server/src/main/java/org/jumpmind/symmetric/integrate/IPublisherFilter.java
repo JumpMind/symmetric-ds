@@ -20,9 +20,13 @@
 
 package org.jumpmind.symmetric.integrate;
 
-import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.load.IBatchListener;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
 
-public interface IPublisherFilter extends IDatabaseWriterFilter {
+/**
+ * 
+ */
+public interface IPublisherFilter extends IDataLoaderFilter, IBatchListener {
 
     public void setPublisher(IPublisher publisher);
     

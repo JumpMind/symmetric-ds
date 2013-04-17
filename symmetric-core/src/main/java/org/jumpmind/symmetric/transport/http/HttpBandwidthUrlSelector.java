@@ -28,12 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This {@link ISyncUrlExtension} is capable of measuring the bandwidth of a
@@ -44,10 +45,12 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * Valid parameters are constants on this class that start with PARAM_. Any
  * parameter that is a numeral will be designated a possible URL.
+ *
+ * 
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
     
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";
     public static String PARAM_SAMPLE_SIZE = "sampleSize";
@@ -62,13 +65,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     private Map<URI, List<SyncUrl>> cachedUrls = new HashMap<URI, List<SyncUrl>>();
 
     private INodeService nodeService;
-    private IBandwidthService bandwidthService;
-    
-    public HttpBandwidthUrlSelector(INodeService nodeService,
-            IBandwidthService bandwidthService) {
-        this.nodeService = nodeService;
-        this.bandwidthService = bandwidthService;
-    }
+    private IBandwidthService bandwidthService = new BandwidthService();
 
     public String resolveUrl(URI uri) {
         Map<String, String> params = getParameters(uri);
@@ -106,7 +103,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 sampleSize = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("Unable to parse sampleSize of {}", val);
+                log.error("BandwidthSampleSizeParsingFailed", val);
             }
         }
         return sampleSize;
@@ -119,7 +116,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 maxSampleDuration = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("Unable to parse sampleSize of {}",val);
+                log.error("BandwidthSampleSizeParsingFailed",val);
             }
         }
         return maxSampleDuration;
@@ -132,7 +129,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 sampleTTL = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("Unable to parse sampleTTL of {}",val);
+                log.error("BandwidthSampleTTLParsingFailed",val);
             }
         }
         return sampleTTL;
@@ -171,6 +168,10 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
         return map;
     }
 
+    public boolean isAutoRegister() {
+        return autoRegister;
+    }
+
     public void setDefaultSampleSize(long sampleSize) {
         this.defaultSampleSize = sampleSize;
     }
@@ -181,6 +182,14 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setBandwidthService(IBandwidthService bandwidthService) {
+        this.bandwidthService = bandwidthService;
     }
 
     public void setDefaultMaxSampleDuration(long defaultMaxSampleDuration) {

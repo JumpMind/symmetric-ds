@@ -19,7 +19,7 @@
  * under the License.  */
 package org.jumpmind.symmetric.config;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 public interface IParameterFilter extends IExtensionPoint {
 

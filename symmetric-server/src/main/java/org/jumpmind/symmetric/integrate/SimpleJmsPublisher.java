@@ -16,36 +16,38 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.integrate;
 
-import org.jumpmind.util.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jms.core.JmsTemplate;
 
+/**
+ * 
+ */
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 
-    static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
+    static final ILog log = LogFactory.getLog(SimpleJmsPublisher.class);
 
     private BeanFactory beanFactory;
-
+    
     private String jmsTemplateBeanName;
 
     public boolean enabled = true;
 
-    public void publish(Context context, String text) {
-        log.debug("Publishing {}", text);
-        JmsTemplate jmsTemplate = (JmsTemplate) beanFactory.getBean(jmsTemplateBeanName);
+    public void publish(ICacheContext ctx, String text) {
+        log.debug("TextPublishing", text);
+        JmsTemplate jmsTemplate = (JmsTemplate)beanFactory.getBean(jmsTemplateBeanName);
         if (enabled) {
             jmsTemplate.convertAndSend(text);
         } else {
-            log.warn("Message was not published because the publisher is not enabled.");
+            log.warn("TextPublishingFailed");
         }
     }
 
@@ -56,8 +58,8 @@ public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
     public void setJmsTemplateBeanName(String jmsTemplateBeanName) {
         this.jmsTemplateBeanName = jmsTemplateBeanName;
     }
-
+    
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
+     this.beanFactory = beanFactory;        
     }
 }

@@ -23,20 +23,6 @@ package org.jumpmind.symmetric.web;
  * Constants that are related to the HTTP transport
  */
 public class WebConstants {
-    
-    public static final String METHOD_GET = "GET";
-    
-    public static final String METHOD_HEAD = "HEAD";
-    
-    public static final String INIT_PARAM_AUTO_START = "autoStart";
-    
-    public static final String INIT_PARAM_MULTI_SERVER_MODE = "multiServerMode";
-    
-    public static final String INIT_PARAM_DEPLOYMENT_TYPE = "deploymentType";
-    
-    public static final String INIT_SINGLE_SERVER_PROPERTIES_FILE = "singleServerPropertiesFile";
-    
-    public static final String ATTR_ENGINE_HOLDER = "symmetricEngineHolder";
 
     public static final int REGISTRATION_NOT_OPEN = 656;
 
@@ -61,8 +47,6 @@ public class WebConstants {
     public static final String ACK_DATABASE_MILLIS = "database-";
 
     public static final String ACK_BYTE_COUNT = "byteCount-";
-    
-    public static final String ACK_IGNORE_COUNT = "ignoreCount-";
 
     public static final String ACK_SQL_STATE = "sqlState-";
 
@@ -77,10 +61,6 @@ public class WebConstants {
     public static final String EXTERNAL_ID = "externalId";
 
     public static final String SYMMETRIC_VERSION = "symmetricVersion";
-    
-    public static final String HOST_NAME = "hostName";
-    
-    public static final String IP_ADDRESS = "ipAddress";
 
     public static final String SYNC_URL = "syncURL";
 

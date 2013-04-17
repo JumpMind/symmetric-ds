@@ -16,31 +16,28 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
 
 package org.jumpmind.symmetric.integrate;
 
-import org.jumpmind.db.model.Table;
+import java.util.Map;
+
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.symmetric.load.IDataLoader;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  */
-abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWriterFilterAdapter
-        implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
+abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint,
+        BeanNameAware {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final ILog log = LogFactory.getLog(getClass());
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 
@@ -49,6 +46,8 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     private boolean loadDataInTargetDatabase = true;
 
     protected String tableName;
+
+    private boolean autoRegister = true;
 
     private String[] nodeGroupIdsToApplyTo;
 
@@ -60,65 +59,80 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
 
     private String beanName;
 
-    protected abstract String addTextHeader(
-            DataContext context);
+    protected abstract String addTextHeader(IDataLoaderContext ctx);
 
-    protected abstract String addTextElement(
-            DataContext context, Table table,
-            CsvData data);
+    protected abstract String addTextElementForDelete(IDataLoaderContext ctx, String[] keys);
 
-    protected abstract String addTextFooter(
-            DataContext context);
+    protected abstract String addTextElementForUpdate(IDataLoaderContext ctx, String[] data, String[] keys);
+
+    protected abstract String addTextElementForInsert(IDataLoaderContext ctx, String[] data);
+
+    protected abstract String addTextFooter(IDataLoaderContext ctx);
 
     public void setBeanName(String name) {
         this.beanName = name;
     }
 
-    public boolean beforeWrite(
-            DataContext context, Table table, CsvData data) {
-        if (tableName != null && tableName.equals(table.getName())) {
-            DataEventType eventType = data.getDataEventType();
-            if (eventType.isDml()) {
-                String msg = addTextElement(context, table, data);
-                if (msg != null) {
-                    getFromCache(context).append(msg);
-                }
+    public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
+            String msg = addTextElementForDelete(ctx, keys);
+            if (msg != null) {
+                getFromCache(ctx).append(msg);
             }
         }
         return loadDataInTargetDatabase;
     }
 
-    protected StringBuilder getFromCache(
-            DataContext context) {
-        StringBuilder msgCache = (StringBuilder) context.get(MSG_CACHE);
+    public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
+            String msg = addTextElementForUpdate(ctx, data, keys);
+            if (msg != null) {
+                getFromCache(ctx).append(msg);
+            }
+        }
+        return loadDataInTargetDatabase;
+    }
+
+    public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
+            String msg = addTextElementForInsert(ctx, data);
+            if (msg != null) {
+                getFromCache(ctx).append(msg);
+            }
+        }
+        return loadDataInTargetDatabase;
+    }
+
+    protected StringBuilder getFromCache(IDataLoaderContext ctx) {
+        Map<String, Object> cache = ctx.getContextCache();
+        StringBuilder msgCache = (StringBuilder) cache.get(MSG_CACHE);
         if (msgCache == null) {
-            msgCache = new StringBuilder(addTextHeader(context));
-            context.put(MSG_CACHE, msgCache);
+            msgCache = new StringBuilder(addTextHeader(ctx));
+            cache.put(MSG_CACHE, msgCache);
         }
         return msgCache;
     }
 
-    protected boolean doesTextExistToPublish(
-            DataContext context) {
-        StringBuilder msgCache = (StringBuilder) context.get(MSG_CACHE);
+    protected boolean doesTextExistToPublish(IDataLoaderContext ctx) {
+        Map<String, Object> cache = ctx.getContextCache();
+        StringBuilder msgCache = (StringBuilder) cache.get(MSG_CACHE);
         return msgCache != null && msgCache.length() > 0;
     }
 
-    private void finalizeAndPublish(
-            DataContext context) {
-        StringBuilder msg = getFromCache(context);
+    private void finalizeAndPublish(IDataLoaderContext ctx) {
+        StringBuilder msg = getFromCache(ctx);
         if (msg.length() > 0) {
-            msg.append(addTextFooter(context));
-            log.debug("Publishing text message {}", msg);
-            context.remove(MSG_CACHE);
-            publisher.publish(context, msg.toString());
+            msg.append(addTextFooter(ctx));
+            log.debug("TextMessagePublishing", msg);
+            ctx.getContextCache().remove(MSG_CACHE);
+            publisher.publish(ctx, msg.toString());
         }
     }
 
-    public void batchComplete(
-            DataContext context) {
-        if (doesTextExistToPublish(context)) {
-            finalizeAndPublish(context);
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+        IDataLoaderContext ctx = loader.getContext();
+        if (doesTextExistToPublish(ctx)) {
+            finalizeAndPublish(ctx);
             logCount();
         }
     }
@@ -127,8 +141,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         messagesSinceLastLogOutput++;
         long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
         if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            log.info("{} published {} messages in the last {} ms.", new Object[] { beanName,
-                    messagesSinceLastLogOutput, timeInMsSinceLastLogOutput });
+            log.info("TextMessagePublished", beanName, messagesSinceLastLogOutput, timeInMsSinceLastLogOutput);
             lastTimeInMsOutputLogged = System.currentTimeMillis();
             messagesSinceLastLogOutput = 0;
         }
@@ -140,6 +153,14 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
 
     public void setPublisher(IPublisher publisher) {
         this.publisher = publisher;
+    }
+
+    public void setAutoRegister(boolean autoRegister) {
+        this.autoRegister = autoRegister;
+    }
+
+    public boolean isAutoRegister() {
+        return autoRegister;
     }
 
     public String[] getNodeGroupIdsToApplyTo() {
@@ -162,4 +183,12 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         this.tableName = tableName;
     }
 
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+    }
+
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
+    }
+
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    }
 }

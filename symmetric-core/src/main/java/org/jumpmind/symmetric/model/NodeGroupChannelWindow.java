@@ -25,7 +25,7 @@ import java.sql.Time;
 import java.util.Date;
 
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * 

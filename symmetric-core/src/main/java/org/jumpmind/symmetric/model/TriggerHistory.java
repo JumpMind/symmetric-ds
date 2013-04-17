@@ -16,27 +16,28 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Maps to the table sync audit table which tracks the history of sync trigger
- * creation.
- * <p/>
- * This table also tracks the columns and the primary keys as of the create date
- * so that if the table definition changes while we still have events to process
- * (as may be the case when distributing events to remote locations), then we
- * still have the history of what the columns and primary keys were at the time.
+ * creation. <p/> This table also tracks the columns and the primary keys as of
+ * the create date so that if the table definition changes while we still have
+ * events to process (as may be the case when distributing events to remote
+ * locations), then we still have the history of what the columns and primary
+ * keys were at the time.
+ *
+ * 
  */
-public class TriggerHistory implements Serializable {
+public class TriggerHistory extends AbstractCsvData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,12 +54,8 @@ public class TriggerHistory implements Serializable {
     private Date createTime;
 
     private String columnNames;
-    
-    private String[] parsedColumnNames;
 
     private String pkColumnNames;
-    
-    private String[] parsedPkColumnNames;
 
     private String nameForInsertTrigger;
 
@@ -66,9 +63,8 @@ public class TriggerHistory implements Serializable {
 
     private String nameForDeleteTrigger;
 
-    private String errorMessage;
-
     private Date inactiveTime;
+    
 
     /**
      * This is a hash based on the tablename, column names, and column data
@@ -76,7 +72,7 @@ public class TriggerHistory implements Serializable {
      * changes.
      */
     private int tableHash;
-
+    
     /**
      * This is a hash based on the values in the trigger configuration table.
      */
@@ -88,42 +84,68 @@ public class TriggerHistory implements Serializable {
         createTime = new Date();
     }
 
-    public TriggerHistory(int triggerHistoryId) {
-        this();
-        this.triggerHistoryId = triggerHistoryId;
-    }
-
     public TriggerHistory(String tableName, String pkColumnNames, String columnNames) {
-        this();
         this.sourceTableName = tableName;
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
     }
-
+    
     public TriggerHistory(Table table, Trigger trigger) {
-        this(table, trigger, null);
+        this(table,trigger,null);
     }
 
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
         this();
+        this.sourceTableName = table.getName();
         this.lastTriggerBuildReason = reason;
-        this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                .getSourceTableName();
-        this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
+        this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
-        this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(trigger
-                .getSyncKeysColumnsForTable(table)));
+        this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         this.triggerRowHash = trigger.toHashedValue();
-        tableHash = table.calculateTableHashcode();
+        // set primary key equal to all the columns to make data sync work for
+        // tables with no primary keys
+        if (pkColumnNames == null) {
+            pkColumnNames = columnNames;
+        }
+
+        tableHash = calculateTableHashFor(table);
     }
-    
-    public TriggerHistory(Trigger trigger) {
-        this.sourceCatalogName = trigger.getSourceCatalogName();
-        this.sourceSchemaName = trigger.getSourceSchemaName();
-        this.sourceTableName = trigger.getSourceTableName();
-        this.triggerId = trigger.getTriggerId();
+
+    public static int calculateTableHashFor(Table table) {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + table.getName().hashCode();
+        result = PRIME * result + calculateHashForColumns(PRIME, table.getColumns());
+        result = PRIME * result + calculateHashForColumns(PRIME, table.getPrimaryKeyColumns());
+        return result;
+    }
+
+    private static int calculateHashForColumns(final int PRIME, Column[] cols) {
+        int result = 1;
+        if (cols != null && cols.length > 0) {
+            for (Column column : cols) {
+                result = PRIME * result + column.getName().hashCode();
+                result = PRIME * result + column.getType().hashCode();
+                result = PRIME * result + column.getSizeAsInt();
+            }
+        }
+        return result;
+    }
+
+    private String getCommaDeliminatedColumns(Column[] cols) {
+        StringBuilder columns = new StringBuilder();
+        if (cols != null && cols.length > 0) {
+            for (Column column : cols) {
+                columns.append(column.getName());
+                columns.append(",");
+            }
+            columns.replace(columns.length() - 1, columns.length(), "");
+            return columns.toString();
+        } else {
+            return null;
+        }
     }
 
     public String getTriggerNameForDmlType(DataEventType type) {
@@ -134,38 +156,16 @@ public class TriggerHistory implements Serializable {
             return getNameForUpdateTrigger();
         case DELETE:
             return getNameForDeleteTrigger();
-        default:
-            break;
         }
         throw new IllegalStateException();
     }
-
+    
     public String[] getParsedColumnNames() {
-        if (parsedColumnNames == null && columnNames != null) {
-            parsedColumnNames = columnNames.split(",");
-        }
-        return parsedColumnNames;
+        return getData("columnNames", columnNames);
     }
     
-    public int indexOfColumnName(String columnName, boolean ignoreCase) {
-        String[] columnNames = getParsedColumnNames();
-        int i = 0;
-        for (String col : columnNames) {
-            if (ignoreCase && col.equalsIgnoreCase(columnName)) {
-                return i;
-            } else if (col.equals(columnName)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
     public String[] getParsedPkColumnNames() {
-        if (parsedPkColumnNames == null && pkColumnNames != null) {
-            parsedPkColumnNames = pkColumnNames.split(",");
-        }
-        return parsedPkColumnNames;
+        return getData("pkColumnNames", pkColumnNames);
     }
 
     public int getTableHash() {
@@ -175,10 +175,6 @@ public class TriggerHistory implements Serializable {
     public void setTableHash(int tableHash) {
         this.tableHash = tableHash;
     }
-    
-    public String getFullyQualifiedSourceTableName() {
-        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName);
-    }
 
     public String getSourceTableName() {
         return sourceTableName;
@@ -187,7 +183,7 @@ public class TriggerHistory implements Serializable {
     public void setSourceTableName(String tableName) {
         this.sourceTableName = tableName;
     }
-
+    
     public String getColumnNames() {
         return columnNames;
     }
@@ -291,23 +287,6 @@ public class TriggerHistory implements Serializable {
     public void setTriggerRowHash(long triggerRowHash) {
         this.triggerRowHash = triggerRowHash;
     }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public int toVirtualTriggerHistId() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
-        result = prime * result + ((sourceCatalogName == null) ? 0 : sourceCatalogName.hashCode());
-        result = prime * result + ((sourceSchemaName == null) ? 0 : sourceSchemaName.hashCode());
-        result = prime * result + ((sourceTableName == null) ? 0 : sourceTableName.hashCode());
-        return result;
-    }
     
+
 }

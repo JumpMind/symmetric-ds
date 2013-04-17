@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.route;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
@@ -33,5 +33,5 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public interface IBatchAlgorithm extends IExtensionPoint {
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
-            SimpleRouterContext routingContext);
+            IRouterContext routingContext);
 }

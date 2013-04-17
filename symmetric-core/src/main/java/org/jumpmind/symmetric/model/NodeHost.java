@@ -21,12 +21,10 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * 
@@ -36,8 +34,6 @@ public class NodeHost implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static Date LAST_RESTART_TIME = new Date();
-    
-    protected final static int MAX_IP_ADDRESS_SIZE = 50;
     
     private String nodeId;
     private String hostName;
@@ -66,11 +62,11 @@ public class NodeHost implements Serializable {
         this.nodeId = nodeId;
         this.refresh();
         this.createTime = new Date();
-    }        
+    }
 
     public void refresh() {
         this.hostName = AppUtils.getHostName();
-        setIpAddress(AppUtils.getIpAddress());
+        this.ipAddress = AppUtils.getIpAddress();
         this.osUser = System.getProperty("user.name");
         this.osName = System.getProperty("os.name");
         this.osArch = System.getProperty("os.arch");
@@ -83,9 +79,7 @@ public class NodeHost implements Serializable {
         this.javaVendor = System.getProperty("java.vendor");
         this.symmetricVersion = Version.version();
         this.timezoneOffset = AppUtils.getTimezoneOffset();
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MILLISECOND, 0);
-        this.heartbeatTime = cal.getTime();
+        this.heartbeatTime = new Date();
     }
 
     public String getNodeId() {
@@ -109,7 +103,7 @@ public class NodeHost implements Serializable {
     }
 
     public void setIpAddress(String ipAddress) {
-        this.ipAddress = StringUtils.left(ipAddress, MAX_IP_ADDRESS_SIZE);
+        this.ipAddress = ipAddress;
     }
 
     public String getOsUser() {

@@ -25,9 +25,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Defines the trigger via which a table will be synchronized.
@@ -36,9 +37,7 @@ public class TriggerRouter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger logger = LoggerFactory.getLogger(TriggerRouter.class);
-    
-    private boolean enabled =  true;
+    static final Log logger = LogFactory.getLog(TriggerRouter.class);
 
     /**
      * This is the order in which the definitions will be processed.
@@ -46,9 +45,7 @@ public class TriggerRouter implements Serializable {
     private int initialLoadOrder;
     
     private String initialLoadSelect;
-    
-    private String initialLoadDeleteStmt;
-        
+
     private Trigger trigger;
 
     private Router router;
@@ -70,14 +67,6 @@ public class TriggerRouter implements Serializable {
         this.router = router;
         createTime = new Date();
         lastUpdateTime = new Date();        
-    }
-    
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-    
-    public boolean isEnabled() {
-        return enabled;
     }
 
     public Date getCreateTime() {
@@ -102,6 +91,13 @@ public class TriggerRouter implements Serializable {
 
     public void setLastUpdateBy(String updatedBy) {
         this.lastUpdateBy = updatedBy;
+    }
+
+    /**
+     * When dealing with columns, always use this method to order the columns so that the primary keys are first.
+     */
+    public Column[] orderColumnsForTable(Table table) {
+        return trigger.orderColumnsForTable(table);
     }
 
     public int getInitialLoadOrder() {
@@ -135,16 +131,8 @@ public class TriggerRouter implements Serializable {
     public String getInitialLoadSelect() {
         return initialLoadSelect;
     }
-    
-	public String getInitialLoadDeleteStmt() {
-		return initialLoadDeleteStmt;
-	}
 
-	public void setInitialLoadDeleteStmt(String initialLoadDeleteStmt) {
-		this.initialLoadDeleteStmt = initialLoadDeleteStmt;
-	}
-
-	public boolean isRouted(DataEventType event) {
+    public boolean isRouted(DataEventType event) {
         switch (event) {
         case INSERT:
             return router.isSyncOnInsert();
@@ -173,24 +161,29 @@ public class TriggerRouter implements Serializable {
         }
     }
 
-    public String getTargetTable(TriggerHistory triggerHistory) {
+    public String getTargetTable() {
         if (router != null && !StringUtils.isBlank(router.getTargetTableName())) {
             return router.getTargetTableName();
-        }
-        if (triggerHistory != null) {
-            return triggerHistory.getSourceTableName();
         }
         if (trigger != null && !StringUtils.isBlank(trigger.getSourceTableName())) {
             return trigger.getSourceTableName();
         } else {
             return null;
         }
-    }   
+    }
+    
+    public String qualifiedSourceTableName() {
+        return trigger.qualifiedSourceTableName();
+    }
+    
+    public String qualifiedSourceTablePrefix() {
+        return trigger.qualifiedSourceTablePrefix();
+    }
 
-    public String qualifiedTargetTableName(TriggerHistory triggerHistory) {
+    public String qualifiedTargetTableName() {
         String catalog = getTargetCatalog(null);
         String schema = getTargetSchema(null);
-        String tableName = getTargetTable(triggerHistory);
+        String tableName = getTargetTable();
         if (!StringUtils.isBlank(schema)) {
             tableName = schema + "." + tableName;
         }
@@ -211,15 +204,9 @@ public class TriggerRouter implements Serializable {
     public boolean isSame(TriggerRouter triggerRouter) {
         return (this.trigger == null && triggerRouter.trigger == null)
                 || (this.trigger != null && triggerRouter.trigger != null && this.trigger
-                        .matches(triggerRouter.trigger))
+                        .isSame(triggerRouter.trigger))
                 && (this.router == null && triggerRouter.router == null)
                 || (this.router != null && triggerRouter.router != null && this.router
                         .equals(triggerRouter.router));
-    }
-    
-    @Override
-    public String toString() {
-        return (trigger != null ? trigger.toString() : "") + ":"
-                + (router != null ? router.toString() : "");
     }
 }

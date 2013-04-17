@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
-import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -33,13 +33,13 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
  */
 public interface IOutgoingBatchService {
 
-    public void markAllAsSentForNode(String nodeId);
+    public void markAllAsSentForNode(Node node);
 
     public void updateAbandonedRoutingBatches();
 
-    public OutgoingBatch findOutgoingBatch(long batchId, String nodeId);
+    public OutgoingBatch findOutgoingBatch(long batchId);
 
-    public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels);
+    public OutgoingBatches getOutgoingBatches(Node node);
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
 
@@ -56,16 +56,8 @@ public interface IOutgoingBatchService {
     public void updateOutgoingBatches(List<OutgoingBatch> batches);
 
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
-    
-    public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
 
     public int countOutgoingBatchesInError();
-    
-    public int countOutgoingBatchesUnsent();
-    
-    public int countOutgoingBatchesInError(String channelId);
-    
-    public int countOutgoingBatchesUnsent(String channelId);    
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
@@ -73,6 +65,6 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses);
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected, boolean ascending);
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected);
 
 }

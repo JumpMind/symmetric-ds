@@ -34,7 +34,7 @@
     </l:context>
     <l:context name="xref-number-and-title">
       <l:template name="section" style="table" text="%t"/>
-      <l:template name="appendix" text="Appendix&#160;%n, %t (p.&#160;%p)&#160;&#160;&#160;"/>
+      <l:template name="appendix" text="Appendix&#160;%n, %t (p.&#160;%p)&#160;"/>
       <l:template name="chapter" text="Chapter&#160;%n, %t (p.&#160;%p)&#160;"/>
       <l:template name="section" text="Section&#160;%n, %t (p.&#160;%p)&#160;"/>
     </l:context>
@@ -49,7 +49,7 @@
 
     <xsl:template name="book.titlepage.recto">
         <fo:block>
-             <fo:table table-layout="fixed" width="175mm">
+            <fo:table table-layout="fixed" width="175mm">
                 <fo:table-column column-width="175mm"/>x
                 <fo:table-body>
                     <fo:table-row>
@@ -79,7 +79,7 @@
                     <fo:table-row>
                         <fo:table-cell text-align="center">
                             <fo:block font-family="Helvetica" font-size="12pt" padding-before="90mm">
-                                <xsl:text>Copyright &copyright; 2007 - 2013 </xsl:text>
+                                <xsl:text>Copyright &copyright; 2007 - 2010 </xsl:text>
                                 <xsl:for-each select="bookinfo/authorgroup/author">
                                     <xsl:if test="position() > 1">
                                         <xsl:text>, </xsl:text>
@@ -99,7 +99,6 @@
         </fo:block>
     </xsl:template>
 
-
     <!-- Prevent blank pages in output-->    
     <xsl:template name="book.titlepage.before.verso"/>
     <xsl:template name="book.titlepage.verso"/>
@@ -107,11 +106,6 @@
 
     <xsl:param name="draft.mode">no</xsl:param>
     <xsl:param name="graphic.default.extension">GIF</xsl:param>
-
-<xsl:template match="processing-instruction('hard-pagebreak')">
-   <fo:block break-after='page'/>
- </xsl:template>
- 
 
 <!--###################################################
                       Header
@@ -136,11 +130,11 @@
         <xsl:param name="gentext-key" select="''" />
         <xsl:variable name="Version">
             <xsl:if test="//releaseinfo">
-                <xsl:text>SymmetricDS </xsl:text><xsl:value-of select="//releaseinfo" /><xsl:text></xsl:text>
+                <xsl:text>Symmetric DS </xsl:text><xsl:value-of select="//releaseinfo" /><xsl:text></xsl:text>
             </xsl:if>
         </xsl:variable>
         <xsl:choose>
-           <xsl:when test="$sequence='blank'">
+            <xsl:when test="$sequence='blank'">
                 <xsl:if test="$position = 'center'">
                     <xsl:value-of select="$Version" />
                 </xsl:if>
@@ -155,10 +149,7 @@
                         <fo:page-number />
                     </xsl:when>
                     <xsl:when test="$position='center'">
-                      <xsl:value-of select="$Version" />
-                    </xsl:when>
-                    <xsl:when test="$sequence = 'first' and $position='right'">
-                        <fo:page-number />
+                        <xsl:value-of select="$Version" />
                     </xsl:when>
                 </xsl:choose>
             </xsl:when>
@@ -210,9 +201,9 @@
     
     <!-- Paper type, no headers on blank pages, no double sided printing-->
     <xsl:param name="paper.type">USletter</xsl:param>
-    <xsl:param name="double.sided">1</xsl:param>
+    <xsl:param name="double.sided">0</xsl:param>
     <xsl:param name="headers.on.blank.pages">0</xsl:param>
-    <xsl:param name="footers.on.blank.pages">1</xsl:param>
+    <xsl:param name="footers.on.blank.pages">0</xsl:param>
 
     <!-- Space between paper border and content (chaotic stuff, don't touch)-->
     <xsl:param name="page.margin.top">5mm</xsl:param>
@@ -280,7 +271,7 @@
                          Labels
     ###################################################-->   
 
-    <!-- Labels and Sections (numbering)-->
+    <!-- Label Chapters and Sections (numbering)-->
     <xsl:param name="chapter.autolabel">1</xsl:param>
     <xsl:param name="section.autolabel" select="1"/>
     <xsl:param name="section.label.includes.component.label" select="1"/>

@@ -1,30 +1,47 @@
 package org.jumpmind.symmetric.integrate;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IDataService;
 
-public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAware {
+public class RunSqlReloadListener implements IReloadListener {
 
-    private ISymmetricEngine engine;
+    private IDataService dataService;
+
+    private IDbDialect dbDialect;
 
     private String sqlToRunAtTargetBeforeReload;
 
     private String sqlToRunAtTargetAfterReload;
 
-    public void afterReload(ISqlTransaction transaction, Node node) {
+    public void afterReload(Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetAfterReload)) {
-            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetAfterReload, true, -1, null);
+            dataService.sendSQL(node.getNodeId(), dbDialect.getDefaultCatalog(),
+                    dbDialect.getDefaultSchema(), "SYM_TRIGGER", sqlToRunAtTargetAfterReload, true);
         }
     }
 
-    public void beforeReload(ISqlTransaction transaction, Node node) {
+    public void beforeReload(Node node) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetBeforeReload)) {
-            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetBeforeReload, true, -1, null);
+            dataService
+                    .sendSQL(node.getNodeId(), dbDialect.getDefaultCatalog(),
+                            dbDialect.getDefaultSchema(), "SYM_TRIGGER",
+                            sqlToRunAtTargetBeforeReload, true);
         }
+    }
+
+    public boolean isAutoRegister() {
+        return true;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
     public void setSqlToRunAtTargetAfterReload(String sqlToRunAfterReload) {
@@ -33,10 +50,6 @@ public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAw
 
     public void setSqlToRunAtTargetBeforeReload(String sqlToRunBeforeReload) {
         this.sqlToRunAtTargetBeforeReload = sqlToRunBeforeReload;
-    }
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-       this.engine=engine;        
     }
 
 }

@@ -20,9 +20,8 @@
 
 package org.jumpmind.symmetric.service;
 
-
 /**
- * An interface that indicates that this class provides stateless services methods for the application
+ * 
  */
 public interface IService {
 
@@ -32,7 +31,5 @@ public interface IService {
      * @param runnable The code to run
      */
     public void synchronize(Runnable runnable);
-    
-    public String getSql(String... keys);
     
 }

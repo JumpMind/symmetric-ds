@@ -28,44 +28,33 @@ import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
-import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
-import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
-import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.sql.ConcurrencySqlException;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.symmetric.util.AppUtils;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IClusterService
  */
 public class ClusterService extends AbstractService implements IClusterService {
 
-    private String serverId = null;
+    protected String serverId = AppUtils.getServerId();
 
-    public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
-        super(parameterService, dialect);
-        setSqlMap(new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
-    }
-
-    public void init() {
+    public void initLockTable() {
         initLockTable(ROUTE);
         initLockTable(PULL);
         initLockTable(PUSH);
@@ -75,31 +64,28 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(PURGE_STATISTICS);
         initLockTable(SYNCTRIGGERS);
         initLockTable(PURGE_DATA_GAPS);
-        initLockTable(STAGE_MANAGEMENT);
-        initLockTable(WATCHDOG);
-        initLockTable(STATISTICS);
     }
 
     public void initLockTable(final String action) {
         try {
-            sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
-            log.debug("Inserted into the NODE_LOCK table for {}", action);
-        } catch (UniqueKeyException ex) {
-            log.debug(
-                    "Failed to insert to the NODE_LOCK table for {}.  Must be initialized already.",
-                    action);
+            jdbcTemplate.update(getSql("insertLockSql"), new Object[] { action });
+            log.debug("LockInserted", action);
+
+        } catch (final DataIntegrityViolationException ex) {
+            log.debug("LockInsertFailed", action);
         }
     }
 
     public void clearAllLocks() {
-        sqlTemplate.update(getSql("clearAllLocksSql"));
+        jdbcTemplate.update(getSql("clearAllLocksSql"));
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean lock(final String action) {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
                     (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lock(action, timeout, new Date(), getServerId());
+            return lock(action, timeout, new Date(), serverId);
         } else {
             return true;
         }
@@ -107,26 +93,21 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean lock(String action, Date timeToBreakLock, Date timeLockAquired,
             String serverId) {
-        try {
-            return sqlTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
-                    timeLockAquired, action, timeToBreakLock, serverId }) == 1;
-        } catch (ConcurrencySqlException ex) {
-            log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
-            return false;
-        }
+        return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
+                timeLockAquired, action, timeToBreakLock, serverId }) == 1;
     }
 
     public Map<String, Lock> findLocks() {
         final Map<String, Lock> locks = new HashMap<String, Lock>();
         if (isClusteringEnabled()) {
-            sqlTemplate.query(getSql("findLocksSql"), new ISqlRowMapper<Lock>() {
-                public Lock mapRow(Row rs) {
+            jdbcTemplate.query(getSql("findLocksSql"), new RowMapper<Lock>() {
+                public Lock mapRow(ResultSet rs, int rowNum) throws SQLException {
                     Lock lock = new Lock();
-                    lock.setLockAction(rs.getString("lock_action"));
-                    lock.setLockingServerId(rs.getString("locking_server_id"));
-                    lock.setLockTime(rs.getDateTime("lock_time"));
-                    lock.setLastLockingServerId(rs.getString("last_locking_server_id"));
-                    lock.setLastLockTime(rs.getDateTime("last_lock_time"));
+                    lock.setLockAction(rs.getString(1));
+                    lock.setLockingServerId(rs.getString(2));
+                    lock.setLockTime(rs.getTimestamp(3));
+                    lock.setLastLockingServerId(rs.getString(4));
+                    lock.setLastLockTime(rs.getTimestamp(5));
                     locks.put(lock.getLockAction(), lock);
                     return lock;
                 }
@@ -135,53 +116,25 @@ public class ClusterService extends AbstractService implements IClusterService {
         return locks;
     }
 
-    /**
-     * Get a unique identifier that represents the JVM instance this server is
-     * currently running in.
-     */
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
+    }
+
     public String getServerId() {
-        if (StringUtils.isBlank(serverId)) {
-            serverId = parameterService.getString(ParameterConstants.CLUSTER_SERVER_ID);
-            if (StringUtils.isBlank(serverId)) {
-                serverId = System.getProperty(SystemConstants.SYSPROP_CLUSTER_SERVER_ID, null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("jboss.bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                try {
-                    serverId = AppUtils.getHostName();
-                } catch (Exception ex) {
-                    serverId = "unknown";
-                }
-            }
-            
-            log.info("This node picked a server id of {}", serverId);
-        }
         return serverId;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void unlock(final String action) {
         if (isClusteringEnabled()) {
-            if (!unlock(action, getServerId())) {
-                log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
+            if (!unlock(action, serverId)) {
+                log.warn("ClusterUnlockFailed", action, serverId);
             }
         }
     }
 
     protected boolean unlock(String action, String serverId) {
-        String lastLockingServerId = serverId.equals(Lock.STOPPED) ? null : serverId;
-        return sqlTemplate.update(getSql("releaseLockSql"), new Object[] { lastLockingServerId, action,
+        return jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { serverId, action,
                 serverId }) > 0;
     }
 
@@ -189,29 +142,10 @@ public class ClusterService extends AbstractService implements IClusterService {
         return parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
     }
 
-    public boolean isInfiniteLocked(String action) {
-        Map<String, Lock> locks = findLocks();
-        Lock lock = locks.get(action);
-        if (lock != null && lock.getLockTime() != null && new Date().before(lock.getLockTime())
-                && Lock.STOPPED.equals(lock.getLockingServerId())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public void aquireInfiniteLock(String action) {
         if (isClusteringEnabled()) {
-            int tries = 600;
             Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
-            while (tries > 0) {
-                if (!lock(action, new Date(), futureTime, Lock.STOPPED)) {
-                    AppUtils.sleep(50);
-                    tries--;
-                } else {
-                    tries = 0;
-                }
-            }
+            lock(action, new Date(), futureTime, Lock.STOPPED);
         }
     }
 
