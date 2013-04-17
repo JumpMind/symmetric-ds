@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.route;
 
@@ -26,7 +27,7 @@ import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 
 /**
- * 
+ * Factory that creates and initializes the correct {@link IDataToRouteReader}.
  */
 public class DataToRouteReaderFactory extends AbstractService implements ISqlProvider {
 
@@ -38,13 +39,9 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
     public IDataToRouteReader getDataToRouteReader(ChannelRouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
-            return new DataRefRouteReader(jdbcTemplate.getDataSource(),
-                    jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
+            return new DataRefRouteReader(log, this, context, dataService, jdbcTemplate, dbDialect);
         } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
-            return new DataGapRouteReader(jdbcTemplate.getDataSource(),
-                    jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
+            return new DataGapRouteReader(log, this, context, dataService, jdbcTemplate, dbDialect);
         } else {
             throw unsupportedType(type);
         }

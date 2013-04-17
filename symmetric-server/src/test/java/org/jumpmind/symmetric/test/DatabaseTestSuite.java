@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.service.impl.OutgoingBatchServiceTest;
 import org.jumpmind.symmetric.service.impl.ParameterServiceTest;
 import org.jumpmind.symmetric.service.impl.PurgeServiceTest;
 import org.jumpmind.symmetric.service.impl.RegistrationServiceTest;
-import org.jumpmind.symmetric.service.impl.RouterServiceTest;
 import org.jumpmind.symmetric.service.impl.StatisticServiceTest;
 import org.jumpmind.symmetric.service.impl.TriggerRouterServiceTest;
 import org.jumpmind.symmetric.web.NodeConcurrencyFilterTest;
@@ -49,7 +48,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
 @SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataLoaderMappingTest.class, DataExtractorTest.class,
-        ParameterFilterTest.class, RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
+        ParameterFilterTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
         NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
         DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
