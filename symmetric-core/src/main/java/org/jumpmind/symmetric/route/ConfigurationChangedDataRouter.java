@@ -291,52 +291,63 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     private boolean isLinked(String nodeIdInQuestion, Node nodeThatCouldBeRoutedTo,
             NetworkedNode root, Node me, List<NodeGroupLink> allLinks) {
-        if (nodeIdInQuestion != null && nodeThatCouldBeRoutedTo != null
-                && !nodeIdInQuestion.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
-            NetworkedNode networkedNodeInQuestion = root.findNetworkedNode(nodeIdInQuestion);
-            NetworkedNode networkedNodeThatCouldBeRoutedTo = root
-                    .findNetworkedNode(nodeThatCouldBeRoutedTo.getNodeId());
-            if (networkedNodeInQuestion != null) {
-                if (networkedNodeInQuestion
-                        .isInParentHierarchy(nodeThatCouldBeRoutedTo.getNodeId())) {
-                    // always route changes to parent nodes
-                    return true;
-                }
-
-                String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
-                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId())
-                        && !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
-                    if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
+        if (root != null) {
+            if (nodeIdInQuestion != null && nodeThatCouldBeRoutedTo != null
+                    && !nodeIdInQuestion.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
+                NetworkedNode networkedNodeInQuestion = root.findNetworkedNode(nodeIdInQuestion);
+                NetworkedNode networkedNodeThatCouldBeRoutedTo = root
+                        .findNetworkedNode(nodeThatCouldBeRoutedTo.getNodeId());
+                if (networkedNodeInQuestion != null) {
+                    if (networkedNodeInQuestion.isInParentHierarchy(nodeThatCouldBeRoutedTo
+                            .getNodeId())) {
+                        // always route changes to parent nodes
                         return true;
-                    } else if (networkedNodeThatCouldBeRoutedTo != null) {
-                        // the node was created at some other node. lets attempt
-                        // to get that update back to that node
-                        return networkedNodeThatCouldBeRoutedTo.isInChildHierarchy(createdAtNodeId);
                     }
-                }
 
-                // if we haven't found a place to route by now, then we need to
-                // send the row to all nodes that have links to the node's group
-                String groupId = networkedNodeInQuestion.getNode().getNodeGroupId();
-                Set<String> groupsThatWillBeInterested = new HashSet<String>();
-                for (NodeGroupLink nodeGroupLink : allLinks) {
-                    if (nodeGroupLink.getTargetNodeGroupId().equals(groupId)) {
-                        groupsThatWillBeInterested.add(nodeGroupLink.getSourceNodeGroupId());
-                    } else if (nodeGroupLink.getSourceNodeGroupId().equals(groupId)) {
-                        groupsThatWillBeInterested.add(nodeGroupLink.getTargetNodeGroupId());
+                    String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
+                    if (createdAtNodeId != null
+                            && !createdAtNodeId.equals(me.getNodeId())
+                            && !networkedNodeInQuestion.getNode().getNodeId()
+                                    .equals(me.getNodeId())) {
+                        if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
+                            return true;
+                        } else if (networkedNodeThatCouldBeRoutedTo != null) {
+                            // the node was created at some other node. lets
+                            // attempt
+                            // to get that update back to that node
+                            return networkedNodeThatCouldBeRoutedTo
+                                    .isInChildHierarchy(createdAtNodeId);
+                        }
                     }
-                }
 
-                if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo.getNodeGroupId())) {
-                    return true;
+                    // if we haven't found a place to route by now, then we need
+                    // to
+                    // send the row to all nodes that have links to the node's
+                    // group
+                    String groupId = networkedNodeInQuestion.getNode().getNodeGroupId();
+                    Set<String> groupsThatWillBeInterested = new HashSet<String>();
+                    for (NodeGroupLink nodeGroupLink : allLinks) {
+                        if (nodeGroupLink.getTargetNodeGroupId().equals(groupId)) {
+                            groupsThatWillBeInterested.add(nodeGroupLink.getSourceNodeGroupId());
+                        } else if (nodeGroupLink.getSourceNodeGroupId().equals(groupId)) {
+                            groupsThatWillBeInterested.add(nodeGroupLink.getTargetNodeGroupId());
+                        }
+                    }
+
+                    if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo
+                            .getNodeGroupId())) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else {
                     return false;
                 }
             } else {
-                return false;
+                return true;
             }
         } else {
-            return true;
+            return false;
         }
     }
 
