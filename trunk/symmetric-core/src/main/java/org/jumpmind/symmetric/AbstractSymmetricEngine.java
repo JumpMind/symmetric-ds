@@ -706,8 +706,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         removeMeFromMap(registeredEnginesByUrl);
     }
 
-    public String reloadNode(String nodeId) {
-        return dataService.reloadNode(nodeId, false);
+    public String reloadNode(String nodeId, String createBy) {
+        return dataService.reloadNode(nodeId, false, createBy);
     }
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,

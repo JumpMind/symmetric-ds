@@ -363,7 +363,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private void reloadNode(CommandLine line, List<String> args) {
         String nodeId = popArg(args, "Node ID");
         IDataService dataService = getSymmetricEngine().getDataService();
-        String message = dataService.reloadNode(nodeId, false);
+        String message = dataService.reloadNode(nodeId, false, "symadmin");
         System.out.println(message);
     }
 

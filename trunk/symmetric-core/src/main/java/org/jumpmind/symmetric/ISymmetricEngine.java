@@ -104,8 +104,9 @@ public interface ISymmetricEngine {
 
     /**
      * Queue up an initial load or a reload to a node.
+     * @param createBy TODO
      */
-    public String reloadNode(String nodeId);
+    public String reloadNode(String nodeId, String createBy);
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
