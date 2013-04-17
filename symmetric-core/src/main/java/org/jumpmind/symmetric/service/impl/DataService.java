@@ -304,11 +304,11 @@ public class DataService extends AbstractService implements IDataService {
         ISqlTransaction transaction = null;
         
         try {
-
-            long loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
-            String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy() : nodeSecurity.getInitialLoadCreateBy();
             
             transaction = platform.getSqlTemplate().startSqlTransaction();
+
+            long loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+            String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy() : nodeSecurity.getInitialLoadCreateBy();
 
             if (reloadListeners != null) {
                 for (IReloadListener listener : reloadListeners) {
