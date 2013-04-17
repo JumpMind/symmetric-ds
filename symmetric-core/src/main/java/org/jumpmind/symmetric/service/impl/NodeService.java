@@ -218,14 +218,27 @@ public class NodeService extends AbstractService implements INodeService {
         sqlTemplate.update(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
     }
 
-    public void deleteNode(String nodeId) {
-        if (StringUtils.isNotBlank(nodeId)) {
-            if (nodeId.equals(findIdentityNodeId())) {
-                sqlTemplate.update(getSql("deleteNodeIdentitySql"));
+    public void deleteNode(String nodeId, boolean syncChange) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            if (!syncChange) {
+                symmetricDialect.disableSyncTriggers(transaction, nodeId);
             }
-            deleteNodeSecurity(nodeId);
-            sqlTemplate.update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
-            sqlTemplate.update(getSql("deleteNodeSql"), new Object[] { nodeId });
+            if (StringUtils.isNotBlank(nodeId)) {
+                if (nodeId.equals(findIdentityNodeId())) {
+                    transaction.prepareAndExecute(getSql("deleteNodeIdentitySql"));
+                }
+                transaction.prepareAndExecute(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
+            }
+        } finally {
+            if (!syncChange) {
+                symmetricDialect.enableSyncTriggers(transaction);
+            }
+
+            close(transaction);
         }
     }
 
