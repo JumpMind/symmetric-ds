@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="abstractHomeServer" class="org.jumpmind.symmetric.SymmetricWebServer" abstract="true">
+        <property name="httpPort" value="51413" />
+        <property name="propertiesFile" value="classpath:/stress/multi-tier-test-home.properties" />
+        <property name="createJmxServer" value="false" />
+        <property name="join" value="false" />
+    </bean>
+
+    <bean id="abstractRegionServer" class="org.jumpmind.symmetric.SymmetricWebServer" abstract="true">
+        <property name="httpPort" value="51414" />
+        <property name="propertiesFile" value="classpath:/stress/multi-tier-test-region.properties" />
+        <property name="createJmxServer" value="false" />
+        <property name="join" value="false" />
+    </bean>
+    
+    <bean id="abstractWorkstation000101" class="org.jumpmind.symmetric.SymmetricWebServer" abstract="true" >
+        <property name="httpPort" value="51416" />
+        <property name="propertiesFile" value="classpath:/stress/multi-tier-test-workstation.1.1.properties" />
+        <property name="createJmxServer" value="false" />
+        <property name="join" value="false" />
+    </bean>    
+    
+    <bean id="abstractWorkstation000102" class="org.jumpmind.symmetric.SymmetricWebServer" abstract="true">
+        <property name="httpPort" value="51417" />
+        <property name="propertiesFile" value="classpath:/stress/multi-tier-test-workstation.1.2.properties" />
+        <property name="createJmxServer" value="false" />
+        <property name="join" value="false" />
+    </bean>  
+
+    <util:map id="unitTestSql">
+        <entry key="insertWorkstationToHomeSql" value="insert into sync_workstation_to_home values(?,?)" />
+    </util:map>
+    
+    
+
+</beans>
