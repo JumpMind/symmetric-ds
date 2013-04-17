@@ -77,7 +77,7 @@ public interface INodeService {
 
     public void deleteNodeSecurity(String nodeId);
     
-    public void deleteNode(String nodeId); 
+    public void deleteNode(String nodeId, boolean syncChange); 
     
     public String findSymmetricVersion();
 
