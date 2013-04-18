@@ -480,7 +480,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, String createBy) {
+            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
         try {
             if (!syncChange) {
                 symmetricDialect.disableSyncTriggers(transaction, nodeId);
@@ -488,6 +488,7 @@ public class NodeService extends AbstractService implements INodeService {
             NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
             if (nodeSecurity != null) {
                 nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
+                nodeSecurity.setInitialLoadId(loadId);
                 if (initialLoadEnabled) {
                     nodeSecurity.setInitialLoadTime(null);
                     nodeSecurity.setInitialLoadCreateBy(createBy);
@@ -504,11 +505,11 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, String createBy) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, createBy);
+            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
             transaction.commit();
             return updated;
         } finally {
@@ -517,7 +518,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, String createBy) {
+            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
         try {
             if (!syncChange) {
                 symmetricDialect.disableSyncTriggers(transaction, nodeId);
@@ -526,6 +527,7 @@ public class NodeService extends AbstractService implements INodeService {
             NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
             if (nodeSecurity != null) {
                 nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
+                nodeSecurity.setRevInitialLoadId(loadId);
                 if (initialLoadEnabled) {
                     nodeSecurity.setRevInitialLoadTime(null);
                     nodeSecurity.setRevInitialLoadCreateBy(createBy);
@@ -542,11 +544,11 @@ public class NodeService extends AbstractService implements INodeService {
         }
     } 
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, String createBy) {
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, createBy);
+            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
             transaction.commit();
             return updated;
         } finally {      

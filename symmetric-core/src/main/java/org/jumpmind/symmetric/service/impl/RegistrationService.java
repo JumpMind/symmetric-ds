@@ -193,11 +193,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if ((security != null && security.getInitialLoadTime() == null)
                     || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-                    nodeService.setInitialLoadEnabled(nodeId, true, false, "registration");
+                    nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
 
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, "registration");
+                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
             }
             

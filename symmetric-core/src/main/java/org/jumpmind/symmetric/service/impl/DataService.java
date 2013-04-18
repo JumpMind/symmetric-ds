@@ -407,9 +407,9 @@ public class DataService extends AbstractService implements IDataService {
             }
 
             if (!reverse) {
-                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false, createBy);
+                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId, createBy);
             } else {
-                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false, createBy);
+                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId, createBy);
             }
             
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
@@ -702,9 +702,9 @@ public class DataService extends AbstractService implements IDataService {
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
             return String.format("Unknown node %s", nodeId);
-        } else if (reverseLoad && nodeService.setReverseInitialLoadEnabled(nodeId, true, true, createBy)) {
+        } else if (reverseLoad && nodeService.setReverseInitialLoadEnabled(nodeId, true, true, -1, createBy)) {
             return String.format("Successfully enabled reverse initial load for node %s", nodeId);
-        } else if (nodeService.setInitialLoadEnabled(nodeId, true, true, createBy)) {
+        } else if (nodeService.setInitialLoadEnabled(nodeId, true, true, -1, createBy)) {
             return String.format("Successfully enabled initial load for node %s", nodeId);
         } else {
             return String.format("Could not enable initial load for %s", nodeId);
