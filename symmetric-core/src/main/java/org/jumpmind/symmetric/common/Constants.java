@@ -120,5 +120,5 @@ final public class Constants {
     
     public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
     
-    public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "OUTGOING_BATCH_LOAD_ID";
+    public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "outgoing_batch_load_id";
 }
