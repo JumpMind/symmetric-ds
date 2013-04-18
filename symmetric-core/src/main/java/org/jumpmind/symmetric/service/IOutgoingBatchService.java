@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -74,5 +75,7 @@ public interface IOutgoingBatchService {
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected, boolean ascending);
+    
+    public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
 
 }

@@ -72,6 +72,17 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("updateOutgoingBatchesStatusSql" ,"" + 
 "update $(outgoing_batch) set status=? where status = ?   " );
+        
+        putSql("getLoadSummariesSql", 
+                "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as count, min(b.create_time) as create_time, " +
+        		"       max(b.last_update_time) as last_update_time, d.event_type, min(b.batch_id) as current_batch_id, min(d.table_name) as current_table_name, " +
+        		"       min(b.data_event_count) as current_data_event_count " +
+        		"from sym_outgoing_batch b inner join " +
+        		"     sym_data_event e on b.batch_id=e.batch_id inner join " +
+        		"     sym_data d on d.data_id=e.data_id " +
+        		"where b.channel_id='reload' " +
+        		"group by b.load_id, b.node_id, b.status, d.event_type, b.create_by " +
+        		"order by b.load_id desc");
 
     }
 
