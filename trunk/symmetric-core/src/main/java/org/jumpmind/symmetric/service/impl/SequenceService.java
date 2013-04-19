@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.Types;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -82,7 +84,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         long currVal = currVal(transaction, name);
         Sequence sequence = sequenceDefinitionCache.get(name);
         if (sequence == null) {
-            sequence = get(name);
+            sequence = get(transaction, name);
             if (sequence != null) {
                 sequenceDefinitionCache.put(name, sequence);
             } else {
@@ -140,8 +142,13 @@ public class SequenceService extends AbstractService implements ISequenceService
                 sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getLastUpdateBy());
     }
 
-    public Sequence get(String name) {
-        return sqlTemplate.queryForObject(getSql("getSequenceSql"), new SequenceRowMapper(), name);
+    protected Sequence get(ISqlTransaction transaction, String name) {
+        List<Sequence> values = transaction.query(getSql("getSequenceSql"), new SequenceRowMapper(), new Object[] {name}, new int [] {Types.VARCHAR});
+        if (values.size() > 0) {
+            return values.get(0);
+        } else {
+            return null;
+        }
     }
 
     class SequenceRowMapper implements ISqlRowMapper<Sequence> {

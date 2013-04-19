@@ -14,8 +14,6 @@ public interface ISequenceService {
     public long currVal(ISqlTransaction transaction, String name);
 
     public void create(Sequence sequence);
-
-    public Sequence get(String name);
     
     public void init();
     
