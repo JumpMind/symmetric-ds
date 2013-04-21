@@ -128,7 +128,13 @@ abstract public class AbstractParameterService {
                 lastTimeParameterWereCached = System.currentTimeMillis();
                 cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
             } catch (SqlException ex) {
-                log.error("Could not read database parameters.  We will try again later");
+                if (parameters != null) {
+                    log.warn("Could not read database parameters.  We will try again later", ex);
+                } else {
+                    log.error("Could not read database parameters and they have not yet been initialized");
+                    throw ex;
+                }
+                throw ex;
             }
         }
         return parameters;
@@ -179,13 +185,14 @@ abstract public class AbstractParameterService {
 
     public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
         this.databaseHasBeenInitialized = databaseHasBeenInitialized;
+        this.parameters = null;
     }
 
     abstract protected TypedProperties rereadDatabaseParameters(String externalId,
             String nodeGroupId);
 
     protected TypedProperties rereadDatabaseParameters(Properties p) {
-        try {
+        if (databaseHasBeenInitialized) {
             TypedProperties properties = rereadDatabaseParameters(ParameterConstants.ALL,
                     ParameterConstants.ALL);
             properties.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
@@ -195,12 +202,8 @@ abstract public class AbstractParameterService {
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
             databaseHasBeenInitialized = true;
             return properties;
-        } catch (SqlException ex) {
-            if (databaseHasBeenInitialized) {
-                throw ex;
-            } else {
-                return new TypedProperties();
-            }
+        } else {
+            return new TypedProperties();
         }
     }
 
