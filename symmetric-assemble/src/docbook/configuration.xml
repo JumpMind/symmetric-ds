@@ -1518,6 +1518,11 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
           <listitem>Copy Column Transform ('copy'): This transformation type
           copies the source column value to the target column. This is the
           default behavior.</listitem>
+          
+          <listitem>Remove Column Transform ('remove'): This transformation type
+          removes the source column.  This transform type is only valid for a
+          table transformation type of 'IMPLIED' where all the columns from the source
+          are automatically copied to the target.</listitem>          
 
           <listitem>Constant Transform ('const'): This transformation type
           allows you to map a constant value to the given target column. The
