@@ -1,3 +1,43 @@
+SymmetricDS - 3.4.0 (Released 2013-04-21)  
+=========================================
+- 0001117: [Bug] registration_enabled doesn't get set to 0 when node is really registered (chenson) - resolved.
+- 0001116: [Bug] sym_data_gap referenced directly instead of using sync.table.prefix (chenson) - resolved.
+- 0001115: [New Feature] Add option to dbexport to NOT use quoted identifiers when exporting data as SQL (chenson) - resolved.
+- 0001111: [Bug] MySQL upgrade issue: Columns not modified when symmetricds table columns type or size change (chenson) - resolved.
+- 0001110: [Bug] Triggers not removed when sym_trigger source_ catalog, schema or table name changed (chenson) - resolved.
+- 0001109: [Bug] Registration can fail when multiple sym_node records exist with a null created_at_node_id value (chenson) - resolved.
+- 0000580: [Improvement] MySQL trigger throwing error on special characters (chenson) - resolved.
+- 0001107: [Improvement] Bind all of the symmetric properties to the spring context for use in extensions points (chenson) - resolved.
+- 0001105: [Improvement] Add new web.xml setting that controls whether the symmetric engine(s) are started (chenson) - resolved.
+- 0001046: [Bug] There are 2 log4j-1.2.16.jar files in the symmetricds deployment (chenson) - resolved.
+- 0001104: [Improvement] Exclude sym_ tables from being effected by wildcard load filters (chenson) - resolved.
+- 0001086: [Improvement] Make the 3.x use 1.x protocol for backwards compatibility (chenson) - resolved.
+- 0000865: [Bug] Ignore batch is not working for an initial load batch that was failing to extract because of a bad initial_load_select (chenson) - closed.
+- 0000958: [New Feature] JNDI DataSource Support (chenson) - closed.
+- 0000989: [Improvement] Provide a way to blank out the target schema/catalogs in sym_router (chenson) - closed.
+- 0001118: [Improvement] Allow the sync.url to be blank. Past versions of SymmetricDS allowed this and defaulted to using the registration.url (chenson) - closed.
+- 0001119: [Bug] When dead triggers are disabled SymmetricDS attempts to delete triggers that don't exist. Causes warning in log file. (chenson) - closed.
+- 0001121: [New Feature] Add a new "remove" column transform type that can be used with implied table transforms to remove a column completely. (chenson) - closed.
+- 0001124: [Improvement] Add support to use the jboss.binding.address system property in JBoss 7 for the cluster.server.id (chenson) - closed.
+- 0001128: [Improvement] Add new parameter to make heartbeat at server startup optional. Defaulting heartbeat at startup to off. (chenson) - closed.
+- 0001129: [Bug] Null pointer happens if trigger router is removed for a reload event that has not been sent. Should just skip the reload event. (chenson) - closed.
+- 0001139: [New Feature] Expose information about the processes that are currently running via an api to be used to inspect what is going on in an engine (chenson) - closed.
+- 0001149: [Bug] Log error message when an invalid sync_key_name column is specified. If no columns match, then return the original keys. (chenson) - closed.
+- 0001154: [Improvement] Make the max_batch_size for the config channel bigger (2000) than its current default of 100 (chenson) - closed.
+- 0001160: [Bug] Marking of old incoming batches as OK during initial load should also include the setting of the error_flag to 0 (chenson) - closed.
+- 0001161: [Improvement] Set the default fetch size to 100. 1000 is a little big for smaller installations or for database with very BIG rows. (chenson) - closed.
+- 0001162: [Improvement] Reuse nodes when auto.registration is turned on so you don't end up with a bunch of stranded nodes (chenson) - closed.
+- 0001163: [Bug] If a database error occurs while initializing SymmetricDS the error bubbles out of a startup thread and is logged to std err (chenson) - closed.
+- 0001164: [Bug] If a protocol error happens during extract (corrupted staging file), then delete the staging file so it will be reextracted (chenson) - closed.
+- 0001165: [Bug] For an initial load on push, exit out of load loop if one of the batches failed (chenson) - closed.
+- 0001166: [Improvement] Add DbFill support for PostgreSQL 'text' and 'active_inactive' column types. (chenson) - closed.
+- 0001168: [Bug] Audit router throws NPE on Oracle and PostgreSQL. (chenson) - closed.
+- 0001169: [Bug] Selection of batches is short circuited when a channel is encountered that is missing or disabled (chenson) - closed.
+- 0001171: [Bug] Don't refresh the ParameterService cache if the database is unavailable because you can end up misconfigured for a timeperiod (chenson) - closed.
+- 0001175: [Improvement] Add reload_id and create_by to sym_outgoing_batch (chenson) - closed.
+- 0001176: [Improvement] Add support for MariaDB's Jdbc Driver (chenson) - closed.
+- 0001179: [Bug] Parameters are not refreshed right after registration (chenson) - closed.
+
 SymmetricDS - 3.3.6 (Released 2013-04-03) 
 =========================================
 - 0001140: [Bug] SQL Server 2000 triggers are being created using the 'max' keyword, which 2000 does not support. (abrougher) - closed.
