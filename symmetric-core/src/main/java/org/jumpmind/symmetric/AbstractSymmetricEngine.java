@@ -359,6 +359,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getParameterService().rereadParameters();
         if (!setup) {
             setupDatabase(false);
+            parameterService.setDatabaseHasBeenInitialized(true);
             setup = true;
         }
     }
