@@ -202,6 +202,37 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
         return String.format("%s,status=%s,startTime=%s", key.toString(), status.toString(),
                 startTime.toString());
     }
+    
+    public String showInError(String identityNodeId) {
+        if (status == Status.ERROR) {
+        switch (key.getProcessType()) {
+            case MANUAL_LOAD:
+                return null;
+            case PUSH_JOB:
+                return key.getTargetNodeId();
+            case PULL_JOB:
+                return key.getSourceNodeId();
+            case PUSH_HANDLER:
+                return key.getSourceNodeId();
+            case PULL_HANDLER:
+                return key.getTargetNodeId();
+            case ROUTER_JOB:
+                return key.getSourceNodeId();
+            case ROUTER_READER:
+                return key.getSourceNodeId();
+            case GAP_DETECT:
+                return key.getSourceNodeId();
+            case REGISTRATION_ATTEMPT:
+                return null;
+            case REGISTRATION_HANDLER:
+                return key.getTargetNodeId();
+            default:
+                return null;
+        }
+        } else {
+            return null;
+        }
+    }
 
     public int compareTo(ProcessInfo o) {
         if (status == Status.ERROR && o.status == Status.DONE) {
