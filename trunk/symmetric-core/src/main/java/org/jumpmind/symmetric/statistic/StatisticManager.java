@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -99,6 +101,21 @@ public class StatisticManager implements IStatisticManager {
         }
         processInfos.put(key, process);
         return process;
+    }
+    
+    public Set<String> getNodesWithProcessesInError() {
+        String identityNodeId = nodeService.findIdentityNodeId();
+        Set<String> status = new HashSet<String>();
+        if (identityNodeId != null) {
+            List<ProcessInfo> list = getProcessInfos();
+            for (ProcessInfo processInfo : list) {
+                String nodeIdInError = processInfo.showInError(identityNodeId);
+                if (nodeIdInError != null) {
+                    status.add(nodeIdInError);
+                }
+            }
+        }
+        return status;
     }
     
     public List<ProcessInfo> getProcessInfos() {

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.statistic;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -36,6 +37,9 @@ public class MockStatisticManager implements IStatisticManager {
         return null;
     }
     
+    public Set<String> getNodesWithProcessesInError() {
+        return null;
+    }
     
     public void flush() {
     }

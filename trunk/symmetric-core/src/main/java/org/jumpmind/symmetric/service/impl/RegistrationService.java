@@ -40,6 +40,9 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
@@ -109,29 +112,34 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
-    public boolean registerNode(Node nodePriorToRegistration, String remoteHost, String remoteAddress,
-            OutputStream out, boolean isRequestedRegistration) throws IOException {
+    public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
+            String remoteAddress, OutputStream out, boolean isRequestedRegistration)
+            throws IOException {
+        Node identity = nodeService.findIdentity();
+        if (identity == null) {
+            saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                    RegistrationStatus.RQ, remoteHost, remoteAddress));
+            log.warn("Registration is not allowed until this node has an identity");
+            return false;
+        }
+
+        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity.getNodeId(),
+                nodePriorToRegistration.getNodeId() == null ? nodePriorToRegistration
+                        .getExternalId() : nodePriorToRegistration.getNodeId(),
+                ProcessType.REGISTRATION_HANDLER));
         try {
-            
-            Node identity = nodeService.findIdentity();
-            if (identity == null) {
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                        RegistrationStatus.RQ, remoteHost, remoteAddress));
-                log.warn("Registration is not allowed until this node has an identity");
-                return false;
-            }                        
-            
+
             if (!nodeService.isRegistrationServer()) {
                 /*
                  * registration is not allowed until this node has an identity
                  * and an initial load
-                 */                
-                NodeSecurity security = nodeService
-                        .findNodeSecurity(identity.getNodeId());
+                 */
+                NodeSecurity security = nodeService.findNodeSecurity(identity.getNodeId());
                 if (security == null || security.getInitialLoadTime() == null) {
                     saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.RQ, remoteHost, remoteAddress));
                     log.warn("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);
                     return false;
                 }
             }
@@ -142,25 +150,31 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         nodePriorToRegistration.getExternalId(), redirectUrl);
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RR, remoteHost, remoteAddress));
+                processInfo.setStatus(ProcessInfo.Status.DONE);                
                 throw new RegistrationRedirectException(redirectUrl);
             }
-            
+
             /*
-             * Check to see if there is a link that exists to service the node that is requesting registration
+             * Check to see if there is a link that exists to service the node
+             * that is requesting registration
              */
-            NodeGroupLink link = configurationService.getNodeGroupLinkFor(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-            if (link == null && 
-                    parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK, true)) {
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(
+                    identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+            if (link == null
+                    && parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK,
+                            true)) {
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
-                log.warn("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
+                log.warn(
+                        "Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
                 return false;
-            }            
+            }
 
             String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
-                    .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost, remoteAddress)
-                    : nodePriorToRegistration.getNodeId();
+                    .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
+                            remoteAddress) : nodePriorToRegistration.getNodeId();
             Node registeredNode = nodeService.findNode(nodeId);
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
             if ((registeredNode == null || security == null || !security.isRegistrationEnabled())
@@ -175,6 +189,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     || !security.isRegistrationEnabled()) {
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
+                processInfo.setStatus(ProcessInfo.Status.ERROR);                
                 return false;
             }
 
@@ -197,23 +212,28 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
 
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1, "registration");
+                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1,
+                            "registration");
                 }
             }
-            
+
             dataExtractorService.extractConfigurationStandalone(registeredNode, out);
 
             saveRegisgtrationRequest(new RegistrationRequest(registeredNode, RegistrationStatus.OK,
                     remoteHost, remoteAddress));
 
             statisticManager.incrementNodesRegistered(1);
+            
+            processInfo.setStatus(ProcessInfo.Status.DONE);
 
             return true;
 
         } catch (RegistrationNotOpenException ex) {
             if (StringUtils.isNotBlank(ex.getMessage())) {
-                log.warn("Registration not allowed for {} because {}", nodePriorToRegistration.toString(), ex.getMessage());
+                log.warn("Registration not allowed for {} because {}",
+                        nodePriorToRegistration.toString(), ex.getMessage());
             }
+            processInfo.setStatus(ProcessInfo.Status.ERROR);
             return false;
         }
     }
