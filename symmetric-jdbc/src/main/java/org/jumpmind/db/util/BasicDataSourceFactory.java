@@ -20,6 +20,9 @@
  */
 package org.jumpmind.db.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
@@ -84,6 +87,13 @@ public class BasicDataSourceFactory {
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }
+        }
+        
+        String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);
+        if (StringUtils.isNotBlank(initSql)) {
+            List<String> initSqlList = new ArrayList<String>(1);
+            initSqlList.add(initSql);
+            dataSource.setConnectionInitSqls(initSqlList);
         }
         return dataSource;
 

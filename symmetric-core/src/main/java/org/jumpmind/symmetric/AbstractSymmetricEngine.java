@@ -496,6 +496,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!starting && !started) {
             try {
                 starting = true;
+                symmetricDialect.verifyDatabaseIsCompatible();
                 setup();
                 if (isConfigured()) {
                     Node node = nodeService.findIdentity();

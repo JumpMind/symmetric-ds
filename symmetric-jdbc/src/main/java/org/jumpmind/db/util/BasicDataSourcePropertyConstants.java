@@ -43,6 +43,7 @@ final public class BasicDataSourcePropertyConstants {
     public final static String DB_POOL_TEST_ON_BORROW = "db.test.on.borrow";
     public final static String DB_POOL_TEST_ON_RETURN = "db.test.on.return";
     public final static String DB_POOL_TEST_WHILE_IDLE = "db.test.while.idle";
+    public final static String DB_POOL_INIT_SQL = "db.init.sql";
     public final static String DB_POOL_CONNECTION_PROPERTIES = "db.connection.properties";
 
 }

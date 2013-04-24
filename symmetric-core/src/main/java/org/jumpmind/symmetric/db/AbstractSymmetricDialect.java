@@ -141,6 +141,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
+    
+    public void verifyDatabaseIsCompatible() {
+    }
 
     public void initTablesAndDatabaseObjects() {
         createOrAlterTablesIfNecessary();

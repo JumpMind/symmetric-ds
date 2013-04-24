@@ -55,6 +55,8 @@ public interface ISymmetricDialect {
             String tableName, TriggerHistory oldHistory);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
+    
+    public void verifyDatabaseIsCompatible();
 
     public void initTablesAndDatabaseObjects();
     
