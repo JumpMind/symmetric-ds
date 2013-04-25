@@ -285,7 +285,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     private boolean isSameNumberOfLinksAwayFromRoot(Node nodeThatCouldBeRoutedTo,
             NetworkedNode root, Node me) {
-        return root.getNumberOfLinksAwayFromRoot(nodeThatCouldBeRoutedTo.getNodeId()) == root
+        return me != null && root != null && root.getNumberOfLinksAwayFromRoot(nodeThatCouldBeRoutedTo.getNodeId()) == root
                 .getNumberOfLinksAwayFromRoot(me.getNodeId());
     }
 
