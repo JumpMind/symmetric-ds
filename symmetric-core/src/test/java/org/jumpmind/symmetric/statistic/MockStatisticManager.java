@@ -33,6 +33,9 @@ public class MockStatisticManager implements IStatisticManager {
         return null;
     }
     
+    public void removeProcessInfo(ProcessInfoKey key) {
+    }
+    
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         return null;
     }
