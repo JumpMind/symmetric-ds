@@ -259,4 +259,8 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    public Node findIdentity(boolean useCache, boolean logSqlError) {
+        return null;
+    }
+    
 }
