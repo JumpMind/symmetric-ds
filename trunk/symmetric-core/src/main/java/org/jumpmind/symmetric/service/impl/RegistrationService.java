@@ -462,6 +462,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 reOpenRegistration(nodeId);
             }
+            statisticManager.removeProcessInfo(new ProcessInfoKey(me.getNodeId(), nodeId, ProcessType.REGISTRATION_HANDLER));
             return nodeId;
         } else {
             throw new IllegalStateException(

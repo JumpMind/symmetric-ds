@@ -103,6 +103,10 @@ public class StatisticManager implements IStatisticManager {
         return process;
     }
     
+    public void removeProcessInfo(ProcessInfoKey key) {
+        processInfos.remove(key);
+    }
+    
     public Set<String> getNodesWithProcessesInError() {
         String identityNodeId = nodeService.findIdentityNodeId();
         Set<String> status = new HashSet<String>();
