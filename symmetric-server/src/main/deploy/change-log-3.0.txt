@@ -1,3 +1,9 @@
+SymmetricDS - 3.4.1 (Released 2013-04-24)
+=========================================
+- 0001053: [Improvement] Verify that NOCOUNT is off for SQL Server before starting SymmetricDS. When NOCOUNT is turned on SymmetricDS won't work. (chenson) - closed.
+- 0001183: [Improvement] Add new property db.init.sql that allows sql to be run against a database connection right after it is created (chenson) - closed.
+- 0001184: [Improvement] Record ProcessInfo for server side registration process so it can more easily be monitored for errors (chenson) - closed.
+
 SymmetricDS - 3.4.0 (Released 2013-04-21)  
 =========================================
 - 0001117: [Bug] registration_enabled doesn't get set to 0 when node is really registered (chenson) - resolved.
