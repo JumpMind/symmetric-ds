@@ -96,6 +96,8 @@ public interface INodeService {
 
     public Node findIdentity(boolean useCache);
     
+    public Node findIdentity(boolean useCache, boolean logSqlError);
+    
     public Node getCachedIdentity();
 
     public boolean deleteIdentity();
