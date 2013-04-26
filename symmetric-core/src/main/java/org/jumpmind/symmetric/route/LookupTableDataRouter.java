@@ -108,15 +108,18 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     
     public Map<String, String> parse(String routerExpression) throws SyntaxParsingException {
         boolean valid = true;
-        Map<String, String> params =  new HashMap<String, String>();
+        Map<String, String> params = new HashMap<String, String>();
         if (!StringUtils.isBlank(routerExpression)) {
             String[] expTokens = routerExpression.split("\r\n|\r|\n");
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
                         String[] tokens = t.split("=");
-                        if (tokens.length == 2 && !params.containsKey(tokens[0])) {
-                            params.put(tokens[0], tokens[1]);
+                        /*
+                         * tokens must be trimmed, removing leading and trailing spaces
+                         */
+                        if (tokens.length == 2 && !params.containsKey(tokens[0].trim())) {
+                            params.put(tokens[0].trim(), tokens[1].trim());
                         } else {
                             valid = false;
                             break;
@@ -139,8 +142,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             log.warn("The provided lookup table router expression is empty");
         }
         return params;
-    }
-    
+    }    
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
             SimpleRouterContext routingContext) {
