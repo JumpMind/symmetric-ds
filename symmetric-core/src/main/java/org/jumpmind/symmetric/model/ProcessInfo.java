@@ -222,10 +222,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
                 return key.getSourceNodeId();
             case GAP_DETECT:
                 return key.getSourceNodeId();
-            case REGISTRATION_ATTEMPT:
-                return null;
-            case REGISTRATION_HANDLER:
-                return key.getTargetNodeId();
             default:
                 return null;
         }

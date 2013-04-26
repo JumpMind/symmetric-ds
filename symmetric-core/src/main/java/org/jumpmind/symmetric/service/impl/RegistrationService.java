@@ -40,9 +40,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
@@ -117,16 +114,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throws IOException {
         Node identity = nodeService.findIdentity();
         if (identity == null) {
-            saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                    RegistrationStatus.RQ, remoteHost, remoteAddress));
-            log.warn("Registration is not allowed until this node has an identity");
+            RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
+                    RegistrationStatus.ER, remoteHost, remoteAddress);
+            req.setErrorMessage("Registration is not allowed until this node has an identity");
+            saveRegisgtrationRequest(req);
+            log.warn(req.getErrorMessage());
             return false;
         }
 
-        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity.getNodeId(),
-                nodePriorToRegistration.getNodeId() == null ? nodePriorToRegistration
-                        .getExternalId() : nodePriorToRegistration.getNodeId(),
-                ProcessType.REGISTRATION_HANDLER));
         try {
 
             if (!nodeService.isRegistrationServer()) {
@@ -136,10 +131,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
                  */
                 NodeSecurity security = nodeService.findNodeSecurity(identity.getNodeId());
                 if (security == null || security.getInitialLoadTime() == null) {
-                    saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                            RegistrationStatus.RQ, remoteHost, remoteAddress));
-                    log.warn("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                    RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
+                            RegistrationStatus.ER, remoteHost, remoteAddress);
+                    req.setErrorMessage("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                    saveRegisgtrationRequest(req);
+                    log.warn(req.getErrorMessage());
                     return false;
                 }
             }
@@ -150,7 +146,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         nodePriorToRegistration.getExternalId(), redirectUrl);
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RR, remoteHost, remoteAddress));
-                processInfo.setStatus(ProcessInfo.Status.DONE);                
                 throw new RegistrationRedirectException(redirectUrl);
             }
 
@@ -163,12 +158,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if (link == null
                     && parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK,
                             true)) {
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
-                        RegistrationStatus.RQ, remoteHost, remoteAddress));
-                log.warn(
-                        "Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is {} and the target group id is {}",
-                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
+                        RegistrationStatus.ER, remoteHost, remoteAddress);
+                req.setErrorMessage(String.format("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
+                        identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
+                saveRegisgtrationRequest(req);
+                log.warn(req.getErrorMessage());
                 return false;
             }
 
@@ -189,7 +184,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     || !security.isRegistrationEnabled()) {
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
-                processInfo.setStatus(ProcessInfo.Status.ERROR);                
                 return false;
             }
 
@@ -224,8 +218,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
             statisticManager.incrementNodesRegistered(1);
             
-            processInfo.setStatus(ProcessInfo.Status.DONE);
-
             return true;
 
         } catch (RegistrationNotOpenException ex) {
@@ -233,7 +225,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 log.warn("Registration not allowed for {} because {}",
                         nodePriorToRegistration.toString(), ex.getMessage());
             }
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
             return false;
         }
     }
@@ -241,8 +232,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public List<RegistrationRequest> getRegistrationRequests(
             boolean includeNodesWithOpenRegistrations) {
         List<RegistrationRequest> requests = sqlTemplate.query(
-                getSql("selectRegistrationRequestSql"), new RegistrationRequestMapper(),
-                RegistrationStatus.RQ.name());
+                getSql("selectRegistrationRequestSql"), new RegistrationRequestMapper());
         if (!includeNodesWithOpenRegistrations) {
             Collection<Node> nodes = nodeService.findNodesWithOpenRegistration();
             Iterator<RegistrationRequest> i = requests.iterator();
@@ -273,15 +263,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
         int count = sqlTemplate.update(
                 getSql("updateRegistrationRequestSql"),
                 new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
-                        request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
-                        externalId, request.getIpAddress(), request.getHostName(),
-                        RegistrationStatus.RQ.name() });
+                        request.getRegisteredNodeId(), request.getStatus().name(), request.getErrorMessage(),
+                        nodeGroupId, externalId, request.getIpAddress(), request.getHostName() });
         if (count == 0) {
             sqlTemplate.update(
                     getSql("insertRegistrationRequestSql"),
                     new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
-                            externalId, request.getIpAddress(), request.getHostName() });
+                            externalId, request.getIpAddress(), request.getHostName(), request.getErrorMessage() });
         }
 
     }
@@ -462,7 +451,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 reOpenRegistration(nodeId);
             }
-            statisticManager.removeProcessInfo(new ProcessInfoKey(me.getNodeId(), nodeId, ProcessType.REGISTRATION_HANDLER));
             return nodeId;
         } else {
             throw new IllegalStateException(
@@ -509,6 +497,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             request.setCreateTime(rs.getDateTime("create_time"));
             request.setLastUpdateBy(rs.getString("last_update_by"));
             request.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            request.setErrorMessage(rs.getString("error_message"));
             return request;
         }
     }

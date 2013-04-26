@@ -27,7 +27,7 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, REGISTRATION_ATTEMPT, REGISTRATION_HANDLER;
+        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD;
         
         public String toString() {
             switch (this) {
@@ -47,10 +47,6 @@ public class ProcessInfoKey implements Serializable {
                     return "Routing Reader";
                 case GAP_DETECT:
                     return "Gap Detection";
-                case REGISTRATION_ATTEMPT:
-                    return "Registration Attempt";
-                case REGISTRATION_HANDLER:
-                    return "Service Registration";
                 default:
                     return name();
             }

@@ -312,6 +312,7 @@
         <column name="ip_address" type="VARCHAR" size="50" required="true"  description="The ip address for the host." />
         <column name="attempt_count" type="INTEGER" default="0" description="The number of registration attempts." />
         <column name="registered_node_id" type="VARCHAR" size="50" description="A unique identifier for a node." />
+        <column name="error_message" type="LONGVARCHAR" description="Record any errors or warnings that occurred when attempting to register." />
         <column name="create_time" primaryKey="true" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -645,6 +646,7 @@
         </foreign-key>
     </table>
     
+    <!-- 
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
         <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
@@ -692,6 +694,6 @@
         <column name="target_base_dir" type="VARCHAR" size="255" required="true" description="" />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
     </table>
-        
+         -->
 
 </database>

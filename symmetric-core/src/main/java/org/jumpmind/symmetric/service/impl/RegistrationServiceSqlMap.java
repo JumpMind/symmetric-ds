@@ -41,25 +41,25 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertRegistrationRequestSql",
                 ""
-                        + "insert into $(registration_request)                                         "
-                        + "  (last_update_by, last_update_time, attempt_count, registered_node_id, status,   "
-                        + "  node_group_id, external_id, ip_address, host_name, create_time)                 "
-                        + "  values (?,?,1,?,?,?,?,?,?,current_timestamp)                                    ");
+                        + "insert into $(registration_request)                                                 "
+                        + "  (last_update_by, last_update_time, attempt_count, registered_node_id, status,     "
+                        + "  node_group_id, external_id, ip_address, host_name, error_message, create_time)    "
+                        + "  values (?,?,1,?,?,?,?,?,?,?,current_timestamp)                                    ");
 
         putSql("updateRegistrationRequestSql",
                 ""
                         + "update $(registration_request)                                                                    "
                         + "  set                                                                                                   "
-                        + "  last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=?   "
+                        + "  last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=?, error_message=?   "
                         + "  where                                                                                                 "
-                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?                       ");
+                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status in ('RQ','ER')                       ");
 
         putSql("selectRegistrationRequestSql",
                 ""
-                        + "select node_group_id, external_id, status, host_name, ip_address,                    "
+                        + "select node_group_id, external_id, status, host_name, ip_address, error_message,     "
                         + "  attempt_count, registered_node_id, create_time, last_update_by, last_update_time   "
-                        + "  from $(registration_request)                                                 "
-                        + "  where status=?                                                                     ");
+                        + "  from $(registration_request)                                                       "
+                        + "  where status in ('RQ','ER')                                                        ");
 
         putSql("deleteRegistrationRequestSql",
                 "delete from $(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");
