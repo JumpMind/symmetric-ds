@@ -1,3 +1,7 @@
+SymmetricDS - 3.4.2 (Released 2013-04-26) 
+=========================================
+- 0001190: [Improvement] Remove file sync tables. They should not have been released yet. (chenson) - closed.
+
 SymmetricDS - 3.4.1 (Released 2013-04-24)
 =========================================
 - 0001053: [Improvement] Verify that NOCOUNT is off for SQL Server before starting SymmetricDS. When NOCOUNT is turned on SymmetricDS won't work. (chenson) - closed.
