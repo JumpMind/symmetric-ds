@@ -195,6 +195,7 @@ final public class ParameterConstants {
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
     public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
+    public final static String HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS = "heartbeat.update.node.with.batch.status";
     
     public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
@@ -215,6 +216,8 @@ final public class ParameterConstants {
     public final static String REST_API_ENABLED = "rest.api.enable";
 
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
+    
+    public final static String FILE_SYNC_ENABLE = "file.sync.enable";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
