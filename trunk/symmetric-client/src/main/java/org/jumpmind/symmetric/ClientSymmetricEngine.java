@@ -357,7 +357,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     public List<File> listSnapshots() {
         File snapshotsDir = getSnapshotDirectory();
-        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"jar"}, false));
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"zip"}, false));
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {             
                 return -o1.compareTo(o2);
@@ -374,7 +374,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public File snapshot() {
         
-        String dirName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String dirName = getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         
         File snapshotsDir = getSnapshotDirectory();
         
@@ -536,7 +536,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
         try {
             File jarFile = new File(snapshotsDir, tmpDir.getName()
-                    + ".jar");
+                    + ".zip");
             JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
