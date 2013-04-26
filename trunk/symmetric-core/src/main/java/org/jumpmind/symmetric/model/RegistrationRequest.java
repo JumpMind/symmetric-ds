@@ -30,7 +30,7 @@ public class RegistrationRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static enum RegistrationStatus {
-        OK, RQ, IG, RR
+        OK, RQ, IG, RR, ER
     };
 
     private String nodeGroupId;
@@ -40,6 +40,7 @@ public class RegistrationRequest implements Serializable {
     private String ipAddress;
     private long attemptCount;
     private String registeredNodeId;
+    private String errorMessage;
     private Date createTime = new Date();
     private String lastUpdateBy = "engine";
     private Date lastUpdateTime = new Date();
@@ -136,6 +137,14 @@ public class RegistrationRequest implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+    
+    public void setErrorMessage(String message) {
+        this.errorMessage = message;
+    }
+    
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
 }
