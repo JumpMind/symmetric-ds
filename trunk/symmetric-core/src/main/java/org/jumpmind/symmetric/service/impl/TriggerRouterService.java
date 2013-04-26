@@ -392,6 +392,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         triggerRouter.setTrigger(trigger);
 
         Router router = triggerRouter.getRouter();
+        router.setRouterId(trigger.getTriggerId());
         router.setRouterType(ConfigurationChangedDataRouter.ROUTER_TYPE);
         router.setNodeGroupLink(nodeGroupLink);
         router.setLastUpdateTime(trigger.getLastUpdateTime());
