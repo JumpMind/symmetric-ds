@@ -45,6 +45,7 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
+@SuppressWarnings("deprecation")
 abstract public class AbstractTriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";

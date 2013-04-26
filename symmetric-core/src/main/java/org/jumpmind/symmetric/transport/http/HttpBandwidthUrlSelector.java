@@ -57,7 +57,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     private long defaultSampleSize = 1000;
     private long defaultSampleTTL = 60000;
     private long defaultMaxSampleDuration = 2000;
-    private boolean autoRegister = true;
     protected long lastSampleTs;
     private Map<URI, List<SyncUrl>> cachedUrls = new HashMap<URI, List<SyncUrl>>();
 
@@ -177,10 +176,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
 
     public void setDefaultSampleTTL(long sampleTTL) {
         this.defaultSampleTTL = sampleTTL;
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
     }
 
     public void setDefaultMaxSampleDuration(long defaultMaxSampleDuration) {
