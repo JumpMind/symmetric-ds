@@ -648,6 +648,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             if (batch != null) {
                 Node targetNode = nodeService.findNode(nodeId);
+                if (targetNode == null && Constants.UNROUTED_NODE_ID.equals(nodeId)) {
+                    targetNode = new Node();
+                    targetNode.setNodeId("-1");
+                }
                 if (targetNode != null) {
                     IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
                             new SelectFromSymDataSource(batch, sourceNode, targetNode));
