@@ -260,6 +260,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private List<OutgoingBatch> filterBatchesForExtraction(OutgoingBatches batches,
             ChannelMap suspendIgnoreChannelsList) {
+        
+        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
+            batches.filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        }
 
         // We now have either our local suspend/ignore list, or the combined
         // remote send/ignore list and our local list (along with a

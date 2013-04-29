@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
@@ -284,6 +285,8 @@ public interface ISymmetricEngine {
     public IStagingManager getStagingManager();
     
     public ISqlTemplate getSqlTemplate();
+    
+    public IFileSyncService getFileSyncService();
     
     public Date getLastRestartTime();
     

@@ -73,6 +73,8 @@ final public class Constants {
     public static final String CHANNEL_RELOAD = "reload";
     
     public static final String CHANNEL_DEFAULT = "default";
+    
+    public static final String CHANNEL_FILESYNC = "filesync";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 
