@@ -32,6 +32,9 @@ import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
 import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -78,6 +81,9 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(STAGE_MANAGEMENT);
         initLockTable(WATCHDOG);
         initLockTable(STATISTICS);
+        initLockTable(FILE_SYNC_PULL);
+        initLockTable(FILE_SYNC_PUSH);
+        initLockTable(FILE_SYNC_TRACKER);
     }
 
     public void initLockTable(final String action) {
