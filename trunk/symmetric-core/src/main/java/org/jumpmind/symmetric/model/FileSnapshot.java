@@ -44,6 +44,23 @@ public class FileSnapshot implements Serializable {
         public String getCode() {
             return this.code;
         }
+        
+        public static LastEventType fromCode(String code) {
+            if ("C".equals(code)) {
+                return CREATE;
+            } else if ("M".equals(code)) {
+                return MODIFY;
+                
+            } else if ("D".equals(code)) {
+                return DELETE;
+                
+            } else if ("S".equals(code)) {
+                return SEED;
+                
+            } else {
+                return null;
+            }
+        }
     };
 
     private String triggerId;

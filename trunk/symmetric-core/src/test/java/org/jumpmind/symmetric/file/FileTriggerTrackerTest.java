@@ -69,9 +69,9 @@ public class FileTriggerTrackerTest {
     public void testTakeSnapshotRecursiveTestDelete() throws Exception {        
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
         FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
-        tracker.takeSnapshot();
+        tracker.trackChanges();
         FileUtils.deleteQuietly(fileInDirectory1);
-        DirectorySnapshot snapshot = tracker.takeSnapshot();
+        DirectorySnapshot snapshot = tracker.trackChanges();
         Assert.assertEquals(1, snapshot.size());
         FileSnapshot change = snapshot.get(0);
         Assert.assertEquals(change.getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
