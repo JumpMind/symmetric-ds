@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.Types;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,23 +33,24 @@ import org.jumpmind.symmetric.file.DirectorySnapshot;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
 import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
-import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class FileSyncService extends AbstractService implements IFileSyncService {
-    
+
     IClusterService clusterService;
-    
+
     ITriggerRouterService triggerRouterService;
-    
+
     private Map<FileTrigger, FileTriggerTracker> trackers = new HashMap<FileTrigger, FileTriggerTracker>();
 
-    public FileSyncService(IParameterService parameterService, ISymmetricDialect symmetricDialect, IClusterService clusterService, ITriggerRouterService triggerRouterService) {
+    public FileSyncService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            IClusterService clusterService, ITriggerRouterService triggerRouterService) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.triggerRouterService = triggerRouterService;
@@ -55,7 +58,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void trackChanges() {
-        List<FileTrigger> fileTriggers = getFileTriggersForCurrentNode();        
+        List<FileTrigger> fileTriggers = getFileTriggersForCurrentNode();
         for (FileTrigger fileTrigger : fileTriggers) {
             FileTriggerTracker tracker = trackers.get(fileTrigger);
             if (tracker == null) {
@@ -66,20 +69,49 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 save(tracker.trackChanges());
             } catch (Exception ex) {
                 // TODO rollback snapshot if we fail to save to database
-                log.error("Failed to track changes for file trigger: " + fileTrigger.getTriggerId(), ex);
+                log.error(
+                        "Failed to track changes for file trigger: " + fileTrigger.getTriggerId(),
+                        ex);
             }
         }
     }
 
     public List<FileTrigger> getFileTriggers() {
-        return null;
+        return sqlTemplate.query(getSql("selectFileTriggersSql"), new FileTriggerMapper());
     }
 
     public FileTrigger getFileTrigger(String triggerId) {
-        return null;
+        return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "whereTriggerIdSql"),
+                new FileTriggerMapper(), triggerId);
     }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
+        fileTrigger.setLastUpdateTime(new Date());
+        if (0 == sqlTemplate.update(
+                getSql("updateFileTriggerSql"),
+                new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecursive() ? 1 : 0,
+                        fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
+                        fileTrigger.isSyncOnCreate() ? 1 : 0,
+                        fileTrigger.isSyncOnModified() ? 1 : 0,
+                        fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.getLastUpdateBy(),
+                        fileTrigger.getLastUpdateTime(), fileTrigger.getTriggerId() }, new int[] {
+                        Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                        Types.TIMESTAMP, Types.VARCHAR })) {
+            fileTrigger.setCreateTime(fileTrigger.getLastUpdateTime());
+            sqlTemplate.update(getSql("insertFileTriggerSql"),
+                    new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecursive() ? 1 : 0,
+                            fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
+                            fileTrigger.isSyncOnCreate() ? 1 : 0,
+                            fileTrigger.isSyncOnModified() ? 1 : 0,
+                            fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.getLastUpdateBy(),
+                            fileTrigger.getLastUpdateTime(), fileTrigger.getTriggerId(),
+                            fileTrigger.getCreateTime() }, new int[] { Types.VARCHAR,
+                            Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
+                            Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.TIMESTAMP });
+        }
+
     }
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
@@ -88,22 +120,22 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger) {
         return null;
     }
-    
+
     public List<FileTrigger> getFileTriggersForCurrentNode() {
         return null;
-    }    
+    }
 
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode() {
         return null;
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger) {
-        return null;
+        return new DirectorySnapshot(fileTrigger, sqlTemplate.query(getSql("selectFileSnapshotSql"), new FileSnapshotMapper()));
     }
 
     public void save(List<FileSnapshot> changes) {
     }
-    
+
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
         public FileTrigger mapRow(Row rs) {
             FileTrigger fileTrigger = new FileTrigger();
@@ -121,25 +153,27 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             return fileTrigger;
         }
     }
-    
+
     class FileTriggerRouterMapper implements ISqlRowMapper<FileTriggerRouter> {
         public FileTriggerRouter mapRow(Row rs) {
             FileTriggerRouter fileTriggerRouter = new FileTriggerRouter();
             String triggerId = rs.getString("trigger_id");
             FileTrigger fileTrigger = getFileTrigger(triggerId);
             fileTriggerRouter.setFileTrigger(fileTrigger);
-            fileTriggerRouter.setConflictStrategy(FileConflictStrategy.valueOf(rs.getString("conflict_strategy").toUpperCase()));
+            fileTriggerRouter.setConflictStrategy(FileConflictStrategy.valueOf(rs.getString(
+                    "conflict_strategy").toUpperCase()));
             fileTriggerRouter.setCreateTime(rs.getDateTime("create_time"));
             fileTriggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             fileTriggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir"));
-            fileTriggerRouter.setRouter(triggerRouterService.getRouterById(rs.getString("router_id")));
+            fileTriggerRouter.setRouter(triggerRouterService.getRouterById(rs
+                    .getString("router_id")));
             return fileTriggerRouter;
         }
     }
-    
+
     class FileSnapshotMapper implements ISqlRowMapper<FileSnapshot> {
         public FileSnapshot mapRow(Row rs) {
             FileSnapshot fileSnapshot = new FileSnapshot();

@@ -67,6 +67,9 @@ public class TableConstants {
     public static final String SYM_GROUPLET = "grouplet";
     public static final String SYM_GROUPLET_LINK = "grouplet_link";
     public static final String SYM_TRIGGER_ROUTER_GROUPLET = "trigger_router_grouplet";
+    public static final String SYM_FILE_TRIGGER = "file_trigger";
+    public static final String SYM_FILE_TRIGGER_ROUTER = "file_trigger_router";
+    public static final String SYM_FILE_SNAPSHOT = "file_trigger_snapshot";
     
 
     private static List<String> tablesWithPrefix;
@@ -118,7 +121,9 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_GROUPLET_LINK));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));        
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         return configTables;
     }
@@ -162,7 +167,9 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_GROUPLET));
         tables.add(getTableName(tablePrefix, SYM_GROUPLET_LINK));
         tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER_GROUPLET));
-        
+        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER));
+        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
+        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));        
         return tables;
     }
     
