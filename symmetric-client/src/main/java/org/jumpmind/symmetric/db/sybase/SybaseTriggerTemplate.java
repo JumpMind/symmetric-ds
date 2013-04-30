@@ -38,9 +38,9 @@ public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " + 
 "                                    declare DataCursor cursor for                                                                                                                                      " + 
 "                                    $(if:containsBlobClobColumns)                                                                                                                                      " + 
-"                                       select $(columns), $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" + 
+"                                       select $(columns) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" + 
 "                                    $(else:containsBlobClobColumns)                                                                                                                                    " + 
-"                                       select $(columns), $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                  " + 
+"                                       select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                  " + 
 "                                    $(end:containsBlobClobColumns)                                                                                                                                     " + 
 "                                       open DataCursor                                                                                                                                                 " + 
 "                                       fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                     " + 
