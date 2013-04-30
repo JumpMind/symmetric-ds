@@ -64,7 +64,6 @@ public class FileSnapshot implements Serializable {
     };
 
     private String triggerId;
-    private String baseDir;
     private String filePath;
     private String fileName;
     private LastEventType lastEventType;
@@ -82,11 +81,10 @@ public class FileSnapshot implements Serializable {
         this.triggerId = fileTrigger.getTriggerId();
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
-        this.baseDir = fileTrigger.getBaseDir();
         this.fileName = file.getName();
         this.filePath = file.getAbsolutePath();
-        if (this.filePath.startsWith(this.baseDir)) {
-            this.filePath = this.filePath.substring(0, baseDir.length() - 1);
+        if (this.filePath.startsWith(fileTrigger.getBaseDir())) {
+            this.filePath = this.filePath.substring(0, fileTrigger.getBaseDir().length() - 1);
         }
 
         if (this.filePath.endsWith(fileName)) {
@@ -116,14 +114,6 @@ public class FileSnapshot implements Serializable {
 
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-    }
-
-    public String getBaseDir() {
-        return baseDir;
-    }
-
-    public void setBaseDir(String baseDir) {
-        this.baseDir = baseDir;
     }
 
     public String getFilePath() {

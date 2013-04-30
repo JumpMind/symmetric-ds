@@ -143,7 +143,6 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     class FileSnapshotMapper implements ISqlRowMapper<FileSnapshot> {
         public FileSnapshot mapRow(Row rs) {
             FileSnapshot fileSnapshot = new FileSnapshot();
-            fileSnapshot.setBaseDir(rs.getString("base_dir"));
             fileSnapshot.setCrc32Checksum(rs.getLong("crc32_checksum"));
             fileSnapshot.setCreateTime(rs.getDateTime("create_time"));
             fileSnapshot.setLastUpdateBy(rs.getString("last_update_by"));
