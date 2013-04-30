@@ -667,6 +667,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transaction = sqlTemplate.startSqlTransaction();
             insertIncomingError(transaction, incomingError);
             transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;              
         } finally {
             close(transaction);
         }
