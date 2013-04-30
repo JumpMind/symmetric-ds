@@ -306,6 +306,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
             symmetricDialect.disableSyncTriggers(transaction, nodeId);
             transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
             transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;              
         } finally {
             symmetricDialect.enableSyncTriggers(transaction);
             close(transaction);

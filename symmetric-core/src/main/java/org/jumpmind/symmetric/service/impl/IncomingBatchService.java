@@ -229,6 +229,16 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             int count = updateIncomingBatch(transaction, batch);
             transaction.commit();
             return count;   
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;              
         } finally {
             close(transaction);
         }        

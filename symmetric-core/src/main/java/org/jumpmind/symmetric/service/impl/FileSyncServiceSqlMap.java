@@ -12,28 +12,42 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("selectFileTriggersSql", 
-                " select trigger_id, base_dir, recursive, includes_files, excludes_files,      " +
-        		"       sync_on_create, sync_on_modified, sync_on_delete, create_time,         " +
-        		"       last_update_by, last_update_time                                       " +
-        		" from $(file_trigger)                                                         ");
+                " select trigger_id, base_dir, recursive, includes_files, excludes_files,       " +
+        		"       sync_on_create, sync_on_modified, sync_on_delete, create_time,          " +
+        		"       last_update_by, last_update_time                                        " +
+        		" from $(file_trigger)                                                          ");
         
         putSql("whereTriggerId", "where trigger_id=?");
         
         putSql("updateFileTriggerSql",                 
-                " update $(file_trigger) set base_dir=?, recursive=?, includes_files=?,        " +
-        		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,   " +
-        		"  last_update_by=?, last_update_time=? where trigger_id=?                     ");
+                " update $(file_trigger) set base_dir=?, recursive=?, includes_files=?,         " +
+        		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,    " +
+        		"  last_update_by=?, last_update_time=? where trigger_id=?                      ");
 
         putSql("insertFileTriggerSql",                 
-                " insert into $(file_trigger) (base_dir, recursive, includes_files,            " +
-                "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,           " +
-                "  last_update_by, last_update_time, trigger_id, create_time)                  " +
-                " values(?,?,?,?,?,?,?,?,?,?,?)                                                ");
+                " insert into $(file_trigger) (base_dir, recursive, includes_files,             " +
+                "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,            " +
+                "  last_update_by, last_update_time, trigger_id, create_time)                   " +
+                " values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");
         
         putSql("selectFileSnapshotSql", 
                 " select trigger_id, file_path, file_name, last_event_type, crc32_checksum,     " +
                 "  file_size, file_modified_time, create_time, last_update_time, last_update_by " +
                 " from $(file_snapshot) where trigger_id=?                                      ");
+        
+        putSql("updateFileSnapshotSql",                 
+                " update $(file_snapshot) set   " +
+                        "  last_event_type=?, crc32_checksum=?,                                 " + 
+                        "  file_size=?, file_modified_time=?, last_update_time=?,               " +
+                        "  last_update_by=? where trigger_id=? and file_path=? and file_name=?  ");
+
+        putSql("insertFileSnapshotSql",                 
+                " insert into $(file_snapshot) (                                                " +
+                "  last_event_type, crc32_checksum,                                             " + 
+                "  file_size, file_modified_time, create_time, last_update_time,                " +
+                "  last_update_by, trigger_id, file_path, file_name                             " +
+                " ) values(?,?,?,?,?,?,?,?,?,?)                                                 ");
+        
         
     }
 

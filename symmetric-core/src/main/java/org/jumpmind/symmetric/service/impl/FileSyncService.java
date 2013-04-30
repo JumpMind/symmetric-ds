@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
@@ -130,10 +131,62 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger) {
-        return new DirectorySnapshot(fileTrigger, sqlTemplate.query(getSql("selectFileSnapshotSql"), new FileSnapshotMapper()));
+        return new DirectorySnapshot(fileTrigger, sqlTemplate.query(
+                getSql("selectFileSnapshotSql"), new FileSnapshotMapper()));
     }
 
     public void save(List<FileSnapshot> changes) {
+        if (changes != null) {
+            ISqlTransaction sqlTransaction = null;
+            try {
+
+                sqlTransaction = sqlTemplate.startSqlTransaction();
+                for (FileSnapshot fileSnapshot : changes) {
+                    save(sqlTransaction, fileSnapshot);
+                }
+                
+                sqlTransaction.commit();
+            } catch (Error ex) {
+                if (sqlTransaction != null) {
+                    sqlTransaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (sqlTransaction != null) {
+                    sqlTransaction.rollback();
+                }
+                throw ex;          
+            } finally {
+                close(sqlTransaction);
+            }
+        }
+    }
+
+
+    public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
+        snapshot.setLastUpdateTime(new Date());
+        if (0 == sqlTransaction.prepareAndExecute(getSql("updateFileSnapshotSql"),
+                        new Object[] { snapshot.getLastEventType().getCode(),
+                                snapshot.getCrc32Checksum(), snapshot.getFileSize(),
+                                snapshot.getFileModifiedTime(), snapshot.getLastUpdateTime(),
+                                snapshot.getLastUpdateBy(), snapshot.getTriggerId(),
+                                snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
+                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
+                                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                Types.VARCHAR })) {
+            snapshot.setCreateTime(snapshot.getLastUpdateTime());
+            sqlTransaction.prepareAndExecute(getSql("insertFileSnapshotSql"),
+                            new Object[] { snapshot.getLastEventType().getCode(),
+                                    snapshot.getCrc32Checksum(), snapshot.getFileSize(),
+                                    snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
+                                    snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                                    snapshot.getTriggerId(), snapshot.getFilePath(),
+                                    snapshot.getFileName() }, new int[] { Types.VARCHAR,
+                                    Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP,
+                                    Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                    Types.VARCHAR });
+        }
+
     }
 
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
