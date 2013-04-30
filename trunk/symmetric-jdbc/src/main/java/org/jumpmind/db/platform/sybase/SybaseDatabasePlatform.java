@@ -35,22 +35,22 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard Sybase jdbc driver. */
-    public static final String JDBC_DRIVER = "com.sybase.jdbc2.jdbc.SybDriver";
+    public static final String JDBC_DRIVER = "com.sybase.jdbc4.jdbc.SybDriver";
 
     /* The old Sybase jdbc driver. */
-    public static final String JDBC_DRIVER_OLD = "com.sybase.jdbc.SybDriver";
+    public static final String JDBC_DRIVER_OLD = "com.sybase.jdbc4.jdbc.SybDriver";
 
     /* The subprotocol used by the standard Sybase driver. */
     public static final String JDBC_SUBPROTOCOL = "sybase:Tds";
 
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
-    
+
     private Map<String, String> sqlScriptReplacementTokens;
 
     public SybaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        
+
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
@@ -63,13 +63,13 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected SybaseDdlReader createDdlReader() {
         return new SybaseDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected SybaseJdbcSqlTemplate createSqlTemplate() {
         return new SybaseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
-    
+
     public String getName() {
         return DatabaseNamesConstants.SYBASE;
     }
@@ -88,7 +88,7 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return defaultSchema;
     }
-    
+
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;

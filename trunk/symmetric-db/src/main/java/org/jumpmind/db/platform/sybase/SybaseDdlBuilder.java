@@ -60,7 +60,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE");
         // BIGINT is mapped back in the model reader
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC(19,0)");
         // we're not using the native BIT type because it is rather limited
         // (cannot be NULL, cannot be indexed)
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
@@ -95,7 +95,8 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
-        
+        databaseInfo.setRequiresAutoCommitForDdl(true);
+
         addEscapedCharSequence("'", "''");
     }
 
@@ -190,9 +191,9 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
     /*
      * Returns the SQL to enable identity override mode.
-     * 
+     *
      * @param table The table to enable the mode for
-     * 
+     *
      * @return The SQL
      */
     protected String getEnableIdentityOverrideSql(Table table) {
@@ -207,9 +208,9 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
     /*
      * Returns the SQL to disable identity override mode.
-     * 
+     *
      * @param table The table to disable the mode for
-     * 
+     *
      * @return The SQL
      */
     protected String getDisableIdentityOverrideSql(Table table) {
@@ -225,7 +226,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
     /*
      * Returns the statement that turns on the ability to write delimited
      * identifiers.
-     * 
+     *
      * @return The quotation-on statement
      */
     protected String getQuotationOnStatement() {
@@ -248,7 +249,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
     /*
      * Prints the given identifier with enforced single quotes around it
      * regardless of whether delimited identifiers are turned on or not.
-     * 
+     *
      * @param identifier The identifier
      */
     private void printAlwaysSingleQuotedIdentifier(String identifier, StringBuilder ddl) {
@@ -436,11 +437,11 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
 
     /*
      * Processes the removal of a primary key from a table.
-     * 
+     *
      * @param currentModel The current database schema
-     * 
+     *
      * @param desiredModel The desired database schema
-     * 
+     *
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
@@ -543,6 +544,7 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
             if (newDefault != null) {
+                targetColumn.setDefaultValue(newDefault);
                 writeColumnDefaultValueStmt(sourceTable, targetColumn, ddl);
             } else {
                 ddl.append(" DEFAULT NULL");
@@ -550,13 +552,13 @@ public class SybaseDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
     }
-    
+
     /**
      * Creates a reasonably unique identifier only consisting of hexadecimal
      * characters and underscores. It looks like
      * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48
      * characters long.
-     * 
+     *
      * @return The identifier
      */
     protected String createUniqueIdentifier() {
