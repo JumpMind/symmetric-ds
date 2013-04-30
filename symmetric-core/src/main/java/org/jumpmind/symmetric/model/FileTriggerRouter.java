@@ -27,7 +27,7 @@ public class FileTriggerRouter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Trigger trigger;
+    private FileTrigger fileTrigger;
     private Router router;
     private boolean enabled = true;
     private boolean initialLoadEnabled;
@@ -37,12 +37,12 @@ public class FileTriggerRouter implements Serializable {
     private String lastUpdateBy;
     private Date lastUpdateTime;
 
-    public void setTrigger(Trigger trigger) {
-        this.trigger = trigger;
+    public void setFileTrigger(FileTrigger fileTrigger) {
+        this.fileTrigger = fileTrigger;
     }
     
-    public Trigger getTrigger() {
-        return trigger;
+    public FileTrigger getFileTrigger() {
+        return fileTrigger;
     }
     
     public void setRouter(Router router) {

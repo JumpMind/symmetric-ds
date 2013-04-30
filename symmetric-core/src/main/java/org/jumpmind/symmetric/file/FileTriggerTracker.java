@@ -71,13 +71,13 @@ public class FileTriggerTracker {
 
     }
 
-    public void pollForChanges() {
+    protected void pollForChanges() {
         if (fileObserver != null) {
             fileObserver.checkAndNotify();
         }
     }
 
-    synchronized public DirectorySnapshot takeSnapshot() {
+    synchronized public DirectorySnapshot trackChanges() {
         pollForChanges();
         DirectorySnapshot changes = changesSinceLastSnapshot;
         changesSinceLastSnapshot = new DirectorySnapshot(fileTrigger);
