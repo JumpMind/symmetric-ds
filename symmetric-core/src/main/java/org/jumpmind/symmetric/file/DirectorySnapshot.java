@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.file;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.FileSnapshot;
@@ -33,7 +34,12 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
     private static final long serialVersionUID = 1L;
 
     private FileTrigger fileTrigger;
-    
+
+    public DirectorySnapshot(FileTrigger fileTrigger, List<FileSnapshot> snapshot) {
+        this(fileTrigger);
+        addAll(snapshot);        
+    }
+
     public DirectorySnapshot(FileTrigger fileTrigger) {
         this.fileTrigger = fileTrigger;
     }
