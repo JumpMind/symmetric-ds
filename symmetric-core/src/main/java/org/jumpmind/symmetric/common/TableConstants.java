@@ -69,7 +69,7 @@ public class TableConstants {
     public static final String SYM_TRIGGER_ROUTER_GROUPLET = "trigger_router_grouplet";
     public static final String SYM_FILE_TRIGGER = "file_trigger";
     public static final String SYM_FILE_TRIGGER_ROUTER = "file_trigger_router";
-    public static final String SYM_FILE_SNAPSHOT = "file_trigger_snapshot";
+    public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     
 
     private static List<String> tablesWithPrefix;
