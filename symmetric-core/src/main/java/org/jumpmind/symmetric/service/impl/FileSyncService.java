@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -50,6 +51,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     private Map<FileTrigger, FileTriggerTracker> trackers = new HashMap<FileTrigger, FileTriggerTracker>();
 
+    // TODO cache
+
     public FileSyncService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IClusterService clusterService, ITriggerRouterService triggerRouterService) {
         super(parameterService, symmetricDialect);
@@ -58,22 +61,26 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
 
-    public void trackChanges() {
-        List<FileTrigger> fileTriggers = getFileTriggersForCurrentNode();
-        for (FileTrigger fileTrigger : fileTriggers) {
-            FileTriggerTracker tracker = trackers.get(fileTrigger);
-            if (tracker == null) {
-                tracker = new FileTriggerTracker(fileTrigger, getDirectorySnapshot(fileTrigger));
-                trackers.put(fileTrigger, tracker);
+    public void trackChanges(boolean force) {
+        if (force || !clusterService.isInfiniteLocked(ClusterConstants.FILE_SYNC_TRACKER)) {
+            List<FileTrigger> fileTriggers = getFileTriggersForCurrentNode();
+            for (FileTrigger fileTrigger : fileTriggers) {
+                FileTriggerTracker tracker = trackers.get(fileTrigger);
+                if (tracker == null) {
+                    tracker = new FileTriggerTracker(fileTrigger, getDirectorySnapshot(fileTrigger));
+                    trackers.put(fileTrigger, tracker);
+                }
+                try {
+                    save(tracker.trackChanges());
+                } catch (Exception ex) {
+                    // TODO build mechanism to rollback snapshot if we fail to save to database
+                    log.error(
+                            "Failed to track changes for file trigger: "
+                                    + fileTrigger.getTriggerId(), ex);
+                }
             }
-            try {
-                save(tracker.trackChanges());
-            } catch (Exception ex) {
-                // TODO rollback snapshot if we fail to save to database
-                log.error(
-                        "Failed to track changes for file trigger: " + fileTrigger.getTriggerId(),
-                        ex);
-            }
+        } else {
+            log.debug("Did not run the track file sync changes process because it has been stopped");
         }
     }
 
@@ -85,12 +92,11 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "whereTriggerIdSql"),
                 new FileTriggerMapper(), triggerId);
     }
-    
 
     public List<FileTrigger> getFileTriggersForCurrentNode() {
         return sqlTemplate.query(getSql("selectFileTriggersSql", "fileTriggerForCurrentNodeWhere"),
-                new FileTriggerMapper(), parameterService.getNodeGroupId());        
-    }    
+                new FileTriggerMapper(), parameterService.getNodeGroupId());
+    }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
         fileTrigger.setLastUpdateTime(new Date());
@@ -158,7 +164,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger) {
         return new DirectorySnapshot(fileTrigger, sqlTemplate.query(
-                getSql("selectFileSnapshotSql"), new FileSnapshotMapper()));
+                getSql("selectFileSnapshotSql"), new FileSnapshotMapper(), fileTrigger.getTriggerId()));
     }
 
     public void save(List<FileSnapshot> changes) {
@@ -231,7 +237,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTrigger.setSyncOnCreate(rs.getBoolean("sync_on_create"));
             fileTrigger.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
             fileTrigger.setSyncOnModified(rs.getBoolean("sync_on_modified"));
-            fileTrigger.setTriggerId("trigger_id");
+            fileTrigger.setTriggerId(rs.getString("trigger_id"));
             return fileTrigger;
         }
     }

@@ -37,7 +37,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
 
     public DirectorySnapshot(FileTrigger fileTrigger, List<FileSnapshot> snapshot) {
         this(fileTrigger);
-        addAll(snapshot);        
+        addAll(snapshot);
     }
 
     public DirectorySnapshot(FileTrigger fileTrigger) {
@@ -57,40 +57,57 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
                 }
             }
         }
-        
+
         for (FileSnapshot fileChange : toRemove) {
             if (fileChange.getLastEventType() == LastEventType.CREATE) {
                 toAdd.add(fileChange);
             }
         }
-        
+
         this.removeAll(toRemove);
         this.addAll(toAdd);
     }
-    
-    protected DirectorySnapshot diff(DirectorySnapshot snapshot) {
-        DirectorySnapshot differences = new DirectorySnapshot(snapshot.getFileTrigger());
-        for (FileSnapshot fileChange : snapshot) {
+
+    protected DirectorySnapshot diff(DirectorySnapshot anotherSnapshot) {
+        DirectorySnapshot differences = new DirectorySnapshot(anotherSnapshot.getFileTrigger());
+        for (FileSnapshot anotherFile : anotherSnapshot) {
             boolean found = false;
             for (FileSnapshot file : this) {
-                found = true;
-                if (fileChange.getFileName().equals(file.getFileName())) {
-                    if (!fileChange.getLastEventType().equals(file.getLastEventType())) {
-
-                        differences.add(file);
+                if (anotherFile.sameFile(file)) {
+                    found = true;
+                    if (!anotherFile.equals(file)) {
+                        if ((file.getLastEventType() == LastEventType.MODIFY || file
+                                .getLastEventType() == LastEventType.CREATE)
+                                && anotherFile.getLastEventType() == LastEventType.CREATE) {
+                            anotherFile.setLastEventType(LastEventType.MODIFY);
+                        }
+                        differences.add(anotherFile);
                     }
                 }
             }
             if (!found) {
-                differences.add(fileChange);
+                differences.add(anotherFile);
+            }
+        }
+
+        for (FileSnapshot file : this) {
+            boolean found = false;
+            for (FileSnapshot anotherFile : anotherSnapshot) {
+                if (anotherFile.sameFile(file)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                FileSnapshot copy = new FileSnapshot(file);
+                copy.setLastEventType(LastEventType.DELETE);
+                differences.add(copy);
             }
         }
         return differences;
     }
-    
+
     public FileTrigger getFileTrigger() {
         return fileTrigger;
     }
-    
-    
+
 }

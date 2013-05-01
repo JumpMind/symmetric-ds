@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.FileTriggerRouter;
 public interface IFileSyncService {
 
     
-    public void trackChanges();
+    public void trackChanges(boolean force);
     
     public List<FileTrigger> getFileTriggers();
     

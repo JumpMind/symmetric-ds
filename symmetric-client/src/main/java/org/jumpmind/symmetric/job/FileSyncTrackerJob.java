@@ -37,11 +37,14 @@ public class FileSyncTrackerJob extends AbstractJob {
     }
 
     public boolean isClusterable() {
-        return true;
+        return false;
     }
 
     @Override
     void doJob(boolean force) throws Exception {
+        if (engine != null) {
+            engine.getFileSyncService().trackChanges(force);
+        }
     }
 
 }

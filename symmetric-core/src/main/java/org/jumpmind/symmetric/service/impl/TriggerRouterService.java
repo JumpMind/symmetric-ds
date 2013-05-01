@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
+import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -350,6 +351,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
                 .equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
+        } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)
+                .equals(tableName)) {
+            trigger.setChannelId(Constants.CHANNEL_FILESYNC);
+            trigger.setUseCaptureOldData(true);
+            trigger.setSyncOnIncomingBatch(false);
         } else {
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
         }
@@ -393,7 +399,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         Router router = triggerRouter.getRouter();
         router.setRouterId(trigger.getTriggerId());
-        router.setRouterType(ConfigurationChangedDataRouter.ROUTER_TYPE);
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(
+                trigger.getSourceTableName())) {
+            router.setRouterType(FileSyncDataRouter.ROUTER_TYPE);
+        } else {
+            router.setRouterType(ConfigurationChangedDataRouter.ROUTER_TYPE);
+        }
         router.setNodeGroupLink(nodeGroupLink);
         router.setLastUpdateTime(trigger.getLastUpdateTime());
 
