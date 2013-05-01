@@ -109,7 +109,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("audit", new AuditTableDataRouter(engine));
         this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
-        this.routers.put("filesync", new FileSyncDataRouter(engine));
+        this.routers.put(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -296,6 +296,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
+                && !Constants.CHANNEL_FILESYNC.equals(channelId)
                 && !Constants.CHANNEL_RELOAD.equals(channelId) 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();

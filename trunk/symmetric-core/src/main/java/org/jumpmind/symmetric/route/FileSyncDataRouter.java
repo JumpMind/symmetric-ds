@@ -28,6 +28,8 @@ import org.jumpmind.symmetric.model.Node;
 
 public class FileSyncDataRouter extends AbstractDataRouter {
 
+    public static final String ROUTER_TYPE = "filesync";
+    
     private ISymmetricEngine engine;
 
     public FileSyncDataRouter(ISymmetricEngine engine) {

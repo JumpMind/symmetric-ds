@@ -76,6 +76,19 @@ public class FileSnapshot implements Serializable {
 
     public FileSnapshot() {
     }
+    
+    public FileSnapshot(FileSnapshot copy) {
+        this.triggerId = copy.triggerId;
+        this.filePath = copy.filePath;
+        this.fileName = copy.fileName;
+        this.lastEventType = copy.lastEventType;
+        this.crc32Checksum = copy.crc32Checksum;
+        this.fileSize = copy.fileSize;
+        this.fileModifiedTime = copy.fileModifiedTime;
+        this.createTime = copy.createTime;
+        this.lastUpdateBy = copy.lastUpdateBy;
+        this.lastUpdateTime = copy.lastUpdateTime;
+    }
 
     public FileSnapshot(FileTrigger fileTrigger, File file, LastEventType lastEventType) {
         this.triggerId = fileTrigger.getTriggerId();
@@ -84,12 +97,11 @@ public class FileSnapshot implements Serializable {
         this.fileName = file.getName();
         this.filePath = file.getAbsolutePath();
         if (this.filePath.startsWith(fileTrigger.getBaseDir())) {
-            this.filePath = this.filePath.substring(0, fileTrigger.getBaseDir().length() - 1);
+            this.filePath = this.filePath.substring(fileTrigger.getBaseDir().length());
         }
 
         if (this.filePath.endsWith(fileName)) {
-            this.filePath = this.filePath.substring(this.filePath.indexOf(fileName),
-                    this.filePath.length());
+            this.filePath = this.filePath.substring(0, this.filePath.indexOf(fileName));
         }
 
         this.fileSize = file.length();
@@ -187,5 +199,63 @@ public class FileSnapshot implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
+    
+    public boolean sameFile(FileSnapshot file) {
+        return fileName.equals(file.getFileName()) && filePath.equals(file.getFilePath());
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (crc32Checksum ^ (crc32Checksum >>> 32));
+        result = prime * result + ((fileModifiedTime == null) ? 0 : fileModifiedTime.hashCode());
+        result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
+        result = prime * result + ((lastEventType == null) ? 0 : lastEventType.hashCode());
+        result = prime * result + ((triggerId == null) ? 0 : triggerId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FileSnapshot other = (FileSnapshot) obj;
+        if (crc32Checksum != other.crc32Checksum)
+            return false;
+        if (fileModifiedTime == null) {
+            if (other.fileModifiedTime != null)
+                return false;
+        } else if (!fileModifiedTime.equals(other.fileModifiedTime))
+            return false;
+        if (fileName == null) {
+            if (other.fileName != null)
+                return false;
+        } else if (!fileName.equals(other.fileName))
+            return false;
+        if (filePath == null) {
+            if (other.filePath != null)
+                return false;
+        } else if (!filePath.equals(other.filePath))
+            return false;
+        if (fileSize != other.fileSize)
+            return false;
+        if (lastEventType != other.lastEventType)
+            return false;
+        if (triggerId == null) {
+            if (other.triggerId != null)
+                return false;
+        } else if (!triggerId.equals(other.triggerId))
+            return false;
+        return true;
+    }
+    
+    
 
 }

@@ -57,9 +57,9 @@ public class FileTriggerTracker {
                 this.lastSnapshot = changesSinceLastSnapshot;
                 takeFullSnapshot(this.lastSnapshot);
             } else {
-                DirectorySnapshot snapshot = new DirectorySnapshot(fileTrigger);
-                takeFullSnapshot(snapshot);
-                changesSinceLastSnapshot.merge(lastSnapshot.diff(snapshot));
+                DirectorySnapshot currentSnapshot = new DirectorySnapshot(fileTrigger);
+                takeFullSnapshot(currentSnapshot);
+                changesSinceLastSnapshot.addAll(lastSnapshot.diff(currentSnapshot));
             }
         } catch (RuntimeException e) {
             throw e;

@@ -166,5 +166,28 @@ public class FileTrigger implements Serializable {
         }
         return filter;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FileTrigger && triggerId != null) {
+            return triggerId.equals(((FileTrigger) obj).triggerId);
+        } else {
+            return super.equals(obj);
+        }
+    }    
+    
+    @Override
+    public int hashCode() {
+        return triggerId != null ? triggerId.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        if (triggerId != null) {
+            return triggerId;
+        } else {
+            return super.toString();
+        }
+    }
 
 }
