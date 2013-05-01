@@ -116,7 +116,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);
-            req.setErrorMessage("Registration is not allowed until this node has an identity");
+            req.setErrorMessage("Cannot register a client node until this node is registered");
             saveRegisgtrationRequest(req);
             log.warn(req.getErrorMessage());
             return false;
@@ -133,7 +133,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 if (security == null || security.getInitialLoadTime() == null) {
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
-                    req.setErrorMessage("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                    req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                     saveRegisgtrationRequest(req);
                     log.warn(req.getErrorMessage());
                     return false;
@@ -160,7 +160,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             true)) {
                 RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.ER, remoteHost, remoteAddress);
-                req.setErrorMessage(String.format("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
+                req.setErrorMessage(String.format("Cannot register a client node unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
                 saveRegisgtrationRequest(req);
                 log.warn(req.getErrorMessage());
