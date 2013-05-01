@@ -40,9 +40,7 @@ public interface IFileSyncService {
     
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
     
-    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);
-    
-    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode();
+    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);   
     
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger);
     

@@ -85,6 +85,12 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "whereTriggerIdSql"),
                 new FileTriggerMapper(), triggerId);
     }
+    
+
+    public List<FileTrigger> getFileTriggersForCurrentNode() {
+        return sqlTemplate.query(getSql("selectFileTriggersSql", "fileTriggerForCurrentNodeWhere"),
+                new FileTriggerMapper(), parameterService.getNodeGroupId());        
+    }    
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
         fileTrigger.setLastUpdateTime(new Date());
@@ -116,18 +122,38 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
+        fileTriggerRouter.setLastUpdateTime(new Date());
+        if (0 == sqlTemplate.update(
+                getSql("updateFileTriggerSql"),
+                new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
+                        fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
+                        fileTriggerRouter.getTargetBaseDir(),
+                        fileTriggerRouter.getConflictStrategy().name(),
+                        fileTriggerRouter.getLastUpdateBy(), fileTriggerRouter.getLastUpdateTime(),
+                        fileTriggerRouter.getFileTrigger().getTriggerId(),
+                        fileTriggerRouter.getRouter().getRouterId() }, new int[] { Types.SMALLINT,
+                        Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
+            fileTriggerRouter.setCreateTime(fileTriggerRouter.getLastUpdateTime());
+            sqlTemplate.update(
+                    getSql("insertFileTriggerSql"),
+                    new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
+                            fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
+                            fileTriggerRouter.getTargetBaseDir(),
+                            fileTriggerRouter.getConflictStrategy().name(),
+                            fileTriggerRouter.getCreateTime(), fileTriggerRouter.getLastUpdateBy(),
+                            fileTriggerRouter.getLastUpdateTime(),
+                            fileTriggerRouter.getFileTrigger().getTriggerId(),
+                            fileTriggerRouter.getRouter().getRouterId() }, new int[] {
+                            Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.VARCHAR });
+        }
     }
 
     public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger) {
-        return null;
-    }
-
-    public List<FileTrigger> getFileTriggersForCurrentNode() {
-        return null;
-    }
-
-    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode() {
-        return null;
+        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql", "whereTriggerIdSql"),
+                new FileTriggerRouterMapper(), fileTrigger.getTriggerId());
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger) {
@@ -144,7 +170,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
                 }
-                
+
                 sqlTransaction.commit();
             } catch (Error ex) {
                 if (sqlTransaction != null) {
@@ -155,17 +181,18 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 if (sqlTransaction != null) {
                     sqlTransaction.rollback();
                 }
-                throw ex;          
+                throw ex;
             } finally {
                 close(sqlTransaction);
             }
         }
     }
 
-
     public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
         snapshot.setLastUpdateTime(new Date());
-        if (0 == sqlTransaction.prepareAndExecute(getSql("updateFileSnapshotSql"),
+        if (0 == sqlTransaction
+                .prepareAndExecute(
+                        getSql("updateFileSnapshotSql"),
                         new Object[] { snapshot.getLastEventType().getCode(),
                                 snapshot.getCrc32Checksum(), snapshot.getFileSize(),
                                 snapshot.getFileModifiedTime(), snapshot.getLastUpdateTime(),
@@ -175,7 +202,9 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                                 Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                 Types.VARCHAR })) {
             snapshot.setCreateTime(snapshot.getLastUpdateTime());
-            sqlTransaction.prepareAndExecute(getSql("insertFileSnapshotSql"),
+            sqlTransaction
+                    .prepareAndExecute(
+                            getSql("insertFileSnapshotSql"),
                             new Object[] { snapshot.getLastEventType().getCode(),
                                     snapshot.getCrc32Checksum(), snapshot.getFileSize(),
                                     snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
