@@ -124,7 +124,6 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         return configTables;
     }
