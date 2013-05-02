@@ -176,54 +176,60 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
-                    triggerRouter.getTrigger().getTriggerId());
-            if (triggerHistory == null) {
-                Trigger trigger = triggerRouter.getTrigger();
-                Table table = symmetricDialect.getPlatform().getTableFromCache(
-                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), false);
-                if (table == null) {
-                    throw new IllegalStateException("Could not find a required table: "
-                            + triggerRouter.getTrigger().getSourceTableName());
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
+                TriggerHistory triggerHistory = triggerRouterService
+                        .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                                .getTriggerId());
+                if (triggerHistory == null) {
+                    Trigger trigger = triggerRouter.getTrigger();
+                    Table table = symmetricDialect.getPlatform().getTableFromCache(
+                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            trigger.getSourceTableName(), false);
+                    if (table == null) {
+                        throw new IllegalStateException("Could not find a required table: "
+                                + triggerRouter.getTrigger().getSourceTableName());
+                    }
+                    triggerHistory = new TriggerHistory(table, triggerRouter.getTrigger());
+                    triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
                 }
-                triggerHistory = new TriggerHistory(table, triggerRouter.getTrigger());
-                triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
-            }
 
-            StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(targetNode,
-                    triggerRouter, triggerHistory));
-            addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(),
-                    sql);
-            String sourceTable = triggerHistory.getSourceTableName();
-            Data data = new Data(1, null, sql.toString(), DataEventType.SQL, sourceTable, null,
-                    triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
-            data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter().getRouterId());
-            initialLoadEvents.add(new SelectFromTableEvent(data));
+                StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(
+                        targetNode, triggerRouter, triggerHistory));
+                addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger()
+                        .getSourceTableName(), sql);
+                String sourceTable = triggerHistory.getSourceTableName();
+                Data data = new Data(1, null, sql.toString(), DataEventType.SQL, sourceTable, null,
+                        triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
+                data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter().getRouterId());
+                initialLoadEvents.add(new SelectFromTableEvent(data));
+            }
         }
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(
-                    triggerRouter.getTrigger().getTriggerId());
-            if (triggerHistory == null) {
-                Trigger trigger = triggerRouter.getTrigger();
-                triggerHistory = new TriggerHistory(
-                        symmetricDialect.getPlatform().getTableFromCache(
-                                trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                                trigger.getSourceTableName(), false), trigger);
-                triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
-            }
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
+                TriggerHistory triggerHistory = triggerRouterService
+                        .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                                .getTriggerId());
+                if (triggerHistory == null) {
+                    Trigger trigger = triggerRouter.getTrigger();
+                    triggerHistory = new TriggerHistory(symmetricDialect.getPlatform()
+                            .getTableFromCache(trigger.getSourceCatalogName(),
+                                    trigger.getSourceSchemaName(), trigger.getSourceTableName(),
+                                    false), trigger);
+                    triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+                }
 
-            if (!triggerRouter.getTrigger().getSourceTableName()
-                    .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter,
-                        triggerHistory));
-            } else {
-                Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT,
-                        triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
-                                .getTrigger().getChannelId(), null, null);
-                initialLoadEvents.add(new SelectFromTableEvent(data));
+                if (!triggerRouter.getTrigger().getSourceTableName()
+                        .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
+                    initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter,
+                            triggerHistory));
+                } else {
+                    Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT,
+                            triggerHistory.getSourceTableName(), null, triggerHistory,
+                            triggerRouter.getTrigger().getChannelId(), null, null);
+                    initialLoadEvents.add(new SelectFromTableEvent(data));
+                }
             }
         }
 

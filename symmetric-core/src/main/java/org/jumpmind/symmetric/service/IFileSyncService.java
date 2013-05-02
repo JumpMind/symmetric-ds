@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 
 public interface IFileSyncService {
-
     
     public void trackChanges(boolean force);
     
@@ -45,5 +44,7 @@ public interface IFileSyncService {
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger);
     
     public void save(List<FileSnapshot> changes);
+    
+    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(String triggerId);
 
 }
