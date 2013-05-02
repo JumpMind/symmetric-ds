@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 
 public class FileSnapshot implements Serializable {
@@ -102,6 +103,19 @@ public class FileSnapshot implements Serializable {
 
         if (this.filePath.endsWith(fileName)) {
             this.filePath = this.filePath.substring(0, this.filePath.indexOf(fileName));
+        }
+        
+        String fileSepartor = System.getProperty("file.separator");
+        if (this.filePath.startsWith(fileSepartor)) {
+            this.filePath = this.filePath.substring(1);
+        }
+        
+        if (this.filePath.endsWith(fileSepartor)) {
+            this.filePath = this.filePath.substring(0, this.filePath.length()-1);
+        }
+        
+        if (StringUtils.isBlank(filePath)) {
+            this.filePath = ".";
         }
 
         this.fileSize = file.length();
@@ -201,7 +215,7 @@ public class FileSnapshot implements Serializable {
     }
     
     public boolean sameFile(FileSnapshot file) {
-        return fileName.equals(file.getFileName()) && filePath.equals(file.getFilePath());
+        return StringUtils.equals(fileName, file.fileName) && StringUtils.equals(filePath, file.filePath);
     }
 
     @Override

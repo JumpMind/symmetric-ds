@@ -12,14 +12,14 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("selectFileTriggersSql", 
-                " select t.trigger_id as trigger_id, base_dir, recursive,                       " +
+                " select distinct t.trigger_id as trigger_id, base_dir, recursive,              " +
                 "        includes_files, excludes_files,                                        " +
         		"        sync_on_create, sync_on_modified, t.sync_on_delete as sync_on_delete,  " +
         		"        t.create_time as create_time, t.last_update_by as last_update_by,      " +
         		"        t.last_update_time as last_update_time                                 " +
         		" from $(file_trigger) t                                                        ");
         
-        putSql("whereTriggerId", "where trigger_id=?");
+        putSql("triggerIdWhere", "where trigger_id=?");
         
         putSql("fileTriggerForCurrentNodeWhere", " " +
         		" inner join $(file_trigger_router) tr on " +
@@ -58,12 +58,19 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " ) values(?,?,?,?,?,?,?,?,?,?)                                                 ");
         
         putSql("selectFileTriggerRoutersSql", 
-                " select " +
-                "  trigger_id, router_id, enabled, initial_load_enabled, target_base_dir,       " +
-                "  conflict_strategy, create_time, last_update_by, last_update_time             " +
-                " from $(file_trigger_router)                                                   ");
+                " select                                                                        " +
+                "  tr.trigger_id as trigger_id, tr.router_id as router_id, enabled,             " +
+                "  initial_load_enabled, target_base_dir,                                       " +
+                "  conflict_strategy, tr.create_time as create_time,                            " +
+                "  tr.last_update_by as last_update_by, tr.last_update_time as last_update_time " +
+                " from $(file_trigger_router) tr                                                ");
         
         putSql("whereTriggerRouterId", "where trigger_id=? and router_id=?");        
+        
+        putSql("fileTriggerRouterForCurrentNodeWhere", " " +
+                " inner join $(router) r on " +
+                "  tr.router_id=r.router_id " +
+                " where r.source_node_group_id=? and tr.trigger_id=? ");        
         
         putSql("updateFileTriggerRouterSql",                 
                 " update $(file_trigger_router) set                                             " +

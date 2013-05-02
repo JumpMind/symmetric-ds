@@ -89,13 +89,18 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public FileTrigger getFileTrigger(String triggerId) {
-        return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "whereTriggerIdSql"),
+        return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "triggerIdWhere"),
                 new FileTriggerMapper(), triggerId);
     }
-
+    
     public List<FileTrigger> getFileTriggersForCurrentNode() {
         return sqlTemplate.query(getSql("selectFileTriggersSql", "fileTriggerForCurrentNodeWhere"),
                 new FileTriggerMapper(), parameterService.getNodeGroupId());
+    }
+    
+    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(String triggerId) {
+        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql", "fileTriggerRouterForCurrentNodeWhere"),
+                new FileTriggerRouterMapper(), parameterService.getNodeGroupId(), triggerId);
     }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
