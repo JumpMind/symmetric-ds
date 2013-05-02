@@ -105,12 +105,12 @@ public class FileSnapshot implements Serializable {
             this.filePath = this.filePath.substring(0, this.filePath.indexOf(fileName));
         }
         
-        String fileSepartor = System.getProperty("file.separator");
-        if (this.filePath.startsWith(fileSepartor)) {
+        String fileSeparator = System.getProperty("file.separator");
+        if (this.filePath.startsWith(fileSeparator)) {
             this.filePath = this.filePath.substring(1);
         }
         
-        if (this.filePath.endsWith(fileSepartor)) {
+        if (this.filePath.endsWith(fileSeparator)) {
             this.filePath = this.filePath.substring(0, this.filePath.length()-1);
         }
         
