@@ -365,6 +365,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE)
                 .equals(tableName) &&
                 !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY)
+                .equals(tableName) &&
+                !TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST)
                 .equals(tableName)) {
             trigger.setUseCaptureLobs(true);
         }
