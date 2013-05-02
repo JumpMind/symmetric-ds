@@ -690,7 +690,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
             IndexColumn[] indexColumns = index.getColumns();
             for (IndexColumn indexColumn : indexColumns) {
-                indexColumn.setName(indexColumn.getName());
+                indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
             }
         }
     }
