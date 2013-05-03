@@ -61,15 +61,6 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     protected void createRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "create function dbo.$(functionName)(@data varbinary(1000)) returns varchar(2000) as                                                                                                                    " +
-                    "                                  begin                                                                                                                                                                " +
-                    "                                      declare @test varchar(50)                                                                                                                                        " +
-                    "                                      return @test                                                                                                                                                     " +
-                    "                                  end                                                                                                                                                                  ";
-            install(sql, encode);
-        }
 
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
@@ -186,7 +177,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public BinaryEncoding getBinaryEncoding() {
-        return BinaryEncoding.BASE64;
+        return BinaryEncoding.HEX;
     }
 
     @Override
@@ -248,7 +239,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public boolean isTransactionIdOverrideSupported() {
-        return true;
+        return false;
     }
 
     public void purgeRecycleBin() {
