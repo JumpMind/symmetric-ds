@@ -18,10 +18,43 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.fs.track;
+package org.jumpmind.symmetric.file;
 
-public enum FileChangeType {
+import java.util.Map;
 
-    CREATE, UPDATE, DELETE, NONE
-    
+import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.util.Statistics;
+
+public class FileSyncBatchDataWriter implements IDataWriter {
+
+    public void open(DataContext context) {
+    }
+
+    public void close() {
+    }
+
+    public Map<Batch, Statistics> getStatistics() {
+        return null;
+    }
+
+    public void start(Batch batch) {
+    }
+
+    public boolean start(Table table) {
+        return false;
+    }
+
+    public void write(CsvData data) {
+    }
+
+    public void end(Table table) {
+    }
+
+    public void end(Batch batch, boolean inError) {
+    }
+
 }
