@@ -77,14 +77,21 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
         Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
         String column = params.get(PARAM_KEY_COLUMN);
-        String keyData = dataMap.get(column);
-        Set<String> externalIds = lookupTable.get(keyData);
-        if (externalIds != null) {
-            for (Node node : nodes) {
-                if (externalIds.contains(node.getExternalId())) {
-                    nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+        if (dataMap.containsKey(column)) {
+            String keyData = dataMap.get(column);
+            Set<String> externalIds = lookupTable.get(keyData);
+            if (externalIds != null) {
+                for (Node node : nodes) {
+                    if (externalIds.contains(node.getExternalId())) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+                    }
                 }
             }
+        } else {
+            log.error(
+                    "Could not route data with an id of {} using the {} router because the column {} was not captured for the {} table",
+                    new Object[] { dataMetaData.getData().getDataId(), getClass().getSimpleName(),
+                            column, dataMetaData.getTable().getName() });
         }
 
         return nodeIds;
