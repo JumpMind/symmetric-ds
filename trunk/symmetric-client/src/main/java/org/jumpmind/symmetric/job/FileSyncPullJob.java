@@ -42,6 +42,7 @@ public class FileSyncPullJob extends AbstractJob {
 
     @Override
     void doJob(boolean force) throws Exception {
+        engine.getFileSyncService().pullFilesFromNodes(force);
     }
 
 

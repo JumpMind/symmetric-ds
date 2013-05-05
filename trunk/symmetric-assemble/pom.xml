@@ -26,7 +26,6 @@
     <modules>
         <module>../symmetric-parent</module>
         <module>../symmetric-util</module>
-        <module>../symmetric-fs</module>
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
         <module>../symmetric-jdbc</module>

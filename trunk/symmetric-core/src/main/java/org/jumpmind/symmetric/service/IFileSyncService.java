@@ -26,25 +26,30 @@ import org.jumpmind.symmetric.file.DirectorySnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
 public interface IFileSyncService {
-    
+
     public void trackChanges(boolean force);
-    
+
     public List<FileTrigger> getFileTriggers();
-    
+
     public FileTrigger getFileTrigger(String triggerId);
-    
+
     public void saveFileTrigger(FileTrigger fileTrigger);
-    
+
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
-    
-    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);   
-    
+
+    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);
+
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger);
-    
+
     public void save(List<FileSnapshot> changes);
-    
+
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(String triggerId);
+
+    public RemoteNodeStatuses pullFilesFromNodes(boolean force);
+
+    public RemoteNodeStatuses pushFilesToNodes(boolean force);
 
 }

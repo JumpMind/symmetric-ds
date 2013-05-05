@@ -61,6 +61,14 @@ final public class ParameterConstants {
     public final static String PUSH_THREAD_COUNT_PER_SERVER = "push.thread.per.server.count";
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
+    
+    public final static String FILE_PULL_THREAD_COUNT_PER_SERVER = "file.pull.thread.per.server.count";
+    public final static String FILE_PULL_MINIMUM_PERIOD_MS = "file.pull.period.minimum.ms";
+    public final static String FILE_PULL_LOCK_TIMEOUT_MS = "file.pull.lock.timeout.ms";
+    
+    public final static String FILE_PUSH_THREAD_COUNT_PER_SERVER = "file.push.thread.per.server.count";
+    public final static String FILE_PUSH_MINIMUM_PERIOD_MS = "file.push.period.minimum.ms";
+    public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";    
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 

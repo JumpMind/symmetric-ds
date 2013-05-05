@@ -29,7 +29,7 @@ public class FileSyncPushJob extends AbstractJob {
 
     protected FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.push", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE), engine, taskScheduler);    
+                ParameterConstants.FILE_SYNC_ENABLE), engine, taskScheduler);
     }
 
     public String getClusterLockName() {
@@ -42,7 +42,7 @@ public class FileSyncPushJob extends AbstractJob {
 
     @Override
     void doJob(boolean force) throws Exception {
+        engine.getFileSyncService().pushFilesToNodes(force);
     }
-
 
 }

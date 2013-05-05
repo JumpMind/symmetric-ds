@@ -29,35 +29,52 @@ import java.util.Map;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
 import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IFileSyncService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
-public class FileSyncService extends AbstractService implements IFileSyncService {
+public class FileSyncService extends AbstractService implements IFileSyncService,
+        INodeCommunicationExecutor {
 
-    IClusterService clusterService;
+    protected IClusterService clusterService;
 
-    ITriggerRouterService triggerRouterService;
+    protected ITriggerRouterService triggerRouterService;
+
+    protected INodeCommunicationService nodeCommunicationService;
+
+    protected INodeService nodeService;
 
     private Map<FileTrigger, FileTriggerTracker> trackers = new HashMap<FileTrigger, FileTriggerTracker>();
 
     // TODO cache
 
     public FileSyncService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IClusterService clusterService, ITriggerRouterService triggerRouterService) {
+            IClusterService clusterService, ITriggerRouterService triggerRouterService,
+            INodeCommunicationService nodeCommunicationService, INodeService nodeService) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.triggerRouterService = triggerRouterService;
+        this.nodeCommunicationService = nodeCommunicationService;
+        this.nodeService = nodeService;
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
 
@@ -73,7 +90,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 try {
                     save(tracker.trackChanges());
                 } catch (Exception ex) {
-                    // TODO build mechanism to rollback snapshot if we fail to save to database
+                    // TODO build mechanism to rollback snapshot if we fail to
+                    // save to database
                     log.error(
                             "Failed to track changes for file trigger: "
                                     + fileTrigger.getTriggerId(), ex);
@@ -92,14 +110,15 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         return sqlTemplate.queryForObject(getSql("selectFileTriggersSql", "triggerIdWhere"),
                 new FileTriggerMapper(), triggerId);
     }
-    
+
     public List<FileTrigger> getFileTriggersForCurrentNode() {
         return sqlTemplate.query(getSql("selectFileTriggersSql", "fileTriggerForCurrentNodeWhere"),
                 new FileTriggerMapper(), parameterService.getNodeGroupId());
     }
-    
+
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(String triggerId) {
-        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql", "fileTriggerRouterForCurrentNodeWhere"),
+        return sqlTemplate.query(
+                getSql("selectFileTriggerRoutersSql", "fileTriggerRouterForCurrentNodeWhere"),
                 new FileTriggerRouterMapper(), parameterService.getNodeGroupId(), triggerId);
     }
 
@@ -169,7 +188,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger) {
         return new DirectorySnapshot(fileTrigger, sqlTemplate.query(
-                getSql("selectFileSnapshotSql"), new FileSnapshotMapper(), fileTrigger.getTriggerId()));
+                getSql("selectFileSnapshotSql"), new FileSnapshotMapper(),
+                fileTrigger.getTriggerId()));
     }
 
     public void save(List<FileSnapshot> changes) {
@@ -227,6 +247,53 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                                     Types.VARCHAR });
         }
 
+    }
+
+    synchronized public RemoteNodeStatuses pullFilesFromNodes(boolean force) {
+        return queueJob(force,
+                parameterService.getLong(ParameterConstants.FILE_PULL_MINIMUM_PERIOD_MS, -1),
+                ClusterConstants.FILE_SYNC_PULL, CommunicationType.FILE_PULL);
+    }
+    
+    synchronized public RemoteNodeStatuses pushFilesToNodes(boolean force) {
+        return queueJob(force,
+                parameterService.getLong(ParameterConstants.FILE_PUSH_MINIMUM_PERIOD_MS, -1),
+                ClusterConstants.FILE_SYNC_PUSH, CommunicationType.FILE_PUSH);
+    }
+
+
+    protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,
+            CommunicationType type) {
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
+        Node identity = nodeService.findIdentity(false);
+        if (identity != null && identity.isSyncEnabled()) {
+            if (force || !clusterService.isInfiniteLocked(clusterLock)) {
+
+                List<NodeCommunication> nodes = nodeCommunicationService.list(type);
+                int availableThreads = nodeCommunicationService.getAvailableThreads(type);
+                for (NodeCommunication nodeCommunication : nodes) {
+                    boolean meetsMinimumTime = true;
+                    if (minimumPeriodMs > 0
+                            && nodeCommunication.getLastLockTime() != null
+                            && (System.currentTimeMillis() - nodeCommunication.getLastLockTime()
+                                    .getTime()) < minimumPeriodMs) {
+                        meetsMinimumTime = false;
+                    }
+                    if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
+                        nodeCommunicationService.execute(nodeCommunication, statuses, this);
+                        availableThreads--;
+                    }
+                }
+            } else {
+                log.debug("Did not run the {} process because it has been stopped", type.name()
+                        .toLowerCase());
+            }
+        }
+
+        return statuses;
+    }
+
+    public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
     }
 
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
