@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.EOFException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
@@ -228,6 +229,15 @@ abstract public class AbstractService implements IService {
             log.info(message);
         }
     }
+    
+    protected boolean isStreamClosedByClient(Exception ex) {
+        if (ExceptionUtils.indexOfType(ex, EOFException.class) >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     
 
 }
