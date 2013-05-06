@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.EOFException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.sql.SQLException;
@@ -32,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -431,14 +429,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    protected boolean isStreamClosedByClient(Exception ex) {
-        if (ExceptionUtils.indexOfType(ex, EOFException.class) >= 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     final protected void changeBatchStatus(Status status, OutgoingBatch currentBatch) {
         if (currentBatch.getStatus() != Status.IG) {
             currentBatch.setStatus(status);
@@ -458,7 +448,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
     }
 
-    protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
+    public OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean streamToFileEnabled) {
         if (currentBatch.getStatus() != Status.OK) {

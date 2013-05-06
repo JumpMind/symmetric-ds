@@ -26,7 +26,10 @@ import org.jumpmind.symmetric.file.DirectorySnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IFileSyncService {
 
@@ -51,5 +54,7 @@ public interface IFileSyncService {
     public RemoteNodeStatuses pullFilesFromNodes(boolean force);
 
     public RemoteNodeStatuses pushFilesToNodes(boolean force);
+    
+    public void sendFiles(ProcessInfo processInfo, Node node, IOutgoingTransport outgoingTransport);
 
 }

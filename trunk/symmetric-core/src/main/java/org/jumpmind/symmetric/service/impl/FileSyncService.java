@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,57 +30,49 @@ import java.util.Map;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
+import org.jumpmind.symmetric.file.FileSyncBatchDataWriter;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
 import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
-import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.RemoteNodeStatus;
-import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class FileSyncService extends AbstractService implements IFileSyncService,
         INodeCommunicationExecutor {
 
-    protected IClusterService clusterService;
-
-    protected ITriggerRouterService triggerRouterService;
-
-    protected INodeCommunicationService nodeCommunicationService;
-
-    protected INodeService nodeService;
-
+    private ISymmetricEngine engine;
     private Map<FileTrigger, FileTriggerTracker> trackers = new HashMap<FileTrigger, FileTriggerTracker>();
 
     // TODO cache
 
-    public FileSyncService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IClusterService clusterService, ITriggerRouterService triggerRouterService,
-            INodeCommunicationService nodeCommunicationService, INodeService nodeService) {
-        super(parameterService, symmetricDialect);
-        this.clusterService = clusterService;
-        this.triggerRouterService = triggerRouterService;
-        this.nodeCommunicationService = nodeCommunicationService;
-        this.nodeService = nodeService;
+    public FileSyncService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.engine = engine;
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
 
     public void trackChanges(boolean force) {
-        if (force || !clusterService.isInfiniteLocked(ClusterConstants.FILE_SYNC_TRACKER)) {
+        if (force
+                || !engine.getClusterService().isInfiniteLocked(ClusterConstants.FILE_SYNC_TRACKER)) {
             List<FileTrigger> fileTriggers = getFileTriggersForCurrentNode();
             for (FileTrigger fileTrigger : fileTriggers) {
                 FileTriggerTracker tracker = trackers.get(fileTrigger);
@@ -254,21 +247,86 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 parameterService.getLong(ParameterConstants.FILE_PULL_MINIMUM_PERIOD_MS, -1),
                 ClusterConstants.FILE_SYNC_PULL, CommunicationType.FILE_PULL);
     }
-    
+
     synchronized public RemoteNodeStatuses pushFilesToNodes(boolean force) {
         return queueJob(force,
                 parameterService.getLong(ParameterConstants.FILE_PUSH_MINIMUM_PERIOD_MS, -1),
                 ClusterConstants.FILE_SYNC_PUSH, CommunicationType.FILE_PUSH);
     }
 
+    public void sendFiles(ProcessInfo processInfo, Node targetNode,
+            IOutgoingTransport outgoingTransport) {
+        OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(
+                targetNode.getNodeId(), false);
+        List<OutgoingBatch> activeBatches = batches
+                .filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        OutgoingBatch currentBatch = null;
+        try {
+
+            long maxBytesToSync = parameterService
+                    .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+            
+            // combines file meta data from multiple batches to be sent in a single zip
+            FileSyncBatchDataWriter dataWriter = new FileSyncBatchDataWriter(maxBytesToSync, this);
+            for (int i = 0; i < activeBatches.size(); i++) {                
+                currentBatch = activeBatches.get(i);
+                processInfo.incrementBatchCount();
+                processInfo.setCurrentBatchId(currentBatch.getBatchId());
+
+                engine.getDataExtractorService().extractOutgoingBatch(processInfo, targetNode,
+                        dataWriter, currentBatch, false);
+                
+                // check to see if max bytes to sync has been reached and stop processing batches
+                if (dataWriter.readyToSend()) {
+                    break;
+                }
+            }
+            
+            // build and stream zip file
+            String manifestEntry = dataWriter.toManifest();
+            
+        } catch (RuntimeException e) {
+            SQLException se = unwrapSqlException(e);
+            if (currentBatch != null) {
+                engine.getStatisticManager().incrementDataExtractedErrors(
+                        currentBatch.getChannelId(), 1);
+                if (se != null) {
+                    currentBatch.setSqlState(se.getSQLState());
+                    currentBatch.setSqlCode(se.getErrorCode());
+                    currentBatch.setSqlMessage(se.getMessage());
+                } else {
+                    currentBatch.setSqlMessage(getRootMessage(e));
+                }
+                currentBatch.revertStatsOnError();
+                if (currentBatch.getStatus() != Status.IG) {
+                    currentBatch.setStatus(Status.ER);
+                }
+                currentBatch.setErrorFlag(true);
+                engine.getOutgoingBatchService().updateOutgoingBatch(currentBatch);
+
+                if (isStreamClosedByClient(e)) {
+                    log.warn(
+                            "Failed to extract batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed.  The error was: {}",
+                            currentBatch, getRootMessage(e));
+                } else {
+                    log.error("Failed to extract batch {}", currentBatch, e);
+                }
+            } else {
+                log.error("Could not log the outgoing batch status because the batch was null", e);
+            }
+        }
+
+    }
 
     protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,
             CommunicationType type) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
-        Node identity = nodeService.findIdentity(false);
+        Node identity = engine.getNodeService().findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {
-            if (force || !clusterService.isInfiniteLocked(clusterLock)) {
+            if (force || !engine.getClusterService().isInfiniteLocked(clusterLock)) {
 
+                INodeCommunicationService nodeCommunicationService = engine
+                        .getNodeCommunicationService();
                 List<NodeCommunication> nodes = nodeCommunicationService.list(type);
                 int availableThreads = nodeCommunicationService.getAvailableThreads(type);
                 for (NodeCommunication nodeCommunication : nodes) {
@@ -328,8 +386,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir"));
-            fileTriggerRouter.setRouter(triggerRouterService.getRouterById(rs
-                    .getString("router_id")));
+            fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
+                    rs.getString("router_id")));
             return fileTriggerRouter;
         }
     }

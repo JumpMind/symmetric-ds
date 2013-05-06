@@ -27,10 +27,19 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.util.Statistics;
 
 public class FileSyncBatchDataWriter implements IDataWriter {
 
+    protected long maxBytesToSync;
+    protected IFileSyncService fileSyncService;
+    
+    public FileSyncBatchDataWriter(long maxBytesToSync, IFileSyncService fileSyncService) {
+        this.maxBytesToSync = maxBytesToSync;
+        this.fileSyncService = fileSyncService;
+    }
+    
     public void open(DataContext context) {
     }
 
@@ -55,6 +64,14 @@ public class FileSyncBatchDataWriter implements IDataWriter {
     }
 
     public void end(Batch batch, boolean inError) {
+    }
+    
+    public boolean readyToSend() {
+        return true;
+    }
+    
+    public String toManifest() {
+        return null;
     }
 
 }
