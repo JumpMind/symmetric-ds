@@ -44,6 +44,8 @@ public class FileTrigger implements Serializable {
     private boolean syncOnCreate = true;
     private boolean syncOnModified = true;
     private boolean syncOnDelete = true;
+    private String beforeCopyScript;
+    private String afterCopyScript;
     private Date createTime = new Date();
     private String lastUpdateBy;
     private Date lastUpdateTime;
@@ -165,6 +167,22 @@ public class FileTrigger implements Serializable {
             filter = new AndFileFilter(fileFilters);            
         }
         return filter;
+    }
+    
+    public void setAfterCopyScript(String afterCopyScript) {
+        this.afterCopyScript = afterCopyScript;
+    }
+    
+    public String getAfterCopyScript() {
+        return afterCopyScript;
+    }
+    
+    public void setBeforeCopyScript(String beforeCopyScript) {
+        this.beforeCopyScript = beforeCopyScript;
+    }
+    
+    public String getBeforeCopyScript() {
+        return beforeCopyScript;
     }
     
     @Override

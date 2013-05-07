@@ -15,6 +15,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " select distinct t.trigger_id as trigger_id, base_dir, recursive,              " +
                 "        includes_files, excludes_files,                                        " +
         		"        sync_on_create, sync_on_modified, t.sync_on_delete as sync_on_delete,  " +
+                "        t.before_copy_script as before_copy_script, " +
+                "        t.after_copy_script as after_copy_script, " +
         		"        t.create_time as create_time, t.last_update_by as last_update_by,      " +
         		"        t.last_update_time as last_update_time                                 " +
         		" from $(file_trigger) t                                                        ");
@@ -25,13 +27,15 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("updateFileTriggerSql",                 
                 " update $(file_trigger) set base_dir=?, recursive=?, includes_files=?,         " +
         		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,    " +
+                "  before_copy_script=?, after_copy_script=?,                                   " +
         		"  last_update_by=?, last_update_time=? where trigger_id=?                      ");
 
         putSql("insertFileTriggerSql",                 
                 " insert into $(file_trigger) (base_dir, recursive, includes_files,             " +
                 "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,            " +
+                "  before_copy_script, after_copy_script,                                       " +
                 "  last_update_by, last_update_time, trigger_id, create_time)                   " +
-                " values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");                
+                " values(?,?,?,?,?,?,?,?,?,?,?,?,?)                                             ");                
         
         putSql("selectFileSnapshotSql", 
                 " select trigger_id, router_id, file_path, file_name, last_event_type, crc32_checksum, " +

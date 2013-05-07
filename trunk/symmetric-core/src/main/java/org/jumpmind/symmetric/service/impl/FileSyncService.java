@@ -34,8 +34,10 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
-import org.jumpmind.symmetric.file.FileSyncBatchDataWriter;
+import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
@@ -111,11 +113,10 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 new FileTriggerRouterMapper(), parameterService.getNodeGroupId());
     }
 
-    public FileTriggerRouter getFileTriggerRouterForCurrentNode(String triggerId, String routerId) {
+    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId) {
         return sqlTemplate.queryForObject(
                 getSql("selectFileTriggerRoutersSql", "whereTriggerRouterId"),
-                new FileTriggerRouterMapper(), triggerId,
-                routerId);
+                new FileTriggerRouterMapper(), triggerId, routerId);
     }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
@@ -126,23 +127,26 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                         fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                         fileTrigger.isSyncOnCreate() ? 1 : 0,
                         fileTrigger.isSyncOnModified() ? 1 : 0,
-                        fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.getLastUpdateBy(),
+                        fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.getBeforeCopyScript(),
+                        fileTrigger.getAfterCopyScript(), fileTrigger.getLastUpdateBy(),
                         fileTrigger.getLastUpdateTime(), fileTrigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
             fileTrigger.setCreateTime(fileTrigger.getLastUpdateTime());
             sqlTemplate.update(getSql("insertFileTriggerSql"),
                     new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecursive() ? 1 : 0,
                             fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                             fileTrigger.isSyncOnCreate() ? 1 : 0,
                             fileTrigger.isSyncOnModified() ? 1 : 0,
-                            fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.getLastUpdateBy(),
-                            fileTrigger.getLastUpdateTime(), fileTrigger.getTriggerId(),
-                            fileTrigger.getCreateTime() }, new int[] { Types.VARCHAR,
-                            Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.TIMESTAMP });
+                            fileTrigger.isSyncOnDelete() ? 1 : 0,
+                            fileTrigger.getBeforeCopyScript(), fileTrigger.getAfterCopyScript(),
+                            fileTrigger.getLastUpdateBy(), fileTrigger.getLastUpdateTime(),
+                            fileTrigger.getTriggerId(), fileTrigger.getCreateTime() }, new int[] {
+                            Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.TIMESTAMP });
         }
 
     }
@@ -267,9 +271,12 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             long maxBytesToSync = parameterService
                     .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
 
-            // combines file meta data from multiple batches to be sent in a
-            // single zip
-            FileSyncBatchDataWriter dataWriter = new FileSyncBatchDataWriter(maxBytesToSync, this);
+            IStagingManager stagingManager = engine.getStagingManager();
+            IStagedResource stagedResource = stagingManager.create(
+                    Constants.STAGING_CATEGORY_OUTGOING, targetNode.getNodeId(), "filesync.zip");
+
+            FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
+                    stagedResource);
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
                 processInfo.incrementBatchCount();
@@ -284,9 +291,6 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                     break;
                 }
             }
-
-            // build and stream zip file
-            String manifestEntry = dataWriter.toManifest();
 
         } catch (RuntimeException e) {
             SQLException se = unwrapSqlException(e);
@@ -369,6 +373,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTrigger.setRecursive(rs.getBoolean("recursive"));
             fileTrigger.setSyncOnCreate(rs.getBoolean("sync_on_create"));
             fileTrigger.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
+            fileTrigger.setAfterCopyScript(rs.getString("after_copy_script"));
+            fileTrigger.setBeforeCopyScript(rs.getString("before_copy_script"));
             fileTrigger.setSyncOnModified(rs.getBoolean("sync_on_modified"));
             fileTrigger.setTriggerId(rs.getString("trigger_id"));
             return fileTrigger;

@@ -655,6 +655,8 @@
         <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are created." />
         <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are modified." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and remove files when they are deleted." />
+        <column name="before_copy_script" type="LONGVARCHAR" description="A bsh script that is run right before the file copy." />
+        <column name="after_copy_script" type="LONGVARCHAR" description="A bsh script that is run right after the file copy." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp of when a user last updated this entry." />
@@ -665,7 +667,8 @@
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger router is enabled or not."/>
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger should be initial loaded."/>
-        <column name="target_base_dir" type="VARCHAR" size="255" description="The base directory on the destination that will be synchronized." />
+        <column name="target_base_dir" type="VARCHAR" size="255" description="The base directory on the destination that files will be synchronized to." />
+        <column name="target_file_path" type="VARCHAR" size="255" description="The relative directory on the destination that will be synchronized to." />        
         <column name="conflict_strategy" type="VARCHAR" size="128" default="source_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: source_wins, target_wins, report_error" />                
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
