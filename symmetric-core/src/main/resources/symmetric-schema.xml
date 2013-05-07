@@ -646,27 +646,33 @@
         </foreign-key>
     </table>
     
+    <!-- 
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="frequency" type="VARCHAR" size="50" required="true" description="This is a cron expression or the period in between synchronizations in milliseconds." />
         <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
         <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />        
-        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to include in synchronization." />
-        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to exclude from synchronization." />       
-        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are created." />
-        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are modified." />
-        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and remove files when they are deleted." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />
+        <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to include in synchronization." />
+        <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard enabled comma separtated list of file to exclude from synchronization." />       
+        <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are created." />
+        <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are modified." />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when the are deleted." />
+        <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether or not an incoming batch that loads data into this table should cause the triggers to capture data_events. Be careful turning this on, because an update loop is possible." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp of when a user last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <foreign-key foreignTable="channel" name="fk_ftrg_2_chnl">
+            <reference local="channel_id" foreign="channel_id" />
+        </foreign-key>
     </table>
     
     <table name="file_trigger_router" description="Map a file trigger to a router.">
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a file trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger router is enabled or not."/>
-        <column name="initial_load_enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger should be initial loaded."/>
         <column name="target_base_dir" type="VARCHAR" size="255" description="The base directory on the destination that will be synchronized." />
-        <column name="conflict_strategy" type="VARCHAR" size="128" default="source_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: source_wins, target_wins, report_error" />                
+        <column name="conflict_strategy" type="VARCHAR" size="128" default="client_wins" required="true" description="The strategy to employ when a file has been modified at both the client and the server.  Possible values are: client_wins, server_wins, report_error" />                
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -678,17 +684,16 @@
         </foreign-key>
     </table>
     
-    <table name="file_snapshot" description="">
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the trigger that caused this snapshot to be taken" />
-        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the router that caused this snapshot to be taken" />        
-        <column name="file_path" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir" />
-        <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="" />
-        <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />        
-        <column name="crc32_checksum" type="BIGINT" description="" />
+    <table name="file_event" description="">
+        <column name="file_event_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a file event" />        
+        <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
+        <column name="file_name" type="VARCHAR" size="255" required="true" description="" />
+        <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry." />        
         <column name="file_size" type="BIGINT" description="" />
         <column name="file_modified_time" type="TIMESTAMP" description="" />        
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="target_base_dir" type="VARCHAR" size="255" required="true" description="" />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
     </table>
+         -->
 
 </database>

@@ -70,10 +70,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
-            case FILE_PULL:
                 nodesToCommunicateWith = nodeService.findNodesToPull();
                 break;
-            case FILE_PUSH:
             case PUSH:
                 nodesToCommunicateWith = nodeService.findNodesToPushTo();
                 break;
@@ -158,14 +156,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
                 break;
-            case FILE_PULL:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            case FILE_PUSH:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            default:
-                break;
         }
         int threadCount = parameterService.getInt(threadCountParameter, 1);
         
@@ -227,14 +217,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case PUSH:
                 parameter = ParameterConstants.PUSH_LOCK_TIMEOUT_MS;
-                break;
-            case FILE_PULL:
-                parameter = ParameterConstants.FILE_PULL_LOCK_TIMEOUT_MS;
-                break;
-            case FILE_PUSH:
-                parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
-                break;
-            default:
                 break;
         }
         return DateUtils.add(new Date(), Calendar.MILLISECOND,

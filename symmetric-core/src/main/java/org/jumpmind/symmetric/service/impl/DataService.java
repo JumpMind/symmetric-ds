@@ -166,16 +166,7 @@ public class DataService extends AbstractService implements IDataService {
                                 if (updateTableReloadRequest) {
                                     saveTableReloadRequest(request);
                                 }
-                            } catch (Error ex) {
-                                if (transaction != null) {
-                                    transaction.rollback();
-                                }
-                                throw ex;
-                            } catch (RuntimeException ex) {
-                                if (transaction != null) {
-                                    transaction.rollback();
-                                }
-                                throw ex;  
+
                             } finally {
                                 close(transaction);
                             }
@@ -262,16 +253,6 @@ public class DataService extends AbstractService implements IDataService {
             insertReloadEvent(transaction, targetNode, triggerRouter, null,
                     overrideInitialLoadSelect, -1, null);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -438,14 +419,10 @@ public class DataService extends AbstractService implements IDataService {
 
             transaction.commit();
         } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            transaction.rollback();
             throw ex;
         } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            transaction.rollback();
             throw ex;            
         } finally {
             close(transaction);
@@ -484,16 +461,6 @@ public class DataService extends AbstractService implements IDataService {
             transaction = sqlTemplate.startSqlTransaction();
             insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, isLoad, null, loadId, createBy);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -579,16 +546,6 @@ public class DataService extends AbstractService implements IDataService {
             transaction = sqlTemplate.startSqlTransaction();
             insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, isLoad, loadId, createBy);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -624,16 +581,6 @@ public class DataService extends AbstractService implements IDataService {
             dataId = insertData(transaction, data);
             transaction.commit();
             return dataId;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -711,16 +658,6 @@ public class DataService extends AbstractService implements IDataService {
                         data.getDataEventType(), routerId, isLoad, loadId, createBy);
             }
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -733,16 +670,6 @@ public class DataService extends AbstractService implements IDataService {
             transaction = sqlTemplate.startSqlTransaction();
             insertDataAndDataEventAndOutgoingBatch(transaction, data, nodeId, routerId, isLoad, loadId, createBy);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -1021,16 +948,6 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -1049,16 +966,6 @@ public class DataService extends AbstractService implements IDataService {
             Data data = createData(transaction, catalogName, schemaName, tableName, whereClause);
             transaction.commit();
             return data;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }

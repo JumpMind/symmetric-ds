@@ -666,31 +666,34 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
     
-    public String alterCaseToMatchDatabaseDefaultCase(String value) {
-        if (StringUtils.isNotBlank(value)) {
-            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-            if (!FormatUtils.isMixedCase(value)) {
-                value = storesUpperCase ? value.toUpperCase() : value.toLowerCase();
-            }
-        }
-        return value;
-    }
-    
     public void alterCaseToMatchDatabaseDefaultCase(Table table) {
-        table.setName(alterCaseToMatchDatabaseDefaultCase(table.getName()));
+        boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+        if (!FormatUtils.isMixedCase(table.getName())) {
+            table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                    .toLowerCase());
+        }
 
         Column[] columns = table.getColumns();
         for (Column column : columns) {
-            column.setName(alterCaseToMatchDatabaseDefaultCase(column.getName()));
+            if (!FormatUtils.isMixedCase(column.getName())) {
+                column.setName(storesUpperCase ? column.getName().toUpperCase() : column.getName()
+                        .toLowerCase());
+            }
         }
 
         IIndex[] indexes = table.getIndices();
         for (IIndex index : indexes) {
-            index.setName(alterCaseToMatchDatabaseDefaultCase(index.getName()));
+            if (!FormatUtils.isMixedCase(index.getName())) {
+                index.setName(storesUpperCase ? index.getName().toUpperCase() : index.getName()
+                        .toLowerCase());
+            }
 
             IndexColumn[] indexColumns = index.getColumns();
             for (IndexColumn indexColumn : indexColumns) {
-                indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
+                if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                    indexColumn.setName(storesUpperCase ? indexColumn.getName().toUpperCase()
+                            : indexColumn.getName().toLowerCase());
+                }
             }
         }
     }

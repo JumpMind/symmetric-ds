@@ -1,22 +1,22 @@
 /*
- * Licensed to JumpMind Inc under one or more contributor
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
  * to you under the GNU Lesser General Public License (the
  * "License"); you may not use this file except in compliance
- * with the License.
- *
+ * with the License. 
+ * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 
 
@@ -58,49 +58,58 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         super(parameterService, platform);
         this.triggerTemplate = new SybaseTriggerTemplate(this);
     }
-
+    
     @Override
     protected void createRequiredDatabaseObjects() {
-
+        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
+        if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
+            String sql = "create function dbo.$(functionName)(@data varbinary(1000)) returns varchar(2000) as                                                                                                                    " + 
+                    "                                  begin                                                                                                                                                                " + 
+                    "                                      declare @test varchar(50)                                                                                                                                        " + 
+                    "                                      return @test                                                                                                                                                     " + 
+                    "                                  end                                                                                                                                                                  ";
+            install(sql, encode);
+        }
+        
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns smallint as                                                                                                                              " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @clientapplname varchar(50)                                                                                                                                " +
-                    "                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid                                                                           " +
-                    "                                    if @clientapplname = 'SymmetricDS'                                                                                                                                 " +
-                    "                                        return 1                                                                                                                                                       " +
-                    "                                    return 0                                                                                                                                                           " +
+            String sql = "create function dbo.$(functionName)(@unused smallint) returns smallint as                                                                                                                              " + 
+                    "                                begin                                                                                                                                                                  " + 
+                    "                                    declare @clientapplname varchar(50)                                                                                                                                " + 
+                    "                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid                                                                           " + 
+                    "                                    if @clientapplname = 'SymmetricDS'                                                                                                                                 " + 
+                    "                                        return 1                                                                                                                                                       " + 
+                    "                                    return 0                                                                                                                                                           " + 
                     "                                end                                                                                                                                                                    ";
             install(sql, triggersDisabled);
         }
-
+        
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @clientname varchar(50)                                                                                                                                    " +
-                    "                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'                                                " +
-                    "                                    return @clientname                                                                                                                                                 " +
+            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
+                    "                                begin                                                                                                                                                                  " + 
+                    "                                    declare @clientname varchar(50)                                                                                                                                    " + 
+                    "                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'                                                " + 
+                    "                                    return @clientname                                                                                                                                                 " + 
                     "                                end                                                                                                                                                                    ";
             install(sql, nodeDisabled);
         }
-
+        
         String txId = this.parameterService.getTablePrefix() + "_" + "txid";
         if (!installed(SQL_FUNCTION_INSTALLED, txId)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @txid varchar(50)                                                                                                                                          " +
-                    "                                    if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
-                    "                                        select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
-                    "                                    end                                                                                                                                                                " +
-                    "                                    return @txid                                                                                                                                                       " +
+            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " + 
+                    "                                begin                                                                                                                                                                  " + 
+                    "                                    declare @txid varchar(50)                                                                                                                                          " + 
+                    "                                    if (@@TRANCOUNT > 0) begin                                                                                                                                         " + 
+                    "                                        select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " + 
+                    "                                    end                                                                                                                                                                " + 
+                    "                                    return @txid                                                                                                                                                       " + 
                     "                                end                                                                                                                                                                    ";
             install(sql, txId);
         }
 
     }
-
+    
     @Override
     protected void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
@@ -169,7 +178,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
                 return previousCatalog;
             } catch (SQLException e) {
                 throw new SqlException(e);
-            }
+            }            
         } else {
             return null;
         }
@@ -177,7 +186,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public BinaryEncoding getBinaryEncoding() {
-        return BinaryEncoding.HEX;
+        return BinaryEncoding.BASE64;
     }
 
     @Override
@@ -214,13 +223,13 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         if (nodeId == null) {
             nodeId = "";
         }
-        transaction.prepareAndExecute("set clientapplname 'SymmetricDS'");
-        transaction.prepareAndExecute("set clientname '" + nodeId + "'");
+        transaction.prepareAndExecute("exec set clientapplname 'SymmetricDS'");
+        transaction.prepareAndExecute("exec set clientname '" + nodeId + "'");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("set clientapplname null");
-        transaction.prepareAndExecute("set clientname null");
+        transaction.prepareAndExecute("exec set clientapplname null");
+        transaction.prepareAndExecute("exec set clientname null");
     }
 
     public String getSyncTriggersExpression() {
@@ -239,7 +248,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public boolean isTransactionIdOverrideSupported() {
-        return false;
+        return true;
     }
 
     public void purgeRecycleBin() {

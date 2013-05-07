@@ -51,22 +51,12 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long nextVal(String name) {
-        ISqlTransaction transaction = null;
+        ISqlTransaction sqlTransaction = null;
         try {
-            transaction = sqlTemplate.startSqlTransaction();
-            return nextVal(transaction, name);
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return nextVal(sqlTransaction, name);
         } finally {
-            close(transaction);
+            close(sqlTransaction);
         }
     }
 
@@ -137,22 +127,12 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long currVal(String name) {
-        ISqlTransaction transaction = null;
+        ISqlTransaction sqlTransaction = null;
         try {
-            transaction = sqlTemplate.startSqlTransaction();
-            return currVal(transaction, name);
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return currVal(sqlTransaction, name);
         } finally {
-            close(transaction);
+            close(sqlTransaction);
         }
     }
 

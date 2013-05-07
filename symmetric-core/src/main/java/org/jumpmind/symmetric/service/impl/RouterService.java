@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
-import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
@@ -109,7 +108,6 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("audit", new AuditTableDataRouter(engine));
         this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
-        this.routers.put(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -296,7 +294,6 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !Constants.CHANNEL_FILESYNC.equals(channelId)
                 && !Constants.CHANNEL_RELOAD.equals(channelId) 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
