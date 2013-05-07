@@ -274,11 +274,26 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return list;
     }
 
-    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId) {
-        return sqlTemplate.queryForObject(getSql("latestTriggerHistSql"),
-                new TriggerHistoryMapper(), triggerId);
-    }    
-
+    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
+            String schemaName, String tableName) {
+        List<TriggerHistory> triggerHistories = sqlTemplate.query(getSql("latestTriggerHistSql"),
+                new TriggerHistoryMapper(), triggerId, tableName);
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            if ((StringUtils.isBlank(catalogName) && StringUtils.isBlank(triggerHistory
+                    .getSourceCatalogName()))
+                    || (StringUtils.isNotBlank(catalogName) && catalogName.equals(triggerHistory
+                            .getSourceCatalogName()))) {
+                if ((StringUtils.isBlank(schemaName) && StringUtils.isBlank(triggerHistory
+                        .getSourceSchemaName()))
+                        || (StringUtils.isNotBlank(schemaName) && schemaName.equals(triggerHistory
+                                .getSourceSchemaName()))) {
+                    return triggerHistory;
+                }
+            }
+        }
+        return null;
+    } 
+    
     /**
      * Get a list of trigger histories that are currently active
      */
@@ -981,6 +996,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     .equals(table.getName(), history.getSourceTableName());
                         }
                         removeTrigger = !foundMatch;
+                    } else if (!StringUtils.equals(trigger.getSourceTableName(),
+                                history.getSourceTableName())) {
+                    	  removeTrigger = true;
                     }
                 }
             }
@@ -1132,6 +1150,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if (tables != null && tables.size() > 0) {
             for (Table table : tables) {
+            	if (table.getName().equalsIgnoreCase("A")) {
+            		System.out.println("Here");
+            	}
                 updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
             }
         } else {
@@ -1203,8 +1224,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 table.makeAllColumnsPrimaryKeys();
             }
 
+
             TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                        trigger.getTriggerId());
+                        trigger.getTriggerId(),
+                        trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(),
+                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
+                                .getSourceTableName());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
@@ -1348,7 +1374,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
             insert(newTriggerHist);
             hist = getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId());
+                    trigger.getTriggerId(),
+                    trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(),
+                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
+                            .getSourceTableName());
         }
 
         try {
