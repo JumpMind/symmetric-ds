@@ -72,14 +72,15 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                int count = platform.getSqlTemplate().update(dropSql);
-                if (count > 0) {
-                    log.info("Just dropped trigger {}", triggerName);
-                }
-                count = platform.getSqlTemplate().update(dropTable);
-                if (count > 0) {
-                    log.info("Just dropped table {}_CONFIG", triggerName);
-                }
+				log.debug(
+						"Dropping trigger {} for {}",
+						triggerName,
+						oldHistory != null ? oldHistory
+								.getFullyQualifiedSourceTableName() : Table
+								.getFullyQualifiedTableName(catalogName,
+										schemaName, tableName));
+				platform.getSqlTemplate().update(dropSql);
+                platform.getSqlTemplate().update(dropTable);
             } catch (Exception e) {
                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
