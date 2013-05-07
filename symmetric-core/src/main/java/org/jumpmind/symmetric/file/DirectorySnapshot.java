@@ -27,21 +27,21 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
-import org.jumpmind.symmetric.model.FileTrigger;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
 
 public class DirectorySnapshot extends ArrayList<FileSnapshot> {
 
     private static final long serialVersionUID = 1L;
 
-    private FileTrigger fileTrigger;
+    private FileTriggerRouter fileTriggerRouter;
 
-    public DirectorySnapshot(FileTrigger fileTrigger, List<FileSnapshot> snapshot) {
-        this(fileTrigger);
+    public DirectorySnapshot(FileTriggerRouter fileTriggerRouter, List<FileSnapshot> snapshot) {
+        this(fileTriggerRouter);
         addAll(snapshot);
     }
 
-    public DirectorySnapshot(FileTrigger fileTrigger) {
-        this.fileTrigger = fileTrigger;
+    public DirectorySnapshot(FileTriggerRouter fileTriggerRouter) {
+        this.fileTriggerRouter = fileTriggerRouter;
     }
 
     protected void merge(DirectorySnapshot snapshot) {
@@ -69,7 +69,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
     }
 
     protected DirectorySnapshot diff(DirectorySnapshot anotherSnapshot) {
-        DirectorySnapshot differences = new DirectorySnapshot(anotherSnapshot.getFileTrigger());
+        DirectorySnapshot differences = new DirectorySnapshot(anotherSnapshot.getFileTriggerRouter());
         for (FileSnapshot anotherFile : anotherSnapshot) {
             boolean found = false;
             for (FileSnapshot file : this) {
@@ -105,9 +105,9 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
         }
         return differences;
     }
-
-    public FileTrigger getFileTrigger() {
-        return fileTrigger;
+    
+    public FileTriggerRouter getFileTriggerRouter() {
+        return fileTriggerRouter;
     }
 
 }

@@ -37,6 +37,14 @@ public class FileTriggerRouter implements Serializable {
     private String lastUpdateBy;
     private Date lastUpdateTime;
 
+    public FileTriggerRouter(FileTrigger fileTrigger, Router router) {
+        this.fileTrigger = fileTrigger;
+        this.router = router;
+    }
+    
+    public FileTriggerRouter() {
+    }
+    
     public void setFileTrigger(FileTrigger fileTrigger) {
         this.fileTrigger = fileTrigger;
     }

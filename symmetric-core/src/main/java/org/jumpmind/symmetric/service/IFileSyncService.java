@@ -45,11 +45,13 @@ public interface IFileSyncService {
 
     public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);
 
-    public DirectorySnapshot getDirectorySnapshot(FileTrigger fileTrigger);
+    public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter);
 
     public void save(List<FileSnapshot> changes);
 
-    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(String triggerId);
+    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode();
+
+    public FileTriggerRouter getFileTriggerRouterForCurrentNode(String triggerId, String routerId);   
 
     public RemoteNodeStatuses pullFilesFromNodes(boolean force);
 
