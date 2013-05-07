@@ -65,6 +65,7 @@ public class FileSnapshot implements Serializable {
     };
 
     private String triggerId;
+    private String routerId;
     private String filePath;
     private String fileName;
     private LastEventType lastEventType;
@@ -80,6 +81,7 @@ public class FileSnapshot implements Serializable {
     
     public FileSnapshot(FileSnapshot copy) {
         this.triggerId = copy.triggerId;
+        this.routerId = copy.routerId;
         this.filePath = copy.filePath;
         this.fileName = copy.fileName;
         this.lastEventType = copy.lastEventType;
@@ -91,14 +93,15 @@ public class FileSnapshot implements Serializable {
         this.lastUpdateTime = copy.lastUpdateTime;
     }
 
-    public FileSnapshot(FileTrigger fileTrigger, File file, LastEventType lastEventType) {
-        this.triggerId = fileTrigger.getTriggerId();
+    public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType) {
+        this.triggerId = fileTriggerRouter.getFileTrigger().getTriggerId();
+        this.routerId = fileTriggerRouter.getRouter().getRouterId();
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
         this.fileName = file.getName();
         this.filePath = file.getAbsolutePath();
-        if (this.filePath.startsWith(fileTrigger.getBaseDir())) {
-            this.filePath = this.filePath.substring(fileTrigger.getBaseDir().length());
+        if (this.filePath.startsWith(fileTriggerRouter.getFileTrigger().getBaseDir())) {
+            this.filePath = this.filePath.substring(fileTriggerRouter.getFileTrigger().getBaseDir().length());
         }
 
         if (this.filePath.endsWith(fileName)) {
@@ -140,6 +143,14 @@ public class FileSnapshot implements Serializable {
 
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
+    }
+    
+    public String getRouterId() {
+        return routerId;
+    }
+    
+    public void setRouterId(String routerId) {
+        this.routerId = routerId;
     }
 
     public String getFilePath() {
@@ -229,6 +240,7 @@ public class FileSnapshot implements Serializable {
         result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
         result = prime * result + ((lastEventType == null) ? 0 : lastEventType.hashCode());
         result = prime * result + ((triggerId == null) ? 0 : triggerId.hashCode());
+        result = prime * result + ((routerId == null) ? 0 : routerId.hashCode());
         return result;
     }
 
@@ -266,6 +278,11 @@ public class FileSnapshot implements Serializable {
             if (other.triggerId != null)
                 return false;
         } else if (!triggerId.equals(other.triggerId))
+            return false;        
+        if (routerId == null) {
+            if (other.routerId != null)
+                return false;
+        } else if (!routerId.equals(other.routerId))
             return false;
         return true;
     }

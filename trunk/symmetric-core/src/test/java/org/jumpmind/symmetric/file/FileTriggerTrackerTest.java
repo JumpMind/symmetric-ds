@@ -5,10 +5,11 @@ import java.io.File;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
-
 import org.jumpmind.symmetric.model.FileSnapshot;
-import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
+import org.jumpmind.symmetric.model.FileTrigger;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.Router;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,8 +30,10 @@ public class FileTriggerTrackerTest {
     @Test
     public void testTakeFullSnapshotRecursive() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
-        DirectorySnapshot snapshot = new DirectorySnapshot(fileTrigger);
+        Router router = new Router();
+        FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(4, snapshot.size());        
     }
@@ -38,8 +41,10 @@ public class FileTriggerTrackerTest {
     @Test
     public void testTakeFullSnapshotNonRecursive() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null, null);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
-        DirectorySnapshot snapshot = new DirectorySnapshot(fileTrigger);
+        Router router = new Router();
+        FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(2, snapshot.size());        
     }
@@ -47,8 +52,10 @@ public class FileTriggerTrackerTest {
     @Test
     public void testTakeFullSnapshotIncludes() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, "*.txt", null);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
-        DirectorySnapshot snapshot = new DirectorySnapshot(fileTrigger);        
+        Router router = new Router();
+        FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);       
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.size());
         Assert.assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
@@ -57,8 +64,10 @@ public class FileTriggerTrackerTest {
     @Test
     public void testTakeFullSnapshotExcludes() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null,  "*.txt");
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
-        DirectorySnapshot snapshot = new DirectorySnapshot(fileTrigger); 
+        Router router = new Router();
+        FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         
         tracker.takeFullSnapshot(snapshot);
         Assert.assertEquals(1, snapshot.size());
@@ -68,7 +77,9 @@ public class FileTriggerTrackerTest {
     @Test
     public void testTakeSnapshotRecursiveTestDelete() throws Exception {        
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTrigger, null);
+        Router router = new Router();
+        FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
         tracker.trackChanges();
         FileUtils.deleteQuietly(fileInDirectory1);
         DirectorySnapshot snapshot = tracker.trackChanges();

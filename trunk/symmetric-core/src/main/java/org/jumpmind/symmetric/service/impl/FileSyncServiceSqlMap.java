@@ -20,13 +20,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         		" from $(file_trigger) t                                                        ");
         
         putSql("triggerIdWhere", "where trigger_id=?");
-        
-        putSql("fileTriggerForCurrentNodeWhere", " " +
-        		" inner join $(file_trigger_router) tr on " +
-        		"  t.trigger_id=tr.trigger_id " +
-        		" inner join $(router) r on " +
-        		"  tr.router_id=r.router_id " +
-        		" where r.source_node_group_id=? ");
+       
         
         putSql("updateFileTriggerSql",                 
                 " update $(file_trigger) set base_dir=?, recursive=?, includes_files=?,         " +
@@ -40,22 +34,24 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");                
         
         putSql("selectFileSnapshotSql", 
-                " select trigger_id, file_path, file_name, last_event_type, crc32_checksum,     " +
-                "  file_size, file_modified_time, create_time, last_update_time, last_update_by " +
-                " from $(file_snapshot) where trigger_id=?                                      ");
+                " select trigger_id, router_id, file_path, file_name, last_event_type, crc32_checksum, " +
+                "  file_size, file_modified_time, create_time, last_update_time, last_update_by        " +
+                " from $(file_snapshot) where trigger_id=? and router_id=?                             ");
         
         putSql("updateFileSnapshotSql",                 
                 " update $(file_snapshot) set   " +
                         "  last_event_type=?, crc32_checksum=?,                                 " + 
                         "  file_size=?, file_modified_time=?, last_update_time=?,               " +
-                        "  last_update_by=? where trigger_id=? and file_path=? and file_name=?  ");
+                        "  last_update_by=?                                                     " +
+                        " where                                                                 " +
+                        "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");
 
         putSql("insertFileSnapshotSql",                 
                 " insert into $(file_snapshot) (                                                " +
                 "  last_event_type, crc32_checksum,                                             " + 
                 "  file_size, file_modified_time, create_time, last_update_time,                " +
-                "  last_update_by, trigger_id, file_path, file_name                             " +
-                " ) values(?,?,?,?,?,?,?,?,?,?)                                                 ");
+                "  last_update_by, trigger_id, router_id, file_path, file_name                  " +
+                " ) values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");
         
         putSql("selectFileTriggerRoutersSql", 
                 " select                                                                        " +
@@ -67,10 +63,10 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         
         putSql("whereTriggerRouterId", "where trigger_id=? and router_id=?");        
         
-        putSql("fileTriggerRouterForCurrentNodeWhere", " " +
+        putSql("fileTriggerRoutersForCurrentNodeWhere", " " +
                 " inner join $(router) r on " +
                 "  tr.router_id=r.router_id " +
-                " where r.source_node_group_id=? and tr.trigger_id=? ");        
+                " where r.source_node_group_id=?");        
         
         putSql("updateFileTriggerRouterSql",                 
                 " update $(file_trigger_router) set                                             " +

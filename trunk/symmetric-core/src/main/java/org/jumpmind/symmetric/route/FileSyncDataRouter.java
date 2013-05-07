@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,9 +52,10 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         Map<String, String> newData = getNewDataAsString(null, dataMetaData,
                 engine.getSymmetricDialect());
         String triggerId = newData.get("TRIGGER_ID");
-        List<FileTriggerRouter> triggerRouters = fileSyncService
-                .getFileTriggerRoutersForCurrentNode(triggerId);
-        for (FileTriggerRouter fileTriggerRouter : triggerRouters) {
+        String routerId = newData.get("ROUTER_ID");
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouterForCurrentNode(
+                triggerId, routerId);
+        if (fileTriggerRouter != null) {
             Router router = fileTriggerRouter.getRouter();
             Map<String, IDataRouter> routers = routerService.getRouters();
             IDataRouter dataRouter = null;
@@ -71,8 +71,11 @@ public class FileSyncDataRouter extends AbstractDataRouter {
                 ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
             }
             nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false));
+        } else {
+            log.error(
+                    "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
+                    triggerId, routerId);
         }
-
         return nodeIds;
     }
 
