@@ -20,12 +20,18 @@
  */
 package org.jumpmind.symmetric.io.stage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +59,11 @@ public class StagedResource implements IStagedResource {
     private long createTime;
 
     private State state;
-
+    
+    private Map<Thread, OutputStream> outputStreams = null;
+    
+    private Map<Thread, InputStream> inputStreams = null;
+    
     private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
 
     private Map<Thread, BufferedWriter> writers = new HashMap<Thread, BufferedWriter>();
@@ -160,11 +170,66 @@ public class StagedResource implements IStagedResource {
         BufferedWriter writer = writers.get(thread);
         if (writer != null) {
             IOUtils.closeQuietly(writer);
-            writers.remove(writer);
+            writers.remove(thread);
         }
+        
+        if (outputStreams != null) {
+            OutputStream outputStream = outputStreams.get(thread);
+            if (outputStream != null) {
+                IOUtils.closeQuietly(outputStream);
+                outputStreams.remove(thread);
+            }
+        }
+        
+        if (inputStreams != null) {
+            InputStream inputStream = inputStreams.get(thread);
+            if (inputStream != null) {
+                IOUtils.closeQuietly(inputStream);
+                inputStreams.remove(thread);
+            }
+        }
+        
 
     }
+    
+    public OutputStream getOutputStream() {
+        try {
+            Thread thread = Thread.currentThread();
+            OutputStream writer = outputStreams.get(thread);
+            if (writer == null) {
+                if (file.exists()) {
+                    log.warn("We had to delete {} because it already existed",
+                            file.getAbsolutePath());
+                    file.delete();
+                }
+                writer = new BufferedOutputStream(new FileOutputStream(file));
+                outputStreams.put(thread, writer);
+            }
+            return writer;
+        } catch (FileNotFoundException e) {
+            throw new IoException(e);
+        }
+    }
 
+    public InputStream getInputStream() {
+        Thread thread = Thread.currentThread();
+        InputStream reader = inputStreams.get(thread);
+        if (reader == null) {
+            if (file.exists()) {
+                try {
+                    reader = new BufferedInputStream(new FileInputStream(file));
+                    inputStreams.put(thread, reader);
+                } catch (IOException ex) {
+                    throw new IoException(ex);
+                }
+            } else {
+                throw new IllegalStateException("There is no content to read. "
+                        + file.getAbsolutePath() + " was not found.");
+            }
+        }
+        return reader;
+    }
+    
     public BufferedWriter getWriter() {
         Thread thread = Thread.currentThread();
         BufferedWriter writer = writers.get(thread);

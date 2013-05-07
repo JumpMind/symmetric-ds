@@ -51,7 +51,7 @@ public interface IFileSyncService {
 
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode();
 
-    public FileTriggerRouter getFileTriggerRouterForCurrentNode(String triggerId, String routerId);   
+    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId);   
 
     public RemoteNodeStatuses pullFilesFromNodes(boolean force);
 
