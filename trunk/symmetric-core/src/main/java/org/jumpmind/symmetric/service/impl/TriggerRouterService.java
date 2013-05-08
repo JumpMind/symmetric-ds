@@ -1014,8 +1014,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     .equals(table.getName(), history.getSourceTableName());
                         }
                         removeTrigger = !foundMatch;
-                    }
-                }
+                     } else if (!StringUtils.equals(trigger.getSourceTableName(),
+                            history.getSourceTableName())) {
+                        removeTrigger = true;
+                     }
+                } 
             }
 
             if (removeTrigger) {
