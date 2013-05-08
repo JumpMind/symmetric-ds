@@ -202,16 +202,6 @@ public class TransformService extends AbstractService implements ITransformServi
                 }
             }
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -232,16 +222,6 @@ public class TransformService extends AbstractService implements ITransformServi
                     (Object) transformTableId);
             transaction.commit();
             refreshCache();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }

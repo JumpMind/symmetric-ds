@@ -11,7 +11,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         // @formatter:off
-
+        
         putSql("countTriggerRoutersByRouterIdSql",
            "select count(*) from $(trigger_router) where router_id=?   ");
 
@@ -170,8 +170,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 "from $(router) r where r.source_node_group_id=? and r.target_node_group_id=? order by r.router_id   ");
 
         putSql("selectTriggerByIdSql", "" + "where t.trigger_id = ?   ");
-
-        putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );
+        
+        putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );       
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(trigger_router) where last_update_time is not null" );
 

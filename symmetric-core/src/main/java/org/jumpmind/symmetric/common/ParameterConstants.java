@@ -61,14 +61,6 @@ final public class ParameterConstants {
     public final static String PUSH_THREAD_COUNT_PER_SERVER = "push.thread.per.server.count";
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
-    
-    public final static String FILE_PULL_THREAD_COUNT_PER_SERVER = "file.pull.thread.per.server.count";
-    public final static String FILE_PULL_MINIMUM_PERIOD_MS = "file.pull.period.minimum.ms";
-    public final static String FILE_PULL_LOCK_TIMEOUT_MS = "file.pull.lock.timeout.ms";
-    
-    public final static String FILE_PUSH_THREAD_COUNT_PER_SERVER = "file.push.thread.per.server.count";
-    public final static String FILE_PUSH_MINIMUM_PERIOD_MS = "file.push.period.minimum.ms";
-    public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";    
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
@@ -203,7 +195,6 @@ final public class ParameterConstants {
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
     public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
-    public final static String HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS = "heartbeat.update.node.with.batch.status";
     
     public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
@@ -224,8 +215,6 @@ final public class ParameterConstants {
     public final static String REST_API_ENABLED = "rest.api.enable";
 
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
-    
-    public final static String FILE_SYNC_ENABLE = "file.sync.enable";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
