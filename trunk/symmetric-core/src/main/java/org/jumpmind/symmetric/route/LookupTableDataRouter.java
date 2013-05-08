@@ -153,7 +153,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
             SimpleRouterContext routingContext) {
-        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
+        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get(PARAM_TABLE);
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
                 .getContextCache().get(CTX_CACHE_KEY);
         if (lookupMap == null) {
