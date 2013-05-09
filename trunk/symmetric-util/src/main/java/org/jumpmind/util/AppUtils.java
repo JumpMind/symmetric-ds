@@ -195,6 +195,7 @@ public class AppUtils {
                     if (entry.isDirectory()) {
                         File dir = new File(toDir, entry.getName());
                         dir.mkdirs();
+                        dir.setLastModified(entry.getTime());
                     } else {
                         File file = new File(toDir, entry.getName());
                         file.getParentFile().mkdirs();
