@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedWriter;
@@ -32,23 +30,23 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-/**
- * 
- */
 public class InternalOutgoingTransport implements IOutgoingTransport {
 
     BufferedWriter writer = null;
+    
+    OutputStream os = null;
 
     ChannelMap map = null;
 
     boolean open = true;
 
-    public InternalOutgoingTransport(OutputStream pushOs) throws UnsupportedEncodingException {
-        this(pushOs, new ChannelMap());
+    public InternalOutgoingTransport(OutputStream os) throws UnsupportedEncodingException {
+        this(os, new ChannelMap());
     }
 
-    public InternalOutgoingTransport(OutputStream pushOs, ChannelMap map) throws UnsupportedEncodingException {
-        writer = new BufferedWriter(new OutputStreamWriter(pushOs, IoConstants.ENCODING));
+    public InternalOutgoingTransport(OutputStream os, ChannelMap map) throws UnsupportedEncodingException {
+        this.os = os;
+        this.writer = new BufferedWriter(new OutputStreamWriter(os, IoConstants.ENCODING));
         this.map = map;
     }
 
@@ -65,8 +63,12 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     public boolean isOpen() {
         return open;
     }
+    
+    public OutputStream openStream() {
+        return os;
+    }
 
-    public BufferedWriter open() {
+    public BufferedWriter openWriter() {
         return writer;
     }
 

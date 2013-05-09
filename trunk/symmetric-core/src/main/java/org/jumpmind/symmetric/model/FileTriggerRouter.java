@@ -32,6 +32,7 @@ public class FileTriggerRouter implements Serializable {
     private boolean enabled = true;
     private boolean initialLoadEnabled;
     private String targetBaseDir;
+    private String targetFilePath;
     private FileConflictStrategy conflictStrategy = FileConflictStrategy.SOURCE_WINS;
     private Date createTime = new Date();
     private String lastUpdateBy;
@@ -51,6 +52,14 @@ public class FileTriggerRouter implements Serializable {
     
     public FileTrigger getFileTrigger() {
         return fileTrigger;
+    }
+    
+    public void setTargetFilePath(String targetFilePath) {
+        this.targetFilePath = targetFilePath;
+    }
+    
+    public String getTargetFilePath() {
+        return targetFilePath;
     }
     
     public void setRouter(Router router) {
@@ -117,4 +126,37 @@ public class FileTriggerRouter implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fileTrigger == null) ? 0 : fileTrigger.hashCode());
+        result = prime * result + ((router == null) ? 0 : router.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FileTriggerRouter other = (FileTriggerRouter) obj;
+        if (fileTrigger == null) {
+            if (other.fileTrigger != null)
+                return false;
+        } else if (!fileTrigger.equals(other.fileTrigger))
+            return false;
+        if (router == null) {
+            if (other.router != null)
+                return false;
+        } else if (!router.equals(other.router))
+            return false;
+        return true;
+    }
+
+    
+    
 }

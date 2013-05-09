@@ -22,13 +22,16 @@
 package org.jumpmind.symmetric.transport;
 
 import java.io.BufferedWriter;
+import java.io.OutputStream;
 
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 
 public interface IOutgoingTransport {
 
-    public BufferedWriter open();
+    public BufferedWriter openWriter();
+    
+    public OutputStream openStream();
 
     public void close();
 
