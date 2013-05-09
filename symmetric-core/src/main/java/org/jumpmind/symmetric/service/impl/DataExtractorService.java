@@ -361,7 +361,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 
                 if (dataWriter == null) {
                     dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                            targetTransport.open(), targetNode.requires13Compatiblity());
+                            targetTransport.openWriter(), targetNode.requires13Compatiblity());
                 }
                 
                 processInfo.setStatus(ProcessInfo.Status.EXTRACTING);

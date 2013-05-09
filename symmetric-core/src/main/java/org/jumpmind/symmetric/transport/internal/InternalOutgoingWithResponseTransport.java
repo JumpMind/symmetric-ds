@@ -33,20 +33,24 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
-/**
- * 
- */
 public class InternalOutgoingWithResponseTransport implements IOutgoingWithResponseTransport {
 
     BufferedWriter writer = null;
 
     BufferedReader reader = null;
+    
+    OutputStream os = null;
 
     boolean open = true;
 
-    InternalOutgoingWithResponseTransport(OutputStream pushOs, InputStream respIs) throws IOException {
-        writer = TransportUtils.toWriter(pushOs);
-        reader = TransportUtils.toReader(respIs);
+    InternalOutgoingWithResponseTransport(OutputStream os, InputStream respIs) throws IOException {
+        this.os = os;
+        this.writer = TransportUtils.toWriter(os);
+        this.reader = TransportUtils.toReader(respIs);
+    }
+    
+    public OutputStream openStream() {
+        return os;
     }
 
     public BufferedReader readResponse() throws IOException {
@@ -55,6 +59,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     }
 
     public void close() {
+        IOUtils.closeQuietly(os);
         IOUtils.closeQuietly(writer);
         IOUtils.closeQuietly(reader);
         open = false;
@@ -64,7 +69,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return open;
     }
 
-    public BufferedWriter open() {
+    public BufferedWriter openWriter() {
         return writer;
     }
 

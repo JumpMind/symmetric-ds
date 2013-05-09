@@ -45,6 +45,8 @@ import org.jumpmind.symmetric.web.WebConstants;
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private URL url;
+    
+    private OutputStream os;
 
     private BufferedWriter writer;
 
@@ -84,6 +86,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public void close() {
         closeWriter(true);
+        IOUtils.closeQuietly(os);
         closeReader();
         if (connection != null) {
             connection.disconnect();
@@ -97,7 +100,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             reader = null;
         }
     }
-
+    
     private void closeWriter(boolean closeQuietly) {
         if (writer != null) {
             try {
@@ -143,8 +146,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
         return connection;
     }
-
-    public BufferedWriter open() {
+    
+    public OutputStream openStream() {
         try {
             connection = HttpTransportManager.openConnection(url, basicAuthUsername,
                     basicAuthPassword);
@@ -162,16 +165,24 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                 connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
             }
 
-            OutputStream out = connection.getOutputStream();
+            os = connection.getOutputStream();
             if (useCompression) {
-                out = new GZIPOutputStream(out) {
+                os = new GZIPOutputStream(os) {
                     {
                         this.def.setLevel(compressionLevel);
                         this.def.setStrategy(compressionStrategy);
                     }
                 };
             }
-            OutputStreamWriter wout = new OutputStreamWriter(out, IoConstants.ENCODING);
+            return os;
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
+    }
+
+    public BufferedWriter openWriter() {
+        try {
+            OutputStreamWriter wout = new OutputStreamWriter(openStream(), IoConstants.ENCODING);
             writer = new BufferedWriter(wout);
             return writer;
         } catch (IOException ex) {

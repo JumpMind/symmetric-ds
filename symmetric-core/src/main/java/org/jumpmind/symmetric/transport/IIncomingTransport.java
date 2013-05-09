@@ -23,12 +23,15 @@ package org.jumpmind.symmetric.transport;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 
 public interface IIncomingTransport {
 
-    public BufferedReader open() throws IOException;
+    public BufferedReader openReader() throws IOException;
+    
+    public InputStream openStream() throws IOException;
 
-    public void close() throws IOException;
+    public void close();
 
     public boolean isOpen();
     

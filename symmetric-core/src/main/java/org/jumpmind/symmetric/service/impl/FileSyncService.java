@@ -20,16 +20,24 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.SQLException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -46,6 +54,7 @@ import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -56,6 +65,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
+import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class FileSyncService extends AbstractService implements IFileSyncService,
@@ -158,26 +168,28 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                         fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                         fileTriggerRouter.getTargetBaseDir(),
+                        fileTriggerRouter.getTargetFilePath(),
                         fileTriggerRouter.getConflictStrategy().name(),
                         fileTriggerRouter.getLastUpdateBy(), fileTriggerRouter.getLastUpdateTime(),
                         fileTriggerRouter.getFileTrigger().getTriggerId(),
                         fileTriggerRouter.getRouter().getRouterId() }, new int[] { Types.SMALLINT,
                         Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             fileTriggerRouter.setCreateTime(fileTriggerRouter.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertFileTriggerSql"),
                     new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                             fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                             fileTriggerRouter.getTargetBaseDir(),
+                            fileTriggerRouter.getTargetFilePath(),
                             fileTriggerRouter.getConflictStrategy().name(),
                             fileTriggerRouter.getCreateTime(), fileTriggerRouter.getLastUpdateBy(),
                             fileTriggerRouter.getLastUpdateTime(),
                             fileTriggerRouter.getFileTrigger().getTriggerId(),
                             fileTriggerRouter.getRouter().getRouterId() }, new int[] {
                             Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.VARCHAR });
+                            Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -261,49 +273,72 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     public void sendFiles(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport outgoingTransport) {
+
         OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(
                 targetNode.getNodeId(), false);
         List<OutgoingBatch> activeBatches = batches
                 .filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
+
         OutgoingBatch currentBatch = null;
+
+        IStagingManager stagingManager = engine.getStagingManager();
+        IStagedResource stagedResource = stagingManager.create(Constants.STAGING_CATEGORY_OUTGOING,
+                processInfo.getSourceNodeId(), targetNode.getNodeId(), "filesync.zip");
+
         try {
 
             long maxBytesToSync = parameterService
                     .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
 
-            IStagingManager stagingManager = engine.getStagingManager();
-            IStagedResource stagedResource = stagingManager.create(
-                    Constants.STAGING_CATEGORY_OUTGOING, targetNode.getNodeId(), "filesync.zip");
-
             FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
                     stagedResource);
-            for (int i = 0; i < activeBatches.size(); i++) {
-                currentBatch = activeBatches.get(i);
-                processInfo.incrementBatchCount();
-                processInfo.setCurrentBatchId(currentBatch.getBatchId());
+            try {
+                for (int i = 0; i < activeBatches.size(); i++) {
+                    currentBatch = activeBatches.get(i);
+                    processInfo.incrementBatchCount();
+                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
 
-                engine.getDataExtractorService().extractOutgoingBatch(processInfo, targetNode,
-                        dataWriter, currentBatch, false);
+                    engine.getDataExtractorService().extractOutgoingBatch(processInfo, targetNode,
+                            dataWriter, currentBatch, false);
 
-                // check to see if max bytes to sync has been reached and stop
-                // processing batches
-                if (dataWriter.readyToSend()) {
-                    break;
+                    /*
+                     * check to see if max bytes to sync has been reached and
+                     * stop processing batches
+                     */
+                    if (dataWriter.readyToSend()) {
+                        break;
+                    }
                 }
+            } finally {
+                dataWriter.finish();
+            }
+
+            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+
+            for (int i = 0; i < activeBatches.size(); i++) {
+                activeBatches.get(i).setStatus(Status.SE);
+                engine.getOutgoingBatchService().updateOutgoingBatch(activeBatches.get(i));
+            }
+
+            try {
+                if (stagedResource.exists()) {
+                    InputStream is = stagedResource.getInputStream();
+                    try {
+                        IOUtils.copy(is, outgoingTransport.openStream());
+                    } catch (IOException e) {
+                        throw new IoException(e);
+                    }
+                }
+            } finally {
+                stagedResource.close();
+                outgoingTransport.close();
             }
 
         } catch (RuntimeException e) {
-            SQLException se = unwrapSqlException(e);
             if (currentBatch != null) {
                 engine.getStatisticManager().incrementDataExtractedErrors(
                         currentBatch.getChannelId(), 1);
-                if (se != null) {
-                    currentBatch.setSqlState(se.getSQLState());
-                    currentBatch.setSqlCode(se.getErrorCode());
-                    currentBatch.setSqlMessage(se.getMessage());
-                } else {
-                    currentBatch.setSqlMessage(getRootMessage(e));
-                }
+                currentBatch.setSqlMessage(getRootMessage(e));
                 currentBatch.revertStatsOnError();
                 if (currentBatch.getStatus() != Status.IG) {
                     currentBatch.setStatus(Status.ER);
@@ -313,13 +348,19 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
                 if (isStreamClosedByClient(e)) {
                     log.warn(
-                            "Failed to extract batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed.  The error was: {}",
+                            "Failed to extract batch {}.  The stream was closed by the client.  The error was: {}",
                             currentBatch, getRootMessage(e));
                 } else {
                     log.error("Failed to extract batch {}", currentBatch, e);
                 }
             } else {
                 log.error("Could not log the outgoing batch status because the batch was null", e);
+            }
+
+            throw e;
+        } finally {
+            if (stagedResource != null) {
+                stagedResource.delete();
             }
         }
 
@@ -359,6 +400,53 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        Node identity = engine.getNodeService().findIdentity();
+        if (identity != null) {
+            NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId());
+            // TODO process info
+            if (security != null) {
+                if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL) {
+                    IIncomingTransport transport = null;
+                    try {
+                        File unzipDir = new File(parameterService.getTempDirectory(),
+                                nodeCommunication.getNodeId());
+                        FileUtils.deleteDirectory(unzipDir);
+                        unzipDir.mkdirs();
+                        transport = engine.getTransportManager().getFilePullTransport(
+                                nodeCommunication.getNode(), identity, security.getNodePassword(),
+                                null, parameterService.getRegistrationUrl());
+                        ZipInputStream is = new ZipInputStream(transport.openStream());
+                        ZipEntry entry = null;
+                        do {
+                            entry = is.getNextEntry();
+                            if (entry != null) {
+                                if (entry.isDirectory()) {
+                                    File dir = new File(unzipDir, entry.getName());
+                                    dir.mkdirs();
+                                } else {
+                                    File file = new File(unzipDir, entry.getName());
+                                    file.getParentFile().mkdirs();
+                                    FileOutputStream fos = new FileOutputStream(file);
+                                    try {
+                                        IOUtils.copy(is, fos);
+                                        file.setLastModified(entry.getTime());
+                                    } finally {
+                                        IOUtils.closeQuietly(fos);
+                                    }
+                                }
+                            }
+                        } while (entry != null);
+
+                    } catch (IOException e) {
+                        throw new IoException(e);
+                    } finally {
+                        if (transport != null) {
+                            transport.close();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
@@ -395,6 +483,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir"));
+            fileTriggerRouter.setTargetFilePath(rs.getString("target_file_path"));
             fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
                     rs.getString("router_id")));
             return fileTriggerRouter;

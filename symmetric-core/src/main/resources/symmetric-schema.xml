@@ -691,6 +691,7 @@
         <column name="file_size" type="BIGINT" description="" />
         <column name="file_modified_time" type="TIMESTAMP" description="" />        
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
     </table>
 

@@ -420,7 +420,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                 IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
-                        transport.open());
+                        transport.openReader());
                 IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(processInfo, sourceNode.getNodeId(), listener));
@@ -428,7 +428,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                        targetNodeId, transport.open()), null, listener) {
+                        targetNodeId, transport.openReader()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(processInfo, sourceNode.getNodeId(), batch.getChannelId(),

@@ -194,7 +194,10 @@ public class StagedResource implements IStagedResource {
     
     public OutputStream getOutputStream() {
         try {
-            Thread thread = Thread.currentThread();
+            if (outputStreams == null) {
+                outputStreams = new HashMap<Thread, OutputStream>();
+            }
+            Thread thread = Thread.currentThread();            
             OutputStream writer = outputStreams.get(thread);
             if (writer == null) {
                 if (file.exists()) {
@@ -202,6 +205,7 @@ public class StagedResource implements IStagedResource {
                             file.getAbsolutePath());
                     file.delete();
                 }
+                file.getParentFile().mkdirs();
                 writer = new BufferedOutputStream(new FileOutputStream(file));
                 outputStreams.put(thread, writer);
             }
@@ -213,6 +217,9 @@ public class StagedResource implements IStagedResource {
 
     public InputStream getInputStream() {
         Thread thread = Thread.currentThread();
+        if (inputStreams == null) {
+            inputStreams = new HashMap<Thread, InputStream>();
+        }
         InputStream reader = inputStreams.get(thread);
         if (reader == null) {
             if (file.exists()) {

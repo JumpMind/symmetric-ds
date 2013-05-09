@@ -20,14 +20,22 @@
  */
 package org.jumpmind.symmetric.file;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -48,6 +56,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
     static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
 
+    protected long byteCount;
     protected long maxBytesToSync;
     protected IFileSyncService fileSyncService;
     protected IStagedResource stagedResource;
@@ -76,12 +85,13 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
     public void start(Batch batch) {
         this.batch = batch;
+        this.statistics.put(batch, new Statistics());
         this.snapshotEvents = new ArrayList<FileSnapshot>();
     }
 
     public boolean start(Table table) {
         this.snapshotTable = table;
-        return false;
+        return true;
     }
 
     public void write(CsvData data) {
@@ -108,54 +118,158 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
     public void end(Batch batch, boolean inError) {
 
-        if (!inError) {
-            if (zos == null) {
-                zos = new ZipOutputStream(stagedResource.getOutputStream());
-            }
-
-            StringBuilder script = new StringBuilder();
-            for (FileSnapshot snapshot : snapshotEvents) {
-                FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
-                        snapshot.getTriggerId(), snapshot.getRouterId());
-                if (triggerRouter != null) {
-                    FileTrigger fileTrigger = triggerRouter.getFileTrigger();
-                    String targetBaseDir = triggerRouter.getTargetBaseDir();
-                    if (StringUtils.isBlank(targetBaseDir)) {
-                        targetBaseDir = fileTrigger.getBaseDir();
-                    }
-                    
-                    script.append("cd ").append(targetBaseDir).append("\n");
-                    
-                    if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
-                        script.append(fileTrigger.getBeforeCopyScript()).append("\n");
-                    }
-                    
-                    LastEventType eventType = snapshot.getLastEventType();
-                    
-                    switch (eventType) {
-                        case CREATE:
-                        case MODIFY:
-                        case SEED:
-                            script.append("cd ").append(targetBaseDir).append("\n");
-                            
-                            break;
-                        case DELETE:
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    log.error(
-                            "Could not locate the file trigger ({}) router ({}) to process a snapshot event.  The event will be ignored",
-                            snapshot.getTriggerId(), snapshot.getRouterId());
+        try {
+            if (!inError) {
+                if (zos == null) {
+                    zos = new ZipOutputStream(stagedResource.getOutputStream());
                 }
+
+                Set<String> commands = new HashSet<String>();
+                StringBuilder script = new StringBuilder();
+                for (FileSnapshot snapshot : snapshotEvents) {
+                    FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
+                            snapshot.getTriggerId(), snapshot.getRouterId());
+                    if (triggerRouter != null) {
+                        StringBuilder command = new StringBuilder();
+                        LastEventType eventType = snapshot.getLastEventType();
+
+                        FileTrigger fileTrigger = triggerRouter.getFileTrigger();
+                        File sourceBaseDir = new File(fileTrigger.getBaseDir());
+
+                        String targetBaseDir = triggerRouter.getTargetBaseDir();
+                        if (StringUtils.isBlank(targetBaseDir)) {
+                            targetBaseDir = fileTrigger.getBaseDir();
+                        }
+
+                        command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
+
+                        StringBuilder entryName = new StringBuilder(Long.toString(batch
+                                .getBatchId()));
+                        entryName.append("/");
+                        if (!snapshot.getFilePath().equals(".")) {
+                            String sourcePath = snapshot.getFilePath() + "/";
+                            entryName.append(sourcePath);
+                            sourceBaseDir = new File(sourceBaseDir, sourcePath);
+                        }
+                        entryName.append(snapshot.getFileName());
+                        File file = new File(sourceBaseDir, snapshot.getFileName());
+                        if (file.isDirectory()) {
+                            entryName.append("/");
+                        }
+
+                        if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
+                            command.append(fileTrigger.getBeforeCopyScript()).append("\n");
+                        }
+
+                        switch (eventType) {
+                            case CREATE:
+                            case MODIFY:
+                            case SEED:
+                                if (file.exists()) {
+                                    command.append("mv (\"");
+                                    if (!snapshot.getFilePath().equals(".")) {
+                                        command.append(snapshot.getFilePath());
+                                        command.append("/");
+                                    }
+                                    command.append(snapshot.getFileName());
+                                    command.append("\", targetBaseDir + \"/");
+                                    if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
+                                        if (!triggerRouter.getTargetFilePath().equals(".")) {
+                                            command.append(triggerRouter.getTargetFilePath());
+                                        }
+                                    } else {
+                                        if (!snapshot.getFilePath().equals(".")) {
+                                            command.append(snapshot.getFilePath());
+                                        }
+                                    }
+                                    command.append(snapshot.getFileName());
+                                    command.append("\");\n");
+                                }
+                                break;
+                            case DELETE:
+                                command.append("rm (targetBaseDir + \\\"/");
+                                if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
+                                    if (!triggerRouter.getTargetFilePath().equals(".")) {
+                                        command.append(triggerRouter.getTargetFilePath());
+                                    }
+                                } else {
+                                    if (!snapshot.getFilePath().equals(".")) {
+                                        command.append(snapshot.getFilePath());
+                                    }
+                                }
+                                command.append(snapshot.getFileName());
+                                command.append("\");\n");
+
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (StringUtils.isNotBlank(fileTrigger.getAfterCopyScript())) {
+                            command.append(fileTrigger.getAfterCopyScript()).append("\n");
+                        }
+
+                        if (!commands.contains(command.toString())) {
+                            if (file.exists()) {
+                                byteCount += file.length();
+                                ZipEntry entry = new ZipEntry(entryName.toString());
+                                entry.setSize(file.length());
+                                entry.setTime(file.lastModified());
+                                zos.putNextEntry(entry);
+                                if (file.isFile()) {
+                                    FileInputStream fis = new FileInputStream(file);
+                                    try {
+                                        IOUtils.copy(fis, zos);
+                                    } finally {
+                                        IOUtils.closeQuietly(fis);
+                                    }
+                                }
+                                zos.closeEntry();
+                            } else if (eventType != LastEventType.DELETE) {
+                                log.warn(
+                                        "Could not find the {} file to package for synchronization.  Skipping it.",
+                                        file.getAbsolutePath());
+                            }
+
+                            script.append(command.toString());
+                            commands.add(command.toString());
+                        }
+
+                    } else {
+                        log.error(
+                                "Could not locate the file trigger ({}) router ({}) to process a snapshot event.  The event will be ignored",
+                                snapshot.getTriggerId(), snapshot.getRouterId());
+                    }
+                }
+
+                ZipEntry entry = new ZipEntry(batch.getBatchId() + "/sync.bsh");
+                zos.putNextEntry(entry);
+                IOUtils.write(script.toString(), zos);
+                zos.closeEntry();
+
             }
+        } catch (IOException e) {
+            throw new IoException(e);
         }
 
     }
 
+    public void finish() {
+        try {
+            if (zos != null) {
+                zos.finish();
+                IOUtils.closeQuietly(zos);
+            }
+        } catch (IOException e) {
+            throw new IoException(e);
+        } finally {
+            stagedResource.close();
+            stagedResource.setState(IStagedResource.State.READY);
+        }
+    }
+
     public boolean readyToSend() {
-        return true;
+        return byteCount > maxBytesToSync;
     }
 
 }
