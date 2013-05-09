@@ -22,6 +22,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.EOFException;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,12 +37,17 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
+import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,6 +229,41 @@ abstract public class AbstractService implements IService {
         }
         return where.toString();
     }
+    
+    /**
+     * Try a configured number of times to get the ACK through.
+     */
+    protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
+            List<IncomingBatch> list, ITransportManager transportManager) throws IOException {        
+        Exception error = null;
+        int sendAck = -1;
+        int numberOfStatusSendRetries = parameterService
+                .getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
+        for (int i = 0; i < numberOfStatusSendRetries && sendAck != HttpURLConnection.HTTP_OK; i++) {
+            try {
+                sendAck = transportManager.sendAcknowledgement(remote, list, local,
+                        localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
+            } catch (IOException ex) {
+                error = ex;
+            } catch (RuntimeException ex) {
+                error = ex;
+            }
+            if (sendAck != HttpURLConnection.HTTP_OK) {
+                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1,
+                        error != null ? error.getMessage() : "");
+                if (i < numberOfStatusSendRetries - 1) {
+                    AppUtils.sleep(parameterService
+                            .getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
+                } else if (error instanceof RuntimeException) {
+                    throw (RuntimeException) error;
+                } else if (error instanceof IOException) {
+                    throw (IOException) error;
+                } else {
+                    throw new IOException(Integer.toString(sendAck));
+                }
+            }
+        }
+    }    
     
     protected void logOnce(String message) {
         if (!logOnce.contains(message)) {
