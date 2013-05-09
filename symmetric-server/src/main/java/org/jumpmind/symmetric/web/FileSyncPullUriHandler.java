@@ -61,6 +61,10 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), nodeId,
                         ProcessType.FILE_SYNC_PULL_HANDLER));
         try {
+            
+            res.setContentType("application/zip");
+            res.addHeader("Content-Disposition", "attachment; filename=\"file-sync.zip\"");
+            
             engine.getFileSyncService().sendFiles(processInfo,
                     engine.getNodeService().findNode(nodeId), outgoingTransport);
             processInfo.setStatus(Status.DONE);
@@ -68,7 +72,6 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
             processInfo.setStatus(Status.ERROR);
             throw ex;
         }
-        outgoingTransport.close();
 
     }
 
