@@ -176,29 +176,33 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                         if (!triggerRouter.getTargetFilePath().equals(".")) {
                                             command.append(triggerRouter.getTargetFilePath());
+                                            command.append("/");
                                         }
                                     } else {
                                         if (!snapshot.getFilePath().equals(".")) {
                                             command.append(snapshot.getFilePath());
+                                            command.append("/");
                                         }
                                     }
                                     command.append(snapshot.getFileName());
                                     command.append("\");\n");
                                 }
                                 break;
-                            case DELETE:
-                                command.append("rm (targetBaseDir + \\\"/");
+                            case DELETE:                                                                
+                                command.append("org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(targetBaseDir + \"/");
                                 if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                     if (!triggerRouter.getTargetFilePath().equals(".")) {
                                         command.append(triggerRouter.getTargetFilePath());
+                                        command.append("/");
                                     }
                                 } else {
                                     if (!snapshot.getFilePath().equals(".")) {
                                         command.append(snapshot.getFilePath());
+                                        command.append("/");
                                     }
                                 }
                                 command.append(snapshot.getFileName());
-                                command.append("\");\n");
+                                command.append("\"));\n");
 
                                 break;
                             default:

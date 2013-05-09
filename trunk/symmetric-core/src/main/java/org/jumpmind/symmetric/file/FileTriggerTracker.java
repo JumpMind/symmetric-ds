@@ -149,11 +149,6 @@ public class FileTriggerTracker {
         }
 
         public void onDirectoryChange(File directory) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnModified()) {
-                log.debug("File change detected: {}", directory.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), directory,
-                        LastEventType.MODIFY));
-            }
         }
 
     }

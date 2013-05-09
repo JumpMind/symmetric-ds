@@ -20,7 +20,10 @@
  */
 package org.jumpmind.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,8 +32,12 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.TimeZone;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,6 +183,35 @@ public class AppUtils {
         }
 
         return false;
+    }
+    
+    public static void unzip(InputStream in, File toDir) {
+        try {
+            ZipInputStream is = new ZipInputStream(in);
+            ZipEntry entry = null;
+            do {
+                entry = is.getNextEntry();
+                if (entry != null) {
+                    if (entry.isDirectory()) {
+                        File dir = new File(toDir, entry.getName());
+                        dir.mkdirs();
+                    } else {
+                        File file = new File(toDir, entry.getName());
+                        file.getParentFile().mkdirs();
+                        FileOutputStream fos = new FileOutputStream(file);
+                        try {
+                            IOUtils.copy(is, fos);
+                            file.setLastModified(entry.getTime());
+                        } finally {
+                            IOUtils.closeQuietly(fos);
+                        }
+                    }
+                }
+            } while (entry != null);
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+
     }
 
 }

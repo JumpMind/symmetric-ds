@@ -21,19 +21,20 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -51,6 +52,7 @@ import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
@@ -59,14 +61,21 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IFileSyncService;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.util.AppUtils;
+
+import bsh.Interpreter;
+import bsh.TargetError;
 
 public class FileSyncService extends AbstractService implements IFileSyncService,
         INodeCommunicationExecutor {
@@ -403,50 +412,119 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         Node identity = engine.getNodeService().findIdentity();
         if (identity != null) {
             NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId());
-            // TODO process info
             if (security != null) {
                 if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL) {
-                    IIncomingTransport transport = null;
-                    try {
-                        File unzipDir = new File(parameterService.getTempDirectory(),
-                                nodeCommunication.getNodeId());
-                        FileUtils.deleteDirectory(unzipDir);
-                        unzipDir.mkdirs();
-                        transport = engine.getTransportManager().getFilePullTransport(
-                                nodeCommunication.getNode(), identity, security.getNodePassword(),
-                                null, parameterService.getRegistrationUrl());
-                        ZipInputStream is = new ZipInputStream(transport.openStream());
-                        ZipEntry entry = null;
-                        do {
-                            entry = is.getNextEntry();
-                            if (entry != null) {
-                                if (entry.isDirectory()) {
-                                    File dir = new File(unzipDir, entry.getName());
-                                    dir.mkdirs();
-                                } else {
-                                    File file = new File(unzipDir, entry.getName());
-                                    file.getParentFile().mkdirs();
-                                    FileOutputStream fos = new FileOutputStream(file);
-                                    try {
-                                        IOUtils.copy(is, fos);
-                                        file.setLastModified(entry.getTime());
-                                    } finally {
-                                        IOUtils.closeQuietly(fos);
-                                    }
-                                }
-                            }
-                        } while (entry != null);
-
-                    } catch (IOException e) {
-                        throw new IoException(e);
-                    } finally {
-                        if (transport != null) {
-                            transport.close();
-                        }
-                    }
+                    pullFilesFromNode(nodeCommunication, status, identity, security);
+                } else if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PUSH) {
+                    pushFilesToNode(nodeCommunication, status, identity, security);
                 }
             }
         }
+    }
+
+    protected void pushFilesToNode(NodeCommunication nodeCommunication, RemoteNodeStatus status,
+            Node identity, NodeSecurity security) {
+    }
+
+    protected void pullFilesFromNode(NodeCommunication nodeCommunication, RemoteNodeStatus status,
+            Node identity, NodeSecurity security) {
+        IIncomingTransport transport = null;
+        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(new ProcessInfoKey(nodeCommunication.getNodeId(), identity.getNodeId(), ProcessType.FILE_SYNC_PULL_JOB));
+        try {
+            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+            File unzipDir = new File(parameterService.getTempDirectory(), "filesync_incoming/"
+                    + nodeCommunication.getNodeId());
+            FileUtils.deleteDirectory(unzipDir);
+            unzipDir.mkdirs();
+            transport = engine.getTransportManager().getFilePullTransport(
+                    nodeCommunication.getNode(), identity, security.getNodePassword(), null,
+                    parameterService.getRegistrationUrl());
+
+            AppUtils.unzip(transport.openStream(), unzipDir);
+
+            Set<Long> batchIds = new TreeSet<Long>();
+            String[] files = unzipDir.list(DirectoryFileFilter.INSTANCE);
+            for (int i = 0; i < files.length; i++) {
+                try {
+                    batchIds.add(Long.parseLong(files[i]));
+                } catch (NumberFormatException e) {
+                    log.error(
+                            "Unexpected directory name.  Expected a number representing a batch id.  Instead the directory was named '{}'",
+                            files[i]);
+                }
+            }
+
+            List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
+
+            IIncomingBatchService incomingBatchService = engine.getIncomingBatchService();
+
+            processInfo.setStatus(ProcessInfo.Status.LOADING);
+            for (Long batchId : batchIds) {
+                processInfo.setCurrentBatchId(batchId);
+                processInfo.incrementBatchCount();
+                File batchDir = new File(unzipDir, Long.toString(batchId));
+                File syncScript = new File(batchDir, "sync.bsh");
+
+                IncomingBatch incomingBatch = new IncomingBatch();
+                incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
+                incomingBatch.setBatchId(batchId);
+                incomingBatch.setStatus(IncomingBatch.Status.LD);
+                incomingBatch.setNodeId(nodeCommunication.getNodeId());
+                incomingBatch.setByteCount(FileUtils.sizeOfDirectory(batchDir));
+                batchesProcessed.add(incomingBatch);
+                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
+                    if (syncScript.exists()) {
+                        String script = FileUtils.readFileToString(syncScript);
+                        Interpreter interpreter = new Interpreter();
+                        try {
+                            interpreter.set("bsh.cwd", batchDir.getAbsolutePath());
+                            interpreter.eval(script);
+                            incomingBatch.setStatus(IncomingBatch.Status.OK);
+                            incomingBatchService.updateIncomingBatch(incomingBatch);
+                        } catch (Throwable ex) {
+                            if (ex instanceof TargetError) {
+                                Throwable target = ((TargetError) ex).getTarget();
+                                if (target != null) {
+                                    ex = target;
+                                }
+                            }
+                            
+                            log.error("Failed to process file sync batch " + batchId, ex);
+
+                            incomingBatch.setErrorFlag(true);
+                            incomingBatch.setStatus(IncomingBatch.Status.ER);
+                            incomingBatch.setSqlMessage(ex.getMessage());
+                            incomingBatchService.updateIncomingBatch(incomingBatch);
+                            processInfo.setStatus(ProcessInfo.Status.ERROR);
+                            break;
+                            
+                        }
+                    } else {
+                        log.error("Could not find the sync.bsh script for batch {}", batchId);
+                    }
+                }
+                
+            }
+            
+            if (batchesProcessed.size() > 0) {
+                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                status.updateIncomingStatus(batchesProcessed);
+                sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed, engine.getTransportManager());
+            }
+
+
+        } catch (IOException e) {
+            throw new IoException(e);
+        } finally {
+            if (transport != null) {
+                transport.close();
+            }
+            
+            if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
+                processInfo.setStatus(ProcessInfo.Status.DONE);
+            }
+        }
+
     }
 
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {

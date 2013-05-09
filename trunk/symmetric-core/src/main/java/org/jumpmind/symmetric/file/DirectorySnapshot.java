@@ -97,7 +97,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
                     found = true;
                 }
             }
-            if (!found) {
+            if (file.getLastEventType() != LastEventType.DELETE && !found) {
                 FileSnapshot copy = new FileSnapshot(file);
                 copy.setLastEventType(LastEventType.DELETE);
                 differences.add(copy);
