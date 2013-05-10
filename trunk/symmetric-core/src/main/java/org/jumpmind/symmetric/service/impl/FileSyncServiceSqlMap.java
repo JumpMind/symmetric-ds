@@ -49,6 +49,11 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                         "  last_update_by=?                                                     " +
                         " where                                                                 " +
                         "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");
+        
+        putSql("deleteFileSnapshotSql",                 
+                " delete from $(file_snapshot)                                                  " +
+                        " where                                                                 " +
+                        "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");        
 
         putSql("insertFileSnapshotSql",                 
                 " insert into $(file_snapshot) (                                                " +

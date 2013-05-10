@@ -242,28 +242,38 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
-        snapshot.setLastUpdateTime(new Date());
-        if (0 == sqlTransaction.prepareAndExecute(
-                getSql("updateFileSnapshotSql"),
-                new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
-                        snapshot.getFileSize(), snapshot.getFileModifiedTime(),
-                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
-                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
-                        snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
-                        Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
-            snapshot.setCreateTime(snapshot.getLastUpdateTime());
-            sqlTransaction.prepareAndExecute(
-                    getSql("insertFileSnapshotSql"),
-                    new Object[] { snapshot.getLastEventType().getCode(),
-                            snapshot.getCrc32Checksum(), snapshot.getFileSize(),
-                            snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
-                            snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
-                            snapshot.getTriggerId(), snapshot.getRouterId(),
-                            snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
-                            Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
-                            Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+        if (snapshot.getLastEventType() == LastEventType.DELETE) {
+            sqlTransaction.prepareAndExecute(getSql("deleteFileSnapshotSql"), new Object[] {
+                    snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
+                    snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR });
+        } else {
+            snapshot.setLastUpdateTime(new Date());
+            if (0 == sqlTransaction
+                    .prepareAndExecute(
+                            getSql("updateFileSnapshotSql"),
+                            new Object[] { snapshot.getLastEventType().getCode(),
+                                    snapshot.getCrc32Checksum(), snapshot.getFileSize(),
+                                    snapshot.getFileModifiedTime(), snapshot.getLastUpdateTime(),
+                                    snapshot.getLastUpdateBy(), snapshot.getTriggerId(),
+                                    snapshot.getRouterId(), snapshot.getFilePath(),
+                                    snapshot.getFileName() }, new int[] { Types.VARCHAR,
+                                    Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP,
+                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                    Types.VARCHAR })) {
+                snapshot.setCreateTime(snapshot.getLastUpdateTime());
+                sqlTransaction.prepareAndExecute(
+                        getSql("insertFileSnapshotSql"),
+                        new Object[] { snapshot.getLastEventType().getCode(),
+                                snapshot.getCrc32Checksum(), snapshot.getFileSize(),
+                                snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
+                                snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                                snapshot.getTriggerId(), snapshot.getRouterId(),
+                                snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
+                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
+                                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+            }
         }
 
     }
@@ -429,7 +439,9 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     protected void pullFilesFromNode(NodeCommunication nodeCommunication, RemoteNodeStatus status,
             Node identity, NodeSecurity security) {
         IIncomingTransport transport = null;
-        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(new ProcessInfoKey(nodeCommunication.getNodeId(), identity.getNodeId(), ProcessType.FILE_SYNC_PULL_JOB));
+        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
+                new ProcessInfoKey(nodeCommunication.getNodeId(), identity.getNodeId(),
+                        ProcessType.FILE_SYNC_PULL_JOB));
         try {
             processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
             File unzipDir = new File(parameterService.getTempDirectory(), "filesync_incoming/"
@@ -488,7 +500,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                                     ex = target;
                                 }
                             }
-                            
+
                             log.error("Failed to process file sync batch " + batchId, ex);
 
                             incomingBatch.setErrorFlag(true);
@@ -497,21 +509,21 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                             incomingBatchService.updateIncomingBatch(incomingBatch);
                             processInfo.setStatus(ProcessInfo.Status.ERROR);
                             break;
-                            
+
                         }
                     } else {
                         log.error("Could not find the sync.bsh script for batch {}", batchId);
                     }
                 }
-                
+
             }
-            
+
             if (batchesProcessed.size() > 0) {
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
-                sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed, engine.getTransportManager());
+                sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
+                        engine.getTransportManager());
             }
-
 
         } catch (IOException e) {
             throw new IoException(e);
@@ -519,7 +531,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             if (transport != null) {
                 transport.close();
             }
-            
+
             if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
                 processInfo.setStatus(ProcessInfo.Status.DONE);
             }

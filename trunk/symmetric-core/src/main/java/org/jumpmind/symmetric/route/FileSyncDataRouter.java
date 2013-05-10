@@ -53,6 +53,13 @@ public class FileSyncDataRouter extends AbstractDataRouter {
                 engine.getSymmetricDialect());
         String triggerId = newData.get("TRIGGER_ID");
         String routerId = newData.get("ROUTER_ID");
+        
+        if (triggerId == null) {
+            Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
+                    engine.getSymmetricDialect());
+            triggerId = oldData.get("TRIGGER_ID");
+            routerId = oldData.get("ROUTER_ID");            
+        }
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId);
         if (fileTriggerRouter != null) {
