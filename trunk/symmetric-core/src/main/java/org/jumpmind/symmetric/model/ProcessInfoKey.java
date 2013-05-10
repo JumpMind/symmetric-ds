@@ -47,6 +47,14 @@ public class ProcessInfoKey implements Serializable {
                     return "Routing Reader";
                 case GAP_DETECT:
                     return "Gap Detection";
+                case FILE_SYNC_PULL_JOB:
+                    return "File Sync Pull";
+                case FILE_SYNC_PUSH_JOB:
+                    return "File Sync Push";
+                case FILE_SYNC_PULL_HANDLER:
+                    return "Service File Sync Pull";
+                case FILE_SYNC_PUSH_HANDLER:
+                    return "Service File Sync Push";
                 default:
                     return name();
             }

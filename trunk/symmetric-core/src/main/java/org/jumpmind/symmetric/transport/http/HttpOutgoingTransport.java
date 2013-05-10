@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -44,8 +45,12 @@ import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
-    private URL url;
+    static final String CRLF = "\r\n";
     
+    private String boundary;
+    
+    private URL url;
+
     private OutputStream os;
 
     private BufferedWriter writer;
@@ -70,9 +75,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private int streamOutputChunkSize = 30720;
 
+    private boolean fileUpload = false;
+
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String basicAuthUsername,
-            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize) {
+            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize,
+            boolean fileUpload) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
@@ -82,11 +90,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.basicAuthPassword = basicAuthPassword;
         this.streamOutputChunkSize = streamOutputSize;
         this.streamOutputEnabled = streamOutputEnabled;
+        this.fileUpload = fileUpload;
     }
 
     public void close() {
         closeWriter(true);
-        IOUtils.closeQuietly(os);
+        closeOutputStream(true);
         closeReader();
         if (connection != null) {
             connection.disconnect();
@@ -101,9 +110,36 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
     
+    private void closeOutputStream(boolean closeQuietly) {
+        if (os != null) {
+            try {
+                if (fileUpload) {
+                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);                    
+                }
+                os.flush();
+            } catch (IOException ex) {
+                throw new IoException(ex);
+            } finally {
+                if (closeQuietly) {
+                    IOUtils.closeQuietly(os);
+                } else {
+                    try {
+                        os.close();
+                    } catch (IOException ex) {
+                        throw new IoException(ex);
+                    }
+                }
+                os = null;
+            }
+        }
+    }
+    
     private void closeWriter(boolean closeQuietly) {
         if (writer != null) {
             try {
+                if (fileUpload) {
+                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);
+                }
                 writer.flush();
             } catch (IOException ex) {
                 throw new IoException(ex);
@@ -118,6 +154,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                     }
                 }
                 writer = null;
+                os = null;
             }
         }
     }
@@ -146,7 +183,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
         return connection;
     }
-    
+
     public OutputStream openStream() {
         try {
             connection = HttpTransportManager.openConnection(url, basicAuthUsername,
@@ -159,20 +196,40 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
-            connection.setRequestMethod("PUT");            
-            connection.setRequestProperty("Accept-Encoding", "gzip");
-            if (useCompression) {
-                connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
+
+            boundary = Long.toHexString(System.currentTimeMillis());
+            if (!fileUpload) {
+                connection.setRequestMethod("PUT");
+                connection.setRequestProperty("Accept-Encoding", "gzip");
+                if (useCompression) {
+                    connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
+                }
+            } else {
+                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="
+                        + boundary);
             }
 
             os = connection.getOutputStream();
-            if (useCompression) {
+
+            if (!fileUpload && useCompression) {
                 os = new GZIPOutputStream(os) {
                     {
                         this.def.setLevel(compressionLevel);
                         this.def.setStrategy(compressionStrategy);
                     }
                 };
+            }
+
+            if (fileUpload) {
+                final String fileName = "file.zip";
+                IOUtils.write("--" + boundary + CRLF, os);
+                IOUtils.write("Content-Disposition: form-data; name=\"binaryFile\"; filename=\""
+                        + fileName + "\"" + CRLF, os);
+                IOUtils.write("Content-Type: " + URLConnection.guessContentTypeFromName(fileName)
+                        + CRLF, os);
+                IOUtils.write("Content-Transfer-Encoding: binary" + CRLF + CRLF, os);
+                os.flush();
+
             }
             return os;
         } catch (IOException ex) {
@@ -207,7 +264,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public BufferedReader readResponse() throws IOException {
-        closeWriter(false);
+        closeWriter(false);        
+        closeOutputStream(false);
         analyzeResponseCode(connection.getResponseCode());
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;

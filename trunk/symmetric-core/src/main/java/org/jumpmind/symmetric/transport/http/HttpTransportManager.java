@@ -186,8 +186,16 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
-                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false);
     }
+    
+    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
+            String securityToken, String registrationUrl) throws IOException {
+        URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+                getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), true);
+    }    
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
             throws IOException {
