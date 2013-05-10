@@ -198,7 +198,10 @@ public class AppUtils {
                         dir.setLastModified(entry.getTime());
                     } else {
                         File file = new File(toDir, entry.getName());
-                        file.getParentFile().mkdirs();
+                        if (!file.getParentFile().exists()) {
+                            file.getParentFile().mkdirs();
+                            file.getParentFile().setLastModified(entry.getTime());
+                        }
                         FileOutputStream fos = new FileOutputStream(file);
                         try {
                             IOUtils.copy(is, fos);

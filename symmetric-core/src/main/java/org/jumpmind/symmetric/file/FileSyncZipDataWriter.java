@@ -110,6 +110,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshot.setFilePath(columnData.get("FILE_PATH"));
             snapshot.setLastEventType(LastEventType.fromCode(columnData.get("LAST_EVENT_TYPE")));
             snapshotEvents.add(snapshot);
+        } else if (eventType == DataEventType.DELETE) {
+            Map<String, String> columnData = data.toColumnNameValuePairs(
+                    snapshotTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            FileSnapshot snapshot = new FileSnapshot();
+            snapshot.setTriggerId(columnData.get("TRIGGER_ID"));
+            snapshot.setRouterId(columnData.get("ROUTER_ID"));
+            snapshot.setFileName(columnData.get("FILE_NAME"));
+            snapshot.setFilePath(columnData.get("FILE_PATH"));
+            snapshot.setLastEventType(LastEventType.DELETE);
+            snapshotEvents.add(snapshot);
+            
         }
     }
 
