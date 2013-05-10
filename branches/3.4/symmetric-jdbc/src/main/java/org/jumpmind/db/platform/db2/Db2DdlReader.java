@@ -165,7 +165,12 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                     column.setDefaultValue(newDefault.toString());
                 }
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
-                column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+                String defaultValue = column.getDefaultValue();            
+                // DB2 stores default text values quoted.  Remove the quotes
+                if ((defaultValue.length() >= 2) && defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                    defaultValue = defaultValue.substring(1, defaultValue.length()-1);
+                }
+                column.setDefaultValue(unescape(defaultValue, "'", "''"));
             }
         }
         return column;
