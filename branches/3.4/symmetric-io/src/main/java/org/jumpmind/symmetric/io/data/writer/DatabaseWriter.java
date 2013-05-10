@@ -163,7 +163,7 @@ public class DatabaseWriter implements IDataWriter {
             start(context.getLastParsedTable());
         }
         if (targetTable != null || !data.requiresTable() || 
-        		(targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
+        		(targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
