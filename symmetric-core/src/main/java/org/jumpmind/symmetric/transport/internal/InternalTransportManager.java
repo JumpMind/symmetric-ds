@@ -120,7 +120,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, Node sourceNode,
+    public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, final Node sourceNode,
             String securityToken, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
@@ -132,11 +132,29 @@ public class InternalTransportManager extends AbstractTransportManager implement
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
                 // This should be basically what the push servlet does ...
-                engine.getDataLoaderService().loadDataFromPush(targetNode, pushIs, respOs);
+                engine.getDataLoaderService().loadDataFromPush(sourceNode, pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }
+    
+    public IOutgoingWithResponseTransport getFilePushTransport(final Node targetNode, final Node sourceNode,
+            String securityToken, String registrationUrl) throws IOException {
+        final PipedOutputStream pushOs = new PipedOutputStream();
+        final PipedInputStream pushIs = new PipedInputStream(pushOs);
+
+        final PipedOutputStream respOs = new PipedOutputStream();
+        final PipedInputStream respIs = new PipedInputStream(respOs);
+
+        runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
+                    throws Exception {
+                // This should be basically what the push servlet does ...
+                engine.getFileSyncService().loadFilesFromPush(sourceNode.getNodeId(), is, os);
+            }
+        });
+        return new InternalOutgoingWithResponseTransport(pushOs, respIs);
+    }    
 
     public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl)
             throws IOException {

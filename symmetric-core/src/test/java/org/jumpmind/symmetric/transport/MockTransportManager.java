@@ -101,6 +101,11 @@ public class MockTransportManager implements ITransportManager {
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return null;
     }
+    
+    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
+            String securityToken, String registrationUrl) throws IOException {
+        return outgoingTransport;
+    }
 
 
 

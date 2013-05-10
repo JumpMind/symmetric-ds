@@ -71,6 +71,10 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
         } catch (RuntimeException ex) {
             processInfo.setStatus(Status.ERROR);
             throw ex;
+        } finally {
+            if (outgoingTransport != null) {
+                outgoingTransport.close();
+            }
         }
 
     }

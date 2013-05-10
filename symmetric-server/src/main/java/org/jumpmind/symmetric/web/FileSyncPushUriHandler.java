@@ -26,12 +26,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 
 public class FileSyncPushUriHandler extends AbstractUriHandler {
 
@@ -43,27 +43,35 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException {
+            ServletException, FileUploadException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
 
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
                     "Node must be specified");
             return;
+        } else if (!ServletFileUpload.isMultipartContent(req)) {
+            ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
+                    "We only handle multipart requests");
+            return;
         } else {
             log.debug("File sync push request received from {}", nodeId);
         }
 
-        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), nodeId,
-                        ProcessType.FILE_SYNC_PUSH_HANDLER));
-        try {
-//            engine.getFileSyncService().sendFiles(processInfo,
-//                    engine.getNodeService().findNode(nodeId), outgoingTransport);
-            processInfo.setStatus(Status.DONE);
-        } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
-            throw ex;
+        ServletFileUpload upload = new ServletFileUpload();
+
+        // Parse the request
+        FileItemIterator iter = upload.getItemIterator(req);
+        while (iter.hasNext()) {
+            FileItemStream item = iter.next();
+            String name = item.getFieldName();
+            if (!item.isFormField()) {
+                log.info("File field " + name + " with file name " + item.getName()
+                        + " detected.");                
+                engine.getFileSyncService().loadFilesFromPush(nodeId, item.openStream(),
+                        res.getOutputStream());
+
+            }
         }
 
     }

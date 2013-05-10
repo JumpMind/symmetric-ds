@@ -39,7 +39,10 @@ public interface ITransportManager {
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
     
     public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException;    
+            Map<String, String> requestProperties, String registrationUrl) throws IOException;   
+    
+    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
+            String securityToken, String registrationUrl) throws IOException;
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 

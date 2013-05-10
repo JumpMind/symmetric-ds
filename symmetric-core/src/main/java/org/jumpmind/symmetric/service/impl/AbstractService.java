@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -40,12 +41,15 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
+import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
@@ -264,6 +268,60 @@ abstract public class AbstractService implements IService {
             }
         }
     }    
+    
+    
+    protected  List<BatchAck> readAcks(List<OutgoingBatch> batches, IOutgoingWithResponseTransport transport,
+            ITransportManager transportManager, IAcknowledgeService acknowledgeService)
+            throws IOException {
+
+        Set<Long> batchIds = new HashSet<Long>(batches.size());
+        for (OutgoingBatch outgoingBatch : batches) {
+            if (outgoingBatch.getStatus() == OutgoingBatch.Status.LD) {
+                batchIds.add(outgoingBatch.getBatchId());
+            }
+        }
+
+        BufferedReader reader = transport.readResponse();
+        String ackString = reader.readLine();
+        String ackExtendedString = reader.readLine();
+
+        log.debug("Reading ack: {}", ackString);
+        log.debug("Reading extend ack: {}", ackExtendedString);
+
+        String line = null;
+        do {
+            line = reader.readLine();
+            if (line != null) {
+                log.info("Read another unexpected line {}", line);
+            }
+        } while (line != null);
+
+        if (StringUtils.isBlank(ackString)) {
+            log.error("Did not receive an acknowledgement for the batches sent");
+        }
+
+        List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
+                ackExtendedString);
+
+        long batchIdInError = Long.MAX_VALUE;
+        for (BatchAck batchInfo : batchAcks) {
+            batchIds.remove(batchInfo.getBatchId());
+            if (!batchInfo.isOk()) {
+                batchIdInError = batchInfo.getBatchId();
+            }
+            log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
+                    (batchInfo.isOk() ? "OK" : "ER"));
+            acknowledgeService.ack(batchInfo);
+        }
+
+        for (Long batchId : batchIds) {
+            if (batchId < batchIdInError) {
+                log.error("We expected but did not receive an ack for batch {}", batchId);
+            }
+        }
+
+        return batchAcks;
+    }
     
     protected void logOnce(String message) {
         if (!logOnce.contains(message)) {
