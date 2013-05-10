@@ -156,12 +156,14 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && targetTable == null) {
+        if (data.requiresTable() && 
+                (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
             // if we cross batches and the table isn't specified, then
             // use the last table we used
             start(context.getLastParsedTable());
         }
-        if (targetTable != null || !data.requiresTable()) {
+        if (targetTable != null || !data.requiresTable() || 
+                (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
