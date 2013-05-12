@@ -1,3 +1,8 @@
+SymmetricDS - 3.4.4 (Released 2013-05-12) 
+=========================================
+- 0001207: [Bug] DB2 text column default value metadata values are quoted. Need to remove quotes when reading table metadata from database. (chenson) - resolved.
+- 0001206: [Bug] dataloader.ignore.missing.tables not working for initial load when initial.load.delete.first=true (chenson) - resolved.
+
 SymmetricDS - 3.4.3 (Released 2013-05-07) 
 ======================================
 - 0001202: [Bug] Wild card expressions are currently broken (chenson) - closed.
