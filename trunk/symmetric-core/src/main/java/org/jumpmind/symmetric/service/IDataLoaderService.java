@@ -67,7 +67,7 @@ public interface IDataLoaderService {
     
     public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener);
     
-    public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
+    public List<IncomingBatch> loadDataBatch(String batchData);
     
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
     

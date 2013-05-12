@@ -200,7 +200,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return new ArrayList<String>(dataLoaderFactories.keySet());
     }
 
-    public List<IncomingBatch> loadDataBatch(String batchData) throws IOException {
+    public List<IncomingBatch> loadDataBatch(String batchData){
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeId,
@@ -212,6 +212,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         nodeService.findIdentity(), transport);
                 processInfo.setStatus(ProcessInfo.Status.DONE);
                 return list;
+            } catch (IOException ex) {
+                throw new IoException();
             } catch (RuntimeException ex) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw ex;
