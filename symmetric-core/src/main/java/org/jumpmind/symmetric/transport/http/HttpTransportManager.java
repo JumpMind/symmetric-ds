@@ -156,18 +156,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         pw.println(data);
         pw.flush();
     }
-    
-    public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("filesync/pull", remote, local,
-                securityToken, registrationUrl)));
-        if (requestProperties != null) {
-            for (String key : requestProperties.keySet()) {
-                conn.addRequestProperty(key, requestProperties.get(key));
-            }
-        }
-        return new HttpIncomingTransport(conn, parameterService);
-    }
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
@@ -186,16 +174,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
-                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false);
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
     }
-    
-    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
-            String securityToken, String registrationUrl) throws IOException {
-        URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
-                getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
-                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), true);
-    }    
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
             throws IOException {
@@ -233,15 +213,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestMethod("GET");
         return conn;
-    }
-    
-    protected static InputStream getInputStreamFrom(HttpURLConnection connection) throws IOException {
-        String type = connection.getContentEncoding();
-        InputStream in = connection.getInputStream();
-        if (!StringUtils.isBlank(type) && type.equals("gzip")) {
-            in = new GZIPInputStream(in);
-        }
-        return in;
     }
 
     /**

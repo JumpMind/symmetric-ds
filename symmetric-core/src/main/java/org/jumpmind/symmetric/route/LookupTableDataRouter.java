@@ -77,21 +77,14 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
         Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
         String column = params.get(PARAM_KEY_COLUMN);
-        if (dataMap.containsKey(column)) {
-            String keyData = dataMap.get(column);
-            Set<String> externalIds = lookupTable.get(keyData);
-            if (externalIds != null) {
-                for (Node node : nodes) {
-                    if (externalIds.contains(node.getExternalId())) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
-                    }
+        String keyData = dataMap.get(column);
+        Set<String> externalIds = lookupTable.get(keyData);
+        if (externalIds != null) {
+            for (Node node : nodes) {
+                if (externalIds.contains(node.getExternalId())) {
+                    nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                 }
             }
-        } else {
-            log.error(
-                    "Could not route data with an id of {} using the {} router because the column {} was not captured for the {} table",
-                    new Object[] { dataMetaData.getData().getDataId(), getClass().getSimpleName(),
-                            column, dataMetaData.getTable().getName() });
         }
 
         return nodeIds;
@@ -115,18 +108,15 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     
     public Map<String, String> parse(String routerExpression) throws SyntaxParsingException {
         boolean valid = true;
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params =  new HashMap<String, String>();
         if (!StringUtils.isBlank(routerExpression)) {
             String[] expTokens = routerExpression.split("\r\n|\r|\n");
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
                         String[] tokens = t.split("=");
-                        /*
-                         * tokens must be trimmed, removing leading and trailing spaces
-                         */
-                        if (tokens.length == 2 && !params.containsKey(tokens[0].trim())) {
-                            params.put(tokens[0].trim(), tokens[1].trim());
+                        if (tokens.length == 2 && !params.containsKey(tokens[0])) {
+                            params.put(tokens[0], tokens[1]);
                         } else {
                             valid = false;
                             break;
@@ -149,11 +139,12 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             log.warn("The provided lookup table router expression is empty");
         }
         return params;
-    }    
+    }
+    
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
             SimpleRouterContext routingContext) {
-        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get(PARAM_TABLE);
+        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
                 .getContextCache().get(CTX_CACHE_KEY);
         if (lookupMap == null) {

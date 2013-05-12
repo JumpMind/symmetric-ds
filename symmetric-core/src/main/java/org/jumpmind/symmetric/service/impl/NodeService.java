@@ -233,16 +233,6 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
             }
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             if (!syncChange) {
                 symmetricDialect.enableSyncTriggers(transaction);
@@ -468,16 +458,6 @@ public class NodeService extends AbstractService implements INodeService {
             boolean updated = updateNodeSecurity(transaction, security);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -539,16 +519,6 @@ public class NodeService extends AbstractService implements INodeService {
             boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
@@ -588,16 +558,6 @@ public class NodeService extends AbstractService implements INodeService {
             boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {      
             close(transaction);
         }

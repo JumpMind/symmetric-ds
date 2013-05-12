@@ -22,9 +22,6 @@ package org.jumpmind.symmetric.io.stage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public interface IStagedResource {
 
@@ -40,12 +37,6 @@ public interface IStagedResource {
     public BufferedReader getReader();
 
     public BufferedWriter getWriter();
-    
-    public OutputStream getOutputStream();
-
-    public InputStream getInputStream();    
-    
-    public File getFile();
     
     public void close();
 

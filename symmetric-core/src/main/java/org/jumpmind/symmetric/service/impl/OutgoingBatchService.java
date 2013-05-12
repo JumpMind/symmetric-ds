@@ -154,16 +154,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             transaction = sqlTemplate.startSqlTransaction();
             insertOutgoingBatch(transaction, outgoingBatch);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;             
         } finally {
             close(transaction);
         }

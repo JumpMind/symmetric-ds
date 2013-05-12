@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -85,6 +86,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.Node;
@@ -93,7 +95,6 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -114,6 +115,7 @@ import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.util.AppUtils;
 
 /**
  * Responsible for writing batch data to the database
@@ -277,7 +279,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     "");
                             remote.setSyncUrl(url);
                         }
-                        sendAck(remote, local, localSecurity, list, transportManager);
+                        sendAck(remote, local, localSecurity, list);
                     }
                 }
                 processInfo.setStatus(ProcessInfo.Status.DONE);
@@ -361,6 +363,41 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
+     * Try a configured number of times to get the ACK through.
+     */
+    protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
+            List<IncomingBatch> list) throws IOException {        
+        Exception error = null;
+        int sendAck = -1;
+        int numberOfStatusSendRetries = parameterService
+                .getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
+        for (int i = 0; i < numberOfStatusSendRetries && sendAck != HttpURLConnection.HTTP_OK; i++) {
+            try {
+                sendAck = transportManager.sendAcknowledgement(remote, list, local,
+                        localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
+            } catch (IOException ex) {
+                error = ex;
+            } catch (RuntimeException ex) {
+                error = ex;
+            }
+            if (sendAck != HttpURLConnection.HTTP_OK) {
+                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1,
+                        error != null ? error.getMessage() : "");
+                if (i < numberOfStatusSendRetries - 1) {
+                    AppUtils.sleep(parameterService
+                            .getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
+                } else if (error instanceof RuntimeException) {
+                    throw (RuntimeException) error;
+                } else if (error instanceof IOException) {
+                    throw (IOException) error;
+                } else {
+                    throw new IOException(Integer.toString(sendAck));
+                }
+            }
+        }
+    }
+
+    /**
      * Load database from input stream and return a list of batch statuses. This
      * is used for a pull request that responds with data, and the
      * acknowledgment is sent later.
@@ -383,7 +420,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                 IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
-                        transport.openReader());
+                        transport.open());
                 IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(processInfo, sourceNode.getNodeId(), listener));
@@ -391,7 +428,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                        targetNodeId, transport.openReader()), null, listener) {
+                        targetNodeId, transport.open()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(processInfo, sourceNode.getNodeId(), batch.getChannelId(),
@@ -630,16 +667,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transaction = sqlTemplate.startSqlTransaction();
             insertIncomingError(transaction, incomingError);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }

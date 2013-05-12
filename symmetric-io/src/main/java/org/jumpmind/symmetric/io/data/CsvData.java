@@ -236,8 +236,8 @@ public class CsvData {
     }
 
     public boolean requiresTable() {
-        return dataEventType != null && dataEventType != DataEventType.CREATE
-                && dataEventType != DataEventType.BSH;
+        return dataEventType != null && dataEventType != DataEventType.CREATE && 
+                dataEventType != DataEventType.BSH;
     }
     
     public boolean isNoBinaryOldData() {

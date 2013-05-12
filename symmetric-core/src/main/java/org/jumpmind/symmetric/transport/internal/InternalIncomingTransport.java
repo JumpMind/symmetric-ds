@@ -35,40 +35,26 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 public class InternalIncomingTransport implements IIncomingTransport {
 
     BufferedReader reader = null;
-    
-    InputStream is;
 
-    public InternalIncomingTransport(InputStream is)  {
-        this.is = is;
-        this.reader = TransportUtils.toReader(is);
+    public InternalIncomingTransport(InputStream pullIs)  {
+        reader = TransportUtils.toReader(pullIs);
     }
     
     public InternalIncomingTransport(BufferedReader reader)  {
         this.reader = reader;
     }    
 
-    public void close() {
-        if (reader != null) {
-            IOUtils.closeQuietly(reader);
-            reader = null;
-        }
-
-        if (is != null) {
-            IOUtils.closeQuietly(is);
-            is = null;
-        }
+    public void close() throws IOException {
+        IOUtils.closeQuietly(reader);
+        reader = null;
     }
 
     public boolean isOpen() {
-        return reader != null || is != null;
+        return reader != null;
     }
 
-    public BufferedReader openReader() throws IOException {
+    public BufferedReader open() throws IOException {
         return reader;
-    }
-    
-    public InputStream openStream() throws IOException {
-        return is;
     }
     
     public String getRedirectionUrl() {
