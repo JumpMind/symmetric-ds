@@ -408,7 +408,7 @@ public class SymmetricWebServer {
     }
 
     protected void removeHttpJmxAdaptor() {
-        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true) && jmxEnabled) {
             try {
                 MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());

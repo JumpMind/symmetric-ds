@@ -676,6 +676,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return value;
     }
     
+    public void alterCaseToMatchDatabaseDefaultCase(Table... tables) {
+        for (Table table : tables) {
+            alterCaseToMatchDatabaseDefaultCase(table);
+        }
+    }
+    
     public void alterCaseToMatchDatabaseDefaultCase(Table table) {
         table.setName(alterCaseToMatchDatabaseDefaultCase(table.getName()));
 

@@ -135,6 +135,8 @@ public interface IDatabasePlatform {
     
     public void alterCaseToMatchDatabaseDefaultCase(Table table);
     
+    public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
+    
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
 
     public boolean isLob(int type);
