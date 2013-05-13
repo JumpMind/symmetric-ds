@@ -76,6 +76,7 @@ abstract public class AbstractTest {
 
     @Before
     public void setup() {
+        TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
         for (String group : groups) {
             getWebServer(group);
