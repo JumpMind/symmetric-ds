@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -85,14 +86,14 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
 
         // pull out headers and pass to pull() method
-        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), map);
+        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), map);
 
         log.debug("Done with Pull request from {}", nodeId);
 
     }
         
     public void pull(String nodeId, String remoteHost, String remoteAddress,
-            OutputStream outputStream, ChannelMap map) throws IOException {
+            OutputStream outputStream,  String encoding, ChannelMap map) throws IOException {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         long ts = System.currentTimeMillis();
         try {
@@ -108,7 +109,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     registrationService.registerNode(nodeService.findNode(nodeId), remoteHost,
                             remoteAddress, outputStream, false);
                 } else {
-                    IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream,
+                    IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                             nodeService.findIdentityNodeId(), nodeId, ProcessType.PULL_HANDLER));
