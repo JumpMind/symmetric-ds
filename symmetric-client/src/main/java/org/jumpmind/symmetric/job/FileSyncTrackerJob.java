@@ -29,7 +29,8 @@ public class FileSyncTrackerJob extends AbstractJob {
 
     protected FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.tracker", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE), engine, taskScheduler);
+                ParameterConstants.FILE_SYNC_ENABLE)
+                && engine.getParameterService().is("start.file.sync.tracker.job", true), engine, taskScheduler);
     }
 
     public String getClusterLockName() {

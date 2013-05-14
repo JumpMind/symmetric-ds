@@ -29,7 +29,7 @@ public class FileSyncPullJob extends AbstractJob {
 
     protected FileSyncPullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.pull", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE), engine, taskScheduler);
+                ParameterConstants.FILE_SYNC_ENABLE) && engine.getParameterService().is("start.file.sync.pull.job", true), engine, taskScheduler);
     }
 
     public String getClusterLockName() {

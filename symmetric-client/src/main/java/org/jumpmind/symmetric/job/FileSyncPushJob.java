@@ -29,7 +29,9 @@ public class FileSyncPushJob extends AbstractJob {
 
     protected FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.push", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE), engine, taskScheduler);
+                ParameterConstants.FILE_SYNC_ENABLE)
+                && engine.getParameterService().is("start.file.sync.push.job", true), engine,
+                taskScheduler);
     }
 
     public String getClusterLockName() {
