@@ -101,11 +101,7 @@ public class DataService extends AbstractService implements IDataService {
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
     
-    public boolean insertReloadEvent(TableReloadRequest request) {
-        return insertReloadEvent(request, true);
-    }
-    
-    public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest) {
+    public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
         boolean successful = false;
         if (request.isReloadEnabled()) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -140,14 +136,14 @@ public class DataService extends AbstractService implements IDataService {
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
                                         triggerHistory, request.getReloadSelect(), false, -1, null);
 
-                                if (updateTableReloadRequest) {
+                                if (!targetNode.requires13Compatiblity() && deleteAtClient) {
                                     insertSqlEvent(
                                             transaction,
                                             triggerHistory,
                                             trigger.getChannelId(),
                                             targetNode,
                                             String.format(
-                                                    "update %s set reload_enabled=0, reload_time=current_timestamp where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
+                                                    "delete from %s where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
                                                     TableConstants
                                                             .getTableName(
                                                                     tablePrefix,
@@ -157,15 +153,11 @@ public class DataService extends AbstractService implements IDataService {
                                                             .getTriggerId(), request.getRouterId()),
                                             false, -1, null);
                                 }
+
+                                deleteTableReloadRequest(transaction, request);
                                 
                                 transaction.commit();
                                 
-                                request.setReloadEnabled(false);
-                                request.setReloadTime(new Date());
-                                request.setLastUpdateBy("symmetricds");
-                                if (updateTableReloadRequest) {
-                                    saveTableReloadRequest(request);
-                                }
                             } catch (Error ex) {
                                 if (transaction != null) {
                                     transaction.rollback();
@@ -206,6 +198,15 @@ public class DataService extends AbstractService implements IDataService {
         return successful;
 
     }
+    
+    protected void deleteTableReloadRequest(ISqlTransaction sqlTransaction, TableReloadRequest request) {
+        sqlTransaction.prepareAndExecute(
+                getSql("deleteTableReloadRequest"),
+                new Object[] { request.getSourceNodeId(),
+                        request.getTargetNodeId(), request.getTriggerId(), request.getRouterId() },
+                new int[] { Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+    }    
     
     public void saveTableReloadRequest(TableReloadRequest request) {
         Date time = new Date();
@@ -959,17 +960,18 @@ public class DataService extends AbstractService implements IDataService {
                     .getTriggerHistoryId());
             if (triggerRouters != null && triggerRouters.size() > 0) {
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    if (parameterService
-                            .is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                        String xml = symmetricDialect.getCreateTableXML(triggerHistory,
-                                triggerRouter);
-                        insertCreateEvent(targetNode, triggerRouter, triggerHistory, xml, true, -1, null);
-                    } else if (parameterService
-                            .is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-                        insertPurgeEvent(targetNode, triggerRouter, triggerHistory, true, -1, null);
-                    }
-                    eventCount++;
-                    insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
+                    if (!triggerRouter.getTrigger().isSourceTableNameWildCarded()) {
+                        TableReloadRequest request = new TableReloadRequest();
+                        request.setTriggerId(triggerRouter.getTrigger().getTriggerId());
+                        request.setRouterId(triggerRouter.getRouter().getRouterId());
+                        request.setSourceNodeId(sourceNode.getNodeId());                        
+                        request.setTargetNodeId(targetNode.getNodeId());
+                        request.setReloadTime(null);
+                        request.setReloadEnabled(true);
+                        request.setReloadSelect(overrideInitialLoadSelect);
+                        saveTableReloadRequest(request);
+                        eventCount++;
+                    }                                    
                 }
             }
         }

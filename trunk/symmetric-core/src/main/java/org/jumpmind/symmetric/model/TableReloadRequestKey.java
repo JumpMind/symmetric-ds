@@ -26,13 +26,15 @@ public class TableReloadRequestKey {
     protected String sourceNodeId;
     protected String triggerId;
     protected String routerId;
+    protected String receivedFromNodeId;
 
     public TableReloadRequestKey(String targetNodeId, String sourceNodeId, String triggerId,
-            String routerId) {
+            String routerId, String receivedFromNodeId) {
         this.targetNodeId = targetNodeId;
         this.sourceNodeId = sourceNodeId;
         this.triggerId = triggerId;
         this.routerId = routerId;
+        this.receivedFromNodeId = receivedFromNodeId;
     }
 
     public String getRouterId() {
@@ -50,5 +52,13 @@ public class TableReloadRequestKey {
     public String getTriggerId() {
         return triggerId;
     }
+    
+    public void setReceivedFromNodeId(String receivedFromNodeId) {
+		this.receivedFromNodeId = receivedFromNodeId;
+	}
+    
+    public String getReceivedFromNodeId() {
+		return receivedFromNodeId;
+	}
 
 }
