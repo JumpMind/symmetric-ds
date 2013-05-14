@@ -109,7 +109,7 @@ abstract public class AbstractTriggerTemplate {
     }
 
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
-            TriggerHistory triggerHistory, Channel channel) {
+            TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
         
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
@@ -122,11 +122,15 @@ abstract public class AbstractTriggerTemplate {
                 false, channel, triggerRouter.getTrigger()).columnString;
 
         sql = FormatUtils.replace("columns", columnsText, sql);
+        String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
+                : triggerRouter.getInitialLoadSelect();
+        if (StringUtils.isNotBlank(overrideSelectSql)) {
+        	initialLoadSelect = overrideSelectSql;
+        }
         sql = FormatUtils
                 .replace(
-                        "whereClause",
-                        StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
-                                : triggerRouter.getInitialLoadSelect(), sql);
+                        "whereClause", initialLoadSelect
+                        , sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger())

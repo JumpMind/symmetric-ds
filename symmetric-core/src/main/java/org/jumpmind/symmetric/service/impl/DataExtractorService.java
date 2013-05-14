@@ -219,7 +219,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (!triggerRouter.getTrigger().getSourceTableName()
                     .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter,
-                        triggerHistory));
+                        triggerHistory, null));
             } else {
                 Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT,
                         triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
@@ -787,7 +787,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(triggerId, routerId, false);
                         if (triggerRouter != null) {
                             SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
-                                    triggerRouter, triggerHistory);
+                                    triggerRouter, triggerHistory, data.getRowData());
                             this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
                                     event);
                             data = (Data) this.reloadSource.next();
@@ -951,9 +951,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             triggerRouter.getRouter().getRouterId(), history, false);
                     this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                            triggerRouter.getRouter().getRouterId(), history, true);                    
-                    this.startNewCursor(history, triggerRouter);
-
+                            triggerRouter.getRouter().getRouterId(), history, true);      
+                    this.startNewCursor(history, triggerRouter, this.currentInitialLoadEvent.getInitialLoadSelect());
                 }
 
             }
@@ -978,12 +977,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
-                final TriggerRouter triggerRouter) {
+                final TriggerRouter triggerRouter, String overrideSelectSql) {
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
             String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, this.sourceTable,
                     triggerHistory,
-                    configurationService.getChannel(triggerRouter.getTrigger().getChannelId()));
+                    configurationService.getChannel(triggerRouter.getTrigger().getChannelId()), overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row rs) {
                     String csvRow = rs.stringValue();
@@ -1026,9 +1025,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private TriggerHistory triggerHistory;
         private Node node;
         private Data data;
+        private String initialLoadSelect;
 
         public SelectFromTableEvent(Node node, TriggerRouter triggerRouter,
-                TriggerHistory triggerHistory) {
+                TriggerHistory triggerHistory, String initialLoadSelect) {
+        	this.initialLoadSelect = initialLoadSelect;
             this.node = node;
             this.triggerRouter = triggerRouter;
             Trigger trigger = triggerRouter.getTrigger();
@@ -1062,6 +1063,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public boolean containsData() {
             return data != null;
         }
+        
+        public String getInitialLoadSelect() {
+			return initialLoadSelect;
+		}
 
     }    
 
