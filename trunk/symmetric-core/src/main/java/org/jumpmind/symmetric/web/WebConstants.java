@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.web;
  * Constants that are related to the HTTP transport
  */
 public class WebConstants {
+
+    public static final String HEADER_ACCEPT_CHARSET = "Accept-Charset";
     
     public static final String METHOD_GET = "GET";
     

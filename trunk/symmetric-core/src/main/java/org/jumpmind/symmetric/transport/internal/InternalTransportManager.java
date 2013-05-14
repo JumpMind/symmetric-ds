@@ -103,7 +103,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
                 IOutgoingTransport transport = new InternalOutgoingTransport(respOs,
-                        suspendIgnoreChannels);
+                        suspendIgnoreChannels, IoConstants.ENCODING);
                 ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                         new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
                                 .getNodeId(), ProcessType.PULL_HANDLER));
