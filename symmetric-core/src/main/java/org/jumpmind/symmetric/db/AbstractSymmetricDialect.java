@@ -210,8 +210,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
-            TriggerHistory triggerHistory, Channel channel) {
-        return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel)
+            TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
+        return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel, overrideSelectSql)
                 .trim();
     }
 
