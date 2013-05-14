@@ -55,7 +55,8 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
             log.debug("File sync pull request received from {}", nodeId);
         }
 
-        IOutgoingTransport outgoingTransport = createOutgoingTransport(res.getOutputStream(),
+        IOutgoingTransport outgoingTransport = createOutgoingTransport(res.getOutputStream(), 
+                req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET),
                 engine.getConfigurationService().getSuspendIgnoreChannelLists(nodeId));
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), nodeId,

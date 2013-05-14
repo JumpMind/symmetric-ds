@@ -70,12 +70,12 @@ abstract public class AbstractUriHandler implements IUriHandler {
         return interceptors;
     }
     
-    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, ChannelMap map) throws IOException {
-        return new InternalOutgoingTransport(outputStream, map);
+    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, String encoding, ChannelMap map) throws IOException {
+        return new InternalOutgoingTransport(outputStream, map, encoding);
     }
 
-    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream) throws IOException {
-        return new InternalOutgoingTransport(outputStream, new ChannelMap());
+    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, String encoding) throws IOException {
+        return new InternalOutgoingTransport(outputStream, new ChannelMap(), encoding);
     }
     
     public void setEnabled(boolean enabled) {

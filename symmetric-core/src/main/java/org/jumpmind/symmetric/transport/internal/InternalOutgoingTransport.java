@@ -23,9 +23,9 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -40,13 +40,13 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
 
     boolean open = true;
 
-    public InternalOutgoingTransport(OutputStream os) throws UnsupportedEncodingException {
-        this(os, new ChannelMap());
+    public InternalOutgoingTransport(OutputStream os, String encoding) throws UnsupportedEncodingException {
+        this(os, new ChannelMap(), encoding);
     }
 
-    public InternalOutgoingTransport(OutputStream os, ChannelMap map) throws UnsupportedEncodingException {
+    public InternalOutgoingTransport(OutputStream os, ChannelMap map, String encoding) throws UnsupportedEncodingException {
         this.os = os;
-        this.writer = new BufferedWriter(new OutputStreamWriter(os, IoConstants.ENCODING));
+        this.writer = new BufferedWriter(new OutputStreamWriter(os, encoding == null ? Charset.defaultCharset().name() : encoding));
         this.map = map;
     }
 
