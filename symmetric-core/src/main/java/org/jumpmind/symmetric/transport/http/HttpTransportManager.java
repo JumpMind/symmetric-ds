@@ -106,7 +106,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public static HttpURLConnection openConnection(URL url, String username, String password)
             throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Accept-Charset", "utf-8");
+        conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, IoConstants.ENCODING);
         setBasicAuthIfNeeded(conn, username, password);
         return conn;
     }

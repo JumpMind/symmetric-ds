@@ -16,39 +16,38 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
-
+ * under the License. 
+ */
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-/**
- * 
- */
 public class InternalOutgoingTransport implements IOutgoingTransport {
 
     BufferedWriter writer = null;
+    
+    OutputStream os = null;
 
     ChannelMap map = null;
 
     boolean open = true;
 
-    public InternalOutgoingTransport(OutputStream pushOs) throws UnsupportedEncodingException {
-        this(pushOs, new ChannelMap());
+    public InternalOutgoingTransport(OutputStream os, String encoding) throws UnsupportedEncodingException {
+        this(os, new ChannelMap(), encoding);
     }
 
-    public InternalOutgoingTransport(OutputStream pushOs, ChannelMap map) throws UnsupportedEncodingException {
-        writer = new BufferedWriter(new OutputStreamWriter(pushOs, IoConstants.ENCODING));
+    public InternalOutgoingTransport(OutputStream os, ChannelMap map, String encoding) throws UnsupportedEncodingException {
+        this.os = os;
+        this.writer = new BufferedWriter(new OutputStreamWriter(os, encoding == null ? Charset.defaultCharset().name() : encoding));
         this.map = map;
     }
 
