@@ -184,7 +184,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         String triggerId = columnValues.get("TRIGGER_ID");
 
                         list.add(new TableReloadRequestKey(targetNodeId, sourceNodeId, triggerId,
-                                routerId));
+                                routerId, dataMetaData.getData().getSourceNodeId()));
                     }
                 } else {
                     for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
@@ -396,10 +396,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     jobManager.stopJobs();
                     jobManager.startJobs();
                 }
-
             }
         }
-
     }
     
     protected void insertReloadEvents(SimpleRouterContext routingContext) {        
@@ -410,7 +408,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             for (TableReloadRequestKey reloadRequestKey : reloadRequestKeys) {
                 TableReloadRequest request = engine.getDataService()
                         .getTableReloadRequest(reloadRequestKey);
-                if (engine.getDataService().insertReloadEvent(request)) {
+                if (engine.getDataService().insertReloadEvent(request, reloadRequestKey.getReceivedFromNodeId() != null)) {
                     log.info(
                             "Inserted table reload request from config data router for node {} and trigger {}",
                             reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());                    

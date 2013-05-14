@@ -67,9 +67,7 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
-    public boolean insertReloadEvent(TableReloadRequest request, boolean updateTableReloadRequest);
-    
-    public boolean insertReloadEvent(TableReloadRequest request);
+    public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, long loadId, String createBy);
