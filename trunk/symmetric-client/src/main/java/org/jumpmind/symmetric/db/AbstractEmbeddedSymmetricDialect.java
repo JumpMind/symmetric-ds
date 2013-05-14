@@ -41,8 +41,8 @@ abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetric
      * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel) {
-        String sql = super.createInitialLoadSqlFor(node, trigger, table, triggerHistory, channel);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
+        String sql = super.createInitialLoadSqlFor(node, trigger, table, triggerHistory, channel, overrideSelectSql);
         sql = sql.replace("''", "'");
         return sql;
     }
