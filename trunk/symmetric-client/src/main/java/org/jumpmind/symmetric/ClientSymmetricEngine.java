@@ -86,7 +86,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
      *            Whether to store a reference to this engine in a local static
      *            map.
      */
-    public ClientSymmetricEngine(BasicDataSource dataSource, ApplicationContext springContext,
+    public ClientSymmetricEngine(DataSource dataSource, ApplicationContext springContext,
             Properties properties, boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
@@ -96,7 +96,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.init();
     }
 
-    public ClientSymmetricEngine(BasicDataSource dataSource, Properties properties,
+    public ClientSymmetricEngine(DataSource dataSource, Properties properties,
             boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
