@@ -368,9 +368,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
 
                             if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
-                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
+                                log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
                             } else {
-                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
+                                log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
                                 if (failOnError) {
                                     throw ex;
                                 }
