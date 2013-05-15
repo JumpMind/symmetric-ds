@@ -653,14 +653,14 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
-                batch.incrementDataEventCount();
-                numberOfDataEventsInserted++;
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
                     TriggerRouter triggerRouter = dataMetaData.getTriggerRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                             triggerRouter != null ? triggerRouter.getRouter().getRouterId()
                                     : Constants.UNKNOWN_ROUTER_ID);
+                    batch.incrementDataEventCount();
+                    numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
