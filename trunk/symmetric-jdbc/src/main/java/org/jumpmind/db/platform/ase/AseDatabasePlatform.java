@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.sybase;
+package org.jumpmind.db.platform.ase;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,12 +27,13 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.ase.AseDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for Sybase.
  */
-public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
+public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The standard Sybase jdbc driver. */
     public static final String JDBC_DRIVER = "com.sybase.jdbc4.jdbc.SybDriver";
@@ -48,7 +49,7 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public SybaseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
+    public AseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
 
         sqlScriptReplacementTokens = new HashMap<String, String>();
@@ -56,22 +57,22 @@ public class SybaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected SybaseDdlBuilder createDdlBuilder() {
-        return new SybaseDdlBuilder();
+    protected AseDdlBuilder createDdlBuilder() {
+        return new AseDdlBuilder();
     }
 
     @Override
-    protected SybaseDdlReader createDdlReader() {
-        return new SybaseDdlReader(this);
+    protected AseDdlReader createDdlReader() {
+        return new AseDdlReader(this);
     }
 
     @Override
-    protected SybaseJdbcSqlTemplate createSqlTemplate() {
-        return new SybaseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+    protected AseJdbcSqlTemplate createSqlTemplate() {
+        return new AseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {
-        return DatabaseNamesConstants.SYBASE;
+        return DatabaseNamesConstants.ASE;
     }
 
     public String getDefaultCatalog() {

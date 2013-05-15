@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db.sybase;
+package org.jumpmind.symmetric.db.ase;
 
 import java.util.HashMap;
 
@@ -12,9 +12,9 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.util.FormatUtils;
 
-public class SybaseTriggerTemplate extends AbstractTriggerTemplate {
+public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
-    public SybaseTriggerTemplate(ISymmetricDialect symmetricDialect) {
+    public AseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;

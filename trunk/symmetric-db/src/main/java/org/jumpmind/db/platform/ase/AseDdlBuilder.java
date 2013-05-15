@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.sybase;
+package org.jumpmind.db.platform.ase;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -48,9 +48,9 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for Sybase.
  */
-public class SybaseDdlBuilder extends AbstractDdlBuilder {
+public class AseDdlBuilder extends AbstractDdlBuilder {
 
-    public SybaseDdlBuilder() {
+    public AseDdlBuilder() {
 
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setNullAsDefaultValueRequired(true);

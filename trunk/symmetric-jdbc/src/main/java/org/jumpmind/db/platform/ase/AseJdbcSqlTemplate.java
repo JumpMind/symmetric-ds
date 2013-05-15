@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.sybase;
+package org.jumpmind.db.platform.ase;
 
 import javax.sql.DataSource;
 
@@ -8,9 +8,9 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
-public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate {
+public class AseJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    public SybaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
+    public AseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
@@ -18,7 +18,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate {
 
     @Override
     public ISqlTransaction startSqlTransaction() {
-        return new SybaseJdbcSqlTransaction(this);
+        return new AseJdbcSqlTransaction(this);
     }
 
     @Override
