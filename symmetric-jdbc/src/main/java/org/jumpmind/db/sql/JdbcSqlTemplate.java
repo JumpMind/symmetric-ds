@@ -512,9 +512,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if ("java.sql.Timestamp".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             }
-        } else if (obj instanceof Timestamp
-                && metaData.getColumnTypeName(index).equals("timestamptz")) {
-            obj = rs.getString(index);
+        } else if (obj instanceof Timestamp) {
+            String typeName = metaData.getColumnTypeName(index);
+            if (typeName != null && typeName.equals("timestamptz")) {
+                obj = rs.getString(index);
+            }
         }
         return obj;
     }

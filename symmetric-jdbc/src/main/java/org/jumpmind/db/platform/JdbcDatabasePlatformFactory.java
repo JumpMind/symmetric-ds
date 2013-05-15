@@ -46,6 +46,7 @@ import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
@@ -87,6 +88,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Enterprise", SybaseDatabasePlatform.class);
+        addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
