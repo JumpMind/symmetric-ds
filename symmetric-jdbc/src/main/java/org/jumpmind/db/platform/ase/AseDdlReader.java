@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.sybase;
+package org.jumpmind.db.platform.ase;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -47,7 +47,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 /*
  * Reads a database model from a Sybase database.
  */
-public class SybaseDdlReader extends AbstractJdbcDdlReader {
+public class AseDdlReader extends AbstractJdbcDdlReader {
 
     /* The regular expression pattern for the ISO dates. */
     private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
@@ -55,7 +55,7 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     /* The regular expression pattern for the ISO times. */
     private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
-    public SybaseDdlReader(IDatabasePlatform platform) {
+    public AseDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);

@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
@@ -48,7 +49,6 @@ import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
-import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -87,7 +87,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
-        addPlatform(platforms, "Adaptive Server Enterprise", SybaseDatabasePlatform.class);
+        addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
@@ -110,7 +110,7 @@ public class JdbcDatabasePlatformFactory {
                 OracleDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL,
                 PostgreSqlDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(SybaseDatabasePlatform.JDBC_SUBPROTOCOL, SybaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(AseDatabasePlatform.JDBC_SUBPROTOCOL, AseDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
                 FirebirdDatabasePlatform.class);
     }

@@ -1,12 +1,12 @@
-package org.jumpmind.db.platform.sybase;
+package org.jumpmind.db.platform.ase;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 
-public class SybaseJdbcSqlTransaction extends JdbcSqlTransaction {
+public class AseJdbcSqlTransaction extends JdbcSqlTransaction {
 
-    public SybaseJdbcSqlTransaction(JdbcSqlTemplate sqltemplate) {
+    public AseJdbcSqlTransaction(JdbcSqlTemplate sqltemplate) {
         super(sqltemplate);
     }
 

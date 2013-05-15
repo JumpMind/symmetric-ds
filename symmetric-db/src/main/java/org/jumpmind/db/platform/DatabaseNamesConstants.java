@@ -19,7 +19,7 @@ final public class DatabaseNamesConstants {
     public final static String MYSQL = "mysql";
     public final static String DB2 = "db2";
     public final static String POSTGRESQL = "postgres";
-    public final static String SYBASE = "sybase";
+    public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";
     public final static String MARIADB = "mariadb";
 

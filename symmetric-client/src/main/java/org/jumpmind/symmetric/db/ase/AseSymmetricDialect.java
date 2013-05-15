@@ -20,7 +20,7 @@
  */
 
 
-package org.jumpmind.symmetric.db.sybase;
+package org.jumpmind.symmetric.db.ase;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,14 +49,14 @@ import org.jumpmind.symmetric.service.IParameterService;
  *  disk resize name = master, size = 16384
  *  create database symmetricclient on master = '30M'
  */
-public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
+public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
 
-    public SybaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+    public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerTemplate = new SybaseTriggerTemplate(this);
+        this.triggerTemplate = new AseTriggerTemplate(this);
     }
 
     @Override
