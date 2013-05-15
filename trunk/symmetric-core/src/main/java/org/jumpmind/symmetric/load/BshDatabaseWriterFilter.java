@@ -56,6 +56,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     private static final String DATA = "data";
     private static final String ERROR = "error";
     private static final String ENGINE = "engine";
+    private static final String LOG = "log";
     private final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     private final String BATCH_COMPLETE_SCRIPTS_KEY = String.format("%d.BatchCompleteScripts",
             hashCode());
@@ -125,6 +126,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
             throws EvalError {
 
+        interpreter.set(LOG, log);
         interpreter.set(ENGINE, this.symmetricEngine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
