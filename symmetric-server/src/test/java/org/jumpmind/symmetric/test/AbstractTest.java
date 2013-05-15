@@ -195,6 +195,7 @@ abstract public class AbstractTest {
             try {
                 statuses.waitForComplete(20000);
             } catch (InterruptedException ex) {
+                log.warn(ex.getMessage());
             }
             pulled = statuses.wasDataProcessed();
             AppUtils.sleep(100);
