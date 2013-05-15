@@ -3,7 +3,6 @@ package org.jumpmind.db.platform.sybase;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
-import org.jumpmind.db.platform.mssql.MsSqlJdbcSqlTransaction;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
