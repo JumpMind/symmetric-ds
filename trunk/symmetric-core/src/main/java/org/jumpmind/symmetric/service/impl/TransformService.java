@@ -30,7 +30,7 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
-    
+
     private Date lastUpdateTime;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
@@ -40,12 +40,12 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTransformTableLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxTransformColumnLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2);
-        
+
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
@@ -80,7 +80,21 @@ public class TransformService extends AbstractService implements ITransformServi
             Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
                     .get(nodeGroupLink);
             if (byTransformPoint != null) {
-                return byTransformPoint.get(transformPoint);
+                if (transformPoint != null) {
+                    return byTransformPoint.get(transformPoint);
+                } else {
+                    // Transform point not specified, so return all transforms.
+                    List<TransformTableNodeGroupLink> transformsExtract = byTransformPoint.get(TransformPoint.EXTRACT);
+                    List<TransformTableNodeGroupLink> transformsLoad = byTransformPoint.get(TransformPoint.LOAD);
+                    List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+                    if (transformsExtract != null) {
+                        transforms.addAll(transformsExtract);
+                    }
+                    if (transformsLoad != null) {
+                        transforms.addAll(transformsLoad);
+                    }
+                    return transforms;
+                }
             }
         }
         return null;
@@ -211,7 +225,7 @@ public class TransformService extends AbstractService implements ITransformServi
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;              
+            throw ex;
         } finally {
             close(transaction);
         }
@@ -241,7 +255,7 @@ public class TransformService extends AbstractService implements ITransformServi
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;              
+            throw ex;
         } finally {
             close(transaction);
         }
