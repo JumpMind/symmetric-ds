@@ -762,21 +762,20 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return <code>true</code> if the index matches the columns
      */
     protected boolean matches(IIndex index, List<String> columnsToSearchFor) {
-        if (index.getColumnCount() != columnsToSearchFor.size()) {
-            return false;
-        }
-        for (int columnIdx = 0; columnIdx < index.getColumnCount(); columnIdx++) {
-            try {
-            if (!columnsToSearchFor.get(columnIdx).equals(index.getColumn(columnIdx).getName())) {
-                return false;
+        for (String column : columnsToSearchFor) {
+            boolean found = false;
+            for (int i = 0; i < index.getColumnCount(); i++) {
+                if (column != null && column.equals(index.getColumn(i).getName())) {
+                    found = true;
+                }
             }
-            } catch (NullPointerException ex) {
-                ex.printStackTrace();
+            if (!found) {
+                return false;
             }
         }
         return true;
     }
-
+    
     /*
      * Tries to determine whether the index is the internal database-generated
      * index for the given table's primary key. Note that only unique indices
