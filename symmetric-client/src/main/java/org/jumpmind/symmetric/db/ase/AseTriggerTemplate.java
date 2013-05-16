@@ -33,6 +33,11 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
+"                                  declare @txid varchar(50)             " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
@@ -46,12 +51,13 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
 "                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(0), $(externalSelect), getdate())                                   " +
+"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())                                   " +
 "                                           fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
+"                                  set nocount off      " +
 "                                end                                                                                                                                                                    " );
 
 
@@ -60,9 +66,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @txid varchar(50)                                                                                                                                            " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
@@ -76,18 +87,26 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
 "                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(0), $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
 "                                         fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                    end                                                                                                                                                                " +
+"                                  set nocount off      " +
 "                                  end                                                                                                                                                                  " );
+
+
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @txid varchar(50)                                                                                                                                            " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "                                    declare DataCursor cursor for                                                                                                                                      " +
@@ -96,13 +115,15 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
 "                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(0), $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
 "                                         fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
+"                                  set nocount off      " +
 "                                end                                                                                                                                                                    " );
+
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
