@@ -80,7 +80,21 @@ public class TransformService extends AbstractService implements ITransformServi
             Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
                     .get(nodeGroupLink);
             if (byTransformPoint != null) {
-                return byTransformPoint.get(transformPoint);
+                if (transformPoint != null) {
+                    return byTransformPoint.get(transformPoint);
+                } else {
+                    // Transform point not specified, so return all transforms.
+                    List<TransformTableNodeGroupLink> transformsExtract = byTransformPoint.get(TransformPoint.EXTRACT);
+                    List<TransformTableNodeGroupLink> transformsLoad = byTransformPoint.get(TransformPoint.LOAD);
+                    List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+                    if (transformsExtract != null) {
+                        transforms.addAll(transformsExtract);
+                    }
+                    if (transformsLoad != null) {
+                        transforms.addAll(transformsLoad);
+                    }
+                    return transforms;
+                }
             }
         }
         return null;
