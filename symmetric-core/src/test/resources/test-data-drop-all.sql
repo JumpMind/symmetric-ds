@@ -2,7 +2,7 @@ drop table sym_transform_column;
 drop table sym_transform_table;
 drop table sym_data_gap;
 drop table sym_node_channel_ctl;
-drop table sym_node_group_channel_window;
+drop table sym_node_group_channel_wnd;
 drop table sym_data_event;
 drop table sym_trigger_hist;
 drop table sym_trigger_router;
