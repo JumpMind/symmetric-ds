@@ -107,7 +107,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         // MySql defines a unique index "PRIMARY" for primary keys
-        return "PRIMARY".equals(index.getName()) || "PRIMARYINDEX".equals(index.getName());
+        return "PRIMARY".equals(index.getName());
     }
 
     @Override
