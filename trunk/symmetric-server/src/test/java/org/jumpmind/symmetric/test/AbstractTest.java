@@ -193,7 +193,7 @@ abstract public class AbstractTest {
         while (!pulled && tries < 10) {
             RemoteNodeStatuses statuses = getWebServer(name).getEngine().pull();
             try {
-                statuses.waitForComplete(20000);
+                statuses.waitForComplete(60000);
             } catch (InterruptedException ex) {
                 log.warn(ex.getMessage());
             }
