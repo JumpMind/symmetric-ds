@@ -54,6 +54,9 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
 
+    static final String SYNC_TRIGGERS_DISABLED = "sync_triggers_disabled";
+    static final String SYNC_NODE_DISABLED = "sync_node_disabled";
+
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new AseTriggerTemplate(this);
@@ -62,64 +65,10 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     @Override
     protected void createRequiredDatabaseObjects() {
 
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns smallint as                                                                                                                              " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @clientapplname varchar(50)                                                                                                                                " +
-                    "                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid                                                                           " +
-                    "                                    if @clientapplname = 'SymmetricDS'                                                                                                                                 " +
-                    "                                        return 1                                                                                                                                                       " +
-                    "                                    return 0                                                                                                                                                           " +
-                    "                                end                                                                                                                                                                    ";
-            install(sql, triggersDisabled);
-        }
-
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @clientname varchar(50)                                                                                                                                    " +
-                    "                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'                                                " +
-                    "                                    return @clientname                                                                                                                                                 " +
-                    "                                end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
-        }
-
-        String txId = this.parameterService.getTablePrefix() + "_" + "txid";
-        if (!installed(SQL_FUNCTION_INSTALLED, txId)) {
-            String sql = "create function dbo.$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @txid varchar(50)                                                                                                                                          " +
-                    "                                    if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
-                    "                                        select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
-                    "                                    end                                                                                                                                                                " +
-                    "                                    return @txid                                                                                                                                                       " +
-                    "                                end                                                                                                                                                                    ";
-            install(sql, txId);
-        }
-
     }
 
     @Override
     protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
-        if (installed(SQL_FUNCTION_INSTALLED, encode)) {
-            uninstall(SQL_DROP_FUNCTION, encode);
-        }
-
-        String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, triggersDisabled);
-        }
-        String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
-        if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            uninstall(SQL_DROP_FUNCTION, nodeDisabled);
-        }
-        String txId = this.parameterService.getTablePrefix() + "_" + "txid";
-        if (installed(SQL_FUNCTION_INSTALLED, txId)) {
-            uninstall(SQL_DROP_FUNCTION, txId);
-        }
 
     }
 
@@ -214,22 +163,27 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         if (nodeId == null) {
             nodeId = "";
         }
-        transaction.prepareAndExecute("set clientapplname 'SymmetricDS'");
-        transaction.prepareAndExecute("set clientname '" + nodeId + "'");
+
+        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "')");
+        transaction.prepareAndExecute("select set_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "', '1')");
+
+        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "')");
+        transaction.prepareAndExecute("select set_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "', '" + nodeId + "')");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("set clientapplname null");
-        transaction.prepareAndExecute("set clientname null");
+        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "')");
+        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "')");
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo."+parameterService.getTablePrefix()+"_triggers_disabled(0) = 0";
+        return "get_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "') is null";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-    	return platform.getDefaultCatalog() + ".dbo."+parameterService.getTablePrefix()+"_txid(0)";
+
+        return "select convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid";
     }
 
     @Override
