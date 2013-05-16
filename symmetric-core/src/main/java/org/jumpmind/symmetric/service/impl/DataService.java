@@ -103,7 +103,7 @@ public class DataService extends AbstractService implements IDataService {
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
         boolean successful = false;
-        if (request.isReloadEnabled()) {
+        if (request != null && request.isReloadEnabled()) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             INodeService nodeService = engine.getNodeService();
             Node targetNode = nodeService.findNode(request.getTargetNodeId());
