@@ -1518,11 +1518,11 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
           <listitem>Copy Column Transform ('copy'): This transformation type
           copies the source column value to the target column. This is the
           default behavior.</listitem>
-          
+
           <listitem>Remove Column Transform ('remove'): This transformation type
           removes the source column.  This transform type is only valid for a
           table transformation type of 'IMPLIED' where all the columns from the source
-          are automatically copied to the target.</listitem>          
+          are automatically copied to the target.</listitem>
 
           <listitem>Constant Transform ('const'): This transformation type
           allows you to map a constant value to the given target column. The
@@ -1752,7 +1752,7 @@ values ('TABLE_TO_RELOAD','BSH','Client','Server',NULL,NULL,
   </section>
 
   <xi:include href="conflicts.xml"/>
-  
+
 <section id="jobs">
 <title>Jobs</title>
 <para>
@@ -1790,8 +1790,8 @@ means every 15 seconds, not every 15 minutes. See
 documentation</ulink>
 for more details.
 </para>
-<para>Some jobs cannot be run in parallel against a single node.  When running on a cluster these jobs use the 
-<xref linkend="table_lock" xrefstyle="table" /> table to get an exclusive semaphore to run the job.  In order to use this table the 
+<para>Some jobs cannot be run in parallel against a single node.  When running on a cluster these jobs use the
+<xref linkend="table_lock" xrefstyle="table" /> table to get an exclusive semaphore to run the job.  In order to use this table the
 <ns:literal>cluster.lock.enabled</ns:literal> must be set to true.
 </para>
 <para> The three main jobs in SymmetricDS are the route, push and
@@ -1848,14 +1848,14 @@ are updated to a status of New "NE".
 </para>
 <para>
 The route job will respect the <literal>max_batch_size</literal> on <xref linkend="table_outgoing_batch" xrefstyle="table" />.  If the max
-batch size is reached before the end of a database tranaction and the batch algorithm is set to something other than 
-<ns:literal>nontransactional</ns:literal> the batch may exceed the specified max size. 
+batch size is reached before the end of a database tranaction and the batch algorithm is set to something other than
+<ns:literal>nontransactional</ns:literal> the batch may exceed the specified max size.
 </para>
 <para>
-The route job delegates to a router defined by the <literal>router_type</literal> and configured by the <literal>router_expression</literal> in the 
-<xref linkend="table_router" xrefstyle="table" /> table.  Each router that has a <ns:literal>source_node_group_id</ns:literal> 
+The route job delegates to a router defined by the <literal>router_type</literal> and configured by the <literal>router_expression</literal> in the
+<xref linkend="table_router" xrefstyle="table" /> table.  Each router that has a <ns:literal>source_node_group_id</ns:literal>
 that matches the current node's source node group id and is linked to the <xref linkend="table_trigger" xrefstyle="table" /> that captured the data gets an
-opportunity to choose a list of nodes the data should be sent to.  Data can only be routed to nodes that belong to the 
+opportunity to choose a list of nodes the data should be sent to.  Data can only be routed to nodes that belong to the
 router's <ns:literal>target_node_group_id</ns:literal>.
 </para>
 <section id="data-gaps">
@@ -1932,7 +1932,7 @@ SymmetricDS property is set to
 <literal>true</literal>
 , the frequency that data is pushed is controlled by the
 <literal>job.push.period.time.ms</literal>
-. 
+.
 </para>
 <para>
 Data is extracted by channel from the source database's
@@ -1952,15 +1952,15 @@ the channel will be skipped for this run. If the
 is set to zero, data extraction will happen every time the jobs run.
 </para>
 <para>
-The maximum number of batches to extract per synchronization is controlled by 
-<ns:literal>max_batch_to_send</ns:literal> on the <xref linkend="table_channel" xrefstyle="table" /> table.  There is also 
+The maximum number of batches to extract per synchronization is controlled by
+<ns:literal>max_batch_to_send</ns:literal> on the <xref linkend="table_channel" xrefstyle="table" /> table.  There is also
 a setting that controls the max number of bytes to send in one synchronization.  If SymmetricDS has extracted the more than the
-number of bytes configured by the <ns:literal>transport.max.bytes.to.sync</ns:literal> parameter, then it will finish extracting the 
+number of bytes configured by the <ns:literal>transport.max.bytes.to.sync</ns:literal> parameter, then it will finish extracting the
 current batch and finish synchronization so the client has a chance to process and acknowlege the "big" batch.  This may happen before
-the configured max number of batches has been reached.  
+the configured max number of batches has been reached.
 </para>
 <para>
-Both the push and pull jobs can be configured to push and pull 
+Both the push and pull jobs can be configured to push and pull
 multiple nodes in parallel. In order to take advantage of this the
 <literal>pull.thread.per.server.count</literal>
 or
@@ -1975,7 +1975,7 @@ multiple servers in a cluster.
 <para>
 SymmetricDS also provides the ability to configure windows of time when
 synchronization is allowed. This is done using the
-<xref linkend="table_node_group_channel_window" xrefstyle="table" />
+<xref linkend="table_node_group_channel_wnd" xrefstyle="table" />
 table. A list of allowed time windows can be specified for a node group
 and a channel. If one or more windows exist, then data will only be
 extracted and transported if the time of day falls within the window of
@@ -2142,5 +2142,5 @@ requires a lock before running. [&#xA0;Default:&#xA0;false&#xA0;] </para>
     </section>
 
 </section>
-  
+
 </chapter>

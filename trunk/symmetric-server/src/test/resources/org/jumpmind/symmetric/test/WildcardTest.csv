@@ -76,10 +76,10 @@ columns,TRIGGER_ID,SOURCE_CATALOG_NAME,SOURCE_SCHEMA_NAME,SOURCE_TABLE_NAME,CHAN
 sql,delete from sym_trigger
 catalog,
 schema,
-table,SYM_NODE_GROUP_CHANNEL_WINDOW
+table,SYM_NODE_GROUP_CHANNEL_WND
 keys,NODE_GROUP_ID,CHANNEL_ID,START_TIME,END_TIME
 columns,NODE_GROUP_ID,CHANNEL_ID,START_TIME,END_TIME,ENABLED
-sql,delete from sym_node_group_channel_window
+sql,delete from sym_node_group_channel_wnd
 catalog,
 schema,
 table,SYM_CHANNEL

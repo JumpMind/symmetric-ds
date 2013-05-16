@@ -1,22 +1,22 @@
 /*
- * Licensed to JumpMind Inc under one or more contributor 
+ * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
+ * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
  * to you under the GNU Lesser General Public License (the
  * "License"); you may not use this file except in compliance
- * with the License. 
- * 
+ * with the License.
+ *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
+ * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
+ * under the License.
  */
 
 package org.jumpmind.symmetric.common;
@@ -46,7 +46,7 @@ public class TableConstants {
     public static final String SYM_DATA_EVENT = "data_event";
     public static final String SYM_TRANSFORM_TABLE = "transform_table";
     public static final String SYM_LOAD_FILTER = "load_filter";
-    public static final String SYM_TRANSFORM_COLUMN = "transform_column";    
+    public static final String SYM_TRANSFORM_COLUMN = "transform_column";
     public static final String SYM_TRIGGER_ROUTER = "trigger_router";
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_SECURITY = "node_security";
@@ -59,7 +59,7 @@ public class TableConstants {
     public static final String SYM_REGISTRATION_REDIRECT = "registration_redirect";
     public static final String SYM_NODE_CHANNEL_CTL = "node_channel_ctl";
     public static final String SYM_CONFLICT = "conflict";
-    public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
+    public static final String SYM_NODE_GROUP_CHANNEL_WND = "node_group_channel_wnd";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
     public static final String SYM_INCOMING_ERROR = "incoming_error";
     public static final String SYM_SEQUENCE = "sequence";
@@ -70,7 +70,7 @@ public class TableConstants {
     public static final String SYM_FILE_TRIGGER = "file_trigger";
     public static final String SYM_FILE_TRIGGER_ROUTER = "file_trigger_router";
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
-    
+
 
     private static List<String> tablesWithPrefix;
 
@@ -110,7 +110,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
-        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_CHANNEL_WND));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
@@ -147,7 +147,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_SECURITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
-        tables.add(getTableName(tablePrefix, SYM_NODE_GROUP_CHANNEL_WINDOW));
+        tables.add(getTableName(tablePrefix, SYM_NODE_GROUP_CHANNEL_WND));
         tables.add(getTableName(tablePrefix, SYM_PARAMETER));
         tables.add(getTableName(tablePrefix, SYM_NODE_HOST_CHANNEL_STATS));
         tables.add(getTableName(tablePrefix, SYM_NODE_HOST_STATS));
@@ -170,10 +170,10 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_TRIGGER_ROUTER_GROUPLET));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
-        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));        
+        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         return tables;
     }
-    
+
     public static final List<String> getTablesThatSync(String tablePrefix) {
         List<String> tables = new ArrayList<String>(getConfigTables(tablePrefix));
         tables.removeAll(getTablesThatDoNotSync(tablePrefix));
