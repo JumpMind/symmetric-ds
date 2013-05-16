@@ -704,7 +704,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
             IIndex index = table.getIndex(indexIdx);
-
+            
             if (index.isUnique() && matches(index, columnNames)
                     && isInternalPrimaryKeyIndex(connection, metaData, table, index)) {
                 table.removeIndex(indexIdx);
@@ -762,18 +762,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return <code>true</code> if the index matches the columns
      */
     protected boolean matches(IIndex index, List<String> columnsToSearchFor) {
-        if (index.getColumnCount() != columnsToSearchFor.size()) {
-            return false;
-        }
-        for (int columnIdx = 0; columnIdx < index.getColumnCount(); columnIdx++) {
-            try {
-            if (!columnsToSearchFor.get(columnIdx).equals(index.getColumn(columnIdx).getName())) {
-                return false;
+    	for (String column : columnsToSearchFor) {
+    		boolean found = false;
+            for (int i = 0; i < index.getColumnCount(); i++) {
+            	if (column != null && column.equals(index.getColumn(i).getName())) {
+            		found = true;
+            	}
             }
-            } catch (NullPointerException ex) {
-                ex.printStackTrace();
+            if (!found) {
+            	return false;
             }
-        }
+		}
         return true;
     }
 
