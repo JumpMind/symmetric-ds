@@ -66,7 +66,8 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns smallint as                                                                                                                              " +
                     "                                begin                                                                                                                                                                  " +
-                    "                                   declare @ret smallint default 0 " +
+                    "                                   declare @ret smallint" +
+                    "                                   select @ret=0 " +
                     "                                   begin   " +
                     "                                       if varexists('" + SYNC_TRIGGERS_DISABLED + "') = 1     " +
                     "                                          select " + SYNC_TRIGGERS_DISABLED + " into @ret    " +
@@ -81,7 +82,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
                     "                                begin                                                                                                                                                                  " +
-                    "                                    declare @ret varchar(50) default 0    " +
+                    "                                    declare @ret varchar(50)    " +
                     "                                    begin      " +
                     "                                        if varexists('" + SYNC_NODE_DISABLED + "') = 1       " +
                     "                                            select " + SYNC_NODE_DISABLED + " into @ret      " +
@@ -216,18 +217,33 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.prepareAndExecute("CREATE OR REPLACE VARIABLE " + SYNC_TRIGGERS_DISABLED + " smallint default 1");
 
-        String defValue = "";
+        transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_TRIGGERS_DISABLED + "')=1 " +
+                                        "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
+                                        "END IF;" +
+                                        "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
+                                        "set " + SYNC_TRIGGERS_DISABLED + "=1;");
+
+        transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_NODE_DISABLED + "')=1 " +
+                                        "THEN drop variable " + SYNC_NODE_DISABLED + " " +
+                                        "END IF;" +
+                                        "create variable " + SYNC_NODE_DISABLED + " varchar(50);");
         if (nodeId != null) {
-            defValue = " default '" + nodeId + "'";
+            transaction.prepareAndExecute("set " + SYNC_NODE_DISABLED + " = '" + nodeId + "'");
         }
-        transaction.prepareAndExecute("CREATE OR REPLACE VARIABLE " + SYNC_NODE_DISABLED + " varchar(50) " + defValue);
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("CREATE OR REPLACE VARIABLE " + SYNC_TRIGGERS_DISABLED + " smallint default 0");
-        transaction.prepareAndExecute("CREATE OR REPLACE VARIABLE " + SYNC_NODE_DISABLED + " varchar(50)");
+        transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_TRIGGERS_DISABLED + "')=1 " +
+                                        "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
+                                        "END IF;" +
+                                        "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
+                                        "set " + SYNC_TRIGGERS_DISABLED + "= 0;");
+
+        transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_NODE_DISABLED + "')=1 " +
+                "THEN drop variable " + SYNC_NODE_DISABLED + " " +
+                "END IF;" +
+                "create variable " + SYNC_NODE_DISABLED + " varchar(50);");
     }
 
     public String getSyncTriggersExpression() {
