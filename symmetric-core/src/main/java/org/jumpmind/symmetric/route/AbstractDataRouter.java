@@ -75,10 +75,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 break;
         }
 
-        if (data.size() == 0) {
-            data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
+        if (data != null) {
+            if (data.size() == 0) {
+                data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
+            }
+            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         }
-        data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         return data;
     }
 
