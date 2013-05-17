@@ -59,7 +59,7 @@ public class BshDataRouter extends AbstractDataRouter {
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.init.ms");
             HashSet<String> targetNodes = new HashSet<String>();
             ts = System.currentTimeMillis();
-            bind(interpreter, dataMetaData, nodes, targetNodes);
+            bind(interpreter, dataMetaData, nodes, targetNodes, initialLoad);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
             Object returnValue = interpreter.eval(dataMetaData.getTriggerRouter().getRouter().getRouterExpression());
@@ -104,9 +104,10 @@ public class BshDataRouter extends AbstractDataRouter {
         }
     }
 
-    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes)
+    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes, boolean initialLoad)
             throws EvalError {
         interpreter.set("log", log);
+        interpreter.set("initialLoad", initialLoad);        
         interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
         interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
