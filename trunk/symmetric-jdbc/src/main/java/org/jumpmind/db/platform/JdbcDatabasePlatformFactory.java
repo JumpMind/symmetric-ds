@@ -88,6 +88,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
+        addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
