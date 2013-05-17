@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -596,16 +597,23 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 List<NodeCommunication> nodes = nodeCommunicationService.list(type);
                 int availableThreads = nodeCommunicationService.getAvailableThreads(type);
                 for (NodeCommunication nodeCommunication : nodes) {
-                    boolean meetsMinimumTime = true;
-                    if (minimumPeriodMs > 0
-                            && nodeCommunication.getLastLockTime() != null
-                            && (System.currentTimeMillis() - nodeCommunication.getLastLockTime()
-                                    .getTime()) < minimumPeriodMs) {
-                        meetsMinimumTime = false;
-                    }
-                    if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
-                        nodeCommunicationService.execute(nodeCommunication, statuses, this);
-                        availableThreads--;
+                    if (StringUtils.isNotBlank(nodeCommunication.getNode().getSyncUrl()) || 
+                                !parameterService.isRegistrationServer()) {
+                        boolean meetsMinimumTime = true;
+                        if (minimumPeriodMs > 0
+                                && nodeCommunication.getLastLockTime() != null
+                                && (System.currentTimeMillis() - nodeCommunication
+                                        .getLastLockTime().getTime()) < minimumPeriodMs) {
+                            meetsMinimumTime = false;
+                        }
+                        if (availableThreads > 0 && !nodeCommunication.isLocked()
+                                && meetsMinimumTime) {
+                            nodeCommunicationService.execute(nodeCommunication, statuses, this);
+                            availableThreads--;
+                        }
+                    } else {
+                        log.warn("File sync cannot communicate with node '{}' in the group '{}'.  The sync url is blank",
+                                nodeCommunication.getNode().getNodeId(), nodeCommunication.getNode().getNodeGroupId());
                     }
                 }
             } else {
