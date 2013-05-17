@@ -101,93 +101,113 @@ public class DataService extends AbstractService implements IDataService {
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
     
-    public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
-        boolean successful = false;
-        if (request != null && request.isReloadEnabled()) {
-            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-            INodeService nodeService = engine.getNodeService();
-            Node targetNode = nodeService.findNode(request.getTargetNodeId());
-            if (targetNode != null) {
-                TriggerRouter triggerRouter = triggerRouterService.
-                        getTriggerRouterForCurrentNode(request.getTriggerId(), request.getRouterId(), false);
-                if (triggerRouter != null) {
-                    Trigger trigger = triggerRouter.getTrigger();
-                    Router router = triggerRouter.getRouter();
+	public boolean insertReloadEvent(TableReloadRequest request,
+			boolean deleteAtClient) {
+		boolean successful = false;
+		if (request != null && request.isReloadEnabled()) {
+			ITriggerRouterService triggerRouterService = engine
+					.getTriggerRouterService();
+			INodeService nodeService = engine.getNodeService();
+			Node targetNode = nodeService.findNode(request.getTargetNodeId());
 
-                    NodeGroupLink link = router.getNodeGroupLink();
-                    Node me = nodeService.findIdentity();
-                    if (link.getSourceNodeGroupId().equals(me.getNodeGroupId())) {
-                        if (link.getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
+			ISqlTransaction transaction = null;
+			try {
+				transaction = sqlTemplate.startSqlTransaction();
+				if (targetNode != null) {
+					TriggerRouter triggerRouter = triggerRouterService
+							.getTriggerRouterForCurrentNode(
+									request.getTriggerId(),
+									request.getRouterId(), false);
+					if (triggerRouter != null) {
+						Trigger trigger = triggerRouter.getTrigger();
+						Router router = triggerRouter.getRouter();
 
-                            TriggerHistory triggerHistory = lookupTriggerHistory(trigger);
+						NodeGroupLink link = router.getNodeGroupLink();
+						Node me = nodeService.findIdentity();
+						if (link.getSourceNodeGroupId().equals(
+								me.getNodeGroupId())) {
+							if (link.getTargetNodeGroupId().equals(
+									targetNode.getNodeGroupId())) {
 
-                            ISqlTransaction transaction = null;
-                            try {
-                                transaction = sqlTemplate.startSqlTransaction();
+								TriggerHistory triggerHistory = lookupTriggerHistory(trigger);
 
-                                String deleteStatement = StringUtils.isNotBlank(request
-                                        .getReloadDeleteStmt()) ? request.getReloadDeleteStmt()
-                                        : triggerRouter.getInitialLoadDeleteStmt();
-                                if (StringUtils.isNotBlank(deleteStatement)) {
-                                    insertPurgeEvent(transaction, targetNode, triggerRouter,
-                                            triggerHistory, false, request.getReloadDeleteStmt(), -1, null);
-                                }
+								String deleteStatement = StringUtils
+										.isNotBlank(request
+												.getReloadDeleteStmt()) ? request
+										.getReloadDeleteStmt() : triggerRouter
+										.getInitialLoadDeleteStmt();
+								if (StringUtils.isNotBlank(deleteStatement)) {
+									insertPurgeEvent(transaction, targetNode,
+											triggerRouter, triggerHistory,
+											false,
+											request.getReloadDeleteStmt(), -1,
+											null);
+								}
 
-                                insertReloadEvent(transaction, targetNode, triggerRouter,
-                                        triggerHistory, request.getReloadSelect(), false, -1, null);
+								insertReloadEvent(transaction, targetNode,
+										triggerRouter, triggerHistory,
+										request.getReloadSelect(), false, -1,
+										null);
 
-                                if (!targetNode.requires13Compatiblity() && deleteAtClient) {
-                                    insertSqlEvent(
-                                            transaction,
-                                            triggerHistory,
-                                            trigger.getChannelId(),
-                                            targetNode,
-                                            String.format(
-                                                    "delete from %s where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
-                                                    TableConstants
-                                                            .getTableName(
-                                                                    tablePrefix,
-                                                                    TableConstants.SYM_TABLE_RELOAD_REQUEST),
-                                                    request.getTargetNodeId(), request
-                                                            .getSourceNodeId(), request
-                                                            .getTriggerId(), request.getRouterId()),
-                                            false, -1, null);
-                                }
-                                
-                                deleteTableReloadRequest(transaction, request);
-                                
-                                transaction.commit();
+								if (!targetNode.requires13Compatiblity()
+										&& deleteAtClient) {
+									insertSqlEvent(
+											transaction,
+											triggerHistory,
+											trigger.getChannelId(),
+											targetNode,
+											String.format(
+													"delete from %s where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
+													TableConstants
+															.getTableName(
+																	tablePrefix,
+																	TableConstants.SYM_TABLE_RELOAD_REQUEST),
+													request.getTargetNodeId(),
+													request.getSourceNodeId(),
+													request.getTriggerId(),
+													request.getRouterId()),
+											false, -1, null);
+								}
 
-                            } finally {
-                                close(transaction);
-                            }
+							} else {
+								log.error(
+										"Could not reload table for node {} because the router {} target node group id {} did not match",
+										new Object[] {
+												request.getTargetNodeId(),
+												request.getRouterId(),
+												link.getTargetNodeGroupId() });
+							}
+						} else {
+							log.error(
+									"Could not reload table for node {} because the router {} source node group id {} did not match",
+									new Object[] { request.getTargetNodeId(),
+											request.getRouterId(),
+											link.getSourceNodeGroupId() });
+						}
+					} else {
+						log.error(
+								"Could not reload table for node {} because the trigger router ({}, {}) could not be found",
+								new Object[] { request.getTargetNodeId(),
+										request.getTriggerId(),
+										request.getRouterId() });
+					}
+				} else {
+					log.error(
+							"Could not reload table for node {} because the node could not be found",
+							request.getTargetNodeId());
+				}
 
-                        } else {
-                            log.error(
-                                    "Could not reload table for node {} because the router {} target node group id {} did not match",
-                                    new Object[] { request.getTargetNodeId(),
-                                            request.getRouterId(), link.getTargetNodeGroupId() });
-                        }
-                    } else {
-                        log.error(
-                                "Could not reload table for node {} because the router {} source node group id {} did not match",
-                                new Object[] { request.getTargetNodeId(), request.getRouterId(),
-                                        link.getSourceNodeGroupId() });
-                    }
-                } else {
-                    log.error(
-                            "Could not reload table for node {} because the trigger router ({}, {}) could not be found",
-                            new Object[] { request.getTargetNodeId(), request.getTriggerId(),
-                                    request.getRouterId() });
-                }
-            } else {
-                log.error("Could not reload table for node {} because the node could not be found",
-                        request.getTargetNodeId());
-            }
-        }
-        return successful;
+				deleteTableReloadRequest(transaction, request);
 
-    }
+				transaction.commit();
+
+			} finally {
+				close(transaction);
+			}
+		}
+		return successful;
+
+	}
     
     protected void deleteTableReloadRequest(ISqlTransaction sqlTransaction, TableReloadRequest request) {
     	sqlTransaction.prepareAndExecute(
@@ -599,9 +619,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.getPkData(),
                         data.getOldData(),
                         data.getTriggerHistory() != null ? data.getTriggerHistory()
-                                .getTriggerHistoryId() : -1, data.getChannelId() }, new int[] {
+                                .getTriggerHistoryId() : -1, data.getChannelId(), data.getExternalData() }, new int[] {
                         Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.NUMERIC, Types.VARCHAR });
+                        Types.NUMERIC, Types.VARCHAR, Types.VARCHAR });
         data.setDataId(id);
         return id;
     }
