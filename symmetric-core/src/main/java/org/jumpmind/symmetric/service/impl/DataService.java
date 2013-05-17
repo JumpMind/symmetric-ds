@@ -653,9 +653,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.getPkData(),
                         data.getOldData(),
                         data.getTriggerHistory() != null ? data.getTriggerHistory()
-                                .getTriggerHistoryId() : -1, data.getChannelId() }, new int[] {
+                                .getTriggerHistoryId() : -1, data.getChannelId(), data.getExternalData() }, new int[] {
                         Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.NUMERIC, Types.VARCHAR });
+                        Types.NUMERIC, Types.VARCHAR, Types.VARCHAR });
         data.setDataId(id);
         return id;
     }
