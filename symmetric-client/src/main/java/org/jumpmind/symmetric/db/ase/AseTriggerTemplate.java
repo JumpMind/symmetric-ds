@@ -48,14 +48,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                  " +
 "                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
 "                                       open DataCursor                                                                                                                                                 " +
-"                                       fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
-"                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
+"                                       fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
+"                                       while @@error = 0 begin                                                                                                                                  " +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())                                   " +
-"                                           fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
+"                                           fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
-"                                       deallocate DataCursor                                                                                                                                           " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
 "                                  set nocount off      " +
 "                                end                                                                                                                                                                    " );
@@ -84,14 +84,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    " +
 "                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
 "                                       open DataCursor                                                                                                                                                 " +
-"                                       fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
-"                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
+"                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
+"                                       while @@error = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
-"                                         fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
+"                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
-"                                       deallocate DataCursor                                                                                                                                           " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                    end                                                                                                                                                                " +
 "                                  set nocount off      " +
 "                                  end                                                                                                                                                                  " );
@@ -112,14 +112,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                    declare DataCursor cursor for                                                                                                                                      " +
 "                                      select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " +
 "                                      open DataCursor                                                                                                                                                  " +
-"                                       fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
-"                                       while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
+"                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
+"                                       while @@error = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
-"                                         fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
+"                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
-"                                       deallocate DataCursor                                                                                                                                           " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
 "                                  set nocount off      " +
 "                                end                                                                                                                                                                    " );
