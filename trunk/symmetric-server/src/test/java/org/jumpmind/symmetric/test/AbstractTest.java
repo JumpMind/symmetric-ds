@@ -58,7 +58,9 @@ abstract public class AbstractTest {
         return getWebServer(getGroupNames()[0]);
     }
 
-    protected abstract Table[] getTables(String name);
+    protected Table[] getTables(String name) {
+        return null;
+    }
 
     protected Properties getProperties(String name) {
         TypedProperties properties = new TypedProperties(getClass().getResourceAsStream(
@@ -84,8 +86,14 @@ abstract public class AbstractTest {
     }
 
     @Test
-    public abstract void test() throws Exception;
+    public void test() throws Exception {
+        ISymmetricEngine rootServer = getRegServer().getEngine();
+        ISymmetricEngine clientServer = getWebServer("client").getEngine();
+        test(rootServer, clientServer);
+    }
 
+    protected abstract void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception;
+    
     @After
     public void teardown() {
         String[] groups = getGroupNames();
@@ -203,5 +211,22 @@ abstract public class AbstractTest {
         }
         return pulled;
     }
+    
+    protected boolean pullFiles(String name) {
+        int tries = 0;
+        boolean pulled = false;
+        while (!pulled && tries < 10) {
+            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService().pullFilesFromNodes(true);
+            try {
+                statuses.waitForComplete(60000);
+            } catch (InterruptedException ex) {
+                log.warn(ex.getMessage());
+            }
+            pulled = statuses.wasDataProcessed();
+            AppUtils.sleep(100);
+            tries++;
+        }
+        return pulled;
+    }    
 
 }

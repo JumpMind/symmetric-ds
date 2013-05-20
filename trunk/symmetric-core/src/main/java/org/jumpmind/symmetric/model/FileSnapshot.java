@@ -99,7 +99,7 @@ public class FileSnapshot implements Serializable {
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
         this.fileName = file.getName();
-        this.filePath = file.getAbsolutePath();
+        this.filePath = file.getPath();
         if (this.filePath.startsWith(fileTriggerRouter.getFileTrigger().getBaseDir())) {
             this.filePath = this.filePath.substring(fileTriggerRouter.getFileTrigger().getBaseDir().length());
         }
