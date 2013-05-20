@@ -177,7 +177,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             case MODIFY:
                             case SEED:
                                 if (file.exists()) {
-                                    command.append("mv (\"");
+                                    command.append("log.info(batchDir);\n");
+                                    command.append("mv (batchDir + \"/");
                                     if (!snapshot.getFilePath().equals(".")) {
                                         command.append(snapshot.getFilePath());
                                         command.append("/");

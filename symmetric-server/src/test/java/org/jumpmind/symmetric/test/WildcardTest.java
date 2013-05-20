@@ -8,7 +8,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.Node;
-import org.junit.Test;
 
 public class WildcardTest extends AbstractTest {
 
@@ -30,11 +29,8 @@ public class WildcardTest extends AbstractTest {
     }
 
     @Override
-    @Test
-    public void test() throws Exception {
+    protected void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception {
 
-        ISymmetricEngine rootServer = getRegServer().getEngine();
-        ISymmetricEngine clientServer = getWebServer("client").getEngine();
         for (int i = 0; i < 10; i++) {
             rootServer.getSqlTemplate().update("insert into a (id, notes) values(?,?)", i,
                     "test 12345");
@@ -91,5 +87,6 @@ public class WildcardTest extends AbstractTest {
         Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
 
     }
+
 
 }

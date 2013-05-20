@@ -516,8 +516,11 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                     String script = FileUtils.readFileToString(syncScript);
                     Interpreter interpreter = new Interpreter();
                     try {
-                        interpreter.set("bsh.cwd", batchDir.getAbsolutePath());
+                        interpreter.set("log", log);
+                        interpreter.set("batchDir", batchDir.getAbsolutePath());
                         interpreter.eval(script);
+                        // TODO set statement count to the number of files processed
+                        incomingBatch.setStatementCount(1);
                         incomingBatch.setStatus(IncomingBatch.Status.OK);
                         incomingBatchService.updateIncomingBatch(incomingBatch);
                     } catch (Throwable ex) {
