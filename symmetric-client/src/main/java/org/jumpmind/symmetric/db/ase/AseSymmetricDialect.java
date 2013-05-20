@@ -54,9 +54,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
 
-    static final String SYNC_TRIGGERS_DISABLED = "sync_triggers_disabled";
-    static final String SYNC_NODE_DISABLED = "sync_node_disabled";
-
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new AseTriggerTemplate(this);
@@ -163,21 +160,17 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         if (nodeId == null) {
             nodeId = "";
         }
-
-        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "')");
-        transaction.prepareAndExecute("select set_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "', '1')");
-
-        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "')");
-        transaction.prepareAndExecute("select set_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "', '" + nodeId + "')");
+        transaction.prepareAndExecute("set clientapplname 'SymmetricDS'");
+        transaction.prepareAndExecute("set clientname '" + nodeId + "'");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "')");
-        transaction.prepareAndExecute("select rm_appcontext('SymmetricDS', '" + SYNC_NODE_DISABLED + "')");
+        transaction.prepareAndExecute("set clientapplname null");
+        transaction.prepareAndExecute("set clientname null");
     }
 
     public String getSyncTriggersExpression() {
-        return "get_appcontext('SymmetricDS', '" + SYNC_TRIGGERS_DISABLED + "') is null";
+        return "@clientapplname <> 'SymmetricDS'";
     }
 
     @Override
