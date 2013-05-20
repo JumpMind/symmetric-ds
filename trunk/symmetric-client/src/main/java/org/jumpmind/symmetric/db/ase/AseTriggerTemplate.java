@@ -49,7 +49,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
 "                                       open DataCursor                                                                                                                                                 " +
 "                                       fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
-"                                       while @@error = 0 begin                                                                                                                                  " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())                                   " +
 "                                           fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
@@ -85,7 +85,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
 "                                       open DataCursor                                                                                                                                                 " +
 "                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
-"                                       while @@error = 0 begin                                                                                                                                  " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
@@ -113,7 +113,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                      select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " +
 "                                      open DataCursor                                                                                                                                                  " +
 "                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
-"                                       while @@error = 0 begin                                                                                                                                  " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
