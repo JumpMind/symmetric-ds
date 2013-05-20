@@ -203,4 +203,9 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         return true;
     }
 
+    @Override
+    public int getMaxTriggerNameLength() {
+        return 28;
+    }
+
 }
