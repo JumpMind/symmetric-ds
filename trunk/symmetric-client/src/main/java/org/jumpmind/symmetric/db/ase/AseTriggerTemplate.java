@@ -34,10 +34,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
 "                                  set nocount on      " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
 "                                  declare @txid varchar(50)             " +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
 "                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
 "                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
@@ -51,7 +55,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())                                   " +
+"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())                                   " +
 "                                           fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
@@ -70,10 +74,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
 "                                  declare @txid varchar(50)                                                                                                                                            " +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
 "                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
 "                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
@@ -87,7 +95,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
@@ -103,10 +111,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  set nocount on      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
 "                                  declare @txid varchar(50)                                                                                                                                            " +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
 "                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
 "                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "                                    declare DataCursor cursor for                                                                                                                                      " +
@@ -115,7 +127,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, get_appcontext('SymmetricDS', 'sync_node_disabled'), $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
