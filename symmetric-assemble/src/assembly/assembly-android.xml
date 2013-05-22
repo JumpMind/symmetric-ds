@@ -1,5 +1,6 @@
 <assembly>
-    <id>client</id>
+    <id>android</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
     <formats>
         <format>zip</format>
     </formats>
@@ -14,11 +15,11 @@
                 <include>NOTICE</include>
             </includes>
         </fileSet>
-    </fileSets>
+    </fileSets>    
     <moduleSets>
         <moduleSet>
             <includes>
-                <include>org.jumpmind.symmetric:symmetric-client</include>
+                <include>org.jumpmind.symmetric:symmetric-android</include>
             </includes>
             <binaries>
                 <unpack>false</unpack>
@@ -28,15 +29,9 @@
                         <unpack>false</unpack>
                         <scope>runtime</scope>
                     </dependencySet>
-                    <dependencySet>
-                        <outputDirectory>/optional</outputDirectory>
-                        <unpack>false</unpack>
-                        <scope>provided</scope>
-                        <useProjectArtifact>false</useProjectArtifact>
-                    </dependencySet>
                 </dependencySets>
             </binaries>
         </moduleSet>
-    </moduleSets>
+    </moduleSets>    
 
 </assembly>
