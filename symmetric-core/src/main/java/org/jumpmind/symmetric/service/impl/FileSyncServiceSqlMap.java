@@ -12,7 +12,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("selectFileTriggersSql", 
-                " select distinct t.trigger_id as trigger_id, base_dir, recursive,              " +
+                " select t.trigger_id as trigger_id, base_dir, recursive,              " +
                 "        includes_files, excludes_files,                                        " +
         		"        sync_on_create, sync_on_modified, t.sync_on_delete as sync_on_delete,  " +
                 "        t.before_copy_script as before_copy_script, " +
