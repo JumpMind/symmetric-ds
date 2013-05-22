@@ -33,6 +33,7 @@
         <module>../symmetric-core</module>
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
+        <module>../symmetric-android</module>
     </modules>
     <build>
         <plugins>
@@ -69,7 +70,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-server.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-ds-${project.version}</finalName>
+                            <finalName>symmetric-${project.version}</finalName>
                         </configuration>
                     </execution>
                     <execution>
@@ -82,9 +83,22 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-client.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-client-${project.version}</finalName>
+                            <finalName>symmetric-${project.version}</finalName>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>android</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/src/assembly/assembly-android.xml</descriptor>
+                            </descriptors>
+                            <finalName>symmetric-${project.version}</finalName>
+                        </configuration>
+                    </execution>                    
                 </executions>
             </plugin>
             <plugin>
