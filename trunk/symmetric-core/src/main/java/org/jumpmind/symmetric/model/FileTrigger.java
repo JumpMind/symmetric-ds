@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.model;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -183,6 +184,15 @@ public class FileTrigger implements Serializable {
     
     public String getBeforeCopyScript() {
         return beforeCopyScript;
+    }
+    
+    public File createSourceFile(FileSnapshot snapshot) {
+        File sourceBaseDir = new File(baseDir);
+        if (!snapshot.getFilePath().equals(".")) {
+            String sourcePath = snapshot.getFilePath() + "/";
+            sourceBaseDir = new File(sourceBaseDir, sourcePath);
+        }
+        return new File(sourceBaseDir, snapshot.getFileName());
     }
     
     @Override

@@ -38,7 +38,7 @@ public class FileSyncTrackerJob extends AbstractJob {
     }
 
     public boolean isClusterable() {
-        return false;
+        return true;
     }
 
     @Override

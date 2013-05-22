@@ -50,6 +50,24 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                         " where                                                                 " +
                         "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");
         
+        putSql("updateFileIncoming",                 
+                " update $(file_incoming) set                                                   " +
+                        "  node_id=?,                                                           " +
+                        "  file_modified_time=?,                                                " +
+                        "  last_event_type=?                                                    " +
+                        " where                                                                 " +
+                        "  file_path=? and file_name=?                                          ");
+        
+        putSql("insertFileIncoming",                 
+                " insert into $(file_incoming) (node_id, file_modified_time, last_event_type, file_path, file_name) " +
+                "   values(?,?,?,?,?)                                                                             ");
+
+        putSql("deleteFileIncoming",                 
+                " delete from $(file_incoming)");
+        
+        putSql("findNodeIdFromFileIncoming",                 
+                " select node_id from $(file_incoming) where file_path=? and file_name=? and file_modified_time=?");
+
         putSql("deleteFileSnapshotSql",                 
                 " delete from $(file_snapshot)                                                  " +
                         " where                                                                 " +

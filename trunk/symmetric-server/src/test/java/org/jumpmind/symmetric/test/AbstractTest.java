@@ -227,6 +227,30 @@ abstract public class AbstractTest {
             tries++;
         }
         return pulled;
+    }  
+    
+    protected boolean pushFiles(String name) {
+        int tries = 0;
+        boolean pulled = false;
+        while (!pulled && tries < 10) {
+            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService().pushFilesToNodes(true);
+            try {
+                statuses.waitForComplete(60000);
+            } catch (InterruptedException ex) {
+                log.warn(ex.getMessage());
+            }
+            pulled = statuses.wasDataProcessed();
+            AppUtils.sleep(100);
+            tries++;
+        }
+        return pulled;
     }    
+        
+    
+    protected void loadConfigAndRegisterNode(String clientGroup, String serverGroup) throws Exception {
+        loadConfigAtRegistrationServer();
+        getWebServer(serverGroup).getEngine().openRegistration(clientGroup, clientGroup);
+        pull(clientGroup);
+    }
 
 }

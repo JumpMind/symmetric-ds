@@ -374,7 +374,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean syncEnabled = parameterService.is(ParameterConstants.FILE_SYNC_ENABLE);
             trigger.setSyncOnInsert(syncEnabled);
             trigger.setSyncOnUpdate(syncEnabled);
-            trigger.setSyncOnDelete(syncEnabled);
+            trigger.setSyncOnDelete(false);
         } else {
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
         }
