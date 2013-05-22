@@ -311,19 +311,23 @@ public class RouterService extends AbstractService implements IRouterService {
                  * data to all nodes in a node_group. We can only do 'optimal'
                  * routing if data is going to go to all nodes in a group.
                  */
-                if (!(dataRouter instanceof DefaultDataRouter)) {
-                    producesCommonBatches = false;
-                    break;
-                } else {
-                    if (triggerRouter
-                                .getTrigger().isSyncOnIncomingBatch()) {
-                        String tableName = triggerRouter.getTrigger().getFullyQualifiedSourceTableName();
-                        for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
-                            if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName().equals(tableName) &&
-                                    triggerRouter2.getRouter()
-                                    .getNodeGroupLink().getTargetNodeGroupId().equals(nodeGroupId)) {
-                                        producesCommonBatches = false;
-                                        break;
+                if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                        .equals(nodeGroupId)) {
+                    if (!(dataRouter instanceof DefaultDataRouter)) {
+                        producesCommonBatches = false;
+                        break;
+                    } else {
+                        if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
+                            String tableName = triggerRouter.getTrigger()
+                                    .getFullyQualifiedSourceTableName();
+                            for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
+                                if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName()
+                                        .equals(tableName)
+                                        && triggerRouter2.getRouter().getNodeGroupLink()
+                                                .getTargetNodeGroupId().equals(nodeGroupId)) {
+                                    producesCommonBatches = false;
+                                    break;
+                                }
                             }
                         }
                     }
