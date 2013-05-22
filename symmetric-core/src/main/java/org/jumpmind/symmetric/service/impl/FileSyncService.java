@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,10 +85,10 @@ import bsh.TargetError;
 public class FileSyncService extends AbstractService implements IFileSyncService,
         INodeCommunicationExecutor {
 
+    private Object trackerLock = new Object();
     private ISymmetricEngine engine;
-    private Map<FileTriggerRouter, FileTriggerTracker> trackers = new HashMap<FileTriggerRouter, FileTriggerTracker>();
 
-    // TODO cache
+    // TODO cache trigger routers
 
     public FileSyncService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -98,29 +97,52 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void trackChanges(boolean force) {
-        if (force
-                || !engine.getClusterService().isInfiniteLocked(ClusterConstants.FILE_SYNC_TRACKER)) {
-            List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
-            for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                FileTriggerTracker tracker = trackers.get(fileTriggerRouter);
-                if (tracker == null) {
-                    tracker = new FileTriggerTracker(fileTriggerRouter,
-                            getDirectorySnapshot(fileTriggerRouter));
-                    trackers.put(fileTriggerRouter, tracker);
-                }
+        synchronized (trackerLock) {
+            if (!engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER) || force) {
                 try {
-                    save(tracker.trackChanges());
-                } catch (Exception ex) {
-                    // TODO build mechanism to rollback snapshot if we fail to
-                    // save to database
-                    log.error("Failed to track changes for file trigger router: "
-                            + fileTriggerRouter.getFileTrigger().getTriggerId() + "::"
-                            + fileTriggerRouter.getRouter().getRouterId(), ex);
+                    List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
+                    for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+                        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter,
+                                getDirectorySnapshot(fileTriggerRouter));
+                        try {
+                            DirectorySnapshot dirSnapshot = tracker.trackChanges();
+                            for (FileSnapshot fileSnapshot : dirSnapshot) {
+                                File file = fileTriggerRouter.getFileTrigger().createSourceFile(
+                                        fileSnapshot);
+                                String filePath = file.getParentFile().getPath();
+                                String fileName = file.getName();
+                                String nodeId = findSourceNodeIdFromFileIncoming(filePath,
+                                        fileName, fileSnapshot.getFileModifiedTime());
+                                if (StringUtils.isNotBlank(nodeId)) {
+                                    fileSnapshot.setLastUpdateBy(nodeId);
+                                }
+                            }
+                            save(dirSnapshot);
+                        } catch (Exception ex) {
+                            log.error("Failed to track changes for file trigger router: "
+                                    + fileTriggerRouter.getFileTrigger().getTriggerId() + "::"
+                                    + fileTriggerRouter.getRouter().getRouterId(), ex);
+                        }
+                    }
+                    
+                    deleteFromFileIncoming();
+                } finally {                    
+                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
                 }
+            } else {
+                log.debug("Did not run the track file sync changes process because it was locked");
             }
-        } else {
-            log.debug("Did not run the track file sync changes process because it has been stopped");
         }
+    }
+
+    protected String findSourceNodeIdFromFileIncoming(String filePath, String fileName,
+            Date lastUpdateDate) {
+        return sqlTemplate.queryForString(getSql("findNodeIdFromFileIncoming"), filePath, fileName,
+                lastUpdateDate);
+    }
+
+    protected void deleteFromFileIncoming() {
+        sqlTemplate.update(getSql("deleteFileIncoming"));
     }
 
     public List<FileTrigger> getFileTriggers() {
@@ -224,7 +246,6 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         if (changes != null) {
             ISqlTransaction sqlTransaction = null;
             try {
-
                 sqlTransaction = sqlTemplate.startSqlTransaction();
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
@@ -248,38 +269,35 @@ public class FileSyncService extends AbstractService implements IFileSyncService
     }
 
     public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
+        snapshot.setLastUpdateTime(new Date());
+        if (0 == sqlTransaction.prepareAndExecute(
+                getSql("updateFileSnapshotSql"),
+                new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
+                        snapshot.getFileSize(), snapshot.getFileModifiedTime(),
+                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
+                        snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
+                        Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
+            snapshot.setCreateTime(snapshot.getLastUpdateTime());
+            sqlTransaction.prepareAndExecute(
+                    getSql("insertFileSnapshotSql"),
+                    new Object[] { snapshot.getLastEventType().getCode(),
+                            snapshot.getCrc32Checksum(), snapshot.getFileSize(),
+                            snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
+                            snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                            snapshot.getTriggerId(), snapshot.getRouterId(),
+                            snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
+                            Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
+                            Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+        }
+        // now that we have captured an update, delete the row for cleanup
         if (snapshot.getLastEventType() == LastEventType.DELETE) {
             sqlTransaction.prepareAndExecute(getSql("deleteFileSnapshotSql"), new Object[] {
                     snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
                     snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR });
-        } else {
-            snapshot.setLastUpdateTime(new Date());
-            if (0 == sqlTransaction
-                    .prepareAndExecute(
-                            getSql("updateFileSnapshotSql"),
-                            new Object[] { snapshot.getLastEventType().getCode(),
-                                    snapshot.getCrc32Checksum(), snapshot.getFileSize(),
-                                    snapshot.getFileModifiedTime(), snapshot.getLastUpdateTime(),
-                                    snapshot.getLastUpdateBy(), snapshot.getTriggerId(),
-                                    snapshot.getRouterId(), snapshot.getFilePath(),
-                                    snapshot.getFileName() }, new int[] { Types.VARCHAR,
-                                    Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP,
-                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR })) {
-                snapshot.setCreateTime(snapshot.getLastUpdateTime());
-                sqlTransaction.prepareAndExecute(
-                        getSql("insertFileSnapshotSql"),
-                        new Object[] { snapshot.getLastEventType().getCode(),
-                                snapshot.getCrc32Checksum(), snapshot.getFileSize(),
-                                snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
-                                snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
-                                snapshot.getTriggerId(), snapshot.getRouterId(),
-                                snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
-                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
-                                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
-            }
         }
 
     }
@@ -518,9 +536,16 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                     try {
                         interpreter.set("log", log);
                         interpreter.set("batchDir", batchDir.getAbsolutePath());
-                        interpreter.eval(script);
-                        // TODO set statement count to the number of files processed
-                        incomingBatch.setStatementCount(1);
+
+                        synchronized (trackerLock) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, String> filesToEventType = (Map<String, String>) interpreter
+                                    .eval(script);
+                            updateFileIncoming(sourceNodeId, filesToEventType);
+                            incomingBatch
+                                    .setStatementCount(filesToEventType != null ? filesToEventType
+                                            .size() : 0);
+                        }
                         incomingBatch.setStatus(IncomingBatch.Status.OK);
                         incomingBatchService.updateIncomingBatch(incomingBatch);
                     } catch (Throwable ex) {
@@ -549,6 +574,23 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         }
 
         return batchesProcessed;
+    }
+
+    protected void updateFileIncoming(String nodeId, Map<String, String> filesToEventType) {
+        Set<String> filePaths = filesToEventType.keySet();
+        for (String filePath : filePaths) {
+            String eventType = filesToEventType.get(filePath);
+            File file = new File(filePath);
+            String fileName = file.getName();
+            String dirName = file.getParentFile().getPath();
+            Date lastUpdateTime = new Date(file.lastModified());
+            int updateCount = sqlTemplate.update(getSql("updateFileIncoming"), nodeId,
+                    lastUpdateTime, eventType, dirName, fileName);
+            if (updateCount == 0) {
+                sqlTemplate.update(getSql("insertFileIncoming"), nodeId, lastUpdateTime, eventType,
+                        dirName, fileName);
+            }
+        }
     }
 
     protected void pullFilesFromNode(NodeCommunication nodeCommunication, RemoteNodeStatus status,
@@ -600,8 +642,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 List<NodeCommunication> nodes = nodeCommunicationService.list(type);
                 int availableThreads = nodeCommunicationService.getAvailableThreads(type);
                 for (NodeCommunication nodeCommunication : nodes) {
-                    if (StringUtils.isNotBlank(nodeCommunication.getNode().getSyncUrl()) || 
-                                !parameterService.isRegistrationServer()) {
+                    if (StringUtils.isNotBlank(nodeCommunication.getNode().getSyncUrl())
+                            || !parameterService.isRegistrationServer()) {
                         boolean meetsMinimumTime = true;
                         if (minimumPeriodMs > 0
                                 && nodeCommunication.getLastLockTime() != null
@@ -615,8 +657,10 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                             availableThreads--;
                         }
                     } else {
-                        log.warn("File sync cannot communicate with node '{}' in the group '{}'.  The sync url is blank",
-                                nodeCommunication.getNode().getNodeId(), nodeCommunication.getNode().getNodeGroupId());
+                        log.warn(
+                                "File sync cannot communicate with node '{}' in the group '{}'.  The sync url is blank",
+                                nodeCommunication.getNode().getNodeId(), nodeCommunication
+                                        .getNode().getNodeGroupId());
                     }
                 }
             } else {

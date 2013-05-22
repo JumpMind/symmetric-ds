@@ -53,12 +53,14 @@ public class FileSyncDataRouter extends AbstractDataRouter {
                 engine.getSymmetricDialect());
         String triggerId = newData.get("TRIGGER_ID");
         String routerId = newData.get("ROUTER_ID");
+        String sourceNodeId = newData.get("LAST_UPDATE_BY");
         
         if (triggerId == null) {
             Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
                     engine.getSymmetricDialect());
             triggerId = oldData.get("TRIGGER_ID");
             routerId = oldData.get("ROUTER_ID");            
+            sourceNodeId = oldData.get("LAST_UPDATE_BY");
         }
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId);
@@ -78,6 +80,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
                 ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
             }
             nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false));
+            nodeIds.remove(sourceNodeId);
         } else {
             log.error(
                     "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",

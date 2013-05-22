@@ -141,7 +141,7 @@ if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.F
 }
 ",,"2013-05-19 10:14:04.830","unit_test","2013-05-19 10:14:04.830"
 insert,"client_src","target/fs_clnt/client_src","0",,,"1","1","1",,,"2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
-insert,"ping_back","target/fs_clnt/ping_back","0",,,"1","1","1",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
+insert,"ping_back_clnt","target/fs_clnt/ping_back","0",,,"1","1","1",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
 insert,"ping_back_svr","target/fs_svr/ping_back","0",,,"1","1","1",,,"2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
 catalog,
 schema,
@@ -153,4 +153,5 @@ insert,".csv only","server_2_client","1","1","target/fs_clnt/csv_only",,"SOURCE_
 insert,"choose_target","server_2_client","1","1","target/fs_clnt/choose_target",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
 insert,"client_src","client_2_server","1","1","target/fs_svr/client_src",,"SOURCE_WINS","2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
 insert,"ping_back_svr","server_2_client","1","1","target/fs_clnt/ping_back",,"SOURCE_WINS","2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
+insert,"ping_back_clnt","client_2_server","1","1","target/fs_svr/ping_back",,"SOURCE_WINS","2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
 commit,-9999

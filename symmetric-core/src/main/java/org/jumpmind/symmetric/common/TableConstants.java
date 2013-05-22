@@ -70,15 +70,13 @@ public class TableConstants {
     public static final String SYM_FILE_TRIGGER = "file_trigger";
     public static final String SYM_FILE_TRIGGER_ROUTER = "file_trigger_router";
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
-
+    public static final String SYM_FILE_INCOMING = "file_incoming";
 
     private static List<String> tablesWithPrefix;
 
     private static List<String> configTablesWithPrefix;
 
     private static List<String> tablesWithoutPrefix;
-
-    public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };
 
     public static final List<String> getTables(String tablePrefix) {
         if (tablesWithPrefix == null) {
@@ -171,6 +169,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+        tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
         return tables;
     }
 
