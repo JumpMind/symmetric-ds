@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +62,9 @@ import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Node;
 import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
+import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.QueryResults;
+import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
 import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -611,7 +614,124 @@ public class RestService {
     	    @PathVariable("engine") String engineName) {
         getSymmetricEngine(engineName).removeAndCleanupNode(nodeId);
     }    
+
+    /**
+     * Requests the server to add this node to the synchronization scenario
+     * @param externalId - The external id for this node
+     * @param nodeGroup - The node group to which this node belongs
+     * @param databaseType - The database type for this node
+     * @param databaseVersion - the database version for this node
+     * @return {@link RegistrationInfo}
+     */
+    @RequestMapping(value = "/engine/registernode", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final RegistrationInfo registerNode(@RequestParam(value = "externalId") String externalId,
+    		@RequestParam(value = "nodeGroup") String nodeGroup,
+    		@RequestParam(value = "databaseType") String databaseType,
+    		@RequestParam(value = "databaseVersion") String databaseVersion 		
+    		) {
+        //TODO: implement
+    	return null;
+    }
     
+    /**
+     * 
+     * @param nodeId - The node id of the node requesting to pull data
+     * @param communicationType - The communication type, either (PULL, PUSH, FILE_PUSH, FILE_PULL)
+     * @return 
+     */
+    @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final PullDataResults pullData(@RequestParam(value = "nodeId") String nodeId,
+    		@RequestParam(value = "communicationtype") String communicationType) {
+        //TODO: implement
+    	return null;
+    }
+    
+    /**
+     * Sends a heartbeat to the server for the given node.  
+     * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
+     * param hostName - Optional - The hostName for the machine on which the client node is running
+     * @param ipAddress - Optional - The IP address for the machine on which the client node is running
+     * @param osUser - Optional - The logged in user for the machine on which the client node is running
+     * @param osName - Optional - The name of the operating system on which the client node is running
+     * @param osArchitecture - Optional - The operating system architecture (i.e. amd, intel) on which the client node is running
+     * @param osVersion - Optional -The operating system version on which the client node is running 
+     * @param availableProcessors - Optional - The number of available processors on the machine on which the client node is running
+     * @param freeMemoryBytes - Optional - The amount of memory free (in bytes) on the machine on which the client node is running 
+     * @param totalMemoryBytes - Optional - The total amount of memory (in bytes) on the machine on which the client node is running
+     * @param maxMemoryBytes - Optional - The maximum amount of memory (in bytes) on the machine on which the client node is running
+     * @param javaVersion - Optional - The version of java currently being run on the machine on which the client node is running
+     * @param javaVendor - Optional - The java provided begin run on the machine on which the client node is running
+     * @param symmetricVersion - Optional - The symmetric version on the machine on which the client node is running
+     * @param timezoneOffset - Optional - The timezone offset on the machine on which the client node is running
+     * @param heartbeatTime - Optional - The heartbeat time for which this heartbeat pertains
+     * @param lastRestartTime - Optional - The last restart time of symmetric on the machine on which the client node is running
+     * @param createTime - Optional - The Symmetric instance create time for the machine on which the client node is running 
+     */
+    @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postHeartbeat(@RequestParam(value = "nodeId") String nodeID, 
+		@RequestParam(value = "hostName") String hostName,
+		@RequestParam(value = "ipAddress") String ipAddress,
+		@RequestParam(value = "osUser") String osUser,		
+		@RequestParam(value = "osName") String osName,
+		@RequestParam(value = "osArchitecture") String osArchitecture,
+		@RequestParam(value = "osVersion") String osVersion,
+		@RequestParam(value = "availableProcessors") Integer availableProcessors,
+		@RequestParam(value = "freeMemoryBytes") Long freeMemoryBytes,
+		@RequestParam(value = "totalMemoryBytes") Long totalMemoryBytes,
+		@RequestParam(value = "maxMemoryBytes") Long maxMemoryBytes,		
+		@RequestParam(value = "javaVersion") String javaVersion,
+		@RequestParam(value = "javaVendor") String javaVendor,
+		@RequestParam(value = "symmetricVersion") String symmetricVersion,
+		@RequestParam(value = "timezoneOffset") String timezoneOffset,
+		@RequestParam(value = "heartbeatTime") Date heartbeatTime,
+		@RequestParam(value = "lastRestartTime") Date lastRestartTime,
+		@RequestParam(value = "createTime") Date createTime
+		) {    	
+    	//TODO: implement
+    }
+    
+    /**
+     * Acknowledges a batch that has been pulled and processed on the client side.  Setting
+     * the status to OK will render the batch complete.  Setting the status to anything other 
+     * than OK will queue the batch on the server to be sent again on the next pull.
+     * @param nodeID - The node id that is acknowledging the batch
+     * @param batchId - The batch id that is being acknowledged
+     * @param status - The status of the batch, either "OK" or "ER"
+     * @param statusDescription - A description of the status.  This is particularly important 
+     * if the status is "ER".  In error status the status description should contain relevant
+     * information about the error on the client including SQL Error Number and description
+     */
+    @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postAcknowledgeBatch(@RequestParam(value = "nodeId") String nodeID, 
+		@RequestParam(value = "batchId") Long batchId,
+		@RequestParam(value = "status") String status,
+		@RequestParam(value = "statusDescription") String statusDescription
+		) {    	
+    	//TODO: implement
+    }
+
+    
+    /**
+     * Requests an initial load from the server for the node id provided.  The initial load requst
+     * directs the server to queue up initial load data for the client node.  Data is obtained for 
+     * the initial load by the client calling the pull method.
+     * @param nodeID
+     */
+    @RequestMapping(value = "/engine/requestinitialload", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRequestInitialLoad(@RequestParam(value = "nodeId") String nodeID) {    	
+    	//TODO: implement
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     protected RestError handleError(Exception ex, HttpServletRequest req) {
