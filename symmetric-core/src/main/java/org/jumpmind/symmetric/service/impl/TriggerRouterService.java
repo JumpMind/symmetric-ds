@@ -938,7 +938,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
                         
-                        boolean createTriggersForTables = true;
+                        boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
                         if (StringUtils.isNotBlank(nodeId)) {
                         	NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
@@ -947,7 +947,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         		if (!createTriggersForTables) {
                         			log.info("Trigger creation has been disabled by " + ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD + " because an initial load is in progress or has not yet been requested");
                         		}
-                        	} 
+                        	} else {
+                        		createTriggersForTables = true;
+                        	}
                         }
                         
                         if (!createTriggersForTables) {
