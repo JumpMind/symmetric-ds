@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -57,6 +58,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IGroupletService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
@@ -88,6 +90,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IStatisticManager statisticManager;
 
     private IGroupletService groupletService;
+    
+    private INodeService nodeService;
 
     private List<String> extraConfigTables = new ArrayList<String>();
 
@@ -105,6 +109,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.configurationService = engine.getConfigurationService();
         this.statisticManager = engine.getStatisticManager();
         this.groupletService = engine.getGroupletService();
+        this.nodeService = engine.getNodeService();
         this.addTriggerCreationListeners(this.failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -950,6 +955,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         configurationService.clearCache();
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                        
+                        
+                        boolean createTriggersForTables = false;
+                        String nodeId = nodeService.findIdentityNodeId();
+                        if (StringUtils.isNotBlank(nodeId)) {
+                            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+                            if (nodeSecurity != null && (nodeSecurity.isInitialLoadEnabled() || nodeSecurity.getInitialLoadTime() == null)) {
+                                createTriggersForTables = parameterService.is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
+                                if (!createTriggersForTables) {
+                                    log.info("Trigger creation has been disabled by " + ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD + " because an initial load is in progress or has not yet been requested");
+                                }
+                            } 
+                        }
+                        
+                        if (!createTriggersForTables) {
+                            triggersForCurrentNode.clear();
+                        }
+                        
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer);
                         updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force);
                         resetTriggerRouterCacheByNodeGroupId();
