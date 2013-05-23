@@ -956,7 +956,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();                        
                         
-                        boolean createTriggersForTables = true;
+                        boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
                         if (StringUtils.isNotBlank(nodeId)) {
                             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
