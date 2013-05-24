@@ -1006,6 +1006,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return triggerIds;
     }
+    
+    protected Trigger getTriggerFromList(String triggerId, List<Trigger> triggersThatShouldBeActive) {
+        for (Trigger trigger : triggersThatShouldBeActive) {
+            if (trigger.getTriggerId().equals(triggerId)) {
+                return trigger;
+            }
+        }
+        return null;
+    }
 
     protected void inactivateTriggers(List<Trigger> triggersThatShouldBeActive,
             StringBuilder sqlBuffer) {
@@ -1015,7 +1024,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (TriggerHistory history : activeHistories) {
             boolean removeTrigger = false;
             Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
-            Trigger trigger = getTriggerForCurrentNodeById(history.getTriggerId());
+            Trigger trigger = getTriggerFromList(history.getTriggerId(), triggersThatShouldBeActive);
             if (tables == null && trigger != null) {
                 tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
