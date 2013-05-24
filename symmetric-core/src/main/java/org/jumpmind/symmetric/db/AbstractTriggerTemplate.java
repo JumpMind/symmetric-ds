@@ -1,22 +1,22 @@
 /*
- * Licensed to JumpMind Inc under one or more contributor 
+ * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
+ * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
  * to you under the GNU Lesser General Public License (the
  * "License"); you may not use this file except in compliance
- * with the License. 
- * 
+ * with the License.
+ *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
+ * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
+ * under the License.
  */
 
 package org.jumpmind.symmetric.db;
@@ -84,6 +84,8 @@ abstract public class AbstractTriggerTemplate {
 
     protected String blobColumnTemplate;
 
+    protected String imageColumnTemplate;
+
     protected String wrappedBlobColumnTemplate;
 
     protected String booleanColumnTemplate;
@@ -104,17 +106,17 @@ abstract public class AbstractTriggerTemplate {
 
     protected AbstractTriggerTemplate() {
     }
-    
+
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
 
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
             TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
-        
+
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
-        
+
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
@@ -171,7 +173,7 @@ abstract public class AbstractTriggerTemplate {
                 .getSourceCatalogName()) + "." : "")
                 + schemaPlus;
         return catalogPlus;
-    }    
+    }
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
@@ -183,10 +185,10 @@ abstract public class AbstractTriggerTemplate {
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
-        
+
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);        
-        
+                triggerHistory.getParsedPkColumnNames(), true);
+
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getColumns();
@@ -242,14 +244,14 @@ abstract public class AbstractTriggerTemplate {
     public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
-        
+
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
-        
+
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
     		ddl = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
-    	}    		
+    	}
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
@@ -261,10 +263,10 @@ abstract public class AbstractTriggerTemplate {
     public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
-        
+
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
-        
+
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
@@ -608,6 +610,14 @@ abstract public class AbstractTriggerTemplate {
                                 .contains(TypeMap.GEOMETRY))
                                 && StringUtils.isNotBlank(geometryColumnTemplate)) {
                             templateToUse = geometryColumnTemplate;
+                        } else if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
+                                .contains(TypeMap.IMAGE))
+                                && StringUtils.isNotBlank(imageColumnTemplate)) {
+                            if (isOld) {
+                                templateToUse = emptyColumnTemplate;
+                            } else {
+                                templateToUse = imageColumnTemplate;
+                            }
                         } else if (isOld && symmetricDialect.needsToSelectLobData()) {
                             templateToUse = emptyColumnTemplate;
                         } else {
@@ -853,6 +863,14 @@ abstract public class AbstractTriggerTemplate {
 
     public void setDateColumnTemplate(String dateColumnTemplate) {
         this.dateColumnTemplate = dateColumnTemplate;
+    }
+
+    public String getImageColumnTemplate() {
+        return imageColumnTemplate;
+    }
+
+    public void setImageColumnTemplate(String imageColumnTemplate) {
+        this.imageColumnTemplate = imageColumnTemplate;
     }
 
     protected class ColumnString {

@@ -56,7 +56,12 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setCommentPrefix("/*");
         databaseInfo.setCommentSuffix("*/");
-        databaseInfo.setDelimiterToken("\"");
+
+        // ASE will not accept delimter tokens surrounding the catalog name.
+        // This is a temporary fix. ADB
+//        databaseInfo.setDelimiterToken("\"");
+        databaseInfo.setDelimiterToken("");
+
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE");
         // BIGINT is mapped back in the model reader
@@ -70,7 +75,8 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
-        databaseInfo.addNativeTypeMapping(Types.INTEGER, "INT");
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMERIC(12,0)");
+
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
@@ -142,13 +148,13 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         writeQuotationOnStatement(ddl);
-        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
+        ddl.append("IF EXISTS (SELECT 1 FROM " + table.getCatalog() + ".dbo.sysobjects WHERE type = 'U' AND name = "); // ADB catalog
         printAlwaysSingleQuotedIdentifier(getTableName(table.getName()), ddl);
         println(")", ddl);
         println("BEGIN", ddl);
         printIndent(ddl);
         ddl.append("DROP TABLE ");
-        printlnIdentifier(getTableName(table.getName()), ddl);
+        printlnIdentifier(getTableName(table.getFullyQualifiedTableName()), ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
     }

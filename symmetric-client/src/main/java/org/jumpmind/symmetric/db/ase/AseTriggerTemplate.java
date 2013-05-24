@@ -1,7 +1,9 @@
 package org.jumpmind.symmetric.db.ase;
 
+import java.sql.Types;
 import java.util.HashMap;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
@@ -20,8 +22,9 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar,$(tableAlias).\"$(columnName)\") + '\"') end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + str_replace(convert(varchar,$(tableAlias).\"$(columnName)\",102),'.','-') + ' ' + convert(varchar,$(tableAlias).\"$(columnName)\",108) + '\"') end" ;
-        clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        clobColumnTemplate = "case when datalength($(origTableAlias).\"$(columnName)\") is null or datalength($(origTableAlias).\"$(columnName)\")=0 then '' else '\"' + str_replace(str_replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias).\"$(columnName)\")) + '\"' end" ;
+        imageColumnTemplate = "case when datalength($(origTableAlias).\"$(columnName)\") is null or datalength($(origTableAlias).\"$(columnName)\")=0 then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias).\"$(columnName)\")) + '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
@@ -144,7 +147,9 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
     protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
-        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
+        ddl = FormatUtils.replace("oldColumns", trigger.isUseCaptureOldData() ?
+                super.buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, table.getColumns(), dml, true, channel, trigger).toString() : "convert(VARCHAR,null)", ddl);
+        ddl = super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
         Column[] columns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace("declareOldKeyVariables",
@@ -152,6 +157,73 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         ddl = FormatUtils.replace("declareNewKeyVariables",
                 buildKeyVariablesDeclare(columns, "new"), ddl);
         return ddl;
+    }
+
+    @Override
+    protected String buildKeyVariablesDeclare(Column[] columns, String prefix) {
+        String text = "";
+        for (int i = 0; i < columns.length; i++) {
+            text += "declare @" + prefix + "pk" + i + " ";
+            switch (columns[i].getMappedTypeCode()) {
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                    // ASE does not support bigint
+                    text += "NUMERIC(19,0)\n";
+                    break;
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    text += "decimal\n";
+                    break;
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                    text += "float\n";
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    text += "varchar(1000)\n";
+                    break;
+                case Types.DATE:
+                    text += "date\n";
+                    break;
+                case Types.TIME:
+                    text += "time\n";
+                    break;
+                case Types.TIMESTAMP:
+                    text += "datetime\n";
+                    break;
+                case Types.BOOLEAN:
+                case Types.BIT:
+                    text += "bit\n";
+                    break;
+                case Types.CLOB:
+                    text += "varchar(max)\n";
+                    break;
+                case Types.BLOB:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                case -10: // SQL-Server ntext binary type
+                    text += "varbinary(max)\n";
+                    break;
+                case Types.OTHER:
+                    text += "varbinary(max)\n";
+                    break;
+                default:
+                    if (columns[i].getJdbcTypeName() != null
+                            && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
+                        text += "interval";
+                        break;
+                    }
+                    throw new NotImplementedException(columns[i] + " is of type "
+                            + columns[i].getMappedType());
+            }
+        }
+
+        return text;
     }
 
 }

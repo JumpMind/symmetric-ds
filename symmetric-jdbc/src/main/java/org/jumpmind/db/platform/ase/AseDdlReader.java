@@ -89,10 +89,14 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19)
+        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19) // ADB reads numeric back to bigint
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
             column.setMappedTypeCode(Types.BIGINT);
+        } else if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 12) // ADB reads numeric back to bigint
+                && (column.getScale() == 0)) {
+            // Back-mapping to INTEGER
+            column.setMappedTypeCode(Types.INTEGER);
         } else if (column.getDefaultValue() != null) {
             if (column.getMappedTypeCode() == Types.TIMESTAMP) {
                 // Sybase maintains the default values for DATE/TIME jdbc types,
