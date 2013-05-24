@@ -172,7 +172,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
         fileTrigger.setLastUpdateTime(new Date());
         if (0 == sqlTemplate.update(
                 getSql("updateFileTriggerSql"),
-                new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecursive() ? 1 : 0,
+                new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
                         fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                         fileTrigger.isSyncOnCreate() ? 1 : 0,
                         fileTrigger.isSyncOnModified() ? 1 : 0,
@@ -184,7 +184,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                         Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
             fileTrigger.setCreateTime(fileTrigger.getLastUpdateTime());
             sqlTemplate.update(getSql("insertFileTriggerSql"),
-                    new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecursive() ? 1 : 0,
+                    new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
                             fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                             fileTrigger.isSyncOnCreate() ? 1 : 0,
                             fileTrigger.isSyncOnModified() ? 1 : 0,
@@ -683,7 +683,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTrigger.setIncludesFiles(rs.getString("includes_files"));
             fileTrigger.setLastUpdateBy(rs.getString("last_update_by"));
             fileTrigger.setLastUpdateTime(rs.getDateTime("last_update_time"));
-            fileTrigger.setRecursive(rs.getBoolean("recursive"));
+            fileTrigger.setRecurse(rs.getBoolean("recurse"));
             fileTrigger.setSyncOnCreate(rs.getBoolean("sync_on_create"));
             fileTrigger.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
             fileTrigger.setAfterCopyScript(rs.getString("after_copy_script"));

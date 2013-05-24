@@ -12,7 +12,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("selectFileTriggersSql", 
-                " select trigger_id, base_dir, recursive,                                     " +
+                " select trigger_id, base_dir, recurse,                                     " +
                 "        includes_files, excludes_files,                                      " +
         		"        sync_on_create, sync_on_modified, sync_on_delete,                    " +
                 "        before_copy_script,                                                  " +
@@ -25,13 +25,13 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
        
         
         putSql("updateFileTriggerSql",                 
-                " update $(file_trigger) set base_dir=?, recursive=?, includes_files=?,         " +
+                " update $(file_trigger) set base_dir=?, recurse=?, includes_files=?,         " +
         		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,    " +
                 "  before_copy_script=?, after_copy_script=?,                                   " +
         		"  last_update_by=?, last_update_time=? where trigger_id=?                      ");
 
         putSql("insertFileTriggerSql",                 
-                " insert into $(file_trigger) (base_dir, recursive, includes_files,             " +
+                " insert into $(file_trigger) (base_dir, recurse, includes_files,             " +
                 "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,            " +
                 "  before_copy_script, after_copy_script,                                       " +
                 "  last_update_by, last_update_time, trigger_id, create_time)                   " +
