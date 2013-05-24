@@ -122,7 +122,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             Node targetNode = nodeService.findNode(targetNodeId);
             List<FileTriggerRouter> fileTriggerRouters = fileSyncService.getFileTriggerRoutersForCurrentNode();
             for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                if (fileTriggerRouter.isInitialLoadEnabled() && 
+                if (fileTriggerRouter.isEnabled() && fileTriggerRouter.isInitialLoadEnabled() && 
                         fileTriggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
                     DirectorySnapshot directorySnapshot = fileSyncService.getDirectorySnapshot(fileTriggerRouter);
                     snapshotEvents.addAll(directorySnapshot);
