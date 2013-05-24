@@ -649,7 +649,7 @@
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
         <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
-        <column name="recursive" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />
+        <column name="recurse" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />
         <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to include in synchronization." />
         <column name="excludes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to exclude from synchronization." />
         <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are created." />

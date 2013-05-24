@@ -39,7 +39,7 @@ public class FileTrigger implements Serializable {
     
     private String triggerId;
     private String baseDir;
-    private boolean recursive;
+    private boolean recurse;
     private String includesFiles;
     private String excludesFiles;
     private boolean syncOnCreate = true;
@@ -54,9 +54,9 @@ public class FileTrigger implements Serializable {
     public FileTrigger() {
     }
     
-    public FileTrigger(String baseDir, boolean recursive, String includes, String excludes) {
+    public FileTrigger(String baseDir, boolean recurse, String includes, String excludes) {
         this.baseDir = baseDir;
-        this.recursive = recursive;
+        this.recurse = recurse;
         this.includesFiles = includes;
         this.excludesFiles = excludes;
         this.triggerId = "?";
@@ -79,12 +79,12 @@ public class FileTrigger implements Serializable {
         this.baseDir = baseDir;
     }
 
-    public boolean isRecursive() {
-        return recursive;
+    public boolean isRecurse() {
+        return recurse;
     }
 
-    public void setRecursive(boolean recursive) {
-        this.recursive = recursive;
+    public void setRecurse(boolean recursive) {
+        this.recurse = recursive;
     }
 
     public String getIncludesFiles() {
@@ -161,7 +161,7 @@ public class FileTrigger implements Serializable {
             fileFilters.add(new NotFileFilter(new WildcardFileFilter(excludes)));
             filter = new AndFileFilter(fileFilters);
         }
-        if (!recursive) {
+        if (!recurse) {
             List<IOFileFilter> fileFilters = new ArrayList<IOFileFilter>();
             fileFilters.add(filter);
             fileFilters.add(new NotFileFilter(FileFilterUtils.directoryFileFilter()));
