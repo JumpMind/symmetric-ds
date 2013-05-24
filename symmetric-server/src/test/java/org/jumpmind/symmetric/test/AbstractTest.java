@@ -249,6 +249,8 @@ abstract public class AbstractTest {
     
     protected void loadConfigAndRegisterNode(String clientGroup, String serverGroup) throws Exception {
         loadConfigAtRegistrationServer();
+        getWebServer(serverGroup).getEngine().getFileSyncService().trackChanges(true);
+        getWebServer(serverGroup).getEngine().route();
         getWebServer(serverGroup).getEngine().openRegistration(clientGroup, clientGroup);
         pull(clientGroup);
     }
