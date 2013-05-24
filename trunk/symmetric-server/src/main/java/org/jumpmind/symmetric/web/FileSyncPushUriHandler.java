@@ -66,7 +66,7 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
             FileItemStream item = iter.next();
             String name = item.getFieldName();
             if (!item.isFormField()) {
-                log.info("File field " + name + " with file name " + item.getName()
+                log.debug("Processing upload file field " + name + " with file name " + item.getName()
                         + " detected.");                
                 engine.getFileSyncService().loadFilesFromPush(nodeId, item.openStream(),
                         res.getOutputStream());

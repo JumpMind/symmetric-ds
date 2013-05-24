@@ -9,7 +9,9 @@ import org.junit.Assert;
 public class FileSyncTest extends AbstractTest {
 
     File allSvrSourceDir = new File("target/fs_svr/all");
+    File allSvrSourceInitialLoadFile = new File(allSvrSourceDir, "initialload.txt");
     File allClntTargetDir = new File("target/fs_clnt/all");
+    File allClntTargetInitialLoadFile = new File(allClntTargetDir, "initialload.txt");
     
     File pingbackServerDir = new File("target/fs_svr/ping_back");
     File pingbackClientDir = new File("target/fs_clnt/ping_back");
@@ -24,16 +26,30 @@ public class FileSyncTest extends AbstractTest {
     @Override
     protected void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
-        createDirs();
-
+        createDirsAndInitialFiles();
+        
         loadConfigAndRegisterNode("client", "server");
 
         pullFiles();
+        
+        testInitialLoadFromServerToClient(rootServer, clientServer);
 
         testPullAllFromServerToClient(rootServer, clientServer);
         
         testPingback();
 
+    }
+    
+    protected void testInitialLoadFromServerToClient(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+       Assert.assertFalse("The initial load file should not exist at the client", allClntTargetInitialLoadFile.exists());
+       Assert.assertTrue("The initial load file should exist at the server", allSvrSourceInitialLoadFile.exists());
+       pullFiles();
+       Assert.assertFalse("The initial load file should not exist at the client", allClntTargetInitialLoadFile.exists());
+       Assert.assertTrue("The initial load file should exist at the server", allSvrSourceInitialLoadFile.exists());
+       rootServer.reloadNode(clientServer.getNodeService().findIdentityNodeId(), "unit_test");
+       pullFiles();
+       Assert.assertTrue("The initial load file should exist at the client", allClntTargetInitialLoadFile.exists());
     }
 
     protected void testPullAllFromServerToClient(ISymmetricEngine rootServer,
@@ -92,11 +108,13 @@ public class FileSyncTest extends AbstractTest {
         return pushFiles("client");
     }
 
-    protected void createDirs() throws Exception {
+    protected void createDirsAndInitialFiles() throws Exception {
         for (File dir : allDirs) {
             FileUtils.deleteDirectory(dir);
             dir.mkdirs();
         }
+        
+        FileUtils.write(allSvrSourceInitialLoadFile, "Initial Load Data");
     }
 
 }

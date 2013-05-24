@@ -102,31 +102,33 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 try {
                     List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
                     for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter,
-                                getDirectorySnapshot(fileTriggerRouter));
-                        try {
-                            DirectorySnapshot dirSnapshot = tracker.trackChanges();
-                            for (FileSnapshot fileSnapshot : dirSnapshot) {
-                                File file = fileTriggerRouter.getFileTrigger().createSourceFile(
-                                        fileSnapshot);
-                                String filePath = file.getParentFile().getPath();
-                                String fileName = file.getName();
-                                String nodeId = findSourceNodeIdFromFileIncoming(filePath,
-                                        fileName, fileSnapshot.getFileModifiedTime());
-                                if (StringUtils.isNotBlank(nodeId)) {
-                                    fileSnapshot.setLastUpdateBy(nodeId);
+                        if (fileTriggerRouter.isEnabled()) {
+                            FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter,
+                                    getDirectorySnapshot(fileTriggerRouter));
+                            try {
+                                DirectorySnapshot dirSnapshot = tracker.trackChanges();
+                                for (FileSnapshot fileSnapshot : dirSnapshot) {
+                                    File file = fileTriggerRouter.getFileTrigger()
+                                            .createSourceFile(fileSnapshot);
+                                    String filePath = file.getParentFile().getPath();
+                                    String fileName = file.getName();
+                                    String nodeId = findSourceNodeIdFromFileIncoming(filePath,
+                                            fileName, fileSnapshot.getFileModifiedTime());
+                                    if (StringUtils.isNotBlank(nodeId)) {
+                                        fileSnapshot.setLastUpdateBy(nodeId);
+                                    }
                                 }
+                                save(dirSnapshot);
+                            } catch (Exception ex) {
+                                log.error("Failed to track changes for file trigger router: "
+                                        + fileTriggerRouter.getFileTrigger().getTriggerId() + "::"
+                                        + fileTriggerRouter.getRouter().getRouterId(), ex);
                             }
-                            save(dirSnapshot);
-                        } catch (Exception ex) {
-                            log.error("Failed to track changes for file trigger router: "
-                                    + fileTriggerRouter.getFileTrigger().getTriggerId() + "::"
-                                    + fileTriggerRouter.getRouter().getRouterId(), ex);
                         }
                     }
-                    
+
                     deleteFromFileIncoming();
-                } finally {                    
+                } finally {
                     engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
                 }
             } else {
@@ -333,7 +335,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             long maxBytesToSync = parameterService
                     .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
 
-            FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
+            FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this, engine.getNodeService(),
                     stagedResource);
             try {
                 for (int i = 0; i < activeBatches.size(); i++) {

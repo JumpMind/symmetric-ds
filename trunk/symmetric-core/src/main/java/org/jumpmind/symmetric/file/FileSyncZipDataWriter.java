@@ -43,10 +43,12 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
-import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IFileSyncService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
@@ -65,15 +67,19 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected Batch batch;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected List<FileSnapshot> snapshotEvents;
+    protected DataContext context;
+    protected INodeService nodeService;
 
-    public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
+    public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService, INodeService nodeService,
             IStagedResource stagedResource) {
         this.maxBytesToSync = maxBytesToSync;
         this.fileSyncService = fileSyncService;
         this.stagedResource = stagedResource;
+        this.nodeService = nodeService;
     }
 
     public void open(DataContext context) {
+        this.context = context;
     }
 
     public void close() {
@@ -111,6 +117,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshot.setFilePath(columnData.get("FILE_PATH"));
             snapshot.setLastEventType(LastEventType.fromCode(columnData.get("LAST_EVENT_TYPE")));
             snapshotEvents.add(snapshot);
+        } else if (eventType == DataEventType.RELOAD) {
+            String targetNodeId = context.getBatch().getTargetNodeId();
+            Node targetNode = nodeService.findNode(targetNodeId);
+            List<FileTriggerRouter> fileTriggerRouters = fileSyncService.getFileTriggerRoutersForCurrentNode();
+            for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+                if (fileTriggerRouter.isInitialLoadEnabled() && 
+                        fileTriggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
+                    DirectorySnapshot directorySnapshot = fileSyncService.getDirectorySnapshot(fileTriggerRouter);
+                    snapshotEvents.addAll(directorySnapshot);
+                }
+            }            
         }
     }
 

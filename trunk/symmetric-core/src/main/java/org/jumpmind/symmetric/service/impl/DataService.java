@@ -310,6 +310,7 @@ public class DataService extends AbstractService implements IDataService {
         engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId());
 
         INodeService nodeService = engine.getNodeService();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         
         Node sourceNode = nodeService.findIdentity();                
 
@@ -358,7 +359,7 @@ public class DataService extends AbstractService implements IDataService {
                             tablePrefix, nodeService
                                     .findIdentityNodeId()), true, loadId, createBy);            
 
-            List<TriggerHistory> triggerHistories = engine.getTriggerRouterService()
+            List<TriggerHistory> triggerHistories = triggerRouterService
                     .getActiveTriggerHistories();
 
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
@@ -416,6 +417,21 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             }
+            
+            if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
+                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
+                        null, null,
+                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+                TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
+                        .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
+                                fileSyncSnapshotHistory.getTriggerId(), true);
+                insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
+                        fileSyncSnapshotHistory, null, false, loadId, createBy);
+                if (!transactional) {
+                    transaction.commit();
+                }
+            }
+            
 
             if (reloadListeners != null) {
                 for (IReloadListener listener : reloadListeners) {

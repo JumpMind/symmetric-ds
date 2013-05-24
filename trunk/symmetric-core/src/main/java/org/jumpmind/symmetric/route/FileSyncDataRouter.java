@@ -64,7 +64,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         }
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId);
-        if (fileTriggerRouter != null) {
+        if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
             Router router = fileTriggerRouter.getRouter();
             Map<String, IDataRouter> routers = routerService.getRouters();
             IDataRouter dataRouter = null;
