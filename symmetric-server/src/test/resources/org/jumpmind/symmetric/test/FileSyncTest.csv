@@ -130,10 +130,10 @@ table,SYM_FILE_TRIGGER
 insert,"all","target/fs_svr/all","0",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
 insert,"create_only","target/fs_svr/create_only","0",,,"1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
 insert,"all_recursive","target/fs_svr/all_recursive","1",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,".csv only","target/fs_svr/csv_only","0","*.txt",,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"csv_only","target/fs_svr/csv_only","0","*.txt",,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
 insert,"choose_target","target/fs_svr/choose_target","0",,,"1","1","1","
-a = new java.io.File(\"target/fs_client/a\");
-b = new java.io.File(\"target/fs_client/b\");
+a = new java.io.File(\"target/fs_clnt/choose_target/a\");
+b = new java.io.File(\"target/fs_clnt/choose_target/b\");
 if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.FileUtils.sizeOfDirectory(b)) {
    targetBaseDir = b;
 } else {
@@ -149,7 +149,7 @@ table,SYM_FILE_TRIGGER_ROUTER
 insert,"all","server_2_client","1","1","target/fs_clnt/all",,"SOURCE_WINS","2013-05-19 13:52:16.390","unit_test","2013-05-19 13:52:16.390"
 insert,"create_only","server_2_client","1","1","target/fs_clnt/create_only",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
 insert,"all_recursive","server_2_client","1","1","target/fs_clnt/all_recursive",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
-insert,".csv only","server_2_client","1","1","target/fs_clnt/csv_only",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
+insert,"csv_only","server_2_client","1","1","target/fs_clnt/csv_only",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
 insert,"choose_target","server_2_client","1","1","target/fs_clnt/choose_target",,"SOURCE_WINS","2013-05-19 13:53:45.635","unit_test","2013-05-19 13:53:45.635"
 insert,"client_src","client_2_server","1","1","target/fs_svr/client_src",,"SOURCE_WINS","2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
 insert,"ping_back_svr","server_2_client","1","1","target/fs_clnt/ping_back",,"SOURCE_WINS","2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
