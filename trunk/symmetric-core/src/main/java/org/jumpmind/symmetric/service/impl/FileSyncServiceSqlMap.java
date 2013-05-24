@@ -12,14 +12,14 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         
         putSql("selectFileTriggersSql", 
-                " select t.trigger_id as trigger_id, base_dir, recursive,              " +
-                "        includes_files, excludes_files,                                        " +
-        		"        sync_on_create, sync_on_modified, t.sync_on_delete as sync_on_delete,  " +
-                "        t.before_copy_script as before_copy_script, " +
-                "        t.after_copy_script as after_copy_script, " +
-        		"        t.create_time as create_time, t.last_update_by as last_update_by,      " +
-        		"        t.last_update_time as last_update_time                                 " +
-        		" from $(file_trigger) t                                                        ");
+                " select trigger_id, base_dir, recursive,                                     " +
+                "        includes_files, excludes_files,                                      " +
+        		"        sync_on_create, sync_on_modified, sync_on_delete,                    " +
+                "        before_copy_script,                                                  " +
+                "        after_copy_script,                                                   " +
+        		"        create_time, last_update_by,                                          " +
+        		"        last_update_time                                                     " +
+        		" from $(file_trigger)                                                        ");
         
         putSql("triggerIdWhere", "where trigger_id=?");
        
