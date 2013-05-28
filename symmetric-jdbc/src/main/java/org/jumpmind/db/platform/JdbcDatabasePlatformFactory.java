@@ -73,6 +73,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "H2", H2DatabasePlatform.class);
         addPlatform(platforms, "H21", H2DatabasePlatform.class);
         addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
+        addPlatform(platforms, "Informix Dynamic Server", InformixDatabasePlatform.class);
         addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
         addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
