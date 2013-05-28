@@ -18,14 +18,19 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
     public AseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+
+        String quote = symmetricDialect.getPlatform()
+                .getDatabaseInfo().getDelimiterToken();
+        quote = quote == null ? "\"" : quote;
+
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + str_replace(str_replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar,$(tableAlias).\"$(columnName)\") + '\"') end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + str_replace(convert(varchar,$(tableAlias).\"$(columnName)\",102),'.','-') + ' ' + convert(varchar,$(tableAlias).\"$(columnName)\",108) + '\"') end" ;
-        clobColumnTemplate = "case when datalength($(origTableAlias).\"$(columnName)\") is null or datalength($(origTableAlias).\"$(columnName)\")=0 then '' else '\"' + str_replace(str_replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias).\"$(columnName)\")) + '\"' end" ;
-        imageColumnTemplate = "case when datalength($(origTableAlias).\"$(columnName)\") is null or datalength($(origTableAlias).\"$(columnName)\")=0 then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias).\"$(columnName)\")) + '\"' end" ;
-        booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else '\"' + str_replace(str_replace($(tableAlias)." + quote + "$(columnName)" + quote + ",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        numberColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else ('\"' + convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ") + '\"') end" ;
+        datetimeColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else ('\"' + str_replace(convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ",102),'.','-') + ' ' + convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ",108) + '\"') end" ;
+        clobColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then '' else '\"' + str_replace(str_replace(cast($(origTableAlias)." + quote + "$(columnName)" + quote + " as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        blobColumnTemplate = "case when $(origTableAlias)." + quote + "$(columnName)" + quote + " is null then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
+        imageColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
+        booleanColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' when $(tableAlias)." + quote + "$(columnName)" + quote + " = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
         oldTriggerValue = "deleted" ;
