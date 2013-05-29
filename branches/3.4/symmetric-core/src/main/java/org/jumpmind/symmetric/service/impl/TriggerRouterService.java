@@ -1183,9 +1183,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if (tables != null && tables.size() > 0) {
             for (Table table : tables) {
-            	if (table.getName().equalsIgnoreCase("A")) {
-            		System.out.println("Here");
-            	}
                 updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
             }
         } else {
