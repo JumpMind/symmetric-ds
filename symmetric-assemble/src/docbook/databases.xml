@@ -606,5 +606,17 @@ ontape -s -L 0
                 </listitem>
             </itemizedlist>
         </para>
-        </section>
+    </section>
+    <section id="ap02-ase">
+        <title>Sybase Active Server Enterprise</title>
+        <para>
+            Active Server Enterprise was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+        </para>
+    </section>
+    <section id="ap02-sqlanywhere">
+        <title>Sybase SQL Anywhere</title>
+        <para>
+            SQL Anywhere was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+        </para>
+    </section>
 </appendix>
