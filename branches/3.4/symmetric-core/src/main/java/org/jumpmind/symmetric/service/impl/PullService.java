@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -156,6 +157,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             } catch (ConnectionRejectedException ex) {
                 fireOffline(ex, node, status);
             } catch (AuthenticationException ex) {
+            	fireOffline(ex, node, status);
+            } catch (UnknownHostException ex) {
                 fireOffline(ex, node, status);
             } catch (SyncDisabledException ex) {
                 fireOffline(ex, node, status);
