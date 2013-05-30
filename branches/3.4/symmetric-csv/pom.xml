@@ -3,7 +3,7 @@
 	<groupId>org.jumpmind.symmetric</groupId>
 	<artifactId>symmetric-csv</artifactId>
 	<packaging>jar</packaging>
-	<version>3.4.5</version>
+	<version>3.4.6-SNAPSHOT</version>
 	<name>csv</name>
 	<inceptionYear>2010</inceptionYear>
 
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.jumpmind.symmetric</groupId>
 		<artifactId>symmetric-parent</artifactId>
-		<version>3.4.5</version>
+		<version>3.4.6-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
 	</parent>
 
