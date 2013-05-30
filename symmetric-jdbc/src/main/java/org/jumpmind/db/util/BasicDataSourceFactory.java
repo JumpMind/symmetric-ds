@@ -20,7 +20,10 @@
  */
 package org.jumpmind.db.util;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -44,6 +47,20 @@ public class BasicDataSourceFactory {
         dataSource.setDriverClassName(properties.get(
                 BasicDataSourcePropertyConstants.DB_POOL_DRIVER, null));
         dataSource.setUrl(properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL, null));
+        try {
+            Driver driver = (Driver)Class.forName(dataSource.getDriverClassName()).newInstance();
+            synchronized (DriverManager.class) {
+                Enumeration<Driver> drivers = DriverManager.getDrivers();
+                while (drivers.hasMoreElements()) {
+                    Driver driver2 = (Driver) drivers.nextElement();
+                    if (!driver2.getClass().equals(driver.getClass())) {
+                        DriverManager.deregisterDriver(driver2);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Had trouble registering the jdbc driver: " + dataSource.getDriverClassName(),e);
+        }
         String user = properties.get(BasicDataSourcePropertyConstants.DB_POOL_USER, "");
         if (user != null && user.startsWith(SecurityConstants.PREFIX_ENC)) {
             user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
