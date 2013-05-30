@@ -1,3 +1,17 @@
+SymmetricDS - 3.4.5 (Released 2013-05-29) 
+=========================================
+- 0001211: [Bug] Backwards compatibility change. Use the client's Charset-Accept http header to decide what encoding to use. (chenson) - closed.
+- 0001214: [Bug] reloadTable race condition (chenson) - closed.
+- 0001215: [Bug] The initial load sql is not overridden in the reloadTable method (chenson) - closed.
+- 0001220: [Bug] Wrong number of sym_data_events being logged when routing common batch (chenson) - closed.
+- 0001227: [Bug] Reading of MySQL tables can sometimes include the PRIMARY index if the primary key columns aren't at the start (chenson) - closed.
+- 0001232: [Bug] NullPointerException in BshDataRouter for reload events (chenson) - closed.
+- 0001233: [Bug] DataService.insertData(Data data) should populate external_data (chenson) - closed.
+- 0001235: [Bug] https settings in symmetric-server.properties not working with sym_service (chenson) - closed.
+- 0001238: [Bug] Issue with detecting whether batch is common or not. (chenson) - closed.
+- 0001239: [Improvement] Add the ability to NOT add triggers to a client database until initial load has finished (chenson) - closed.
+- 0001242: [Bug] ping_back settings broken for conflict resolution. class cast exception. (chenson) - closed.
+
 SymmetricDS - 3.4.4 (Released 2013-05-12) 
 =========================================
 - 0001207: [Bug] DB2 text column default value metadata values are quoted. Need to remove quotes when reading table metadata from database. (chenson) - resolved.
