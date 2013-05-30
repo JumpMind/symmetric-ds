@@ -131,11 +131,7 @@ public interface IDatabasePlatform {
     
     public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
     
-    public String alterCaseToMatchDatabaseDefaultCase(String value);
-    
     public void alterCaseToMatchDatabaseDefaultCase(Table table);
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
     
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
 

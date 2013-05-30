@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.transport.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -36,7 +35,6 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
-import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
@@ -44,8 +42,6 @@ public class HttpIncomingTransport implements IIncomingTransport {
     private HttpURLConnection connection;
 
     private BufferedReader reader;
-    
-    private InputStream is;
 
     private IParameterService parameterService;
     
@@ -63,16 +59,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
         return this.connection.getURL().toExternalForm();
     }
 
-    public void close() {
-        if (reader != null) {
-            IOUtils.closeQuietly(reader);
-            reader = null;
-        } 
-        
-        if (is != null) {
-            IOUtils.closeQuietly(is);
-            is = null;
-        }
+    public void close() throws IOException {
+        IOUtils.closeQuietly(reader);
     }
 
     public boolean isOpen() {
@@ -82,9 +70,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public String getRedirectionUrl() {
         return redirectionUrl;
     }
+
+    public BufferedReader open() throws IOException {
     
-    public InputStream openStream() throws IOException {
-        
         boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
         if (manualRedirects) {
             connection = this.openConnectionCheckRedirects(connection);
@@ -102,16 +90,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
         case WebConstants.SC_FORBIDDEN:
             throw new AuthenticationException();
         default:
-            is = HttpTransportManager.getInputStreamFrom(connection);
-            return is;
+            reader = HttpTransportManager.getReaderFrom(connection);
+            return reader;
         }
-    }
-    
-
-    public BufferedReader openReader() throws IOException {
-        InputStream is = openStream();
-        reader = TransportUtils.toReader(is);
-        return reader;
     }
     
     /**

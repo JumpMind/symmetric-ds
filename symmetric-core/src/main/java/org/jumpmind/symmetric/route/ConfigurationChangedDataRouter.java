@@ -396,8 +396,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     jobManager.stopJobs();
                     jobManager.startJobs();
                 }
+
             }
         }
+
     }
     
     protected void insertReloadEvents(SimpleRouterContext routingContext) {        

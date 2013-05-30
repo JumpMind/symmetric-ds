@@ -30,7 +30,6 @@ public class SystemConstants {
     public final static String SYSPROP_JMX_HTTP_CONSOLE_LOCALHOST_ENABLED = "jmx.http.console.localhost.only.enabled";
     public static final String SYSPROP_STANDALONE_WEB = "symmetric.standalone.web";
     public static final String SYSPROP_ENGINES_DIR = "symmetric.engines.dir";
-    public static final String SYSPROP_WAIT_FOR_DATABASE = "symmetric.wait.for.database.enabled";
     public static final String SYSPROP_WEB_DIR = "symmetric.default.web.dir";
     public static final String SYSPROP_SERVER_PROPERTIES_PATH = "symmetric.server.properties.path";
     public static final String SYSPROP_CLUSTER_SERVER_ID = "runtime.symmetric.cluster.server.id";

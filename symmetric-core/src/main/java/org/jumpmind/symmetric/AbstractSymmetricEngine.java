@@ -70,7 +70,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
@@ -95,7 +94,6 @@ import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
-import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
@@ -203,8 +201,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IStagingManager stagingManager;
 
     protected INodeCommunicationService nodeCommunicationService;
-    
-    protected IFileSyncService fileSyncService;
 
     protected Date lastRestartTime = null;
 
@@ -301,7 +297,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 clusterService, nodeCommunicationService, statisticManager);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService, nodeCommunicationService);
-        this.fileSyncService = new FileSyncService(this);
         this.jobManager = createJobManager();
 
         this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(
@@ -394,7 +389,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         node = nodeService.findIdentity();
 
-        if (node == null && parameterService.isRegistrationServer()
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("Inserting rows for node, security, identity and group for registration server");
             String nodeId = parameterService.getExternalId();
@@ -1067,10 +1062,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IDatabasePlatform getDatabasePlatform() {
         return getSymmetricDialect().getPlatform();
-    }
-    
-    public IFileSyncService getFileSyncService() {
-        return fileSyncService;
     }
 
 }

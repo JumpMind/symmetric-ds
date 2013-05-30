@@ -33,7 +33,6 @@ import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
@@ -196,7 +195,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
+        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, true);
         return platform;
     }
 
@@ -358,7 +357,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     public List<File> listSnapshots() {
         File snapshotsDir = getSnapshotDirectory();
-        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"zip"}, false));
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"jar"}, false));
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {             
                 return -o1.compareTo(o2);
@@ -375,7 +374,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public File snapshot() {
         
-        String dirName = getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String dirName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         
         File snapshotsDir = getSnapshotDirectory();
         
@@ -537,7 +536,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
         try {
             File jarFile = new File(snapshotsDir, tmpDir.getName()
-                    + ".zip");
+                    + ".jar");
             JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
             builder.build();
             FileUtils.deleteDirectory(tmpDir);

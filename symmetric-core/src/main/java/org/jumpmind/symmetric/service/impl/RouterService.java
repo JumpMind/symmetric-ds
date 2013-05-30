@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
-import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
@@ -109,7 +108,6 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("audit", new AuditTableDataRouter(engine));
         this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
-        this.routers.put(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -296,7 +294,6 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !Constants.CHANNEL_FILESYNC.equals(channelId)
                 && !Constants.CHANNEL_RELOAD.equals(channelId) 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
@@ -311,27 +308,30 @@ public class RouterService extends AbstractService implements IRouterService {
                  * data to all nodes in a node_group. We can only do 'optimal'
                  * routing if data is going to go to all nodes in a group.
                  */
-                if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
-                        .equals(nodeGroupId)) {
-                    if (!(dataRouter instanceof DefaultDataRouter)) {
-                        producesCommonBatches = false;
-                        break;
-                    } else {
-                        if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
-                            String tableName = triggerRouter.getTrigger()
-                                    .getFullyQualifiedSourceTableName();
-                            for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
-                                if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName()
-                                        .equals(tableName)
-                                        && triggerRouter2.getRouter().getNodeGroupLink()
-                                                .getTargetNodeGroupId().equals(nodeGroupId)) {
-                                    producesCommonBatches = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+				if (triggerRouter.getRouter().getNodeGroupLink()
+						.getSourceNodeGroupId().equals(nodeGroupId)) {
+					if (!(dataRouter instanceof DefaultDataRouter)) {
+						producesCommonBatches = false;
+						break;
+					} else {
+						if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
+							String tableName = triggerRouter.getTrigger()
+									.getFullyQualifiedSourceTableName();
+							for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
+								if (triggerRouter2.getTrigger()
+										.getFullyQualifiedSourceTableName()
+										.equals(tableName)
+										&& triggerRouter2.getRouter()
+												.getNodeGroupLink()
+												.getTargetNodeGroupId()
+												.equals(nodeGroupId)) {
+									producesCommonBatches = false;
+									break;
+								}
+							}
+						}
+					}
+				}
             }
         }
 

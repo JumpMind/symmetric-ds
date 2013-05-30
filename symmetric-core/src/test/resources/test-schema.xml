@@ -139,7 +139,7 @@
 		<column name="three_column" type="VARCHAR" size="50" required="true" />
 	</table>
 
-	<table name="init_load_from_client_table">
+	<table name="initial_load_from_client_table">
 		<column name="id" type="INTEGER" primaryKey="true" required="true" />
 		<column name="data" type="VARCHAR" size="10" />
 	</table>

@@ -46,7 +46,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                            DatabaseWriter writer = transformWriter
+                        	DatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
@@ -58,7 +58,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DatabaseWriter writer = transformWriter
+                        	DatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {

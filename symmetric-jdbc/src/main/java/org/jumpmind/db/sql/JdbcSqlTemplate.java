@@ -368,9 +368,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
 
                             if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
-                                log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             } else {
-                                log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                                 if (failOnError) {
                                     throw ex;
                                 }
@@ -512,11 +512,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if ("java.sql.Timestamp".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             }
-        } else if (obj instanceof Timestamp) {
-            String typeName = metaData.getColumnTypeName(index);
-            if (typeName != null && typeName.equals("timestamptz")) {
-                obj = rs.getString(index);
-            }
+        } else if (obj instanceof Timestamp
+                && metaData.getColumnTypeName(index).equals("timestamptz")) {
+            obj = rs.getString(index);
         }
         return obj;
     }

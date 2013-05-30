@@ -30,6 +30,9 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 
+/**
+ * 
+ */
 public interface ITransportManager {
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException;
@@ -37,12 +40,6 @@ public interface ITransportManager {
     public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
-    
-    public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException;   
-    
-    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
-            String securityToken, String registrationUrl) throws IOException;
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 

@@ -177,7 +177,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 Statement stmt = null;
                 ResultSet rs = null;
                 try {
-                    logSql(sql, args);
                     if (args != null && args.length > 0) {
                         PreparedStatement ps = con.prepareStatement(sql);
                         stmt = ps;
@@ -215,7 +214,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 PreparedStatement st = null;
                 ResultSet rs = null;
                 try {
-                    logSql(sql, args);
                     st = c.prepareStatement(sql);
                     st.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
                     if (args != null) {
@@ -244,7 +242,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 Statement stmt = null;
                 ResultSet rs = null;
                 try {
-                    logSql(sql, null);
                     stmt = con.createStatement();
                     if (stmt.execute(sql)) {
                         rs = stmt.getResultSet();
@@ -267,7 +264,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 PreparedStatement stmt = null;
                 ResultSet rs = null;
                 try {
-                    logSql(sql, args);
                     stmt = con.prepareStatement(sql);
                     jdbcSqlTemplate.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
                     if (stmt.execute()) {
@@ -291,7 +287,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 PreparedStatement stmt = null;
                 ResultSet rs = null;
                 try {
-                    logSql(sql, args);
                     stmt = con.prepareStatement(sql);
                     if (args != null && args.length > 0) {
                         jdbcSqlTemplate.setValues(stmt, args);

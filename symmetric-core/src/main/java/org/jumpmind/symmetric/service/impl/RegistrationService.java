@@ -1,22 +1,22 @@
 /*
- * Licensed to JumpMind Inc under one or more contributor
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
  * to you under the GNU Lesser General Public License (the
  * "License"); you may not use this file except in compliance
- * with the License.
- *
+ * with the License. 
+ * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -80,7 +80,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
 
     private IStatisticManager statisticManager;
-
+    
     private IConfigurationService configurationService;
 
     public RegistrationService(IParameterService parameterService,
@@ -116,7 +116,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);
-            req.setErrorMessage("Cannot register a client node until this node is registered");
+            req.setErrorMessage("Registration is not allowed until this node has an identity");
             saveRegisgtrationRequest(req);
             log.warn(req.getErrorMessage());
             return false;
@@ -133,7 +133,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 if (security == null || security.getInitialLoadTime() == null) {
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
-                    req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                    req.setErrorMessage("Registration is not allowed until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                     saveRegisgtrationRequest(req);
                     log.warn(req.getErrorMessage());
                     return false;
@@ -160,7 +160,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             true)) {
                 RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.ER, remoteHost, remoteAddress);
-                req.setErrorMessage(String.format("Cannot register a client node unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
+                req.setErrorMessage(String.format("Registration is not allowed unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
                 saveRegisgtrationRequest(req);
                 log.warn(req.getErrorMessage());
@@ -217,7 +217,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     remoteHost, remoteAddress));
 
             statisticManager.incrementNodesRegistered(1);
-
+            
             return true;
 
         } catch (RegistrationNotOpenException ex) {
@@ -270,9 +270,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     getSql("insertRegistrationRequestSql"),
                     new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
-                            externalId, request.getIpAddress(), request.getHostName(), request.getErrorMessage() },
-                            new int[] { Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                            externalId, request.getIpAddress(), request.getHostName(), request.getErrorMessage() });
         }
 
     }
@@ -308,16 +306,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             symmetricDialect.disableSyncTriggers(transaction, nodeId);
             transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
         } finally {
             symmetricDialect.enableSyncTriggers(transaction);
             close(transaction);
@@ -373,7 +361,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                                             + identity.getNodeId() + "'", false, -1, null);
                 }
             }
-
+            
             if (registered) {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
@@ -437,8 +425,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public synchronized String openRegistration(Node node) {
         return openRegistration(node, null, null);
     }
-
-    protected String openRegistration(Node node, String remoteHost, String remoteAddress) {
+    
+    protected String openRegistration(Node node, String remoteHost, String remoteAddress) {        
         Node me = nodeService.findIdentity();
         if (me != null) {
             String nodeId = nodeService.getNodeIdCreator().generateNodeId(node, remoteHost, remoteAddress);
@@ -451,7 +439,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
                 // make sure there isn't a node security row lying around w/out
                 // a node row
-                nodeService.deleteNodeSecurity(nodeId);
+                nodeService.deleteNodeSecurity(nodeId);                                
                 String password = nodeService.getNodeIdCreator().generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
@@ -481,9 +469,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         return s;
     }
-
+    
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-        this.nodePasswordFilter = nodePasswordFilter;
+        this.nodePasswordFilter = nodePasswordFilter;        
     }
 
     public boolean isRegistrationOpen(String nodeGroupId, String externalId) {

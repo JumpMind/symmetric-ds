@@ -49,11 +49,6 @@ public class MockTransportManager implements ITransportManager {
             throws IOException {
         return incomingTransport;
     }
-    
-    public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException {
-        return incomingTransport;
-    }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
         Node local, String securityToken, String registrationUrl) throws IOException {
@@ -100,11 +95,6 @@ public class MockTransportManager implements ITransportManager {
 
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return null;
-    }
-    
-    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
-            String securityToken, String registrationUrl) throws IOException {
-        return outgoingTransport;
     }
 
 

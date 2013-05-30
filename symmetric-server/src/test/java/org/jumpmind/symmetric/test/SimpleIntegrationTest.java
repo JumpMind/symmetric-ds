@@ -74,7 +74,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void createServer() {
         ISymmetricEngine server = getServer();
         Assert.assertNotNull(server);
-        server.getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");
         checkForFailedTriggers(true, false);
 
     }
@@ -89,7 +88,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertTrue("The registration for the client should be opened now", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClient().start();
-        getClient().getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");        
         clientPull();
         Assert.assertTrue("The client did not register", getClient().isRegistered());
         Assert.assertFalse("The registration for the client should be closed now", rootNodeService

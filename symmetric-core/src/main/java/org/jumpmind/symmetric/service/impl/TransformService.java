@@ -30,7 +30,7 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
-
+    
     private Date lastUpdateTime;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
@@ -40,12 +40,12 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
+    
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTransformTableLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxTransformColumnLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2);
-
+        
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
@@ -216,16 +216,6 @@ public class TransformService extends AbstractService implements ITransformServi
                 }
             }
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
         } finally {
             close(transaction);
         }
@@ -246,16 +236,6 @@ public class TransformService extends AbstractService implements ITransformServi
                     (Object) transformTableId);
             transaction.commit();
             refreshCache();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
         } finally {
             close(transaction);
         }

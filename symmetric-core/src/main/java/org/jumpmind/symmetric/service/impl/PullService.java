@@ -157,9 +157,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             } catch (ConnectionRejectedException ex) {
                 fireOffline(ex, node, status);
             } catch (AuthenticationException ex) {
-                fireOffline(ex, node, status);
+            	fireOffline(ex, node, status);
             } catch (UnknownHostException ex) {
-                fireOffline(ex, node, status);                
+                fireOffline(ex, node, status);
             } catch (SyncDisabledException ex) {
                 fireOffline(ex, node, status);
             } catch (SocketException ex) {

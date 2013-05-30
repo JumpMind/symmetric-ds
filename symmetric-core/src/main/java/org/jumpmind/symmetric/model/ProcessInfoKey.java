@@ -27,8 +27,8 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER;
-
+        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD;
+        
         public String toString() {
             switch (this) {
                 case MANUAL_LOAD:
@@ -47,14 +47,6 @@ public class ProcessInfoKey implements Serializable {
                     return "Routing Reader";
                 case GAP_DETECT:
                     return "Gap Detection";
-                case FILE_SYNC_PULL_JOB:
-                    return "File Sync Pull";
-                case FILE_SYNC_PUSH_JOB:
-                    return "File Sync Push";
-                case FILE_SYNC_PULL_HANDLER:
-                    return "Service File Sync Pull";
-                case FILE_SYNC_PUSH_HANDLER:
-                    return "Service File Sync Push";
                 default:
                     return name();
             }
@@ -118,11 +110,10 @@ public class ProcessInfoKey implements Serializable {
             return false;
         return true;
     }
-
+    
     @Override
     public String toString() {
-        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s",
-                processType.toString(), sourceNodeId, targetNodeId);
+        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s",processType.toString(), sourceNodeId, targetNodeId);
     }
-
+    
 }

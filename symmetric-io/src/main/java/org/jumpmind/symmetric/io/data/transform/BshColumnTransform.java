@@ -60,7 +60,6 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         try {
             Interpreter interpreter = getInterpreter(context);
-            interpreter.set("log", log);
             interpreter.set("sqlTemplate", platform.getSqlTemplate());
             interpreter.set("currentValue", newValue);
             interpreter.set("oldValue", oldValue);

@@ -704,7 +704,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
             IIndex index = table.getIndex(indexIdx);
-
+            
             if (index.isUnique() && matches(index, columnNames)
                     && isInternalPrimaryKeyIndex(connection, metaData, table, index)) {
                 table.removeIndex(indexIdx);
@@ -762,20 +762,20 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return <code>true</code> if the index matches the columns
      */
     protected boolean matches(IIndex index, List<String> columnsToSearchFor) {
-        for (String column : columnsToSearchFor) {
-            boolean found = false;
+    	for (String column : columnsToSearchFor) {
+    		boolean found = false;
             for (int i = 0; i < index.getColumnCount(); i++) {
-                if (column != null && column.equals(index.getColumn(i).getName())) {
-                    found = true;
-                }
+            	if (column != null && column.equals(index.getColumn(i).getName())) {
+            		found = true;
+            	}
             }
             if (!found) {
-                return false;
+            	return false;
             }
-        }
+		}
         return true;
     }
-    
+
     /*
      * Tries to determine whether the index is the internal database-generated
      * index for the given table's primary key. Note that only unique indices

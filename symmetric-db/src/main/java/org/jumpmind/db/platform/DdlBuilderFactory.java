@@ -20,7 +20,6 @@
  */
 package org.jumpmind.db.platform;
 
-import org.jumpmind.db.platform.ase.AseDdlBuilder;
 import org.jumpmind.db.platform.db2.Db2DdlBuilder;
 import org.jumpmind.db.platform.derby.DerbyDdlBuilder;
 import org.jumpmind.db.platform.firebird.FirebirdDdlBuilder;
@@ -35,6 +34,7 @@ import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
+import org.jumpmind.db.platform.sybase.SybaseDdlBuilder;
 
 /**
  * Factory that creates {@link IDdlBuilder} from {@link DatabaseNamesConstants} values.
@@ -77,8 +77,8 @@ final public class DdlBuilderFactory {
             return new PostgreSqlDdlBuilder();
         } else if (DatabaseNamesConstants.SQLITE.equals(databaseName)) {
             return new SqliteDdlBuilder();  
-        } else if (DatabaseNamesConstants.ASE.equals(databaseName)) {
-            return new AseDdlBuilder();
+        } else if (DatabaseNamesConstants.SYBASE.equals(databaseName)) {
+            return new SybaseDdlBuilder();
         } else {
             return null;
         }

@@ -18,7 +18,7 @@
     <moduleSets>
         <moduleSet>
             <includes>
-                <include>org.jumpmind.symmetric:symmetric-client</include>
+                <include>org.jumpmind.symmetric:symmetric-core</include>
             </includes>
             <binaries>
                 <unpack>false</unpack>
