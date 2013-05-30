@@ -52,8 +52,15 @@ public class BasicDataSourceFactory {
             synchronized (DriverManager.class) {
                 Enumeration<Driver> drivers = DriverManager.getDrivers();
                 while (drivers.hasMoreElements()) {
-                    Driver driver2 = (Driver) drivers.nextElement();
-                    if (!driver2.getClass().equals(driver.getClass())) {
+                    Driver driver2 = (Driver) drivers.nextElement();                    
+                    /* 
+                     * MySQL and Maria DB drivers cannot co-exist because
+                     * they use the same JDBC URL.
+                     */
+                    if ((driver.getClass().equals("com.mysql.jdbc.Driver") &&
+                            driver2.getClass().getName().equals("org.mariadb.jdbc.Driver")) ||
+                            (driver.getClass().equals("org.mariadb.jdbc.Driver") &&
+                                    driver2.getClass().getName().equals("com.mysql.jdbc.Driver"))) {
                         DriverManager.deregisterDriver(driver2);
                     }
                 }
