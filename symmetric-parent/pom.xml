@@ -245,6 +245,13 @@
             </extension>
         </extensions>
         <plugins>
+             <plugin>
+                 <groupId>com.mycila.maven-license-plugin</groupId>
+                 <artifactId>maven-license-plugin</artifactId>
+                 <configuration>
+                     <header>../symmetric-assemble/HEADER</header>
+                 </configuration>
+            </plugin>                
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
                 <version>2.9</version>
