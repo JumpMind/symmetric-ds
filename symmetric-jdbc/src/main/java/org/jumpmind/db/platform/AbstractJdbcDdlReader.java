@@ -79,7 +79,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     private final List<MetaDataColumnDescriptor> _columnsForIndex;
 
     /* The platform that this model reader belongs to. */
-    private IDatabasePlatform platform;
+    protected IDatabasePlatform platform;
 
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
