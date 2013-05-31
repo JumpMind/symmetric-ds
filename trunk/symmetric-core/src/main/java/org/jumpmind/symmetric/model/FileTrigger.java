@@ -30,6 +30,7 @@ import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.OrFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
 
@@ -166,6 +167,11 @@ public class FileTrigger implements Serializable {
             fileFilters.add(filter);
             fileFilters.add(new NotFileFilter(FileFilterUtils.directoryFileFilter()));
             filter = new AndFileFilter(fileFilters);            
+        } else {
+            List<IOFileFilter> fileFilters = new ArrayList<IOFileFilter>();
+            fileFilters.add(filter);
+            fileFilters.add(FileFilterUtils.directoryFileFilter());
+            filter = new OrFileFilter(fileFilters);
         }
         return filter;
     }

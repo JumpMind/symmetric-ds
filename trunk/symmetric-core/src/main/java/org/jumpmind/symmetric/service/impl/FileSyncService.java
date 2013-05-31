@@ -98,7 +98,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     public void trackChanges(boolean force) {
         synchronized (trackerLock) {
-            if (!engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER) || force) {
+            if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER) || force) {
                 try {
                     List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
                     for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
@@ -540,7 +540,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
             incomingBatch.setBatchId(batchId);
             incomingBatch.setStatus(IncomingBatch.Status.LD);
-            incomingBatch.setNodeId(sourceNodeId);
+            incomingBatch.setNodeId(sourceNodeId);            
             incomingBatch.setByteCount(FileUtils.sizeOfDirectory(batchDir));
             batchesProcessed.add(incomingBatch);
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
@@ -550,6 +550,8 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                     try {
                         interpreter.set("log", log);
                         interpreter.set("batchDir", batchDir.getAbsolutePath());
+                        interpreter.set("engine", engine);
+                        interpreter.set("sourceNodeId", sourceNodeId);
 
                         synchronized (trackerLock) {
                             @SuppressWarnings("unchecked")

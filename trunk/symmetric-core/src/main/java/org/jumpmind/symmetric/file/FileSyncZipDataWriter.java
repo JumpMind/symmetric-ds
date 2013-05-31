@@ -143,12 +143,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 }
 
                 Set<String> commands = new HashSet<String>();
-                StringBuilder script = new StringBuilder("fileList = new HashMap();");                
+                StringBuilder script = new StringBuilder("fileList = new HashMap();\n");                
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
                             snapshot.getTriggerId(), snapshot.getRouterId());
                     if (triggerRouter != null) {
-                        StringBuilder command = new StringBuilder();
+                        StringBuilder command = new StringBuilder("\n");
                         LastEventType eventType = snapshot.getLastEventType();
 
                         FileTrigger fileTrigger = triggerRouter.getFileTrigger();
@@ -159,6 +159,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         }
 
                         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
+                        command.append("processFile = true;\n");
+                        command.append("sourceFileName = \"").append(snapshot.getFileName()).append("\";\n");
+                        command.append("sourceFilePath = \"").append(snapshot.getFilePath()).append("\";\n");
 
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
@@ -176,19 +179,20 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
                             command.append(fileTrigger.getBeforeCopyScript()).append("\n");
                         }
+                        
+                        command.append("if (processFile) {\n");
 
                         switch (eventType) {
                             case CREATE:
                             case MODIFY:
                             case SEED:
                                 if (file.exists()) {
-                                    command.append("mv (batchDir + \"/");
+                                    command.append("  mv (batchDir + \"/\"");
                                     if (!snapshot.getFilePath().equals(".")) {
-                                        command.append(snapshot.getFilePath());
-                                        command.append("/");
+                                        command.append(" + sourceFilePath + \"/\"");
                                     }
-                                    command.append(snapshot.getFileName());
-                                    command.append("\", ");
+                                    command.append(" + sourceFileName");
+                                    command.append(", ");
                                     StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
                                     if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                         if (!triggerRouter.getTargetFilePath().equals(".")) {
@@ -205,13 +209,13 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     targetFile.append("\"");
                                     command.append(targetFile);
                                     command.append(");\n");
-                                    command.append("fileList.put(").append(targetFile).append(",\"");
+                                    command.append("  fileList.put(").append(targetFile).append(",\"");
                                     command.append(eventType.getCode());
                                             command.append("\");\n");
                                 }
                                 break;
                             case DELETE:                                                                
-                                command.append("org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
+                                command.append("  org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
                                 StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
                                 if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                     if (!triggerRouter.getTargetFilePath().equals(".")) {
@@ -228,7 +232,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 targetFile.append("\"");
                                 command.append(targetFile);
                                 command.append("));\n");
-                                command.append("fileList.put(").append(targetFile).append(",\"");
+                                command.append("  fileList.put(").append(targetFile).append(",\"");
                                 command.append(eventType.getCode());
                                         command.append("\");\n");
                                 break;
@@ -262,8 +266,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                         file.getAbsolutePath());
                             }
 
+                            command.append("}\n\n");
                             script.append(command.toString());
                             commands.add(command.toString());
+                            
                         }
 
                     } else {
@@ -273,7 +279,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                     }
                 }
 
-                script.append("return fileList;");
+                script.append("return fileList;\n");
                 ZipEntry entry = new ZipEntry(batch.getBatchId() + "/sync.bsh");
                 zos.putNextEntry(entry);
                 IOUtils.write(script.toString(), zos);
