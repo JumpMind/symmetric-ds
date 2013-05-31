@@ -1097,17 +1097,44 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @param resultSet The result set
      * 
-     * @param columnDescriptors The dscriptors of the columns to read
+     * @param columnDescriptors The descriptors of the columns to read
      * 
      * @return The read values keyed by the column name
      */
     protected Map<String, Object> readMetaData(ResultSet resultSet,
             List<MetaDataColumnDescriptor> columnDescriptors) throws SQLException {
         HashMap<String, Object> values = new HashMap<String, Object>();
-        for (Iterator<MetaDataColumnDescriptor> it = columnDescriptors.iterator(); it.hasNext();) {
-            MetaDataColumnDescriptor descriptor = it.next();
+        ResultSetMetaData meta = resultSet.getMetaData();
+        int columnCount = meta.getColumnCount();
+        Set<String> processed = new HashSet<String>(columnCount);
+        for (int i = 1; i <= columnCount; i++) {
+            boolean foundMetaDataDescriptor = false;
+            String columnName = meta.getColumnName(i);
+            for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
+                if (metaDataColumnDescriptor.getName().equals(columnName)) {
+                    foundMetaDataDescriptor = true;
+                    values.put(metaDataColumnDescriptor.getName(),
+                            metaDataColumnDescriptor.readColumn(resultSet));
+                    processed.add(columnName);
+                    break;
+                }
+            }
 
-            values.put(descriptor.getName(), descriptor.readColumn(resultSet));
+            /*
+             * Put all metadata values into the map for easy debugging
+             * of drivers that return nonstandard names
+             */
+            if (!foundMetaDataDescriptor) {
+                values.put(columnName, resultSet.getObject(i));
+            }
+
+        }
+        
+        for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
+            if (!processed.contains(metaDataColumnDescriptor)) {
+                values.put(metaDataColumnDescriptor.getName(),
+                        metaDataColumnDescriptor.readColumn(resultSet));
+            }
         }
         return values;
     }
