@@ -250,6 +250,9 @@
                  <artifactId>maven-license-plugin</artifactId>
                  <configuration>
                      <header>../symmetric-assemble/HEADER</header>
+                     <excludes>
+                        <exclude>**/*.vm</exclude>
+                     </excludes>
                  </configuration>
             </plugin>                
             <plugin>
