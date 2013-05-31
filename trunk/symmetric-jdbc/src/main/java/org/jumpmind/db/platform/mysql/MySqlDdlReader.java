@@ -50,6 +50,15 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
     }
+    
+    @Override
+    protected String getResultSetCatalogName() {
+        if (isMariaDbDriver()) {
+            return "TABLE_SCHEMA";
+        } else {
+            return super.getResultSetCatalogName();
+        }
+    }
 
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
@@ -117,9 +126,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
     
-    protected boolean isMariaDbDriver(Connection connection) throws SQLException {
-        if (mariaDbDriver == null) {
-            mariaDbDriver = "mariadb-jdbc".equals(connection.getMetaData().getDriverName());
+    protected boolean isMariaDbDriver() {
+        if (mariaDbDriver == null) {            
+            mariaDbDriver = "mariadb-jdbc".equals(getPlatform().getSqlTemplate().getDriverName());
         }
         return mariaDbDriver;
     }
@@ -127,7 +136,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
-        if (!isMariaDbDriver(connection)) {
+        if (!isMariaDbDriver()) {
             return super.readForeignKeys(connection, metaData, tableName);
         } else {
             Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
