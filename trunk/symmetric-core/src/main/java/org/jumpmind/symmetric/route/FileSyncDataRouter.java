@@ -79,6 +79,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
             if (context instanceof ChannelRouterContext) {
                 ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
             }
+            dataMetaData.setRouter(router);
             nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false));
             nodeIds.remove(sourceNodeId);
         } else {

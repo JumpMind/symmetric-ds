@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +95,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
-        List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
+        List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
 
         if (columnValues != null) {
@@ -155,6 +156,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         
         if(nodeIds != null) {
             nodeIds.remove(null);
+        } else {
+            nodeIds = Collections.emptySet();
         }
 
         return nodeIds;

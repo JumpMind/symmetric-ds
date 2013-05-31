@@ -918,7 +918,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } while (data != null
                     && routingContext != null
                     && !routerService.shouldDataBeRouted(routingContext, new DataMetaData(
-                            (Data) data, targetTable, triggerRouter, routingContext.getChannel()),
+                            (Data) data, targetTable, triggerRouter.getRouter(), routingContext.getChannel()),
                             node, true));
 
             if (data != null && outgoingBatch != null) {
