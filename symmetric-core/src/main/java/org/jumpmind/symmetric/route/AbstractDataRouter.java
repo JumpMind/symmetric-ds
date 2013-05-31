@@ -196,11 +196,6 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
             String additionalErrorMessage = "";
-            String triggerHistTableName = dataMetaData.getTriggerHistory().getFullyQualifiedSourceTableName();
-            String triggerTableName = dataMetaData.getTriggerRouter().getTrigger().getFullyQualifiedSourceTableName();
-            if (!triggerHistTableName.equalsIgnoreCase(triggerTableName)) {
-                additionalErrorMessage += String.format("\nThe trigger hist table name (%s) does not match the trigger table name (%s).  Did the trigger hist table get reset and while the data table did not?", triggerHistTableName, triggerHistTableName);                
-            }
             if (symmetricDialect != null && 
                     symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
                 boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();

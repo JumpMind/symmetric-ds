@@ -62,11 +62,11 @@ public class BshDataRouter extends AbstractDataRouter {
             bind(interpreter, dataMetaData, nodes, targetNodes, initialLoad);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
-            Object returnValue = interpreter.eval(dataMetaData.getTriggerRouter().getRouter().getRouterExpression());
+            Object returnValue = interpreter.eval(dataMetaData.getRouter().getRouterExpression());
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
-            log.error("Error in data router: " + dataMetaData.getTriggerRouter().getRouter() + ".  Routing to nobody.", e);
+            log.error("Error in data router: " + dataMetaData.getRouter() + ".  Routing to nobody.", e);
             return Collections.emptySet();
         }
     }    

@@ -120,7 +120,7 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Node node, boolean initialLoad) {
-        IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
+        IDataRouter router = getDataRouter(dataMetaData.getRouter());
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet,
@@ -302,7 +302,7 @@ public class RouterService extends AbstractService implements IRouterService {
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
             for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
-                IDataRouter dataRouter = getDataRouter(triggerRouter);
+                IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
                 /*
                  * If the data router is not a default data router or there will
                  * be incoming data on the channel where sync_on_incoming_batch
@@ -592,12 +592,12 @@ public class RouterService extends AbstractService implements IRouterService {
         Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter,
+                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
                         context.getChannel());
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getDataEventType())) {
-                    IDataRouter dataRouter = getDataRouter(triggerRouter);
+                    IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
                     nodeIds = dataRouter.routeToNodes(context, dataMetaData,
@@ -662,9 +662,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
-                    TriggerRouter triggerRouter = dataMetaData.getTriggerRouter();
+                    Router router = dataMetaData.getRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            triggerRouter != null ? triggerRouter.getRouter().getRouterId()
+                            router != null ? router.getRouterId()
                                     : Constants.UNKNOWN_ROUTER_ID);
                     batch.incrementDataEventCount();
                     numberOfDataEventsInserted++;
@@ -681,21 +681,21 @@ public class RouterService extends AbstractService implements IRouterService {
         return numberOfDataEventsInserted;
     }
 
-    protected IDataRouter getDataRouter(TriggerRouter trigger) {
-        IDataRouter router = null;
-        if (!StringUtils.isBlank(trigger.getRouter().getRouterType())) {
-            router = routers.get(trigger.getRouter().getRouterType());
-            if (router == null) {
+    protected IDataRouter getDataRouter(Router router) {
+        IDataRouter dataRouter = null;
+        if (!StringUtils.isBlank(router.getRouterType())) {
+            dataRouter = routers.get(router.getRouterType());
+            if (dataRouter == null) {
                 log.warn(
-                        "Could not find configured router '{}' for trigger with the id of {}. Defaulting the router",
-                        trigger.getRouter().getRouterType(), trigger.getTrigger().getTriggerId());
+                        "Could not find configured router '{}' for router with the id of {}. Defaulting the router",
+                        router.getRouterType(), router.getRouterId());
             }
         }
 
-        if (router == null) {
+        if (dataRouter == null) {
             return routers.get("default");
         }
-        return router;
+        return dataRouter;
     }
 
     protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
