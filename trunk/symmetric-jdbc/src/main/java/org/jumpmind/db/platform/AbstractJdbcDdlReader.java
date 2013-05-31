@@ -1131,7 +1131,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         
         for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
-            if (!processed.contains(metaDataColumnDescriptor)) {
+            if (!processed.contains(metaDataColumnDescriptor.getName())) {
                 values.put(metaDataColumnDescriptor.getName(),
                         metaDataColumnDescriptor.readColumn(resultSet));
             }
