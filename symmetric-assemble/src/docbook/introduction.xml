@@ -430,6 +430,13 @@
       payload can be any SQL statement. The event is processed and
       acknowledged just like any other event type.</para>
     </section>
+    
+    <section id="feature-filesync">
+      <title>File Synchronization</title>
+      <para>Quite a few users of SymmetricDS have found that they have a need to not only synchronize database tables to remote locations, but they also have a set of files that should be synchronized.  As of version 3.5 SymmetricDS now support file synchronization.</para>
+      <para>Please see <xref linkend="filesync"/>
+    for more information.</para>
+    </section>    
   </section>
 
   <section id="background">
