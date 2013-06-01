@@ -449,11 +449,11 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             System.out.println("Reloading table to node '" + node.getNodeId() + "'");
 
             if (line.hasOption(OPTION_WHERE)) {
-                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
-                        schemaName, tableName, line.getOptionValue(OPTION_WHERE));
+                System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                        schemaName, tableName, line.getOptionValue(OPTION_WHERE)));
             } else {
-                getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
-                        schemaName, tableName);
+                System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                        schemaName, tableName));
             }
         }
     }
