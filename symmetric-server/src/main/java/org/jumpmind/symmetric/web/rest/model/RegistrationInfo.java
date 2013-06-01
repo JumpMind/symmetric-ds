@@ -22,6 +22,11 @@ package org.jumpmind.symmetric.web.rest.model;
 
 public class RegistrationInfo {
 
+	/**
+	 * Whether the node was successfully registered
+	 */
+	boolean registered;
+	
     /**
      * The nodeId that was generated during the registration process for the given node
      * based on its external id
@@ -32,6 +37,11 @@ public class RegistrationInfo {
 	 * The URL that should be used to request (pull) data in the sycnronization scenario
 	 */
 	String syncUrl;
+	
+	/**
+	 * The password for the root node to use when doing a pull
+	 */
+	String nodePassword;	
 	
 	/**
 	 * Returns the node id that was generated during the registration process for the given node
@@ -65,4 +75,21 @@ public class RegistrationInfo {
 	public void setSyncUrl(String syncUrl) {
 		this.syncUrl = syncUrl;
 	}
+
+	public String getNodePassword() {
+		return nodePassword;
+	}
+
+	public void setNodePassword(String nodePassword) {
+		this.nodePassword = nodePassword;
+	}
+
+	public boolean isRegistered() {
+		return registered;
+	}
+
+	public void setRegistered(boolean registered) {
+		this.registered = registered;
+	}
+
 }
