@@ -182,5 +182,9 @@ public class TypedProperties extends Properties {
             }
         }
     }
+    
+    public TypedProperties copy() {
+        return new TypedProperties(this);
+    }
 
 }
