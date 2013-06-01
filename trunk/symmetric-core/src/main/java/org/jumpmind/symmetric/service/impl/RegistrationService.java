@@ -35,6 +35,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -101,17 +102,41 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 createSqlReplacementTokens()));
     }
 
+	public Node registerPullOnlyNode(String externalId, String nodeGroupId,
+			String databaseType, String databaseVersion) 
+			throws IOException {
+		
+		Node node = new Node();
+		node.setExternalId(externalId);
+		node.setNodeGroupId(nodeGroupId);
+		node.setDatabaseType(databaseType);
+		node.setDatabaseVersion(databaseVersion);
+		
+		node = processRegistration(node, null, null, true, Constants.DEPLOYMENT_TYPE_REST);
+		
+		if (node.isSyncEnabled()) {
+			//set the node as registered as we have no 
+			//virtual batch for registration to be ok'd
+			markNodeAsRegistered(node.getNodeId());
+		}		
+		return node;
+	}    
+    
     public boolean registerNode(Node preRegisteredNode, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
         return registerNode(preRegisteredNode, null, null, out, isRequestedRegistration);
     }
 
-    /**
-     * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
-     */
-    public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
-            String remoteAddress, OutputStream out, boolean isRequestedRegistration)
+    public void extractConfiguration(OutputStream out, Node registeredNode) {
+        dataExtractorService.extractConfigurationStandalone(registeredNode, out);
+    }
+    
+    public Node processRegistration(Node nodePriorToRegistration, String remoteHost,
+            String remoteAddress, boolean isRequestedRegistration, String deploymentType)
             throws IOException {
+
+    	Node processedNode = new Node();
+    	processedNode.setSyncEnabled(false);
         Node identity = nodeService.findIdentity();
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
@@ -119,11 +144,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
             req.setErrorMessage("Cannot register a client node until this node is registered");
             saveRegisgtrationRequest(req);
             log.warn(req.getErrorMessage());
-            return false;
+            return processedNode;
         }
 
         try {
-
             if (!nodeService.isRegistrationServer()) {
                 /*
                  * registration is not allowed until this node has an identity
@@ -136,7 +160,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                     saveRegisgtrationRequest(req);
                     log.warn(req.getErrorMessage());
-                    return false;
+                    return processedNode;
                 }
             }
 
@@ -164,37 +188,41 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
                 saveRegisgtrationRequest(req);
                 log.warn(req.getErrorMessage());
-                return false;
+                return processedNode;
             }
 
             String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
                     .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
                             remoteAddress) : nodePriorToRegistration.getNodeId();
-            Node registeredNode = nodeService.findNode(nodeId);
+            
+            Node foundNode = nodeService.findNode(nodeId);
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-            if ((registeredNode == null || security == null || !security.isRegistrationEnabled())
+            
+            if ((foundNode == null || security == null || !security.isRegistrationEnabled())
                     && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
                 openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
                 nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
                         .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
                                 remoteAddress) : nodePriorToRegistration.getNodeId();
                 security = nodeService.findNodeSecurity(nodeId);
-                registeredNode = nodeService.findNode(nodeId);
-            } else if (registeredNode == null || security == null
+                foundNode = nodeService.findNode(nodeId);
+            } else if (foundNode == null || security == null
                     || !security.isRegistrationEnabled()) {
                 saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
-                return false;
+                return processedNode;
             }
 
-            registeredNode.setSyncEnabled(true);
-            registeredNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
-            registeredNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
-            registeredNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
-            registeredNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
-
-            nodeService.save(registeredNode);
-
+            foundNode.setSyncEnabled(true);
+            if (Constants.DEPLOYMENT_TYPE_REST.equalsIgnoreCase(deploymentType)) {
+            	foundNode.setSymmetricVersion(null);
+            	foundNode.setDeploymentType(deploymentType);
+            }
+            foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
+            foundNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
+            foundNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
+            nodeService.save(foundNode);                        
+            
             /**
              * Only send automatic initial load once or if the client is really
              * re-registering
@@ -210,23 +238,38 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             "registration");
                 }
             }
-
-            dataExtractorService.extractConfigurationStandalone(registeredNode, out);
-
-            saveRegisgtrationRequest(new RegistrationRequest(registeredNode, RegistrationStatus.OK,
+            
+            saveRegisgtrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
                     remoteHost, remoteAddress));
 
             statisticManager.incrementNodesRegistered(1);
 
-            return true;
-
+           return foundNode;
+            
         } catch (RegistrationNotOpenException ex) {
             if (StringUtils.isNotBlank(ex.getMessage())) {
                 log.warn("Registration not allowed for {} because {}",
                         nodePriorToRegistration.toString(), ex.getMessage());
             }
-            return false;
+            return processedNode;
         }
+    }
+    
+    /**
+     * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
+     */
+    public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
+            String remoteAddress, OutputStream out, boolean isRequestedRegistration)
+            throws IOException {
+
+        Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
+                remoteAddress, isRequestedRegistration, null);
+
+        if (processedNode.isSyncEnabled()) {
+        	extractConfiguration(out, processedNode);
+        }
+        
+        return processedNode.isSyncEnabled();
     }
 
     public List<RegistrationRequest> getRegistrationRequests(
@@ -513,4 +556,5 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return request;
         }
     }
+
 }

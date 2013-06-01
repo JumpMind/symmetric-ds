@@ -34,6 +34,17 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
  */
 public interface IRegistrationService {
 
+	/**
+	 * Register a "Pull Only" node.  This type of node has no Symmetric configuration and can only be used to PULL data from another node. 
+	 * It can never track changes or push data to other nodes.  When a node of this type is registered, it must complete all symmetric client
+	 * functionality by itself including issue the pull, acknowledging batches, etc.
+	 * @param externalId
+	 * @param nodeGroupId
+	 * @param databaseType
+	 * @param databaseVersion
+	 */
+	public Node registerPullOnlyNode(String externalId, String nodeGroupId, String databaseType, String databaseVersion) throws IOException;
+	
     /**
      * Register a node for the given group name and external id if the
      * registration is open.

@@ -50,6 +50,8 @@ final public class Constants {
     
     public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
     
+    public static final String DEPLOYMENT_TYPE_REST = "rest";
+    
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
      */

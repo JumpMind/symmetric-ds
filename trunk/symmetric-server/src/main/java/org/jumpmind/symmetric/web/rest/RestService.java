@@ -52,10 +52,12 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
@@ -73,6 +75,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -616,7 +619,7 @@ public class RestService {
     }    
 
     /**
-     * Requests the server to add this node to the synchronization scenario
+     * Requests the server to add this node to the synchronization scenario as a "pull only" node
      * @param externalId - The external id for this node
      * @param nodeGroup - The node group to which this node belongs
      * @param databaseType - The database type for this node
@@ -627,12 +630,30 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final RegistrationInfo registerNode(@RequestParam(value = "externalId") String externalId,
-    		@RequestParam(value = "nodeGroup") String nodeGroup,
+    		@RequestParam(value = "nodeGroupId") String nodeGroupId,
     		@RequestParam(value = "databaseType") String databaseType,
     		@RequestParam(value = "databaseVersion") String databaseVersion 		
-    		) {
-        //TODO: implement
-    	return null;
+    		) {    	
+    	
+        IRegistrationService registrationService = getSymmetricEngine().getRegistrationService();
+        INodeService nodeService = getSymmetricEngine().getNodeService();
+        RegistrationInfo regInfo = new org.jumpmind.symmetric.web.rest.model.RegistrationInfo();
+        try {
+        	org.jumpmind.symmetric.model.Node processedNode = registrationService.registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
+        	regInfo.setRegistered(processedNode.isSyncEnabled());    	
+            if (regInfo.isRegistered()) {
+            	regInfo.setNodeId(processedNode.getNodeId());
+                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(processedNode.getNodeId());
+            	regInfo.setNodePassword(nodeSecurity.getNodePassword());     
+                org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
+                //TODO: does this work when using a registration redirect?
+                regInfo.setSyncUrl(modelNode.getSyncUrl());
+            }
+
+        } catch (IOException e) {
+            throw new IoException(e);
+        }    	
+        return regInfo;
     }
     
     /**
@@ -707,14 +728,11 @@ public class RestService {
      * if the status is "ER".  In error status the status description should contain relevant
      * information about the error on the client including SQL Error Number and description
      */
-    @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.POST)
+    
+    @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postAcknowledgeBatch(@RequestParam(value = "nodeId") String nodeID, 
-		@RequestParam(value = "batchId") Long batchId,
-		@RequestParam(value = "status") String status,
-		@RequestParam(value = "statusDescription") String statusDescription
-		) {    	
+    public final void putAcknowledgeBatch(@RequestBody BatchResults batchResults) {    
+        	
     	//TODO: implement
     }
 
