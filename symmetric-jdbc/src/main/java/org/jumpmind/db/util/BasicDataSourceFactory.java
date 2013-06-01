@@ -43,6 +43,8 @@ public class BasicDataSourceFactory {
 
     public static BasicDataSource create(TypedProperties properties,
             ISecurityService securityService) {
+        properties = properties.copy();
+        properties.putAll(System.getProperties());
         ResettableBasicDataSource dataSource = new ResettableBasicDataSource();
         dataSource.setDriverClassName(properties.get(
                 BasicDataSourcePropertyConstants.DB_POOL_DRIVER, null));
