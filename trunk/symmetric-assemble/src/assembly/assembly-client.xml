@@ -31,7 +31,6 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>COPYING</include>
-                <include>COPYING.LESSER</include>
                 <include>CREDITS</include>
                 <include>NOTICE</include>
             </includes>
