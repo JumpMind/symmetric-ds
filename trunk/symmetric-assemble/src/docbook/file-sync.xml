@@ -79,33 +79,33 @@ process. </para>
 <section id="filesync-operation">
 <title>Operation</title>
 <para> File synchronization operates in a very similar way to that of 
-database synchronization. The file system is monitored for changes by a
+database synchronization. The file system is monitored for changes via a
 background job that tracks the file system changes 
 (this parallels the use of triggers to monitor for changes when synchronizing database changes).
 When a change is detected it is written to the <xref linkend="table_file_snapshot" xrefstyle="table" />
 table. This file snapshot table represent the most recent known state of the
 monitored files. This snapshot table has a SymmetricDS database trigger automatically installed
-on it so that when it is updated the updates are captured on an internal
+on it so that when it is updated the changes are captured by SymmetricDS on an internal
 channel named <literal>filesync</literal>. </para>
-<para> The snapshot changes are routed and batched by a file-synchronization-specific router 
+<para> These snapshot changes are then routed and batched by a file-synchronization-specific router 
 that delegates to the configured router
-based on the <xref linkend="table_file_trigger_router" xrefstyle="table" /> configuration. The file sync router can
-make routing decisions based on the column data of the snapshot table.
-The snapshot table contains attributes of the file like the name, path,
-size, and last modified time. Both old and new file snapshot data are
+based on the <xref linkend="table_file_trigger_router" xrefstyle="table" /> configuration. The
+ file sync router can
+make routing decisions based on the column data of the snapshot table, columns which contain attributes of the file like the name, path,
+size, and last modified time. Both old and new file snapshot data are also
 available. The router can, for example, parse the path or name of the
 file and use it as the node id to route to. </para>
 <para> Batches of file snapshot changes are stored on the
 <literal>filesync</literal> channel in <xref linkend="table_outgoing_batch" xrefstyle="table" />. The existing SymmetricDS pull and
 push jobs ignore the <literal>filesync</literal> channel. Instead, they are processed by
 file-synchronization-specific push and pull jobs. </para>
-<para> When transferring data, the push and pull jobs build a zip
+<para> When transferring data, the file sync push and pull jobs build a zip
 file dynamically based on the batched snapshot data. The
 zip file contains a directory per batch. The directory name is the
 <literal>batch_id</literal>. At the root of each batch directory a <literal>sync.bsh</literal> BeanShell
 script is generated. The BeanShell script contains the commands to copy
 or delete files at their file destination from an extracted zip in the staging directory on the
-target node. The zip file is downloaded, in the
+target node. The zip file is downloaded in the
 case of a pull, or, in the case of a push, is uploaded as an HTTP multi-part attachment.
 Outgoing zip files are written and transferred from the
 outgoing staging directory. Incoming zip files are staged in the
@@ -208,7 +208,7 @@ be used to log to the SymmetricDS log file.</para>
 </para>
 </section>
 <section id="filesync-examples">
-<title>Examples</title>
+<title>File Sync Examples</title>
 
 <section id="filesync-example-1">
 <title>Sync Text Files From Server To Client</title>
