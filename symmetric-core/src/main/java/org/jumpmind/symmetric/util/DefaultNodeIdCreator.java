@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.security.SecurityService;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
@@ -42,10 +42,13 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     protected IParameterService parameterService;
     
     protected INodeService nodeService;
+    
+    protected ISecurityService securityService;
 
-    public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService) {
+    public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService, ISecurityService securityService) {
         this.parameterService = parameterService;
         this.nodeService = nodeService;
+        this.securityService = securityService;
     }        
     
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
@@ -103,7 +106,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }
     
     public String generatePassword(Node node) {
-        return new SecurityService().nextSecureHexString(30);
+        return securityService.nextSecureHexString(30);
     }
  
     protected String evaluateScript(Node node, String remoteHost, String remoteAddress) {

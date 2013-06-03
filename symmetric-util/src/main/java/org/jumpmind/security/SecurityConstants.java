@@ -22,6 +22,8 @@ package org.jumpmind.security;
 
 public class SecurityConstants {
 
+    public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
+   
     public static final String PREFIX_ENC = "enc:";
 
     public static final String ALGORITHM = System.getProperty("sym.secret.key.defalt.algorithm","PBEWithMD5AndDES");

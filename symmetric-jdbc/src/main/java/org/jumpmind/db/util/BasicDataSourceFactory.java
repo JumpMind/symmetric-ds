@@ -31,14 +31,14 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
-import org.jumpmind.security.SecurityService;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.slf4j.LoggerFactory;
 
 public class BasicDataSourceFactory {
     
     
     public static BasicDataSource create(TypedProperties properties) {
-        return create(properties, new SecurityService());
+        return create(properties, SecurityServiceFactory.create(properties));
     }
 
     public static BasicDataSource create(TypedProperties properties,

@@ -367,7 +367,7 @@ public class SymmetricWebServer {
             SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory(); 
             sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
-            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, "sym"));
+            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslConnectorFactory.setKeyStoreType(keyStoreType);
 
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
