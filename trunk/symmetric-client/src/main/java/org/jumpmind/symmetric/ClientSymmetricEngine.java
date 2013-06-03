@@ -52,6 +52,7 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -206,7 +207,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
         TypedProperties properties = createTypedPropertiesFactory(propsFile, null).reload();
-        return BasicDataSourceFactory.create(properties, createSecurityService(properties));
+        return BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(properties));
     }
 
     @Override
@@ -225,7 +226,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         if (dataSource == null) {
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
             if (StringUtils.isBlank(jndiName)) {
-                dataSource = BasicDataSourceFactory.create(properties, createSecurityService(properties));
+                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(properties));
             } else {
                 try {
                     log.info("Looking up datasource in jndi.  The jndi name is {}", jndiName);

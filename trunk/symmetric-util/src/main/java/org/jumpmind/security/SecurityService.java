@@ -52,6 +52,9 @@ public class SecurityService implements ISecurityService {
     protected SecretKey secretKey;
 
     protected SecureRandom secRand;
+    
+    protected SecurityService() {
+    }
 
     public void init() {
     }

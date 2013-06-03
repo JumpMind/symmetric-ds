@@ -28,7 +28,7 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
-import org.jumpmind.security.SecurityService;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ abstract public class DbTestUtils {
                 DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), String.format(
                         "test.%s", name), name);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(
-                BasicDataSourceFactory.create(properties, new SecurityService()),
+                BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
                 new SqlTemplateSettings(), true);
     }
 

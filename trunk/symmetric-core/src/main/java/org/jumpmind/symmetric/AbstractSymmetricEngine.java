@@ -44,7 +44,7 @@ import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
-import org.jumpmind.security.SecurityService;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -246,7 +246,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected void init() {
         this.propertiesFactory = createTypedPropertiesFactory();
-        this.securityService = createSecurityService(propertiesFactory.reload());
+        this.securityService = SecurityServiceFactory.create(propertiesFactory.reload());
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
@@ -263,7 +263,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.symmetricDialect = createSymmetricDialect();
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
-        this.nodeService = new NodeService(parameterService, symmetricDialect);
+        this.nodeService = new NodeService(parameterService, symmetricDialect, securityService);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
@@ -324,20 +324,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         return new NodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
-    }
-
-    public static ISecurityService createSecurityService(TypedProperties properties) {
-        try {
-            String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
-                    SecurityService.class.getName());
-            ISecurityService securityService = (ISecurityService) Class.forName(className).newInstance();
-            securityService.init();
-            return securityService;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     abstract protected IStagingManager createStagingManager();

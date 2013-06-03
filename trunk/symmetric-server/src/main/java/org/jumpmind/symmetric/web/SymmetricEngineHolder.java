@@ -39,8 +39,8 @@ import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
-import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -193,8 +193,7 @@ public class SymmetricEngineHolder {
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
-                ISecurityService service = AbstractSymmetricEngine
-                        .createSecurityService(properties);
+                ISecurityService service = SecurityServiceFactory.create(properties);
                 properties.setProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
                         SecurityConstants.PREFIX_ENC + service.encrypt(password));
             } catch (Exception ex) {

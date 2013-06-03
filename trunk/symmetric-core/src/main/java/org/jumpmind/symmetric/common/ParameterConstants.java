@@ -215,9 +215,7 @@ final public class ParameterConstants {
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     
     public final static String DB_MASTER_COLLATION = "db.master.collation";   
-    
-    public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
-    
+        
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
     
     public final static String SERVER_LOG_FILE = "server.log.file";

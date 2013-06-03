@@ -38,6 +38,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -73,9 +74,9 @@ public class NodeService extends AbstractService implements INodeService {
 
     private List<IOfflineServerListener> offlineServerListeners;
 
-    public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
+    public NodeService(IParameterService parameterService, ISymmetricDialect dialect, ISecurityService securityService) {
         super(parameterService, dialect);
-        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this);
+        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this, securityService);
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
