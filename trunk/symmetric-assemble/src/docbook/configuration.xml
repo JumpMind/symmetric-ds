@@ -1922,7 +1922,7 @@ called
 . The load filter table allows you to specify the following:
 <itemizedlist>
 <listitem>Load Filter Type ('load_filter_type'): The type of
-load filter. Today only beanshell is support ('BSH'), but SQL scripts
+load filter. Today only BeanShell is support ('BSH'), but SQL scripts
 may be added in a future release.</listitem>
 
 <listitem>Source Node Group ('source_node_group_id'): The
@@ -2488,9 +2488,9 @@ from one node to another. </para>
 File synchronization features include:
 
 <itemizedlist>
-<listitem> Monitor file system base directory locations for file changes </listitem>
-<listitem> Supports a different file system base directory
-for target </listitem>
+<listitem> Monitoring one or more file system base directory locations for file changes </listitem>
+<listitem> Support for a different file system base directory
+for the target file system </listitem>
 <listitem> Use of wild card expressions to “include” or
 “exclude” files </listitem>
 <listitem> Choice of whether to recurse into subdirectories
@@ -2499,7 +2499,7 @@ of monitored directories </listitem>
 target nodes based on file and directory metadata </listitem>
 <listitem> Specify if files will by synchronizing on
 creation, or deletion, and/or modification </listitem>
-<listitem> Specify the frequency with which files are
+<listitem> Specify the frequency with which file systems are
 monitored for changes </listitem>
 <listitem> Ability to extend file synchronization through
 scripts that run before or after a file is copied to its source location
@@ -2509,23 +2509,21 @@ scripts that run before or after a file is copied to its source location
 </para>
 <para> Like database synchronization, file synchronization is
 configured in a series of database tables. The configuration was
-designed to be similar to database synchronization to maintain
+designed to be similar to database synchronization in order to maintain
 consistency and to give database synchronization users a sense of
 familiarity. </para>
-<para> SymmetricDS database synchronization configuration uses
+<para>For database synchronization, SymmetricDS uses
 <xref linkend="table_trigger" xrefstyle="table" /> to configure which tables will capture data for synchronization
 and <xref linkend="table_router" xrefstyle="table" /> to designate which nodes will be the source of data changes
 and which nodes the data changes will receive those changes.
 <xref linkend="table_trigger_router" xrefstyle="table" /> links triggers to routers. </para>
-<para> Likewise, SymmetricDS file synchronization configuration
-uses <xref linkend="table_file_trigger" xrefstyle="table" /> to designate which base directories will be monitored.
-Each entry in file_trigger designates one base directory to monitor on
-the source system. The columns on file trigger provide additional
-settings for which files in that base directory should be monitored. </para>
-<para> File triggers are linked to routers by
-<xref linkend="table_file_trigger_router" xrefstyle="table" />. The file trigger router, not only links the source
-and the target node groups, but it optionally provides the ability to
-override the base directory name at the target. file_trigger also
+<para> Likewise, for file synchronization, SymmetricDS uses <xref linkend="table_file_trigger" xrefstyle="table" /> to designate which base directories will be monitored.
+Each entry in <xref linkend="table_file_trigger" xrefstyle="table" /> designates one base directory to monitor on
+the source system. The columns on <xref linkend="table_file_trigger" xrefstyle="table" /> provide additional
+settings for which files in that base directory should be monitored, whether to recurse into subdirectories, etc.  File triggers are linked to routers by
+<xref linkend="table_file_trigger_router" xrefstyle="table" />. The file trigger router not only links the source
+and the target node groups, but it also optionally provides the ability to
+override the base directory name at the target. <xref linkend="table_file_trigger_router" xrefstyle="table" /> also
 provides a flag that indicates if the target node should be seeded with
 the files from the source node during SymmetricDS's initial load
 process. </para>
@@ -2535,12 +2533,12 @@ process. </para>
 <para> File synchronization operates under the same concepts of
 database synchronization. The file system is monitored for changes by a
 background job. When a change is detected it is written to the <xref linkend="table_file_snapshot" xrefstyle="table" />
-table. The snapshot table represent the last known state of the
-monitored files. The snapshot table has a SymmetricDS database trigger
-on it so when it is updated, the updates are captured on an internal
-channel named filesync. </para>
-<para> The snapshot changes are routed and batched by a file
-synchronization specific router that delegates to the configured router
+table. This file snapshot table represent the last known state of the
+monitored files. This snapshot table has a SymmetricDS database trigger automatically installed
+on it so that when it is updated the updates are captured on an internal
+channel named <literal>filesync</literal>. </para>
+<para> The snapshot changes are routed and batched by a file-synchronization-specific router 
+that delegates to the configured router
 based on the <xref linkend="table_file_trigger_router" xrefstyle="table" /> configuration. The file sync router can
 make routing decisions based on the column data of the snapshot table.
 The snapshot table contains attributes of the file like the name, path,
@@ -2548,30 +2546,30 @@ size, and last modified time. Both old and new file snapshot data are
 available. The router can, for example, parse the path or name of the
 file and use it as the node id to route to. </para>
 <para> Batches of file snapshot changes are stored on the
-filesync channel in <xref linkend="table_outgoing_batch" xrefstyle="table" />. The existing SymmetricDS pull and
-push jobs ignore the filesync channel. Instead, they are processed by
-file synchronization specific push and pull jobs. </para>
+<literal>filesync</literal> channel in <xref linkend="table_outgoing_batch" xrefstyle="table" />. The existing SymmetricDS pull and
+push jobs ignore the <literal>filesync</literal> channel. Instead, they are processed by
+file-synchronization-specific push and pull jobs. </para>
 <para> When transferring data, the push and pull jobs build a zip
 file dynamically based on the batched snapshot data. The
 zip file contains a directory per batch. The directory name is the
-batch_id. At the root of each batch directory a sync.bsh beanshell
-script is generated. The beanshell script contains the commands to copy
-or delete files from an extracted zip in the staging directory on the
-target node to their file destination. The zip file is downloaded in the
-case of a pull and uploaded as an HTTP multi-part attachment in the case
-of a push. Outgoing zip files are written and transferred from the
+<literal>batch_id</literal>. At the root of each batch directory a <literal>sync.bsh</literal> BeanShell
+script is generated. The BeanShell script contains the commands to copy
+or delete files at their file destination from an extracted zip in the staging directory on the
+target node. The zip file is downloaded, in the
+case of a pull, or, in the case of a push, is uploaded as an HTTP multi-part attachment.
+Outgoing zip files are written and transferred from the
 outgoing staging directory. Incoming zip files are staged in the
-filesync_incoming staging directory by source node id. The
+<literal>filesync_incoming</literal> staging directory by source node id. The
 <literal>filesync_incoming/{node_id}</literal> staging directory is cleared out before each
 subsequent delivery of files. </para>
-<para> The acknowledgement of a batch is the same
-as database synchronization process. The client responds with an acknowledgement as part of the response
+<para> The acknowledgement of a batch is the same process
+as that of database synchronization. The client responds with an acknowledgement as part of the response
 during a file push or pull. </para>
 </section>
 
 <section id="filesync-beanshell">
-<title>Beanshell Scripts</title>
-<para> There are two types of beanshell scripts that can be
+<title>BeanShell Scripts</title>
+<para> There are two types of BeanShell scripts that can be
 leveraged to customize file synchronization behavior: <literal>before_copy_script</literal>
 and <literal>after_copy_script</literal>. </para>
 <para>
@@ -2595,7 +2593,7 @@ overwritten in <xref linkend="table_file_trigger_router" xrefstyle="table" />. T
 </term>
 <listitem>
 <para>This is a variable that is set to true by default. A custom
-before_copy_script may process the file itself and set this variable to
+<literal>before_copy_script</literal> may process the file itself and set this variable to
 false to indicate that the file should NOT be copied to its target
 location. </para>
 </listitem>
@@ -2651,7 +2649,7 @@ the source of the file.</para>
 <command>log</command>
 </term>
 <listitem>
-<para>This is the bound instance of an org.slf4j.Logger that can
+<para>This is the bound instance of an <literal>org.slf4j.Logger</literal> that can
 be used to log to the SymmetricDS log file.</para>
 </listitem>
 </varlistentry>
@@ -2667,7 +2665,8 @@ be used to log to the SymmetricDS log file.</para>
 <para>
 The following example is for a configuration with client and server node
 groups. Creation, modification, and deletion of files with the extension
-of txt will be captured recursively in the <literal>/filesync/server/all</literal>
+of <literal>txt</literal> will be captured recursively 
+in the <literal>/filesync/server/all</literal>
 directory. A before copy script will set the targetBaseDir to
 <literal>/filesync/clients/{externalId}</literal>.
 
