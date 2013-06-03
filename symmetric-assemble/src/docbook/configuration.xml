@@ -2482,7 +2482,7 @@ less. </para>
 <title>Overview</title>
 
 <para> SymmetricDS not only supports the synchronization of
-database tables, but it now also supports the synchronization of files
+database tables, but it also supports the synchronization of files
 from one node to another. </para>
 <para>
 File synchronization features include:
@@ -2534,7 +2534,7 @@ process. </para>
 <title>Operation</title>
 <para> File synchronization operates under the same concepts of
 database synchronization. The file system is monitored for changes by a
-background job. When a change it detected it is written to a <xref linkend="table_file_snapshot" xrefstyle="table" />
+background job. When a change is detected it is written to the <xref linkend="table_file_snapshot" xrefstyle="table" />
 table. The snapshot table represent the last known state of the
 monitored files. The snapshot table has a SymmetricDS database trigger
 on it so when it is updated, the updates are captured on an internal
@@ -2543,7 +2543,7 @@ channel named filesync. </para>
 synchronization specific router that delegates to the configured router
 based on the <xref linkend="table_file_trigger_router" xrefstyle="table" /> configuration. The file sync router can
 make routing decisions based on the column data of the snapshot table.
-The snapshot table contains attribute of the file like the name, path,
+The snapshot table contains attributes of the file like the name, path,
 size, and last modified time. Both old and new file snapshot data are
 available. The router can, for example, parse the path or name of the
 file and use it as the node id to route to. </para>
@@ -2552,22 +2552,21 @@ filesync channel in <xref linkend="table_outgoing_batch" xrefstyle="table" />. T
 push jobs ignore the filesync channel. Instead, they are processed by
 file synchronization specific push and pull jobs. </para>
 <para> When transferring data, the push and pull jobs build a zip
-file that is built dynamically based on the batched snapshot data. The
+file dynamically based on the batched snapshot data. The
 zip file contains a directory per batch. The directory name is the
 batch_id. At the root of each batch directory a sync.bsh beanshell
 script is generated. The beanshell script contains the commands to copy
 or delete files from an extracted zip in the staging directory on the
-target node to there file destination. The zip file is downloaded in the
+target node to their file destination. The zip file is downloaded in the
 case of a pull and uploaded as an HTTP multi-part attachment in the case
 of a push. Outgoing zip files are written and transferred from the
 outgoing staging directory. Incoming zip files are staged in the
 filesync_incoming staging directory by source node id. The
 <literal>filesync_incoming/{node_id}</literal> staging directory is cleared out before each
 subsequent delivery of files. </para>
-<para> The acknowledgement process of a batch is the same
-as for database synchronization. The acknowledgement is part of the response
-during a file push and during a file pull the client responds with the
-acknowledgement. </para>
+<para> The acknowledgement of a batch is the same
+as database synchronization process. The client responds with an acknowledgement as part of the response
+during a file push or pull. </para>
 </section>
 
 <section id="filesync-beanshell">
@@ -2718,14 +2717,14 @@ INSERT INTO sym_file_trigger
  last_update_by,last_update_time)
 VALUES
 ('node_specific','/filesync/server/nodes',1,null,null,1,1,1,'',null,current_timestamp,'example',
-current_timestamp); 
+current_timestamp);
 
 INSERT INTO sym_file_trigger_router
 (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,target_file_path,
  conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
 ('node_specific','router_files_to_node',1,1,'/filesync/clients','','SOURCE_WINS',current_timestamp,'example',
-current_timestamp); 
+current_timestamp);
 
 INSERT INTO sym_router
 (router_id,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,
