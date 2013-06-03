@@ -218,6 +218,26 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>
+                    <row>
+                        <entry>Active Server Enterprise</entry>
+                        <entry>12.5</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
+                    <row>
+                        <entry>SQL Anywhere</entry>
+                        <entry>9</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
                 </tbody>
             </tgroup>
         </table>

@@ -105,6 +105,14 @@
        <listitem>
         <para>SQLite 3 and above</para>
       </listitem>
+
+      <listitem>
+        <para>Sybase Adaptive Server Enterprise 12.5 and above</para>
+      </listitem>
+
+      <listitem>
+        <para>Sybase SQL Anywhere 9 and above</para>
+      </listitem>
     </itemizedlist>
 
     <para>See <xref linkend="databases"/>, for compatibility notes and other
