@@ -58,6 +58,8 @@ public interface IFileSyncService {
 
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode();
 
+    public List<FileTriggerRouter> getFileTriggerRouters();
+
     public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId);
 
     public void loadFilesFromPush(String nodeId, InputStream in, OutputStream out);

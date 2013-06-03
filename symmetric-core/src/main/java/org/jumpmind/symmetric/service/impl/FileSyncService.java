@@ -162,6 +162,11 @@ public class FileSyncService extends AbstractService implements IFileSyncService
                 new FileTriggerRouterMapper(), parameterService.getNodeGroupId());
     }
 
+    public List<FileTriggerRouter> getFileTriggerRouters() {
+        return sqlTemplate.query(
+                getSql("selectFileTriggerRoutersSql"), new FileTriggerRouterMapper());
+    }
+
     public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId) {
         return sqlTemplate.queryForObject(
                 getSql("selectFileTriggerRoutersSql", "whereTriggerRouterId"),
@@ -540,7 +545,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
             incomingBatch.setBatchId(batchId);
             incomingBatch.setStatus(IncomingBatch.Status.LD);
-            incomingBatch.setNodeId(sourceNodeId);            
+            incomingBatch.setNodeId(sourceNodeId);
             incomingBatch.setByteCount(FileUtils.sizeOfDirectory(batchDir));
             batchesProcessed.add(incomingBatch);
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
