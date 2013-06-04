@@ -294,6 +294,18 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>db.jndi.name</command>
+                    </term>
+                    <listitem>
+                        <para>Name of a JNDI data source to use instead of using SymmetricDS's connection pool.  When
+                              this is set the db.url is ignored.  Using a JNDI data source is relevant when deploying 
+                              to an application server.
+                            [&#xA0;Default:&#&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
                         <command>auto.config.database</command>
                     </term>
                     <listitem>
