@@ -589,8 +589,8 @@
             </dependency>
             <dependency>
                 <groupId>bouncycastle</groupId>
-                <artifactId>bcprov-jdk16</artifactId>
-                <version>140</version>
+                <artifactId>bcprov-jdk15</artifactId>
+                <version>136</version>
             </dependency>
             <!-- Commons -->
             <dependency>
