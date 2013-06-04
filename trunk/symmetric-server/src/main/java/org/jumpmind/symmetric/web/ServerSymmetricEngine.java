@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
@@ -33,6 +34,11 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
     public ServerSymmetricEngine(File propertiesFile) {
         super(propertiesFile);
+    }
+    
+    @Override
+    protected SecurityServiceType getSecurityServiceType() {
+        return SecurityServiceType.SERVER;
     }
 
     @Override

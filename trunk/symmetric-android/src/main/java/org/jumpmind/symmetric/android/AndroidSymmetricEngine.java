@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
@@ -73,6 +74,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
         init();
+    }
+    
+    @Override
+    protected SecurityServiceType getSecurityServiceType() {
+        return SecurityServiceType.CLIENT;
     }
 
     @Override

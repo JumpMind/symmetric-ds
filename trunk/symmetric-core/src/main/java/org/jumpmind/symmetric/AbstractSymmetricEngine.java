@@ -45,6 +45,7 @@ import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -243,10 +244,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
+    
+    protected abstract SecurityServiceType getSecurityServiceType();
 
     protected void init() {
         this.propertiesFactory = createTypedPropertiesFactory();
-        this.securityService = SecurityServiceFactory.create(propertiesFactory.reload());
+        this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(

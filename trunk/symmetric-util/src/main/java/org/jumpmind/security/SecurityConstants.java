@@ -22,6 +22,14 @@ package org.jumpmind.security;
 
 public class SecurityConstants {
 
+    public static final String SYSPROP_KEYSTORE_TYPE = "sym.keystore.type";
+    
+    public static final String SYSPROP_KEYSTORE_CERT_ALIAS = "sym.keystore.ssl.cert.alias";
+    
+    public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
+
+    public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";    
+    
     public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
    
     public static final String PREFIX_ENC = "enc:";
@@ -44,9 +52,5 @@ public class SecurityConstants {
     public static final String ALIAS_SYM_SECRET_KEY = "sym.secret";
     
     public static final String EMBEDDED_WEBSERVER_DEFAULT_ROLE="symmetric";
-
-    public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
-
-    public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
 
 }
