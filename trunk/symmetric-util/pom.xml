@@ -46,8 +46,7 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<scope>provided</scope>
-		</dependency>
-        
+		</dependency>        
         <dependency>
             <groupId>bouncycastle</groupId>
             <artifactId>bcprov-jdk15</artifactId>
