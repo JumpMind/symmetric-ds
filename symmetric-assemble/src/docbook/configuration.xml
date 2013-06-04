@@ -1922,7 +1922,7 @@ called
 . The load filter table allows you to specify the following:
 <itemizedlist>
 <listitem>Load Filter Type ('load_filter_type'): The type of
-load filter. Today only BeanShell is support ('BSH'), but SQL scripts
+load filter. Today only Bean Shell is supported ('BSH'), but SQL scripts
 may be added in a future release.</listitem>
 
 <listitem>Source Node Group ('source_node_group_id'): The
