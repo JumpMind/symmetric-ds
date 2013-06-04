@@ -50,7 +50,7 @@
         
         <dependency>
             <groupId>bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
+            <artifactId>bcprov-jdk15</artifactId>
             <scope>provided</scope>
         </dependency>           
 		<dependency>
