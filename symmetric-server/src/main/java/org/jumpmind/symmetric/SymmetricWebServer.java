@@ -52,7 +52,10 @@ import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.security.SecurityServiceFactory;
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.ServletUtils;
@@ -359,6 +362,8 @@ public class SymmetricWebServer {
             log.info("About to start {} web server on port {}", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
+            ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, new TypedProperties(System.getProperties()));
+            securityService.installDefaultSslCert(host);
             Connector connector = new SslSocketConnector();
             String keyStorePassword = System
                     .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);

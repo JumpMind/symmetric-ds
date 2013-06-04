@@ -587,6 +587,11 @@
                 <artifactId>ant</artifactId>
                 <version>1.8.1</version>
             </dependency>
+            <dependency>
+                <groupId>bouncycastle</groupId>
+                <artifactId>bcprov-jdk16</artifactId>
+                <version>140</version>
+            </dependency>
             <!-- Commons -->
             <dependency>
                 <groupId>commons-io</groupId>

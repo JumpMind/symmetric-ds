@@ -32,13 +32,14 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.slf4j.LoggerFactory;
 
 public class BasicDataSourceFactory {
     
     
     public static BasicDataSource create(TypedProperties properties) {
-        return create(properties, SecurityServiceFactory.create(properties));
+        return create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
     }
 
     public static BasicDataSource create(TypedProperties properties,

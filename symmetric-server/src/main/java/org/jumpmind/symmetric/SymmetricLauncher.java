@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Launch the SymmetricDS engine as a standalone client or server.
+ * Launch the SymmetricDS engine as a stand alone client or server.
  */
 public class SymmetricLauncher extends AbstractCommandLauncher {
 

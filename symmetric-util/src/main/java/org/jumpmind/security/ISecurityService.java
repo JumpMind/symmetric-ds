@@ -28,6 +28,8 @@ public interface ISecurityService {
 
     public void init();
     
+    public void installDefaultSslCert(String host);
+    
     public String nextSecureHexString(int len);
 
     public String encrypt(String plainText);

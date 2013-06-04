@@ -47,6 +47,12 @@
 			<artifactId>log4j</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        
+        <dependency>
+            <groupId>bouncycastle</groupId>
+            <artifactId>bcprov-jdk16</artifactId>
+            <scope>provided</scope>
+        </dependency>           
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
