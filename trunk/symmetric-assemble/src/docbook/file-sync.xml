@@ -115,8 +115,8 @@ subsequent delivery of files. </para>
 during a file push or pull. </para>
 </section>
 
-<section id="filesync-Bean Shell">
-<title>Bean Shell Scripts</title>
+<section id="filesync-beanshell">
+<title>File Sync Bean Shell Scripts</title>
 <para> There are two types of Bean Shell scripts that can be
 leveraged to customize file synchronization behavior: <literal>before_copy_script</literal>
 and <literal>after_copy_script</literal>. </para>
@@ -219,25 +219,29 @@ directory. A before copy script will set the targetBaseDir to
 <literal>/filesync/clients/{externalId}</literal>.
 
 <programlisting>INSERT INTO sym_file_trigger
-(trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,sync_on_modified,sync_on_delete,
-before_copy_script,after_copy_script,create_time,last_update_by,last_update_time)
+  (trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,
+   sync_on_modified,sync_on_delete,before_copy_script,after_copy_script,
+   create_time,last_update_by,last_update_time)
 VALUES ('sync_directory','/filesync/server/all',1,'*.txt',null,1,1,1,
-'targetBaseDir = "/filesync/clients/" +
-engine.getParameterService().getExternalId();',null,current_timestamp,'example',current_timestamp);
+  'targetBaseDir = "/filesync/clients/" +
+  engine.getParameterService().getExternalId();',null,current_timestamp,'example',
+  current_timestamp);
 
 INSERT INTO sym_file_trigger_router
-(trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,target_file_path,
- conflict_strategy,create_time,last_update_by,last_update_time)
+ (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
+  target_file_path,conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
-('sync_directory','server_2_client',1,1,'','','SOURCE_WINS',current_timestamp,'example',current_timestamp);
+  ('sync_directory','server_2_client',1,1,'','','SOURCE_WINS',current_timestamp,
+  'example',current_timestamp);
 
 INSERT INTO sym_router
-(router_id,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,
-router_type,router_expression,sync_on_update,sync_on_insert,sync_on_delete,
-create_time,last_update_by,last_update_time)
+  (router_id,target_catalog_name,target_schema_name,target_table_name,
+  source_node_group_id,target_node_group_id,
+  router_type,router_expression,sync_on_update,sync_on_insert,sync_on_delete,
+  create_time,last_update_by,last_update_time)
 VALUES
-('server_2_client',null,null,null,'server','client','default',null,1,1,1,
- current_timestamp,'example',current_timestamp);
+  ('server_2_client',null,null,null,'server','client','default',null,1,1,1,
+   current_timestamp,'example',current_timestamp);
 </programlisting>
 </para>
 </section>
@@ -259,27 +263,28 @@ of node_id/subdir which would not match.
 <programlisting>
 <![CDATA[
 INSERT INTO sym_file_trigger
-(trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,
- sync_on_modified,sync_on_delete,before_copy_script,after_copy_script,create_time,
- last_update_by,last_update_time)
+  (trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,
+  sync_on_modified,sync_on_delete,before_copy_script,after_copy_script,create_time,
+  last_update_by,last_update_time)
 VALUES
-('node_specific','/filesync/server/nodes',1,null,null,1,1,1,'',null,current_timestamp,'example',
-current_timestamp);
+  ('node_specific','/filesync/server/nodes',1,null,null,1,1,1,'',null,
+  current_timestamp,'example',current_timestamp);
 
 INSERT INTO sym_file_trigger_router
-(trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,target_file_path,
- conflict_strategy,create_time,last_update_by,last_update_time)
+  (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
+  target_file_path,conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
-('node_specific','router_files_to_node',1,1,'/filesync/clients','','SOURCE_WINS',current_timestamp,'example',
-current_timestamp);
+  ('node_specific','router_files_to_node',1,1,'/filesync/clients','','SOURCE_WINS',
+  current_timestamp,'example',current_timestamp);
 
 INSERT INTO sym_router
-(router_id,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,
- target_node_group_id,router_type,router_expression,sync_on_update,sync_on_insert,sync_on_delete,
- create_time,last_update_by,last_update_time)
+  (router_id,target_catalog_name,target_schema_name,target_table_name,
+   source_node_group_id,target_node_group_id,router_type,router_expression,
+   sync_on_update,sync_on_insert,sync_on_delete,create_time,last_update_by,
+   last_update_time)
 VALUES
-('router_files_to_node',null,null,null,'server','client','column','FILE_PATH
-= :NODE_ID ',1,1,1,current_timestamp,'example', current_timestamp);
+  ('router_files_to_node',null,null,null,'server','client','column',
+  'FILE_PATH = :NODE_ID ',1,1,1,current_timestamp,'example', current_timestamp);
 ]]>
 </programlisting>
 </para>
