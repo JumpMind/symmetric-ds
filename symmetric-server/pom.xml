@@ -251,5 +251,10 @@
             <artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>bouncycastle</groupId>
+            <artifactId>bcprov-jdk15</artifactId>
+            <scope>provided</scope>
+        </dependency>                   
     </dependencies>
 </project>
