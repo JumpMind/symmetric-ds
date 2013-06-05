@@ -395,7 +395,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
             for (IncomingBatch incomingBatch : batchesProcessed) {
                 if (incomingBatch.getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION
-                        && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
+                        && incomingBatchService.updateIncomingBatch(incomingBatch) == 0
+                        && !parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD)) {
                     log.error("Failed to update batch {}.  Zero rows returned.",
                             incomingBatch.getBatchId());
                 }
