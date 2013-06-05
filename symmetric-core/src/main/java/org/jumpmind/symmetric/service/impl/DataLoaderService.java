@@ -801,7 +801,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Status oldStatus = this.currentBatch.getStatus();
             try {
                 this.currentBatch.setStatus(Status.OK);
-                incomingBatchService.updateIncomingBatch(this.currentBatch);
+            	if (parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD)) {
+            		incomingBatchService.deleteIncomingBatch(this.currentBatch);
+            	} else {
+	                incomingBatchService.updateIncomingBatch(this.currentBatch);
+            	}
             } catch (RuntimeException ex) {
                 this.currentBatch.setStatus(oldStatus);
                 throw ex;
