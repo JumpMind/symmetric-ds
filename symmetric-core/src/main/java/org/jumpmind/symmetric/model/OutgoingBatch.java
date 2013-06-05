@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -58,8 +59,6 @@ public class OutgoingBatch implements Serializable {
     private String nodeId;
 
     private String channelId;
-    
-    private long loadId = -1;
 
     private Status status = Status.RT;
 
@@ -114,8 +113,6 @@ public class OutgoingBatch implements Serializable {
     private Date lastUpdatedTime;
 
     private Date createTime;
-    
-    private String createBy;
 
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
@@ -459,22 +456,6 @@ public class OutgoingBatch implements Serializable {
     @Override
     public String toString() {
         return getNodeBatchId();
-    }
-    
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-    
-    public String getCreateBy() {
-        return createBy;
-    }
-    
-    public void setLoadId(long loadId) {
-        this.loadId = loadId;
-    }
-
-    public long getLoadId() {
-        return loadId;
     }
 
 }

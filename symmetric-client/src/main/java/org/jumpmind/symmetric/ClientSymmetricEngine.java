@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric;
 
 import java.io.File;
@@ -37,7 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -52,10 +31,7 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.security.SecurityServiceFactory;
-import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
@@ -77,7 +53,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.jndi.JndiObjectFactoryBean;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
@@ -91,7 +66,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     protected Properties properties;
 
-    protected DataSource dataSource;
+    protected BasicDataSource dataSource;
 
     protected ApplicationContext springContext;
 
@@ -108,7 +83,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
      *            Whether to store a reference to this engine in a local static
      *            map.
      */
-    public ClientSymmetricEngine(DataSource dataSource, ApplicationContext springContext,
+    public ClientSymmetricEngine(BasicDataSource dataSource, ApplicationContext springContext,
             Properties properties, boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
@@ -118,7 +93,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.init();
     }
 
-    public ClientSymmetricEngine(DataSource dataSource, Properties properties,
+    public ClientSymmetricEngine(BasicDataSource dataSource, Properties properties,
             boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
@@ -156,11 +131,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(boolean registerEngine) {
         this((Properties) null, registerEngine);
     }
-    
-    @Override
-    protected SecurityServiceType getSecurityServiceType() {
-        return SecurityServiceType.CLIENT;
-    }
 
     @Override
     protected void init() {
@@ -171,7 +141,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
             if (springContext == null) {
                 PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-                configurer.setProperties(parameterService.getAllParameters());
+                Properties properties = new Properties();
+                properties.setProperty("engine.name", getEngineName());
+                configurer.setProperties(properties);
 
                 ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext();
                 ctx.addBeanFactoryPostProcessor(configurer);
@@ -213,7 +185,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
         TypedProperties properties = createTypedPropertiesFactory(propsFile, null).reload();
-        return BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
+        return BasicDataSourceFactory.create(properties, createSecurityService(properties));
     }
 
     @Override
@@ -223,33 +195,14 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
+        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, true);
         return platform;
     }
 
     public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
-            DataSource dataSource, boolean waitOnAvailableDatabase) {
+            BasicDataSource dataSource, boolean waitOnAvailableDatabase) {
         if (dataSource == null) {
-            String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
-            if (StringUtils.isBlank(jndiName)) {
-                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
-            } else {
-                try {
-                    log.info("Looking up datasource in jndi.  The jndi name is {}", jndiName);
-                    JndiObjectFactoryBean jndiFactory = new JndiObjectFactoryBean();
-                    jndiFactory.setJndiName(jndiName);
-                    jndiFactory.afterPropertiesSet();
-                    dataSource = (DataSource)jndiFactory.getObject();
-                    
-                    if (dataSource == null) {
-                        throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", jndiName);
-                    }
-                } catch (IllegalArgumentException e) {
-                    throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
-                } catch (NamingException e) {
-                    throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
-                }
-            }
+            dataSource = BasicDataSourceFactory.create(properties, createSecurityService(properties));
         }
         if (waitOnAvailableDatabase) {
             waitForAvailableDatabase(dataSource);
@@ -375,9 +328,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     public synchronized void destroy() {
         super.destroy();
-        if (dataSource != null && dataSource instanceof BasicDataSource) {
+        if (dataSource != null) {
             try {
-                ((BasicDataSource)dataSource).close();
+                dataSource.close();
             } catch (SQLException e) {
             }
         }
@@ -385,7 +338,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     public List<File> listSnapshots() {
         File snapshotsDir = getSnapshotDirectory();
-        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"zip"}, false));
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"jar"}, false));
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {             
                 return -o1.compareTo(o2);
@@ -402,7 +355,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public File snapshot() {
         
-        String dirName = getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String dirName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         
         File snapshotsDir = getSnapshotDirectory();
         
@@ -564,7 +517,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
         try {
             File jarFile = new File(snapshotsDir, tmpDir.getName()
-                    + ".zip");
+                    + ".jar");
             JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
             builder.build();
             FileUtils.deleteDirectory(tmpDir);

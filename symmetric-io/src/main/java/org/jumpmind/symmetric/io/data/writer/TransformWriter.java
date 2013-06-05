@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.data.writer;
 
@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -44,26 +45,25 @@ import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
+import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TransformWriter extends NestedDataWriter {
+public class TransformWriter implements IDataWriter {
 
     protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
 
+    protected IDataWriter targetWriter;
     protected TransformPoint transformPoint;
     protected IDatabasePlatform platform;
     protected Map<String, List<TransformTable>> transformsBySourceTable;
-    protected Table sourceTable;
-    protected List<TransformTable> activeTransforms;
 
     static protected Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
 
@@ -77,7 +77,6 @@ public class TransformWriter extends NestedDataWriter {
         columnTransforms.put(SubstrColumnTransform.NAME, new SubstrColumnTransform());
         columnTransforms.put(VariableColumnTransform.NAME, new VariableColumnTransform());
         columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
-        columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
     }
 
     public static void addColumnTransform(IColumnTransform<?> columnTransform) {
@@ -88,12 +87,20 @@ public class TransformWriter extends NestedDataWriter {
         return columnTransforms;
     }
 
+    protected Table sourceTable;
+    protected List<TransformTable> activeTransforms;
+    protected DataContext context;
+
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, TransformTable... transforms) {
-        super(targetWriter);
         this.platform = platform;
         this.transformPoint = transformPoint == null ? TransformPoint.LOAD : transformPoint;
         this.transformsBySourceTable = toMap(transforms);
+        this.targetWriter = targetWriter;
+    }
+
+    public void setTargetWriter(IDataWriter targetWriter) {
+        this.targetWriter = targetWriter;
     }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
@@ -114,13 +121,26 @@ public class TransformWriter extends NestedDataWriter {
         return transformsByTable;
     }
 
+    public void open(DataContext context) {
+        this.context = context;
+        this.targetWriter.open(context);
+    }
+
+    public void close() {
+        this.targetWriter.close();
+    }
+
+    public void start(Batch batch) {
+        this.targetWriter.start(batch);
+    }
+
     public boolean start(Table table) {
         activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName());
         if (activeTransforms != null && activeTransforms.size() > 0) {
             this.sourceTable = table;
             return true;
         } else {
-            return super.start(table);
+            return this.targetWriter.start(table);
         }
     }
 
@@ -130,12 +150,6 @@ public class TransformWriter extends NestedDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && sourceTable == null && 
-                context.getLastParsedTable() != null) {
-            // if we cross batches and the table isn't specified, then
-            // use the last table we used
-            start(context.getLastParsedTable());
-        }        
         DataEventType eventType = data.getDataEventType();
         if (activeTransforms != null && activeTransforms.size() > 0 && isTransformable(eventType)) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
@@ -178,14 +192,14 @@ public class TransformWriter extends NestedDataWriter {
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
                 Table table = transformedData.buildTargetTable();
                 CsvData csvData = transformedData.buildTargetCsvData();
-                if (this.nestedWriter.start(table) || !csvData.requiresTable()) {
-                    this.nestedWriter.write(csvData);
-                    this.nestedWriter.end(table);
+                if (this.targetWriter.start(table) || !csvData.requiresTable()) {
+                    this.targetWriter.write(csvData);
+                    this.targetWriter.end(table);
                 }
             }
 
         } else {
-            super.write(data);
+            this.targetWriter.write(data);
         }
 
     }
@@ -397,9 +411,21 @@ public class TransformWriter extends NestedDataWriter {
         if (activeTransforms != null && activeTransforms.size() > 0) {
             activeTransforms = null;
         } else {
-            super.end(table);
+            this.targetWriter.end(table);
         }
 
+    }
+
+    public void end(Batch batch, boolean inError) {
+        this.targetWriter.end(batch, inError);
+    }
+
+    public Map<Batch, Statistics> getStatistics() {
+        return this.targetWriter.getStatistics();
+    }
+
+    public IDataWriter getTargetWriter() {
+        return targetWriter;
     }
 
 }

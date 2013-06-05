@@ -1,31 +1,31 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.load;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -145,20 +145,6 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
                 context.put(CTX_KEY_RESYNC_TABLE_NEEDED, tables);
             }
             tables.add(table);
-        }
-        
-        if (data.getDataEventType() == DataEventType.UPDATE && 
-        		!engine.getParameterService().is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD)) {
-        	if (matchesTable(table, TableConstants.SYM_NODE_SECURITY)) {
-        	    Map<String,String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-        	    String initialLoadEnabled = newData.get("INITIAL_LOAD_ENABLED"); 
-        	    String initialLoadTime = newData.get("INITIAL_LOAD_TIME");
-        	    if (StringUtils.isNotBlank(initialLoadTime) && "0".equals(initialLoadEnabled)) {
-        	    	log.info("Requesting syncTriggers because {} is false and sym_node_security changed to indicate that an initial load has completed",
-        	    			ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
-                    context.put(CTX_KEY_RESYNC_NEEDED, true);
-        	    }
-        	}
         }
     }
 
@@ -285,9 +271,10 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
             String nodeId = nodeService.findIdentityNodeId();
             if (nodeId != null) {
                 NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                if (security != null && 
-                        (security.isRegistrationEnabled() || security.getRegistrationTime() == null)) {
-                    engine.getRegistrationService().markNodeAsRegistered(nodeId);
+                if (security != null) {
+                    security.setRegistrationEnabled(false);
+                    security.setRegistrationTime(new Date());
+                    nodeService.updateNodeSecurity(security);
                 }
             }
         }       
@@ -314,7 +301,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             engine.getTransformService().clearCache();
-            context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
+            context.remove(CTX_KEY_FLUSH_PARAMETERS_NEEDED);
         }
 
         if (context.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {

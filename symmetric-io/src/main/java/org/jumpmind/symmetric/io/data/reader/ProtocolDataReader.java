@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.data.reader;
 
@@ -62,8 +62,10 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
     protected DataContext context;
+    protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
     protected Batch batch;
+    protected Table table;
     protected String channelId;
     protected String sourceNodeId;
     protected String targetNodeId;
@@ -155,9 +157,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.setDataEventType(DataEventType.UPDATE);
                     // TODO check for invalid range and print results
                     data.putParsedData(CsvData.ROW_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, context.getLastParsedTable().getColumnCount() + 1));
+                            CollectionUtils.copyOfRange(tokens, 1, table.getColumnCount() + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
-                            context.getLastParsedTable().getColumnCount() + 1, tokens.length));
+                            table.getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
@@ -192,14 +194,12 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                             : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    Table table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName,
                             tableName));
                     if (table != null) {
-                        context.setLastParsedTable(table);
                         return table;
                     } else {
                         table = new Table(catalogName, schemaName, tableName);
-                        context.setLastParsedTable(table);
                     }
                 } else if (tokens[0].equals(CsvConstants.KEYS)) {
                     if (keys == null) {
@@ -209,14 +209,13 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         keys.add(tokens[i]);
                     }
                 } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
-                    Table table = context.getLastParsedTable();
                     table.removeAllColumns();
                     for (int i = 1; i < tokens.length; i++) {
                         Column column = new Column(tokens[i], keys != null
                                 && keys.contains(tokens[i]));
                         table.addColumn(column);
                     }
-                    context.getParsedTables().put(table.getFullyQualifiedTableName(), table);
+                    tables.put(table.getFullyQualifiedTableName(), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     if (batch != null) {
@@ -277,16 +276,14 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
 
     public Table nextTable() {
         if (next instanceof Table) {
-            Table table = (Table) next;
-            context.setLastParsedTable(table);
+            this.table = (Table) next;
             next = null;
             return table;
         } else {
             do {
                 next = readNext();
                 if (next instanceof Table) {
-                    Table table = (Table) next;
-                    context.setLastParsedTable(table);
+                    this.table = (Table) next;
                     next = null;
                     return table;
                 }

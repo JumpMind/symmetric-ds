@@ -1,23 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
 package org.jumpmind.symmetric.route;
 
 import java.util.Collection;
@@ -60,14 +59,14 @@ public class BshDataRouter extends AbstractDataRouter {
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.init.ms");
             HashSet<String> targetNodes = new HashSet<String>();
             ts = System.currentTimeMillis();
-            bind(interpreter, dataMetaData, nodes, targetNodes, initialLoad);
+            bind(interpreter, dataMetaData, nodes, targetNodes);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
-            Object returnValue = interpreter.eval(dataMetaData.getRouter().getRouterExpression());
+            Object returnValue = interpreter.eval(dataMetaData.getTriggerRouter().getRouter().getRouterExpression());
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
-            log.error("Error in data router: " + dataMetaData.getRouter() + ".  Routing to nobody.", e);
+            log.error("Error in data router.  Routing to nobody.", e);
             return Collections.emptySet();
         }
     }    
@@ -105,16 +104,14 @@ public class BshDataRouter extends AbstractDataRouter {
         }
     }
 
-    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes, boolean initialLoad)
+    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes)
             throws EvalError {
-        interpreter.set("log", log);
-        interpreter.set("initialLoad", initialLoad);        
         interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
         interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(), true);
+        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect());
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));

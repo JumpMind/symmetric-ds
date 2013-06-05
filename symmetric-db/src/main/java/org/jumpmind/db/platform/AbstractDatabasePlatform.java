@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform;
 
 /*
@@ -366,14 +346,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                     objectValue = StringUtils.rightPad(value.toString(),
                                             column.getSizeAsInt(), ' ');
                                 }
-                            } else if (type == Types.BIGINT) {
-                                objectValue = parseBigInteger(value);
                             } else if (type == Types.INTEGER || type == Types.SMALLINT
                                     || type == Types.BIT) {
                                 objectValue = parseIntegerObjectValue(value);
                             } else if (type == Types.NUMERIC || type == Types.DECIMAL
                                     || type == Types.FLOAT || type == Types.DOUBLE
-                                    || type == Types.REAL) {
+                                    || type == Types.REAL || type == Types.BIGINT) {
                                 // The number will have either one period or one
                                 // comma for the decimal point, but we need a
                                 // period
@@ -416,14 +394,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
-    
-    protected Number parseBigInteger(String value) {
-        try {
-            return new Long(value);
-        } catch (NumberFormatException ex) {
-            return new BigInteger(value);        
-        }
-    }    
         
     protected Number parseIntegerObjectValue(String value) {
         try {
@@ -686,37 +656,34 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
     
-    public String alterCaseToMatchDatabaseDefaultCase(String value) {
-        if (StringUtils.isNotBlank(value)) {
-            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-            if (!FormatUtils.isMixedCase(value)) {
-                value = storesUpperCase ? value.toUpperCase() : value.toLowerCase();
-            }
-        }
-        return value;
-    }
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Table... tables) {
-        for (Table table : tables) {
-            alterCaseToMatchDatabaseDefaultCase(table);
-        }
-    }
-    
     public void alterCaseToMatchDatabaseDefaultCase(Table table) {
-        table.setName(alterCaseToMatchDatabaseDefaultCase(table.getName()));
+        boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+        if (!FormatUtils.isMixedCase(table.getName())) {
+            table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                    .toLowerCase());
+        }
 
         Column[] columns = table.getColumns();
         for (Column column : columns) {
-            column.setName(alterCaseToMatchDatabaseDefaultCase(column.getName()));
+            if (!FormatUtils.isMixedCase(column.getName())) {
+                column.setName(storesUpperCase ? column.getName().toUpperCase() : column.getName()
+                        .toLowerCase());
+            }
         }
 
         IIndex[] indexes = table.getIndices();
         for (IIndex index : indexes) {
-            index.setName(alterCaseToMatchDatabaseDefaultCase(index.getName()));
+            if (!FormatUtils.isMixedCase(index.getName())) {
+                index.setName(storesUpperCase ? index.getName().toUpperCase() : index.getName()
+                        .toLowerCase());
+            }
 
             IndexColumn[] indexColumns = index.getColumns();
             for (IndexColumn indexColumn : indexColumns) {
-                indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
+                if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                    indexColumn.setName(storesUpperCase ? indexColumn.getName().toUpperCase()
+                            : indexColumn.getName().toLowerCase());
+                }
             }
         }
     }

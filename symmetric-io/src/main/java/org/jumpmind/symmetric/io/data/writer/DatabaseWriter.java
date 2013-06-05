@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.data.writer;
 
@@ -131,9 +131,6 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public boolean start(Table table) {
-        if (table == null) {
-            throw new NullPointerException("Cannot load a null table");
-        }
         this.lastData = null;
         this.currentDmlStatement = null;
         this.sourceTable = table;
@@ -156,14 +153,9 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && 
-                (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
-            // if we cross batches and the table isn't specified, then
-            // use the last table we used
-            start(context.getLastParsedTable());
-        }
-        if (targetTable != null || !data.requiresTable() || 
-                (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
+        if (targetTable != null || 
+                data.getDataEventType() == DataEventType.CREATE ||
+                data.getDataEventType() == DataEventType.SQL) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
@@ -853,8 +845,6 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-            transaction.commit();
-            
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);

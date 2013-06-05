@@ -1,44 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Licensed to JumpMind Inc under one or more contributor
-    license agreements.  See the NOTICE file distributed
-    with this work for additional information regarding
-    copyright ownership.  JumpMind Inc licenses this file
-    to you under the GNU General Public License, version 3.0 (GPLv3)
-    (the "License"); you may not use this file except in compliance
-    with the License.
-
-    You should have received a copy of the GNU General Public License,
-    version 3.0 (GPLv3) along with this library; if not, see
-    <http://www.gnu.org/licenses/>.
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
--->
 <section version="5.0" xml:id="extensions" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
          xmlns:ns="http://docbook.org/ns/docbook"
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
-         xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Extension Points</title>
+         xmlns:html="http://www.w3.org/1999/xhtml">         
+    <title>Extension Points</title>           
         <para>
-             SymmetricDS has a pluggable architecture that can be extended. A Java class that implements
+             SymmetricDS has a pluggable architecture that can be extended. A Java class that implements 
              the appropriate extension point interface, can implement custom logic and change the behavior
-             of SymmetricDS to suit special needs.  All supported extension
-             points extend the <literal>IExtensionPoint</literal> interface.  The available extension points are documented in the following sections.
+             of SymmetricDS to suit special needs.  All supported extension 
+             points extend the <literal>IExtensionPoint</literal> interface.  The available extension points are documented in the following sections.  
         </para>
         <para>
-             When SymmetricDS starts up, the <literal>ExtensionPointManager</literal> searches a <ulink url="http://springframework.org">Spring Framework</ulink>
+             When SymmetricDS starts up, the <literal>ExtensionPointManager</literal> searches a <ulink url="http://springframework.org">Spring Framework</ulink> 
              context for classes that implement the <literal>IExtensionPoint</literal> interface, then creates and registers
-             the class with the appropriate SymmetricDS component.
+             the class with the appropriate SymmetricDS component.  
         </para>
         <para>
              If an extension point needs access to SymmetricDS services or needs to connect to the database
@@ -46,7 +24,7 @@
              get a handle to the <literal>ISymmetricEngine</literal>.
         </para>
         <para>
-             The <literal>INodeGroupExtensionPoint</literal> interface may be optionally implemented to indicate that a registered
+             The <literal>INodeGroupExtensionPoint</literal> interface may be optionally implemented to indicate that a registered 
              extension point should only be registered with specific node groups.
              <programlisting><![CDATA[/**
  * Only apply this extension point to the 'root' node group.
@@ -54,8 +32,8 @@
  public String[] getNodeGroupIdsToApplyTo() {
      return new String[] { "root" };
  }
-]]></programlisting>
-        </para>
+]]></programlisting>             
+        </para>        
         <para>
              Extensions are configured in the <literal>conf/symmetric-extensions.xml</literal> file.
         </para>
@@ -64,7 +42,7 @@
             <para>
                 Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
                 filter per engine instance.  The IParameterFilter replaces the deprecated IRuntimeConfig from prior releases.
-                <programlisting><![CDATA[public class MyParameterFilter
+                <programlisting><![CDATA[public class MyParameterFilter 
     implements IParameterFilter, INodeGroupExtensionPoint {
 
     /**
@@ -79,7 +57,7 @@
         if (key.equals(ParameterConstants.EXTERNAL_ID)) {
             return StoreProperties.getStoreProperties().
               getProperty(StoreProperties.STORE_NUMBER);
-        }
+        } 
         return value;
     }
 
@@ -87,37 +65,37 @@
         return true;
     }
 
-}]]></programlisting>
+}]]></programlisting> 
             </para>
-        </section>
+        </section>        
         <section id="extensions-data-loader-filter">
-            <title>IDatabaseWriterFilter</title>
+            <title>IDatabaseWriterFilter</title>         
             <para>
-                Data can be filtered or manipulated before it is loaded into the target database.
+                Data can be filtered or manipulated before it is loaded into the target database.              
                 A filter can change the
-                data in a column, save it somewhere else or do something else with the data entirely.
+                data in a column, save it somewhere else or do something else with the data entirely.  
                 It can also specify by the
-                return value of the function call that the data loader should continue on
-                and load the data (by returning true) or ignore it (by returning false). One
+                return value of the function call that the data loader should continue on 
+                and load the data (by returning true) or ignore it (by returning false). One 
                 possible use of the filter, for example, might be to
-                route credit card data to a secure database and blank it out as it loads
+                route credit card data to a secure database and blank it out as it loads 
                 into a less-restricted reporting database.
             </para>
             <para>
-                A <literal>DataContext</literal> is passed to each of the callback methods.  A new
-                context is created for each synchronization.  The context provides a mechanism
-                to share data during the load of a batch between different rows of data that are
-                committed in a single database transaction.
-            </para>
+                A <literal>DataContext</literal> is passed to each of the callback methods.  A new 
+                context is created for each synchronization.  The context provides a mechanism  
+                to share data during the load of a batch between different rows of data that are 
+                committed in a single database transaction. 
+            </para>  
             <para>
-                The filter also provides callback methods for the batch lifecycle.  The <literal>DatabaseWriterFilterAdapter</literal>
+                The filter also provide callback methods for the batch lifecycle.  The <literal>DatabaseWriterFilterAdapter</literal>
                 may be used if not all methods are required.
-            </para>
+            </para>          
             <para>
                 A class implementing the IDatabaseWriterFilter interface is injected onto the
                 DataLoaderService in order to receive callbacks when data is inserted,
                 updated, or deleted.
-
+                
                 <programlisting><![CDATA[public class MyFilter extends DatabaseWriterFilterAdapter {
 
     @Override
@@ -134,18 +112,18 @@
             </para>
             <para>
                 The filter class should be specified in <literal>conf/symmetric-extensions.xml</literal> as follows.
-
+                
                 <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
+ 
     <bean id="myFilter" class="com.mydomain.MyFilter"/>
-
+     
 </beans>]]></programlisting>
             </para>
         </section>
@@ -155,26 +133,26 @@
             <para>
             Implement this extension point to override how errors are handled.  You can use this extension point to ignore rows that produce foreign key errors.
             </para>
-        </section>
-
+        </section>             
+        
         <section id="extensions-dataloader-factory">
             <title>IDataLoaderFactory</title>
             <para>
-            Implement this extension point to provide a different implementation of the <code>org.jumpmind.symmetric.io.data.IDataWriter</code> that
-            is used by the SymmetricDS data loader.  Data loaders are configured for a channel.  After this extension point is registered it can
+            Implement this extension point to provide a different implementation of the <code>org.jumpmind.symmetric.io.data.IDataWriter</code> that 
+            is used by the SymmetricDS data loader.  Data loaders are configured for a channel.  After this extension point is registered it can 
             be activated for a <xref linkend="table_channel" xrefstyle="table"/> by indicating the data loader name in the <code>data_loader_type</code> column.
             </para>
             <para>
             One possible use of this extension point is to route data to a NOSQL data sink.
             </para>
-        </section>
+        </section>             
         <section id="extensions-acknowledge-event-listener">
             <title>IAcknowledgeEventListener</title>
             <para>
-            Implement this extension point to receive callback events when a batch is acknowledged.
+            Implement this extension point to receive callback events when a batch is acknowledged.  
             The callback for this listener happens at the point of extraction.
             </para>
-        </section>
+        </section>                
         <section id="extensions-reload-listener">
             <title>IReloadListener</title>
             <para>
@@ -182,7 +160,7 @@
             action before or after a reload is requested for a Node.  The callback for this listener
             happens at the point of extraction.
             </para>
-        </section>
+        </section>                
         <section id="extensions-sync-url-extension">
             <title>ISyncUrlExtension</title>
             <para>
@@ -194,22 +172,22 @@
              protocol of ext://beanName. The beanName is the name you give the extension
              point in the extension xml file.
             </para>
-        </section>
+        </section>        
         <section id="extensions-column-transforms">
             <title>IColumnTransform</title>
             <para>
-             This extension point allows custom column transformations to be created.  There are a handful of
-             out-of-the-box implementations.  If any of these do not meet the column transformation needs of
+             This extension point allows custom column transformations to be created.  There are a handful of 
+             out-of-the-box implementations.  If any of these do not meet the column transformation needs of 
              the application, then a custom transform can be created and registered.  It can be activated
-             by referencing the column transform's name <code>transform_type</code> column of
+             by referencing the column transform's name <code>transform_type</code> column of 
              <xref linkend="table_transform_column" xrefstyle="table"/>
             </para>
-        </section>
+        </section>        
         <section id="extensions-node-id-generator">
             <title>INodeIdCreator</title>
             <para>
-             This extension point allows SymmetricDS users to implement their own algorithms for how
-             node ids and passwords are generated or selected during the registration process.  There may be
+             This extension point allows SymmetricDS users to implement their own algorithms for how 
+             node ids and passwords are generated or selected during the registration process.  There may be 
              only one node creator per SymmetricDS instance (Please note that the node creator extension has replaced the node generator extension).
             </para>
         </section>
@@ -218,22 +196,22 @@
             <para>
             Implement this extension point to get status callbacks during trigger creation.
             </para>
-        </section>
+        </section>       
         <section id="extensions-batch-algorithm">
             <title>IBatchAlgorithm</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use.
             This extension point gives fine grained control over how a channel is batched.
             </para>
-        </section>
+        </section>                   
         <section id="extensions-data-router">
             <title>IDataRouter</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the router_type column
-            of the Router table to use.  This extension point gives the ability to programmatically decide
+            of the Router table to use.  This extension point gives the ability to programatically decide
             which nodes data should be routed to.
             </para>
-        </section>
+        </section>  
         <section id="extensions-heartbeat-listener">
             <title>IHeartbeatListener</title>
             <para>
@@ -257,5 +235,5 @@
             <para>
             Implement this extension point to intercept the saving and rendering of the node password.
             </para>
-        </section>
+        </section>        
     </section>

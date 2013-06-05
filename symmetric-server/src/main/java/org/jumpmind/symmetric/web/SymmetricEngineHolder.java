@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.web;
 
@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -39,16 +38,11 @@ import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
-import org.jumpmind.security.SecurityServiceFactory;
-import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroup;
-import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,13 +57,9 @@ public class SymmetricEngineHolder {
 
     private boolean multiServerMode = false;
 
-    private boolean autoStart = true;
-
     private String singleServerPropertiesFile;
 
     private static Date createTime = new Date();
-
-    private int engineCount;
 
     private String deploymentType = "server";
 
@@ -100,17 +90,9 @@ public class SymmetricEngineHolder {
     public boolean areEnginesConfigured() {
         return enginesStarting.size() > 0 || engines.size() > 0;
     }
-
+    
     public int getNumerOfEnginesStarting() {
         return enginesStarting.size();
-    }
-
-    public void setAutoStart(boolean autoStart) {
-        this.autoStart = autoStart;
-    }
-
-    public boolean isAutoStart() {
-        return autoStart;
     }
 
     public synchronized void stop() {
@@ -125,26 +107,23 @@ public class SymmetricEngineHolder {
         if (isMultiServerMode()) {
             File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
             File[] files = null;
-
-            if (enginesDir != null) {
+            
+            if (enginesDir!=null) {
                 files = enginesDir.listFiles();
             }
-
+            
             if (files == null) {
                 String firstAttempt = enginesDir.getAbsolutePath();
                 enginesDir = new File(".");
-                log.warn(
-                        "Unable to retrieve engine properties files from {}.  Trying current working directory {}",
-                        firstAttempt, enginesDir.getAbsolutePath());
+                log.warn("Unable to retrieve engine properties files from {}.  Trying current working directory {}", firstAttempt, enginesDir.getAbsolutePath());
 
-                if (enginesDir != null) {
+                if (enginesDir!=null) {
                     files = enginesDir.listFiles();
                 }
             }
-
-            if (files != null) {
+            
+            if (files!=null) {
                 for (int i = 0; i < files.length; i++) {
-                    engineCount++;
                     File file = files[i];
                     if (file.getName().endsWith(".properties")) {
                         enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
@@ -155,7 +134,6 @@ public class SymmetricEngineHolder {
             }
 
         } else {
-            engineCount++;
             enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
         }
 
@@ -163,10 +141,6 @@ public class SymmetricEngineHolder {
             starter.start();
         }
 
-    }
-
-    public int getEngineCount() {
-        return engineCount;
     }
 
     protected ISymmetricEngine create(String propertiesFile) {
@@ -194,7 +168,8 @@ public class SymmetricEngineHolder {
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
-                ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
+                ISecurityService service = AbstractSymmetricEngine
+                        .createSecurityService(properties);
                 properties.setProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
                         SecurityConstants.PREFIX_ENC + service.encrypt(password));
             } catch (Exception ex) {
@@ -235,45 +210,13 @@ public class SymmetricEngineHolder {
                 for (ISymmetricEngine symmetricWebServer : servers) {
                     if (symmetricWebServer.getParameterService().getSyncUrl()
                             .equals(registrationUrl)) {
-                        String serverNodeGroupId = symmetricWebServer.getParameterService()
-                                .getNodeGroupId();
-                        String clientNodeGroupId = properties
+                        String nodeGroupId = properties
                                 .getProperty(ParameterConstants.NODE_GROUP_ID);
                         String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
-
-                        IConfigurationService configurationService = symmetricWebServer
-                                .getConfigurationService();
-                        List<NodeGroup> groups = configurationService.getNodeGroups();
-                        boolean foundGroup = false;
-                        for (NodeGroup nodeGroup : groups) {
-                            if (nodeGroup.getNodeGroupId().equals(clientNodeGroupId)) {
-                                foundGroup = true;
-                            }
-                        }
-
-                        if (!foundGroup) {
-                            configurationService.saveNodeGroup(new NodeGroup(clientNodeGroupId));
-                        }
-
-                        boolean foundLink = false;
-                        List<NodeGroupLink> links = configurationService
-                                .getNodeGroupLinksFor(serverNodeGroupId);
-                        for (NodeGroupLink nodeGroupLink : links) {
-                            if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
-                                foundLink = true;
-                            }
-                        }
-
-                        if (!foundLink) {
-                            configurationService.saveNodeGroupLink(new NodeGroupLink(
-                                    serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
-                        }
-
                         IRegistrationService registrationService = symmetricWebServer
                                 .getRegistrationService();
                         if (!registrationService.isAutoRegistration()
-                                && !registrationService.isRegistrationOpen(clientNodeGroupId,
-                                        externalId)) {
+                                && !registrationService.isRegistrationOpen(nodeGroupId, externalId)) {
                             Node node = new Node(properties);
                             registrationService.openRegistration(node);
                         }
@@ -282,7 +225,7 @@ public class SymmetricEngineHolder {
             }
 
             engine = create(symmetricProperties.getAbsolutePath());
-            if (engine != null && autoStart) {
+            if (engine != null) {
                 engine.start();
             } else {
                 log.warn("The engine could not be created.  It will not be started");
@@ -343,19 +286,14 @@ public class SymmetricEngineHolder {
         if (StringUtils.isBlank(properties.getProperty(ParameterConstants.SYNC_URL))) {
             throw new IllegalStateException("Missing property " + ParameterConstants.SYNC_URL);
         }
-        if (StringUtils.isBlank(properties
-                .getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
+        if (StringUtils.isBlank(properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
         }
-        if (StringUtils.isBlank(properties
-                .getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL))) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_URL);
+        if (StringUtils.isBlank(properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL))) {
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_URL);
         }
         if (!properties.containsKey(BasicDataSourcePropertyConstants.DB_POOL_USER)) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_USER);
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_USER);
         }
         if (!properties.containsKey(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)) {
             throw new IllegalStateException("Missing property "
@@ -383,7 +321,7 @@ public class SymmetricEngineHolder {
         @Override
         public void run() {
             ISymmetricEngine engine = create(propertiesFile);
-            if (engine != null && autoStart) {
+            if (engine != null) {
                 engine.start();
             }
             enginesStarting.remove(this);

@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform;
 
 /*
@@ -52,12 +32,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -99,7 +77,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     private final List<MetaDataColumnDescriptor> _columnsForIndex;
 
     /* The platform that this model reader belongs to. */
-    protected IDatabasePlatform platform;
+    private IDatabasePlatform platform;
 
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
@@ -201,8 +179,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         // first to be read)
         // See also DDLUTILS-29
         result.add(new MetaDataColumnDescriptor("COLUMN_DEF", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", Types.VARCHAR));
-
         // we're also reading the table name so that a model reader impl can
         // filter manually
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
@@ -782,20 +758,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return <code>true</code> if the index matches the columns
      */
     protected boolean matches(IIndex index, List<String> columnsToSearchFor) {
-        for (String column : columnsToSearchFor) {
-            boolean found = false;
-            for (int i = 0; i < index.getColumnCount(); i++) {
-                if (column != null && column.equals(index.getColumn(i).getName())) {
-                    found = true;
-                }
-            }
-            if (!found) {
+        if (index.getColumnCount() != columnsToSearchFor.size()) {
+            return false;
+        }
+        for (int columnIdx = 0; columnIdx < index.getColumnCount(); columnIdx++) {
+            if (!columnsToSearchFor.get(columnIdx).equals(index.getColumn(columnIdx).getName())) {
                 return false;
             }
         }
         return true;
     }
-    
+
     /*
      * Tries to determine whether the index is the internal database-generated
      * index for the given table's primary key. Note that only unique indices
@@ -852,9 +825,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
-        ResultSet columnData = null;        
+        ResultSet columnData = null;
         try {
-            Set<String> columnNames = new HashSet<String>();
             columnData = metaData.getColumns(getTableNamePattern(tableName),
                     getDefaultColumnPattern());
 
@@ -862,11 +834,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             while (columnData.next()) {
                 Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
-                Column column = readColumn(metaData, values);
-                if (!columnNames.contains(column.getName())) {
-                    columnNames.add(column.getName());
-                    columns.add(column);
-                }
+
+                columns.add(readColumn(metaData, values));
             }
             return columns;
         } finally {
@@ -893,9 +862,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
         String defaultValue = (String) values.get("COLUMN_DEF");
-        if (defaultValue == null) {
-            defaultValue = (String) values.get("COLUMN_DEFAULT");
-        }
         if (defaultValue != null) {
             column.setDefaultValue(defaultValue.trim());
         }
@@ -996,6 +962,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             while (fkData.next()) {
                 Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
+
                 readForeignKey(metaData, values, fks);
             }
         } finally {
@@ -1117,44 +1084,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @param resultSet The result set
      * 
-     * @param columnDescriptors The descriptors of the columns to read
+     * @param columnDescriptors The dscriptors of the columns to read
      * 
      * @return The read values keyed by the column name
      */
     protected Map<String, Object> readMetaData(ResultSet resultSet,
             List<MetaDataColumnDescriptor> columnDescriptors) throws SQLException {
         HashMap<String, Object> values = new HashMap<String, Object>();
-        ResultSetMetaData meta = resultSet.getMetaData();
-        int columnCount = meta.getColumnCount();
-        Set<String> processed = new HashSet<String>(columnCount);
-        for (int i = 1; i <= columnCount; i++) {
-            boolean foundMetaDataDescriptor = false;
-            String columnName = meta.getColumnName(i);
-            for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
-                if (metaDataColumnDescriptor.getName().equals(columnName)) {
-                    foundMetaDataDescriptor = true;
-                    values.put(metaDataColumnDescriptor.getName(),
-                            metaDataColumnDescriptor.readColumn(resultSet));
-                    processed.add(columnName);
-                    break;
-                }
-            }
+        for (Iterator<MetaDataColumnDescriptor> it = columnDescriptors.iterator(); it.hasNext();) {
+            MetaDataColumnDescriptor descriptor = it.next();
 
-            /*
-             * Put all metadata values into the map for easy debugging
-             * of drivers that return nonstandard names
-             */
-            if (!foundMetaDataDescriptor) {
-                values.put(columnName, resultSet.getObject(i));
-            }
-
-        }
-        
-        for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
-            if (!processed.contains(metaDataColumnDescriptor.getName())) {
-                values.put(metaDataColumnDescriptor.getName(),
-                        metaDataColumnDescriptor.readColumn(resultSet));
-            }
+            values.put(descriptor.getName(), descriptor.readColumn(resultSet));
         }
         return values;
     }
@@ -1322,7 +1262,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                         if (columnCount > 1) {
                             schemaCatalog = rs.getString(2);
                         }
-                        if ((StringUtils.isBlank(schemaCatalog) || StringUtils.isBlank(catalog)) && !schemas.contains(schema)) {
+                        if (StringUtils.isBlank(catalog) && !schemas.contains(schema)) {
                             schemas.add(schema);
                         } else if (StringUtils.isNotBlank(schemaCatalog)
                                 && schemaCatalog.equals(catalog)) {

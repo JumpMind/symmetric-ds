@@ -1,35 +1,12 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Types;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -53,40 +30,21 @@ public class SequenceService extends AbstractService implements ISequenceService
             maxBatchId = 1;
         }
         try {
-            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
+            create(new Sequence(TableConstants.SYM_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
                     "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
-                    Constants.SEQUENCE_OUTGOING_BATCH);
+                    TableConstants.SYM_OUTGOING_BATCH);
         }
-        
-        try {
-            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 1, 1, 9999999999l,
-                    "system", false));
-        } catch (UniqueKeyException ex) {
-            log.debug("Failed to create sequence {}.  Must be initialized already.",
-                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
-        }
-
     }
 
     public long nextVal(String name) {
-        ISqlTransaction transaction = null;
+        ISqlTransaction sqlTransaction = null;
         try {
-            transaction = sqlTemplate.startSqlTransaction();
-            return nextVal(transaction, name);
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return nextVal(sqlTransaction, name);
         } finally {
-            close(transaction);
+            close(sqlTransaction);
         }
     }
 
@@ -114,7 +72,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         long currVal = currVal(transaction, name);
         Sequence sequence = sequenceDefinitionCache.get(name);
         if (sequence == null) {
-            sequence = get(transaction, name);
+            sequence = get(name);
             if (sequence != null) {
                 sequenceDefinitionCache.put(name, sequence);
             } else {
@@ -157,22 +115,12 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long currVal(String name) {
-        ISqlTransaction transaction = null;
+        ISqlTransaction sqlTransaction = null;
         try {
-            transaction = sqlTemplate.startSqlTransaction();
-            return currVal(transaction, name);
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
+            sqlTransaction = sqlTemplate.startSqlTransaction();
+            return currVal(sqlTransaction, name);
         } finally {
-            close(transaction);
+            close(sqlTransaction);
         }
     }
 
@@ -182,13 +130,8 @@ public class SequenceService extends AbstractService implements ISequenceService
                 sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getLastUpdateBy());
     }
 
-    protected Sequence get(ISqlTransaction transaction, String name) {
-        List<Sequence> values = transaction.query(getSql("getSequenceSql"), new SequenceRowMapper(), new Object[] {name}, new int [] {Types.VARCHAR});
-        if (values.size() > 0) {
-            return values.get(0);
-        } else {
-            return null;
-        }
+    public Sequence get(String name) {
+        return sqlTemplate.queryForObject(getSql("getSequenceSql"), new SequenceRowMapper(), name);
     }
 
     class SequenceRowMapper implements ISqlRowMapper<Sequence> {

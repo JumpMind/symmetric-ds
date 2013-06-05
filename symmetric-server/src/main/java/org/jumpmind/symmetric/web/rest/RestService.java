@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.web.rest;
 
@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -52,21 +51,17 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
 import org.jumpmind.symmetric.web.rest.model.Node;
 import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
-import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.QueryResults;
-import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
 import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +70,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -617,139 +611,7 @@ public class RestService {
     	    @PathVariable("engine") String engineName) {
         getSymmetricEngine(engineName).removeAndCleanupNode(nodeId);
     }    
-
-    /**
-     * Requests the server to add this node to the synchronization scenario as a "pull only" node
-     * @param externalId - The external id for this node
-     * @param nodeGroup - The node group to which this node belongs
-     * @param databaseType - The database type for this node
-     * @param databaseVersion - the database version for this node
-     * @return {@link RegistrationInfo}
-     */
-    @RequestMapping(value = "/engine/registernode", method = RequestMethod.GET)
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public final RegistrationInfo registerNode(@RequestParam(value = "externalId") String externalId,
-    		@RequestParam(value = "nodeGroupId") String nodeGroupId,
-    		@RequestParam(value = "databaseType") String databaseType,
-    		@RequestParam(value = "databaseVersion") String databaseVersion 		
-    		) {    	
-    	
-        IRegistrationService registrationService = getSymmetricEngine().getRegistrationService();
-        INodeService nodeService = getSymmetricEngine().getNodeService();
-        RegistrationInfo regInfo = new org.jumpmind.symmetric.web.rest.model.RegistrationInfo();
-        try {
-        	org.jumpmind.symmetric.model.Node processedNode = registrationService.registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
-        	regInfo.setRegistered(processedNode.isSyncEnabled());    	
-            if (regInfo.isRegistered()) {
-            	regInfo.setNodeId(processedNode.getNodeId());
-                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(processedNode.getNodeId());
-            	regInfo.setNodePassword(nodeSecurity.getNodePassword());     
-                org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-                //TODO: does this work when using a registration redirect?
-                regInfo.setSyncUrl(modelNode.getSyncUrl());
-            }
-
-        } catch (IOException e) {
-            throw new IoException(e);
-        }    	
-        return regInfo;
-    }
     
-    /**
-     * 
-     * @param nodeId - The node id of the node requesting to pull data
-     * @param communicationType - The communication type, either (PULL, PUSH, FILE_PUSH, FILE_PULL)
-     * @return 
-     */
-    @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public final PullDataResults pullData(@RequestParam(value = "nodeId") String nodeId,
-    		@RequestParam(value = "communicationtype") String communicationType) {
-        //TODO: implement
-    	return null;
-    }
-    
-    /**
-     * Sends a heartbeat to the server for the given node.  
-     * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
-     * param hostName - Optional - The hostName for the machine on which the client node is running
-     * @param ipAddress - Optional - The IP address for the machine on which the client node is running
-     * @param osUser - Optional - The logged in user for the machine on which the client node is running
-     * @param osName - Optional - The name of the operating system on which the client node is running
-     * @param osArchitecture - Optional - The operating system architecture (i.e. amd, intel) on which the client node is running
-     * @param osVersion - Optional -The operating system version on which the client node is running 
-     * @param availableProcessors - Optional - The number of available processors on the machine on which the client node is running
-     * @param freeMemoryBytes - Optional - The amount of memory free (in bytes) on the machine on which the client node is running 
-     * @param totalMemoryBytes - Optional - The total amount of memory (in bytes) on the machine on which the client node is running
-     * @param maxMemoryBytes - Optional - The maximum amount of memory (in bytes) on the machine on which the client node is running
-     * @param javaVersion - Optional - The version of java currently being run on the machine on which the client node is running
-     * @param javaVendor - Optional - The java provided begin run on the machine on which the client node is running
-     * @param symmetricVersion - Optional - The symmetric version on the machine on which the client node is running
-     * @param timezoneOffset - Optional - The timezone offset on the machine on which the client node is running
-     * @param heartbeatTime - Optional - The heartbeat time for which this heartbeat pertains
-     * @param lastRestartTime - Optional - The last restart time of symmetric on the machine on which the client node is running
-     * @param createTime - Optional - The Symmetric instance create time for the machine on which the client node is running 
-     */
-    @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postHeartbeat(@RequestParam(value = "nodeId") String nodeID, 
-		@RequestParam(value = "hostName") String hostName,
-		@RequestParam(value = "ipAddress") String ipAddress,
-		@RequestParam(value = "osUser") String osUser,		
-		@RequestParam(value = "osName") String osName,
-		@RequestParam(value = "osArchitecture") String osArchitecture,
-		@RequestParam(value = "osVersion") String osVersion,
-		@RequestParam(value = "availableProcessors") Integer availableProcessors,
-		@RequestParam(value = "freeMemoryBytes") Long freeMemoryBytes,
-		@RequestParam(value = "totalMemoryBytes") Long totalMemoryBytes,
-		@RequestParam(value = "maxMemoryBytes") Long maxMemoryBytes,		
-		@RequestParam(value = "javaVersion") String javaVersion,
-		@RequestParam(value = "javaVendor") String javaVendor,
-		@RequestParam(value = "symmetricVersion") String symmetricVersion,
-		@RequestParam(value = "timezoneOffset") String timezoneOffset,
-		@RequestParam(value = "heartbeatTime") Date heartbeatTime,
-		@RequestParam(value = "lastRestartTime") Date lastRestartTime,
-		@RequestParam(value = "createTime") Date createTime
-		) {    	
-    	//TODO: implement
-    }
-    
-    /**
-     * Acknowledges a batch that has been pulled and processed on the client side.  Setting
-     * the status to OK will render the batch complete.  Setting the status to anything other 
-     * than OK will queue the batch on the server to be sent again on the next pull.
-     * @param nodeID - The node id that is acknowledging the batch
-     * @param batchId - The batch id that is being acknowledged
-     * @param status - The status of the batch, either "OK" or "ER"
-     * @param statusDescription - A description of the status.  This is particularly important 
-     * if the status is "ER".  In error status the status description should contain relevant
-     * information about the error on the client including SQL Error Number and description
-     */
-    
-    @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public final void putAcknowledgeBatch(@RequestBody BatchResults batchResults) {    
-        	
-    	//TODO: implement
-    }
-
-    
-    /**
-     * Requests an initial load from the server for the node id provided.  The initial load requst
-     * directs the server to queue up initial load data for the client node.  Data is obtained for 
-     * the initial load by the client calling the pull method.
-     * @param nodeID
-     */
-    @RequestMapping(value = "/engine/requestinitialload", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postRequestInitialLoad(@RequestParam(value = "nodeId") String nodeID) {    	
-    	//TODO: implement
-    }
-
     @ExceptionHandler(Exception.class)
     @ResponseBody
     protected RestError handleError(Exception ex, HttpServletRequest req) {
@@ -835,74 +697,64 @@ public class RestService {
 
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-        
-        if (isRegistered(engine)) {
-	        if (isRootNode(engine, modelNode)) {
-	            NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
-	            Set<NetworkedNode> childNetwork = networkedNode.getChildren();
-	            if (childNetwork != null) {
-		            for (NetworkedNode child : childNetwork) {
-		            	
-		                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
-		                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
-		            	            	
-		                xmlChildNode = new Node();
-		                xmlChildNode.setNodeId(child.getNode().getNodeId());
-		                xmlChildNode.setExternalId(child.getNode().getExternalId());
-		                xmlChildNode.setRegistrationServer(false);
-		                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
-		                
-		                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
-		                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
-		                if (nodeHosts.size()>0) {
-		                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
-		                }
-		                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
-		                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-		                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
-		                if (child.getNode().getCreatedAtNodeId() == null) {
-		                	xmlChildNode.setRegistrationServer(true);        	
-		                }
-		                children.addNode(xmlChildNode);
-		            }
+
+        if (isRootNode(engine, modelNode)) {
+            NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
+            Set<NetworkedNode> childNetwork = networkedNode.getChildren();
+            if (childNetwork != null) {
+	            for (NetworkedNode child : childNetwork) {
+	            	
+	                List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode().getNodeId());
+	                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode().getNodeId());        
+	            	            	
+	                xmlChildNode = new Node();
+	                xmlChildNode.setName(child.getNode().getNodeId());
+	                xmlChildNode.setExternalId(child.getNode().getExternalId());
+	                xmlChildNode.setRegistrationServer(false);
+	                xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
+	                
+	                xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
+	                xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
+	                if (nodeHosts.size()>0) {
+	                	xmlChildNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+	                }
+	                xmlChildNode.setRegistered(nodeSecurity.hasRegistered());
+	                xmlChildNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+	                xmlChildNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+	                if (child.getNode().getCreatedAtNodeId() == null) {
+	                	xmlChildNode.setRegistrationServer(true);        	
+	                }
+	                children.addNode(xmlChildNode);
 	            }
-	        }
-        } else {
-        	throw new NotFoundException();
+            }
         }
         return children;
     }
 
     private Node nodeImpl(ISymmetricEngine engine) {
-    	
+
+        INodeService nodeService = engine.getNodeService();
         Node xmlNode = new Node();
-    	if (isRegistered(engine)) {
-	        INodeService nodeService = engine.getNodeService();
-	        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
-	        List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
-	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-	        xmlNode.setNodeId(modelNode.getNodeId());
-	        xmlNode.setExternalId(modelNode.getExternalId());
-	        xmlNode.setSyncUrl(modelNode.getSyncUrl());
-	        xmlNode.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
-	        xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
-	        xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
-	        if (nodeHosts.size() > 0) {
-	        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
-	        }
-	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
-	        xmlNode.setRegistered(nodeSecurity.hasRegistered());
-	        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
-	        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
-	        if (modelNode.getCreatedAtNodeId() == null) {
-	        	xmlNode.setRegistrationServer(true);       	
-	        } else {
-	        	xmlNode.setRegistrationServer(false);
-	        }
-	        xmlNode.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
-    	} else {
-    		throw new NotFoundException();
-    	}
+        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+        List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+        xmlNode.setName(modelNode.getNodeId());
+        xmlNode.setExternalId(modelNode.getExternalId());
+        xmlNode.setSyncUrl(modelNode.getSyncUrl());
+        xmlNode.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+        xmlNode.setBatchToSendCount(modelNode.getBatchToSendCount());
+        if (nodeHosts.size() > 0) {
+        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
+        }
+        xmlNode.setRegistered(nodeSecurity.hasRegistered());
+        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
+        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
+        if (modelNode.getCreatedAtNodeId() == null) {
+        	xmlNode.setRegistrationServer(true);       	
+        } else {
+        	xmlNode.setRegistrationServer(false);
+        }
+        xmlNode.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
         return xmlNode;
     }
 
@@ -917,60 +769,37 @@ public class RestService {
         }
     }
 
-    private boolean isRegistered(ISymmetricEngine engine) {
-    	boolean registered = true;
-    	INodeService nodeService = engine.getNodeService();
-		org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
-		if (modelNode == null) {
-			registered = false;    			
-		} else {
-	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-			if (nodeSecurity == null) {
-				registered = false;
-			}
-		}    		
-    	return registered;
-    }
-    
     private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
 
+        INodeService nodeService = engine.getNodeService();
+        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
+        List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
+
         NodeStatus status = new NodeStatus();
-    	if (isRegistered(engine)) {
-	        INodeService nodeService = engine.getNodeService();
-	        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
-	        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
-	        List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
-	        status.setStarted(engine.isStarted());
-	        status.setRegistered(nodeSecurity.getRegistrationTime() != null);
-	        status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
-	        status.setReverseInitialLoaded(nodeSecurity.getRevInitialLoadTime() != null);
-	        status.setNodeId(modelNode.getNodeId());
-	        status.setNodeGroupId(modelNode.getNodeGroupId());
-	        status.setExternalId(modelNode.getExternalId());
-	        status.setSyncUrl(modelNode.getSyncUrl());
-	        status.setRegistrationUrl(engine.getParameterService().getRegistrationUrl());
-	        status.setDatabaseType(modelNode.getDatabaseType());
-	        status.setDatabaseVersion(modelNode.getDatabaseVersion());
-	        status.setSyncEnabled(modelNode.isSyncEnabled());
-	        status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
-	        status.setBatchToSendCount(engine.getOutgoingBatchService().countOutgoingBatchesUnsent());
-	        status.setBatchInErrorCount(engine.getOutgoingBatchService().countOutgoingBatchesInError());
-	        status.setDeploymentType(modelNode.getDeploymentType());
-	        if (modelNode.getCreatedAtNodeId() == null) {
-	        	status.setRegistrationServer(true);        	
-	        } else {
-	        	status.setRegistrationServer(false);
-	        }
-	        if (nodeHost != null && nodeHost.size() > 0) {
-	            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
-	        }
-	        status.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
-	        if (status.getHeartbeatInterval() == 0) {
-	        	status.setHeartbeatInterval(300000);
-	        }
-    	} else {
-    		throw new NotFoundException();
-    	}
+        status.setStarted(engine.isStarted());
+        status.setRegistered(nodeSecurity.getRegistrationTime() != null);
+        status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
+        status.setNodeId(modelNode.getNodeId());
+        status.setNodeGroupId(modelNode.getNodeGroupId());
+        status.setExternalId(modelNode.getExternalId());
+        status.setSyncUrl(modelNode.getSyncUrl());
+        status.setDatabaseType(modelNode.getDatabaseType());
+        status.setDatabaseVersion(modelNode.getDatabaseVersion());
+        status.setSyncEnabled(modelNode.isSyncEnabled());
+        status.setCreatedAtNodeId(modelNode.getCreatedAtNodeId());
+        status.setBatchToSendCount(modelNode.getBatchToSendCount());
+        status.setBatchInErrorCount(modelNode.getBatchInErrorCount());
+        status.setDeploymentType(modelNode.getDeploymentType());
+        if (modelNode.getCreatedAtNodeId() == null) {
+        	status.setRegistrationServer(true);        	
+        } else {
+        	status.setRegistrationServer(false);
+        }
+
+        if (nodeHost != null && nodeHost.size() > 0) {
+            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
+        }
         return status;
     }
 

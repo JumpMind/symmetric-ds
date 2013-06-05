@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.data;
 
@@ -29,8 +29,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 public class Batch {
     
     public static final long UNKNOWN_BATCH_ID = -9999;
-    
-    public static final String DEFAULT_CHANNEL_ID = "default";
 
     public enum BatchType { EXTRACT, LOAD };
     
@@ -38,7 +36,7 @@ public class Batch {
     protected String sourceNodeId;
     protected String targetNodeId;
     protected boolean initialLoad;    
-    protected String channelId = DEFAULT_CHANNEL_ID;
+    protected String channelId;
     protected BinaryEncoding binaryEncoding;   
     protected Date startTime;
     protected long lineCount;
@@ -54,9 +52,7 @@ public class Batch {
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;
         this.batchId = batchId;
-        if (channelId != null) {
-            this.channelId = channelId;
-        }
+        this.channelId = channelId;
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.binaryEncoding = binaryEncoding;

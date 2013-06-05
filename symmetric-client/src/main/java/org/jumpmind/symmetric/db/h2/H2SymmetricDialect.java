@@ -1,26 +1,25 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
+
 package org.jumpmind.symmetric.db.h2;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -54,7 +53,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                 && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
 
-        if (!exists && !StringUtils.isBlank(triggerName)) {
+        if (!exists) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
         }
         return exists;
@@ -72,15 +71,14 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-				log.debug(
-						"Dropping trigger {} for {}",
-						triggerName,
-						oldHistory != null ? oldHistory
-								.getFullyQualifiedSourceTableName() : Table
-								.getFullyQualifiedTableName(catalogName,
-										schemaName, tableName));
-				platform.getSqlTemplate().update(dropSql);
-                platform.getSqlTemplate().update(dropTable);
+                int count = platform.getSqlTemplate().update(dropSql);
+                if (count > 0) {
+                    log.info("Just dropped trigger {}", triggerName);
+                }
+                count = platform.getSqlTemplate().update(dropTable);
+                if (count > 0) {
+                    log.info("Just dropped table {}_CONFIG", triggerName);
+                }
             } catch (Exception e) {
                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
@@ -89,7 +87,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     
     @Override
     protected void createRequiredDatabaseObjects() {        
-        String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
+        String encode = this.parameterService.getTablePrefix() + "_" + "BASE64_ENCODE";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
             install(sql, encode);
@@ -99,7 +97,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     
     @Override
     protected void dropRequiredDatabaseObjects() {
-        String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
+        String encode = this.parameterService.getTablePrefix() + "_" + "BASE64_ENCODE";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
         }

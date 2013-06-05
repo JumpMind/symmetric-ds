@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.db.platform.postgresql;
 
@@ -45,7 +45,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             appendColumns(sql, columns, false);
             sql.append(") (select ");
             appendColumnQuestions(sql, columns);
-            sql.append(" where (select distinct 1 from ");
+            sql.append(" where (select 1 from ");
             sql.append(tableName);
             sql.append(" where  ");
             if (keyColumns == null || keyColumns.length == 0) {
@@ -78,7 +78,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             return super.getValueArray(columnValues, keyValues);
         }
     }
-
+    
     @Override
     public Object[] getValueArray(Map<String, Object> params) {
         Object[] args = null;
@@ -109,19 +109,19 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             return super.buildTypes(keys, columns, isDateOverrideToTimestamp);
         }
     }
-
+    
     @Override
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (columns[i].getMappedTypeCode() == -101) {
                     sql.append("cast(? as timestamp with time zone)").append(",");
-                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
                     sql.append("cast(? as uuid)").append(",");
-                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
                     sql.append("cast(? as bit varying)").append(",");
-                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-                    sql.append("cast(? as interval)").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append("cast(? as interval)").append(",");                    
                 } else {
                     sql.append("?").append(",");
                 }
@@ -151,7 +151,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                             .append(" = cast(? as bit varying)").append(separator);
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
-                          .append(" = cast(? as interval)").append(separator);
+                          .append(" = cast(? as interval)").append(separator);                      
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
                             .append(separator);
@@ -163,7 +163,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
     }
-
+    
     @Override
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
         String columnName = column.getName();
@@ -181,7 +181,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             "   end as ").append(columnName);
         } else {
             super.appendColumnNameForSql(sql, column, select);
-        }
+        }        
     }
 
 }

@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -34,8 +14,6 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("insertTableReloadRequest", "insert into $(table_reload_request) (reload_select, reload_delete_stmt, reload_enabled, reload_time, create_time, last_update_by, last_update_time, source_node_id, target_node_id, trigger_id, router_id) values (?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateTableReloadRequest", "update $(table_reload_request) set reload_select=?, reload_delete_stmt=?, reload_enabled=?, reload_time=?, create_time=?, last_update_by=?, last_update_time=? where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
-        
-        putSql("deleteTableReloadRequest", "delete from $(table_reload_request) where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
 
         // Note that the order by data_id is done appended in code
         putSql("selectEventDataToExtractSql",
@@ -66,7 +44,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("insertIntoDataSql",
                 ""
                         + "insert into $(data) (data_id, table_name, event_type, row_data, pk_data,                               "
-                        + "  old_data, trigger_hist_id, channel_id, external_data, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)   ");
+                        + "  old_data, trigger_hist_id, channel_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, current_timestamp)   ");
 
         putSql("insertIntoDataEventSql",
                 ""

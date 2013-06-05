@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -61,25 +41,25 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertRegistrationRequestSql",
                 ""
-                        + "insert into $(registration_request)                                                 "
-                        + "  (last_update_by, last_update_time, attempt_count, registered_node_id, status,     "
-                        + "  node_group_id, external_id, ip_address, host_name, error_message, create_time)    "
-                        + "  values (?,?,1,?,?,?,?,?,?,?,current_timestamp)                                    ");
+                        + "insert into $(registration_request)                                         "
+                        + "  (last_update_by, last_update_time, attempt_count, registered_node_id, status,   "
+                        + "  node_group_id, external_id, ip_address, host_name, create_time)                 "
+                        + "  values (?,?,1,?,?,?,?,?,?,current_timestamp)                                    ");
 
         putSql("updateRegistrationRequestSql",
                 ""
                         + "update $(registration_request)                                                                    "
                         + "  set                                                                                                   "
-                        + "  last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=?, error_message=?   "
+                        + "  last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=?   "
                         + "  where                                                                                                 "
-                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status in ('RQ','ER')                       ");
+                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?                       ");
 
         putSql("selectRegistrationRequestSql",
                 ""
-                        + "select node_group_id, external_id, status, host_name, ip_address, error_message,     "
+                        + "select node_group_id, external_id, status, host_name, ip_address,                    "
                         + "  attempt_count, registered_node_id, create_time, last_update_by, last_update_time   "
-                        + "  from $(registration_request)                                                       "
-                        + "  where status in ('RQ','ER')                                                        ");
+                        + "  from $(registration_request)                                                 "
+                        + "  where status=?                                                                     ");
 
         putSql("deleteRegistrationRequestSql",
                 "delete from $(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");

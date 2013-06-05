@@ -1,29 +1,33 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -34,10 +38,6 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -49,7 +49,6 @@ import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicati
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
@@ -70,15 +69,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private IClusterService clusterService;
 
     private INodeCommunicationService nodeCommunicationService;
-    
-    private IStatisticManager statisticManager;
 
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager) {
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService) {
         super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
@@ -86,7 +83,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         this.nodeService = nodeService;
         this.clusterService = clusterService;
         this.nodeCommunicationService = nodeCommunicationService;
-        this.statisticManager = statisticManager;
     }
 
     public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
@@ -135,14 +131,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
+        if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
                 long reloadBatchesProcessed = 0;
-                long lastBatchCount = 0;
+                int pushCount = 0;
                 do {
-                    if (lastBatchCount > 0) {
+                    if (pushCount > 0) {
                         log.info(
                                 "Pushing to {} again because the last push contained reload batches",
                                 node);
@@ -150,21 +145,17 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
                     log.debug("Push requested for {}", node);
                     pushToNode(node, status);
-                    if (!status.failed() && status.getBatchesProcessed() > 0 
-                            && status.getBatchesProcessed() != lastBatchCount) {
+                    if (status.getBatchesProcessed() > 0) {
                         log.info(
                                 "Pushed data to {}. {} data and {} batches were processed",
                                 new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});
+                                        status.getBatchesProcessed() });
                     } else if (status.failed()) {
-                        log.warn(
-                                "There was a failure while pushing data to {}. {} data and {} batches were processed",
-                                new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});                        
+                        log.warn("There was an error while pushing data to the server");
                     }
                     log.debug("Push completed for {}", node);
-                    lastBatchCount = status.getBatchesProcessed();
-                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
+                    pushCount++;
+                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed);
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
             }
@@ -179,24 +170,54 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         Node identity = nodeService.findIdentity(false);
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
         IOutgoingWithResponseTransport transport = null;
-        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                .getNodeId(), remote.getNodeId(), ProcessType.PUSH_JOB));
         try {
             transport = transportManager.getPushTransport(remote, identity,
                     identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, transport);
+            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
+                Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
+                for (OutgoingBatch outgoingBatch : extractedBatches) {
+                    batchIds.add(outgoingBatch.getBatchId());
+                }
                 
                 log.info("Push data sent to {}", remote);
+                BufferedReader reader = transport.readResponse();
+                String ackString = reader.readLine();
+                String ackExtendedString = reader.readLine();
+
+                log.debug("Reading ack: {}", ackString);
+                log.debug("Reading extend ack: {}", ackExtendedString);
+
+                String line = null;
+                do {
+                    line = reader.readLine();
+                    if (line != null) {
+                        log.info("Read another unexpected line {}", line);
+                    }
+                } while (line != null);
+
+                if (StringUtils.isBlank(ackString)) {
+                    log.error("Did not receive an acknowledgement for the batches sent");
+                }
+
+                List<BatchAck> batches = transportManager.readAcknowledgement(ackString,
+                        ackExtendedString);
+
+                for (BatchAck batchInfo : batches) {
+                    batchIds.remove(batchInfo.getBatchId());
+                    log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
+                            (batchInfo.isOk() ? "OK" : "error"));
+                    acknowledgeService.ack(batchInfo);
+                }
                 
-                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
-                status.updateOutgoingStatus(extractedBatches, batchAcks);
+                for (Long batchId : batchIds) {
+                    log.error("We expected but did not receive an ack for batch {}", batchId);
+                }
+
+                status.updateOutgoingStatus(extractedBatches, batches);
             }
-            
-            processInfo.setStatus(Status.DONE);
         } catch (Exception ex) {
-            processInfo.setStatus(Status.ERROR);
             fireOffline(ex, remote, status);
         } finally {
             try {

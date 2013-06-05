@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform;
 
 /*
@@ -1873,32 +1853,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Prints the default value of the column.
      */
     protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        boolean isNull = defaultValue == null;
-        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode) && 
-                !(TypeMap.isDateTimeType(typeCode)                 
-                && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
-                || defaultValueStr.toUpperCase().startsWith("SYSDATE")
-                || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")));
+        if (defaultValue != null) {
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
 
-        if (shouldUseQuotes) {
-            // characters are only escaped when within a string literal
-            ddl.append(databaseInfo.getValueQuoteToken());
-            ddl.append(escapeStringValue(defaultValueStr));
-            ddl.append(databaseInfo.getValueQuoteToken());
-        } else {
-            ddl.append(defaultValueStr);
+            if (shouldUseQuotes) {
+                // characters are only escaped when within a string literal
+                ddl.append(databaseInfo.getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValue.toString()));
+                ddl.append(databaseInfo.getValueQuoteToken());
+            } else {
+                ddl.append(defaultValue.toString());
+            }
         }
     }
-    
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
-        if (defaultValue == null) {
-            defaultValue = "NULL";
-        }
-        return defaultValue.toString();
-    }    
 
     /**
      * Prints that the column is an auto increment column.

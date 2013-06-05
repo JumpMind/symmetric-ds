@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform.oracle;
 
 /*
@@ -118,7 +98,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else {
             return null;
         }
-    }
+    }    
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {
@@ -187,15 +167,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 if (column.getSizeAsInt() == 0) {
                     /*
                      * Latest oracle jdbc drivers for 11g return (0,-127) for
-                     * types defined as integer resulting in bad mappings.
-                     * NUMBER without scale or precision looks the same as
-                     * INTEGER in the jdbc driver. We must check the Oracle
-                     * meta data to see if type is an INTEGER.
+                     * types defined as integer resulting in bad mappings
                      */
-                    if (isColumnInteger((String)values.get("TABLE_NAME"),
-                            (String)values.get("COLUMN_NAME"))) {
-                        column.setMappedTypeCode(Types.INTEGER);
-                    }
+                    column.setMappedTypeCode(Types.INTEGER);
                 } else if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
                 } else {
@@ -250,16 +224,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         return column;
     }
 
-    private boolean isColumnInteger(String tableName, String columnName) {
-        return (platform.getSqlTemplate().queryForInt(
-                "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
-                "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
-    }
-
     /*
      * Helper method that determines the auto increment status using Firebird's
      * system tables.
-     *
+     * 
      * @param table The table
      */
     protected void determineAutoIncrementColumns(Connection connection, Table table)
@@ -273,11 +241,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
     /*
      * Tries to determine whether the given column is an identity column.
-     *
+     * 
      * @param table The table
-     *
+     * 
      * @param column The column
-     *
+     * 
      * @return <code>true</code> if the column is an identity column
      */
     protected boolean isAutoIncrement(Connection connection, Table table, Column column)

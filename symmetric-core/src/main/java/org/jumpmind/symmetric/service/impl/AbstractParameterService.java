@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.math.BigDecimal;
@@ -148,13 +128,7 @@ abstract public class AbstractParameterService {
                 lastTimeParameterWereCached = System.currentTimeMillis();
                 cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
             } catch (SqlException ex) {
-                if (parameters != null) {
-                    log.warn("Could not read database parameters.  We will try again later", ex);
-                } else {
-                    log.error("Could not read database parameters and they have not yet been initialized");
-                    throw ex;
-                }
-                throw ex;
+                log.error("Could not read database parameters.  We will try again later");
             }
         }
         return parameters;
@@ -205,14 +179,13 @@ abstract public class AbstractParameterService {
 
     public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
         this.databaseHasBeenInitialized = databaseHasBeenInitialized;
-        this.parameters = null;
     }
 
     abstract protected TypedProperties rereadDatabaseParameters(String externalId,
             String nodeGroupId);
 
     protected TypedProperties rereadDatabaseParameters(Properties p) {
-        if (databaseHasBeenInitialized) {
+        try {
             TypedProperties properties = rereadDatabaseParameters(ParameterConstants.ALL,
                     ParameterConstants.ALL);
             properties.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
@@ -222,8 +195,12 @@ abstract public class AbstractParameterService {
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
             databaseHasBeenInitialized = true;
             return properties;
-        } else {
-            return new TypedProperties();
+        } catch (SqlException ex) {
+            if (databaseHasBeenInitialized) {
+                throw ex;
+            } else {
+                return new TypedProperties();
+            }
         }
     }
 

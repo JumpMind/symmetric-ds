@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.common;
 
@@ -61,14 +61,6 @@ final public class ParameterConstants {
     public final static String PUSH_THREAD_COUNT_PER_SERVER = "push.thread.per.server.count";
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
-    
-    public final static String FILE_PULL_THREAD_COUNT_PER_SERVER = "file.pull.thread.per.server.count";
-    public final static String FILE_PULL_MINIMUM_PERIOD_MS = "file.pull.period.minimum.ms";
-    public final static String FILE_PULL_LOCK_TIMEOUT_MS = "file.pull.lock.timeout.ms";
-    
-    public final static String FILE_PUSH_THREAD_COUNT_PER_SERVER = "file.push.thread.per.server.count";
-    public final static String FILE_PUSH_MINIMUM_PERIOD_MS = "file.push.period.minimum.ms";
-    public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";    
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
@@ -138,6 +130,8 @@ final public class ParameterConstants {
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
+    public final static String DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE = "dataextractor.keepalive.period.ms";
+    public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
     public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
 
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
@@ -171,14 +165,12 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_TABLES_IN_MS = "cache.table.time.ms";
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
-    public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
     
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
     public final static String DB_DELIMITED_IDENTIFIER_MODE = "db.delimited.identifier.mode";
-    public final static String DB_JNDI_NAME = "db.jndi.name";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
     
@@ -203,19 +195,17 @@ final public class ParameterConstants {
 
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
-    public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
-    public final static String HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS = "heartbeat.update.node.with.batch.status";
     
     public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
     
-    public final static String CURRENT_ACTIVITY_HISTORY_KEEP_COUNT = "statistic.activity.history.keep.count";
-    
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     
     public final static String DB_MASTER_COLLATION = "db.master.collation";   
-        
+    
+    public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
+    
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
     
     public final static String SERVER_LOG_FILE = "server.log.file";
@@ -223,8 +213,6 @@ final public class ParameterConstants {
     public final static String REST_API_ENABLED = "rest.api.enable";
 
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
-    
-    public final static String FILE_SYNC_ENABLE = "file.sync.enable";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

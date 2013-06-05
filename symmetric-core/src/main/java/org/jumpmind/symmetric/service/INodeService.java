@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service;
 
 import java.util.Collection;
@@ -76,7 +77,7 @@ public interface INodeService {
 
     public void deleteNodeSecurity(String nodeId);
     
-    public void deleteNode(String nodeId, boolean syncChange); 
+    public void deleteNode(String nodeId); 
     
     public String findSymmetricVersion();
 
@@ -94,8 +95,6 @@ public interface INodeService {
     public Node findIdentity();
 
     public Node findIdentity(boolean useCache);
-    
-    public Node findIdentity(boolean useCache, boolean logSqlError);
     
     public Node getCachedIdentity();
 
@@ -125,13 +124,13 @@ public interface INodeService {
     
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security);
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
     
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
     
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled);
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
 
     public INodeIdCreator getNodeIdCreator();
 

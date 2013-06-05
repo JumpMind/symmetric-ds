@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.db.sql;
 
@@ -285,8 +285,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     try {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
-                        stmt.execute(sql);
-                        return stmt.getUpdateCount();
+                        return stmt.executeUpdate(sql);
                     } finally {
                         close(stmt);
                     }
@@ -301,8 +300,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         } else {
                             setValues(ps, args);
                         }
-                        ps.execute();
-                        return ps.getUpdateCount();
+                        return ps.executeUpdate();
                     } finally {
                         close(ps);
                     }
@@ -368,9 +366,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
 
                             if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
-                                log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             } else {
-                                log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                                 if (failOnError) {
                                     throw ex;
                                 }
@@ -426,7 +424,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * <i>columnLabel - the label for the column specified with the SQL AS
      * clause. If the SQL AS clause was not specified, then the label is the
      * name of the column</i>.
-     *
+     * 
      * @return the column name to use
      * @param resultSetMetaData
      *            the current meta data to use
@@ -456,7 +454,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * TIMESTAMP datatype and a <code>java.sql.Date</code> for DATE columns
      * leaving out the time portion: These columns will explicitly be extracted
      * as standard <code>java.sql.Timestamp</code> object.
-     *
+     * 
      * @param rs
      *            is the ResultSet holding the data
      * @param index
@@ -512,11 +510,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if ("java.sql.Timestamp".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             }
-        } else if (obj instanceof Timestamp) {
-            String typeName = metaData.getColumnTypeName(index);
-            if (typeName != null && typeName.equals("timestamptz")) {
-                obj = rs.getString(index);
-            }
+        } else if (obj instanceof Timestamp
+                && metaData.getColumnTypeName(index).equals("timestamptz")) {
+            obj = rs.getString(index);
         }
         return obj;
     }
@@ -725,7 +721,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {
-                ps.execute();
+                ps.executeUpdate();
                 try {
                     rs = ps.getGeneratedKeys();
                     if (rs.next()) {
@@ -745,7 +741,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             } else {
                 Statement st = null;
-                ps.execute();
+                ps.executeUpdate();
                 try {
                     st = conn.createStatement();
                     rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
@@ -840,7 +836,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         return null;
     }
-
+    
     @SuppressWarnings("unchecked")
     public <T> T getObjectFromResultSet(ResultSet rs, Class<T> clazz) throws SQLException {
         T result;
@@ -855,15 +851,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else if (Float.class.isAssignableFrom(clazz)) {
             result = (T)new Float(rs.getFloat(1));
         } else if (Double.class.isAssignableFrom(clazz)) {
-            result = (T)new Double(rs.getDouble(1));
+            result = (T)new Double(rs.getDouble(1));            
         } else if (BigDecimal.class.isAssignableFrom(clazz)) {
-            result = (T)rs.getBigDecimal(1);
+            result = (T)rs.getBigDecimal(1);            
         } else {
             result = (T) rs.getObject(1);
         }
         return result;
     }
-
+    
     public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
             LobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
@@ -880,7 +876,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         }
     }
-
+    
     protected int verifyArgType(Object arg, int argType) {
         if (argType == -101 || argType == Types.OTHER) {
             return SqlTypeValue.TYPE_UNKNOWN;
@@ -900,11 +896,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         }
     }
-
+    
     /**
      * Set the value for prepared statements specified parameter index using the
      * passed in value. This method can be overridden by sub-classes if needed.
-     *
+     * 
      * @param ps
      *            the PreparedStatement
      * @param parameterPosition
@@ -917,5 +913,5 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, parameterPosition, SqlTypeValue.TYPE_UNKNOWN, argValue);
     }
-
+   
 }

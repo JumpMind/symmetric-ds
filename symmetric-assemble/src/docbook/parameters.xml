@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Licensed to JumpMind Inc under one or more contributor
-    license agreements.  See the NOTICE file distributed
-    with this work for additional information regarding
-    copyright ownership.  JumpMind Inc licenses this file
-    to you under the GNU General Public License, version 3.0 (GPLv3)
-    (the "License"); you may not use this file except in compliance
-    with the License.
-
-    You should have received a copy of the GNU General Public License,
-    version 3.0 (GPLv3) along with this library; if not, see
-    <http://www.gnu.org/licenses/>.
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
--->
 <appendix version="5.0" xml:id="parameters" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
@@ -292,18 +270,6 @@
                         </para>
                     </listitem>
                 </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>db.jndi.name</command>
-                    </term>
-                    <listitem>
-                        <para>Name of a JNDI data source to use instead of using SymmetricDS's connection pool.  When
-                              this is set the db.url is ignored.  Using a JNDI data source is relevant when deploying 
-                              to an application server.
-                            [&#xA0;Default:&#&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>                
                 <varlistentry>
                     <term>
                         <command>auto.config.database</command>
@@ -680,8 +646,8 @@
                             the batch ID already existing in the incoming batch table. If this happens, it means an
                             acknowledgement was lost due to failure or there is a bug. Accepting a duplicate batch in this
                             case can mean overwriting data with old data. Another cause of duplicates is when the batch
-                            sequence number is reset, which might happen in a lab environment. Skipping a duplicate batch in
-                            this case would prevent data changes from loading. Generally, in a production environment, this
+                            sequence number is reset, which might happen in a lab environement. Skipping a duplicate batch in
+                            this case would prevent data changes from loading. Generally, in a production envionment, this
                             setting should be true. [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>

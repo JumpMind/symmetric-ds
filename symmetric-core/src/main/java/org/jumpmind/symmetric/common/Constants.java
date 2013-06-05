@@ -1,23 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
 package org.jumpmind.symmetric.common;
 
 import org.jumpmind.symmetric.model.DataEvent;
@@ -27,12 +26,10 @@ import org.jumpmind.symmetric.model.DataEvent;
  */
 final public class Constants {
 
+    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
+
     private Constants() {
     }
-    
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;   
-    
-    public static final String NONE_TOKEN = "$(none)";
     
     public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
     
@@ -49,8 +46,6 @@ final public class Constants {
     public static final String PLEASE_SET_ME = "please set me";
     
     public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
-    
-    public static final String DEPLOYMENT_TYPE_REST = "rest";
     
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
@@ -76,8 +71,6 @@ final public class Constants {
     public static final String CHANNEL_RELOAD = "reload";
     
     public static final String CHANNEL_DEFAULT = "default";
-    
-    public static final String CHANNEL_FILESYNC = "filesync";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 
@@ -122,8 +115,4 @@ final public class Constants {
     public static final String TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL="all";
     
     public static final String TRANSFORM_SERVICE = "transformService";
-    
-    public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
-    
-    public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "outgoing_batch_load_id";
 }

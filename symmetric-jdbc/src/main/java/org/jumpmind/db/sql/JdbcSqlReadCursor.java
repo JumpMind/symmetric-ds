@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.db.sql;
 
@@ -25,15 +25,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     
+    static private final Logger log = LoggerFactory.getLogger(JdbcSqlReadCursor.class);
+
     protected Connection c;
 
     protected ResultSet rs;
 
-    protected Statement st;
+    protected PreparedStatement st;
 
     protected boolean autoCommitFlag;
 
@@ -63,32 +67,19 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 c.setAutoCommit(false);
             }
 
+            st = c.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                    java.sql.ResultSet.CONCUR_READ_ONLY);
+            st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
+            if (values != null) {
+                sqlTemplate.setValues(st, values, types, sqlTemplate.getLobHandler().getDefaultHandler());
+            }
+            st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             try {
-                if (values != null) {
-                    PreparedStatement pstmt = c.prepareStatement(sql,
-                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
-                    sqlTemplate.setValues(pstmt, values, types, sqlTemplate.getLobHandler()
-                            .getDefaultHandler());
-                    st = pstmt;                    
-                    st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
-                    st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
-                    rs = pstmt.executeQuery();
-
-                } else {
-                    st = c.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
-                    st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
-                    st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
-                    rs = st.executeQuery(sql);
-                }
+                rs = st.executeQuery();
             } catch (SQLException e) {
-                /*
-                 * The Xerial SQLite JDBC driver throws an exception if a query
-                 * returns an empty set This gets around that
-                 */
-                if (e.getMessage() == null
-                        || !e.getMessage().equals("query does not return results")) {
+                // The Xerial SQLite JDBC driver throws an exception if a query returns an empty set
+                // This gets around that
+                if (e.getMessage()==null || !e.getMessage().equals("query does not return results")) {
                     throw e;
                 }
             }
@@ -105,11 +96,13 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     public T next() {
         try {
-            while (rs!=null && rs.next()) {
+            if (rs!=null && rs.next()) {
                 Row row = getMapForRow(rs);
                 T value = mapper.mapRow(row);
                 if (value != null) {
                     return value;
+                } else {
+                    log.info("The row mapper returned null for a non null row.  Aborting reading the rest of the result set.");
                 }
             } 
             return null;

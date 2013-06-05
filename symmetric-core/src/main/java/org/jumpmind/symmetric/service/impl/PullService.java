@@ -1,29 +1,29 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -112,8 +112,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
+        if (StringUtils.isNotBlank(node.getSyncUrl())) {
             try {
                 int pullCount = 0;
                 long batchesProcessedCount = 0;
@@ -127,16 +126,15 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     
                     dataLoaderService.loadDataFromPull(node, status);
                     
-                    if (!status.failed() && 
-                            (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
+                    if (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0) {
                         log.info(
                                 "Pull data received from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
 
-                    } else if (status.failed()) {
-                        log.warn(
-                                "There was a failure while pulling data from {}.  {} rows and {} batches were processed",
+                    } else {
+                        log.debug(
+                                "Pull data received from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
                     }
@@ -157,8 +155,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 fireOffline(ex, node, status);
             } catch (AuthenticationException ex) {
                 fireOffline(ex, node, status);
-            } catch (UnknownHostException ex) {
-                fireOffline(ex, node, status);                
             } catch (SyncDisabledException ex) {
                 fireOffline(ex, node, status);
             } catch (SocketException ex) {

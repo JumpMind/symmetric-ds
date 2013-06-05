@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform.mysql;
 
 /*
@@ -56,6 +36,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
@@ -229,14 +210,14 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             } else if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
-                changeIt.remove();               
+                changeIt.remove();
             } else if (change instanceof ColumnChange) {
                 /*
                  * we gather all changed columns because we can use the ALTER
                  * TABLE MODIFY COLUMN statement for them
                  */
                 Column column = ((ColumnChange) change).getChangedColumn();
-                if (!changedColumns.contains(column)) {
+                if (changedColumns.contains(column)) {
                     changedColumns.add(column);
                 }
                 changeIt.remove();
@@ -249,7 +230,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
-    } 
+    }
 
     /*
      * Processes the addition of a column to a table.
@@ -296,6 +277,26 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+
+    @Override
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
+        if (defaultValue != null) {
+            String defaultValueStr = defaultValue.toString();
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_TIMESTAMP")
+                    && !defaultValueStr.equalsIgnoreCase("CURRENT_DATE");
+                    
+            
+            if (shouldUseQuotes) {
+                // characters are only escaped when within a string literal
+                ddl.append(databaseInfo.getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValueStr));
+                ddl.append(databaseInfo.getValueQuoteToken());
+            } else {
+                ddl.append(defaultValueStr);
+            }
+        }
     }
 
     /*

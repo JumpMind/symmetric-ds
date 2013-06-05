@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Licensed to JumpMind Inc under one or more contributor
-    license agreements.  See the NOTICE file distributed
-    with this work for additional information regarding
-    copyright ownership.  JumpMind Inc licenses this file
-    to you under the GNU General Public License, version 3.0 (GPLv3)
-    (the "License"); you may not use this file except in compliance
-    with the License.
-
-    You should have received a copy of the GNU General Public License,
-    version 3.0 (GPLv3) along with this library; if not, see
-    <http://www.gnu.org/licenses/>.
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
--->
 <appendix version="5.0" xml:id="databases" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -87,7 +65,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>
+                    </row>                    
                     <row>
                         <entry>PostgreSQL</entry>
                         <entry>8.2.5 and above</entry>
@@ -107,7 +85,7 @@
                         <entry>Y</entry>
                         <entry>N</entry>
                         <entry>N</entry>
-                    </row>
+                    </row>                    
                     <row>
                         <entry>SQL Server</entry>
                         <entry>2005 and above</entry>
@@ -127,7 +105,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>N</entry>
-                    </row>
+                    </row>                    
                     <row>
                         <entry>HSQLDB</entry>
                         <entry>1.8</entry>
@@ -147,7 +125,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>
+                    </row>                    
                     <row>
                         <entry>H2</entry>
                         <entry>1.x</entry>
@@ -167,7 +145,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>
+                    </row>      
                     <row>
                         <entry>IBM DB2</entry>
                         <entry>9.5</entry>
@@ -177,7 +155,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>
+                    </row>                                    
                     <row>
                         <entry>Firebird</entry>
                         <entry>2.0</entry>
@@ -187,7 +165,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>
+                    </row>                                    
                     <row>
                         <entry>Informix</entry>
                         <entry>11</entry>
@@ -197,7 +175,7 @@
                         <entry>Y</entry>
                         <entry>N</entry>
                         <entry>N</entry>
-                    </row>
+                    </row>                                    
                     <row>
                         <entry>Interbase</entry>
                         <entry>9.0</entry>
@@ -218,26 +196,6 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>
-                    <row>
-                        <entry>Active Server Enterprise</entry>
-                        <entry>12.5</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                    </row>
-                    <row>
-                        <entry>SQL Anywhere</entry>
-                        <entry>9</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                        <entry>Y</entry>
-                    </row>
                 </tbody>
             </tgroup>
         </table>
@@ -252,7 +210,7 @@
             in which the triggers occur appears to be arbitrary.
         </para>
         <para>
-            The SymmetricDS user generally needs privileges for connecting and creating
+            The SymmetricDS user generally needs privileges for connecting and creating 
             tables (including indexes), triggers, sequences, and procedures (including packages and functions).
             The following is an example of the needed grant statements:
             <programlisting><![CDATA[
@@ -263,11 +221,11 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
         </para>
         <para>
             Partitioning the <xref linkend="table_data" xrefstyle="table"/> table by channel can help
-            insert, routing and extraction performance on concurrent, high throughput systems.
-            <xref linkend="table_trigger" xrefstyle="table"/>s should be organized to put data that is
+            insert, routing and extraction performance on concurrent, high throughput systems.  
+            <xref linkend="table_trigger" xrefstyle="table"/>s should be organized to put data that is 
             expected to be inserted concurrently on separate <xref linkend="table_channel" xrefstyle="table"/>s.  The following is an example of
             partitioning.  Note that both the table and the index should be partitioned.  The default
-            value allows for more channels to be added without having to modify the partitions.
+            value allows for more channels to be added without having to modify the partitions. 
             <programlisting><![CDATA[
 CREATE TABLE SYM_DATA
 (
@@ -283,34 +241,34 @@ CREATE TABLE SYM_DATA
     source_node_id VARCHAR2(50),
     external_data VARCHAR2(50),
     create_time TIMESTAMP
-) PARTITION BY LIST (channel_id) (
+) PARTITION BY LIST (channel_id) (  	
 PARTITION P_CONFIG VALUES ('config'),
 PARTITION P_CHANNEL_ONE VALUES ('channel_one'),
 PARTITION P_CHANNEL_TWO VALUES ('channel_two'),
 ...
 PARTITION P_CHANNEL_N VALUES ('channel_n'),
-PARTITION P_DEFAULT VALUES (DEFAULT));
+PARTITION P_DEFAULT VALUES (DEFAULT));            
             ]]></programlisting>
             <programlisting><![CDATA[
 CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
-(
- PARTITION I_CONFIG,
- PARTITION I_CHANNEL_ONE,
+( 
+ PARTITION I_CONFIG, 
+ PARTITION I_CHANNEL_ONE, 
  PARTITION I_CHANNEL_TWO,
- ...
- PARTITION I_CHANNEL_N,
+ ... 
+ PARTITION I_CHANNEL_N, 
  PARTITION I_DEFAULT
-);
-            ]]></programlisting>
-        </para>
-        <para>Note also that, for Oracle, you can control the amount of precision used by the Oracle triggers
+);              
+            ]]></programlisting>            
+        </para>     
+        <para>Note also that, for Oracle, you can control the amount of precision used by the Oracle triggers 
         with the parameter <literal>oracle.template.precision</literal>, which defaults to a precision of 30,10.
-        </para>
+        </para>   
         <para>If the following Oracle error 'ORA-01489: result of string concatenation is too long' is encountered
         you might need to set <code>use_capture_lobs</code> to 1 on in the <xref linkend="table_trigger" xrefstyle="table"/> table
         and resync the triggers.  The error can happen when the captured data in a row exceeds 4k and lob columns do not exist
-        in the table.  By enabling <code>use_capture_lobs</code> the concatanated varchar string is cast to a clob which
-        allows a length of more than 4k.
+        in the table.  By enabling <code>use_capture_lobs</code> the concatanated varchar string is cast to a clob which 
+        allows a length of more than 4k. 
         </para>
     </section>
     <section id="ap02-mysql">
@@ -320,18 +278,18 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             a storage engine that handles transaction-safe tables.  The recommended storage engine
             is InnoDB, which is included by default in MySQL 5.0 distributions.
             Either select the InnoDB engine during installation or modify your server configuration.
-            To make InnoDB the default storage engine, modify your MySQL server configuration file
+            To make InnoDB the default storage engine, modify your MySQL server configuration file 
             (<filename>my.ini</filename> on Windows, <filename>my.cnf</filename> on Unix):
             <programlisting>default-storage_engine = innodb</programlisting>
             Alternatively, you can convert tables to the InnoDB storage engine with the following
             command:
-            <programlisting>alter table t engine = innodb;</programlisting>
+            <programlisting>alter table t engine = innodb;</programlisting>            
         </para>
         <para>
             On MySQL 5.0, the SymmetricDS user needs the SUPER privilege in order to create triggers.
 
             <programlisting>grant super on *.* to symmetric;</programlisting>
-
+            
             On MySQL 5.1, the SymmetricDS user needs the TRIGGER and CREATE ROUTINE privileges
             in order to create triggers and functions.
 
@@ -340,17 +298,17 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
 
         </para>
         <para>
-            MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.
-            JDBC cannot deal with a date value with a year of 0.  In order to work around this SymmetricDS
+            MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.  
+            JDBC can not deal with a date value with a year of 0.  In order to work around this SymmetricDS
             can be configured to treat date and time columns as varchar columns for data capture and data
-            load.  To enable this feature set the <code>db.treat.date.time.as.varchar.enabled</code> property
+            load.  To enable this feature set the <code>db.treat.date.time.as.varchar.enabled</code> property 
             to <code>true</code>.
         </para>
     </section>
     <section id="ap02-mariadb">
         <title>MariaDB</title>
         <para>
-        	See MySQL notes.  In addition, you will need to use a MySQL driver for this dialect.
+        	See MySQL notes.
         </para>
     </section>
     <section id="ap02-postgresql">
@@ -365,7 +323,7 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             On PostgreSQL, session variables are enabled using a custom variable class.
             Add the following line to the <filename>postgresql.conf</filename> file
             of PostgreSQL server:
-
+            
             <programlisting><![CDATA[
 custom_variable_classes = 'symmetric'
 ]]></programlisting>
@@ -376,7 +334,7 @@ custom_variable_classes = 'symmetric'
             Before database triggers can be created by in PostgreSQL,
             the plpgsql language handler must be installed on the database.
             The following statements should be run by the administrator on the database:
-
+            
             <programlisting><![CDATA[
 CREATE FUNCTION plpgsql_call_handler() RETURNS language_handler AS
     '$libdir/plpgsql' LANGUAGE C;
@@ -397,7 +355,7 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
 <programlisting><![CDATA[
         GRANT USAGE ON SCHEMA {schema name} TO {user name};
         GRANT CREATE ON SCHEMA {schema name} TO {user name};
-]]></programlisting>
+]]></programlisting>        
         </para>
     </section>
     <section id="ap02-greenplum">
@@ -406,7 +364,7 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             Greenplum is a data warehouse based on PostgreSQL.  It is supported as a target platform in SymmetricDS.  For the best performance,
             the SymmetricDS Pro PostgreSQL bulk loader should be used.
         </para>
-    </section>
+    </section>    
     <section id="ap02-sql-server">
         <title>MS SQL Server</title>
         <para>
@@ -419,27 +377,27 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
         <para>
         	SQL Server allows the update of primary key fields via the SQL update statement.  If your application allows updating of the primary key
         	field(s) for a table, and you want those updates synchronized, you will need to set the "Handle Key Updates" field on the trigger record for
-        	that specific table.  The default for Handle Key Updates is false.
+        	that specific table.  The default for Handle Key Updates is false. 
         </para>
     </section>
     <section id="ap02-hsqldb">
         <title>HSQLDB</title>
         <para>
-            HSQLDB was implemented with the intention that the database be run embedded in the same JVM process
+            HSQLDB was implemented with the intention that the database be run embedded in the same JVM process 
             as SymmetricDS.  Instead of dynamically generating static SQL-based triggers like the other databases, HSQLDB
             triggers are Java classes that re-use existing SymmetricDS services to read the configuration and insert data events
             accordingly.
         </para>
         <para>
-            The transaction identifier support is based on SQL events that happen in a 'window' of time.  The trigger(s) track when the
-            last trigger fired.  If a trigger fired within X milliseconds of the previous firing, then the current event gets the same
+            The transaction identifier support is based on SQL events that happen in a 'window' of time.  The trigger(s) track when the 
+            last trigger fired.  If a trigger fired within X milliseconds of the previous firing, then the current event gets the same 
             transaction identifier as the last.  If the time window has passed, then a new transaction identifier is generated.
-        </para>
+        </para>        
     </section>
     <section id="ap02-h2">
         <title>H2</title>
         <para>
-            The H2 database allows only Java-based triggers.  Therefore the H2 dialect requires that the SymmetricDS jar file be in the database's classpath.
+            The H2 database allows only Java-based triggers.  Therefore the H2 dialect requires that the SymmetricDS jar file be in the database's classpath.  
         </para>
     </section>
     <section id="ap02-derby">
@@ -452,54 +410,54 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             running Derby as a standalone database, which includes symmetric-ds.jar and
             commons-lang.jar.
         </para>
-    </section>
+    </section>    
     <section id="ap02-db2">
         <title>IBM DB2</title>
         <para>
             The DB2 Dialect uses global variables to enable and disable node and trigger synchronization.
-            These variables are created automatically during the first startup.
+            These variables are created automatically during the first startup.  
             The DB2 JDBC driver should be placed in the "lib" folder.
         </para>
         <para>
             Currently, the DB2 Dialect for SymmetricDS does not provide support for transactional synchronization.
             Large objects (LOB) are supported, but are limited to 16,336 bytes in size.
-            The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.
-        </para>
+            The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.  
+        </para> 
         <para>
             There is currently a bug with the retrieval of auto increment columns with the DB2 9.5 JDBC drivers that causes
             some of the SymmetricDS configuration tables to be rebuilt when auto.config.database=true.  The DB2 9.7 JDBC drivers
             seem to have fixed the issue.  They may be used with the 9.5 database.
-        </para>
+        </para>       
         <para>
             A system temporary tablespace with too small of a page size may cause the following trigger build errors:
             <programlisting><![CDATA[
 SQL1424N Too many references to transition variables and transition table
 columns or the row length for these references is too long. Reason
-code="2". LINE NUMBER=1. SQLSTATE=54040
+code="2". LINE NUMBER=1. SQLSTATE=54040            
             ]]></programlisting>
             Simply create a system temporary tablespace that has a bigger page size.  A page size of 8k will probably suffice.
         </para>
-    </section>
+    </section>      
     <section id="ap02-firebird">
         <title>Firebird</title>
         <para>
             The Firebird Dialect requires the installation of a User Defined Function (UDF) library
             in order to provide functionality needed by the database triggers.
-            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form
-            (as a C program) and as pre-compiled libraries for both Windows and Linux.
+            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form 
+            (as a C program) and as pre-compiled libraries for both Windows and Linux.  
             The SYM_UDF library is copied into the UDF folder within the Firebird installation directory.
         </para>
         <para>
-            For Linux users:
+            For Linux users: 
         </para>
         <para>
             <command>cp databases/firebird/sym_udf.so /opt/firebird/UDF</command>
         </para>
         <para>
-            For Windows users:
+            For Windows users: 
         </para>
         <para>
-            <command>copy databases\firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF</command>
+            <command>copy databases\firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF</command>        
         </para>
         <para>
             The following limitations currently exist for this dialect:
@@ -508,7 +466,7 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
           <itemizedlist spacing="compact">
               <listitem>
                   <para>
-                      The outgoing batch does not honor the channel size, and all
+                      The outgoing batch does not honor the channel size, and all 
                       outstanding data events are included in a batch.
                   </para>
               </listitem>
@@ -524,23 +482,23 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
               </listitem>
           </itemizedlist>
         </para>
-    </section>
+    </section>      
     <section id="ap02-informix">
         <title>Informix</title>
         <para>
             The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions
-            may also work.  You need to download the Informix JDBC Driver (from the
+            may also work.  You need to download the Informix JDBC Driver (from the 
             <ulink url="http://www-01.ibm.com/software/data/informix/downloads.html">IBM Download Site</ulink>)
             and put the <filename>ifxjdbc.jar</filename> and <filename>ifxlang.jar</filename> files
             in the SymmetricDS <filename>lib</filename> folder.
         </para>
-        <para>
+        <para>    
             Make sure your database has logging enabled, which enables transaction
             support.  Enable logging when creating the database, like this:
             <programlisting><![CDATA[
 CREATE DATABASE MYDB WITH LOG;
             ]]></programlisting>
-
+            
             Or enable logging on an existing database, like this:
             <programlisting><![CDATA[
 ondblog mydb unbuf log
@@ -561,11 +519,11 @@ ontape -s -L 0
                   <para>
                       There is no transaction ID recorded on data captured, so it is possible for data
                       to be committed within different transactions on the target database.
-                      If transaction synchronization is required, either specify a custom transaction ID
+                      If transaction synchronization is required, either specify a custom transaction ID 
                       or configure the synchronization so data is always sent in a single batch.
-                      A custom transaction ID can be specified with the tx_id_expression on
+                      A custom transaction ID can be specified with the tx_id_expression on  
                       <xref linkend="table_trigger" xrefstyle="table"/>.
-                      The batch size is controlled with the max_batch_size on
+                      The batch size is controlled with the max_batch_size on                        
                       <xref linkend="table_channel" xrefstyle="table"/>.
                       The pull and push jobs have runtime properties to control their interval.
                   </para>
@@ -578,24 +536,24 @@ ontape -s -L 0
         <para>
             The Interbase Dialect requires the installation of a User Defined Function (UDF) library
             in order to provide functionality needed by the database triggers.
-            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form
-            (as a C program) and as pre-compiled libraries for both Windows and Linux.
+            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form 
+            (as a C program) and as pre-compiled libraries for both Windows and Linux.  
             The SYM_UDF library is copied into the UDF folder within the Interbase installation directory.
         </para>
         <para>
-            For Linux users:
+            For Linux users: 
         </para>
         <para>
             <command>cp databases/interbase/sym_udf.so /opt/interbase/UDF</command>
         </para>
         <para>
-            For Windows users:
+            For Windows users: 
         </para>
         <para>
-            <command>copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF</command>
+            <command>copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF</command>        
         </para>
         <para>
-            The Interbase dialect currently has the following limitations:
+            The Interbase dialect currently has the following limitations:  
         </para>
         <itemizedlist spacing="compact">
             <listitem>
@@ -608,7 +566,7 @@ ontape -s -L 0
                     There is no transaction ID recorded on data captured.
                     Either specify a tx_id_expression on the
                     <xref linkend="table_trigger" xrefstyle="table"/> table,
-                    or set a max_batch_size on the
+                    or set a max_batch_size on the                        
                     <xref linkend="table_channel" xrefstyle="table"/> table that
                     will accommodate your transactional data.
                 </para>
@@ -620,8 +578,8 @@ ontape -s -L 0
         <para>
             For SQLite, the implementation of sync-on-incoming back and the population of a source node if in the sym data rows relies
             on use of a context table (by default, called sym_context) to hold a boolean and node id in place of the more common methods
-            of using temp tables (which are inaccessible from triggers) or functions (which are not available).  The context table assumes
-            there's a single thread updating the database at any onetime.  If that is not the case in the future, the current implementation of
+            of using temp tables (which are unaccessible from triggers) or functions (which are not available).  The context table assumes
+            there's a single thread updating the database at any one time.  If that is not the case in the future, the current implementation of 
             sync on incoming batch will be unreliable.
         </para>
         <para>Nodes using SQLite should have the <literal>jobs.synchronized.enable</literal> parameter set to <literal>true</literal>.  This parameter
@@ -635,30 +593,18 @@ ontape -s -L 0
                     There is no transaction ID recorded on data captured.
                     Either specify a tx_id_expression on the
                     <xref linkend="table_trigger" xrefstyle="table"/> table,
-                    or set a max_batch_size on the
+                    or set a max_batch_size on the                        
                     <xref linkend="table_channel" xrefstyle="table"/> table that
                     will accommodate your transactional data.
                 </para>
                 </listitem>
             <listitem>
                 <para>
-                    Due to the single threaded access to SQLite, the
+                    Due to the single threaded access to SQLite, the 
                     following parameter should be set to true: <literal>jobs.synchronized.enable</literal>.
                 </para>
                 </listitem>
             </itemizedlist>
         </para>
-    </section>
-    <section id="ap02-ase">
-        <title>Sybase Active Server Enterprise</title>
-        <para>
-            Active Server Enterprise was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
-        </para>
-    </section>
-    <section id="ap02-sqlanywhere">
-        <title>Sybase SQL Anywhere</title>
-        <para>
-            SQL Anywhere was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
-        </para>
-    </section>
+        </section>
 </appendix>

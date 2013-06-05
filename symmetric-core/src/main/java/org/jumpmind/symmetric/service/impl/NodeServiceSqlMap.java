@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -76,10 +56,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                          "
                         + "  initial_load_enabled, initial_load_time, created_at_node_id,                         "
-                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
-                          " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
-                          " from $(node_security) where   "
-                        + "  node_id = ?");
+                        + " rev_initial_load_enabled, rev_initial_load_time from $(node_security) where   "
+                        + "  node_id = ?                                                                                     ");
 
         putSql("selectExternalIdsSql",
                 "select distinct(external_id) from $(node) where sync_enabled=1 order by external_id asc   ");
@@ -87,17 +65,13 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeSecurityWithLoadEnabledSql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
-                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
-                          " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
-                          " from $(node_security)          "
+                        + " rev_initial_load_enabled, rev_initial_load_time from $(node_security)          "
                         + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     ");
         
         putSql("findAllNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
-                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
-                          " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
-                          " from $(node_security)   ");
+                        + " rev_initial_load_enabled, rev_initial_load_time from $(node_security)   ");
 
         putSql("deleteNodeSecuritySql", "delete from $(node_security) where node_id = ?");
 
@@ -144,9 +118,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "update $(node_security) set node_password = ?, registration_enabled = ?,                                       "
                         + "  registration_time = ?, initial_load_enabled = ?, initial_load_time = ?, created_at_node_id = ?,"
-                        + "  rev_initial_load_enabled=?, rev_initial_load_time=?, initial_load_id=?, " +
-                          " initial_load_create_by=?, rev_initial_load_id=?, rev_initial_load_create_by=? " +
-                          " where node_id = ?   ");
+                        + "  rev_initial_load_enabled=?, rev_initial_load_time=? where node_id = ?   ");
 
         putSql("insertNodeSecuritySql",
                 ""

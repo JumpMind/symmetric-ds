@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.route;
 
@@ -35,18 +35,15 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -69,28 +66,31 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected ChannelRouterContext context;
 
-    protected ISymmetricEngine engine;
+    protected IDataService dataService;
+
+    protected IParameterService parameterService;
+
+    protected ISymmetricDialect symmetricDialect;
+
+    protected IRouterService routerService;
 
     protected boolean reading = true;
     
-    protected int peekAheadCount = 1000;
-    
-    protected int takeTimeout;
-    
     protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
 
-    public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
-        this.engine = engine;
-        IParameterService parameterService = engine.getParameterService();
-        this.peekAheadCount = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
-        this.takeTimeout = engine.getParameterService().getInt(
-                ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
-        this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
+    public DataGapRouteReader(IRouterService routerService, ChannelRouterContext context,
+            IDataService dataService, ISymmetricDialect symmetricDialect,
+            IParameterService parameterService) {
+        this.routerService = routerService;
+        this.symmetricDialect = symmetricDialect;
+        this.dataQueue = new LinkedBlockingQueue<Data>(
+                symmetricDialect != null ? symmetricDialect.getRouterDataPeekAheadCount() : 1000);
         this.context = context;
+        this.dataService = dataService;
+        this.parameterService = parameterService;
         
-        String engineName = parameterService.getEngineName();
-        if (lastSelectUsedGreaterThanQueryByEngineName.get(engineName) == null) {
-            lastSelectUsedGreaterThanQueryByEngineName.put(engineName, Boolean.FALSE);
+        if (lastSelectUsedGreaterThanQueryByEngineName.get(parameterService.getEngineName()) == null) {
+            lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
         }
     }
 
@@ -103,24 +103,21 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     protected void execute() {
-        ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
+
         ISqlReadCursor<Data> cursor = null;
-        ProcessInfo processInfo = engine.getStatisticManager().
-                newProcessInfo(new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null, ProcessType.ROUTER_READER));
-        processInfo.setCurrentChannelId(context.getChannel().getChannelId());
         try {
             int dataCount = 0;
 
             long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+            int peekAheadCount = symmetricDialect.getRouterDataPeekAheadCount();
             String lastTransactionId = null;
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
             boolean nontransactional = context.getChannel().getBatchAlgorithm()
                     .equals("nontransactional")
                     || !symmetricDialect.supportsTransactionId();
 
-            processInfo.setStatus(Status.QUERYING);
             cursor = prepareCursor();
-            processInfo.setStatus(Status.EXTRACTING);
+
             boolean moreData = true;
             while (dataCount <= maxDataToRoute || lastTransactionId != null) {
                 if (moreData) {
@@ -131,8 +128,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     Data data = peekAheadQueue.remove(0);
                     copyToQueue(data);
                     dataCount++;
-                    processInfo.incrementDataCount();
-                    processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
                 } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                     Iterator<Data> datas = peekAheadQueue.iterator();
@@ -143,9 +138,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                             dataWithSameTransactionIdCount++;
                             datas.remove();
                             copyToQueue(data);
-                            dataCount++;                            
-                            processInfo.incrementDataCount();
-                            processInfo.setCurrentTableName(data.getTableName());
+                            dataCount++;
                         }
                     }
 
@@ -158,9 +151,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     break;
                 }
             }
-            processInfo.setStatus(Status.DONE);
+
         } catch (Throwable ex) {
-            processInfo.setStatus(Status.ERROR);
             log.error(ex.getMessage(), ex);
         } finally {
             if (cursor != null) {
@@ -191,7 +183,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     public Data take() throws InterruptedException {
-        Data data = dataQueue.poll(takeTimeout, TimeUnit.SECONDS);
+        Data data = null;
+        int timeout = parameterService.getInt(
+                ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
+        data = dataQueue.poll(timeout, TimeUnit.SECONDS);
 
         if (data == null) {
             throw new SymmetricException("The read of the data to route queue has timed out");
@@ -202,13 +197,12 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     protected ISqlReadCursor<Data> prepareCursor() {
-        IParameterService parameterService = engine.getParameterService();
         int numberOfGapsToQualify = parameterService.getInt(
                 ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
         
         int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
 
-        this.dataGaps = engine.getDataService().findDataGaps();
+        this.dataGaps = dataService.findDataGaps();
                 
         boolean useGreaterThanDataId = false;
         if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
@@ -240,10 +234,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         
         if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-            sql = sql + engine.getRouterService().getSql("orderByDataId");
+            sql = sql + routerService.getSql("orderByDataId");
         }
 
-        ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
+        ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         Object[] args = null;
         int[] types = null;
         
@@ -278,7 +272,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         return sqlTemplate.queryForCursor(sql, new ISqlRowMapper<Data>() {
             public Data mapRow(Row row) {
-                return engine.getDataService().mapData(row);
+                return dataService.mapData(row);
             }
         }, args, types);
 
@@ -300,7 +294,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     protected String getSql(String sqlName, Channel channel) {
-        String select = engine.getRouterService().getSql(sqlName);
+        String select = routerService.getSql(sqlName);
         if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
         }
@@ -310,7 +304,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (!channel.isUsePkDataToRoute()) {
             select = select.replace("d.pk_data", "''");
         }
-        return engine.getSymmetricDialect().massageDataExtractionSql(
+        return symmetricDialect == null ? select : symmetricDialect.massageDataExtractionSql(
                 select, channel);
     }
 

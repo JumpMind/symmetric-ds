@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
@@ -49,8 +29,6 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.RandomTimeSlot;
 
 public class NodeCommunicationService extends AbstractService implements INodeCommunicationService {
 
@@ -92,10 +70,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
-            case FILE_PULL:
                 nodesToCommunicateWith = nodeService.findNodesToPull();
                 break;
-            case FILE_PUSH:
             case PUSH:
                 nodesToCommunicateWith = nodeService.findNodesToPushTo();
                 break;
@@ -180,14 +156,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
                 break;
-            case FILE_PULL:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            case FILE_PUSH:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            default:
-                break;
         }
         int threadCount = parameterService.getInt(threadCountParameter, 1);
         
@@ -250,14 +218,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 parameter = ParameterConstants.PUSH_LOCK_TIMEOUT_MS;
                 break;
-            case FILE_PULL:
-                parameter = ParameterConstants.FILE_PULL_LOCK_TIMEOUT_MS;
-                break;
-            case FILE_PUSH:
-                parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
-                break;
-            default:
-                break;
         }
         return DateUtils.add(new Date(), Calendar.MILLISECOND,
                 -parameterService.getInt(parameter, 7200000));
@@ -288,7 +248,25 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                                 nodeCommunication.getCommunicationType().name(),
                                 nodeCommunication.getNodeId()), ex);
                     } finally {
-                        unlock(nodeCommunication, status, failed, ts);
+                        long millis = System.currentTimeMillis() - ts;
+                        nodeCommunication.setLockTime(null);
+                        nodeCommunication.setLastLockMillis(millis);
+                        if (failed) {
+                            nodeCommunication.setFailCount(nodeCommunication.getFailCount() + 1);
+                            nodeCommunication.setTotalFailCount(nodeCommunication
+                                    .getTotalFailCount() + 1);
+                            nodeCommunication.setTotalFailMillis(nodeCommunication
+                                    .getTotalFailMillis() + millis);
+                        } else {
+                            nodeCommunication.setSuccessCount(nodeCommunication.getSuccessCount() + 1);
+                            nodeCommunication.setTotalSuccessCount(nodeCommunication
+                                    .getTotalSuccessCount() + 1);
+                            nodeCommunication.setTotalSuccessMillis(nodeCommunication
+                                    .getTotalSuccessMillis() + millis);
+                            nodeCommunication.setFailCount(0);
+                        }
+                        status.setComplete(true);
+                        save(nodeCommunication);
                     }
                 }
             };
@@ -300,53 +278,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
         return locked;
     }
-    
-    protected void unlock(NodeCommunication nodeCommunication,
-            RemoteNodeStatus status, boolean failed, long ts) {
-        boolean unlocked = false;
-        int attempts = 1;
-        do {
-            try {
-                long millis = System.currentTimeMillis() - ts;
-                nodeCommunication.setLockTime(null);
-                nodeCommunication.setLastLockMillis(millis);
-                if (failed) {
-                    nodeCommunication.setFailCount(nodeCommunication
-                            .getFailCount() + 1);
-                    nodeCommunication.setTotalFailCount(nodeCommunication
-                            .getTotalFailCount() + 1);
-                    nodeCommunication.setTotalFailMillis(nodeCommunication
-                            .getTotalFailMillis() + millis);
-                } else {
-                    nodeCommunication.setSuccessCount(nodeCommunication
-                            .getSuccessCount() + 1);
-                    nodeCommunication.setTotalSuccessCount(nodeCommunication
-                            .getTotalSuccessCount() + 1);
-                    nodeCommunication.setTotalSuccessMillis(nodeCommunication
-                            .getTotalSuccessMillis() + millis);
-                    nodeCommunication.setFailCount(0);
-                }
-                status.setComplete(true);
-                save(nodeCommunication);
-                unlocked = true;
-                if (attempts > 1) {
-                    log.info(String.format("Successfully unlocked %s node communication record for %s after %d attempts", 
-                            nodeCommunication.getCommunicationType().name(),
-                        nodeCommunication.getNodeId(), attempts));
-                }
-            } catch (Exception e) {
-                log.error(String.format(
-                        "Failed to unlock %s node communication record for %s",
-                        nodeCommunication.getCommunicationType().name(),
-                        nodeCommunication.getNodeId()), e);
-                long sleepTime = DateUtils.MILLIS_PER_SECOND
-                        * new RandomTimeSlot(nodeCommunication.getNodeId(), 30).getRandomValueSeededByExternalId();
-                log.warn("Sleeping for {} ms before attempting to unlock the node communication record again", sleepTime);
-                AppUtils.sleep(sleepTime);
-                attempts++;
-            };
-        } while (!unlocked);
-    }    
 
     public void stop() {
         Collection<CommunicationType> services = new HashSet<NodeCommunication.CommunicationType>(

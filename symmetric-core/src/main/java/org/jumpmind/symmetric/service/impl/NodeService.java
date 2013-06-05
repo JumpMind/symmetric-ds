@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -38,7 +38,6 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
-import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -74,9 +73,9 @@ public class NodeService extends AbstractService implements INodeService {
 
     private List<IOfflineServerListener> offlineServerListeners;
 
-    public NodeService(IParameterService parameterService, ISymmetricDialect dialect, ISecurityService securityService) {
+    public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
-        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this, securityService);
+        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this);
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -219,37 +218,14 @@ public class NodeService extends AbstractService implements INodeService {
         sqlTemplate.update(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
     }
 
-    public void deleteNode(String nodeId, boolean syncChange) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
+    public void deleteNode(String nodeId) {
+        if (StringUtils.isNotBlank(nodeId)) {
+            if (nodeId.equals(findIdentityNodeId())) {
+                sqlTemplate.update(getSql("deleteNodeIdentitySql"));
             }
-            if (StringUtils.isNotBlank(nodeId)) {
-                if (nodeId.equals(findIdentityNodeId())) {
-                    transaction.prepareAndExecute(getSql("deleteNodeIdentitySql"));
-                }
-                transaction.prepareAndExecute(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
-            }
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
-
-            close(transaction);
+            deleteNodeSecurity(nodeId);
+            sqlTemplate.update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
+            sqlTemplate.update(getSql("deleteNodeSql"), new Object[] { nodeId });
         }
     }
 
@@ -271,6 +247,7 @@ public class NodeService extends AbstractService implements INodeService {
             sqlTemplate.update(getSql("deleteNodeIdentitySql"));
             successful = true;
         } catch (SqlException ex) {
+            log.info("Could not delete the node identity");
             log.debug(ex.getMessage());
         } finally {
             cachedNodeIdentity = null;
@@ -374,20 +351,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Node findIdentity(boolean useCache) {
-        return findIdentity(useCache, true);        
-    }
-    
-    public Node findIdentity(boolean useCache, boolean logSqlError) {
         if (cachedNodeIdentity == null || useCache == false) {
             try {
                 List<Node> list = sqlTemplate.query(
                         getSql("selectNodePrefixSql", "findNodeIdentitySql"), new NodeRowMapper());
                 cachedNodeIdentity = (Node) getFirstEntry(list);
             } catch (SqlException ex) {
-                if (logSqlError) {
-                    log.info("Failed to load the node identity because: {}.  Returning {}",
-                            ex.getMessage(), cachedNodeIdentity);
-                }
+                log.warn("Failed to load the node identity because: {}.  Returning {}", ex.getMessage(), cachedNodeIdentity);
             }
         }
         return cachedNodeIdentity;
@@ -451,7 +421,6 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
 
-        nodeLeaf = leaves.get(findIdentityNodeId());
         if (nodeLeaf != null) {
             NetworkedNode root = nodeLeaf.getRoot();
             root.setAllNetworkedNodes(leaves);
@@ -468,137 +437,75 @@ public class NodeService extends AbstractService implements INodeService {
             boolean updated = updateNodeSecurity(transaction, security);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
     }
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
+        flushNodeAuthorizedCache();
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        boolean updated = transaction.prepareAndExecute(
+        return transaction.prepareAndExecute(
                 getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                         security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
                         security.getCreatedAtNodeId(),
                         security.isRevInitialLoadEnabled() ? 1 : 0,
-                        security.getRevInitialLoadTime(),
-                        security.getInitialLoadId(),
-                        security.getInitialLoadCreateBy(),
-                        security.getRevInitialLoadId(),
-                        security.getRevInitialLoadCreateBy(),
-                        security.getNodeId() }, new int[] {
+                        security.getRevInitialLoadTime(), security.getNodeId() }, new int[] {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
                         Types.VARCHAR }) == 1;
-        flushNodeAuthorizedCache();
-        return updated;
     }
     
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
-        try {
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+        if (nodeSecurity != null) {
+            nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
+            if (initialLoadEnabled) {
+                nodeSecurity.setInitialLoadTime(null);
+            } else {
+                nodeSecurity.setInitialLoadTime(new Date());
             }
-            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-            if (nodeSecurity != null) {
-                nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
-                nodeSecurity.setInitialLoadId(loadId);
-                if (initialLoadEnabled) {
-                    nodeSecurity.setInitialLoadTime(null);
-                    nodeSecurity.setInitialLoadCreateBy(createBy);
-                } else {
-                    nodeSecurity.setInitialLoadTime(new Date());
-                }
-                return updateNodeSecurity(transaction, nodeSecurity);
-            }
-            return false;
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
+            return updateNodeSecurity(transaction, nodeSecurity);
         }
+        return false;        
     }
 
-    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
+            boolean updated = setInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
         } finally {
             close(transaction);
         }
     }
     
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
-        try {
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
+        if (nodeSecurity != null) {
+            nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
+            if (initialLoadEnabled) {
+                nodeSecurity.setRevInitialLoadTime(null);
+            } else {
+                nodeSecurity.setRevInitialLoadTime(new Date());
             }
-
-            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
-            if (nodeSecurity != null) {
-                nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
-                nodeSecurity.setRevInitialLoadId(loadId);
-                if (initialLoadEnabled) {
-                    nodeSecurity.setRevInitialLoadTime(null);
-                    nodeSecurity.setRevInitialLoadCreateBy(createBy);
-                } else {
-                    nodeSecurity.setRevInitialLoadTime(new Date());
-                }
-                return updateNodeSecurity(transaction, nodeSecurity);
-            }
-            return false;
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
+            return updateNodeSecurity(transaction, nodeSecurity);
         }
-    } 
+        return false;        
+    }    
     
-    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
+    public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled, syncChange, loadId, createBy);
+            boolean updated = setReverseInitialLoadEnabled(transaction, nodeId, initialLoadEnabled);
             transaction.commit();
             return updated;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
-        } finally {      
+        } finally {
             close(transaction);
         }
     }    
@@ -732,9 +639,8 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
+        log.info("Returning offline list");
         return offlineNodeList;
-        
     }
     
     public List<String> findOfflineNodeIds(long minutesOffline) {
@@ -767,6 +673,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
+        log.info("Returning offline list");
         return offlineNodeList;
     }    
 
@@ -831,11 +738,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setInitialLoadTime(rs.getDateTime("initial_load_time"));
             nodeSecurity.setCreatedAtNodeId(rs.getString("created_at_node_id"));
             nodeSecurity.setRevInitialLoadEnabled(rs.getBoolean("rev_initial_load_enabled"));
-            nodeSecurity.setRevInitialLoadTime(rs.getDateTime("rev_initial_load_time"));  
-            nodeSecurity.setInitialLoadId(rs.getLong("initial_load_id"));
-            nodeSecurity.setInitialLoadCreateBy(rs.getString("initial_load_create_by"));
-            nodeSecurity.setRevInitialLoadId(rs.getLong("rev_initial_load_id"));
-            nodeSecurity.setRevInitialLoadCreateBy(rs.getString("rev_initial_load_create_by"));
+            nodeSecurity.setRevInitialLoadTime(rs.getDateTime("rev_initial_load_time"));            
             return nodeSecurity;
         }
     }

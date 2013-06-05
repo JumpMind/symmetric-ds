@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.db.mssql;
 
 import java.sql.Connection;
@@ -28,13 +29,11 @@ import java.sql.Statement;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -51,27 +50,14 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    static final protected String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final protected String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
+    static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
+    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
 
     protected Boolean supportsDisableTriggers = null;
-
-    public MsSqlSymmetricDialect() {
-        super();
-    }
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
-    }
-    
-    @Override
-    public void verifyDatabaseIsCompatible() {
-        super.verifyDatabaseIsCompatible();
-        ISqlTemplate template = getPlatform().getSqlTemplate();
-        if (template.queryForInt("select case when (512 & @@options) = 512 then 1 else 0 end") == 1) {
-            throw new SymmetricException("NOCOUNT is currently turned ON.  SymmetricDS will not function with NOCOUNT turned ON.");
-        }
     }
     
     @Override
@@ -135,7 +121,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         if (supportsDisableTriggers == null) {
             try {
                 getPlatform().getSqlTemplate().update("set context_info 0x0");
-                log.info("This database DOES support disabling triggers during a symmetricds data load");
+                log.warn("This database DOES support disabling triggers during a symmetricds data load");
                 supportsDisableTriggers = true;
             } catch (Exception ex) {
                 log.warn("This database does NOT support disabling triggers during a symmetricds data load");
@@ -277,7 +263,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public void purgeRecycleBin() {
     }
 
-    @Override
     public boolean needsToSelectLobData() {
         return true;
     }

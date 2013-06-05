@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.db;
 
@@ -99,9 +99,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
-    public AbstractSymmetricDialect() {
-    }
-    
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
@@ -141,9 +138,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
-    
-    public void verifyDatabaseIsCompatible() {
-    }
 
     public void initTablesAndDatabaseObjects() {
         createOrAlterTablesIfNecessary();
@@ -182,15 +176,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
             String triggerName) {
-        if (StringUtils.isNotBlank(triggerName)) {
-            try {
-                return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
-            } catch (Exception ex) {
-                log.warn("Could not figure out if the trigger exists.  Assuming that is does not",
-                        ex);
-                return false;
-            }
-        } else {
+        try {
+            return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
+        } catch (Exception ex) {
+            log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
             return false;
         }
     }
@@ -210,8 +199,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
-            TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
-        return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel, overrideSelectSql)
+            TriggerHistory triggerHistory, Channel channel) {
+        return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel)
                 .trim();
     }
 
@@ -708,6 +697,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String preProcessTriggerSqlClause(String sqlClause) {
         return sqlClause;
+    }
+
+    public int getRouterDataPeekAheadCount() {
+        return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
     }
 
     public void truncateTable(String tableName) {

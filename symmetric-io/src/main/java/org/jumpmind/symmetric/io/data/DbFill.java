@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.io.data;
 
 import java.math.BigDecimal;
@@ -66,35 +46,35 @@ public class DbFill {
     private boolean ignoreMissingTables;
 
     private boolean cascading = false;
-
+    
     private String ignore[] = null;
 
     private int inputLength = 1;
-
+    
     private Random rand = null;
-
+    
     private int interval = 0;
-
+    
     private boolean debug = false;
-
+    
     private boolean verbose = false;
-
+    
     private boolean continueOnError = false;
-
+    
     // Weights given to insert, update, and delete commands when
     // randomly selecting a command for any given table.
     private int[] dmlWeight = {1,0,0};
-
+    
     private Table[] allDbTablesCache = null;
-
+    
     // -1 for no limit
-    private static final int RANDOM_SELECT_SIZE = 100;
-
+    private static final int RANDOM_SELECT_SIZE = 100; 
+    
     // Must remain 0-2 to choose randomly.
     public final static int INSERT = 0;
     public final static int UPDATE = 1;
     public final static int DELETE = 2;
-
+    
     private boolean firstPass = true;
 
     public DbFill() {
@@ -147,12 +127,12 @@ public class DbFill {
 
         fillTables(tables, tableProperties);
     }
-
+    
     /**
      * Identify the tables not included in the given list that the initial tables have FK relationships to.
-     *
+     * 
      * @param tables
-     *
+     * 
      * @return The table array argument and the tables that the initial table array argument depend on.
      */
     public Table[] addFkInsertDependentTables(Table... tables) {
@@ -179,12 +159,12 @@ public class DbFill {
         }
         return fkDepTblArray;
     }
-
+    
     /**
      * Identify the tables not included in the given list that the initial tables have FK relationships to.
-     *
+     * 
      * @param deleteTables
-     *
+     * 
      * @return The table array argument and the tables that the initial table array argument depend on.
      */
     public Table[] addFkDeleteDependentTables(Table... deleteTables) {
@@ -217,7 +197,7 @@ public class DbFill {
 
     /**
      * Once we have an array of table objects we can begin sorting and IUD operations.
-     *
+     * 
      * @param tables Array of table objects.
      */
     private void fillTables(Table[] tables, Map<String,int[]> tableProperties) {
@@ -225,11 +205,11 @@ public class DbFill {
             makePass(tables, tableProperties);
         }
     }
-
+    
     /**
      * Perform an INSERT, UPDATE, or DELETE on every table in tables.
-     *
-     * @param tables Array of tables to perform statement on. Tables must be in
+     * 
+     * @param tables Array of tables to perform statement on. Tables must be in 
      *          insert order.
      * @param tableProperties Map indicating IUD weights for each table name provided
      *          in the properties file.
@@ -270,12 +250,12 @@ public class DbFill {
             }
         }
     }
-
+    
     /**
-     * Given a table's IUD weights a random DML statement type is chosen.
-     *
+     * Given a table's IUD weights a random DML statement type is chosen. 
+     * 
      * @param iudWeight
-     * @return
+     * @return 
      */
     private int randomIUD(int[] iudWeight) {
         if (iudWeight.length != 3) {
@@ -290,22 +270,22 @@ public class DbFill {
             return INSERT;
         } else if (rVal < iudWeight[0] + iudWeight[1]) {
             return UPDATE;
-        }
+        } 
         return DELETE;
     }
 
     /**
      * Select a random row from the table in the connected database. Return null if there are no rows.
-     *
+     * 
      * TODO: Cache rows.
-     *
+     * 
      * @param sqlTemplate
      * @param table The table to select a row from.
      * @return A random row from the table. Null if there are no rows.
      */
     private Row selectRandomRow(Table table) {
         Row row = null;
-        // Select all rows and return the primary key columns.
+        // Select all rows and return the primary key columns. 
         String sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(),
                 table.getPrimaryKeyColumns(), table.getColumns(), null).getSql();
         final List<Row> rows = new ArrayList<Row>();
@@ -325,13 +305,13 @@ public class DbFill {
     /**
      * All dependent tables for the given table are determined and sorted by fk dependencies.
      * Each table has a record inserted, dependent tables first.
-     *
+     * 
      * @param sqlTemplate
      * @param insertedColumns
      * @param table
      */
     private void insertRandomRecord(Table table) {
-
+        
         Table[] tables = null;
         if (cascading) {
             tables = addFkInsertDependentTables(table);
@@ -339,9 +319,9 @@ public class DbFill {
         } else {
             tables = new Table[] {table};
         }
-
+        
         Map<String, Object> insertedColumns = new HashMap<String, Object>(tables.length);
-
+        
         for (Table tbl : tables) {
             DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, tbl);
             generateRandomValues(insertedColumns, tbl);
@@ -369,10 +349,10 @@ public class DbFill {
             }
         }
     }
-
+    
     /**
      * Select a random row from the table and update all columns except for primary and foreign keys.
-     *
+     * 
      * @param sqlTemplate
      * @param table
      */
@@ -382,12 +362,12 @@ public class DbFill {
             log.warn("Unable to update a random record in empty table '" + table.getName() + "'.");
             return;
         }
-        DmlStatement updStatement = platform.createDmlStatement(DmlType.UPDATE,
+        DmlStatement updStatement = platform.createDmlStatement(DmlType.UPDATE, 
                 table.getCatalog(), table.getSchema(), table.getName(),
                 table.getPrimaryKeyColumns(), table.getNonPrimaryKeyColumns(), null);
         Column[] columns = updStatement.getMetaData();
         Object[] values = new Object[columns.length];
-
+        
         // Get list of local fk reference columns
         List<String> localFkRefColumns = getLocalFkRefColumns(table);
         for (int i=0; i < columns.length; i++) {
@@ -414,15 +394,15 @@ public class DbFill {
             }
         }
     }
-
+    
     private void deleteRandomRecord(Table table) {
         deleteRandomRecord(table, null);
     }
-
+    
     /**
      * Delete a random row in the given table or delete all rows matching selectColumns
      * in the given table.
-     *
+     * 
      * @param table Table to delete from.
      * @param selectColumns If provided, the rows that match this criteria are deleted.
      */
@@ -448,7 +428,7 @@ public class DbFill {
             }
             rows.add(row);
         }
-
+        
         for (Row row : rows) {
             if (cascading) {
                 // Delete dependent tables
@@ -476,7 +456,7 @@ public class DbFill {
             for (int i=0; i<keys.length; i++) {
                 keyValues[i] = row.get(keys[i].getName());
             }
-
+            
             try {
                 platform.getSqlTemplate().update(statement.getSql(), keyValues);
                 if (verbose) {
@@ -495,21 +475,21 @@ public class DbFill {
             }
         }
     }
-
-    /**
+        
+    /** 
      * Generates a random row for the given table. If a fk dependency exists, it is assumed
      * the foreign table has already been populated with random data. A runtime exception will
      * result if a foreign table has not already been populated.
-     *
+     * 
      * Foreign table data should be included in the columnValues map.
-     *
+     * 
      * @param columnValues
      * @param table
      */
     private void generateRandomValues(Map<String, Object> columnValues, Table table) {
         Column[] columns = table.getColumns();
-
-        for_column:
+        
+        for_column: 
         for (Column column : columns) {
             Object objectValue = null;
             for (ForeignKey fk : table.getForeignKeys()) {
@@ -531,14 +511,14 @@ public class DbFill {
             }
             objectValue = generateRandomValueForColumn(column);
             if (objectValue == null) {
-                throw new RuntimeException("No random value generated for the object " + table.getName() + "." +
-                        column.getName() + " of code " + column.getMappedTypeCode() + " jdbc name " + column.getJdbcTypeName());
+                throw new RuntimeException("No random value generated for the object " + table.getName() + "." + 
+                        column.getName() + " of type " + column.getMappedTypeCode());
             }
-
+            
             columnValues.put(table.getName() + "." + column.getName(), objectValue);
         }
     }
-
+    
     private Object generateRandomValueForColumn(Column column) {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
@@ -560,7 +540,7 @@ public class DbFill {
             objectValue = randomDouble();
         } else if (type == Types.TINYINT) {
             objectValue = randomTinyInt();
-        } else if (type == Types.NUMERIC || type == Types.DECIMAL
+        } else if (type == Types.NUMERIC || type == Types.DECIMAL 
                 || type == Types.REAL) {
             objectValue = randomBigDecimal(column.getSizeAsInt(), column.getScale());
         } else if (type == Types.BOOLEAN || type == Types.BIT) {
@@ -573,15 +553,7 @@ public class DbFill {
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR) {
-            int size = 0;
-            // Assume if the size is 0 there is no max size configured.
-            if (column.getSizeAsInt() != 0) {
-                size = column.getSizeAsInt()>50?50:column.getSizeAsInt();
-            } else {
-                // No max length so default to 50
-                size = 50;
-            }
-            objectValue = randomString(size);
+            objectValue = randomString(column.getSizeAsInt()>100?100:column.getSizeAsInt());
         } else if (type == Types.OTHER) {
             if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();
@@ -598,7 +570,7 @@ public class DbFill {
     private Object randomFloat() {
         return getRand().nextFloat();
     }
-
+    
     private Object randomDouble() {
         final long places = 1000000000l;
         double d = Math.random()*places;
@@ -651,7 +623,7 @@ public class DbFill {
         char base = (rnd < 26) ? 'A' : 'a';
         return (char) (base + rnd % 26);
     }
-
+    
     private Date randomDate() {
         // Random date between 1970 and 2020
         long l = Math.abs(getRand().nextLong());
@@ -662,7 +634,7 @@ public class DbFill {
     private Integer randomInt() {
         return new Integer(getRand().nextInt(1000000));
     }
-
+    
     private String randomUUID() {
         return UUID.randomUUID().toString();
     }
@@ -682,7 +654,7 @@ public class DbFill {
             return catalog;
         }
     }
-
+    
     protected List<String> getLocalFkRefColumns(Table table) {
         List<String> columns = new ArrayList<String>();
         for (ForeignKey fk : table.getForeignKeys()) {
@@ -692,14 +664,14 @@ public class DbFill {
         }
         return columns;
     }
-
+    
     protected Table[] getAllDbTables() {
         if (allDbTablesCache == null) {
             allDbTablesCache = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), null).getTables();
         }
         return allDbTablesCache;
     }
-
+    
     protected Table getDbTable(String tableName) {
         if (allDbTablesCache == null) {
             allDbTablesCache = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), null).getTables();
@@ -755,7 +727,7 @@ public class DbFill {
     public void setInterval(int interval) {
         this.interval = interval;
     }
-
+    
     public Random getRand() {
         if (rand == null) {
             rand = new java.util.Random();

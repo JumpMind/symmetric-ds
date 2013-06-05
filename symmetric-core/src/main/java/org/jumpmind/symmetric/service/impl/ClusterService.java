@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -32,9 +32,6 @@ import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
 import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -48,7 +45,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -81,9 +77,6 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(STAGE_MANAGEMENT);
         initLockTable(WATCHDOG);
         initLockTable(STATISTICS);
-        initLockTable(FILE_SYNC_PULL);
-        initLockTable(FILE_SYNC_PUSH);
-        initLockTable(FILE_SYNC_TRACKER);
     }
 
     public void initLockTable(final String action) {
@@ -149,30 +142,20 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (StringUtils.isBlank(serverId)) {
             serverId = parameterService.getString(ParameterConstants.CLUSTER_SERVER_ID);
             if (StringUtils.isBlank(serverId)) {
-                serverId = System.getProperty(SystemConstants.SYSPROP_CLUSTER_SERVER_ID, null);
+                serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
+                if (StringUtils.isBlank(serverId)) {
+                    // JBoss uses this system property to identify a server in a
+                    // cluster
+                    serverId = System.getProperty("bind.address", null);
+                    if (StringUtils.isBlank(serverId)) {
+                        try {
+                            serverId = AppUtils.getHostName();
+                        } catch (Exception ex) {
+                            serverId = "unknown";
+                        }
+                    }
+                }                
             }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                // JBoss uses this system property to identify a server in a
-                // cluster
-                serverId = System.getProperty("jboss.bind.address", null);
-            }
-
-            if (StringUtils.isBlank(serverId)) {
-                try {
-                    serverId = AppUtils.getHostName();
-                } catch (Exception ex) {
-                    serverId = "unknown";
-                }
-            }
-            
-            log.info("This node picked a server id of {}", serverId);
         }
         return serverId;
     }

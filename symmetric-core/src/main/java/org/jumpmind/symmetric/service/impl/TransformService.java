@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
@@ -50,7 +30,7 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
-
+    
     private Date lastUpdateTime;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
@@ -60,17 +40,15 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
+    
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTransformTableLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxTransformColumnLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2);
-
+        
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                if (lastUpdateTime != null) {
-                   log.info("Newer transform settings were detected");
-                }
+                log.info("Newer transform settings were detected");
                 lastUpdateTime = date;
                 clearCache();
                 return true;
@@ -100,21 +78,7 @@ public class TransformService extends AbstractService implements ITransformServi
             Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
                     .get(nodeGroupLink);
             if (byTransformPoint != null) {
-                if (transformPoint != null) {
-                    return byTransformPoint.get(transformPoint);
-                } else {
-                    // Transform point not specified, so return all transforms.
-                    List<TransformTableNodeGroupLink> transformsExtract = byTransformPoint.get(TransformPoint.EXTRACT);
-                    List<TransformTableNodeGroupLink> transformsLoad = byTransformPoint.get(TransformPoint.LOAD);
-                    List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
-                    if (transformsExtract != null) {
-                        transforms.addAll(transformsExtract);
-                    }
-                    if (transformsLoad != null) {
-                        transforms.addAll(transformsLoad);
-                    }
-                    return transforms;
-                }
+                return byTransformPoint.get(transformPoint);
             }
         }
         return null;
@@ -236,16 +200,6 @@ public class TransformService extends AbstractService implements ITransformServi
                 }
             }
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
         } finally {
             close(transaction);
         }
@@ -266,16 +220,6 @@ public class TransformService extends AbstractService implements ITransformServi
                     (Object) transformTableId);
             transaction.commit();
             refreshCache();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
         } finally {
             close(transaction);
         }

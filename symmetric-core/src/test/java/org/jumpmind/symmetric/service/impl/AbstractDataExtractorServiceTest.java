@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedWriter;
@@ -33,7 +13,6 @@ import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -74,11 +53,11 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         dataExtractorService.extractConfigurationStandalone(TestConstants.TEST_CLIENT_NODE, writer);
         String content = writer.getBuffer().toString();
         assertNumberOfLinesThatStartWith(24, "table,", content, false, true);
-        assertNumberOfLinesThatStartWith(22, "columns,", content);
-        assertNumberOfLinesThatStartWith(22, "keys,", content);
-        assertNumberOfLinesThatStartWith(22, "sql,", content);
+        assertNumberOfLinesThatStartWith(20, "columns,", content);
+        assertNumberOfLinesThatStartWith(20, "keys,", content);
+        assertNumberOfLinesThatStartWith(20, "sql,", content);
         assertNumberOfLinesThatStartWith(0, "update,", content);
-        assertNumberOfLinesThatStartWith(65, "insert,", content, false, true);
+        assertNumberOfLinesThatStartWith(66, "insert,", content, false, true);
         assertNumberOfLinesThatStartWith(1, "commit,-9999", content);
         assertNumberOfLinesThatStartWith(1, "batch,-9999", content);
         assertNumberOfLinesThatStartWith(1, "nodeid,", content);
@@ -120,7 +99,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         StringWriter writer = new StringWriter();
         InternalOutgoingTransport transport = new InternalOutgoingTransport(new BufferedWriter(
                 writer));
-        List<OutgoingBatch> batches = service.extract(new ProcessInfo(), TestConstants.TEST_CLIENT_NODE, transport);
+        List<OutgoingBatch> batches = service.extract(TestConstants.TEST_CLIENT_NODE, transport);
         return new ExtractResults(batches, writer.getBuffer().toString());
     }
 

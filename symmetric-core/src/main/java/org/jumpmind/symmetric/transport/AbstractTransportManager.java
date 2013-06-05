@@ -1,23 +1,23 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.transport;
 
@@ -89,45 +89,31 @@ abstract public class AbstractTransportManager {
         }
     }
 
-    protected String getAcknowledgementData(boolean requires13Format, String nodeId,
-            List<IncomingBatch> list) throws IOException {
+    protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
-        if (!requires13Format) {
-            for (IncomingBatch batch : list) {
-                long batchId = batch.getBatchId();
-                Object value = null;
-                if (batch.getStatus() == Status.OK) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
-                append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
-                append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
-                append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
-                append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
-                        batch.getDatabaseMillis());
-                append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
-
-                if (batch.getIgnoreCount() > 0) {
-                    append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
-                }
-
-                if (batch.getStatus() == Status.ER) {
-                    append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
-                    append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
-                    append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
-                }
+        for (IncomingBatch batch : list) {
+            long batchId = batch.getBatchId();
+            Object value = null;
+            if (batch.getStatus() == Status.OK) {
+                value = WebConstants.ACK_BATCH_OK;
+            } else {
+                value = batch.getFailedRowNumber();
             }
-        } else {
-            for (IncomingBatch batch : list) {
-                Object value = null;
-                if (batch.getStatus() == Status.OK || batch.getStatus() == Status.IG) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);            
+            append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
+            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
+            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
+            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getDatabaseMillis());
+            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
+            
+            if (batch.getIgnoreCount() > 0) {
+              append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
+            }
+
+            if (batch.getStatus() == Status.ER) {
+                append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
+                append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
+                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
             }
         }
         return builder.toString();
@@ -172,11 +158,7 @@ abstract public class AbstractTransportManager {
 
     private static BatchAck getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
         BatchAck batchInfo = new BatchAck(batchId);
-        String nodeId = getParam(parameters, WebConstants.ACK_NODE_ID + batchId);
-        if (StringUtils.isBlank(nodeId)) {
-            nodeId = getParam(parameters, WebConstants.NODE_ID);
-        }
-        batchInfo.setNodeId(nodeId);
+        batchInfo.setNodeId(getParam(parameters, WebConstants.ACK_NODE_ID + batchId));
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
         batchInfo.setDatabaseMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));

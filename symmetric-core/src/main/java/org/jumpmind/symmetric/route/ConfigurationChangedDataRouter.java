@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.route;
 
@@ -41,8 +41,6 @@ import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
-    
-    public static final String ROUTER_TYPE = "configurationChanged";
 
     final String CTX_KEY_TABLE_RELOAD_NEEDED = "Reload.Table."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
@@ -102,8 +100,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 String nodeIdInQuestion = columnValues.get("NODE_ID");
                 List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!nodeThatMayBeRoutedTo.requires13Compatiblity() && 
-                            isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
+                    if (isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
                             nodeGroupLinks)
                             && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
                                     rootNetworkedNode, me)
@@ -184,12 +181,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         String triggerId = columnValues.get("TRIGGER_ID");
 
                         list.add(new TableReloadRequestKey(targetNodeId, sourceNodeId, triggerId,
-                                routerId, dataMetaData.getData().getSourceNodeId()));
+                                routerId));
                     }
                 } else {
                     for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                        if (!nodeThatMayBeRoutedTo.requires13Compatiblity() &&
-                                nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
+                        if (nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
                             if (nodeIds == null) {
                                 nodeIds = new HashSet<String>();
                             }
@@ -200,10 +196,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
             } else {
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!nodeThatMayBeRoutedTo.requires13Compatiblity() && (
-                            !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode,
+                    if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode,
                             me)
-                            || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad))) {
+                            || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                         if (nodeIds == null) {
                             nodeIds = new HashSet<String>();
                         }
@@ -285,69 +280,58 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     private boolean isSameNumberOfLinksAwayFromRoot(Node nodeThatCouldBeRoutedTo,
             NetworkedNode root, Node me) {
-        return me != null && root != null && root.getNumberOfLinksAwayFromRoot(nodeThatCouldBeRoutedTo.getNodeId()) == root
+        return root.getNumberOfLinksAwayFromRoot(nodeThatCouldBeRoutedTo.getNodeId()) == root
                 .getNumberOfLinksAwayFromRoot(me.getNodeId());
     }
 
     private boolean isLinked(String nodeIdInQuestion, Node nodeThatCouldBeRoutedTo,
             NetworkedNode root, Node me, List<NodeGroupLink> allLinks) {
-        if (root != null) {
-            if (nodeIdInQuestion != null && nodeThatCouldBeRoutedTo != null
-                    && !nodeIdInQuestion.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
-                NetworkedNode networkedNodeInQuestion = root.findNetworkedNode(nodeIdInQuestion);
-                NetworkedNode networkedNodeThatCouldBeRoutedTo = root
-                        .findNetworkedNode(nodeThatCouldBeRoutedTo.getNodeId());
-                if (networkedNodeInQuestion != null) {
-                    if (networkedNodeInQuestion.isInParentHierarchy(nodeThatCouldBeRoutedTo
-                            .getNodeId())) {
-                        // always route changes to parent nodes
+        if (nodeIdInQuestion != null && nodeThatCouldBeRoutedTo != null
+                && !nodeIdInQuestion.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
+            NetworkedNode networkedNodeInQuestion = root.findNetworkedNode(nodeIdInQuestion);
+            NetworkedNode networkedNodeThatCouldBeRoutedTo = root
+                    .findNetworkedNode(nodeThatCouldBeRoutedTo.getNodeId());
+            if (networkedNodeInQuestion != null) {
+                if (networkedNodeInQuestion
+                        .isInParentHierarchy(nodeThatCouldBeRoutedTo.getNodeId())) {
+                    // always route changes to parent nodes
+                    return true;
+                }
+
+                String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
+                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId())
+                        && !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
+                    if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
                         return true;
+                    } else if (networkedNodeThatCouldBeRoutedTo != null) {
+                        // the node was created at some other node. lets attempt
+                        // to get that update back to that node
+                        return networkedNodeThatCouldBeRoutedTo.isInChildHierarchy(createdAtNodeId);
                     }
+                }
 
-                    String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
-                    if (createdAtNodeId != null
-                            && !createdAtNodeId.equals(me.getNodeId())
-                            && !networkedNodeInQuestion.getNode().getNodeId()
-                                    .equals(me.getNodeId())) {
-                        if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
-                            return true;
-                        } else if (networkedNodeThatCouldBeRoutedTo != null) {
-                            // the node was created at some other node. lets
-                            // attempt
-                            // to get that update back to that node
-                            return networkedNodeThatCouldBeRoutedTo
-                                    .isInChildHierarchy(createdAtNodeId);
-                        }
+                // if we haven't found a place to route by now, then we need to
+                // send the row to all nodes that have links to the node's group
+                String groupId = networkedNodeInQuestion.getNode().getNodeGroupId();
+                Set<String> groupsThatWillBeInterested = new HashSet<String>();
+                for (NodeGroupLink nodeGroupLink : allLinks) {
+                    if (nodeGroupLink.getTargetNodeGroupId().equals(groupId)) {
+                        groupsThatWillBeInterested.add(nodeGroupLink.getSourceNodeGroupId());
+                    } else if (nodeGroupLink.getSourceNodeGroupId().equals(groupId)) {
+                        groupsThatWillBeInterested.add(nodeGroupLink.getTargetNodeGroupId());
                     }
+                }
 
-                    // if we haven't found a place to route by now, then we need
-                    // to
-                    // send the row to all nodes that have links to the node's
-                    // group
-                    String groupId = networkedNodeInQuestion.getNode().getNodeGroupId();
-                    Set<String> groupsThatWillBeInterested = new HashSet<String>();
-                    for (NodeGroupLink nodeGroupLink : allLinks) {
-                        if (nodeGroupLink.getTargetNodeGroupId().equals(groupId)) {
-                            groupsThatWillBeInterested.add(nodeGroupLink.getSourceNodeGroupId());
-                        } else if (nodeGroupLink.getSourceNodeGroupId().equals(groupId)) {
-                            groupsThatWillBeInterested.add(nodeGroupLink.getTargetNodeGroupId());
-                        }
-                    }
-
-                    if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo
-                            .getNodeGroupId())) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                if (groupsThatWillBeInterested.contains(nodeThatCouldBeRoutedTo.getNodeGroupId())) {
+                    return true;
                 } else {
                     return false;
                 }
             } else {
-                return true;
+                return false;
             }
         } else {
-            return false;
+            return true;
         }
     }
 
@@ -396,8 +380,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     jobManager.stopJobs();
                     jobManager.startJobs();
                 }
+
             }
         }
+
     }
     
     protected void insertReloadEvents(SimpleRouterContext routingContext) {        
@@ -408,7 +394,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             for (TableReloadRequestKey reloadRequestKey : reloadRequestKeys) {
                 TableReloadRequest request = engine.getDataService()
                         .getTableReloadRequest(reloadRequestKey);
-                if (engine.getDataService().insertReloadEvent(request, reloadRequestKey.getReceivedFromNodeId() != null)) {
+                if (engine.getDataService().insertReloadEvent(request)) {
                     log.info(
                             "Inserted table reload request from config data router for node {} and trigger {}",
                             reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());                    

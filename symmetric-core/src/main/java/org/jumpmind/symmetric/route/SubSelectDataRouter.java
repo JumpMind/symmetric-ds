@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.route;
 
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -72,12 +74,14 @@ public class SubSelectDataRouter extends AbstractDataRouter {
             Set<Node> nodes, boolean initialLoad) {
         String sql = FormatUtils.replaceToken(SQL, "prefixName", symmetricDialect.getTablePrefix(),
                 true);
-        String subSelect = dataMetaData.getRouter().getRouterExpression();
+        TriggerRouter trigger = dataMetaData.getTriggerRouter();
+        String subSelect = trigger.getRouter().getRouterExpression();
         Set<String> nodeIds = null;
-        if (!StringUtils.isBlank(subSelect) && !initialLoad) {
+        if (!StringUtils.isBlank(subSelect) && 
+                !(initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect()))) {
             try {
-                Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect, true);
-                sqlParams.put("NODE_GROUP_ID", dataMetaData.getRouter().getNodeGroupLink()
+                Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
+                sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink()
                         .getTargetNodeGroupId());
                 sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
                 ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
@@ -88,13 +92,13 @@ public class SubSelectDataRouter extends AbstractDataRouter {
                 }
             } catch (InvalidSqlException ex) {
                 log.error("The subselect expression was invalid for the {} subselect router",
-                        dataMetaData.getRouter().getRouterId());
+                        trigger.getRouter().getRouterId());
                 throw ex;
             }
-        } else if (initialLoad) {
+        } else if (initialLoad && StringUtils.isNotBlank(trigger.getInitialLoadSelect())) {
             nodeIds = toNodeIds(nodes, null);
         } else {
-            throw new InvalidSqlException("The subselect expression is missing for the %s router", dataMetaData.getRouter().getRouterId());
+            throw new InvalidSqlException("The subselect expression is missing for the %s router", trigger.getRouter().getRouterId());
         }
         return nodeIds;
     }

@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -67,13 +67,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         super(parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0, true));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));        
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
-        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0, false));
-        }
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -86,9 +83,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                if (lastUpdateTime != null) {
-                    log.info("Newer channel or group settings were detected");
-                }
+                log.info("Newer channel or group settings were detected");
                 lastUpdateTime = date;
                 clearCache();
                 return true;

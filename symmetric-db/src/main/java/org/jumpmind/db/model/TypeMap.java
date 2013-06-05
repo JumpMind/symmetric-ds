@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.model;
 
 /*
@@ -108,31 +88,30 @@ public abstract class TypeMap
     public static final String TIMESTAMP     = "TIMESTAMP";
 
     public static final String TIMESTAMPTZ     = "TIMESTAMPTZ";
-
+    
     /** The string representation of the {@link java.sql.Types#TINYINT} constant. */
     public static final String TINYINT       = "TINYINT";
     /** The string representation of the {@link java.sql.Types#VARBINARY} constant. */
     public static final String VARBINARY     = "VARBINARY";
     /** The string representation of the {@link java.sql.Types#VARCHAR} constant. */
     public static final String VARCHAR       = "VARCHAR";
-
+    
     public static final String SQLXML = "SQLXML";
     public static final String GEOMETRY  = "GEOMETRY";
-    public static final String UUID = "UUID";
-    public static final String VARBIT = "VARBIT";
+    public static final String UUID = "UUID";   
+    public static final String VARBIT = "VARBIT";    
     public static final String INTERVAL = "INTERVAL";
     public static final String NCHAR = "NCHAR";
     public static final String NVARCHAR = "NVARCHAR";
     public static final String LONGNVARCHAR = "LONGNVARCHAR";
     public static final String NCLOB = "NCLOB";
-    public static final String IMAGE = "IMAGE";
-
+    
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap _typeNameToTypeCode = new HashMap();
-
+    
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */
     private static HashMap _typeCodeToTypeName = new HashMap();
-
+    
     /** Conatins the types per category. */
     private static HashMap _typesPerCategory = new HashMap();
 
@@ -178,7 +157,7 @@ public abstract class TypeMap
         // Torque/Turbine extensions which we only support when reading from an XML schema
         _typeNameToTypeCode.put("BOOLEANINT",  new Integer(Types.TINYINT));
         _typeNameToTypeCode.put("BOOLEANCHAR", new Integer(Types.CHAR));
-
+        
         registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ColumnTypes.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
@@ -189,7 +168,7 @@ public abstract class TypeMap
     /**
      * Returns the JDBC type code (one of the {@link java.sql.Types} constants) that
      * corresponds to the given JDBC type name.
-     *
+     * 
      * @param typeName The JDBC type name (case is ignored)
      * @return The type code or <code>null</code> if the type is unknown
      */
@@ -201,7 +180,7 @@ public abstract class TypeMap
     /**
      * Returns the JDBC type name that corresponds to the given type code
      * (one of the {@link java.sql.Types} constants).
-     *
+     * 
      * @param typeCode The type code
      * @return The JDBC type name (one of the constants in this class) or
      *         <code>null</code> if the type is unknown
@@ -213,12 +192,12 @@ public abstract class TypeMap
 
     /**
      * Registers a jdbc type.
-     *
+     * 
      * @param typeCode The type code (one of the {@link java.sql.Types} constants)
      * @param typeName The type name (case is ignored)
      * @param category The type category
      */
-    protected static void registerJdbcType(int typeCode, String typeName, JdbcTypeCategoryEnum category)
+    protected static void registerJdbcType(int typeCode, String typeName, JdbcTypeCategoryEnum category) 
     {
         Integer typeId = new Integer(typeCode);
 
@@ -238,7 +217,7 @@ public abstract class TypeMap
     /**
      * Determines whether the given jdbc type (one of the {@link java.sql.Types} constants)
      * is a numeric type.
-     *
+     * 
      * @param jdbcTypeCode The type code
      * @return <code>true</code> if the type is a numeric one
      */
@@ -252,7 +231,7 @@ public abstract class TypeMap
     /**
      * Determines whether the given jdbc type (one of the {@link java.sql.Types} constants)
      * is a date/time type.
-     *
+     * 
      * @param jdbcTypeCode The type code
      * @return <code>true</code> if the type is a numeric one
      */
@@ -266,7 +245,7 @@ public abstract class TypeMap
     /**
      * Determines whether the given jdbc type (one of the {@link java.sql.Types} constants)
      * is a text type.
-     *
+     * 
      * @param jdbcTypeCode The type code
      * @return <code>true</code> if the type is a text one
      */
@@ -280,7 +259,7 @@ public abstract class TypeMap
     /**
      * Determines whether the given jdbc type (one of the {@link java.sql.Types} constants)
      * is a binary type.
-     *
+     * 
      * @param jdbcTypeCode The type code
      * @return <code>true</code> if the type is a binary one
      */
@@ -294,7 +273,7 @@ public abstract class TypeMap
     /**
      * Determines whether the given sql type (one of the {@link java.sql.Types} constants)
      * is a special type.
-     *
+     * 
      * @param jdbcTypeCode The type code
      * @return <code>true</code> if the type is a special one
      */
