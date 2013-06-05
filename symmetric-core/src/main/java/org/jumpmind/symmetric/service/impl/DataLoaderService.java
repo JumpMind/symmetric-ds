@@ -438,14 +438,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processor.process(ctx);
             }
 
-            List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
-            for (IncomingBatch incomingBatch : batchesProcessed) {
-                if (incomingBatch.getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION
-                        && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
-                    log.error("Failed to update batch {}.  Zero rows returned.",
-                            incomingBatch.getBatchId());
-                }
-            }
         } catch (Throwable ex) {
             error = ex;
             logAndRethrow(sourceNode, ex);
