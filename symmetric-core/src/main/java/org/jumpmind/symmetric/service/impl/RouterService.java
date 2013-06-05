@@ -660,13 +660,13 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
+                batch.incrementDataEventCount();
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
                     Router router = dataMetaData.getRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                             router != null ? router.getRouterId()
                                     : Constants.UNKNOWN_ROUTER_ID);
-                    batch.incrementDataEventCount();
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
@@ -687,7 +687,7 @@ public class RouterService extends AbstractService implements IRouterService {
             dataRouter = routers.get(router.getRouterType());
             if (dataRouter == null) {
                 log.warn(
-                        "Could not find configured router '{}' for router with the id of {}. Defaulting the router",
+                        "Could not find configured router type of {} with the id of {}. Defaulting the router",
                         router.getRouterType(), router.getRouterId());
             }
         }

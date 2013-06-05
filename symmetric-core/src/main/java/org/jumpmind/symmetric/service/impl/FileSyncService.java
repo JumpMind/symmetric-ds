@@ -82,7 +82,7 @@ import org.jumpmind.util.AppUtils;
 import bsh.Interpreter;
 import bsh.TargetError;
 
-public class FileSyncService extends AbstractService implements IFileSyncService,
+public class FileSyncService extends AbstractOfflineDetectorService implements IFileSyncService,
         INodeCommunicationExecutor {
 
     private Object trackerLock = new Object();
@@ -511,8 +511,9 @@ public class FileSyncService extends AbstractService implements IFileSyncService
 
     protected List<IncomingBatch> processZip(InputStream is, String sourceNodeId,
             ProcessInfo processInfo) throws IOException {
-        File unzipDir = new File(parameterService.getTempDirectory(), "filesync_incoming/"
-                + sourceNodeId);
+        File unzipDir = new File(parameterService.getTempDirectory(), String.format("filesync_incoming/%s/%s",
+                engine.getNodeService().findIdentityNodeId(),
+                sourceNodeId));
         FileUtils.deleteDirectory(unzipDir);
         unzipDir.mkdirs();
 
@@ -638,6 +639,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             }
 
         } catch (IOException e) {
+            fireOffline(e, nodeCommunication.getNode(), status);
             throw new IoException(e);
         } finally {
             if (transport != null) {
