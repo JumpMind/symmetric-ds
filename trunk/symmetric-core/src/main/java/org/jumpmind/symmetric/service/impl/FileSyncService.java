@@ -727,7 +727,7 @@ public class FileSyncService extends AbstractService implements IFileSyncService
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir"));
-            fileTriggerRouter.setTargetFilePath(rs.getString("target_file_path"));
+            fileTriggerRouter.setTargetFilePath(rs.getString("target_relative_dir"));
             fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
                     rs.getString("router_id")));
             return fileTriggerRouter;
