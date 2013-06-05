@@ -75,9 +75,10 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
             for (FileSnapshot file : this) {
                 if (anotherFile.sameFile(file)) {
                     found = true;
-                    if (file.getLastEventType() == LastEventType.MODIFY
+                    if ((file.getLastEventType() == LastEventType.MODIFY ||
+                            file.getLastEventType() == LastEventType.CREATE)
                             && anotherFile.getLastEventType() == LastEventType.CREATE) {
-                        anotherFile.setLastEventType(LastEventType.MODIFY);
+                            anotherFile.setLastEventType(LastEventType.MODIFY);
                     }
                     if (!anotherFile.equals(file)) {
                         differences.add(anotherFile);
@@ -104,7 +105,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
         }
         return differences;
     }
-    
+
     public FileTriggerRouter getFileTriggerRouter() {
         return fileTriggerRouter;
     }

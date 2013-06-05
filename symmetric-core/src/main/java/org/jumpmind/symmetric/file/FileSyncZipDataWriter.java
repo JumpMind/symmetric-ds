@@ -163,7 +163,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
                         command.append("processFile = true;\n");
                         command.append("sourceFileName = \"").append(snapshot.getFileName()).append("\";\n");
-                        command.append("sourceFilePath = \"").append(snapshot.getFilePath()).append("\";\n");
+                        command.append("sourceFilePath = \"");
+                        command.append(StringEscapeUtils.escapeJava(snapshot.getFilePath())).append("\";\n");
 
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
@@ -198,16 +199,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
                                     if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                         if (!triggerRouter.getTargetFilePath().equals(".")) {
-                                            String escapedTargetFilePath =
-                                                    StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath());
-                                            targetFile.append(escapedTargetFilePath);
+                                            targetFile.append(StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath()));
                                             targetFile.append("/");
                                         }
                                     } else {
                                         if (!snapshot.getFilePath().equals(".")) {
-                                            String escapedFilePath =
-                                                    StringEscapeUtils.escapeJava(snapshot.getFilePath());
-                                            targetFile.append(escapedFilePath);
+                                            targetFile.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()));
                                             targetFile.append("/");
                                         }
                                     }
@@ -225,16 +222,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
                                 if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
                                     if (!triggerRouter.getTargetFilePath().equals(".")) {
-                                        String escapedTargetFilePath =
-                                                StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath());
-                                        targetFile.append(escapedTargetFilePath);
+                                        targetFile.append(StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath()));
                                         targetFile.append("/");
                                     }
                                 } else {
                                     if (!snapshot.getFilePath().equals(".")) {
-                                        String escapedFilePath =
-                                                StringEscapeUtils.escapeJava(snapshot.getFilePath());
-                                        targetFile.append(escapedFilePath);
+                                        targetFile.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()));
                                         targetFile.append("/");
                                     }
                                 }
