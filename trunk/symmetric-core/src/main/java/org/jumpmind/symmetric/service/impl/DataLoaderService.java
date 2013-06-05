@@ -403,14 +403,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processor.process(ctx);
             }
 
-            List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
-            for (IncomingBatch incomingBatch : batchesProcessed) {
-                if (incomingBatch.getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION
-                        && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
-                    log.error("Failed to update batch {}.  Zero rows returned.",
-                            incomingBatch.getBatchId());
-                }
-            }
         } catch (Throwable ex) {
             error = ex;
             logAndRethrow(sourceNode, ex);
@@ -824,7 +816,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Status oldStatus = this.currentBatch.getStatus();
             try {
                 this.currentBatch.setStatus(Status.OK);
-                incomingBatchService.updateIncomingBatch(this.currentBatch);
+                if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED)) {
+                    incomingBatchService.updateIncomingBatch(this.currentBatch);
+                } else if (this.currentBatch.isRetry()) {
+                    incomingBatchService.deleteIncomingBatch(this.currentBatch);
+                }
             } catch (RuntimeException ex) {
                 this.currentBatch.setStatus(oldStatus);
                 throw ex;
@@ -935,9 +931,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 
                 if (transaction != null) {
-                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);                    
+                    if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                            this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);      
+                    } else {
+                        incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
+                    }
                 } else {
-                    incomingBatchService.updateIncomingBatch(this.currentBatch);
+                    if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                            this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(this.currentBatch);
+                    } else {
+                        incomingBatchService.insertIncomingBatch(this.currentBatch);
+                    }
                 }
             } catch (Exception e) {
                 log.error("Failed to record status of batch {}",

@@ -42,6 +42,8 @@ public interface IIncomingBatchService {
 
     public boolean acquireIncomingBatch(IncomingBatch batch);
 
+    public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch);
+    
     public void insertIncomingBatch(IncomingBatch batch);
     
     public int updateIncomingBatch(ISqlTransaction transaction, IncomingBatch batch);
