@@ -79,14 +79,14 @@ process. </para>
 <section id="filesync-operation">
 <title>Operation</title>
 <para> Not only is file synchronization configured similar to database synchronization, but it also operates in a very similar way. The file system is monitored for changes via a
-background job that tracks the file system changes 
+background job that tracks the file system changes
 (this parallels the use of triggers to monitor for changes when synchronizing database changes).
 When a change is detected it is written to the <xref linkend="table_file_snapshot" xrefstyle="table" />
 table. This file snapshot table represents the most recent known state of the
 monitored files. This snapshot table has a SymmetricDS database trigger automatically installed
 on it so that when it is updated the changes are captured by SymmetricDS on an internal
 channel named <literal>filesync</literal>. </para>
-<para> The changes to <xref linkend="table_file_snapshot" xrefstyle="table" /> are then routed and batched by a file-synchronization-specific router 
+<para> The changes to <xref linkend="table_file_snapshot" xrefstyle="table" /> are then routed and batched by a file-synchronization-specific router
 that delegates to the configured router
 based on the <xref linkend="table_file_trigger_router" xrefstyle="table" /> configuration. The
  file sync router can
@@ -213,7 +213,7 @@ be used to log to the SymmetricDS log file.</para>
 <para>
 The following example is for a configuration with client and server node
 groups. Creation, modification, and deletion of files with the extension
-of <literal>txt</literal> will be captured recursively 
+of <literal>txt</literal> will be captured recursively
 in the <literal>/filesync/server/all</literal>
 directory. A before copy script will set the targetBaseDir to
 <literal>/filesync/clients/{externalId}</literal>.
@@ -229,7 +229,7 @@ VALUES ('sync_directory','/filesync/server/all',1,'*.txt',null,1,1,1,
 
 INSERT INTO sym_file_trigger_router
  (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
-  target_file_path,conflict_strategy,create_time,last_update_by,last_update_time)
+  target_relative_dir,conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
   ('sync_directory','server_2_client',1,1,'','','SOURCE_WINS',current_timestamp,
   'example',current_timestamp);
@@ -272,7 +272,7 @@ VALUES
 
 INSERT INTO sym_file_trigger_router
   (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
-  target_file_path,conflict_strategy,create_time,last_update_by,last_update_time)
+  target_relative_dir,conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
   ('node_specific','router_files_to_node',1,1,'/filesync/clients','','SOURCE_WINS',
   current_timestamp,'example',current_timestamp);
@@ -290,7 +290,7 @@ VALUES
 </para>
 </section>
 </section>
-           
-           
-           
+
+
+
 </section>
