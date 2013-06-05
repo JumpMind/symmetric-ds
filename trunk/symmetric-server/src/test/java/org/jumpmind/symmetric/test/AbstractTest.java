@@ -63,7 +63,7 @@ abstract public class AbstractTest {
 
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
 
-    private static final int REGISTRATION_PORT = 9999;
+    private static final int REGISTRATION_PORT = 9995;
 
     private int port = REGISTRATION_PORT;
 
@@ -113,7 +113,7 @@ abstract public class AbstractTest {
     }
 
     protected abstract void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception;
-    
+
     @After
     public void teardown() {
         String[] groups = getGroupNames();
@@ -214,7 +214,7 @@ abstract public class AbstractTest {
         Assert.assertFalse("Failed to load configuration", inError);
 
     }
-    
+
     protected boolean pull(String name) {
         int tries = 0;
         boolean pulled = false;
@@ -231,7 +231,7 @@ abstract public class AbstractTest {
         }
         return pulled;
     }
-    
+
     protected boolean pullFiles(String name) {
         int tries = 0;
         boolean pulled = false;
@@ -247,8 +247,8 @@ abstract public class AbstractTest {
             tries++;
         }
         return pulled;
-    }  
-    
+    }
+
     protected boolean pushFiles(String name) {
         int tries = 0;
         boolean pulled = false;
@@ -264,9 +264,9 @@ abstract public class AbstractTest {
             tries++;
         }
         return pulled;
-    }    
-        
-    
+    }
+
+
     protected void loadConfigAndRegisterNode(String clientGroup, String serverGroup) throws Exception {
         loadConfigAtRegistrationServer();
         getWebServer(serverGroup).getEngine().getFileSyncService().trackChanges(true);
