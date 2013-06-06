@@ -80,9 +80,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public void markIncomingBatchesOk(String nodeId) {
         List<IncomingBatch> batches = listIncomingBatchesInErrorFor(nodeId);
         for (IncomingBatch incomingBatch : batches) {
-            incomingBatch.setErrorFlag(false);
-            incomingBatch.setStatus(Status.OK);
-            updateIncomingBatch(incomingBatch);
+            if (isRecordOkBatchesEnabled()) {
+                incomingBatch.setErrorFlag(false);
+                incomingBatch.setStatus(Status.OK);
+                updateIncomingBatch(incomingBatch);
+            } else {
+                deleteIncomingBatch(incomingBatch);
+            }
         }
     }
 
@@ -91,6 +95,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"),
                 new IncomingBatchMapper(), nodeId);
     }
+    
+    @SuppressWarnings("deprecation")
+    public boolean isRecordOkBatchesEnabled() {
+        return parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                !parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD);
+    }    
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, boolean ascending) {
@@ -152,11 +162,18 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         if (batch.isPersistable()) {
             IncomingBatch existingBatch = null;
 
-            try {
-                insertIncomingBatch(batch);
-            } catch (UniqueKeyException e) {
-                batch.setRetry(true);
+            if (isRecordOkBatchesEnabled()) {
+                try {
+                    insertIncomingBatch(batch);
+                } catch (UniqueKeyException e) {
+                    batch.setRetry(true);
+                    existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
+                }
+            } else {                
                 existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
+                if (existingBatch != null) {
+                    batch.setRetry(true);
+                }
             }
 
             if (batch.isRetry()) {
@@ -191,11 +208,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return okayToProcess;
     }
 
-    public void insertIncomingBatch(IncomingBatch batch) {
+    public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         if (batch.isPersistable()) {
             batch.setLastUpdatedHostName(clusterService.getServerId());
             batch.setLastUpdatedTime(new Date());
-            sqlTemplate.update(
+            transaction.prepareAndExecute(
                     getSql("insertIncomingBatchSql"),
                     new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
                             batch.getStatus().name(), batch.getNetworkMillis(),
@@ -214,6 +231,27 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
                             Types.TIMESTAMP });
         }
+    }
+    
+    public void insertIncomingBatch(IncomingBatch batch) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            insertIncomingBatch(transaction, batch);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;              
+        } finally {
+            close(transaction);
+        }    
     }
 
     public int deleteIncomingBatch(IncomingBatch batch) {
