@@ -841,7 +841,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Status oldStatus = this.currentBatch.getStatus();
             try {
                 this.currentBatch.setStatus(Status.OK);
-                incomingBatchService.updateIncomingBatch(this.currentBatch);
+                if (incomingBatchService.isRecordOkBatchesEnabled()) {
+                    incomingBatchService.updateIncomingBatch(this.currentBatch);
+                } else if (this.currentBatch.isRetry()) {
+                    incomingBatchService.deleteIncomingBatch(this.currentBatch);
+                }
             } catch (RuntimeException ex) {
                 this.currentBatch.setStatus(oldStatus);
                 throw ex;
@@ -952,9 +956,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 
                 if (transaction != null) {
-                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);                    
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
+                            this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);      
+                    } else {
+                        incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
+                    }
                 } else {
-                    incomingBatchService.updateIncomingBatch(this.currentBatch);
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
+                            this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(this.currentBatch);
+                    } else {
+                        incomingBatchService.insertIncomingBatch(this.currentBatch);
+                    }
                 }
             } catch (Exception e) {
                 log.error("Failed to record status of batch {}",

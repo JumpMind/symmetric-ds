@@ -41,6 +41,8 @@ public interface IIncomingBatchService {
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
 
     public boolean acquireIncomingBatch(IncomingBatch batch);
+    
+    public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch);
 
     public void insertIncomingBatch(IncomingBatch batch);
     
@@ -59,5 +61,7 @@ public interface IIncomingBatchService {
     public void markIncomingBatchesOk(String nodeId);
     
     public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId);
+    
+    public boolean isRecordOkBatchesEnabled();
 
 }
