@@ -1,3 +1,14 @@
+SymmetricDS - 3.4.6 (Released 2013-06-06) 
+=========================================
+- 0001244: [Bug] Mariadb driver is chosen even though the MySQL driver is specified (chenson) - closed.
+- 0001246: [Bug] Oracle NUMBER datatype is incorrectly mapped to an Integer data type. (abrougher) - closed.
+- 0001253: [Bug] Node communication records can be stranded (chenson) - closed.
+- 0001254: [Improvement] Allow additional paramters min idle and max idle on connection pool (gwilmer) - closed.
+- 0001256: [Improvement] Add a parameter that turns off writing to sym_incoming_batch altogether unless there is an ER (chenson) - closed.
+- 0001257: [Bug] common batches report data_event_count on outgoing_batch only on the first batch (chenson) - closed.
+- 0001258: [Bug] When an incoming_batch is finished, it's status is updated twice. (chenson) - closed.
+- 0001259: [Improvement] Add JMX method to extract batches to a file for a node and time and channel ranges (chenson) - closed.
+
 SymmetricDS - 3.4.5 (Released 2013-05-29) 
 =========================================
 - 0001211: [Bug] Backwards compatibility change. Use the client's Charset-Accept http header to decide what encoding to use. (chenson) - closed.
