@@ -270,7 +270,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
 
             for (NodeChannel nodeChannel : channels) {
-                if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
+                if (nodeChannel.isEnabled()) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
