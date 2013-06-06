@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
@@ -45,5 +46,8 @@ public interface IDataExtractorService {
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);
 
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
+    
+    public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
+            Date endBatchTime, String... channelIds);
 
 }

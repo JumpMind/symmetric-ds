@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -665,6 +666,35 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         return foundBatch;
     }
+    
+    public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
+            Date endBatchTime, String... channelIds) {
+        boolean foundBatch = false;
+        Node sourceNode = nodeService.findIdentity();
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatchRange(nodeId, startBatchTime, endBatchTime, channelIds);
+        List<OutgoingBatch> list = batches.getBatches();
+        for (OutgoingBatch outgoingBatch : list) {
+            Node targetNode = nodeService.findNode(nodeId);
+            if (targetNode == null && Constants.UNROUTED_NODE_ID.equals(nodeId)) {
+                targetNode = new Node();
+                targetNode.setNodeId("-1");
+            }
+            if (targetNode != null) {
+                IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
+                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode));
+                DataContext ctx = new DataContext();
+                ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
+                new DataProcessor(dataReader, createTransformDataWriter(
+                        nodeService.findIdentity(), targetNode,
+                        new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer,
+                                targetNode.requires13Compatiblity()))).process(ctx);
+                foundBatch = true;
+            }            
+        }
+        return foundBatch;
+    }
+
 
     protected TransformWriter createTransformDataWriter(Node identity, Node targetNode,
             IDataWriter extractWriter) {
