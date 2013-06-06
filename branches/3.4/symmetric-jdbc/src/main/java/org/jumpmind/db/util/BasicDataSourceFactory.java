@@ -86,6 +86,10 @@ public class BasicDataSourceFactory {
                 BasicDataSourcePropertyConstants.DB_POOL_MAX_ACTIVE, 10));
         dataSource.setMaxWait(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_WAIT,
                 5000));
+        dataSource.setMaxIdle(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_IDLE,
+                8));
+        dataSource.setMinIdle(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MIN_IDLE,
+                0));                
         dataSource.setMinEvictableIdleTimeMillis(properties.getInt(
                 BasicDataSourcePropertyConstants.DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 60000));
         dataSource.setTimeBetweenEvictionRunsMillis(120000);
