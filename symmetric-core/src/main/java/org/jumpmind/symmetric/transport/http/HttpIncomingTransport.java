@@ -1,29 +1,28 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.transport.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -36,7 +35,6 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
-import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
@@ -44,8 +42,6 @@ public class HttpIncomingTransport implements IIncomingTransport {
     private HttpURLConnection connection;
 
     private BufferedReader reader;
-    
-    private InputStream is;
 
     private IParameterService parameterService;
     
@@ -63,16 +59,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
         return this.connection.getURL().toExternalForm();
     }
 
-    public void close() {
-        if (reader != null) {
-            IOUtils.closeQuietly(reader);
-            reader = null;
-        } 
-        
-        if (is != null) {
-            IOUtils.closeQuietly(is);
-            is = null;
-        }
+    public void close() throws IOException {
+        IOUtils.closeQuietly(reader);
     }
 
     public boolean isOpen() {
@@ -82,9 +70,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public String getRedirectionUrl() {
         return redirectionUrl;
     }
+
+    public BufferedReader open() throws IOException {
     
-    public InputStream openStream() throws IOException {
-        
         boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
         if (manualRedirects) {
             connection = this.openConnectionCheckRedirects(connection);
@@ -102,16 +90,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
         case WebConstants.SC_FORBIDDEN:
             throw new AuthenticationException();
         default:
-            is = HttpTransportManager.getInputStreamFrom(connection);
-            return is;
+            reader = HttpTransportManager.getReaderFrom(connection);
+            return reader;
         }
-    }
-    
-
-    public BufferedReader openReader() throws IOException {
-        InputStream is = openStream();
-        reader = TransportUtils.toReader(is);
-        return reader;
     }
     
     /**

@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform;
 
 /*
@@ -51,7 +31,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
@@ -67,8 +46,8 @@ import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
-import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
+import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -92,8 +71,7 @@ public class JdbcDatabasePlatformFactory {
 
         addPlatform(platforms, "H2", H2DatabasePlatform.class);
         addPlatform(platforms, "H21", H2DatabasePlatform.class);
-        addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
-        addPlatform(platforms, "Informix Dynamic Server", InformixDatabasePlatform.class);
+        addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);        
         addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
         addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
@@ -108,9 +86,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
-        addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
-        addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
-        addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
+        addPlatform(platforms, "Sybase", SybaseDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
@@ -132,30 +108,30 @@ public class JdbcDatabasePlatformFactory {
                 OracleDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL,
                 PostgreSqlDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(AseDatabasePlatform.JDBC_SUBPROTOCOL, AseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(SybaseDatabasePlatform.JDBC_SUBPROTOCOL, SybaseDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
                 FirebirdDatabasePlatform.class);
-    }
-
+    }   
+    
     /*
-     * Creates a new platform for the specified database.  Note that this method installs
+     * Creates a new platform for the specified database.  Note that this method installs 
      * the data source in the returned platform instance.
-     *
+     * 
      * @param dataSource The data source for the database
      * @param log The logger that the platform should use
-     *
+     * 
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode)
             throws DdlException {
-
+        
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
         String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
 
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
-
+        
         try {
             Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, SqlTemplateSettings.class);
             IDatabasePlatform platform = construtor.newInstance(dataSource, settings);
@@ -171,7 +147,7 @@ public class JdbcDatabasePlatformFactory {
             String[] nameVersion) throws DdlException {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
-
+        
         if (platformClass == null) {
             platformClass = platforms.get(nameVersion[0].toLowerCase());
         }
@@ -218,10 +194,10 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 }
             }
-
+            
             /*
              * if the productName is MySQL, it could be either MysSQL or MariaDB
-             * query the metadata to determine which one it is
+             * query the metadata to determine which one it is 
              */
             if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {

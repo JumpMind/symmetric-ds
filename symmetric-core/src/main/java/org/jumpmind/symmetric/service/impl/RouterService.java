@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
-import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
@@ -109,7 +108,6 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("audit", new AuditTableDataRouter(engine));
         this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
-        this.routers.put(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -120,7 +118,7 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Node node, boolean initialLoad) {
-        IDataRouter router = getDataRouter(dataMetaData.getRouter());
+        IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet,
@@ -270,7 +268,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
 
             for (NodeChannel nodeChannel : channels) {
-                if (nodeChannel.isEnabled()) {
+                if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
@@ -296,13 +294,12 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !Constants.CHANNEL_FILESYNC.equals(channelId)
                 && !Constants.CHANNEL_RELOAD.equals(channelId) 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
             for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
-                IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                IDataRouter dataRouter = getDataRouter(triggerRouter);
                 /*
                  * If the data router is not a default data router or there will
                  * be incoming data on the channel where sync_on_incoming_batch
@@ -311,27 +308,30 @@ public class RouterService extends AbstractService implements IRouterService {
                  * data to all nodes in a node_group. We can only do 'optimal'
                  * routing if data is going to go to all nodes in a group.
                  */
-                if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
-                        .equals(nodeGroupId)) {
-                    if (!(dataRouter instanceof DefaultDataRouter)) {
-                        producesCommonBatches = false;
-                        break;
-                    } else {
-                        if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
-                            String tableName = triggerRouter.getTrigger()
-                                    .getFullyQualifiedSourceTableName();
-                            for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
-                                if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName()
-                                        .equals(tableName)
-                                        && triggerRouter2.getRouter().getNodeGroupLink()
-                                                .getTargetNodeGroupId().equals(nodeGroupId)) {
-                                    producesCommonBatches = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+				if (triggerRouter.getRouter().getNodeGroupLink()
+						.getSourceNodeGroupId().equals(nodeGroupId)) {
+					if (!(dataRouter instanceof DefaultDataRouter)) {
+						producesCommonBatches = false;
+						break;
+					} else {
+						if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
+							String tableName = triggerRouter.getTrigger()
+									.getFullyQualifiedSourceTableName();
+							for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
+								if (triggerRouter2.getTrigger()
+										.getFullyQualifiedSourceTableName()
+										.equals(tableName)
+										&& triggerRouter2.getRouter()
+												.getNodeGroupLink()
+												.getTargetNodeGroupId()
+												.equals(nodeGroupId)) {
+									producesCommonBatches = false;
+									break;
+								}
+							}
+						}
+					}
+				}
             }
         }
 
@@ -592,12 +592,12 @@ public class RouterService extends AbstractService implements IRouterService {
         Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
+                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter,
                         context.getChannel());
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getDataEventType())) {
-                    IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                    IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
                     nodeIds = dataRouter.routeToNodes(context, dataMetaData,
@@ -663,9 +663,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 batch.incrementDataEventCount();
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
-                    Router router = dataMetaData.getRouter();
+                    TriggerRouter triggerRouter = dataMetaData.getTriggerRouter();
                     context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            router != null ? router.getRouterId()
+                            triggerRouter != null ? triggerRouter.getRouter().getRouterId()
                                     : Constants.UNKNOWN_ROUTER_ID);
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
@@ -681,21 +681,21 @@ public class RouterService extends AbstractService implements IRouterService {
         return numberOfDataEventsInserted;
     }
 
-    protected IDataRouter getDataRouter(Router router) {
-        IDataRouter dataRouter = null;
-        if (!StringUtils.isBlank(router.getRouterType())) {
-            dataRouter = routers.get(router.getRouterType());
-            if (dataRouter == null) {
+    protected IDataRouter getDataRouter(TriggerRouter trigger) {
+        IDataRouter router = null;
+        if (!StringUtils.isBlank(trigger.getRouter().getRouterType())) {
+            router = routers.get(trigger.getRouter().getRouterType());
+            if (router == null) {
                 log.warn(
-                        "Could not find configured router type of {} with the id of {}. Defaulting the router",
-                        router.getRouterType(), router.getRouterId());
+                        "Could not find configured router '{}' for trigger with the id of {}. Defaulting the router",
+                        trigger.getRouter().getRouterType(), trigger.getTrigger().getTriggerId());
             }
         }
 
-        if (dataRouter == null) {
+        if (router == null) {
             return routers.get("default");
         }
-        return dataRouter;
+        return router;
     }
 
     protected List<TriggerRouter> getTriggerRoutersForData(Data data) {

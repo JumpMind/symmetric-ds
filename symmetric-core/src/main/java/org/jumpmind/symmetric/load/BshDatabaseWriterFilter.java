@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.load;
 
@@ -56,7 +56,6 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     private static final String DATA = "data";
     private static final String ERROR = "error";
     private static final String ENGINE = "engine";
-    private static final String LOG = "log";
     private final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     private final String BATCH_COMPLETE_SCRIPTS_KEY = String.format("%d.BatchCompleteScripts",
             hashCode());
@@ -126,7 +125,6 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
             throws EvalError {
 
-        interpreter.set(LOG, log);
         interpreter.set(ENGINE, this.symmetricEngine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);

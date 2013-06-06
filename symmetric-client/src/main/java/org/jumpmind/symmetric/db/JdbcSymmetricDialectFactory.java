@@ -1,27 +1,27 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.db;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
@@ -37,9 +37,8 @@ import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
-import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
-import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
+import org.jumpmind.db.platform.sybase.SybaseDatabasePlatform;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
@@ -56,8 +55,8 @@ import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
 import org.jumpmind.symmetric.db.oracle.OracleSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
-import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
+import org.jumpmind.symmetric.db.sybase.SybaseSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,10 +116,8 @@ public class JdbcSymmetricDialectFactory {
             }
         } else if (platform instanceof FirebirdDatabasePlatform) {
             dialect = new FirebirdSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof AseDatabasePlatform) {
-            dialect = new AseSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof SqlAnywhereDatabasePlatform) {
-            dialect = new SqlAnywhereSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof SybaseDatabasePlatform) {
+            dialect = new SybaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof InterbaseDatabasePlatform) {
             dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqliteDatabasePlatform) {
