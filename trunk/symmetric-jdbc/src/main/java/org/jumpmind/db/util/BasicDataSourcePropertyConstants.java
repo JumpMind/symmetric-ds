@@ -37,6 +37,8 @@ final public class BasicDataSourcePropertyConstants {
     public final static String DB_POOL_PASSWORD = "db.password";
     public final static String DB_POOL_INITIAL_SIZE = "db.pool.initial.size";
     public final static String DB_POOL_MAX_ACTIVE = "db.pool.max.active";
+    public final static String DB_POOL_MAX_IDLE = "db.pool.max.idle";
+    public final static String DB_POOL_MIN_IDLE = "db.pool.min.idle";    
     public final static String DB_POOL_MAX_WAIT = "db.pool.max.wait.millis";
     public final static String DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
     public final static String DB_POOL_VALIDATION_QUERY = "db.validation.query";
