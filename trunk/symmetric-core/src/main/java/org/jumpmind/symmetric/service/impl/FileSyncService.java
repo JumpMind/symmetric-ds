@@ -569,7 +569,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                             .size() : 0);
                         }
                         incomingBatch.setStatus(IncomingBatch.Status.OK);
-                        incomingBatchService.updateIncomingBatch(incomingBatch);
+                        if (incomingBatchService.isRecordOkBatchesEnabled()) {
+                            incomingBatchService.updateIncomingBatch(incomingBatch);
+                        } else if (incomingBatch.isRetry()) {
+                            incomingBatchService.deleteIncomingBatch(incomingBatch);
+                        }
                     } catch (Throwable ex) {
                         if (ex instanceof TargetError) {
                             Throwable target = ((TargetError) ex).getTarget();
@@ -583,7 +587,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         incomingBatch.setErrorFlag(true);
                         incomingBatch.setStatus(IncomingBatch.Status.ER);
                         incomingBatch.setSqlMessage(ex.getMessage());
-                        incomingBatchService.updateIncomingBatch(incomingBatch);
+                        if (incomingBatchService.isRecordOkBatchesEnabled() || incomingBatch.isRetry()) {
+                            incomingBatchService.updateIncomingBatch(incomingBatch);
+                        } else {
+                            incomingBatchService.insertIncomingBatch(incomingBatch);
+                        }
                         processInfo.setStatus(ProcessInfo.Status.ERROR);
                         break;
 
@@ -632,7 +640,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     nodeCommunication.getNodeId(), processInfo);
 
             if (batchesProcessed.size() > 0) {
-                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                processInfo.setStatus(ProcessInfo.Status.ACKING);                
                 status.updateIncomingStatus(batchesProcessed);
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
                         engine.getTransportManager());

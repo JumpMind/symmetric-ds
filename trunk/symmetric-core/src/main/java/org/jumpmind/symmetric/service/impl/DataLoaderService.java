@@ -816,7 +816,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Status oldStatus = this.currentBatch.getStatus();
             try {
                 this.currentBatch.setStatus(Status.OK);
-                if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED)) {
+                if (incomingBatchService.isRecordOkBatchesEnabled()) {
                     incomingBatchService.updateIncomingBatch(this.currentBatch);
                 } else if (this.currentBatch.isRetry()) {
                     incomingBatchService.deleteIncomingBatch(this.currentBatch);
@@ -931,14 +931,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 
                 if (transaction != null) {
-                    if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
                             this.currentBatch.isRetry()) {
                         incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);      
                     } else {
                         incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
                     }
                 } else {
-                    if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
                             this.currentBatch.isRetry()) {
                         incomingBatchService.updateIncomingBatch(this.currentBatch);
                     } else {

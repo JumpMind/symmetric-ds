@@ -80,7 +80,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public void markIncomingBatchesOk(String nodeId) {
         List<IncomingBatch> batches = listIncomingBatchesInErrorFor(nodeId);
         for (IncomingBatch incomingBatch : batches) {
-            if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED)) {
+            if (isRecordOkBatchesEnabled()) {
                 incomingBatch.setErrorFlag(false);
                 incomingBatch.setStatus(Status.OK);
                 updateIncomingBatch(incomingBatch);
@@ -94,6 +94,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return sqlTemplate.query(
                 getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"),
                 new IncomingBatchMapper(), nodeId);
+    }
+    
+    @SuppressWarnings("deprecation")
+    public boolean isRecordOkBatchesEnabled() {
+        return parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
+                !parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD);
     }
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
@@ -156,7 +162,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         if (batch.isPersistable()) {
             IncomingBatch existingBatch = null;
 
-            if (parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED)) {
+            if (isRecordOkBatchesEnabled()) {
                 try {
                     insertIncomingBatch(batch);
                 } catch (UniqueKeyException e) {
