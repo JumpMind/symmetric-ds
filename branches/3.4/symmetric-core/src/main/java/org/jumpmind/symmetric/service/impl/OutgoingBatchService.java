@@ -362,13 +362,25 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
     }
+    
+    public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels) {
+        OutgoingBatches batches = new OutgoingBatches();
+        List<OutgoingBatch> batchList = new ArrayList<OutgoingBatch>();
+        for (String channel : channels) {
+            batchList.addAll(sqlTemplate.query(
+                    getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchTimeRangeSql"),
+                    new OutgoingBatchMapper(true, false), nodeId, channel, startDate, endDate));
+        }
+        batches.setBatches(batchList);
+        return batches;
+    }
 
-    public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
+    public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId) {
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"),
-                new OutgoingBatchMapper(true, false), Long.parseLong(startBatchId),
-                Long.parseLong(endBatchId)));
+                new OutgoingBatchMapper(true, false), startBatchId,
+                endBatchId));
         return batches;
     }
 
