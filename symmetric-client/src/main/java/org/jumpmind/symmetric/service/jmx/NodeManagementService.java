@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.jmx;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -39,7 +40,9 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -274,6 +277,35 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             return false;
         }
     }
+    
+    @ManagedOperation(description = "Extract multiple batches to a file for a time range")
+    @ManagedOperationParameters({
+            @ManagedOperationParameter(name = "fileName", description = "The file to write the batch output to"),
+            @ManagedOperationParameter(name = "nodeId", description = "The target node id whose batches need extracted"),
+            @ManagedOperationParameter(name = "startTime", description = "The start time range to extract.  The format is yyyy-MM-dd hh:mm"),
+            @ManagedOperationParameter(name = "endTime", description = "The start time range to extract.  The format is yyyy-MM-dd hh:mm"),
+            @ManagedOperationParameter(name = "channelIdList", description = "A comma separated list of channels to extract") })
+    public boolean extractBatcheRange(String fileName, String nodeId, String startTime,
+            String endTime, String channelIdList) {
+        File file = new File(fileName);
+        file.getParentFile().mkdirs();
+        Date startBatchTime = FormatUtils.parseDate(startTime, FormatUtils.TIMESTAMP_PATTERNS);
+        Date endBatchTime = FormatUtils.parseDate(endTime, FormatUtils.TIMESTAMP_PATTERNS);
+        String[] channelIds = channelIdList.split(",");
+        IDataExtractorService dataExtractorService = engine.getDataExtractorService();
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file));
+            dataExtractorService.extractBatchRange(writer, nodeId, startBatchTime, endBatchTime,
+                    channelIds);
+            return true;
+        } catch (Exception ex) {
+            log.error("Failed to write batch range to file", ex);
+            return false;
+        } finally {
+            IOUtils.closeQuietly(writer);
+        }
+    }   
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters({

@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -42,7 +43,9 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels);
 
-    public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
+    public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId);
+    
+    public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels);
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
 
