@@ -55,8 +55,8 @@ public class FileSyncTest extends AbstractTest {
         createDirsAndInitialFiles();
 
         loadConfigAndRegisterNode("client", "server");
-
-        pullFiles();
+        
+        Assert.assertFalse(pullFiles());
 
         testInitialLoadFromServerToClient(rootServer, clientServer);
 
@@ -74,13 +74,13 @@ public class FileSyncTest extends AbstractTest {
                 allClntTargetInitialLoadFile.exists());
         Assert.assertTrue("The initial load file should exist at the server",
                 allSvrSourceInitialLoadFile.exists());
-        pullFiles();
+        Assert.assertFalse(pullFiles());
         Assert.assertFalse("The initial load file should not exist at the client",
                 allClntTargetInitialLoadFile.exists());
         Assert.assertTrue("The initial load file should exist at the server",
                 allSvrSourceInitialLoadFile.exists());
         rootServer.reloadNode(clientServer.getNodeService().findIdentityNodeId(), "unit_test");
-        pullFiles();
+        Assert.assertTrue(pullFiles());
         Assert.assertTrue("The initial load file should exist at the client",
                 allClntTargetInitialLoadFile.exists());
     }
