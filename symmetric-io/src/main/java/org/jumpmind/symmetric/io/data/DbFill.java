@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data;
 import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -546,7 +548,9 @@ public class DbFill {
             objectValue = String.format("%s %s",
                     FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
                     AppUtils.getTimezoneOffset());
-        } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+        } else if (type == Types.DATE) {
+             objectValue = DateUtils.truncate(randomDate(), Calendar.DATE);
+        } else if (type == Types.TIMESTAMP || type == Types.TIME) {
             objectValue = randomDate();
         } else if (type == Types.CHAR) {
             objectValue = randomChar().toString();
@@ -633,6 +637,11 @@ public class DbFill {
     }
 
     private BigDecimal randomBigDecimal(int size, int digits) {
+        if (size == 0 && digits == 0) {
+            // set the values to something reasonable
+            size = 10;
+            digits = 6;
+        }
         Random rnd = getRand();
         StringBuilder str = new StringBuilder();
         if (size>0 && rnd.nextBoolean()) {
