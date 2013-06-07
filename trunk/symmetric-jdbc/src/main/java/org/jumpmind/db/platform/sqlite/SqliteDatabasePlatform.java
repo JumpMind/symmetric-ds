@@ -29,11 +29,11 @@ import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
-    /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     
     private Map<String, String> sqlScriptReplacementTokens;
@@ -45,7 +45,6 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
         sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}","$1");
         sqlScriptReplacementTokens.put("\\{d([^<]*?)\\}","$1");
     }
-
     
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
@@ -57,12 +56,10 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
     }
 
     public String getDefaultSchema() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public String getDefaultCatalog() {
-        // TODO Auto-generated method stub
         return null;
     }
     
@@ -79,5 +76,10 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
     
     protected ISqlTemplate createSqlTemplate() {
         return new SqliteJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo()); 
+    }
+    
+    @Override
+    protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
+        return row.getString(name);
     }
 }
