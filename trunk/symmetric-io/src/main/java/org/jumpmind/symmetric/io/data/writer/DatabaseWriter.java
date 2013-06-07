@@ -916,6 +916,7 @@ public class DatabaseWriter implements IDataWriter {
 			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);			
 		}
 		
+		sql = platform.scrubSql(sql);
 //		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
 //		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
 

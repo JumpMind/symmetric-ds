@@ -512,7 +512,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getRouter().setRouterType("bsh");
         trigger1.getRouter().setRouterExpression(
-                "targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
+                "targetNodes.add(ROUTING_VARCHAR); if (OLD_ROUTING_VARCHAR != void) { targetNodes.add(OLD_ROUTING_VARCHAR); }");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getNodeChannel(

@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
+import org.jumpmind.util.FormatUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,60 +56,61 @@ public class DbExportImportTest extends AbstractServiceTest {
     private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 
     private static final String TEST_TS_W_TZ = "test_ts_w_tz";
-    
+
     protected static IDatabasePlatform platform;
 
     @BeforeClass
-    public static void setup()  throws Exception {
+    public static void setup() throws Exception {
         File f = new File("target/rootdbs");
         FileUtils.deleteDirectory(f);
         f.mkdir();
         AbstractServiceTest.setup();
 
     }
-    
+
     @Test
     public void testInsertBigIntIntoOracleIntField() {
         if (getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
             ISymmetricEngine engine = getSymmetricEngine();
             IDatabasePlatform platform = engine.getDatabasePlatform();
-            
+
             Table table = new Table("TEST_ORACLE_INTEGER");
             table.addColumn(new Column("A", false, Types.INTEGER, -1, -1));
             platform.alterCaseToMatchDatabaseDefaultCase(table);
             platform.createTables(true, false, table);
-            
+
             DbImport importer = new DbImport(platform);
             importer.setFormat(DbImport.Format.CSV);
             importer.importTables("\"A\"\n1149140000100490", table.getName());
-            
-            Assert.assertEquals(1149140000100490l,platform.getSqlTemplate().queryForLong("select A from TEST_ORACLE_INTEGER"));
+
+            Assert.assertEquals(1149140000100490l,
+                    platform.getSqlTemplate().queryForLong("select A from TEST_ORACLE_INTEGER"));
         }
     }
 
-    @Test 
-    public void exportNullTimestampToCsv() throws Exception {       
+    @Test
+    public void exportNullTimestampToCsv() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getDatabasePlatform();
-        
+
         Table table = new Table("test_null_timestamp");
         table.addColumn(new Column("a", false, Types.TIMESTAMP, -1, -1));
         table.addColumn(new Column("b", false, Types.TIMESTAMP, -1, -1));
         platform.alterCaseToMatchDatabaseDefaultCase(table);
         platform.createTables(true, false, table);
-        
+
         platform.getSqlTemplate().update("insert into test_null_timestamp values(null, null)");
-        
+
         DbExport export = new DbExport(platform);
         export.setNoCreateInfo(true);
         export.setFormat(Format.CSV);
-        
-        String csv = export.exportTables(new Table[] {table});
-        
+
+        String csv = export.exportTables(new Table[] { table });
+
         Assert.assertEquals("\"A\",\"B\"\n,", csv.trim().toUpperCase());
-        
+
     }
-    
+
     @Test
     public void exportTableInAnotherSchemaOnH2() throws Exception {
         if (getPlatform().getName().equals(DatabaseNamesConstants.H2)) {
@@ -128,7 +130,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.exportTables(new String[] { "TEST" }).toLowerCase();
             // TODO validate
         }
-    }   
+    }
 
     @Test
     public void exportTestDatabaseSQL() throws Exception {
@@ -147,8 +149,11 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 40, StringUtils.countMatches(output, "create table \"sym_"));
-        Assert.assertEquals(38,
-                StringUtils.countMatches(output, "varchar(" + Integer.MAX_VALUE + ")"));
+        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 243 : 38;
+        final String EXPECTED_STRING = "varchar(" + Integer.MAX_VALUE + ")";
+        Assert.assertEquals("Expected " + EXPECTED_VARCHAR_MAX + " " + EXPECTED_STRING
+                + " in the following output: " + output, EXPECTED_VARCHAR_MAX,
+                StringUtils.countMatches(output, EXPECTED_STRING));
     }
 
     @Test
@@ -191,12 +196,14 @@ public class DbExportImportTest extends AbstractServiceTest {
             export.setFormat(Format.SQL);
             String sql = export.exportTables(new String[] { TEST_TS_W_TZ });
             final String EXPECTED_POSTGRES = "insert into \"test_ts_w_tz\"(\"id\", \"tz\") (select 1,cast('1973-06-08 07:00:00.000000 -04:00' as timestamp with time zone) where (select distinct 1 from \"test_ts_w_tz\" where  \"id\" = 1) is null);";
-            Assert.assertTrue("Expected the following sql:\n" +sql + "\n\n to contain:\n" +EXPECTED_POSTGRES, sql.contains(EXPECTED_POSTGRES));
-            
+            Assert.assertTrue("Expected the following sql:\n" + sql + "\n\n to contain:\n"
+                    + EXPECTED_POSTGRES, sql.contains(EXPECTED_POSTGRES));
+
             export.setCompatible(Compatible.ORACLE);
             sql = export.exportTables(new String[] { TEST_TS_W_TZ });
             final String EXPECTED_ORACLE = "insert into \"test_ts_w_tz\" (\"id\", \"tz\") values (1,TO_TIMESTAMP_TZ('1973-06-08 07:00:00.000000 -04:00', 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM'));";
-            Assert.assertTrue("Expected the following sql:\n" +sql + "\n\n to contain:\n" +EXPECTED_ORACLE, sql.contains(EXPECTED_ORACLE));
+            Assert.assertTrue("Expected the following sql:\n" + sql + "\n\n to contain:\n"
+                    + EXPECTED_ORACLE, sql.contains(EXPECTED_ORACLE));
 
         }
     }
@@ -212,12 +219,14 @@ public class DbExportImportTest extends AbstractServiceTest {
                 template.update(String.format("drop table \"%s\"", TEST_TS_W_TZ));
             } catch (Exception ex) {
             }
-            String createSql = String.format(
-                    "create table \"%s\" (\"id\" integer, \"tz\" timestamp with time zone, primary key (\"id\"))",
-                    TEST_TS_W_TZ);
-            template.update(createSql);          
-            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT, platform.getTableFromCache(TEST_TS_W_TZ, true));            
-            template.update(statement.getSql(), statement.getValueArray(new Object[] {1, "1973-06-08 07:00:00.000 -04:00"}, new Object[] {1}));
+            String createSql = String
+                    .format("create table \"%s\" (\"id\" integer, \"tz\" timestamp with time zone, primary key (\"id\"))",
+                            TEST_TS_W_TZ);
+            template.update(createSql);
+            DmlStatement statement = platform.createDmlStatement(DmlType.INSERT,
+                    platform.getTableFromCache(TEST_TS_W_TZ, true));
+            template.update(statement.getSql(), statement.getValueArray(new Object[] { 1,
+                    "1973-06-08 07:00:00.000 -04:00" }, new Object[] { 1 }));
             return true;
         } else {
             return false;
@@ -365,7 +374,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                 table.getName(), null, table.getColumns(), false, null, null);
         Assert.assertEquals(RECORD_COUNT, sqlTemplate.queryForInt(dml.getSql()));
 
-        compareRows(rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
+        compareRows(table, rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
 
         // TODO test error
 
@@ -375,7 +384,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         // TODO test force
     }
-    
+
     @Test
     public void exportThenImportCsvWithBackslashes() throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
@@ -384,7 +393,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Table table = testTables.findTable("test_db_import_1", false);
 
         recreateImportTable();
-        
+
         DbImport importCsv = new DbImport(platform);
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-backslashes.sql"));
@@ -406,9 +415,9 @@ public class DbExportImportTest extends AbstractServiceTest {
         importCsv.setFormat(DbImport.Format.CSV);
         importCsv.importTables(csvOutput, table.getName());
 
-        compareRows(rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
+        compareRows(table, rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
 
-    }    
+    }
 
     @Test
     public void testExportCsvToDirectory() throws Exception {
@@ -462,7 +471,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     }
 
-    protected void compareRows(List<Row> one, List<Row> two) {
+    protected void compareRows(Table table, List<Row> one, List<Row> two) {
         if (one.size() != two.size()) {
             Assert.fail("First list had " + one.size() + " and second list had " + two.size());
         }
@@ -471,7 +480,17 @@ public class DbExportImportTest extends AbstractServiceTest {
             Row rTwo = two.get(i);
             Set<String> keys = rOne.keySet();
             for (String key : keys) {
-                if (!ObjectUtils.equals(rOne.get(key), rTwo.get(key))) {
+                Object oOne = rOne.get(key);
+                Object oTwo = rTwo.get(key);
+                Column column = table.getColumnWithName(key);
+                // special comparison for sqlite.  the result reports all types as text
+                // even though the jdbc table metadata reports the types as dates
+                if (column != null && (column.getMappedType().equals("DATE") || column.getMappedType().equals("TIME") || column.getMappedType().equals("TIMESTAMP")) 
+                        && oOne instanceof String && oTwo instanceof String) {
+                    oOne = FormatUtils.parseDate(oOne.toString(), FormatUtils.TIMESTAMP_PATTERNS);
+                    oTwo = FormatUtils.parseDate(oTwo.toString(), FormatUtils.TIMESTAMP_PATTERNS);
+                }
+                if (!ObjectUtils.equals(oOne, oTwo)) {
                     Assert.fail("The " + i + " element was not the same.  The column " + key
                             + " had a value of " + rOne.get(key) + " for one row and "
                             + rTwo.get(key) + " for the other");
