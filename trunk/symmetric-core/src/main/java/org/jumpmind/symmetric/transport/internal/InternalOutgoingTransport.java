@@ -28,13 +28,14 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class InternalOutgoingTransport implements IOutgoingTransport {
 
     BufferedWriter writer = null;
-    
+
     OutputStream os = null;
 
     ChannelMap map = null;
@@ -64,7 +65,7 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     public boolean isOpen() {
         return open;
     }
-    
+
     public OutputStream openStream() {
         return os;
     }
@@ -73,7 +74,7 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
         return writer;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
         return map;
     }
 

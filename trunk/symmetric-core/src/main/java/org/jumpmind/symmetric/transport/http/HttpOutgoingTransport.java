@@ -34,6 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -45,9 +46,9 @@ import org.jumpmind.symmetric.web.WebConstants;
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     static final String CRLF = "\r\n";
-    
+
     private String boundary;
-    
+
     private URL url;
 
     private OutputStream os;
@@ -108,12 +109,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             reader = null;
         }
     }
-    
+
     private void closeOutputStream(boolean closeQuietly) {
         if (os != null) {
             try {
                 if (fileUpload) {
-                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);                    
+                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);
                 }
                 os.flush();
             } catch (IOException ex) {
@@ -132,7 +133,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             }
         }
     }
-    
+
     private void closeWriter(boolean closeQuietly) {
         if (writer != null) {
             try {
@@ -162,7 +163,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * Before streaming data to the remote node, make sure it is ok to. We have
      * found that we can be more efficient on a push by relying on HTTP
      * keep-alive.
-     * 
+     *
      * @throws IOException
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
@@ -263,7 +264,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public BufferedReader readResponse() throws IOException {
-        closeWriter(false);        
+        closeWriter(false);
         closeOutputStream(false);
         analyzeResponseCode(connection.getResponseCode());
         this.reader = HttpTransportManager.getReaderFrom(connection);
@@ -274,7 +275,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return connection != null;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
 
         HttpURLConnection connection = requestReservation();
 
@@ -288,6 +289,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
         suspendIgnoreChannelsList.addSuspendChannels(suspends);
         suspendIgnoreChannelsList.addIgnoreChannels(ignores);
+
+        ChannelMap localSuspendIgnoreChannelsList = configurationService
+                .getSuspendIgnoreChannelLists(targetNode.getNodeId());
+        suspendIgnoreChannelsList.addSuspendChannels(
+                localSuspendIgnoreChannelsList.getSuspendChannels());
+        suspendIgnoreChannelsList.addIgnoreChannels(
+                localSuspendIgnoreChannelsList.getIgnoreChannels());
 
         return suspendIgnoreChannelsList;
     }
