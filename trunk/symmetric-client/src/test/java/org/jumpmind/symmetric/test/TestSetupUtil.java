@@ -36,6 +36,7 @@ import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ abstract public class TestSetupUtil {
     static private ISymmetricEngine engine;
 
     public static ISymmetricEngine prepareForServiceTests() {
+        System.setProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "false");
         if (engine == null) {
             engine = prepareRoot("/test-services-setup.sql");
             engine.start();
@@ -55,6 +57,7 @@ abstract public class TestSetupUtil {
     }
 
     protected static ISymmetricEngine prepareRoot() {
+        System.setProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "false");
         return prepareRoot(null);
     }
 
