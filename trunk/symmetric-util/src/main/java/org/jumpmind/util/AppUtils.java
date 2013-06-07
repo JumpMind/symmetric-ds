@@ -136,10 +136,12 @@ public class AppUtils {
      *            milliseconds to sleep
      */
     public static void sleep(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-            log.warn("{}", e.getMessage());
+        if (ms > 0) {
+            try {
+                Thread.sleep(ms);
+            } catch (InterruptedException e) {
+                log.warn("{}", e.getMessage());
+            }
         }
     }
 
