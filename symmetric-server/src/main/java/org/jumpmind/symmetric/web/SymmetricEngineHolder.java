@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,6 +244,8 @@ public class SymmetricEngineHolder {
 
                         IConfigurationService configurationService = symmetricWebServer
                                 .getConfigurationService();
+                        ITriggerRouterService triggerRouterService = symmetricWebServer.
+                                getTriggerRouterService();
                         List<NodeGroup> groups = configurationService.getNodeGroups();
                         boolean foundGroup = false;
                         for (NodeGroup nodeGroup : groups) {
@@ -267,6 +270,7 @@ public class SymmetricEngineHolder {
                         if (!foundLink) {
                             configurationService.saveNodeGroupLink(new NodeGroupLink(
                                     serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
+                            triggerRouterService.syncTriggers();
                         }
 
                         IRegistrationService registrationService = symmetricWebServer
