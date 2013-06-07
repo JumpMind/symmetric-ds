@@ -29,6 +29,7 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
@@ -38,7 +39,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     BufferedWriter writer = null;
 
     BufferedReader reader = null;
-    
+
     OutputStream os = null;
 
     boolean open = true;
@@ -48,7 +49,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         this.writer = TransportUtils.toWriter(os);
         this.reader = TransportUtils.toReader(respIs);
     }
-    
+
     public OutputStream openStream() {
         return os;
     }
@@ -73,7 +74,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return writer;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();
     }
 }

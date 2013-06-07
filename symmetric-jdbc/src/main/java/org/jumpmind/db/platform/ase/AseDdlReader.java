@@ -109,11 +109,11 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19) // ADB reads numeric back to bigint
+        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
             column.setMappedTypeCode(Types.BIGINT);
-        } else if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 12) // ADB reads numeric back to bigint
+        } else if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 12)
                 && (column.getScale() == 0)) {
             // Back-mapping to INTEGER
             column.setMappedTypeCode(Types.INTEGER);

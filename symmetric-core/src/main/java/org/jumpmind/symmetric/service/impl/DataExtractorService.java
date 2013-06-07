@@ -119,7 +119,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IStatisticManager statisticManager;
 
     private IStagingManager stagingManager;
-    
+
     private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
 
     public DataExtractorService(IParameterService parameterService,
@@ -264,7 +264,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private List<OutgoingBatch> filterBatchesForExtraction(OutgoingBatches batches,
             ChannelMap suspendIgnoreChannelsList) {
-        
+
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             batches.filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
         }
@@ -316,7 +316,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (batches.containsBatches()) {
 
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches,
-                    targetTransport.getSuspendIgnoreChannelLists(configurationService));
+                    targetTransport.getSuspendIgnoreChannelLists(configurationService, targetNode));
 
             if (activeBatches.size() > 0) {
                 extract(processInfo, targetNode, targetTransport, activeBatches);
@@ -354,17 +354,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
-                
+
                 processInfo.incrementBatchCount();
                 processInfo.setCurrentBatchId(currentBatch.getBatchId());
 
                 currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
-                
+
                 if (dataWriter == null) {
                     dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                             targetTransport.openWriter(), targetNode.requires13Compatiblity());
                 }
-                
+
                 processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
                 currentBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch,
                         streamToFileEnabled);
@@ -490,7 +490,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     transformExtractWriter.close();
                 }
             } else {
-                if (currentBatch.getStatus() == Status.NE || 
+                if (currentBatch.getStatus() == Status.NE ||
                         !isPreviouslyExtracted(currentBatch)) {
                     int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
                     Semaphore lock = null;
@@ -547,7 +547,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long dataEventCount = currentBatch.getDataEventCount();
             long insertEventCount = currentBatch.getInsertEventCount();
             currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
-            
+
             // preserve in the case of a reload event
             if (dataEventCount > currentBatch.getDataEventCount()) {
                 currentBatch.setDataEventCount(dataEventCount);
@@ -757,7 +757,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private OutgoingBatch outgoingBatch;
 
         private Table targetTable;
-        
+
         private Table sourceTable;
 
         private TriggerHistory lastTriggerHistory;
@@ -781,7 +781,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public Batch getBatch() {
             return batch;
         }
-        
+
         public Table getSourceTable() {
             return sourceTable;
         }
@@ -838,13 +838,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if ((lastTriggerHistory == null || lastTriggerHistory
                                     .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId())) {
                                 this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                                        routerId, triggerHistory, false);                                
+                                        routerId, triggerHistory, false);
                                 this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                                         routerId, triggerHistory, true);
                                 this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
                             }
-                            
-                            data.setNoBinaryOldData(requiresLobSelectedFromSource || 
+
+                            data.setNoBinaryOldData(requiresLobSelectedFromSource ||
                                     symmetricDialect.getName().equals(DatabaseNamesConstants.MSSQL));
                         } else {
                             log.error(
@@ -890,7 +890,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private Batch batch;
 
         private Table targetTable;
-        
+
         private Table sourceTable;
 
         private List<SelectFromTableEvent> selectFromTableEventsToSend;
@@ -928,7 +928,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         this.batch.getTargetNodeId());
             }
         }
-        
+
         public Table getSourceTable() {
             return sourceTable;
         }
@@ -972,7 +972,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, true);
                 } else {
-                    this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();                    
+                    this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
                     if (this.routingContext == null) {
                         NodeChannel channel = batch != null ? configurationService.getNodeChannel(
                                 batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
@@ -1096,11 +1096,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public boolean containsData() {
             return data != null;
         }
-        
+
         public String getInitialLoadSelect() {
             return initialLoadSelect;
         }
 
-    }    
+    }
 
 }
