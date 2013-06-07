@@ -192,7 +192,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return (Date) obj;
         } else if (obj instanceof String) {
             try {
-                return getDate((String) obj, SqlConstants.TIMESTAMP_PATTERNS);
+                return getDate((String) obj, FormatUtils.TIMESTAMP_PATTERNS);
             } catch (ParseException ex) {
                 // on xerial sqlite jdbc dates come back as longs
                 return new Date(Long.parseLong((String) obj));
