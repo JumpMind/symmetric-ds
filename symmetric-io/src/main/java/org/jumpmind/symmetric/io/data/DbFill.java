@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -354,7 +355,7 @@ public class DbFill {
                         + statementColumns[j].getName());
             }
             try {
-                platform.getSqlTemplate().update(statement.getSql(), statementValues);
+                platform.getSqlTemplate().update(statement.getSql(), statementValues, statement.getTypes());
                 if (verbose) {
                     System.out.println("Successful insert into " + tbl.getName());
                 }
@@ -551,7 +552,7 @@ public class DbFill {
         } else if (type == Types.DATE) {
              objectValue = DateUtils.truncate(randomDate(), Calendar.DATE);
         } else if (type == Types.TIMESTAMP || type == Types.TIME) {
-            objectValue = randomDate();
+            objectValue = randomTimestamp();
         } else if (type == Types.CHAR) {
             objectValue = randomChar().toString();
         } else if (type == Types.INTEGER || type == Types.BIGINT) {
@@ -666,6 +667,10 @@ public class DbFill {
         long l = Math.abs(getRand().nextLong());
         long ms = (50L * 365 * 24 * 60 * 60 * 1000);
         return new Date(l % ms);
+    }
+    
+    private Timestamp randomTimestamp() {
+        return Timestamp.valueOf(FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()));
     }
 
     private Integer randomInt() {
