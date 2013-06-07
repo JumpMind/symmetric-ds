@@ -117,21 +117,21 @@ abstract public class TestSetupUtil {
             try {
                 logger.info("Removing client database files and creating directory.");
                 FileUtils.deleteDirectory(clientDbDir);
-                clientDbDir.mkdir();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
         }
+        clientDbDir.mkdir();
         File rootDbDir = new File("target/rootdbs");
         if (rootDbDir.exists()) {
             try {
                 logger.info("Removing root database files and creating directory.");
                 FileUtils.deleteDirectory(rootDbDir);
-                rootDbDir.mkdir();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
         }
+        rootDbDir.mkdir();
     }
 
     protected static URL getResource(String resource) {
