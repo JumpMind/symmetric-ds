@@ -192,32 +192,40 @@ public class RouterService extends AbstractService implements IRouterService {
                             if (nodeSecurities != null) {
                                 boolean reverseLoadFirst = parameterService
                                         .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
-                                for (NodeSecurity security : nodeSecurities) {
-                                    boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-                                    boolean initialLoadQueued = security.isInitialLoadEnabled();
-                                    boolean thisMySecurityRecord = security.getNodeId().equals(
-                                            identity.getNodeId());
-                                    boolean registered = security.getRegistrationTime() != null;
-                                    boolean parent = identity.getNodeId().equals(
-                                            security.getCreatedAtNodeId());
-                                    if (thisMySecurityRecord && reverseLoadQueued
-                                            && (reverseLoadFirst || !initialLoadQueued)) {
-                                        sendReverseInitialLoad();
-                                    } else if (!thisMySecurityRecord && registered && parent
-                                            && initialLoadQueued
-                                            && (!reverseLoadFirst || !reverseLoadQueued)) {
-                                        long ts = System.currentTimeMillis();
-                                        engine.getDataService().insertReloadEvents(
-                                                engine.getNodeService().findNode(
-                                                        security.getNodeId()), false);
-                                        ts = System.currentTimeMillis() - ts;
-                                        if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                            log.warn("Inserted reload events for node {} in {} ms",
-                                                    security.getNodeId(), ts);
-                                        } else {
-                                            log.info("Inserted reload events for node {} in {} ms",
-                                                    security.getNodeId(), ts);
+                                for (NodeSecurity security : nodeSecurities) {                                    
+                                    if (engine.getTriggerRouterService()
+                                            .getActiveTriggerHistories().size() > 0) {
+                                        boolean reverseLoadQueued = security
+                                                .isRevInitialLoadEnabled();
+                                        boolean initialLoadQueued = security.isInitialLoadEnabled();
+                                        boolean thisMySecurityRecord = security.getNodeId().equals(
+                                                identity.getNodeId());
+                                        boolean registered = security.getRegistrationTime() != null;
+                                        boolean parent = identity.getNodeId().equals(
+                                                security.getCreatedAtNodeId());
+                                        if (thisMySecurityRecord && reverseLoadQueued
+                                                && (reverseLoadFirst || !initialLoadQueued)) {
+                                            sendReverseInitialLoad();
+                                        } else if (!thisMySecurityRecord && registered && parent
+                                                && initialLoadQueued
+                                                && (!reverseLoadFirst || !reverseLoadQueued)) {
+                                            long ts = System.currentTimeMillis();
+                                            engine.getDataService().insertReloadEvents(
+                                                    engine.getNodeService().findNode(
+                                                            security.getNodeId()), false);
+                                            ts = System.currentTimeMillis() - ts;
+                                            if (ts > Constants.LONG_OPERATION_THRESHOLD) {
+                                                log.warn(
+                                                        "Inserted reload events for node {} in {} ms",
+                                                        security.getNodeId(), ts);
+                                            } else {
+                                                log.info(
+                                                        "Inserted reload events for node {} in {} ms",
+                                                        security.getNodeId(), ts);
+                                            }
                                         }
+                                    } else {
+                                        log.warn("Could not queue up a load for {} because sync triggers has not yet run", security.getNodeId());
                                     }
                                 }
                             }
