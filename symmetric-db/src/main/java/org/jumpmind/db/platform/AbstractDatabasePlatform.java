@@ -448,15 +448,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     values[i] = row.getString(name);
                 } else if (!column.isTimestampWithTimezone() && 
                         (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
-                    Date date = row.getDateTime(name);
-                    if (useVariableDates) {
-                        long diff = date.getTime() - System.currentTimeMillis();
-                        values[i] = "${curdate" + diff + "}";
-                    } else if (type == Types.TIME) {
-                        values[i] = FormatUtils.TIME_FORMATTER.format(date);
-                    } else {
-                        values[i] = FormatUtils.TIMESTAMP_FORMATTER.format(date);
-                    }
+                    values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (encoding == BinaryEncoding.NONE) {
@@ -472,6 +464,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         return values;
+    }
+    
+    protected String getDateTimeStringValue(String name, int type, Row row,
+            boolean useVariableDates) {
+        Date date = row.getDateTime(name);
+        if (useVariableDates) {
+            long diff = date.getTime() - System.currentTimeMillis();
+            return "${curdate" + diff + "}";
+        } else if (type == Types.TIME) {
+            return FormatUtils.TIME_FORMATTER.format(date);
+        } else {
+            return FormatUtils.TIMESTAMP_FORMATTER.format(date);
+        }
     }
 
     public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row,
