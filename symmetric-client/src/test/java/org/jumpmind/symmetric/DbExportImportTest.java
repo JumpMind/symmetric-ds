@@ -483,8 +483,11 @@ public class DbExportImportTest extends AbstractServiceTest {
                 Object oOne = rOne.get(key);
                 Object oTwo = rTwo.get(key);
                 Column column = table.getColumnWithName(key);
-                // special comparison for sqlite.  the result reports all types as text
-                // even though the jdbc table metadata reports the types as dates
+                /*
+                 * special comparison for sqlite. the result reports all types
+                 * as text even though the jdbc table metadata reports the types
+                 * as dates
+                 */
                 if (column != null && (column.getMappedType().equals("DATE") || column.getMappedType().equals("TIME") || column.getMappedType().equals("TIMESTAMP")) 
                         && oOne instanceof String && oTwo instanceof String) {
                     oOne = FormatUtils.parseDate(oOne.toString(), FormatUtils.TIMESTAMP_PATTERNS);
