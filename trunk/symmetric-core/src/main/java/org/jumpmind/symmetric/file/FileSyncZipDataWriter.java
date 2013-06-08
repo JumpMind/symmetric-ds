@@ -71,8 +71,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected DataContext context;
     protected INodeService nodeService;
 
-    public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService, INodeService nodeService,
-            IStagedResource stagedResource) {
+    public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
+            INodeService nodeService, IStagedResource stagedResource) {
         this.maxBytesToSync = maxBytesToSync;
         this.fileSyncService = fileSyncService;
         this.stagedResource = stagedResource;
@@ -121,11 +121,15 @@ public class FileSyncZipDataWriter implements IDataWriter {
         } else if (eventType == DataEventType.RELOAD) {
             String targetNodeId = context.getBatch().getTargetNodeId();
             Node targetNode = nodeService.findNode(targetNodeId);
-            List<FileTriggerRouter> fileTriggerRouters = fileSyncService.getFileTriggerRoutersForCurrentNode();
+            List<FileTriggerRouter> fileTriggerRouters = fileSyncService
+                    .getFileTriggerRoutersForCurrentNode();
             for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                if (fileTriggerRouter.isEnabled() && fileTriggerRouter.isInitialLoadEnabled() &&
-                        fileTriggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
-                    DirectorySnapshot directorySnapshot = fileSyncService.getDirectorySnapshot(fileTriggerRouter);
+                if (fileTriggerRouter.isEnabled()
+                        && fileTriggerRouter.isInitialLoadEnabled()
+                        && fileTriggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId()
+                                .equals(targetNode.getNodeGroupId())) {
+                    DirectorySnapshot directorySnapshot = fileSyncService
+                            .getDirectorySnapshot(fileTriggerRouter);
                     snapshotEvents.addAll(directorySnapshot);
                 }
             }
@@ -162,9 +166,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
                         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
                         command.append("processFile = true;\n");
-                        command.append("sourceFileName = \"").append(snapshot.getFileName()).append("\";\n");
+                        command.append("sourceFileName = \"").append(snapshot.getFileName())
+                                .append("\";\n");
                         command.append("sourceFilePath = \"");
-                        command.append(StringEscapeUtils.escapeJava(snapshot.getFilePath())).append("\";\n");
+                        command.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()))
+                                .append("\";\n");
 
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
@@ -196,40 +202,30 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     }
                                     command.append(" + sourceFileName");
                                     command.append(", ");
-                                    StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
-                                    if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
-                                        if (!triggerRouter.getTargetFilePath().equals(".")) {
-                                            targetFile.append(StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath()));
-                                            targetFile.append("/");
-                                        }
-                                    } else {
-                                        if (!snapshot.getFilePath().equals(".")) {
-                                            targetFile.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()));
-                                            targetFile.append("/");
-                                        }
+                                    StringBuilder targetFile = new StringBuilder(
+                                            "targetBaseDir + \"/");
+                                    if (!snapshot.getFilePath().equals(".")) {
+                                        targetFile.append(StringEscapeUtils.escapeJava(snapshot
+                                                .getFilePath()));
+                                        targetFile.append("/");
                                     }
                                     targetFile.append(snapshot.getFileName());
                                     targetFile.append("\"");
                                     command.append(targetFile);
                                     command.append(");\n");
-                                    command.append("  fileList.put(").append(targetFile).append(",\"");
+                                    command.append("  fileList.put(").append(targetFile)
+                                            .append(",\"");
                                     command.append(eventType.getCode());
-                                            command.append("\");\n");
+                                    command.append("\");\n");
                                 }
                                 break;
                             case DELETE:
                                 command.append("  org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
                                 StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
-                                if (StringUtils.isNotBlank(triggerRouter.getTargetFilePath())) {
-                                    if (!triggerRouter.getTargetFilePath().equals(".")) {
-                                        targetFile.append(StringEscapeUtils.escapeJava(triggerRouter.getTargetFilePath()));
-                                        targetFile.append("/");
-                                    }
-                                } else {
-                                    if (!snapshot.getFilePath().equals(".")) {
-                                        targetFile.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()));
-                                        targetFile.append("/");
-                                    }
+                                if (!snapshot.getFilePath().equals(".")) {
+                                    targetFile.append(StringEscapeUtils.escapeJava(snapshot
+                                            .getFilePath()));
+                                    targetFile.append("/");
                                 }
                                 targetFile.append(snapshot.getFileName());
                                 targetFile.append("\"");
@@ -237,7 +233,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 command.append("));\n");
                                 command.append("  fileList.put(").append(targetFile).append(",\"");
                                 command.append(eventType.getCode());
-                                        command.append("\");\n");
+                                command.append("\");\n");
                                 break;
                             default:
                                 break;
