@@ -212,13 +212,12 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                         fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                         fileTriggerRouter.getTargetBaseDir(),
-                        fileTriggerRouter.getTargetFilePath(),
                         fileTriggerRouter.getConflictStrategy().name(),
                         fileTriggerRouter.getLastUpdateBy(),
                         fileTriggerRouter.getLastUpdateTime(),
                         fileTriggerRouter.getFileTrigger().getTriggerId(),
                         fileTriggerRouter.getRouter().getRouterId() },
-                        new int[] { Types.SMALLINT,  Types.SMALLINT, Types.VARCHAR,
+                        new int[] { Types.SMALLINT,  Types.SMALLINT,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             fileTriggerRouter.setCreateTime(fileTriggerRouter.getLastUpdateTime());
@@ -227,14 +226,13 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                             fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                             fileTriggerRouter.getTargetBaseDir(),
-                            fileTriggerRouter.getTargetFilePath(),
                             fileTriggerRouter.getConflictStrategy().name(),
                             fileTriggerRouter.getCreateTime(),
                             fileTriggerRouter.getLastUpdateBy(),
                             fileTriggerRouter.getLastUpdateTime(),
                             fileTriggerRouter.getFileTrigger().getTriggerId(),
                             fileTriggerRouter.getRouter().getRouterId() },
-                            new int[] { Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                            new int[] { Types.SMALLINT, Types.SMALLINT, 
                             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
@@ -737,7 +735,6 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir"));
-            fileTriggerRouter.setTargetFilePath(rs.getString("target_relative_dir"));
             fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
                     rs.getString("router_id")));
             return fileTriggerRouter;

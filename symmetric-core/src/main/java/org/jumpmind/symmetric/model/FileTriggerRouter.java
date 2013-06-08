@@ -32,7 +32,6 @@ public class FileTriggerRouter implements Serializable {
     private boolean enabled = true;
     private boolean initialLoadEnabled;
     private String targetBaseDir;
-    private String targetFilePath;
     private FileConflictStrategy conflictStrategy = FileConflictStrategy.SOURCE_WINS;
     private Date createTime = new Date();
     private String lastUpdateBy;
@@ -52,14 +51,6 @@ public class FileTriggerRouter implements Serializable {
     
     public FileTrigger getFileTrigger() {
         return fileTrigger;
-    }
-    
-    public void setTargetFilePath(String targetFilePath) {
-        this.targetFilePath = targetFilePath;
-    }
-    
-    public String getTargetFilePath() {
-        return targetFilePath;
     }
     
     public void setRouter(Router router) {

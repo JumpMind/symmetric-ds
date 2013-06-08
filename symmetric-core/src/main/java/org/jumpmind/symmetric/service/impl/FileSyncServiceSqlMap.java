@@ -103,7 +103,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("selectFileTriggerRoutersSql",
                 " select                                                                        " +
                 "  tr.trigger_id as trigger_id, tr.router_id as router_id, enabled,             " +
-                "  initial_load_enabled, target_base_dir, target_relative_dir,                  " +
+                "  initial_load_enabled, target_base_dir,                                       " +
                 "  conflict_strategy, tr.create_time as create_time,                            " +
                 "  tr.last_update_by as last_update_by, tr.last_update_time as last_update_time " +
                 " from $(file_trigger_router) tr                                                ");
@@ -118,17 +118,15 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("updateFileTriggerRouterSql",
                 " update $(file_trigger_router) set                                             " +
                         "  enabled=?, initial_load_enabled=?, target_base_dir=?,                " +
-                        "  target_relative_dir=?,                                               " +
                         "  conflict_strategy=?, last_update_by=?, last_update_time=?            " +
                 " where trigger_id=? and router_id=?                                            ");
 
         putSql("insertFileTriggerRouterSql",
                 " insert into $(file_trigger_router) (                                          " +
                         "  enabled, initial_load_enabled, target_base_dir,                      " +
-                        "  target_relative_dir,                                                 " +
                         "  conflict_strategy, create_time, last_update_by,                      " +
                         "  last_update_time, trigger_id, router_id                              " +
-                " ) values(?,?,?,?,?,?,?,?,?,?)                                                 ");
+                " ) values(?,?,?,?,?,?,?,?,?)                                                   ");
 
         putSql("deleteFileTriggerRouterSql", ""
                 + "delete from $(file_trigger_router) where trigger_id=? and router_id=? ");
