@@ -253,8 +253,107 @@
                      <header>../symmetric-assemble/HEADER</header>
                      <excludes>
                         <exclude>**/*.vm</exclude>
-                        <exclude>**/CSVReader.java</exclude>
-                        <exclude>**/CSVWriter.java</exclude>
+                        <exclude>**/CsvReader.java</exclude>
+                        <exclude>**/CsvWriter.java</exclude>
+                        <exclude>**/torque/doc/docbook/datamodel.css.vm                                                     </exclude>
+                        <exclude>**/torque/doc/docbook/datamodel.vm                                                         </exclude>
+                        <exclude>**/torque/doc/docbook/table.vm                                                             </exclude>
+                        <exclude>**/torque/doc/Control.vm                                                                   </exclude>
+                        <exclude>**/org/jumpmind/db/util/MultiInstanceofPredicate.java                                      </exclude>
+                        <exclude>**/org/jumpmind/db/util/CallbackClosure.java                                               </exclude>
+                        <exclude>**/org/jumpmind/db/model/TypeMap.java                                                      </exclude>
+                        <exclude>**/org/jumpmind/db/model/Database.java                                                     </exclude>
+                        <exclude>**/org/jumpmind/db/model/ModelException.java                                               </exclude>
+                        <exclude>**/org/jumpmind/db/model/ForeignKey.java                                                   </exclude>
+                        <exclude>**/org/jumpmind/db/model/IndexImpBase.java                                                 </exclude>
+                        <exclude>**/org/jumpmind/db/model/IndexColumn.java                                                  </exclude>
+                        <exclude>**/org/jumpmind/db/model/UniqueIndex.java                                                  </exclude>
+                        <exclude>**/org/jumpmind/db/model/IIndex.java                                                       </exclude>
+                        <exclude>**/org/jumpmind/db/model/Reference.java                                                    </exclude>
+                        <exclude>**/org/jumpmind/db/model/NonUniqueIndex.java                                               </exclude>
+                        <exclude>**/org/jumpmind/db/model/JdbcTypeCategoryEnum.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/model/Table.java                                                        </exclude>
+                        <exclude>**/org/jumpmind/db/model/Column.java                                                       </exclude>
+                        <exclude>**/org/jumpmind/db/alter/AddForeignKeyChange.java                                          </exclude>
+                        <exclude>**/org/jumpmind/db/alter/AddIndexChange.java                                               </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnDataTypeChange.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/alter/IModelChange.java                                                 </exclude>
+                        <exclude>**/org/jumpmind/db/alter/TableChange.java                                                  </exclude>
+                        <exclude>**/org/jumpmind/db/alter/RemoveColumnChange.java                                           </exclude>
+                        <exclude>**/org/jumpmind/db/alter/RemoveForeignKeyChange.java                                       </exclude>
+                        <exclude>**/org/jumpmind/db/alter/RemoveTableChange.java                                            </exclude>
+                        <exclude>**/org/jumpmind/db/alter/AddColumnChange.java                                              </exclude>
+                        <exclude>**/org/jumpmind/db/alter/AddPrimaryKeyChange.java                                          </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnDefaultValueChange.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnRequiredChange.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/alter/AddTableChange.java                                               </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ModelComparator.java                                              </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnSizeChange.java                                             </exclude>
+                        <exclude>**/org/jumpmind/db/alter/TableChangeImplBase.java                                          </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnChange.java                                                 </exclude>
+                        <exclude>**/org/jumpmind/db/alter/ColumnAutoIncrementChange.java                                    </exclude>
+                        <exclude>**/org/jumpmind/db/alter/RemoveIndexChange.java                                            </exclude>
+                        <exclude>**/org/jumpmind/db/alter/RemovePrimaryKeyChange.java                                       </exclude>
+                        <exclude>**/org/jumpmind/db/alter/PrimaryKeyChange.java                                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDdlBuilder.java                           </exclude>
+                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDdlBuilder.java                         </exclude>
+                        <exclude>**/org/jumpmind/db/platform/MetaDataColumnDescriptor.java                                  </exclude>
+                        <exclude>**/org/jumpmind/db/platform/ase/AseDdlBuilder.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/platform/IDatabasePlatform.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDdlBuilder.java                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/h2/H2DdlBuilder.java                                           </exclude>
+                        <exclude>**/org/jumpmind/db/platform/DatabaseMetaDataWrapper.java                                   </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDdlBuilder.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/DatabaseInfo.java                                              </exclude>
+                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDdlBuilder.java                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/DdlException.java                                              </exclude>
+                        <exclude>**/org/jumpmind/db/platform/AbstractDatabasePlatform.java                                  </exclude>
+                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDdlBuilder.java                                   </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDdlBuilder.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDdlBuilder.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/AbstractDdlBuilder.java                                        </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DdlBuilder.java                                 </exclude>
+                        <exclude>**/org/jumpmind/db/platform/db2/Db2DdlBuilder.java                                         </exclude>
+                        <exclude>**/org/jumpmind/db/platform/DefaultValueHelper.java                                        </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlBuilder.java                                   </exclude>
+                        <exclude>**/org/jumpmind/db/io/DatabaseXmlUtil.java                                                 </exclude>
+                        <exclude>**/schema/database.xsd                                                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/postgresql/package.html                                        </exclude>
+                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDdlReader.java                            </exclude>
+                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDatabasePlatform.java                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDatabasePlatform.java                   </exclude>
+                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDdlReader.java                          </exclude>
+                        <exclude>**/org/jumpmind/db/platform/JdbcDatabasePlatformFactory.java                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/ase/package.html                                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/ase/AseDdlReader.java                                          </exclude>
+                        <exclude>**/org/jumpmind/db/platform/ase/AseDatabasePlatform.java                                   </exclude>
+                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDdlReader.java                                </exclude>
+                        <exclude>**/org/jumpmind/db/platform/firebird/package.html                                          </exclude>
+                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDatabasePlatform.java                         </exclude>
+                        <exclude>**/org/jumpmind/db/platform/h2/H2DatabasePlatform.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/h2/H2DdlReader.java                                            </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDdlReader.java                                      </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mysql/package.html                                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDatabasePlatform.java                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDdlReader.java                              </exclude>
+                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDatabasePlatform.java                       </exclude>
+                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDdlReader.java                                    </exclude>
+                        <exclude>**/org/jumpmind/db/platform/oracle/package.html                                            </exclude>
+                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDatabasePlatform.java                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDdlReader.java                                      </exclude>
+                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDatabasePlatform.java                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/AbstractJdbcDdlReader.java                                     </exclude>
+                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDdlReader.java                                      </exclude>
+                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDatabasePlatform.java                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/derby/package.html                                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DatabasePlatform.java                           </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DdlReader.java                                  </exclude>
+                        <exclude>**/org/jumpmind/db/platform/db2/Db2DdlReader.java                                          </exclude>
+                        <exclude>**/org/jumpmind/db/platform/db2/package.html                                               </exclude>
+                        <exclude>**/org/jumpmind/db/platform/db2/Db2DatabasePlatform.java                                   </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDatabasePlatform.java                             </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb/package.html                                            </exclude>
+                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlReader.java                                    </exclude>                        
                      </excludes>
                  </configuration>
             </plugin>                
