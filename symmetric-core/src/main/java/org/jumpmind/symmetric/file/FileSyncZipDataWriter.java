@@ -115,7 +115,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));
             snapshot.setFileName(columnData.get("FILE_NAME"));
-            snapshot.setFilePath(columnData.get("FILE_PATH"));
+            snapshot.setRelativeDir(columnData.get("FILE_PATH"));
             snapshot.setLastEventType(LastEventType.fromCode(columnData.get("LAST_EVENT_TYPE")));
             snapshotEvents.add(snapshot);
         } else if (eventType == DataEventType.RELOAD) {
@@ -169,14 +169,14 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         command.append("sourceFileName = \"").append(snapshot.getFileName())
                                 .append("\";\n");
                         command.append("sourceFilePath = \"");
-                        command.append(StringEscapeUtils.escapeJava(snapshot.getFilePath()))
+                        command.append(StringEscapeUtils.escapeJava(snapshot.getRelativeDir()))
                                 .append("\";\n");
 
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
                         entryName.append("/");
-                        if (!snapshot.getFilePath().equals(".")) {
-                            entryName.append(snapshot.getFilePath()).append("/");
+                        if (!snapshot.getRelativeDir().equals(".")) {
+                            entryName.append(snapshot.getRelativeDir()).append("/");
                         }
                         entryName.append(snapshot.getFileName());
 
@@ -197,16 +197,16 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             case SEED:
                                 if (file.exists()) {
                                     command.append("  mv (batchDir + \"/\"");
-                                    if (!snapshot.getFilePath().equals(".")) {
+                                    if (!snapshot.getRelativeDir().equals(".")) {
                                         command.append(" + sourceFilePath + \"/\"");
                                     }
                                     command.append(" + sourceFileName");
                                     command.append(", ");
                                     StringBuilder targetFile = new StringBuilder(
                                             "targetBaseDir + \"/");
-                                    if (!snapshot.getFilePath().equals(".")) {
+                                    if (!snapshot.getRelativeDir().equals(".")) {
                                         targetFile.append(StringEscapeUtils.escapeJava(snapshot
-                                                .getFilePath()));
+                                                .getRelativeDir()));
                                         targetFile.append("/");
                                     }
                                     targetFile.append(snapshot.getFileName());
@@ -222,9 +222,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             case DELETE:
                                 command.append("  org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
                                 StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
-                                if (!snapshot.getFilePath().equals(".")) {
+                                if (!snapshot.getRelativeDir().equals(".")) {
                                     targetFile.append(StringEscapeUtils.escapeJava(snapshot
-                                            .getFilePath()));
+                                            .getRelativeDir()));
                                     targetFile.append("/");
                                 }
                                 targetFile.append(snapshot.getFileName());
