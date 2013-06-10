@@ -88,7 +88,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                  * returns an empty set This gets around that
                  */
                 if (e.getMessage() == null
-                        || !e.getMessage().equals("query does not return results")) {
+                        || !e.getMessage().equalsIgnoreCase("query does not return results")) {
                     throw e;
                 }
             }
