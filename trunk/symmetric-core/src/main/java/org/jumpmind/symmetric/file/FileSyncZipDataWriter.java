@@ -115,7 +115,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));
             snapshot.setFileName(columnData.get("FILE_NAME"));
-            snapshot.setRelativeDir(columnData.get("FILE_PATH"));
+            snapshot.setRelativeDir(columnData.get("RELATIVE_DIR"));
             snapshot.setLastEventType(LastEventType.fromCode(columnData.get("LAST_EVENT_TYPE")));
             snapshotEvents.add(snapshot);
         } else if (eventType == DataEventType.RELOAD) {

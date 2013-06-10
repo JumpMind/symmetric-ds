@@ -705,7 +705,7 @@
     <table name="file_snapshot" description="Table used to capture file changes.  Updates to the table are captured and routed according to the configured file trigger routers.">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the trigger that caused this snapshot to be taken." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the router that caused this snapshot to be taken." />
-        <column name="file_path" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir" />
+        <column name="relative_dir" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir" />
         <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="The name of the file that changed." />
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="crc32_checksum" type="BIGINT" description="File checksum.  Can be used to determine if file content has changed." />
@@ -717,7 +717,7 @@
     </table>
 
     <table name="file_incoming" description="As files are loaded from another node the file and source node are captured here for file sync to use to prevent file ping backs in bidirectional file synchronization.">
-        <column name="file_path" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir and excluding the file name itself." />
+        <column name="relative_dir" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir and excluding the file name itself." />
         <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="The name of the file that has been loaded." />
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event that caused the file to be loaded from another node. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the source of the batch being loaded." />
