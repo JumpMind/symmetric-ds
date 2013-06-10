@@ -26,8 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -45,8 +43,6 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
     public SqliteJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -56,6 +52,11 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
     public boolean isUniqueKeyViolation(Throwable ex) {
         SQLException sqlEx = findSQLException(ex);
         return (sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]"));
+    }
+    
+    @Override
+    public boolean supportsGetGeneratedKeys() {
+        return false;
     }
 
     @Override
@@ -100,13 +101,13 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if (arg!=null && argType == Types.DATE && arg instanceof Date) {
                 Date clone = (Date) (((Date) arg).clone());
-                arg = dateTimeFormat.format(DateUtils.truncate(clone,Calendar.DATE));
+                arg = FormatUtils.TIMESTAMP_FORMATTER.format(DateUtils.truncate(clone,Calendar.DATE));
                 args[i-1] = arg;
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
-                  arg =  dateTimeFormat.format(arg);
-                  args[i-1] = arg;
-                  StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {                
+                arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
+                args[i-1] = arg;
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             } else {
                 if (arg instanceof BigDecimal) {
                     arg =  ((BigDecimal) arg).doubleValue();
@@ -123,7 +124,7 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             for (int i = 0; i < args.length; i++) {
                 Object arg = args[i];
                 if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
-                    arg =  dateTimeFormat.format(arg);
+                    arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
                     args[i]=arg;
                 }
 

@@ -230,11 +230,11 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
                 String resultValue = null;
                 char decimal = ((DecimalFormat) DecimalFormat.getInstance())
                         .getDecimalFormatSymbols().getDecimalSeparator();
-                if (resultObj instanceof BigDecimal && expected[i].indexOf(decimal) != -1) {
+                if ((resultObj instanceof Double || resultObj instanceof BigDecimal) && expected[i].indexOf(decimal) != -1) {
                     DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.000");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";

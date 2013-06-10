@@ -149,7 +149,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 40, StringUtils.countMatches(output, "create table \"sym_"));
-        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 243 : 38;
+        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 242 : 38;
         final String EXPECTED_STRING = "varchar(" + Integer.MAX_VALUE + ")";
         Assert.assertEquals("Expected " + EXPECTED_VARCHAR_MAX + " " + EXPECTED_STRING
                 + " in the following output: " + output, EXPECTED_VARCHAR_MAX,
@@ -360,6 +360,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         export.setNoData(false);
         String csvOutput = export.exportTables(new String[] { table.getName() });
 
+        logger.info(csvOutput);
+        
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
 
         List<Row> rowsBeforeImport = sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID);

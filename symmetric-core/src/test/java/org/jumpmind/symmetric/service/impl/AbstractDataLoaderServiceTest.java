@@ -296,7 +296,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     @Test
     public void testSkippingResentBatch() throws Exception {
         String[] values = { getNextId(), "resend string", "resend string not null", "resend char",
-                "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7",
+                "resend char not null", "2007-01-25 00:00:00.000", "2007-01-25 01:01:01.000", "0", "7",
                 "10.10", "0.474" };
         getNextBatchId();
         for (long i = 0; i < 7; i++) {
@@ -323,7 +323,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void testErrorWhileSkip() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+                "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
 
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
@@ -358,7 +358,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void testDataIntregrityError() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+                "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
         
         ConflictNodeGroupLink conflictSettings = new ConflictNodeGroupLink();
         conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
@@ -409,7 +409,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void testErrorWhileParsing() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "should not reach database", "string not null", "char",
-                "char not null", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+                "char not null", "2007-01-02", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -442,7 +442,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         String[] values = { getNextId(),
                 "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "not a date",
-                "2007-02-03 04:05:06.0", "0", "47", "123456789.00", "0.474" };
+                "2007-02-03 04:05:06.000", "0", "47", "123456789.00", "0.474" };
         getNextBatchId();
         int retries = 3;
         for (int i = 0; i < retries; i++) {
@@ -465,7 +465,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
         batchId--;
         values[1] = "A smaller string that will succeed";
-        values[5] = "2007-01-02 00:00:00.0";
+        values[5] = "2007-01-02 00:00:00.000";
         values[9] = "67.89";
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
@@ -483,11 +483,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void testMultipleBatch() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+                "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
         String[] values2 = { getNextId(),
                 "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "Not a date",
-                "2007-02-03 04:05:06.0", "0", "47", "123456789.00", "0.474" };
+                "2007-02-03 04:05:06.000", "0", "47", "123456789.00", "0.474" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -615,11 +615,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 String resultValue = null;
                 char decimal = ((DecimalFormat) DecimalFormat.getInstance())
                         .getDecimalFormatSymbols().getDecimalSeparator();
-                if (resultObj instanceof BigDecimal && expected[i].indexOf(decimal) != -1) {
+                if ((resultObj instanceof Double || resultObj instanceof BigDecimal) && expected[i].indexOf(decimal) != -1) {
                     DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.000");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
@@ -628,7 +628,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }
-
                 Assert.assertEquals(name[i] + ". " + printDatabase(), expected[i], resultValue);
             }
         }

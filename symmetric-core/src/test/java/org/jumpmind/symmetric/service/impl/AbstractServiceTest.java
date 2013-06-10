@@ -55,6 +55,7 @@ public abstract class AbstractServiceTest {
     @BeforeClass
     public static void setup() throws Exception {        
         if (engine == null) {
+            //Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
             try {
                 Class<?> clazz = Class.forName("org.jumpmind.symmetric.test.TestSetupUtil");
@@ -72,10 +73,11 @@ public abstract class AbstractServiceTest {
                 logger.error(ex.getMessage(), ex);
                 Assert.fail(ex.getMessage());
             }
+            //setLoggingLevelForTest(old);
         }
     }
 
-    protected Level setLoggingLevelForTest(Level level) {
+    protected static Level setLoggingLevelForTest(Level level) {
         org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
         Level old = logger.getLevel();
         logger.setLevel(level);
