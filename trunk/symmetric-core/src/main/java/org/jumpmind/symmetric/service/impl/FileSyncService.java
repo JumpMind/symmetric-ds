@@ -292,7 +292,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
                         snapshot.getFileSize(), snapshot.getFileModifiedTime(),
                         snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
-                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
+                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
                         snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
                         Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
@@ -304,7 +304,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
                             snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
                             snapshot.getTriggerId(), snapshot.getRouterId(),
-                            snapshot.getFilePath(), snapshot.getFileName() }, new int[] {
+                            snapshot.getRelativeDir(), snapshot.getFileName() }, new int[] {
                             Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
                             Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
@@ -312,7 +312,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         // now that we have captured an update, delete the row for cleanup
         if (snapshot.getLastEventType() == LastEventType.DELETE) {
             sqlTransaction.prepareAndExecute(getSql("deleteFileSnapshotSql"), new Object[] {
-                    snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getFilePath(),
+                    snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
                     snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR });
         }
@@ -750,7 +750,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileSnapshot.setFileModifiedTime(rs.getDateTime("file_modified_time"));
             fileSnapshot.setFileName(rs.getString("file_name"));
-            fileSnapshot.setFilePath(rs.getString("file_path"));
+            fileSnapshot.setRelativeDir(rs.getString("file_path"));
             fileSnapshot.setFileSize(rs.getLong("file_size"));
             fileSnapshot.setLastEventType(LastEventType.fromCode(rs.getString("last_event_type")));
             fileSnapshot.setTriggerId(rs.getString("trigger_id"));

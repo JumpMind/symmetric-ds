@@ -45,19 +45,19 @@ public class FileSnapshot implements Serializable {
         public String getCode() {
             return this.code;
         }
-        
+
         public static LastEventType fromCode(String code) {
             if ("C".equals(code)) {
                 return CREATE;
             } else if ("M".equals(code)) {
                 return MODIFY;
-                
+
             } else if ("D".equals(code)) {
                 return DELETE;
-                
+
             } else if ("S".equals(code)) {
                 return SEED;
-                
+
             } else {
                 return null;
             }
@@ -66,7 +66,7 @@ public class FileSnapshot implements Serializable {
 
     private String triggerId;
     private String routerId;
-    private String filePath;
+    private String relativeDir;
     private String fileName;
     private LastEventType lastEventType;
     private long crc32Checksum;
@@ -78,11 +78,11 @@ public class FileSnapshot implements Serializable {
 
     public FileSnapshot() {
     }
-    
+
     public FileSnapshot(FileSnapshot copy) {
         this.triggerId = copy.triggerId;
         this.routerId = copy.routerId;
-        this.filePath = copy.filePath;
+        this.relativeDir = copy.relativeDir;
         this.fileName = copy.fileName;
         this.lastEventType = copy.lastEventType;
         this.crc32Checksum = copy.crc32Checksum;
@@ -99,26 +99,27 @@ public class FileSnapshot implements Serializable {
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
         this.fileName = file.getName();
-        this.filePath = file.getPath();
-        if (this.filePath.startsWith(fileTriggerRouter.getFileTrigger().getBaseDir())) {
-            this.filePath = this.filePath.substring(fileTriggerRouter.getFileTrigger().getBaseDir().length());
+        this.relativeDir = file.getPath();
+        if (this.relativeDir.replace('\\', '/').startsWith(fileTriggerRouter.getFileTrigger()
+                .getBaseDir().replace('\\', '/'))) {
+            this.relativeDir = this.relativeDir.substring(fileTriggerRouter.getFileTrigger().getBaseDir().length());
         }
 
-        if (this.filePath.endsWith(fileName)) {
-            this.filePath = this.filePath.substring(0, this.filePath.indexOf(fileName));
+        if (this.relativeDir.endsWith(fileName)) {
+            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.indexOf(fileName));
         }
-        
+
         String fileSeparator = System.getProperty("file.separator");
-        if (this.filePath.startsWith(fileSeparator)) {
-            this.filePath = this.filePath.substring(1);
+        if (this.relativeDir.startsWith(fileSeparator)) {
+            this.relativeDir = this.relativeDir.substring(1);
         }
-        
-        if (this.filePath.endsWith(fileSeparator)) {
-            this.filePath = this.filePath.substring(0, this.filePath.length()-1);
+
+        if (this.relativeDir.endsWith(fileSeparator)) {
+            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.length()-1);
         }
-        
-        if (StringUtils.isBlank(filePath)) {
-            this.filePath = ".";
+
+        if (StringUtils.isBlank(relativeDir)) {
+            this.relativeDir = ".";
         }
 
         this.fileSize = file.length();
@@ -144,21 +145,21 @@ public class FileSnapshot implements Serializable {
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
     }
-    
+
     public String getRouterId() {
         return routerId;
     }
-    
+
     public void setRouterId(String routerId) {
         this.routerId = routerId;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getRelativeDir() {
+        return relativeDir;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setRelativeDir(String relativeDir) {
+        this.relativeDir = relativeDir;
     }
 
     public String getFileName() {
@@ -224,9 +225,9 @@ public class FileSnapshot implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public boolean sameFile(FileSnapshot file) {
-        return StringUtils.equals(fileName, file.fileName) && StringUtils.equals(filePath, file.filePath);
+        return StringUtils.equals(fileName, file.fileName) && StringUtils.equals(relativeDir, file.relativeDir);
     }
 
     @Override
@@ -236,7 +237,7 @@ public class FileSnapshot implements Serializable {
         result = prime * result + (int) (crc32Checksum ^ (crc32Checksum >>> 32));
         result = prime * result + ((fileModifiedTime == null) ? 0 : fileModifiedTime.hashCode());
         result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
-        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + ((relativeDir == null) ? 0 : relativeDir.hashCode());
         result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
         result = prime * result + ((lastEventType == null) ? 0 : lastEventType.hashCode());
         result = prime * result + ((triggerId == null) ? 0 : triggerId.hashCode());
@@ -265,10 +266,10 @@ public class FileSnapshot implements Serializable {
                 return false;
         } else if (!fileName.equals(other.fileName))
             return false;
-        if (filePath == null) {
-            if (other.filePath != null)
+        if (relativeDir == null) {
+            if (other.relativeDir != null)
                 return false;
-        } else if (!filePath.equals(other.filePath))
+        } else if (!relativeDir.equals(other.relativeDir))
             return false;
         if (fileSize != other.fileSize)
             return false;
@@ -278,7 +279,7 @@ public class FileSnapshot implements Serializable {
             if (other.triggerId != null)
                 return false;
         } else if (!triggerId.equals(other.triggerId))
-            return false;        
+            return false;
         if (routerId == null) {
             if (other.routerId != null)
                 return false;
@@ -286,7 +287,7 @@ public class FileSnapshot implements Serializable {
             return false;
         return true;
     }
-    
-    
+
+
 
 }

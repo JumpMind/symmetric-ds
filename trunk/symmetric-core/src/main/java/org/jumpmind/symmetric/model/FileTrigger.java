@@ -37,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
 public class FileTrigger implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String triggerId;
     private String baseDir;
     private boolean recurse;
@@ -54,7 +54,7 @@ public class FileTrigger implements Serializable {
 
     public FileTrigger() {
     }
-    
+
     public FileTrigger(String baseDir, boolean recurse, String includes, String excludes) {
         this.baseDir = baseDir;
         this.recurse = recurse;
@@ -62,8 +62,8 @@ public class FileTrigger implements Serializable {
         this.excludesFiles = excludes;
         this.triggerId = "?";
     }
-    
-    
+
+
     public String getTriggerId() {
         return triggerId;
     }
@@ -151,8 +151,8 @@ public class FileTrigger implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
-    public IOFileFilter createIOFileFilter() {        
+
+    public IOFileFilter createIOFileFilter() {
         String[] includes = StringUtils.isNotBlank(includesFiles) ? includesFiles.split(",") : new String[] {"*"};
         String[] excludes = StringUtils.isNotBlank(excludesFiles) ? excludesFiles.split(",") : null;
         IOFileFilter filter = new WildcardFileFilter(includes);
@@ -166,7 +166,7 @@ public class FileTrigger implements Serializable {
             List<IOFileFilter> fileFilters = new ArrayList<IOFileFilter>();
             fileFilters.add(filter);
             fileFilters.add(new NotFileFilter(FileFilterUtils.directoryFileFilter()));
-            filter = new AndFileFilter(fileFilters);            
+            filter = new AndFileFilter(fileFilters);
         } else {
             List<IOFileFilter> fileFilters = new ArrayList<IOFileFilter>();
             fileFilters.add(filter);
@@ -175,32 +175,32 @@ public class FileTrigger implements Serializable {
         }
         return filter;
     }
-    
+
     public void setAfterCopyScript(String afterCopyScript) {
         this.afterCopyScript = afterCopyScript;
     }
-    
+
     public String getAfterCopyScript() {
         return afterCopyScript;
     }
-    
+
     public void setBeforeCopyScript(String beforeCopyScript) {
         this.beforeCopyScript = beforeCopyScript;
     }
-    
+
     public String getBeforeCopyScript() {
         return beforeCopyScript;
     }
-    
+
     public File createSourceFile(FileSnapshot snapshot) {
         File sourceBaseDir = new File(baseDir);
-        if (!snapshot.getFilePath().equals(".")) {
-            String sourcePath = snapshot.getFilePath() + "/";
+        if (!snapshot.getRelativeDir().equals(".")) {
+            String sourcePath = snapshot.getRelativeDir() + "/";
             sourceBaseDir = new File(sourceBaseDir, sourcePath);
         }
         return new File(sourceBaseDir, snapshot.getFileName());
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FileTrigger && triggerId != null) {
@@ -208,8 +208,8 @@ public class FileTrigger implements Serializable {
         } else {
             return super.equals(obj);
         }
-    }    
-    
+    }
+
     @Override
     public int hashCode() {
         return triggerId != null ? triggerId.hashCode() : super.hashCode();
