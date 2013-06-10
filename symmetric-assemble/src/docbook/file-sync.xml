@@ -257,7 +257,7 @@ in the client group. Any files put directly into a folder with the name
 of the node will be routed to that node.
 </para>
 <para>
-Note that the router is a <xref linkend="configuration-column-match-router"/> that is matching the client node_id with the value of the FILE_PATH column in
+Note that the router is a <xref linkend="configuration-column-match-router"/> that is matching the client node_id with the value of the RELATIVE_DIR column in
 <xref linkend="table_file_snapshot" xrefstyle="table" />.  Because the router is looking for an exact match any files in subdirectories would result in a path
 of node_id/subdir which would not match.
 <programlisting>
@@ -284,7 +284,7 @@ INSERT INTO sym_router
    last_update_time)
 VALUES
   ('router_files_to_node',null,null,null,'server','client','column',
-  'FILE_PATH = :NODE_ID ',1,1,1,current_timestamp,'example', current_timestamp);
+  'RELATIVE_DIR = :NODE_ID ',1,1,1,current_timestamp,'example', current_timestamp);
 ]]>
 </programlisting>
 </para>

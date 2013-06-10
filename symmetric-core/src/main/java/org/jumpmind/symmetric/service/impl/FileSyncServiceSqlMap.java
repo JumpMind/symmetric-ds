@@ -58,7 +58,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " values(?,?,?,?,?,?,?,?,?,?,?,?,?)                                             ");
 
         putSql("selectFileSnapshotSql",
-                " select trigger_id, router_id, file_path, file_name, last_event_type, crc32_checksum, " +
+                " select trigger_id, router_id, relative_dir, file_name, last_event_type, crc32_checksum, " +
                 "  file_size, file_modified_time, create_time, last_update_time, last_update_by        " +
                 " from $(file_snapshot) where trigger_id=? and router_id=?                             ");
 
@@ -68,7 +68,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                         "  file_size=?, file_modified_time=?, last_update_time=?,               " +
                         "  last_update_by=?                                                     " +
                         " where                                                                 " +
-                        "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");
+                        "  trigger_id=? and router_id=? and relative_dir=? and file_name=?         ");
 
         putSql("updateFileIncoming",
                 " update $(file_incoming) set                                                   " +
@@ -76,28 +76,28 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                         "  file_modified_time=?,                                                " +
                         "  last_event_type=?                                                    " +
                         " where                                                                 " +
-                        "  file_path=? and file_name=?                                          ");
+                        "  relative_dir=? and file_name=?                                          ");
 
         putSql("insertFileIncoming",
-                " insert into $(file_incoming) (node_id, file_modified_time, last_event_type, file_path, file_name) " +
+                " insert into $(file_incoming) (node_id, file_modified_time, last_event_type, relative_dir, file_name) " +
                 "   values(?,?,?,?,?)                                                                             ");
 
         putSql("deleteFileIncoming",
                 " delete from $(file_incoming)");
 
         putSql("findNodeIdFromFileIncoming",
-                " select node_id from $(file_incoming) where file_path=? and file_name=? and file_modified_time=?");
+                " select node_id from $(file_incoming) where relative_dir=? and file_name=? and file_modified_time=?");
 
         putSql("deleteFileSnapshotSql",
                 " delete from $(file_snapshot)                                                  " +
                         " where                                                                 " +
-                        "  trigger_id=? and router_id=? and file_path=? and file_name=?         ");
+                        "  trigger_id=? and router_id=? and relative_dir=? and file_name=?         ");
 
         putSql("insertFileSnapshotSql",
                 " insert into $(file_snapshot) (                                                " +
                 "  last_event_type, crc32_checksum,                                             " +
                 "  file_size, file_modified_time, create_time, last_update_time,                " +
-                "  last_update_by, trigger_id, router_id, file_path, file_name                  " +
+                "  last_update_by, trigger_id, router_id, relative_dir, file_name                  " +
                 " ) values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");
 
         putSql("selectFileTriggerRoutersSql",

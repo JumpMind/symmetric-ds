@@ -232,7 +232,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             fileTriggerRouter.getLastUpdateTime(),
                             fileTriggerRouter.getFileTrigger().getTriggerId(),
                             fileTriggerRouter.getRouter().getRouterId() },
-                            new int[] { Types.SMALLINT, Types.SMALLINT, 
+                            new int[] { Types.SMALLINT, Types.SMALLINT,
                             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
@@ -638,7 +638,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     nodeCommunication.getNodeId(), processInfo);
 
             if (batchesProcessed.size() > 0) {
-                processInfo.setStatus(ProcessInfo.Status.ACKING);                
+                processInfo.setStatus(ProcessInfo.Status.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
                         engine.getTransportManager());
@@ -750,7 +750,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileSnapshot.setFileModifiedTime(rs.getDateTime("file_modified_time"));
             fileSnapshot.setFileName(rs.getString("file_name"));
-            fileSnapshot.setRelativeDir(rs.getString("file_path"));
+            fileSnapshot.setRelativeDir(rs.getString("relative_dir"));
             fileSnapshot.setFileSize(rs.getLong("file_size"));
             fileSnapshot.setLastEventType(LastEventType.fromCode(rs.getString("last_event_type")));
             fileSnapshot.setTriggerId(rs.getString("trigger_id"));
