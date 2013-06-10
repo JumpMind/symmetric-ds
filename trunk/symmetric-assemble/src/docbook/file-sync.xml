@@ -229,9 +229,9 @@ VALUES ('sync_directory','/filesync/server/all',1,'*.txt',null,1,1,1,
 
 INSERT INTO sym_file_trigger_router
  (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
-  target_relative_dir,conflict_strategy,create_time,last_update_by,last_update_time)
+  conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
-  ('sync_directory','server_2_client',1,1,'','','SOURCE_WINS',current_timestamp,
+  ('sync_directory','server_2_client',1,1,'','SOURCE_WINS',current_timestamp,
   'example',current_timestamp);
 
 INSERT INTO sym_router
@@ -272,9 +272,9 @@ VALUES
 
 INSERT INTO sym_file_trigger_router
   (trigger_id,router_id,enabled,initial_load_enabled,target_base_dir,
-  target_relative_dir,conflict_strategy,create_time,last_update_by,last_update_time)
+  conflict_strategy,create_time,last_update_by,last_update_time)
 VALUES
-  ('node_specific','router_files_to_node',1,1,'/filesync/clients','','SOURCE_WINS',
+  ('node_specific','router_files_to_node',1,1,'/filesync/clients','SOURCE_WINS',
   current_timestamp,'example',current_timestamp);
 
 INSERT INTO sym_router
