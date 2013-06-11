@@ -91,6 +91,8 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword());
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
+        
+        log.info(results.getBatches().get(0).getSqlStatements().get(0));
 
     }
 
