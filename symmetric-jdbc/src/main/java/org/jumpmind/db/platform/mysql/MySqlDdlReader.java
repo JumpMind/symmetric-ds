@@ -33,6 +33,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -41,7 +42,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
  * Reads a database model from a MySql database.
  */
 public class MySqlDdlReader extends AbstractJdbcDdlReader {
-    
+
     private Boolean mariaDbDriver = null;
 
     public MySqlDdlReader(IDatabasePlatform platform) {
@@ -50,7 +51,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
     }
-    
+
     @Override
     protected String getResultSetCatalogName() {
         if (isMariaDbDriver()) {
@@ -109,6 +110,10 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         if ("".equals(column.getDefaultValue())) {
             column.setDefaultValue(null);
         }
+
+        if (column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POINT)) {
+            column.setJdbcTypeName(TypeMap.GEOMETRY);
+        }
         return column;
     }
 
@@ -125,14 +130,14 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         // MySql defines a non-unique index of the same name as the fk
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
-    
+
     protected boolean isMariaDbDriver() {
-        if (mariaDbDriver == null) {            
+        if (mariaDbDriver == null) {
             mariaDbDriver = "mariadb-jdbc".equals(getPlatform().getSqlTemplate().getDriverName());
         }
         return mariaDbDriver;
     }
-    
+
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
