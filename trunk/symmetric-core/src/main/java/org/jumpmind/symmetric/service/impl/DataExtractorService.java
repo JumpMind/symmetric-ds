@@ -25,10 +25,13 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +63,8 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
+import org.jumpmind.symmetric.io.data.writer.StructureDataWriter;
+import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
@@ -72,6 +77,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
@@ -303,130 +309,180 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return batches.getBatches();
     }
 
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, IOutgoingTransport targetTransport) {
+    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo,
+            Node targetNode, PayloadType payloadType) {
 
-        // make sure that data is routed before extracting if the route
-        // job is not configured to start automatically
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(),
+                false);
+
+        if (batches.containsBatches()) {
+
+            ChannelMap channelMap = configurationService.getSuspendIgnoreChannelLists(targetNode
+                    .getNodeId());
+
+            List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
+
+            if (activeBatches.size() > 0) {
+                StructureDataWriter writer = new StructureDataWriter(symmetricDialect.getPlatform(), payloadType);
+                List<OutgoingBatch> extractedBatches = extract(processInfo, targetNode,
+                        activeBatches, writer, false);
+
+                List<OutgoingBatchWithPayload> batchesWithPayload = new ArrayList<OutgoingBatchWithPayload>();
+                for (OutgoingBatch batch : extractedBatches) {
+                    OutgoingBatchWithPayload batchWithPayload = new OutgoingBatchWithPayload(batch, payloadType);
+                    batchWithPayload.setPayload(writer.getPayloadMap().get(batch.getBatchId()));
+                    batchWithPayload.setPayloadType(payloadType);
+                    batchesWithPayload.add(batchWithPayload);
+                }
+
+                return batchesWithPayload;
+
+            }
+        }
+
+        return Collections.emptyList();
+    }
+        
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
+            IOutgoingTransport transport) {
+
+        /*
+         * make sure that data is routed before extracting if the route job is
+         * not configured to start automatically
+         */
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
             routerService.routeData(true);
         }
 
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(),
+                false);
 
         if (batches.containsBatches()) {
 
-            List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches,
-                    targetTransport.getSuspendIgnoreChannelLists(configurationService, targetNode));
+            ChannelMap channelMap = transport.getSuspendIgnoreChannelLists(configurationService,
+                    targetNode);
+
+            List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
 
             if (activeBatches.size() > 0) {
-                extract(processInfo, targetNode, targetTransport, activeBatches);
+                IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                        transport.openWriter(), targetNode.requires13Compatiblity());
+
+                boolean streamToFileEnabled = parameterService
+                        .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+
+                return extract(processInfo, targetNode, activeBatches, dataWriter, streamToFileEnabled);
+            }
+
+        }
+
+        return Collections.emptyList();
+
+    }
+    
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
+            List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled) {
+
+        if (activeBatches.size() > 0) {
+            Set<String> channelsProcessed = new HashSet<String>();
+            long batchesSelectedAtMs = System.currentTimeMillis();
+            OutgoingBatch currentBatch = null;
+            try {
+
+                long bytesSentCount = 0;
+                int batchesSentCount = 0;
+                long maxBytesToSync = parameterService
+                        .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+
+                for (int i = 0; i < activeBatches.size(); i++) {
+                    currentBatch = activeBatches.get(i);
+
+                    channelsProcessed.add(currentBatch.getChannelId());
+                    processInfo.incrementBatchCount();
+                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
+
+                    currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
+
+                    processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
+                    currentBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter,
+                            currentBatch, streamToFileEnabled);
+
+                    if (streamToFileEnabled) {
+                        processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+                        currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch,
+                                dataWriter);
+                    }
+
+                    if (currentBatch.getStatus() != Status.OK) {
+                        currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
+                        changeBatchStatus(Status.LD, currentBatch);
+
+                        bytesSentCount += currentBatch.getByteCount();
+                        batchesSentCount++;
+
+                        if (bytesSentCount >= maxBytesToSync && i < activeBatches.size() - 1) {
+                            log.info(
+                                    "Reached the total byte threshold after {} of {} batches were extracted.  The remaining batches will be extracted on a subsequent sync",
+                                    new Object[] { batchesSentCount, activeBatches.size() });
+                            break;
+                        }
+                    }
+                }
+
+            } catch (RuntimeException e) {
+                SQLException se = unwrapSqlException(e);
+                if (currentBatch != null) {
+                    statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
+                    if (se != null) {
+                        currentBatch.setSqlState(se.getSQLState());
+                        currentBatch.setSqlCode(se.getErrorCode());
+                        currentBatch.setSqlMessage(se.getMessage());
+                    } else {
+                        currentBatch.setSqlMessage(getRootMessage(e));
+                    }
+                    currentBatch.revertStatsOnError();
+                    if (currentBatch.getStatus() != Status.IG) {
+                        currentBatch.setStatus(Status.ER);
+                    }
+                    currentBatch.setErrorFlag(true);
+                    outgoingBatchService.updateOutgoingBatch(currentBatch);
+
+                    if (isStreamClosedByClient(e)) {
+                        log.warn(
+                                "Failed to extract batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed.  The error was: {}",
+                                currentBatch, getRootMessage(e));
+                    } else {
+                        if (e instanceof ProtocolException) {
+                            IStagedResource resource = getStagedResource(currentBatch);
+                            if (resource != null) {
+                                resource.delete();
+                            }
+                        }
+                        log.error("Failed to extract batch {}", currentBatch, e);
+                    }
+                } else {
+                    log.error("Could not log the outgoing batch status because the batch was null",
+                            e);
+                }
             }
 
             // Next, we update the node channel controls to the
             // current timestamp
             Calendar now = Calendar.getInstance();
 
-            for (NodeChannel nodeChannel : batches.getActiveChannels()) {
-                nodeChannel.setLastExtractTime(now.getTime());
-                configurationService.saveNodeChannelControl(nodeChannel, false);
+            for (String channelProcessed : channelsProcessed) {
+                NodeChannel nodeChannel = configurationService.getNodeChannel(channelProcessed,
+                        targetNode.getNodeId(), false);
+                if (nodeChannel != null) {
+                    nodeChannel.setLastExtractTime(now.getTime());
+                    configurationService.saveNodeChannelControl(nodeChannel, false);
+                }
             }
 
             return activeBatches;
+        } else {
+            return Collections.emptyList();
         }
-
-        return new ArrayList<OutgoingBatch>(0);
-    }
-
-    protected void extract(ProcessInfo processInfo, Node targetNode, IOutgoingTransport targetTransport,
-            List<OutgoingBatch> activeBatches) {
-        long batchesSelectedAtMs = System.currentTimeMillis();
-        OutgoingBatch currentBatch = null;
-        try {
-
-            IDataWriter dataWriter = null;
-            long bytesSentCount = 0;
-            int batchesSentCount = 0;
-            long maxBytesToSync = parameterService
-                    .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
-
-            boolean streamToFileEnabled = parameterService
-                    .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
-
-            for (int i = 0; i < activeBatches.size(); i++) {
-                currentBatch = activeBatches.get(i);
-
-                processInfo.incrementBatchCount();
-                processInfo.setCurrentBatchId(currentBatch.getBatchId());
-
-                currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
-
-                if (dataWriter == null) {
-                    dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                            targetTransport.openWriter(), targetNode.requires13Compatiblity());
-                }
-
-                processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
-                currentBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch,
-                        streamToFileEnabled);
-
-                if (streamToFileEnabled) {
-                    processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                    currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, dataWriter);
-                }
-
-                if (currentBatch.getStatus() != Status.OK) {
-                    currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
-                    changeBatchStatus(Status.LD, currentBatch);
-
-                    bytesSentCount += currentBatch.getByteCount();
-                    batchesSentCount++;
-
-                    if (bytesSentCount >= maxBytesToSync && i < activeBatches.size()-1) {
-                        log.info(
-                                "Reached the total byte threshold after {} of {} batches were extracted.  The remaining batches will be extracted on a subsequent sync", new Object[] {
-                                batchesSentCount, activeBatches.size()});
-                        break;
-                    }
-                }
-            }
-
-        } catch (RuntimeException e) {
-            SQLException se = unwrapSqlException(e);
-            if (currentBatch != null) {
-                statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
-                if (se != null) {
-                    currentBatch.setSqlState(se.getSQLState());
-                    currentBatch.setSqlCode(se.getErrorCode());
-                    currentBatch.setSqlMessage(se.getMessage());
-                } else {
-                    currentBatch.setSqlMessage(getRootMessage(e));
-                }
-                currentBatch.revertStatsOnError();
-                if (currentBatch.getStatus() != Status.IG) {
-                    currentBatch.setStatus(Status.ER);
-                }
-                currentBatch.setErrorFlag(true);
-                outgoingBatchService.updateOutgoingBatch(currentBatch);
-
-                if (isStreamClosedByClient(e)) {
-                    log.warn(
-                            "Failed to extract batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed.  The error was: {}",
-                            currentBatch, getRootMessage(e));
-                } else {
-                    if (e instanceof ProtocolException) {
-                        IStagedResource resource = getStagedResource(currentBatch);
-                        if (resource != null) {
-                            resource.delete();
-                        }
-                    }
-                    log.error("Failed to extract batch {}", currentBatch, e);
-                }
-            } else {
-                log.error("Could not log the outgoing batch status because the batch was null", e);
-            }
-
-        }
-
     }
 
     final protected void changeBatchStatus(Status status, OutgoingBatch currentBatch) {

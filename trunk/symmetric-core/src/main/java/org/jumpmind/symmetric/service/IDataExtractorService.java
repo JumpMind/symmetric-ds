@@ -26,8 +26,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
@@ -39,13 +41,16 @@ public interface IDataExtractorService {
     public void extractConfigurationStandalone(Node node, OutputStream out);
 
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
+
+    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType);
     
     /**
-     * @param processInfo TODO
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled);
 
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);    
+    
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
     
     public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,

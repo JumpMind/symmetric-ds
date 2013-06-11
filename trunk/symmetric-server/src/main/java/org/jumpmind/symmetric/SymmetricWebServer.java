@@ -61,9 +61,12 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.symmetric.web.rest.RestService;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -278,6 +281,13 @@ public class SymmetricWebServer {
 
     protected ServletContext getServletContext() {
         return webapp != null ? webapp.getServletContext() : null;
+    }
+    
+    public RestService getRestService() {
+        ServletContext servletContext = getServletContext();
+        WebApplicationContext rootContext =
+                WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        return rootContext.getBean(RestService.class);
     }
 
     public ISymmetricEngine getEngine() {
