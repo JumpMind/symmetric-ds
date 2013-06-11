@@ -27,7 +27,7 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER;
+        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER;
 
         public String toString() {
             switch (this) {
@@ -55,6 +55,8 @@ public class ProcessInfoKey implements Serializable {
                     return "Service File Sync Pull";
                 case FILE_SYNC_PUSH_HANDLER:
                     return "Service File Sync Push";
+                case REST_PULL_HANLDER:
+                    return "REST Pull";
                 default:
                     return name();
             }

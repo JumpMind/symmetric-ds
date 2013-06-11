@@ -29,6 +29,8 @@ public class Batch {
 	 */
 	private long batchId;
 	
+	private String channelId;
+	
 	/**
 	 * The list of sql statements captured on the source for this batch
 	 */
@@ -49,6 +51,14 @@ public class Batch {
 	public void setBatchId(long batchId) {
 		this.batchId = batchId;
 	}
+	
+	public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+	
+	public String getChannelId() {
+        return channelId;
+    }
 	
 	/**
 	 * Returns the list of sql statements captured in this batch

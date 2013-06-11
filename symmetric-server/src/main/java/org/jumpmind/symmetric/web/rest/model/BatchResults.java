@@ -20,16 +20,28 @@
  */
 package org.jumpmind.symmetric.web.rest.model;
 
+import java.util.List;
+
 public class BatchResults {
 
-	BatchResult[] batchList;
+	/**
+	 * A list of batchResults to be acknowledged on the Server
+	 */
+	List<BatchResult> batchResults;
 
-	public BatchResult[] getBatchList() {
-		return batchList;
+	/**
+	 * Returns a list of batch results
+	 * @return {@link BatchResult}
+	 */
+	public List<BatchResult> getBatchResults() {
+		return batchResults;
 	}
 
-	public void setBatchList(BatchResult[] batchList) {
-		this.batchList = batchList;
-	}
-	
+	/**
+	 * Sets the list of batch results
+	 * @param batchResults
+	 */
+	public void setBatchResults(List<BatchResult> batchResults) {
+		this.batchResults = batchResults;
+	}	
 }

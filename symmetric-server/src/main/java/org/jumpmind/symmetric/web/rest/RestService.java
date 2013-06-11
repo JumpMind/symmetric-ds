@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,19 +45,27 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.symmetric.web.rest.model.Batch;
 import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
@@ -619,56 +628,141 @@ public class RestService {
     }    
 
     /**
-     * Requests the server to add this node to the synchronization scenario as a "pull only" node
-     * @param externalId - The external id for this node
-     * @param nodeGroup - The node group to which this node belongs
-     * @param databaseType - The database type for this node
-     * @param databaseVersion - the database version for this node
+     * Requests the server to add this node to the synchronization scenario as a
+     * "pull only" node
+     * 
+     * @param externalId
+     *            The external id for this node
+     * @param nodeGroup
+     *            The node group to which this node belongs
+     * @param databaseType
+     *            The database type for this node
+     * @param databaseVersion
+     *            The database version for this node
      * @return {@link RegistrationInfo}
+     * 
+     *         <pre>
+     * Example json response is as follows:<br/><br/>
+     * {"registered":false,"nodeId":null,"syncUrl":null,"nodePassword":null}<br>
+     * In the above example, the node attempted to register, but was not able to successfully register
+     * because registration was not open on the server.  Checking the "registered" element will allow you
+     * to determine whether the node was successfully registered.<br/><br/>
+     * The following example shows the results from the registration after registration has been opened
+     * on the server for the given node.<br/><br/>
+     * {"registered":true,"nodeId":"001","syncUrl":"http://myserverhost:31415/sync/server-000","nodePassword":"1880fbffd2bc2d00e1d58bd0c734ff"}<br/>
+     * The nodeId, syncUrl and nodePassword should be stored for subsequent calls to the REST API.
+     * </pre>
      */
     @RequestMapping(value = "/engine/registernode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final RegistrationInfo registerNode(@RequestParam(value = "externalId") String externalId,
-    		@RequestParam(value = "nodeGroupId") String nodeGroupId,
-    		@RequestParam(value = "databaseType") String databaseType,
-    		@RequestParam(value = "databaseVersion") String databaseVersion 		
-    		) {    	
-    	
-        IRegistrationService registrationService = getSymmetricEngine().getRegistrationService();
-        INodeService nodeService = getSymmetricEngine().getNodeService();
+    public final RegistrationInfo registerNode(
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "databaseType") String databaseType,
+            @RequestParam(value = "databaseVersion") String databaseVersion) {
+        return registerNode(getSymmetricEngine().getEngineName(), externalId, externalId,
+                databaseType, databaseVersion);
+    }
+
+    @RequestMapping(value = "/engine/{engine}/registernode", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final RegistrationInfo registerNode(@PathVariable("engine") String engineName,
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "databaseType") String databaseType,
+            @RequestParam(value = "databaseVersion") String databaseVersion) {
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        IRegistrationService registrationService = engine.getRegistrationService();
+        INodeService nodeService = engine.getNodeService();
         RegistrationInfo regInfo = new org.jumpmind.symmetric.web.rest.model.RegistrationInfo();
         try {
-        	org.jumpmind.symmetric.model.Node processedNode = registrationService.registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
-        	regInfo.setRegistered(processedNode.isSyncEnabled());    	
+            org.jumpmind.symmetric.model.Node processedNode = registrationService
+                    .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
+            regInfo.setRegistered(processedNode.isSyncEnabled());
             if (regInfo.isRegistered()) {
-            	regInfo.setNodeId(processedNode.getNodeId());
+                regInfo.setNodeId(processedNode.getNodeId());
                 NodeSecurity nodeSecurity = nodeService.findNodeSecurity(processedNode.getNodeId());
-            	regInfo.setNodePassword(nodeSecurity.getNodePassword());     
+                regInfo.setNodePassword(nodeSecurity.getNodePassword());
                 org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-                //TODO: does this work when using a registration redirect?
                 regInfo.setSyncUrl(modelNode.getSyncUrl());
             }
-
+            // TODO: Catch a RegistrationRedirectException and redirect.
         } catch (IOException e) {
             throw new IoException(e);
-        }    	
+        }
         return regInfo;
     }
     
     /**
+     * Pulls pending batches (data) for a given node.
+     * @param nodeId The node id of the node requesting to pull data
+     * @return {@link PullDataResults} 
      * 
-     * @param nodeId - The node id of the node requesting to pull data
-     * @param communicationType - The communication type, either (PULL, PUSH, FILE_PUSH, FILE_PULL)
-     * @return 
+     * Example json response is as follows:<br/><br/>
+     * {"nbrBatches":2,"batches":[{"batchId":20,"sqlStatements":["insert into table1 (field1, field2) values (value1,value2);","update table1 set field1=value1;"]},{"batchId":21,"sqlStatements":["insert into table2 (field1, field2) values (value1,value2);","update table2 set field1=value1;"]}]}<BR>
+     * <br/>
+     * If there are no batches to be pulled, the json response will look as follows:<br/><br/>
+     * {"nbrBatches":0,"batches":[]}
+     * </pre>
      */
     @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final PullDataResults pullData(@RequestParam(value = "nodeId") String nodeId,
-    		@RequestParam(value = "communicationtype") String communicationType) {
-        //TODO: implement
-    	return null;
+    public final PullDataResults pullData(@RequestParam(value = WebConstants.NODE_ID) String nodeId, @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken);
+    }
+        
+    @RequestMapping(value = "/engine/{engine}/pulldata", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final PullDataResults pullData(@PathVariable("engine") String engineName,
+            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+
+        IDataExtractorService dataExtractorService = engine.getDataExtractorService();
+        IStatisticManager statisticManager = engine.getStatisticManager();
+        INodeService nodeService = engine.getNodeService();
+
+        boolean allowed = false;
+        org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId);
+        if (targetNode != null) {
+            NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+            allowed = security.getNodePassword().equals(securityToken);
+        }
+        
+        if (allowed) {
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
+                    nodeService.findIdentityNodeId(), nodeId, ProcessType.REST_PULL_HANLDER));
+            try {
+
+                PullDataResults results = new PullDataResults();
+                List<OutgoingBatchWithPayload> extractedBatches = dataExtractorService
+                        .extractToPayload(processInfo, targetNode, PayloadType.SQL);
+                List<Batch> batches = new ArrayList<Batch>();
+                for (OutgoingBatchWithPayload outgoingBatchWithPayload : extractedBatches) {
+                    if (outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD) {
+                        Batch batch = new Batch();
+                        batch.setBatchId(outgoingBatchWithPayload.getBatchId());
+                        batch.setChannelId(outgoingBatchWithPayload.getChannelId());
+                        batch.setSqlStatements(outgoingBatchWithPayload.getPayload());
+                        batches.add(batch);
+                    }
+                }
+                results.setBatches(batches);
+                results.setNbrBatches(batches.size());
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
+                return results;
+            } catch (RuntimeException ex) {
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
+                throw ex;
+            }
+        } else {
+            throw new NotAllowedException();
+        }
     }
     
     /**
@@ -718,24 +812,18 @@ public class RestService {
     }
     
     /**
-     * Acknowledges a batch that has been pulled and processed on the client side.  Setting
-     * the status to OK will render the batch complete.  Setting the status to anything other 
-     * than OK will queue the batch on the server to be sent again on the next pull.
-     * @param nodeID - The node id that is acknowledging the batch
-     * @param batchId - The batch id that is being acknowledged
-     * @param status - The status of the batch, either "OK" or "ER"
-     * @param statusDescription - A description of the status.  This is particularly important 
+     * Acknowledges a set of batches that have been pulled and processed on the client side.  
+     * Setting the status to OK will render the batch complete.  Setting the status to 
+     * anything other than OK will queue the batch on the server to be sent again on the next pull.
      * if the status is "ER".  In error status the status description should contain relevant
      * information about the error on the client including SQL Error Number and description
-     */
-    
+     */    
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public final void putAcknowledgeBatch(@RequestBody BatchResults batchResults) {    
         	
     	//TODO: implement
     }
-
     
     /**
      * Requests an initial load from the server for the node id provided.  The initial load requst

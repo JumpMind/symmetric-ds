@@ -22,4 +22,86 @@ package org.jumpmind.symmetric.web.rest.model;
 
 public class BatchResult {
 
+	/**
+	 * The node ID for which batches are being acknowledged
+	 */
+	private String nodeId;
+	
+	/**
+	 * The batch ID for the batch being acknowledged
+	 */
+	private Long batchId;
+	
+	/**
+	 * The status of the batch after it was loaded.  Either "OK" or "ER"
+	 */
+	private String status;
+	
+	/**
+	 * A description of the status. This is particularly important if the status is "ER". 
+	 * In error status the status description should contain relevant information about the 
+	 * error on the client including SQL Error Number and description
+	 */
+	private String statusDescription;
+		
+	/**
+	 * Returns the nodeId for the given batch result
+	 * @return
+	 */
+	public String getNodeId() {
+		return nodeId;
+	}
+	
+	/**
+	 * Sets the nodeId for the given batch result
+	 * @param nodeId
+	 */
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
+	
+	/**
+	 * Gets the batch id for the given batch result
+	 * @return
+	 */
+	public Long getBatchId() {
+		return batchId;
+	}
+	
+	/**
+	 * Sets the batch id for the given batch result
+	 * @param batchId
+	 */
+	public void setBatchId(Long batchId) {
+		this.batchId = batchId;
+	}
+	
+	/**
+	 * Gets the status for the given batch result
+	 * @return
+	 */
+	public String getStatus() {
+		return status;
+	}
+	/**
+	 * Sets the status for the given batch result
+	 * @param status
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	/**
+	 * Gets the status description for the given batch result
+	 * @return
+	 */
+	public String getStatusDescription() {
+		return statusDescription;
+	}
+	/**
+	 * Sets the status description for the given batch result
+	 * @param statusDescription
+	 */
+	public void setStatusDescription(String statusDescription) {
+		this.statusDescription = statusDescription;
+	}
 }
