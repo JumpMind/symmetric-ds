@@ -323,7 +323,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
 
             if (activeBatches.size() > 0) {
-                StructureDataWriter writer = new StructureDataWriter(symmetricDialect.getPlatform(), payloadType);
+                StructureDataWriter writer = new StructureDataWriter(symmetricDialect.getPlatform(), targetNode.getDatabaseType(), payloadType,
+                        // TODO might want to pass this into the rest call as an optional parameter
+                        parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE), symmetricDialect.getBinaryEncoding());
                 List<OutgoingBatch> extractedBatches = extract(processInfo, targetNode,
                         activeBatches, writer, false);
 
