@@ -71,11 +71,11 @@ import org.slf4j.LoggerFactory;
 /**
  * This class is a collection of Strategy methods for creating the DDL required
  * to create and drop databases and tables.
- * 
+ *
  * It is hoped that just a single implementation of this class, for each
  * database should make creating DDL for each physical database fairly
  * straightforward.
- * 
+ *
  * An implementation of this class can always delegate down to some templating
  * technology such as Velocity if it requires. Though often that can be quite
  * complex when attempting to reuse code across many databases. Hopefully only a
@@ -129,7 +129,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the default value helper.
-     * 
+     *
      * @return The default value helper
      */
     public DefaultValueHelper getDefaultValueHelper() {
@@ -138,7 +138,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the string used to indent the SQL.
-     * 
+     *
      * @return The indentation string
      */
     public String getIndent() {
@@ -147,7 +147,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Sets the string used to indent the SQL.
-     * 
+     *
      * @param indent
      *            The indentation string
      */
@@ -159,7 +159,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Returns the locale that is used for number and date formatting (when
      * printing default values and in generates insert/update/delete
      * statements).
-     * 
+     *
      * @return The locale or <code>null</code> if default formatting is used
      */
     public String getValueLocale() {
@@ -170,7 +170,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Sets the locale that is used for number and date formatting (when
      * printing default values and in generates insert/update/delete
      * statements).
-     * 
+     *
      * @param localeStr
      *            The new locale or <code>null</code> if default formatting
      *            should be used; Format is "language[_country[_variant]]"
@@ -219,7 +219,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the format object for formatting dates in the specified locale.
-     * 
+     *
      * @return The date format object or null if no locale is set
      */
     protected DateFormat getValueDateFormat() {
@@ -228,7 +228,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Sets the format object for formatting dates in the specified locale.
-     * 
+     *
      * @param format
      *            The date format object
      */
@@ -238,7 +238,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the format object for formatting times in the specified locale.
-     * 
+     *
      * @return The time format object or null if no locale is set
      */
     protected DateFormat getValueTimeFormat() {
@@ -247,7 +247,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Sets the date format object for formatting times in the specified locale.
-     * 
+     *
      * @param format
      *            The time format object
      */
@@ -257,7 +257,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the format object for formatting numbers in the specified locale.
-     * 
+     *
      * @return The number format object or null if no locale is set
      */
     protected NumberFormat getValueNumberFormat() {
@@ -267,7 +267,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns a new date format object for formatting numbers in the specified
      * locale. Platforms can override this if necessary.
-     * 
+     *
      * @param format
      *            The number format object
      */
@@ -277,7 +277,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Adds a char sequence that needs escaping, and its escaped version.
-     * 
+     *
      * @param charSequence
      *            The char sequence
      * @param escapedVersion
@@ -319,14 +319,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         alterDatabase(currentModel, desiredModel, ddl);
         return ddl.toString();
     }
-    
+
     public String alterTable(Table currentTable, Table desiredTable) {
         Database currentModel = new Database();
         currentModel.addTable(currentTable);
-        
+
         Database desiredModel = new Database();
         desiredModel.addTable(desiredTable);
-        
+
         return alterDatabase(currentModel, desiredModel);
     }
 
@@ -351,7 +351,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Calls the given closure for all changes that are of one of the given
      * types, and then removes them from the changes collection.
-     * 
+     *
      * @param changes
      *            The changes
      * @param changeTypes
@@ -459,7 +459,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the change representing the removal of an index.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -475,7 +475,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the change representing the removal of a table.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -491,7 +491,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the change representing the addition of a table.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -507,7 +507,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the change representing the addition of a foreign key.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -524,7 +524,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the change representing the addition of an index.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -540,7 +540,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Processes the changes to the structure of tables.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -620,7 +620,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Determines the unchanged foreign keys of the indicated table.
-     * 
+     *
      * @param currentModel
      *            The current model
      * @param desiredModel
@@ -650,7 +650,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Adds the foreign keys of the unchanged tables that reference changed
      * tables to the given map.
-     * 
+     *
      * @param currentModel
      *            The current model
      * @param desiredModel
@@ -704,9 +704,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             String tableName, List<TableChange> changes, StringBuilder ddl) {
-        
+
         StringBuilder tableDdl = new StringBuilder();
-        
+
         Table sourceTable = currentModel.findTable(tableName, delimitedIdentifierModeOn);
         Table targetTable = desiredModel.findTable(tableName, delimitedIdentifierModeOn);
 
@@ -790,7 +790,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * from the list of changes.<br/>
      * In the default implementation, all {@link AddPrimaryKeyChange} changes
      * are applied via an <code>ALTER TABLE ADD CONSTRAINT</code> statement.
-     * 
+     *
      * @param currentModel
      *            The current database schema
      * @param desiredModel
@@ -812,7 +812,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 changes.clear();
             }
         }
-        
+
         Iterator<TableChange> it = changes.iterator();
         while (it.hasNext()) {
             TableChange change = (TableChange) it.next();
@@ -827,10 +827,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
     }
-    
+
     protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
         return false;
-    }    
+    }
 
     /**
      * Creates a temporary table object that corresponds to the given table.
@@ -838,7 +838,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * database directly supports temporary tables. The default implementation
      * simply appends an underscore to the table name and uses that as the table
      * name.
-     * 
+     *
      * @param targetModel
      *            The target database
      * @param targetTable
@@ -890,7 +890,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Outputs the DDL to create the given temporary table. Per default this is
      * simply a call to {@link #createTable(Table, Map)}.
-     * 
+     *
      * @param database
      *            The database model
      * @param table
@@ -914,7 +914,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates the target table object that differs from the given target table
      * only in the indices. More specifically, only those indices are used that
      * have not changed.
-     * 
+     *
      * @param targetModel
      *            The target database
      * @param sourceTable
@@ -961,7 +961,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Database-specific implementations might redefine this method though they
      * usually it suffices to redefine the
      * {@link #writeCastExpression(Column, Column)} method.
-     * 
+     *
      * @param sourceTable
      *            The source table
      * @param targetTable
@@ -1049,7 +1049,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * columns in the same order is searched. If the given key has a name, then
      * the a corresponding key also needs to have the same name, or no name at
      * all, but not a different one.
-     * 
+     *
      * @param table
      *            The table to search in
      * @param fk
@@ -1098,7 +1098,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Compares the two strings.
-     * 
+     *
      * @param string1
      *            The first string
      * @param string2
@@ -1144,7 +1144,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Creates the external foreignkey creation statements for all tables in the
      * database.
-     * 
+     *
      * @param database
      *            The database
      */
@@ -1237,7 +1237,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Creates external foreign key drop statements.
-     * 
+     *
      * @param table
      *            The table
      */
@@ -1253,7 +1253,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates the SQL for inserting an object into the specified table. If
      * values are given then a concrete insert statement is created, otherwise
      * an insert statement usable in a prepared statement is build.
-     * 
+     *
      * @param table
      *            The table
      * @param columnValues
@@ -1314,7 +1314,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates the SQL for updating an object in the specified table. If values
      * are given then a concrete update statement is created, otherwise an
      * update statement usable in a prepared statement is build.
-     * 
+     *
      * @param table
      *            The table
      * @param columnValues
@@ -1378,7 +1378,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Creates the SQL for deleting an object from the specified table. If
      * values are given then a concrete delete statement is created, otherwise
      * an delete statement usable in a prepared statement is build.
-     * 
+     *
      * @param table
      *            The table
      * @param pkValues
@@ -1420,7 +1420,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Generates the string representation of the given value.
-     * 
+     *
      * @param column
      *            The column
      * @param value
@@ -1493,7 +1493,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * insertion operation. This is obviously only useful for pk fields that are
      * auto-incrementing. A database that does not support this, will return
      * <code>null</code>.
-     * 
+     *
      * @param table
      *            The table
      * @return The sql, or <code>null</code> if the database does not support
@@ -1507,7 +1507,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Generates the SQL to execute that sets the current sequence number.
-     * 
+     *
      * @param table
      * @param id
      * @return
@@ -1526,7 +1526,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Generates a version of the name that has at most the specified length.
-     * 
+     *
      * @param name
      *            The original name
      * @param desiredLength
@@ -1562,7 +1562,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the table name. This method takes care of length limitations
      * imposed by some databases.
-     * 
+     *
      * @param table
      *            The table
      * @return The table name
@@ -1573,7 +1573,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Outputs a comment for the table.
-     * 
+     *
      * @param table
      *            The table
      */
@@ -1587,7 +1587,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Generates the first part of the ALTER TABLE statement including the table
      * name.
-     * 
+     *
      * @param table
      *            The table being altered
      */
@@ -1623,7 +1623,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Writes the end of the table creation statement. Per default, only the end
      * of the statement is written, but this can be changed in subclasses.
-     * 
+     *
      * @param table
      *            The table
      */
@@ -1647,7 +1647,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the column name. This method takes care of length limitations
      * imposed by some databases.
-     * 
+     *
      * @param column
      *            The column
      * @return The column name
@@ -1655,7 +1655,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected String getColumnName(Column column) {
         return shortenName(column.getName(), databaseInfo.getMaxColumnNameLength());
     }
-    
+
     protected void writeColumnTypeDefaultRequired(Table table, Column column, StringBuilder ddl) {
         // see comments in columnsDiffer about null/"" defaults
         printIdentifier(getColumnName(column), ddl);
@@ -1669,7 +1669,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 && databaseInfo.hasNullDefault(column.getMappedTypeCode())) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);
-        }        
+        }
     }
 
     /**
@@ -1702,7 +1702,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the full SQL type specification (including size and
      * precision/scale) for the given column.
-     * 
+     *
      * @param column
      *            The column
      * @return The full SQL type string including the size
@@ -1740,7 +1740,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the database-native type for the given column.
-     * 
+     *
      * @param column
      *            The column
      * @return The native type
@@ -1754,7 +1754,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the bare database-native type for the given column without any
      * size specifies.
-     * 
+     *
      * @param column
      *            The column
      * @return The native type
@@ -1768,7 +1768,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the native default value for the column.
-     * 
+     *
      * @param column
      *            The column
      * @return The native default value
@@ -1779,7 +1779,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Escapes the necessary characters in given string value.
-     * 
+     *
      * @param value
      *            The value
      * @return The corresponding string with the special characters properly
@@ -1802,7 +1802,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * be used in a DEFAULT expression. E.g. if the spec is an empty string and
      * the type is a numeric type, then it is no valid default value whereas if
      * it is a string type, then it is valid.
-     * 
+     *
      * @param defaultSpec
      *            The default value spec
      * @param typeCode
@@ -1852,11 +1852,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Prints the default value of the column.
      */
-    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
-        boolean isNull = defaultValue == null;
+    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
+        boolean isNull = false;
+        if (defaultValue==null || defaultValue.equalsIgnoreCase("null")) {
+            isNull = true;
+        }
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode) && 
-                !(TypeMap.isDateTimeType(typeCode)                 
+        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode) &&
+                !(TypeMap.isDateTimeType(typeCode)
                 && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
                 || defaultValueStr.toUpperCase().startsWith("SYSDATE")
                 || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
@@ -1872,13 +1875,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(defaultValueStr);
         }
     }
-    
+
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
         if (defaultValue == null) {
             defaultValue = "NULL";
         }
         return defaultValue.toString();
-    }    
+    }
 
     /**
      * Prints that the column is an auto increment column.
@@ -1906,7 +1909,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * nullability, size, scale, default value, and precision radix are the
      * attributes checked. Currently default values are compared, and null and
      * empty string are considered equal.
-     * 
+     *
      * @param currentColumn
      *            The current column as it is in the database
      * @param desiredColumn
@@ -1960,7 +1963,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * has no specified name, this method determines a unique name for it. The
      * name will also be shortened to honor the maximum identifier length
      * imposed by the platform.
-     * 
+     *
      * @param table
      *            The table for whith the foreign key is defined
      * @param fk
@@ -1996,7 +1999,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the constraint name. This method takes care of length limitations
      * imposed by some databases.
-     * 
+     *
      * @param prefix
      *            The constraint prefix, can be <code>null</code>
      * @param table
@@ -2027,7 +2030,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes the primary key constraints of the table inside its definition.
-     * 
+     *
      * @param table
      *            The table
      */
@@ -2043,7 +2046,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Writes the primary key constraints of the table as alter table
      * statements.
-     * 
+     *
      * @param table
      *            The table
      * @param primaryKeyColumns
@@ -2066,7 +2069,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Determines whether we should generate a primary key constraint for the
      * given primary key columns.
-     * 
+     *
      * @param primaryKeyColumns
      *            The pk columns
      * @return <code>true</code> if a pk statement should be generated for the
@@ -2078,7 +2081,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes a primary key statement for the given columns.
-     * 
+     *
      * @param table
      *            The table
      * @param primaryKeyColumns
@@ -2098,7 +2101,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Returns the index name. This method takes care of length limitations
      * imposed by some databases.
-     * 
+     *
      * @param index
      *            The index
      * @return The index name
@@ -2109,7 +2112,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes the indexes of the given table.
-     * 
+     *
      * @param table
      *            The table
      */
@@ -2255,7 +2258,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes a single foreign key constraint using a alter table statement.
-     * 
+     *
      * @param database
      *            The database model
      * @param table
@@ -2284,7 +2287,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes a list of local references for the given foreign key.
-     * 
+     *
      * @param key
      *            The foreign key
      */
@@ -2299,7 +2302,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Writes a list of foreign references for the given foreign key.
-     * 
+     *
      * @param key
      *            The foreign key
      */
@@ -2315,7 +2318,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Generates the statement to drop a foreignkey constraint from the database
      * using an alter table statement.
-     * 
+     *
      * @param table
      *            The table
      * @param foreignKey
@@ -2331,7 +2334,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Prints an SQL comment to the current stream.
-     * 
+     *
      * @param text
      *            The comment text
      */
@@ -2372,7 +2375,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Returns the delimited version of the identifier (if configured).
-     * 
+     *
      * @param identifier
      *            The identifier
      * @return The delimited version of the identifier unless the platform is
@@ -2390,7 +2393,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Prints the given identifier. For most databases, this will be a delimited
      * identifier.
-     * 
+     *
      * @param identifier
      *            The identifier
      */
@@ -2401,7 +2404,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Prints the given identifier followed by a newline. For most databases,
      * this will be a delimited identifier.
-     * 
+     *
      * @param identifier
      *            The identifier
      */
@@ -2411,7 +2414,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Prints some text followed by a newline.
-     * 
+     *
      * @param text
      *            The text to print
      */
@@ -2426,12 +2429,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void printIndent(StringBuilder ddl) {
         ddl.append(getIndent());
     }
-    
+
     /*
      * Determines whether script mode is on. This means that the generated SQL
      * is not intended to be sent directly to the database but rather to be
      * saved in a SQL script file. Per default, script mode is off.
-     * 
+     *
      * @return <code>true</code> if script mode is on
      */
     public boolean isScriptModeOn() {
@@ -2442,7 +2445,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Specifies whether script mode is on. This means that the generated SQL is
      * not intended to be sent directly to the database but rather to be saved
      * in a SQL script file.
-     * 
+     *
      * @param scriptModeOn <code>true</code> if script mode is on
      */
     public void setScriptModeOn(boolean scriptModeOn) {
@@ -2451,7 +2454,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /*
      * Determines whether SQL comments are generated.
-     * 
+     *
      * @return <code>true</code> if SQL comments shall be generated
      */
     public boolean isSqlCommentsOn() {
@@ -2460,7 +2463,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /*
      * Specifies whether SQL comments shall be generated.
-     * 
+     *
      * @param sqlCommentsOn <code>true</code> if SQL comments shall be generated
      */
     public void setSqlCommentsOn(boolean sqlCommentsOn) {
@@ -2474,7 +2477,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Determines whether delimited identifiers are used or normal SQL92
      * identifiers (which may only contain alphanumerical characters and the
      * underscore, must start with a letter and cannot be a reserved keyword).
-     * 
+     *
      * @return <code>true</code> if delimited identifiers are used
      */
     public boolean isDelimitedIdentifierModeOn() {
@@ -2484,7 +2487,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /*
      * Specifies whether delimited identifiers are used or normal SQL92
      * identifiers.
-     * 
+     *
      * @param delimitedIdentifierModeOn <code>true</code> if delimited
      * identifiers shall be used
      */
@@ -2492,11 +2495,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (!databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
             log.warn("Platform does not support delimited identifier.  Delimited identifiers will not be enabled.");
         } else {
-            this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;    
+            this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
         }
-        
+
     }
-    
+
     public DatabaseInfo getDatabaseInfo() {
         return databaseInfo;
     }
