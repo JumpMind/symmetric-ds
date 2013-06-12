@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -76,9 +77,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
-        // Oracle 10 added the recycle bin which contains dropped database
-        // objects not yet purged
-        // Since we don't want entries from the recycle bin, we filter them out
+        /*
+         * Oracle 10 added the recycle bin which contains dropped database
+         * objects not yet purged Since we don't want entries from the recycle
+         * bin, we filter them out
+         */
         boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
 
         if (!tableHasBeenDeleted) {
@@ -102,18 +105,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {
-        ResultSet rs = null;
-        PreparedStatement stmt = null;
-        try {
-            stmt = connection.prepareStatement("SELECT * FROM RECYCLEBIN WHERE OBJECT_NAME=?");
-            stmt.setString(1, (String) values.get("TABLE_NAME"));
-
-            rs = stmt.executeQuery();
-            return rs.next();
-        } finally {
-            close(rs);
-            close(stmt);
-        }
+        String tablename = (String)values.get("TABLE_NAME");
+        return StringUtils.isNotBlank(tablename) && tablename.toLowerCase().startsWith("bin$");
     }
 
     @Override
