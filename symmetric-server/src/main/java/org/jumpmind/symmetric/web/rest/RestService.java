@@ -46,6 +46,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
+import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -56,6 +57,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -66,6 +68,7 @@ import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.symmetric.web.rest.model.Batch;
+import org.jumpmind.symmetric.web.rest.model.BatchResult;
 import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
@@ -821,8 +824,38 @@ public class RestService {
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public final void putAcknowledgeBatch(@RequestBody BatchResults batchResults) {    
-        	
-    	//TODO: implement
+    	putAcknowledgeBatch(getSymmetricEngine().getEngineName(),
+    			batchResults);
+    }
+    
+    @RequestMapping(value = "/engine/{engine}/acknowledgebatch", method = RequestMethod.PUT)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public final void putAcknowledgeBatch(@PathVariable("engine") String engineName,
+    		@RequestBody BatchResults batchResults) {    
+
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        IAcknowledgeService ackService = engine.getAcknowledgeService();
+        List<BatchAck> batchAcks = convertBatchResultsToAck(batchResults);
+        ackService.ack(batchAcks);
+    }
+
+    private List<BatchAck> convertBatchResultsToAck(BatchResults batchResults) {
+    	
+    	BatchAck batchAck=null;
+    	List<BatchAck> batchAcks = new ArrayList<BatchAck>();
+    	for (BatchResult batchResult:batchResults.getBatchResults()) {
+    		batchAck = new BatchAck(batchResult.getBatchId());
+    		if (batchResult.getStatus().equalsIgnoreCase("OK")) {
+    			batchAck.setOk(true);
+    		} else {
+    			batchAck.setOk(false);
+    			batchAck.setSqlCode(batchResult.getSqlCode());
+    			batchAck.setSqlState(batchResult.getSqlState());
+    			batchAck.setSqlMessage(batchResult.getStatusDescription());
+    		}
+    		batchAcks.add(batchAck);    		
+    	}
+    	return batchAcks;
     }
     
     /**

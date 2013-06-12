@@ -36,6 +36,16 @@ public class BatchResult {
 	 * The status of the batch after it was loaded.  Either "OK" or "ER"
 	 */
 	private String status;
+
+	/**
+	 * The sqlCode that resulted if the batch being loaded is in error  
+	 */
+	private int sqlCode;
+	
+	/**
+	 * The sqlState that resulted if the batch being loaded is in error
+	 */
+	private String sqlState;	
 	
 	/**
 	 * A description of the status. This is particularly important if the status is "ER". 
@@ -104,4 +114,37 @@ public class BatchResult {
 	public void setStatusDescription(String statusDescription) {
 		this.statusDescription = statusDescription;
 	}
+
+	/**
+	 * Gets the sqlCode for the batch 
+	 * @return
+	 */
+	public int getSqlCode() {
+		return sqlCode;
+	}
+
+	/**
+	 * Sets the sqlCode for the batch
+	 * @param sqlCode
+	 */
+	public void setSqlCode(int sqlCode) {
+		this.sqlCode = sqlCode;
+	}
+
+	/**
+	 * gets the sqlState for the batch
+	 * @return
+	 */
+	public String getSqlState() {
+		return sqlState;
+	}
+
+	/**
+	 * sets the sqlState for the batch
+	 * @param sqlState
+	 */
+	public void setSqlState(String sqlState) {
+		this.sqlState = sqlState;
+	}
+
 }
