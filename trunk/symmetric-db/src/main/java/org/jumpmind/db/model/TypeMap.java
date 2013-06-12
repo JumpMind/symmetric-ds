@@ -99,6 +99,8 @@ public abstract class TypeMap
     public static final String SQLXML = "SQLXML";
     public static final String GEOMETRY  = "GEOMETRY";
     public static final String POINT  = "POINT";
+    public static final String LINESTRING  = "LINESTRING";
+    public static final String POLYGON  = "POLYGON";
     public static final String UUID = "UUID";
     public static final String VARBIT = "VARBIT";
     public static final String INTERVAL = "INTERVAL";
