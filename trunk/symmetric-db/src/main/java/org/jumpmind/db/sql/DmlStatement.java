@@ -47,7 +47,7 @@ public class DmlStatement {
     protected static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
 
     public enum DmlType {
-        INSERT, UPDATE, DELETE, COUNT, FROM, SELECT, SELECT_ALL, UNKNOWN
+        INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, SELECT, SELECT_ALL, UNKNOWN
     };
 
     protected DmlType dmlType;
@@ -97,6 +97,9 @@ public class DmlStatement {
         } else if (type == DmlType.DELETE) {
             this.sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
                     tableName, quote), keysColumns);
+        } else if (type == DmlType.UPSERT) {
+            this.sql = buildUpsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, quote), keysColumns, columns);
         } else if (type == DmlType.COUNT) {
             this.sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
                     tableName, quote), keysColumns);
@@ -172,6 +175,10 @@ public class DmlStatement {
         appendColumnQuestions(sql, columns);
         sql.append(")");
         return sql.toString();
+    }
+    
+    protected String buildUpsertSql(String tableName, Column[] keyColumns, Column[] columns) {
+        throw new NotImplementedException("Unimplemented SQL type: " + DmlType.UPSERT);
     }
 
     protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
@@ -310,7 +317,8 @@ public class DmlStatement {
     public Column[] getMetaData() {
         switch (dmlType) {
             case UPDATE:
-                return getColumnKeyMetaData();
+            case UPSERT:
+                return getColumnKeyMetaData();                
             case INSERT:
                 return getColumns();
             case DELETE:
@@ -329,6 +337,7 @@ public class DmlStatement {
     public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         switch (dmlType) {
             case UPDATE:
+            case UPSERT:
                 return (T[]) ArrayUtils.addAll(columnValues, keyValues);
             case INSERT:
                 return columnValues;
@@ -352,6 +361,7 @@ public class DmlStatement {
                     }
                     break;
                 case UPDATE:
+                case UPSERT:
                     args = new Object[columns.length + keys.length];
                     for (Column column : columns) {
                         args[index++] = params.get(column.getName());
@@ -440,6 +450,10 @@ public class DmlStatement {
         
         newSql = newSql.replace(QUESTION_MARK, "?");
         return newSql + databaseInfo.getSqlCommandDelimiter();
+    }
+    
+    public boolean isUpsertSupported() {
+        return false;
     }
 
 }
