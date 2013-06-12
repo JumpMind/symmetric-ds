@@ -113,16 +113,12 @@ public class StructureDataWriter implements IDataWriter {
                 sql =  data.getParsedData(CsvData.ROW_DATA)[0];
                 break;
             case CREATE:
-                // TODO: figure out what to do with these
+                // TODO: we should be able to generate the ddl for this event
                 break;
             default:
                 break;
         }
         
-        // TODO: change the ? to the actual data
-        // platform.replaceSql(dml.getSql(), BinaryEncoding.NONE, currentTable,
-        // data.getParsedData(CsvData.ROW_DATA),
-        // true);
         if (sql != null) {
             this.payloadMap.get(this.currentBatch).add(sql);
         }
@@ -135,6 +131,7 @@ public class StructureDataWriter implements IDataWriter {
         for (int i = 0; i < columns.length; i++) {
             row.put(columns[i].getName(), objects[i]);            
         }
+       
         return platform.replaceSql(sql, binaryEncoding, currentTable, row, false);
     }
 
