@@ -85,10 +85,12 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
 
         if (!tableHasBeenDeleted) {
-            String tableName = (String) values.get("TABLE_NAME");
-
-            // system table ?
-            if (tableName.indexOf('$') > 0) {
+            
+            /*
+             * System tables are in the system schema
+             */
+            String schema = (String) values.get(getResultSetSchemaName());
+            if ("SYSTEM".equals(schema)) {
                 return null;
             }
 
