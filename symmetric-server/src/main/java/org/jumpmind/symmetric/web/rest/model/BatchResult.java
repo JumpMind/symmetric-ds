@@ -53,6 +53,15 @@ public class BatchResult {
 	 * error on the client including SQL Error Number and description
 	 */
 	private String statusDescription;
+	
+	public BatchResult(String nodeId, long batchId, boolean success) {
+	    this.status = success ? "OK" : "ER";
+	    this.nodeId = nodeId;
+	    this.batchId = batchId;
+    }
+	
+	public BatchResult() {
+    }
 		
 	/**
 	 * Returns the nodeId for the given batch result

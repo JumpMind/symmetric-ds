@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.web.rest.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BatchResults {
@@ -27,7 +28,7 @@ public class BatchResults {
 	/**
 	 * A list of batchResults to be acknowledged on the Server
 	 */
-	List<BatchResult> batchResults;
+	List<BatchResult> batchResults = new ArrayList<BatchResult>();
 
 	/**
 	 * Returns a list of batch results

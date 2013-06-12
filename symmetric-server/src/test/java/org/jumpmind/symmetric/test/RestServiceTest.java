@@ -13,6 +13,8 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.rest.NotAllowedException;
 import org.jumpmind.symmetric.web.rest.RestService;
+import org.jumpmind.symmetric.web.rest.model.BatchResult;
+import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
 import org.jumpmind.util.FormatUtils;
@@ -119,6 +121,17 @@ public class RestServiceTest extends AbstractTest {
 
         log.info(results.getBatches().get(1).getSqlStatements().get(0));
         log.info(results.getBatches().get(1).getSqlStatements().get(1));
+        
+        BatchResults batchResults = new BatchResults();
+        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 3, true));
+        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 4, true));
+        restService.putAcknowledgeBatch("server", batchResults);
+        
+        results = restService.pullData("server", registrationInfo.getNodeId(),
+                registrationInfo.getNodePassword());
+        Assert.assertNotNull("Should have a non null results object", results);
+        Assert.assertEquals(0, results.getNbrBatches());
+
     }
 
 }
