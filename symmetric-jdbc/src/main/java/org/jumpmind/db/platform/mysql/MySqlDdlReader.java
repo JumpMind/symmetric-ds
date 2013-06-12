@@ -111,7 +111,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             column.setDefaultValue(null);
         }
 
-        if (column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POINT)) {
+        if (column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POINT) ||
+                column.getJdbcTypeName().equalsIgnoreCase(TypeMap.LINESTRING) ||
+                column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POLYGON) ) {
             column.setJdbcTypeName(TypeMap.GEOMETRY);
         }
         return column;
