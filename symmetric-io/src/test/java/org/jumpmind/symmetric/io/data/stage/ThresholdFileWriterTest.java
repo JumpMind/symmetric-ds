@@ -43,6 +43,8 @@ public class ThresholdFileWriterTest {
         
         // Check the contents of the buffer (not yet written to a file)
         Assert.assertEquals(TEST_STR, IOUtils.toString(writer.getReader()));
+        
+        writer.close();
     }
 
     @Test

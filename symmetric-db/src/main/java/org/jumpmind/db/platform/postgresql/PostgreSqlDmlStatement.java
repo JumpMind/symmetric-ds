@@ -25,15 +25,16 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class PostgreSqlDmlStatement extends DmlStatement {
 
-    public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString, boolean[] nullKeyValues) {
-        super(type, catalogName, schemaName, tableName, keys, columns, isDateOverrideToTimestamp,
-                identifierQuoteString, nullKeyValues);
+    public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
+        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+                nullKeyValues, databaseInfo, useQuotedIdentifiers);
     }
 
     @Override

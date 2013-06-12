@@ -29,6 +29,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -60,19 +61,22 @@ public class StructureDataWriter implements IDataWriter {
 
     protected long currentBatch;
 
-    protected String databaseType;
+    protected String targetDatabaseName;
     
     protected boolean useQuotedIdentifiers;
     
+    protected boolean useJdbcTimestampFormat;
+    
     protected BinaryEncoding binaryEncoding;
 
-    public StructureDataWriter(IDatabasePlatform platform, String databaseType,
-            PayloadType payloatType, boolean useQuotedIdentifiers, BinaryEncoding binaryEncoding) {
+    public StructureDataWriter(IDatabasePlatform platform, String targetDatabaseName,
+            PayloadType payloatType, boolean useQuotedIdentifiers, BinaryEncoding binaryEncoding, boolean useJdbcTimestampFormat) {
         this.platform = platform;
         this.payloadType = payloatType;
-        this.databaseType = databaseType;
+        this.targetDatabaseName = targetDatabaseName;
         this.useQuotedIdentifiers = useQuotedIdentifiers;
         this.binaryEncoding = binaryEncoding;
+        this.useJdbcTimestampFormat = useJdbcTimestampFormat;
     }
 
     public void open(DataContext context) {
@@ -101,13 +105,13 @@ public class StructureDataWriter implements IDataWriter {
         String sql = null;
         switch (data.getDataEventType()) {
             case UPDATE:
-                sql = makeDynamic(DmlStatementFactory.createDmlStatement(databaseType, DmlType.UPDATE, currentTable, useQuotedIdentifiers).getSql(), data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
+                sql = buildSql(DmlType.UPDATE, data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
                 break;
             case INSERT:
-                sql = makeDynamic(DmlStatementFactory.createDmlStatement(databaseType, DmlType.INSERT, currentTable, useQuotedIdentifiers).getSql(), data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
+                sql = buildSql(DmlType.INSERT, data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
                 break;
             case DELETE:
-                sql = makeDynamic(DmlStatementFactory.createDmlStatement(databaseType, DmlType.DELETE, currentTable, useQuotedIdentifiers).getSql(), data.getParsedData(CsvData.PK_DATA), currentTable.getPrimaryKeyColumns());
+                sql = buildSql(DmlType.DELETE, data.getParsedData(CsvData.PK_DATA), currentTable.getPrimaryKeyColumns());
                 break;
             case SQL:
                 sql =  data.getParsedData(CsvData.ROW_DATA)[0];
@@ -124,15 +128,16 @@ public class StructureDataWriter implements IDataWriter {
         }
     }
     
-    protected String makeDynamic(String sql, String[] values, Column[] columns) {
-        Object[] objects = platform.getObjectValues(
-                binaryEncoding, values, columns, false);
+    protected String buildSql(DmlType dmlType, String[] values, Column[] columns) {
+        // TODO we should try to reuse statements
+        DmlStatement statement = DmlStatementFactory.createDmlStatement(targetDatabaseName,
+                DmlType.INSERT, currentTable, useQuotedIdentifiers);
+        Object[] objects = platform.getObjectValues(binaryEncoding, values, columns, false);
         Row row = new Row(columns.length);
         for (int i = 0; i < columns.length; i++) {
-            row.put(columns[i].getName(), objects[i]);            
+            row.put(columns[i].getName(), objects[i]);
         }
-       
-        return platform.replaceSql(sql, binaryEncoding, currentTable, row, false);
+        return statement.buildDynamicSql(binaryEncoding, row, false, useJdbcTimestampFormat);
     }
 
     public void end(Table table) {

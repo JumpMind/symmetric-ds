@@ -310,7 +310,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo,
-            Node targetNode, PayloadType payloadType) {
+            Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat) {
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(),
                 false);
@@ -325,7 +325,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (activeBatches.size() > 0) {
                 StructureDataWriter writer = new StructureDataWriter(symmetricDialect.getPlatform(), targetNode.getDatabaseType(), payloadType,
                         // TODO might want to pass this into the rest call as an optional parameter
-                        parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE), symmetricDialect.getBinaryEncoding());
+                        parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE), symmetricDialect.getBinaryEncoding(), useJdbcTimestampFormat);
                 List<OutgoingBatch> extractedBatches = extract(processInfo, targetNode,
                         activeBatches, writer, false);
 

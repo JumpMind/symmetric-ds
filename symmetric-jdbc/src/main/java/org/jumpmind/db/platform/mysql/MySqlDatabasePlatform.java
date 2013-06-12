@@ -22,11 +22,8 @@ package org.jumpmind.db.platform.mysql;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -91,14 +88,5 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return defaultCatalog;
     }
-
-    @Override
-    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
-        return new MySqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getDatabaseInfo().isDateOverridesToTimestamp(), getDatabaseInfo()
-                        .getDelimiterToken(), nullKeyValues);
-    }
-
 
 }

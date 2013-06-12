@@ -713,8 +713,12 @@ public class RestService {
     @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final PullDataResults pullData(@RequestParam(value = WebConstants.NODE_ID) String nodeId, @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
-        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken);
+    public final PullDataResults pullData(
+            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
+            boolean useJdbcTimestampFormat) {
+        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken, useJdbcTimestampFormat);
     }
         
     @RequestMapping(value = "/engine/{engine}/pulldata", method = RequestMethod.GET)
@@ -722,7 +726,9 @@ public class RestService {
     @ResponseBody
     public final PullDataResults pullData(@PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
+            boolean useJdbcTimestampFormat) {
 
         ISymmetricEngine engine = getSymmetricEngine(engineName);
 
@@ -744,7 +750,7 @@ public class RestService {
 
                 PullDataResults results = new PullDataResults();
                 List<OutgoingBatchWithPayload> extractedBatches = dataExtractorService
-                        .extractToPayload(processInfo, targetNode, PayloadType.SQL);
+                        .extractToPayload(processInfo, targetNode, PayloadType.SQL, useJdbcTimestampFormat);
                 List<Batch> batches = new ArrayList<Batch>();
                 for (OutgoingBatchWithPayload outgoingBatchWithPayload : extractedBatches) {
                     if (outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD) {

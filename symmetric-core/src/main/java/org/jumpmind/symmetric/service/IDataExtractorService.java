@@ -42,7 +42,7 @@ public interface IDataExtractorService {
 
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
 
-    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType);
+    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat);
     
     /**
      * @return a list of batches that were extracted

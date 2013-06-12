@@ -77,13 +77,13 @@ public class RestServiceTest extends AbstractTest {
         Assert.assertEquals("client", registrationInfo.getNodeId());
 
         try {
-            restService.pullData(registrationInfo.getNodeId(), "wrong password");
+            restService.pullData(registrationInfo.getNodeId(), "wrong password", false);
             Assert.fail("We should have received an exception");
         } catch (NotAllowedException ex) {
         }
 
         PullDataResults results = restService.pullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword());
+                registrationInfo.getNodePassword(), false);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(0, results.getNbrBatches());
         
@@ -92,7 +92,7 @@ public class RestServiceTest extends AbstractTest {
         engine.route();
         
         results = restService.pullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword());
+                registrationInfo.getNodePassword(), false);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
         Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
@@ -101,10 +101,12 @@ public class RestServiceTest extends AbstractTest {
         
         // pull a second time without acking.  should get the same results
         results = restService.pullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword());
+                registrationInfo.getNodePassword(), false);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
         Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
+        // test that when we don't request jdbc timestamp format sql statements come back in that format
+        Assert.assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("{ts '"));
         
         engine.getSqlTemplate().update("update a set notes=? where id=?", "changed", 1);
         engine.getSqlTemplate().update("update a set notes=? where id=?", "changed again", 1);
@@ -112,13 +114,14 @@ public class RestServiceTest extends AbstractTest {
         engine.route();
         
         results = restService.pullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword());
+                registrationInfo.getNodePassword(), true);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(2, results.getNbrBatches());
         Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
         Assert.assertEquals(4, results.getBatches().get(1).getBatchId());
-        Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());        
-
+        Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());    
+        // test that when we request jdbc timestamp format sql statements come back in that format
+        Assert.assertTrue(results.getBatches().get(1).getSqlStatements().get(0).contains("{ts '"));
         log.info(results.getBatches().get(1).getSqlStatements().get(0));
         log.info(results.getBatches().get(1).getSqlStatements().get(1));
         
@@ -128,7 +131,7 @@ public class RestServiceTest extends AbstractTest {
         restService.putAcknowledgeBatch("server", batchResults);
         
         results = restService.pullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword());
+                registrationInfo.getNodePassword(), false);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(0, results.getNbrBatches());
 
