@@ -148,7 +148,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         writeQuotationOnStatement(ddl);
-        ddl.append("IF EXISTS (SELECT 1 FROM " + table.getCatalog() + ".dbo.sysobjects WHERE type = 'U' AND name = ");
+        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(getTableName(table.getName()), ddl);
         println(")", ddl);
         println("BEGIN", ddl);
