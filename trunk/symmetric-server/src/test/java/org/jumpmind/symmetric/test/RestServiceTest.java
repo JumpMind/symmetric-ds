@@ -15,6 +15,7 @@ import org.jumpmind.symmetric.web.rest.NotAllowedException;
 import org.jumpmind.symmetric.web.rest.RestService;
 import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
+import org.jumpmind.util.FormatUtils;
 import org.junit.Assert;
 
 public class RestServiceTest extends AbstractTest {
@@ -24,6 +25,7 @@ public class RestServiceTest extends AbstractTest {
         Table a = new Table("a");
         a.addColumn(new Column("id", true, Types.INTEGER, -1, -1));
         a.addColumn(new Column("notes", false, Types.VARCHAR, 255, -1));
+        a.addColumn(new Column("created", false, Types.TIMESTAMP, -1, -1));
         return new Table[] { a };
     }
 
@@ -83,7 +85,7 @@ public class RestServiceTest extends AbstractTest {
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(0, results.getNbrBatches());
         
-        engine.getSqlTemplate().update("insert into a values(?, ?)", 1, "this is a test");
+        engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 1, "this is a test", FormatUtils.parseDate("2013-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
         
         engine.route();
         
@@ -91,9 +93,32 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword());
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
+        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
         
         log.info(results.getBatches().get(0).getSqlStatements().get(0));
+        
+        // pull a second time without acking.  should get the same results
+        results = restService.pullData("server", registrationInfo.getNodeId(),
+                registrationInfo.getNodePassword());
+        Assert.assertNotNull("Should have a non null results object", results);
+        Assert.assertEquals(1, results.getNbrBatches());
+        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
+        
+        engine.getSqlTemplate().update("update a set notes=? where id=?", "changed", 1);
+        engine.getSqlTemplate().update("update a set notes=? where id=?", "changed again", 1);
 
+        engine.route();
+        
+        results = restService.pullData("server", registrationInfo.getNodeId(),
+                registrationInfo.getNodePassword());
+        Assert.assertNotNull("Should have a non null results object", results);
+        Assert.assertEquals(2, results.getNbrBatches());
+        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
+        Assert.assertEquals(4, results.getBatches().get(1).getBatchId());
+        Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());        
+
+        log.info(results.getBatches().get(1).getSqlStatements().get(0));
+        log.info(results.getBatches().get(1).getSqlStatements().get(1));
     }
 
 }
