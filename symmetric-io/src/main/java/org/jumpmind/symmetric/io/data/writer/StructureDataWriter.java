@@ -27,8 +27,10 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.Row;
@@ -62,21 +64,25 @@ public class StructureDataWriter implements IDataWriter {
     protected long currentBatch;
 
     protected String targetDatabaseName;
-    
+
     protected boolean useQuotedIdentifiers;
-    
+
     protected boolean useJdbcTimestampFormat;
-    
+
+    protected boolean useUpsertStatements;
+
     protected BinaryEncoding binaryEncoding;
 
     public StructureDataWriter(IDatabasePlatform platform, String targetDatabaseName,
-            PayloadType payloatType, boolean useQuotedIdentifiers, BinaryEncoding binaryEncoding, boolean useJdbcTimestampFormat) {
+            PayloadType payloatType, boolean useQuotedIdentifiers, BinaryEncoding binaryEncoding,
+            boolean useJdbcTimestampFormat, boolean useUpsertStatements) {
         this.platform = platform;
         this.payloadType = payloatType;
         this.targetDatabaseName = targetDatabaseName;
         this.useQuotedIdentifiers = useQuotedIdentifiers;
         this.binaryEncoding = binaryEncoding;
         this.useJdbcTimestampFormat = useJdbcTimestampFormat;
+        this.useUpsertStatements = useUpsertStatements;
     }
 
     public void open(DataContext context) {
@@ -105,33 +111,38 @@ public class StructureDataWriter implements IDataWriter {
         String sql = null;
         switch (data.getDataEventType()) {
             case UPDATE:
-                sql = buildSql(DmlType.UPDATE, data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
+                sql = buildSql(useUpsertStatements ? DmlType.UPSERT : DmlType.UPDATE, data.getParsedData(CsvData.ROW_DATA),
+                        currentTable.getColumns());
                 break;
             case INSERT:
-                sql = buildSql(DmlType.INSERT, data.getParsedData(CsvData.ROW_DATA), currentTable.getColumns());
+                sql = buildSql(useUpsertStatements ? DmlType.UPSERT : DmlType.INSERT, data.getParsedData(CsvData.ROW_DATA),
+                        currentTable.getColumns());
                 break;
             case DELETE:
-                sql = buildSql(DmlType.DELETE, data.getParsedData(CsvData.PK_DATA), currentTable.getPrimaryKeyColumns());
+                sql = buildSql(DmlType.DELETE, data.getParsedData(CsvData.PK_DATA),
+                        currentTable.getPrimaryKeyColumns());
                 break;
             case SQL:
-                sql =  data.getParsedData(CsvData.ROW_DATA)[0];
+                sql = data.getParsedData(CsvData.ROW_DATA)[0];
                 break;
             case CREATE:
-                // TODO: we should be able to generate the ddl for this event
+                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetDatabaseName);
+                sql = builder.createTable(currentTable);
                 break;
             default:
                 break;
         }
-        
+
         if (sql != null) {
             this.payloadMap.get(this.currentBatch).add(sql);
         }
     }
-    
+
     protected String buildSql(DmlType dmlType, String[] values, Column[] columns) {
         // TODO we should try to reuse statements
+        // TODO support primary key updates
         DmlStatement statement = DmlStatementFactory.createDmlStatement(targetDatabaseName,
-                DmlType.INSERT, currentTable, useQuotedIdentifiers);
+                dmlType, currentTable, useQuotedIdentifiers);
         Object[] objects = platform.getObjectValues(binaryEncoding, values, columns, false);
         Row row = new Row(columns.length);
         for (int i = 0; i < columns.length; i++) {

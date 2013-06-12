@@ -717,8 +717,13 @@ public class RestService {
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
-            boolean useJdbcTimestampFormat) {
-        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken, useJdbcTimestampFormat);
+            boolean useJdbcTimestampFormat,
+            @RequestParam(value = "useUpsertStatements", required=false, defaultValue="false") 
+            boolean useUpsertStatements,
+            @RequestParam(value = "useDelimitedIdentifiers", required=false, defaultValue="true") 
+            boolean useDelimitedIdentifiers) {
+        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken, 
+                useJdbcTimestampFormat, useUpsertStatements, useDelimitedIdentifiers);
     }
         
     @RequestMapping(value = "/engine/{engine}/pulldata", method = RequestMethod.GET)
@@ -728,7 +733,11 @@ public class RestService {
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
-            boolean useJdbcTimestampFormat) {
+            boolean useJdbcTimestampFormat,
+            @RequestParam(value = "useUpsertStatements", required=false, defaultValue="false") 
+            boolean useUpsertStatements,
+            @RequestParam(value = "useDelimitedIdentifiers", required=false, defaultValue="true") 
+            boolean useDelimitedIdentifiers) {
 
         ISymmetricEngine engine = getSymmetricEngine(engineName);
 
@@ -750,7 +759,7 @@ public class RestService {
 
                 PullDataResults results = new PullDataResults();
                 List<OutgoingBatchWithPayload> extractedBatches = dataExtractorService
-                        .extractToPayload(processInfo, targetNode, PayloadType.SQL, useJdbcTimestampFormat);
+                        .extractToPayload(processInfo, targetNode, PayloadType.SQL, useJdbcTimestampFormat, useUpsertStatements, useDelimitedIdentifiers);
                 List<Batch> batches = new ArrayList<Batch>();
                 for (OutgoingBatchWithPayload outgoingBatchWithPayload : extractedBatches) {
                     if (outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD) {
@@ -798,24 +807,24 @@ public class RestService {
     @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public final void postHeartbeat(@RequestParam(value = "nodeId") String nodeID, 
+    public final void postHeartbeat(@RequestParam(value = WebConstants.NODE_ID) String nodeID, 
 		@RequestParam(value = "hostName") String hostName,
 		@RequestParam(value = "ipAddress") String ipAddress,
-		@RequestParam(value = "osUser") String osUser,		
-		@RequestParam(value = "osName") String osName,
-		@RequestParam(value = "osArchitecture") String osArchitecture,
-		@RequestParam(value = "osVersion") String osVersion,
-		@RequestParam(value = "availableProcessors") Integer availableProcessors,
-		@RequestParam(value = "freeMemoryBytes") Long freeMemoryBytes,
-		@RequestParam(value = "totalMemoryBytes") Long totalMemoryBytes,
-		@RequestParam(value = "maxMemoryBytes") Long maxMemoryBytes,		
-		@RequestParam(value = "javaVersion") String javaVersion,
-		@RequestParam(value = "javaVendor") String javaVendor,
-		@RequestParam(value = "symmetricVersion") String symmetricVersion,
+		@RequestParam(value = "osUser", required=false) String osUser,		
+		@RequestParam(value = "osName", required=false) String osName,
+		@RequestParam(value = "osArchitecture", required=false) String osArchitecture,
+		@RequestParam(value = "osVersion", required=false) String osVersion,
+		@RequestParam(value = "availableProcessors", required=false) Integer availableProcessors,
+		@RequestParam(value = "freeMemoryBytes", required=false) Long freeMemoryBytes,
+		@RequestParam(value = "totalMemoryBytes", required=false) Long totalMemoryBytes,
+		@RequestParam(value = "maxMemoryBytes", required=false) Long maxMemoryBytes,		
+		@RequestParam(value = "javaVersion", required=false) String javaVersion,
+		@RequestParam(value = "javaVendor", required=false) String javaVendor,
+		@RequestParam(value = "symmetricVersion", required=false) String symmetricVersion,
 		@RequestParam(value = "timezoneOffset") String timezoneOffset,
 		@RequestParam(value = "heartbeatTime") Date heartbeatTime,
-		@RequestParam(value = "lastRestartTime") Date lastRestartTime,
-		@RequestParam(value = "createTime") Date createTime
+		@RequestParam(value = "lastRestartTime", required=false) Date lastRestartTime,
+		@RequestParam(value = "createTime", required=false) Date createTime
 		) {    	
     	//TODO: implement
     }
