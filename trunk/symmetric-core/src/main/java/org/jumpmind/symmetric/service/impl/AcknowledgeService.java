@@ -138,4 +138,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
         batchEventListeners.add(statusChangeListner);
     }
+
+	public void ack(List<BatchAck> batches) {		
+		for (BatchAck batch:batches) {
+			ack(batch);
+		}		
+	}
 }
