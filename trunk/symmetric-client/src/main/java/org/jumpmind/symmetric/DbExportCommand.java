@@ -52,6 +52,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
     
     private static final String OPTION_NO_QUALIFIERS = "no-qualifiers";
+    
+    private static final String OPTION_USE_JDBC_TIMESTAMP_FORMAT = "use-jdbc-timestamp-format";
 
     private static final String OPTION_SQL = "sql";
 
@@ -102,6 +104,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_NO_FOREIGN_KEYS, false);
         addOption(options, null, OPTION_NO_DATA, false);
         addOption(options, null, OPTION_USE_VARIABLE_DATES, false);
+        addOption(options, null, OPTION_USE_JDBC_TIMESTAMP_FORMAT, true);
         addOption(options, null, OPTION_NO_QUALIFIERS, false);
         addOption(options, null, OPTION_SQL, true);
         addOption(options, "i", OPTION_COMMENTS, false);
@@ -153,6 +156,9 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_USE_VARIABLE_DATES)) {
             dbExport.setUseVariableForDates(true);
+        }
+        if (line.hasOption(OPTION_USE_JDBC_TIMESTAMP_FORMAT)) {
+            dbExport.setUseJdbcTimestampFormat("true".equalsIgnoreCase(line.getOptionValue(OPTION_USE_JDBC_TIMESTAMP_FORMAT)));
         }
         if (line.hasOption(OPTION_NO_QUALIFIERS)) {
             dbExport.setUseQuotedIdentifiers(false);

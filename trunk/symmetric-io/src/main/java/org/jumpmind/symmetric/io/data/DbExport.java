@@ -44,6 +44,7 @@ import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -95,6 +96,8 @@ public class DbExport {
     private String dir;
     
     private boolean useQuotedIdentifiers = true;
+    
+    private boolean useJdbcTimestampFormat = true;
 
     private IDatabasePlatform platform;
 
@@ -370,6 +373,14 @@ public class DbExport {
     public String getDir() {
         return dir;
     }
+    
+    public void setUseJdbcTimestampFormat(boolean useJdbcTimestampFormat) {
+        this.useJdbcTimestampFormat = useJdbcTimestampFormat;
+    }
+    
+    public boolean isUseJdbcTimestampFormat() {
+        return useJdbcTimestampFormat;
+    }    
 
     class WriterWrapper {
         final private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -377,7 +388,7 @@ public class DbExport {
         private CsvWriter csvWriter;
         private Writer writer;
         private Table table;
-        private String insertSql;
+        private DmlStatement insertSql;
         private boolean startedWriting = false;
 
         public WriterWrapper(OutputStream os) {
@@ -430,8 +441,7 @@ public class DbExport {
                     targetTable.setSchema(schema);
                     targetTable.setCatalog(catalog);
                     insertSql = DmlStatementFactory.createDmlStatement(
-                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers)
-                            .getSql();
+                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers);
                 }
 
                 if (!noCreateInfo) {
@@ -488,8 +498,8 @@ public class DbExport {
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(values, true);
                 } else if (format == Format.SQL) {
-                    write(platform.replaceSql(insertSql, BinaryEncoding.HEX, table, row,
-                            useVariableDates), "\n");
+                    write(insertSql.buildDynamicSql(BinaryEncoding.HEX, row,
+                            useVariableDates, useJdbcTimestampFormat), "\n");
 
                 } else if (format == Format.XML) {
                     write("\t<row>\n");
@@ -567,5 +577,5 @@ public class DbExport {
         }
 
     }
-
+    
 }

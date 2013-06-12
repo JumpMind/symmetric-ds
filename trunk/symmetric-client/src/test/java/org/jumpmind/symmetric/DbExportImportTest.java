@@ -248,9 +248,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
         Table table = testTables.findTable("test_db_import_1", false);
-        DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
-                table.getName(), null, table.getColumns(), false, null, null);
-        Assert.assertEquals(expected, platform.getSqlTemplate().queryForInt(dml.getSql()));
+        Assert.assertEquals(expected, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
     }
 
     @Test
@@ -372,9 +370,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         importCsv.setFormat(DbImport.Format.CSV);
         importCsv.importTables(csvOutput, table.getName());
 
-        DmlStatement dml = new DmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
-                table.getName(), null, table.getColumns(), false, null, null);
-        Assert.assertEquals(RECORD_COUNT, sqlTemplate.queryForInt(dml.getSql()));
+        Assert.assertEquals(RECORD_COUNT, sqlTemplate.queryForInt("select count(*) from " + table.getName()));
 
         compareRows(table, rowsBeforeImport, sqlTemplate.query(SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID));
 

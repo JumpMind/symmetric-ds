@@ -32,8 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -196,14 +194,6 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             }
         }
         return objectValues;
-    }
-    
-    @Override
-    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
-        return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getDatabaseInfo().isDateOverridesToTimestamp(),
-                getDatabaseInfo().getDelimiterToken(), nullKeyValues);
     }
     
 }

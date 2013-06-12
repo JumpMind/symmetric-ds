@@ -22,6 +22,7 @@ package org.jumpmind.db.platform;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.mysql.MySqlDmlStatement;
 import org.jumpmind.db.platform.oracle.OracleDmlStatement;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDmlStatement;
 import org.jumpmind.db.sql.DmlStatement;
@@ -32,27 +33,41 @@ final public class DmlStatementFactory {
     private DmlStatementFactory() {
     }
 
-    public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType, Table table, boolean useQuotedIdentifiers) {
+    public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
+            Table table, boolean useQuotedIdentifiers) {
         return createDmlStatement(databaseName, dmlType, table.getCatalog(), table.getSchema(),
-                table.getName(), table.getPrimaryKeyColumns(), table.getColumns(), null, useQuotedIdentifiers);
+                table.getName(), table.getPrimaryKeyColumns(), table.getColumns(), null,
+                useQuotedIdentifiers);
     }
 
     public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
             String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, boolean[] nullKeyValues, boolean useQuotedIdentifiers) {
         IDdlBuilder ddlBuilder = DdlBuilderFactory.createDdlBuilder(databaseName);
+        ddlBuilder.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
+        return createDmlStatement(databaseName, dmlType, catalogName, schemaName, tableName, keys,
+                columns, nullKeyValues, ddlBuilder);
+    }
+
+    public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
+            String catalogName, String schemaName, String tableName, Column[] keys,
+            Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder) {
         if (DatabaseNamesConstants.ORACLE.equals(databaseName)) {
             return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
-                    columns, ddlBuilder.getDatabaseInfo().isDateOverridesToTimestamp(), useQuotedIdentifiers ? ddlBuilder
-                            .getDatabaseInfo().getDelimiterToken() : "", nullKeyValues);
+                    columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn());
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName)) {
             return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
-                    columns, ddlBuilder.getDatabaseInfo().isDateOverridesToTimestamp(), useQuotedIdentifiers  ? ddlBuilder
-                            .getDatabaseInfo().getDelimiterToken() : "", nullKeyValues);
+                    columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn());
+        } else if (DatabaseNamesConstants.MYSQL.equals(databaseName)) {
+            return new MySqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
+                    columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn());
         } else {
             return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                    ddlBuilder.getDatabaseInfo().isDateOverridesToTimestamp(), useQuotedIdentifiers ? ddlBuilder
-                            .getDatabaseInfo().getDelimiterToken() : "", nullKeyValues);
+                    nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn());
         }
 
     }
