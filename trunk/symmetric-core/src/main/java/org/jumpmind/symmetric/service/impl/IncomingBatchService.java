@@ -188,6 +188,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     okayToProcess = false;
                     batch.setStatus(Status.OK);
                     batch.incrementIgnoreCount();
+                    existingBatch.setStatus(Status.OK);
+                    existingBatch.incrementIgnoreCount();
                     log.warn("Ignoring batch {}", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
