@@ -368,8 +368,7 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    process &= filter.beforeWrite(this.context,
-                            this.targetTable != null ? this.targetTable : this.sourceTable, data);
+                    process &= filter.beforeWrite(this.context, this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -440,8 +439,7 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    filter.afterWrite(this.context, this.targetTable != null ? this.targetTable
-                            : this.sourceTable, data);
+                    filter.afterWrite(this.context, this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
