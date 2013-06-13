@@ -2387,41 +2387,7 @@ The process of examining triggers and rebuilding them is automatically
 run during startup and each night by the SyncTriggersJob. The user can
 also manually run the process at any time by invoking the
 <literal>syncTriggers()</literal>
-method over JMX. The SyncTriggersJob is enabled by default to run at 15
-minutes past midnight. If SymmetricDS is being run from a collection of
-servers (multiple instances of the same Node running against the same
-database), then locking should be enable to prevent database contention.
-The following runtime properties control the behavior of the process.
-<variablelist>
-<varlistentry>
-<term>
-<command>start.synctriggers.job</command>
-</term>
-<listitem>
-<para> Whether the sync triggers job is enabled for this node.
-[&#xA0;Default:&#xA0;true&#xA0;] </para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-<command>job.synctriggers.aftermidnight.minutes</command>
-</term>
-<listitem>
-<para> If scheduled, the sync triggers job will run nightly. This
-is how long after midnight that job will run.
-[&#xA0;Default:&#xA0;15&#xA0;] </para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-<command>cluster.lock.during.sync.triggers</command>
-</term>
-<listitem>
-<para> Indicate if the sync triggers job is clustered and
-requires a lock before running. [&#xA0;Default:&#xA0;false&#xA0;] </para>
-</listitem>
-</varlistentry>
-</variablelist>
+method over JMX. 
 </para>
 </section>
 <section id="purge-job">
