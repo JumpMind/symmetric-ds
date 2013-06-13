@@ -138,7 +138,7 @@ public class RestServiceTest extends AbstractTest {
         BatchResults batchResults = new BatchResults();
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 3, true));
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 4, true));
-        restService.putAcknowledgeBatch("server", batchResults);
+        restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
         
         results = restService.pullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true);
@@ -166,7 +166,7 @@ public class RestServiceTest extends AbstractTest {
 
         batchResults = new BatchResults();
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), results.getBatches().get(0).getBatchId(), true));
-        restService.putAcknowledgeBatch("server", batchResults);
+        restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
         
         results = restService.pullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true);
@@ -194,7 +194,7 @@ public class RestServiceTest extends AbstractTest {
             batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), batch.getBatchId(), true));            
         }
         
-        restService.putAcknowledgeBatch("server", batchResults);
+        restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
 
         results = restService.pullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true);
