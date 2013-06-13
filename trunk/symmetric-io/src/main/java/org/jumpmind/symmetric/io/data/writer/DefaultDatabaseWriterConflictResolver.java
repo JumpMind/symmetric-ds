@@ -293,10 +293,14 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         String sql = stmt.getColumnsSql(new Column[] { targetTable.getColumnWithName(columnName) });
         Long existingVersion = writer.getTransaction()
                 .queryForObject(sql, Long.class, objectValues);
-        Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
-                CsvData.ROW_DATA);
-        Long loadingVersion = Long.valueOf(newData.get(columnName));
-        return loadingVersion > existingVersion;
+        if (existingVersion == null) {
+            return true;
+        } else {
+            Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
+                    CsvData.ROW_DATA);
+            Long loadingVersion = Long.valueOf(newData.get(columnName));
+            return loadingVersion > existingVersion;
+        }
     }
 
     protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
