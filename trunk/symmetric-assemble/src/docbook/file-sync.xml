@@ -30,24 +30,23 @@
 <title>Overview</title>
 
 <para> SymmetricDS not only supports the synchronization of
-database tables, but it also supports the synchronization of files
+database tables, but it also supports the synchronization of files and folders 
 from one node to another. </para>
 <para>
 File synchronization features include:
 
 <itemizedlist>
-<listitem> Monitoring one or more file system base directory locations for file changes </listitem>
-<listitem> Support for a different file system base directory
-for the target file system </listitem>
+<listitem> Monitoring one or more file system directory locations for file and folder changes </listitem>
+<listitem> Support synchronizing a different target directory than the source directory</listitem>
 <listitem> Use of wild card expressions to “include” or
 “exclude” files </listitem>
-<listitem> Choice of whether to recurse into subdirectories
+<listitem> Choice of whether to recurse into subfolders
 of monitored directories </listitem>
 <listitem> Use of existing SymmetricDS routers to subset
 target nodes based on file and directory metadata </listitem>
-<listitem> Ability to  specify if files will by synchronizing on
+<listitem> Ability to specify if files will be synchronized on
 creation, or deletion, and/or modification </listitem>
-<listitem> Ability to  specify the frequency with which file systems are
+<listitem> Ability to specify the frequency with which file systems are
 monitored for changes </listitem>
 <listitem> Ability to extend file synchronization through
 scripts that run before or after a file is copied to its source location
@@ -82,8 +81,8 @@ process. </para>
 background job that tracks the file system changes
 (this parallels the use of triggers to monitor for changes when synchronizing database changes).
 When a change is detected it is written to the <xref linkend="table_file_snapshot" xrefstyle="table" />
-table. This file snapshot table represents the most recent known state of the
-monitored files. This snapshot table has a SymmetricDS database trigger automatically installed
+table. The file snapshot table represents the most recent known state of the
+monitored files. The file snapshot table has a SymmetricDS database trigger automatically installed
 on it so that when it is updated the changes are captured by SymmetricDS on an internal
 channel named <literal>filesync</literal>. </para>
 <para> The changes to <xref linkend="table_file_snapshot" xrefstyle="table" /> are then routed and batched by a file-synchronization-specific router
