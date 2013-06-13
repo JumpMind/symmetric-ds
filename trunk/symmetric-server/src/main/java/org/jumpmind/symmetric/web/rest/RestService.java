@@ -744,15 +744,10 @@ public class RestService {
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
         IStatisticManager statisticManager = engine.getStatisticManager();
         INodeService nodeService = engine.getNodeService();
+		org.jumpmind.symmetric.model.Node targetNode = nodeService
+				.findNode(nodeId);
 
-        boolean allowed = false;
-        org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId);
-        if (targetNode != null) {
-            NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-            allowed = security.getNodePassword().equals(securityToken);
-        }
-        
-        if (allowed) {
+        if (securityVerified(nodeId, engine, securityToken)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                     nodeService.findIdentityNodeId(), nodeId, ProcessType.REST_PULL_HANLDER));
             try {
@@ -838,20 +833,28 @@ public class RestService {
      */    
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public final void putAcknowledgeBatch(@RequestBody BatchResults batchResults) {    
-    	putAcknowledgeBatch(getSymmetricEngine().getEngineName(),
+    public final void putAcknowledgeBatch(@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+    		@RequestBody BatchResults batchResults) {    
+    	putAcknowledgeBatch(getSymmetricEngine().getEngineName(),securityToken,
     			batchResults);
     }
     
     @RequestMapping(value = "/engine/{engine}/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public final void putAcknowledgeBatch(@PathVariable("engine") String engineName,
+    		@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
     		@RequestBody BatchResults batchResults) {    
 
-        ISymmetricEngine engine = getSymmetricEngine(engineName);
-        IAcknowledgeService ackService = engine.getAcknowledgeService();
-        List<BatchAck> batchAcks = convertBatchResultsToAck(batchResults);
-        ackService.ack(batchAcks);
+        ISymmetricEngine engine = getSymmetricEngine(engineName);        
+        if (batchResults.getBatchResults().size()>0) {
+        	if (securityVerified(batchResults.getBatchResults().get(0).getNodeId(), engine, securityToken)) {
+                IAcknowledgeService ackService = engine.getAcknowledgeService();
+                List<BatchAck> batchAcks = convertBatchResultsToAck(batchResults);
+                ackService.ack(batchAcks);
+        	} else {
+        		throw new NotAllowedException();
+        	}
+        }
     }
 
     private List<BatchAck> convertBatchResultsToAck(BatchResults batchResults) {
@@ -865,7 +868,8 @@ public class RestService {
     		} else {
     			batchAck.setOk(false);
     			batchAck.setSqlCode(batchResult.getSqlCode());
-    			batchAck.setSqlState(batchResult.getSqlState());
+				batchAck.setSqlState(batchResult.getSqlState().substring(0,
+						Math.min(batchResult.getSqlState().length(), 10)));
     			batchAck.setSqlMessage(batchResult.getStatusDescription());
     		}
     		batchAcks.add(batchAck);    		
@@ -1193,6 +1197,19 @@ public class RestService {
         } else {
             return engine;
         }
+    }
+
+    protected boolean securityVerified(String nodeId, ISymmetricEngine engine, String securityToken) {
+
+		INodeService nodeService = engine.getNodeService();
+		boolean allowed = false;
+		org.jumpmind.symmetric.model.Node targetNode = nodeService
+				.findNode(nodeId);
+		if (targetNode != null) {
+			NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+			allowed = security.getNodePassword().equals(securityToken);
+		}		
+		return allowed;
     }
 
     protected ISymmetricEngine getSymmetricEngine() {
