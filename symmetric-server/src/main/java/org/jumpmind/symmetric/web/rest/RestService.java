@@ -664,7 +664,7 @@ public class RestService {
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
             @RequestParam(value = "databaseType") String databaseType,
             @RequestParam(value = "databaseVersion") String databaseVersion) {
-        return registerNode(getSymmetricEngine().getEngineName(), externalId, externalId,
+        return registerNode(getSymmetricEngine().getEngineName(), externalId, nodeGroupId,
                 databaseType, databaseVersion);
     }
 
