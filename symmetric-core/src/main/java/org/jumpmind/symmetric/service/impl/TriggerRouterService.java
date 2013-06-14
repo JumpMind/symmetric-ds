@@ -935,6 +935,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 || isCalledFromSymmetricAdminTool()) {
             if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
                 synchronized (this) {
+                    clusterService.lock(ClusterConstants.SYNCTRIGGERS);
                     try {
                         String additionalMessage = "";
                         if (isCalledFromSymmetricAdminTool()

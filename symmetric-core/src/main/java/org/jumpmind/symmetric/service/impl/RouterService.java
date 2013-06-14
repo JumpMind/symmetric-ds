@@ -89,6 +89,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected transient ExecutorService readThread = null;
 
     protected ISymmetricEngine engine;
+    
+    protected boolean syncTriggersBeforeInitialLoadAttempted = false;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -179,6 +181,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
             try {
                 synchronized (engine.getTriggerRouterService()) {
+                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
                     INodeService nodeService = engine.getNodeService();
                     Node identity = nodeService.findIdentity();
                     if (identity != null) {
@@ -225,7 +228,16 @@ public class RouterService extends AbstractService implements IRouterService {
                                             }
                                         }
                                     } else {
-                                        log.warn("Could not queue up a load for {} because sync triggers has not yet run", security.getNodeId());
+                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId());
+                                        if (links == null || links.size() == 0) {
+                                            log.warn("Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered", security.getNodeId());
+                                        } else {
+                                            log.warn("Could not queue up a load for {} because sync triggers has not yet run", security.getNodeId());                                            
+                                            if (!syncTriggersBeforeInitialLoadAttempted) {
+                                                syncTriggersBeforeInitialLoadAttempted = true;
+                                                engine.getTriggerRouterService().syncTriggers();
+                                            }
+                                        }
                                     }
                                 }
                             }
