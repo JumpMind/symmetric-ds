@@ -30,7 +30,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.postgresql.PostgreSqlJdbcSqlTemplate;
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
