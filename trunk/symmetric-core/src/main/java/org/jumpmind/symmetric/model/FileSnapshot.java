@@ -106,7 +106,7 @@ public class FileSnapshot implements Serializable {
         }
 
         if (this.relativeDir.endsWith(fileName)) {
-            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.indexOf(fileName));
+            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.lastIndexOf(fileName));
         }
 
         String fileSeparator = System.getProperty("file.separator");
