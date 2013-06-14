@@ -676,10 +676,12 @@ public class RestService {
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
             @RequestParam(value = "databaseType") String databaseType,
             @RequestParam(value = "databaseVersion") String databaseVersion) {
-        ISymmetricEngine engine = getSymmetricEngine(engineName);
+
+    	ISymmetricEngine engine = getSymmetricEngine(engineName);
         IRegistrationService registrationService = engine.getRegistrationService();
-        INodeService nodeService = engine.getNodeService();
+        INodeService nodeService = engine.getNodeService();        
         RegistrationInfo regInfo = new org.jumpmind.symmetric.web.rest.model.RegistrationInfo();
+        
         try {
             org.jumpmind.symmetric.model.Node processedNode = registrationService
                     .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
@@ -886,10 +888,28 @@ public class RestService {
     @RequestMapping(value = "/engine/requestinitialload", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public final void postRequestInitialLoad(@RequestParam(value = "nodeId") String nodeID) {    	
-    	//TODO: implement
+    public final void postRequestInitialLoad(@RequestParam(value = "nodeId") String nodeId) {    	    	
+        postRequestInitialLoad(getSymmetricEngine().getEngineName(), nodeId);    	
     }
 
+    /**
+     * Requests an initial load from the server for the node id provided.  The initial load requst
+     * directs the server to queue up initial load data for the client node.  Data is obtained for 
+     * the initial load by the client calling the pull method.
+     * @param nodeID
+     */
+    @RequestMapping(value = "/engine/{engine}/requestinitialload", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRequestInitialLoad(@PathVariable("engine") String engineName,
+    		@RequestParam(value = "nodeId") String nodeId) {    	
+    	
+    	ISymmetricEngine engine = getSymmetricEngine(engineName);
+        INodeService nodeService = engine.getNodeService();
+        nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "restapi");
+        
+    }    
+    
     @ExceptionHandler(Exception.class)
     @ResponseBody
     protected RestError handleError(Exception ex, HttpServletRequest req) {
