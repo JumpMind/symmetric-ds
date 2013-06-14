@@ -340,23 +340,26 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
-            /*
-             * Insert node security so the client doing the initial load knows
-             * that an initial load is currently happening
-             */
-            insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), useReloadChannel, loadId, createBy);
-            
-            /*
-             * Mark incoming batches as OK at the target node because we marked
-             * outgoing batches as OK at the source
-             */
-            insertSqlEvent(
-                    transaction,
-                    targetNode,
-                    String.format(
-                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
-                            tablePrefix, nodeService
-                                    .findIdentityNodeId()), true, loadId, createBy);            
+            if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+                /*
+                 * Insert node security so the client doing the initial load
+                 * knows that an initial load is currently happening
+                 */
+                insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
+                        useReloadChannel, loadId, createBy);
+
+                /*
+                 * Mark incoming batches as OK at the target node because we
+                 * marked outgoing batches as OK at the source
+                 */
+                insertSqlEvent(
+                        transaction,
+                        targetNode,
+                        String.format(
+                                "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
+                                tablePrefix, nodeService.findIdentityNodeId()), true, loadId,
+                        createBy);
+            }
 
             List<TriggerHistory> triggerHistories = triggerRouterService
                     .getActiveTriggerHistories();
@@ -417,7 +420,8 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             
-            if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
+            if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE) &&
+                    !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
                 TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
                         null, null,
                         TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
@@ -447,8 +451,10 @@ public class DataService extends AbstractService implements IDataService {
                 nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId, createBy);
             }
             
-            insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
+            if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+                insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
                     useReloadChannel, loadId, createBy);
+            }
 
             engine.getStatisticManager().incrementNodesLoaded(1);
 
