@@ -136,8 +136,8 @@ public class RestServiceTest extends AbstractTest {
         log.info(results.getBatches().get(1).getSqlStatements().get(1));
         
         BatchResults batchResults = new BatchResults();
-        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 3, true));
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 4, true));
+        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 5, true));
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
         
         results = restService.getPullData("server", registrationInfo.getNodeId(),
