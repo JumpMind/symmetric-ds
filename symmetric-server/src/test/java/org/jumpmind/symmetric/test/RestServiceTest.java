@@ -41,7 +41,10 @@ public class RestServiceTest extends AbstractTest {
     @Override
     protected void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
-
+        testRestPullApi();
+    }
+    
+    protected void testRestPullApi() throws Exception {
         loadConfigAtRegistrationServer();
 
         RestService restService = getRegServer().getRestService();
@@ -190,7 +193,7 @@ public class RestServiceTest extends AbstractTest {
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
 
         assertPullReturnsNoData(restService, registrationInfo);
-        
+
     }
     
     protected void assertPullReturnsNoData(RestService restService, RegistrationInfo registrationInfo) {
