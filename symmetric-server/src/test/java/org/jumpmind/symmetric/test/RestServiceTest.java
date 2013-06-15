@@ -84,10 +84,9 @@ public class RestServiceTest extends AbstractTest {
         } catch (NotAllowedException ex) {
         }
 
-        PullDataResults results = restService.getPullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(0, results.getNbrBatches());
+        PullDataResults results = null;
+        
+        assertPullReturnsNoData(restService, registrationInfo);
         
         engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 1, "this is a test", FormatUtils.parseDate("2013-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
         
@@ -140,10 +139,7 @@ public class RestServiceTest extends AbstractTest {
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 5, true));
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
         
-        results = restService.getPullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(0, results.getNbrBatches());
+        assertPullReturnsNoData(restService, registrationInfo);
         
         engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 2, "this is a test", FormatUtils.parseDate("2073-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
         engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 3, "this is a test", FormatUtils.parseDate("2073-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
@@ -168,10 +164,7 @@ public class RestServiceTest extends AbstractTest {
         batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), results.getBatches().get(0).getBatchId(), true));
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
         
-        results = restService.getPullData("server", registrationInfo.getNodeId(),
-                registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(0, results.getNbrBatches());
+        assertPullReturnsNoData(restService, registrationInfo);
         
         Channel channel = engine.getConfigurationService().getChannel("default");
         channel.setBatchAlgorithm("nontransactional");
@@ -196,7 +189,12 @@ public class RestServiceTest extends AbstractTest {
         
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
 
-        results = restService.getPullData("server", registrationInfo.getNodeId(),
+        assertPullReturnsNoData(restService, registrationInfo);
+        
+    }
+    
+    protected void assertPullReturnsNoData(RestService restService, RegistrationInfo registrationInfo) {
+        PullDataResults results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(0, results.getNbrBatches());
