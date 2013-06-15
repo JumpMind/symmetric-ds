@@ -168,27 +168,35 @@ public class NodeService extends AbstractService implements INodeService {
                 new NodeHostRowMapper(), nodeId);
     }        
 
+    public void updateNodeHost(NodeHost nodeHost) {
+
+    	Object[] params = new Object[] { 
+    		nodeHost.getIpAddress(),
+            nodeHost.getOsUser(), nodeHost.getOsName(),
+            nodeHost.getOsArch(), nodeHost.getOsVersion(),
+            nodeHost.getAvailableProcessors(),
+            nodeHost.getFreeMemoryBytes(),
+            nodeHost.getTotalMemoryBytes(),
+            nodeHost.getMaxMemoryBytes(),
+            nodeHost.getJavaVersion(), nodeHost.getJavaVendor(),
+            nodeHost.getSymmetricVersion(),
+            nodeHost.getTimezoneOffset(),
+            nodeHost.getHeartbeatTime(),
+            nodeHost.getLastRestartTime(), nodeHost.getNodeId(),
+            nodeHost.getHostName() };
+    	
+    	if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
+            sqlTemplate.update(getSql("insertNodeHostSql"), params);
+        }
+    	
+    }
+    
     public void updateNodeHostForCurrentNode() {
         if (nodeHostForCurrentNode == null) {
             nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
         }
         nodeHostForCurrentNode.refresh();
-        Object[] params = new Object[] { nodeHostForCurrentNode.getIpAddress(),
-                nodeHostForCurrentNode.getOsUser(), nodeHostForCurrentNode.getOsName(),
-                nodeHostForCurrentNode.getOsArch(), nodeHostForCurrentNode.getOsVersion(),
-                nodeHostForCurrentNode.getAvailableProcessors(),
-                nodeHostForCurrentNode.getFreeMemoryBytes(),
-                nodeHostForCurrentNode.getTotalMemoryBytes(),
-                nodeHostForCurrentNode.getMaxMemoryBytes(),
-                nodeHostForCurrentNode.getJavaVersion(), nodeHostForCurrentNode.getJavaVendor(),
-                nodeHostForCurrentNode.getSymmetricVersion(),
-                nodeHostForCurrentNode.getTimezoneOffset(),
-                nodeHostForCurrentNode.getHeartbeatTime(),
-                nodeHostForCurrentNode.getLastRestartTime(), nodeHostForCurrentNode.getNodeId(),
-                nodeHostForCurrentNode.getHostName() };
-        if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
-            sqlTemplate.update(getSql("insertNodeHostSql"), params);
-        }
+        updateNodeHost(nodeHostForCurrentNode);
     }
 
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {

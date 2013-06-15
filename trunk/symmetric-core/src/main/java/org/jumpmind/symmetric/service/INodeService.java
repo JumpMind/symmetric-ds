@@ -115,6 +115,8 @@ public interface INodeService {
 
     public void save(Node node);
     
+    public void updateNodeHost(NodeHost nodeHost);
+    
     public void updateNodeHostForCurrentNode();
 
     public void insertNodeIdentity(String nodeId);

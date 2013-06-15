@@ -58,6 +58,12 @@ public class NodeHost implements Serializable {
     private Date lastRestartTime = LAST_RESTART_TIME;
     private Date createTime;
 
+    public NodeHost(boolean refresh) {
+    	if (refresh) {
+    		refresh();
+    	}
+    }
+    
     public NodeHost() {
         this.refresh();
     }
