@@ -97,7 +97,7 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword(), false, false, true, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
-        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
+        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
         
         log.info(results.getBatches().get(0).getSqlStatements().get(0));
         
@@ -106,7 +106,7 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword(), false, false, false, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
-        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
+        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
         
         // test that when we don't request jdbc timestamp format sql statements come back in that format
         Assert.assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("{ts '"));
@@ -123,8 +123,8 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword(), true, false, true, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(2, results.getNbrBatches());
-        Assert.assertEquals(3, results.getBatches().get(0).getBatchId());
-        Assert.assertEquals(4, results.getBatches().get(1).getBatchId());
+        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
+        Assert.assertEquals(5, results.getBatches().get(1).getBatchId());
         Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());
         
         // test that when we request jdbc timestamp format sql statements come back in that format
