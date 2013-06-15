@@ -73,6 +73,7 @@ import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
+import org.jumpmind.symmetric.web.rest.model.Heartbeat;
 import org.jumpmind.symmetric.web.rest.model.Node;
 import org.jumpmind.symmetric.web.rest.model.NodeList;
 import org.jumpmind.symmetric.web.rest.model.NodeStatus;
@@ -291,7 +292,7 @@ public class RestService {
     @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final QueryResults queryNode(@RequestParam(value = "query") String sql) {
+    public final QueryResults getQueryNode(@RequestParam(value = "query") String sql) {
         return queryNodeImpl(getSymmetricEngine(), sql);
     }
 
@@ -301,7 +302,7 @@ public class RestService {
     @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final QueryResults queryNode(@PathVariable("engine") String engineName,
+    public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
     		@RequestParam(value = "query") String sql) {
         return queryNodeImpl(getSymmetricEngine(engineName), sql);
     }
@@ -642,6 +643,8 @@ public class RestService {
      *            The database type for this node
      * @param databaseVersion
      *            The database version for this node
+     * @param hostName
+     *            The host name of the machine on which the client is running
      * @return {@link RegistrationInfo}
      * 
      *         <pre>
@@ -656,26 +659,28 @@ public class RestService {
      * The nodeId, syncUrl and nodePassword should be stored for subsequent calls to the REST API.
      * </pre>
      */
-    @RequestMapping(value = "/engine/registernode", method = RequestMethod.GET)
+    @RequestMapping(value = "/engine/registernode", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final RegistrationInfo registerNode(
+    public final RegistrationInfo postRegisterNode(
             @RequestParam(value = "externalId") String externalId,
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
             @RequestParam(value = "databaseType") String databaseType,
-            @RequestParam(value = "databaseVersion") String databaseVersion) {
-        return registerNode(getSymmetricEngine().getEngineName(), externalId, nodeGroupId,
-                databaseType, databaseVersion);
+            @RequestParam(value = "databaseVersion") String databaseVersion,
+            @RequestParam(value = "hostName") String hostName) {
+        return postRegisterNode(getSymmetricEngine().getEngineName(), externalId, nodeGroupId,
+                databaseType, databaseVersion, hostName);
     }
 
     @RequestMapping(value = "/engine/{engine}/registernode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final RegistrationInfo registerNode(@PathVariable("engine") String engineName,
+    public final RegistrationInfo postRegisterNode(@PathVariable("engine") String engineName,
             @RequestParam(value = "externalId") String externalId,
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
             @RequestParam(value = "databaseType") String databaseType,
-            @RequestParam(value = "databaseVersion") String databaseVersion) {
+            @RequestParam(value = "databaseVersion") String databaseVersion,
+            @RequestParam(value = "hostName") String hostName) {
 
     	ISymmetricEngine engine = getSymmetricEngine(engineName);
         IRegistrationService registrationService = engine.getRegistrationService();
@@ -692,7 +697,18 @@ public class RestService {
                 regInfo.setNodePassword(nodeSecurity.getNodePassword());
                 org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
                 regInfo.setSyncUrl(modelNode.getSyncUrl());
-            }
+
+                //do an initial heartbeat
+                Heartbeat heartbeat = new Heartbeat();
+                heartbeat.setNodeId(regInfo.getNodeId());
+                heartbeat.setHostName(hostName);
+                Date now = new Date();
+                heartbeat.setCreateTime(now);
+                heartbeat.setLastRestartTime(now); 
+                heartbeat.setHeartbeatTime(now);
+                this.heartbeatImpl(engine, heartbeat);
+            }            
+            
             // TODO: Catch a RegistrationRedirectException and redirect.
         } catch (IOException e) {
             throw new IoException(e);
@@ -703,6 +719,11 @@ public class RestService {
     /**
      * Pulls pending batches (data) for a given node.
      * @param nodeId The node id of the node requesting to pull data
+     * @param securityToken The security token or password used to authenticate the pull.  The security token is provided during the registration process.
+     * @param useJdbcTimestampFormat
+     * @param useUpsertStatements
+     * @param useDelimitedIdentifiers
+     * @param hostName The name of the host machine requesting the pull.  Only required if you have the rest heartbeat on pull paramter set.
      * @return {@link PullDataResults} 
      * 
      * Example json response is as follows:<br/><br/>
@@ -715,7 +736,7 @@ public class RestService {
     @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final PullDataResults pullData(
+    public final PullDataResults getPullData(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
@@ -723,15 +744,16 @@ public class RestService {
             @RequestParam(value = "useUpsertStatements", required=false, defaultValue="false") 
             boolean useUpsertStatements,
             @RequestParam(value = "useDelimitedIdentifiers", required=false, defaultValue="true") 
-            boolean useDelimitedIdentifiers) {
-        return pullData(getSymmetricEngine().getEngineName(), nodeId, securityToken, 
-                useJdbcTimestampFormat, useUpsertStatements, useDelimitedIdentifiers);
+            boolean useDelimitedIdentifiers,
+            @RequestParam(value = "hostName", required=false) String hostName) {
+        return getPullData(getSymmetricEngine().getEngineName(), nodeId, securityToken, 
+                useJdbcTimestampFormat, useUpsertStatements, useDelimitedIdentifiers, hostName);
     }
         
     @RequestMapping(value = "/engine/{engine}/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final PullDataResults pullData(@PathVariable("engine") String engineName,
+    public final PullDataResults getPullData(@PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required=false, defaultValue="true") 
@@ -739,7 +761,8 @@ public class RestService {
             @RequestParam(value = "useUpsertStatements", required=false, defaultValue="false") 
             boolean useUpsertStatements,
             @RequestParam(value = "useDelimitedIdentifiers", required=false, defaultValue="true") 
-            boolean useDelimitedIdentifiers) {
+            boolean useDelimitedIdentifiers,
+            @RequestParam(value = "hostName", required=false) String hostName) {
 
         ISymmetricEngine engine = getSymmetricEngine(engineName);
 
@@ -770,6 +793,14 @@ public class RestService {
                 results.setBatches(batches);
                 results.setNbrBatches(batches.size());
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
+                
+                if (engine.getParameterService().is(ParameterConstants.REST_HEARTBEAT_ON_PULL) && hostName != null) {
+                	Heartbeat heartbeat = new Heartbeat();
+                	heartbeat.setNodeId(nodeId);
+                	heartbeat.setHeartbeatTime(new Date());
+                	heartbeat.setHostName(hostName);
+                	this.heartbeatImpl(engine, heartbeat);
+                }
                 return results;
             } catch (RuntimeException ex) {
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
@@ -783,47 +814,102 @@ public class RestService {
     /**
      * Sends a heartbeat to the server for the given node.  
      * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
-     * param hostName - Optional - The hostName for the machine on which the client node is running
-     * @param ipAddress - Optional - The IP address for the machine on which the client node is running
-     * @param osUser - Optional - The logged in user for the machine on which the client node is running
-     * @param osName - Optional - The name of the operating system on which the client node is running
-     * @param osArchitecture - Optional - The operating system architecture (i.e. amd, intel) on which the client node is running
-     * @param osVersion - Optional -The operating system version on which the client node is running 
-     * @param availableProcessors - Optional - The number of available processors on the machine on which the client node is running
-     * @param freeMemoryBytes - Optional - The amount of memory free (in bytes) on the machine on which the client node is running 
-     * @param totalMemoryBytes - Optional - The total amount of memory (in bytes) on the machine on which the client node is running
-     * @param maxMemoryBytes - Optional - The maximum amount of memory (in bytes) on the machine on which the client node is running
-     * @param javaVersion - Optional - The version of java currently being run on the machine on which the client node is running
-     * @param javaVendor - Optional - The java provided begin run on the machine on which the client node is running
-     * @param symmetricVersion - Optional - The symmetric version on the machine on which the client node is running
-     * @param timezoneOffset - Optional - The timezone offset on the machine on which the client node is running
-     * @param heartbeatTime - Optional - The heartbeat time for which this heartbeat pertains
-     * @param lastRestartTime - Optional - The last restart time of symmetric on the machine on which the client node is running
-     * @param createTime - Optional - The Symmetric instance create time for the machine on which the client node is running 
+     * See {@link Heartbeat} for request body requirements
      */
-    @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.POST)
+    @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public final void postHeartbeat(@RequestParam(value = WebConstants.NODE_ID) String nodeID, 
-		@RequestParam(value = "hostName") String hostName,
-		@RequestParam(value = "ipAddress") String ipAddress,
-		@RequestParam(value = "osUser", required=false) String osUser,		
-		@RequestParam(value = "osName", required=false) String osName,
-		@RequestParam(value = "osArchitecture", required=false) String osArchitecture,
-		@RequestParam(value = "osVersion", required=false) String osVersion,
-		@RequestParam(value = "availableProcessors", required=false) Integer availableProcessors,
-		@RequestParam(value = "freeMemoryBytes", required=false) Long freeMemoryBytes,
-		@RequestParam(value = "totalMemoryBytes", required=false) Long totalMemoryBytes,
-		@RequestParam(value = "maxMemoryBytes", required=false) Long maxMemoryBytes,		
-		@RequestParam(value = "javaVersion", required=false) String javaVersion,
-		@RequestParam(value = "javaVendor", required=false) String javaVendor,
-		@RequestParam(value = "symmetricVersion", required=false) String symmetricVersion,
-		@RequestParam(value = "timezoneOffset") String timezoneOffset,
-		@RequestParam(value = "heartbeatTime") Date heartbeatTime,
-		@RequestParam(value = "lastRestartTime", required=false) Date lastRestartTime,
-		@RequestParam(value = "createTime", required=false) Date createTime
-		) {    	
-    	//TODO: implement
+    public final void putHeartbeat(@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+    		@RequestBody Heartbeat heartbeat) {
+
+		if (securityVerified(heartbeat.getNodeId(), getSymmetricEngine(), securityToken)) {	
+	    	putHeartbeat(getSymmetricEngine().getEngineName(),
+	    			heartbeat);
+        } else {
+            throw new NotAllowedException();
+        }
+    }
+
+    /**  
+     * Sends a heartbeat to the server for the given node.  
+     * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
+     * See {@link Heartbeat} for request body requirements
+     */
+    @RequestMapping(value = "/engine/{engine}/heartbeat", method = RequestMethod.PUT)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void putHeartbeat(@PathVariable("engine") String engineName,
+    		@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+    		@RequestBody Heartbeat heartbeat) {    	
+        
+		ISymmetricEngine engine = getSymmetricEngine(engineName);
+		if (securityVerified(heartbeat.getNodeId(), engine, securityToken)) {	
+			heartbeatImpl(engine, heartbeat);
+		} else {
+            throw new NotAllowedException();
+		}
+    }
+
+    private void heartbeatImpl(ISymmetricEngine engine, Heartbeat heartbeat) {
+		INodeService nodeService = engine.getNodeService();
+
+		NodeHost nodeHost = new NodeHost(false);
+		if (heartbeat.getAvailableProcessors() != null) {
+			nodeHost.setAvailableProcessors(heartbeat.getAvailableProcessors());
+		}
+		if (heartbeat.getCreateTime() != null) {
+			nodeHost.setCreateTime(heartbeat.getCreateTime());
+		}
+		if (heartbeat.getFreeMemoryBytes() != null) {
+			nodeHost.setFreeMemoryBytes(heartbeat.getFreeMemoryBytes());
+		}
+		if (heartbeat.getHeartbeatTime() != null) {
+			nodeHost.setHeartbeatTime(heartbeat.getHeartbeatTime());
+		}
+		if (heartbeat.getHostName() != null) {
+			nodeHost.setHostName(heartbeat.getHostName());
+		}
+		if (heartbeat.getIpAddress() != null) {
+			nodeHost.setIpAddress(heartbeat.getIpAddress());
+		}
+		if (heartbeat.getJavaVendor() != null) {
+			nodeHost.setJavaVendor(heartbeat.getJavaVendor());
+		}
+		if (heartbeat.getJavaVersion() != null) {
+			nodeHost.setJavaVersion(heartbeat.getJavaVersion());
+		}
+		if (heartbeat.getLastRestartTime() != null) {
+			nodeHost.setLastRestartTime(heartbeat.getLastRestartTime());
+		}
+		if (heartbeat.getMaxMemoryBytes() != null) {
+			nodeHost.setMaxMemoryBytes(heartbeat.getMaxMemoryBytes());
+		}
+		if (heartbeat.getNodeId() != null) {
+			nodeHost.setNodeId(heartbeat.getNodeId());
+		}
+		if (heartbeat.getOsArchitecture() != null) {
+			nodeHost.setOsArch(heartbeat.getOsArchitecture());
+		}
+		if (heartbeat.getOsName() != null) {
+			nodeHost.setOsName(heartbeat.getOsName());
+		}
+		if (heartbeat.getOsUser() != null) {
+			nodeHost.setOsUser(heartbeat.getOsUser());
+		}
+		if (heartbeat.getOsVersion() != null) {
+			nodeHost.setOsVersion(heartbeat.getOsVersion());
+		}
+		if (heartbeat.getSymmetricVersion() != null) {
+			nodeHost.setSymmetricVersion(heartbeat.getSymmetricVersion());
+		}
+		if (heartbeat.getTimezoneOffset() != null) {
+			nodeHost.setTimezoneOffset(heartbeat.getTimezoneOffset());
+		}
+		if (heartbeat.getTotalMemoryBytes() != null) {
+			nodeHost.setTotalMemoryBytes(heartbeat.getTotalMemoryBytes());
+		}
+		
+		nodeService.updateNodeHost(nodeHost);    	
     }
     
     /**

@@ -262,5 +262,10 @@ public class MockNodeService implements INodeService {
     public Node findIdentity(boolean useCache, boolean logSqlError) {
         return null;
     }
+
+	public void updateNodeHost(NodeHost nodeHost) {
+		// TODO Auto-generated method stub
+		
+	}
     
 }
