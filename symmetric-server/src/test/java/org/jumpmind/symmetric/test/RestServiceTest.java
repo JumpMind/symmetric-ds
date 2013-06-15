@@ -108,7 +108,6 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword(), false, false, false, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(1, results.getNbrBatches());
-        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
         
         // test that when we don't request jdbc timestamp format sql statements come back in that format
         Assert.assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("{ts '"));
@@ -125,8 +124,7 @@ public class RestServiceTest extends AbstractTest {
                 registrationInfo.getNodePassword(), true, false, true, null);
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(2, results.getNbrBatches());
-        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
-        Assert.assertEquals(5, results.getBatches().get(1).getBatchId());
+        Assert.assertNotSame(results.getBatches().get(1).getBatchId(), results.getBatches().get(0).getBatchId());
         Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());
         
         // test that when we request jdbc timestamp format sql statements come back in that format
@@ -137,12 +135,7 @@ public class RestServiceTest extends AbstractTest {
         log.info(results.getBatches().get(1).getSqlStatements().get(0));
         log.info(results.getBatches().get(1).getSqlStatements().get(1));
         
-        BatchResults batchResults = new BatchResults();
-        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 4, true));
-        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), 5, true));
-        restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
-        
-        assertPullReturnsNoData(restService, registrationInfo);
+        ackBatches(restService, registrationInfo, results, buildBatchResults(registrationInfo, results));
         
         engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 2, "this is a test", FormatUtils.parseDate("2073-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
         engine.getSqlTemplate().update("insert into a values(?, ?, ?)", 3, "this is a test", FormatUtils.parseDate("2073-06-08 00:00:00.000", FormatUtils.TIMESTAMP_PATTERNS));
@@ -162,12 +155,8 @@ public class RestServiceTest extends AbstractTest {
             log.info(sql);
             Assert.assertTrue(sql, sql.toLowerCase().startsWith("insert or replace"));
         }
-
-        batchResults = new BatchResults();
-        batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), results.getBatches().get(0).getBatchId(), true));
-        restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
-        
-        assertPullReturnsNoData(restService, registrationInfo);
+                
+        ackBatches(restService, registrationInfo, results, buildBatchResults(registrationInfo, results));
         
         Channel channel = engine.getConfigurationService().getChannel("default");
         channel.setBatchAlgorithm("nontransactional");
@@ -183,17 +172,26 @@ public class RestServiceTest extends AbstractTest {
         Assert.assertNotNull("Should have a non null results object", results);
         Assert.assertEquals(3, results.getNbrBatches());
         List<Batch> batches = results.getBatches();
-        batchResults = new BatchResults();
         for (Batch batch : batches) {
             Assert.assertEquals(1, batch.getSqlStatements().size());
             Assert.assertTrue(batch.getSqlStatements().get(0).toLowerCase().startsWith("delete from"));
-            batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), batch.getBatchId(), true));            
         }
         
+        ackBatches(restService, registrationInfo, results, buildBatchResults(registrationInfo, results));
+
+    }
+    
+    protected BatchResults buildBatchResults(RegistrationInfo registrationInfo, PullDataResults results) {
+        BatchResults batchResults = new BatchResults();
+        for (Batch batch : results.getBatches()) {
+            batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), batch.getBatchId(), true));            
+        }
+        return batchResults;
+    }
+    
+    protected void ackBatches(RestService restService, RegistrationInfo registrationInfo, PullDataResults results, BatchResults batchResults) {
         restService.putAcknowledgeBatch("server", registrationInfo.getNodePassword(), batchResults);
-
         assertPullReturnsNoData(restService, registrationInfo);
-
     }
     
     protected void assertPullReturnsNoData(RestService restService, RegistrationInfo registrationInfo) {
