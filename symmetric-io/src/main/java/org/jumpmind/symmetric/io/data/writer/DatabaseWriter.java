@@ -156,6 +156,10 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
+    	write(data, false);
+    }
+    
+    protected void write(CsvData data, boolean fallback) {
         if (data.requiresTable() && 
         		(targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
             // if we cross batches and the table isn't specified, then
@@ -193,7 +197,7 @@ public class DatabaseWriter implements IDataWriter {
                     }
 
                     if (loadStatus == LoadStatus.CONFLICT) {
-                        if (conflictResolver != null) {
+                        if (conflictResolver != null && !fallback) {
                             conflictResolver.needsResolved(this, data, loadStatus);
                         } else {
                             throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
