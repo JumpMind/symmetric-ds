@@ -123,7 +123,7 @@ public class DataProcessor {
                                 listener.batchSuccessful(context);
                             }
                         }
-                    } catch (Exception ex) {
+                    } catch (Throwable ex) {
                         try {
                             context.setLastError(ex);
                             if (dataWriter != null && !endBatchCalled) {
@@ -201,7 +201,7 @@ public class DataProcessor {
         return dataRow;
     }
 
-    protected void rethrow(Exception ex) {
+    protected void rethrow(Throwable ex) {
         if (ex instanceof RuntimeException) {
             throw (RuntimeException) ex;
         } else {
