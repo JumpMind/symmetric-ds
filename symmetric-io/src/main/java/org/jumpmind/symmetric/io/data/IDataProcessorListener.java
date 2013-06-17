@@ -34,6 +34,6 @@ public interface IDataProcessorListener {
 
     public void batchSuccessful(DataContext context);
 
-    public void batchInError(DataContext context, Exception ex);
+    public void batchInError(DataContext context, Throwable ex);
 
 }
