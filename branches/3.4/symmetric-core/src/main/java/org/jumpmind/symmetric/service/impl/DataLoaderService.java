@@ -863,7 +863,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        public void batchInError(DataContext context, Exception ex) {
+        public void batchInError(DataContext context, Throwable ex) {
             try {
                 Batch batch = context.getBatch();
                 if (context.getWriter() != null && 
