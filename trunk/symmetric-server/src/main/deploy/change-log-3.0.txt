@@ -19,6 +19,12 @@
     under the License.
 ====
 
+SymmetricDS - 3.4.7 (Released 2013-06-18)
+=========================================
+- 0001284: [Bug] StackOverflowError can happen when a transform exists and the primary keys mismatch causing conflicts on both update and insert (chenson) - closed.
+- 0001285: [Bug] If an Error (versus an Exception) happens during the data load process, the database transaction can be left hanging (chenson) - closed.
+- 0001287: [Bug] EXTERNAL_DATA is not available for routing for event types other than I, U, or D (chenson) - closed.
+
 SymmetricDS - 3.4.6 (Released 2013-06-06) 
 =========================================
 - 0001244: [Bug] Mariadb driver is chosen even though the MySQL driver is specified (chenson) - closed.
