@@ -28,5 +28,10 @@
     <import resource="classpath*:/conf/*-extensions.xml" />
     <import resource="file:../conf/*-extensions.xml" />
     <import resource="classpath*:/symmetric-console-extensions.xml" /> 
+    
+    <bean id="postgresBulkLoaderFactory" class="org.jumpmind.symmetric.ext.PostgresBulkDataLoaderFactory" />
+    
+    <bean id="oracleBulkLoaderFactory" class="org.jumpmind.symmetric.ext.OracleBulkDataLoaderFactory" />
+    
 
 </beans>

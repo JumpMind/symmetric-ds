@@ -7,10 +7,10 @@
 	<name>symmetric-postgres</name>
 
     <parent>
-        <groupId>com.jumpmind.symmetric</groupId>
-        <artifactId>symmetric-pro-parent</artifactId>
+        <groupId>org.jumpmind.symmetric</groupId>
+        <artifactId>symmetric-parent</artifactId>
         <version>3.5.0-SNAPSHOT</version>
-        <relativePath>../symmetric-pro-parent/pom.xml</relativePath>
+        <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
 	<dependencies>
