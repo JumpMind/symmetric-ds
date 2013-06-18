@@ -41,9 +41,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>oracle.jdbc</groupId>
+			<groupId>jdbc</groupId>
 			<artifactId>ojdbc</artifactId>
-			<version>11.2.0.2.0</version>
+			<version>11.2.0.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

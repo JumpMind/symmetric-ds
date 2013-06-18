@@ -2,7 +2,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>oracle.jdbc</groupId>
+  <groupId>jdbc</groupId>
   <artifactId>ojdbc</artifactId>
-  <version>11.2.0.2.0</version>
+  <version>11.2.0.3</version>
 </project>
