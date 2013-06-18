@@ -1,0 +1,37 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jumpmind.symmetric</groupId>
+	<artifactId>symmetric-csv</artifactId>
+	<packaging>jar</packaging>
+	<version>3.4.7</version>
+	<name>csv</name>
+	<inceptionYear>2010</inceptionYear>
+
+	<description>
+        This library is a fork of a CSV library called CSVReader by Bruce Dunwiddie
+    </description>
+
+	<parent>
+		<groupId>org.jumpmind.symmetric</groupId>
+		<artifactId>symmetric-parent</artifactId>
+		<version>3.4.7</version>
+        <relativePath>../symmetric-parent/pom.xml</relativePath>
+	</parent>
+
+	<licenses>
+		<license>
+			<name>LGPL</name>
+			<url>http://www.gnu.org/licenses/lgpl.txt</url>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+</project>
