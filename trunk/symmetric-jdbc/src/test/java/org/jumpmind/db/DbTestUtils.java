@@ -39,14 +39,18 @@ abstract public class DbTestUtils {
     public final static String DB_TEST_PROPERTIES = "/db-test.properties";
     public static final String ROOT = "root";
     public static final String CLIENT = "client";
+    
+    public static EnvironmentSpecificProperties getEnvironmentSpecificProperties(String name) {
+        return new EnvironmentSpecificProperties(
+                DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), String.format(
+                        "test.%s", name), name);
+    }
 
     public static IDatabasePlatform createDatabasePlatform(String name) throws Exception {
         File f = new File(String.format("target/%sdbs", name));
         FileUtils.deleteDirectory(f);
         f.mkdir();
-        EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
-                DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), String.format(
-                        "test.%s", name), name);
+        EnvironmentSpecificProperties properties = getEnvironmentSpecificProperties(name);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(
                 BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
                 new SqlTemplateSettings(), true);
