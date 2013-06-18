@@ -92,7 +92,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
             String[] values = { getNextId(), "string2", "string not null2", "char2",
-                    "char not null2", "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47",
+                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0", "47",
                     "67.89", "-0.0747663" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             writeData(data, values);
@@ -105,7 +105,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
                 datas.add(data);
                 for (int i = 0; i < 10; i++) {
                     values = new String[] { getNextId(), "string2", "string not null2", "char2",
-                            "char not null2", "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0",
+                            "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000",
                             "0", "47", "67.89", "-0.0747663" };
                     data = new CsvData(DataEventType.INSERT, values);
                     datas.add(data);
