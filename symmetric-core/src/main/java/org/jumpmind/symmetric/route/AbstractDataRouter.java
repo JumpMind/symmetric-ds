@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -148,7 +149,17 @@ public abstract class AbstractDataRouter implements IDataRouter {
             default:
                 break;
         }
-        data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+
+        if (data != null && data.size() == 0) {
+            data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
+        }
+        
+        if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
+            if (data == null) {
+                data = new HashMap<String, Object>(1);
+            }
+            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());            
+        }
         return data;
     }
 
