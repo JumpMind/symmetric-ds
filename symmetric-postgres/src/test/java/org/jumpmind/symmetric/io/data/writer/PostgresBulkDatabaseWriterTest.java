@@ -28,6 +28,7 @@ import junit.framework.Assert;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.junit.Before;
@@ -39,9 +40,13 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @BeforeClass
     public static void setup() throws Exception {
+        if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT)
+                .get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER)
+                .equals("org.postgresql.Driver")) {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
         platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true,
                 false);
+        }
     }
 
     @Before
@@ -62,7 +67,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Test
     public void testInsert1000Rows() {
-        if (platform instanceof PostgreSqlDatabasePlatform) {
+        if (platform != null && platform instanceof PostgreSqlDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
             List<CsvData> datas = new ArrayList<CsvData>();
@@ -84,7 +89,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Test
     public void testInsertCollision() {
-        if (platform instanceof OracleDatabasePlatform) {
+        if (platform != null && platform instanceof OracleDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
             String[] values = { getNextId(), "string2", "string not null2", "char2",
