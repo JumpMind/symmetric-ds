@@ -149,10 +149,8 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 break;
         }
         
-        if (data != null) {
-            if (data.size() == 0) {
-                data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
-            }
+        if (data != null && data.size() == 0) {
+            data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
         
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
