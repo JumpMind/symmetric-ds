@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.data.writer;
 
@@ -155,21 +155,19 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    
     public void write(CsvData data) {
-        write(data, false);
+    	write(data, false);
     }
-        
     
     protected void write(CsvData data, boolean fallback) {
         if (data.requiresTable() && 
-                (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
+        		(targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
             // if we cross batches and the table isn't specified, then
             // use the last table we used
             start(context.getLastParsedTable());
         }
         if (targetTable != null || !data.requiresTable() || 
-                (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
+        		(targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
@@ -374,7 +372,8 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    process &= filter.beforeWrite(this.context, this.sourceTable, data);
+                    process &= filter.beforeWrite(this.context,
+                            this.targetTable != null ? this.targetTable : this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -445,7 +444,8 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    filter.afterWrite(this.context, this.sourceTable, data);
+                    filter.afterWrite(this.context, this.targetTable != null ? this.targetTable
+                            : this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -920,7 +920,6 @@ public class DatabaseWriter implements IDataWriter {
 			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);			
 		}
 		
-		sql = platform.scrubSql(sql);
 //		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
 //		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
 

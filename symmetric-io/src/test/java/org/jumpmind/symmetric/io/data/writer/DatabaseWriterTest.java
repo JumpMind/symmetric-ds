@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.math.BigDecimal;
@@ -76,8 +56,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
-                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
+                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -93,7 +73,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldBeApplied[2] = "string3";
-        updateShouldBeApplied[6] = "2012-03-12 08:00:00.000";
+        updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldBeApplied));
         writeData(data, updateShouldBeApplied);
@@ -113,8 +93,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
-                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
+                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -130,7 +110,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldBeApplied[2] = "string3";
-        updateShouldBeApplied[6] = "2012-03-12 08:00:00.000";
+        updateShouldBeApplied[6] = "2012-03-12 08:00:00.0";
         data = new CsvData(DataEventType.INSERT,
                 massageExpectectedResultsForDialect(updateShouldBeApplied));
         writeData(data, updateShouldBeApplied);
@@ -149,8 +129,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
-                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
+                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "47", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -185,8 +165,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
-                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
+                "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -233,8 +213,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String origId = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { origId,
-                "string2", "changed value", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
+                "string2", "changed value", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -280,8 +260,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
         String origId = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { origId,
-                null, "changed value", "char2", "char not null2", "2007-01-02 03:20:10.000",
-                "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
+                null, "changed value", "char2", "char not null2", "2007-01-02 03:20:10.0",
+                "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" });
 
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
@@ -359,7 +339,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testInsertExisting() throws Exception {
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663" };
+                "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "-0.0747663" };
         massageExpectectedResultsForDialect(values);
         CsvData data = new CsvData(DataEventType.INSERT, values);
         writeData(data, values);
@@ -393,7 +373,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void testUpdateNotExisting() throws Exception {
         String id = getNextId();
         String[] values = { id, "it's /a/  string", "it's  -not-  null", "You're a \"character\"",
-                "Where are you?", "2007-12-31 02:33:45.000", "2007-12-31 23:59:59.000", "1", "13",
+                "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0", "1", "13",
                 "9.95", "-0.0747" };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length);
         massageExpectectedResultsForDialect(expectedValues);
@@ -461,7 +441,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testDeleteExisting() throws Exception {
         String[] values = { getNextId(), "a row to be deleted", "testDeleteExisting", "char2",
-                "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0", "47",
+                "char not null2", "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47",
                 "67.89", "-0.0747" };
         massageExpectectedResultsForDialect(values);
         writeData(new CsvData(DataEventType.INSERT, values), values);
@@ -480,8 +460,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] columns = testColumns.toArray(new String[testColumns.size()]);
 
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char",
-                "i do not exist!", "char not null", "2007-01-02 00:00:00.000",
-                "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747" };
+                "i do not exist!", "char not null", "2007-01-02 00:00:00.0",
+                "2007-02-03 04:05:06.0", "0", "47", "67.89", "-0.0747" };
         List<String> valuesAsList = new ArrayList<String>(Arrays.asList(values));
         valuesAsList.remove(4);
         String[] expectedValues = valuesAsList.toArray(new String[valuesAsList.size()]);
@@ -491,7 +471,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testTableNotExisting() throws Exception {
         String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char",
-                "char not null", "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "0",
+                "char not null", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0",
                 "12.10", "-0.0747" };
 
         Table badTable = buildSourceTable("UnknownTable", TEST_KEYS, TEST_COLUMNS);

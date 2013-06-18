@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.model;
 
@@ -27,8 +27,8 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER;
-
+        PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, ROUTER_JOB, GAP_DETECT, ROUTER_READER, MANUAL_LOAD;
+        
         public String toString() {
             switch (this) {
                 case MANUAL_LOAD:
@@ -47,16 +47,6 @@ public class ProcessInfoKey implements Serializable {
                     return "Routing Reader";
                 case GAP_DETECT:
                     return "Gap Detection";
-                case FILE_SYNC_PULL_JOB:
-                    return "File Sync Pull";
-                case FILE_SYNC_PUSH_JOB:
-                    return "File Sync Push";
-                case FILE_SYNC_PULL_HANDLER:
-                    return "Service File Sync Pull";
-                case FILE_SYNC_PUSH_HANDLER:
-                    return "Service File Sync Push";
-                case REST_PULL_HANLDER:
-                    return "REST Pull";
                 default:
                     return name();
             }
@@ -120,11 +110,10 @@ public class ProcessInfoKey implements Serializable {
             return false;
         return true;
     }
-
+    
     @Override
     public String toString() {
-        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s",
-                processType.toString(), sourceNodeId, targetNodeId);
+        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s",processType.toString(), sourceNodeId, targetNodeId);
     }
-
+    
 }

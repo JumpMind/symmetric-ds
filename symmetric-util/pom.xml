@@ -3,7 +3,7 @@
 	<groupId>org.jumpmind.symmetric</groupId>
 	<artifactId>symmetric-util</artifactId>
 	<packaging>jar</packaging>
-	<version>3.5.0-SNAPSHOT</version>
+	<version>3.4.7</version>
 	<name>util</name>
 	<inceptionYear>2011</inceptionYear>
 
@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.jumpmind.symmetric</groupId>
 		<artifactId>symmetric-parent</artifactId>
-		<version>3.5.0-SNAPSHOT</version>
+		<version>3.4.7</version>
 		<relativePath>../symmetric-parent/pom.xml</relativePath>
 	</parent>
 
@@ -46,12 +46,7 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<scope>provided</scope>
-		</dependency>        
-        <dependency>
-            <groupId>bouncycastle</groupId>
-            <artifactId>bcprov-jdk15</artifactId>
-            <scope>provided</scope>
-        </dependency>           
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

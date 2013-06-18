@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.security;
 
 import java.io.File;
@@ -38,7 +39,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,16 +54,9 @@ public class SecurityService implements ISecurityService {
 
     protected SecureRandom secRand;
 
-    protected SecurityService() {
-    }
-
     public void init() {
     }
-
-    public void installDefaultSslCert(String host) {
-        throw new NotImplementedException();
-    }
-
+    
     protected void checkThatKeystoreFileExists() {
         String keyStoreLocation = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
         if (!new File(keyStoreLocation).exists()) {
@@ -72,7 +65,7 @@ public class SecurityService implements ISecurityService {
                             + keyStoreLocation);
         }
     }
-
+    
     public String encrypt(String plainText) {
         try {
             checkThatKeystoreFileExists();
@@ -81,19 +74,19 @@ public class SecurityService implements ISecurityService {
             return new String(Base64.encodeBase64(enc), SecurityConstants.CHARSET);
         } catch (RuntimeException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (Exception e) {            
             throw new RuntimeException(e);
         }
     }
 
     public String decrypt(String encText) {
         try {
-            checkThatKeystoreFileExists();
+            checkThatKeystoreFileExists();            
             byte[] dec = Base64.decodeBase64(encText.getBytes());
             byte[] bytes = getCipher(Cipher.DECRYPT_MODE).doFinal(dec);
             return new String(bytes, SecurityConstants.CHARSET);
         } catch (RuntimeException e) {
-            throw e;
+            throw e;            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -113,8 +106,8 @@ public class SecurityService implements ISecurityService {
     protected void initializeCipher(Cipher cipher, int mode) throws Exception {
         AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
 
-        if (paramSpec instanceof PBEParameterSpec
-                || (paramSpec == null && cipher.getAlgorithm().startsWith("PBE"))) {
+        if (paramSpec instanceof PBEParameterSpec || 
+                (paramSpec == null && cipher.getAlgorithm().startsWith("PBE"))) {
             paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
                     SecurityConstants.ITERATION_COUNT);
             cipher.init(mode, secretKey, paramSpec);
@@ -126,14 +119,9 @@ public class SecurityService implements ISecurityService {
         }
     }
 
-    protected String getKeyStorePassword() {
+    protected SecretKey getSecretKey() throws Exception {
         String password = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
-        return password;
-    }
-
-    protected SecretKey getSecretKey() throws Exception {
-        String password = getKeyStorePassword();
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
         KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(
@@ -192,8 +180,7 @@ public class SecurityService implements ISecurityService {
         String keyPassword = nextSecureHexString(8);
         KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
                 SecurityConstants.ITERATION_COUNT, 56);
-        SecretKey secretKey = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM)
-                .generateSecret(keySpec);
+        SecretKey secretKey = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
         return secretKey;
     }
 

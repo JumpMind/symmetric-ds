@@ -1,37 +1,31 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.io.stage;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,11 +53,7 @@ public class StagedResource implements IStagedResource {
     private long createTime;
 
     private State state;
-    
-    private Map<Thread, OutputStream> outputStreams = null;
-    
-    private Map<Thread, InputStream> inputStreams = null;
-    
+
     private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
 
     private Map<Thread, BufferedWriter> writers = new HashMap<Thread, BufferedWriter>();
@@ -170,73 +160,11 @@ public class StagedResource implements IStagedResource {
         BufferedWriter writer = writers.get(thread);
         if (writer != null) {
             IOUtils.closeQuietly(writer);
-            writers.remove(thread);
+            writers.remove(writer);
         }
-        
-        if (outputStreams != null) {
-            OutputStream outputStream = outputStreams.get(thread);
-            if (outputStream != null) {
-                IOUtils.closeQuietly(outputStream);
-                outputStreams.remove(thread);
-            }
-        }
-        
-        if (inputStreams != null) {
-            InputStream inputStream = inputStreams.get(thread);
-            if (inputStream != null) {
-                IOUtils.closeQuietly(inputStream);
-                inputStreams.remove(thread);
-            }
-        }
-        
 
     }
-    
-    public OutputStream getOutputStream() {
-        try {
-            if (outputStreams == null) {
-                outputStreams = new HashMap<Thread, OutputStream>();
-            }
-            Thread thread = Thread.currentThread();            
-            OutputStream writer = outputStreams.get(thread);
-            if (writer == null) {
-                if (file.exists()) {
-                    log.warn("We had to delete {} because it already existed",
-                            file.getAbsolutePath());
-                    file.delete();
-                }
-                file.getParentFile().mkdirs();
-                writer = new BufferedOutputStream(new FileOutputStream(file));
-                outputStreams.put(thread, writer);
-            }
-            return writer;
-        } catch (FileNotFoundException e) {
-            throw new IoException(e);
-        }
-    }
 
-    public InputStream getInputStream() {
-        Thread thread = Thread.currentThread();
-        if (inputStreams == null) {
-            inputStreams = new HashMap<Thread, InputStream>();
-        }
-        InputStream reader = inputStreams.get(thread);
-        if (reader == null) {
-            if (file.exists()) {
-                try {
-                    reader = new BufferedInputStream(new FileInputStream(file));
-                    inputStreams.put(thread, reader);
-                } catch (IOException ex) {
-                    throw new IoException(ex);
-                }
-            } else {
-                throw new IllegalStateException("There is no content to read. "
-                        + file.getAbsolutePath() + " was not found.");
-            }
-        }
-        return reader;
-    }
-    
     public BufferedWriter getWriter() {
         Thread thread = Thread.currentThread();
         BufferedWriter writer = writers.get(thread);

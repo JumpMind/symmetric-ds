@@ -1,14 +1,14 @@
-/**
+/*
  * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
  * with the License.
  *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  *
  * Unless required by applicable law or agreed to in writing,
@@ -368,9 +368,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
 
                             if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
-                                log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.debug("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                             } else {
-                                log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                log.warn("{}.  Failed to execute: {}.", ex.getMessage(), statement);
                                 if (failOnError) {
                                     throw ex;
                                 }
@@ -512,11 +512,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if ("java.sql.Timestamp".equals(metaDataClassName)) {
                 obj = rs.getTimestamp(index);
             }
-        } else if (obj instanceof Timestamp) {
-            String typeName = metaData.getColumnTypeName(index);
-            if (typeName != null && typeName.equals("timestamptz")) {
-                obj = rs.getString(index);
-            }
+        } else if (obj instanceof Timestamp
+                && metaData.getColumnTypeName(index).equals("timestamptz")) {
+            obj = rs.getString(index);
         }
         return obj;
     }

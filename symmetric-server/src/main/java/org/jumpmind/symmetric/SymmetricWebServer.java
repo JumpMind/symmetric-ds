@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric;
 
@@ -52,21 +52,15 @@ import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
-import org.jumpmind.security.SecurityServiceFactory;
-import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.symmetric.web.rest.RestService;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -282,13 +276,6 @@ public class SymmetricWebServer {
     protected ServletContext getServletContext() {
         return webapp != null ? webapp.getServletContext() : null;
     }
-    
-    public RestService getRestService() {
-        ServletContext servletContext = getServletContext();
-        WebApplicationContext rootContext =
-                WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        return rootContext.getBean(RestService.class);
-    }
 
     public ISymmetricEngine getEngine() {
         ISymmetricEngine engine = null;
@@ -372,8 +359,6 @@ public class SymmetricWebServer {
             log.info("About to start {} web server on port {}", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
-            ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, new TypedProperties(System.getProperties()));
-            securityService.installDefaultSslCert(host);
             Connector connector = new SslSocketConnector();
             String keyStorePassword = System
                     .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
@@ -382,7 +367,7 @@ public class SymmetricWebServer {
             SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory(); 
             sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
-            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
+            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, "sym"));
             sslConnectorFactory.setKeyStoreType(keyStoreType);
 
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
@@ -423,7 +408,7 @@ public class SymmetricWebServer {
     }
 
     protected void removeHttpJmxAdaptor() {
-        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true) && jmxEnabled) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true)) {
             try {
                 MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
