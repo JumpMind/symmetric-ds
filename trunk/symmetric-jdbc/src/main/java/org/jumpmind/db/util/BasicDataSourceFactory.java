@@ -37,6 +37,25 @@ import org.slf4j.LoggerFactory;
 
 public class BasicDataSourceFactory {
     
+    public static void prepareDriver(String clazzName) throws Exception {
+        Driver driver = (Driver)Class.forName(clazzName).newInstance();
+        synchronized (DriverManager.class) {
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            while (drivers.hasMoreElements()) {
+                Driver driver2 = (Driver) drivers.nextElement();                    
+                /* 
+                 * MySQL and Maria DB drivers cannot co-exist because
+                 * they use the same JDBC URL.
+                 */
+                if ((driver.getClass().getName().equals("com.mysql.jdbc.Driver") &&
+                        driver2.getClass().getName().equals("org.mariadb.jdbc.Driver")) ||
+                        (driver.getClass().getName().equals("org.mariadb.jdbc.Driver") &&
+                                driver2.getClass().getName().equals("com.mysql.jdbc.Driver"))) {
+                    DriverManager.deregisterDriver(driver2);
+                }
+            }
+        }
+    }
     
     public static BasicDataSource create(TypedProperties properties) {
         return create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
@@ -50,23 +69,7 @@ public class BasicDataSourceFactory {
         dataSource.setDriverClassName(properties.get(
                 BasicDataSourcePropertyConstants.DB_POOL_DRIVER, null));
         try {
-            Driver driver = (Driver)Class.forName(dataSource.getDriverClassName()).newInstance();
-            synchronized (DriverManager.class) {
-                Enumeration<Driver> drivers = DriverManager.getDrivers();
-                while (drivers.hasMoreElements()) {
-                    Driver driver2 = (Driver) drivers.nextElement();
-                    /* 
-                     * MySQL and Maria DB drivers cannot co-exist because
-                     * they use the same JDBC URL.
-                     */
-                    if ((driver.getClass().equals("com.mysql.jdbc.Driver") &&
-                            driver2.getClass().getName().equals("org.mariadb.jdbc.Driver")) ||
-                            (driver.getClass().equals("org.mariadb.jdbc.Driver") &&
-                                    driver2.getClass().getName().equals("com.mysql.jdbc.Driver"))) {
-                        DriverManager.deregisterDriver(driver2);
-                    }
-                }
-            }
+            prepareDriver(dataSource.getDriverClassName());
         } catch (Exception e) {
             throw new IllegalStateException("Had trouble registering the jdbc driver: " + dataSource.getDriverClassName(),e);
         }
