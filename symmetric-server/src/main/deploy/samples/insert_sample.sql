@@ -56,6 +56,8 @@ values ('corp', 'store', 'W');
 
 insert into sym_node (node_id, node_group_id, external_id, sync_enabled)
 values ('000', 'corp', '000', 1);
+insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,initial_load_id,initial_load_create_by,rev_initial_load_enabled,rev_initial_load_time,rev_initial_load_id,rev_initial_load_create_by,created_at_node_id) 
+value ('000','changeme',0,current_timestamp,0,current_timestamp,null,null,0,null,null,null,'000');
 insert into sym_node_identity values ('000');
 
 --
