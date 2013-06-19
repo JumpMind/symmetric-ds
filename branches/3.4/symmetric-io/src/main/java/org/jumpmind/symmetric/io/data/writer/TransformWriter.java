@@ -120,6 +120,7 @@ public class TransformWriter extends NestedDataWriter {
             this.sourceTable = table;
             return true;
         } else {
+        	this.sourceTable = null;
             return super.start(table);
         }
     }
@@ -185,7 +186,14 @@ public class TransformWriter extends NestedDataWriter {
             }
 
         } else {
+        	if (sourceTable != null) {
+        		super.start(sourceTable);
+        	}
             super.write(data);
+        	if (sourceTable != null) {
+        		super.end(sourceTable);
+        	}
+
         }
 
     }
