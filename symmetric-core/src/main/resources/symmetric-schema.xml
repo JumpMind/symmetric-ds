@@ -710,7 +710,7 @@
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="crc32_checksum" type="BIGINT" description="File checksum.  Can be used to determine if file content has changed." />
         <column name="file_size" type="BIGINT" description="The size in bytes of the file at the time this change was detected." />
-        <column name="file_modified_time" type="TIMESTAMP" description="The last modified time of the file at the time this change was detected." />
+        <column name="file_modified_time" type="BIGINT" description="The last modified time of the file at the time this change was detected." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
@@ -721,7 +721,7 @@
         <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="The name of the file that has been loaded." />
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event that caused the file to be loaded from another node. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the source of the batch being loaded." />
-        <column name="file_modified_time" type="TIMESTAMP" description="The last modified time of the file at the time the file was loaded." />
+        <column name="file_modified_time" type="BIGINT" description="The last modified time of the file at the time the file was loaded." />
     </table>
 
 </database>

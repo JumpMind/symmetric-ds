@@ -109,8 +109,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             FileSnapshot snapshot = new FileSnapshot();
             snapshot.setTriggerId(columnData.get("TRIGGER_ID"));
             snapshot.setRouterId(columnData.get("ROUTER_ID"));
-            snapshot.setFileModifiedTime(FormatUtils.parseDate(
-                    columnData.get("FILE_MODIFIED_TIME"), FormatUtils.TIMESTAMP_PATTERNS));
+            snapshot.setFileModifiedTime(Long.parseLong(columnData.get("FILE_MODIFIED_TIME")));
             snapshot.setCrc32Checksum(Long.parseLong(columnData.get("CRC32_CHECKSUM")));
             snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));

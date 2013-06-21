@@ -71,7 +71,7 @@ public class FileSnapshot implements Serializable {
     private LastEventType lastEventType;
     private long crc32Checksum;
     private long fileSize;
-    private Date fileModifiedTime;
+    private long fileModifiedTime;
     private Date createTime = new Date();
     private String lastUpdateBy;
     private Date lastUpdateTime;
@@ -123,7 +123,7 @@ public class FileSnapshot implements Serializable {
         }
 
         this.fileSize = file.length();
-        this.fileModifiedTime = new Date(file.lastModified());
+        this.fileModifiedTime = file.lastModified();
         if (file.isFile() && lastEventType != LastEventType.DELETE) {
             try {
                 this.crc32Checksum = FileUtils.checksumCRC32(file);
@@ -194,11 +194,11 @@ public class FileSnapshot implements Serializable {
         this.fileSize = fileSize;
     }
 
-    public Date getFileModifiedTime() {
+    public long getFileModifiedTime() {
         return fileModifiedTime;
     }
 
-    public void setFileModifiedTime(Date fileModifiedTime) {
+    public void setFileModifiedTime(long fileModifiedTime) {
         this.fileModifiedTime = fileModifiedTime;
     }
 
@@ -235,7 +235,7 @@ public class FileSnapshot implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + (int) (crc32Checksum ^ (crc32Checksum >>> 32));
-        result = prime * result + ((fileModifiedTime == null) ? 0 : fileModifiedTime.hashCode());
+        result = prime * result + (int) (fileModifiedTime ^ (fileModifiedTime >>> 32));
         result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
         result = prime * result + ((relativeDir == null) ? 0 : relativeDir.hashCode());
         result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
@@ -256,11 +256,9 @@ public class FileSnapshot implements Serializable {
         FileSnapshot other = (FileSnapshot) obj;
         if (crc32Checksum != other.crc32Checksum)
             return false;
-        if (fileModifiedTime == null) {
-            if (other.fileModifiedTime != null)
-                return false;
-        } else if (!fileModifiedTime.equals(other.fileModifiedTime))
+        if (fileModifiedTime!=other.fileModifiedTime) {
             return false;
+        }
         if (fileName == null) {
             if (other.fileName != null)
                 return false;
