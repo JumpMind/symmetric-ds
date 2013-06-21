@@ -138,7 +138,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     protected String findSourceNodeIdFromFileIncoming(String filePath, String fileName,
-            Date lastUpdateDate) {
+            long lastUpdateDate) {
         return sqlTemplate.queryForString(getSql("findNodeIdFromFileIncoming"), filePath, fileName,
                 lastUpdateDate);
     }
@@ -294,7 +294,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
                         snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
                         snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
-                        Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
             snapshot.setCreateTime(snapshot.getLastUpdateTime());
             sqlTransaction.prepareAndExecute(
@@ -305,7 +305,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
                             snapshot.getTriggerId(), snapshot.getRouterId(),
                             snapshot.getRelativeDir(), snapshot.getFileName() }, new int[] {
-                            Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
@@ -748,7 +748,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileSnapshot.setCreateTime(rs.getDateTime("create_time"));
             fileSnapshot.setLastUpdateBy(rs.getString("last_update_by"));
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
-            fileSnapshot.setFileModifiedTime(rs.getDateTime("file_modified_time"));
+            fileSnapshot.setFileModifiedTime(rs.getLong("file_modified_time"));
             fileSnapshot.setFileName(rs.getString("file_name"));
             fileSnapshot.setRelativeDir(rs.getString("relative_dir"));
             fileSnapshot.setFileSize(rs.getLong("file_size"));
