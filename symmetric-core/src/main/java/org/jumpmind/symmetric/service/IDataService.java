@@ -57,21 +57,20 @@ public interface IDataService {
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 
      *  @param nodeId the remote node where the SQL statement will be executed
-     *  @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
-     *  @param schemaName used to find the sym_trigger entry for table that will be associated with this event
-     *  @param tableName used to find the sym_trigger entry for table that will be associated with this event
-     *  @param sql the SQL statement to run on the remote node database
-     *  @param isLoad indicate whether or not this event is part of the initial load
+     * @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
+     * @param schemaName used to find the sym_trigger entry for table that will be associated with this event
+     * @param tableName used to find the sym_trigger entry for table that will be associated with this event
+     * @param sql the SQL statement to run on the remote node database
      *  @return message string indicating success or error
      */
-    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
-            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, long loadId, String createBy);
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
     
@@ -96,12 +95,10 @@ public interface IDataService {
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
 
-    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy);
-    
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
-    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
-            boolean isLoad, long loadId, String createBy);
+//    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
+//            boolean isLoad, long loadId, String createBy);
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 

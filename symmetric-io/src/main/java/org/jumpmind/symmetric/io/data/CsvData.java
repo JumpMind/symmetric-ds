@@ -42,6 +42,7 @@ public class CsvData {
     public static final String ATTRIBUTE_TX_ID = "transactionId";
     public static final String ATTRIBUTE_SOURCE_NODE_ID = "sourceNodeId";
     public static final String ATTRIBUTE_EXTERNAL_DATA = "externalData";
+    public static final String ATTRIBUTE_NODE_LIST = "nodeList";
     public static final String ATTRIBUTE_ROUTER_ID = "routerId";    
     public static final String ATTRIBUTE_DATA_ID = "dataId";
     public static final String ATTRIBUTE_CREATE_TIME = "createTime";

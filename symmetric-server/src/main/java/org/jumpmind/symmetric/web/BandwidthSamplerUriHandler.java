@@ -39,8 +39,6 @@ import org.jumpmind.util.AppUtils;
  */
 public class BandwidthSamplerUriHandler extends AbstractUriHandler {
 
-    private static final long serialVersionUID = 1L;
-
     protected long defaultTestSlowBandwidthDelay = 0;
 
     public BandwidthSamplerUriHandler(IParameterService parameterService) {

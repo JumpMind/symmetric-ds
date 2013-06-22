@@ -347,8 +347,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql) {
-        return engine.getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql,
-                false);
+        return engine.getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql);
     }
 
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")

@@ -436,7 +436,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         for (Node node : getNodes(line)) {
             System.out.println("Sending SQL to node '" + node.getNodeId() + "'");
             getSymmetricEngine().getDataService().sendSQL(node.getNodeId(), catalogName,
-                    schemaName, tableName, sql, false);
+                    schemaName, tableName, sql);
         }
     }
 

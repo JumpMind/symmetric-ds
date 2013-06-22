@@ -218,14 +218,18 @@ abstract public class AbstractTest {
     protected boolean pull(String name) {
         int tries = 0;
         boolean pulled = false;
-        while (!pulled && tries < 10) {
+        boolean lastPull = false;
+        boolean errorOccurred = false;
+        while (!errorOccurred && (lastPull || (!pulled && tries < 10))) {
             RemoteNodeStatuses statuses = getWebServer(name).getEngine().pull();
             try {
                 statuses.waitForComplete(60000);
             } catch (InterruptedException ex) {
                 log.warn(ex.getMessage());
             }
-            pulled = statuses.wasDataProcessed();
+            lastPull = statuses.wasDataProcessed();
+            errorOccurred = statuses.errorOccurred();
+            pulled |= lastPull;
             AppUtils.sleep(100);
             tries++;
         }
@@ -235,14 +239,18 @@ abstract public class AbstractTest {
     protected boolean pullFiles(String name) {
         int tries = 0;
         boolean pulled = false;
-        while (!pulled && tries < 10) {
+        boolean lastPull = false;
+        boolean errorOccurred = false;
+        while (!errorOccurred && (lastPull || (!pulled && tries < 10))) {
             RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService().pullFilesFromNodes(true);
             try {
                 statuses.waitForComplete(60000);
             } catch (InterruptedException ex) {
                 log.warn(ex.getMessage());
             }
-            pulled = statuses.wasDataProcessed();
+            lastPull = statuses.wasDataProcessed();
+            errorOccurred = statuses.errorOccurred();
+            pulled |= lastPull;
             AppUtils.sleep(100);
             tries++;
         }
