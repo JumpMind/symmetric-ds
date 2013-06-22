@@ -611,7 +611,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             File file = new File(filePath);
             String fileName = file.getName();
             String dirName = file.getParentFile().getPath();
-            Date lastUpdateTime = new Date(file.lastModified());
+            long lastUpdateTime = file.lastModified();
             int updateCount = sqlTemplate.update(getSql("updateFileIncoming"), nodeId,
                     lastUpdateTime, eventType, dirName, fileName);
             if (updateCount == 0) {
