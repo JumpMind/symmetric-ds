@@ -381,6 +381,7 @@
         <column name="transaction_id" type="VARCHAR" size="255"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
         <column name="source_node_id" type="VARCHAR" size="50"  description="If the data was inserted by a SymmetricDS data loader, then the id of the source node is record so that data is not re-routed back to it." />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />
+        <column name="node_list" type="VARCHAR" size="255"  description="A field that can be populated with a comma separated subset of node ids which will be the only nodes available to the router" />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_d_channel_id">
             <index-column name="data_id"/>

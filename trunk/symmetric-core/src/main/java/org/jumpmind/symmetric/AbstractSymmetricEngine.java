@@ -708,7 +708,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql) {
-        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
+        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql);
     }
 
     public RemoteNodeStatuses push() {

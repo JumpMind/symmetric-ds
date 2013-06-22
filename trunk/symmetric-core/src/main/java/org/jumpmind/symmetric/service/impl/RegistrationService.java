@@ -412,7 +412,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                                     parentNode,
                                     "update "
                                             + tablePrefix
-                                            + "_node_security set registration_enabled=1,registration_time=current_timestamp where node_id='"
+                                            + "_node_security set registration_enabled=1, registration_time=current_timestamp where node_id='"
                                             + identity.getNodeId() + "'", false, -1, null);
                 }
             }

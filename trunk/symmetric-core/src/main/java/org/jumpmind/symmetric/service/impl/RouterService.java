@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -606,6 +608,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
+    @SuppressWarnings("unchecked")
     protected int routeData(ProcessInfo processInfo, Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
@@ -625,12 +628,27 @@ public class RouterService extends AbstractService implements IRouterService {
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_DATA_ROUTER_MS);
 
-                    if (nodeIds != null) {
-                        // should never route to self
-                        nodeIds.remove(engine.getNodeService().findIdentityNodeId());
+                    if (nodeIds != null) {                        
+                        String targetNodeIds = data.getNodeList();
+                        if (StringUtils.isNotBlank(targetNodeIds)) {
+                            List<String> targetNodeIdsList = Arrays
+                                    .asList(targetNodeIds.split(","));
+                            nodeIds = CollectionUtils.intersection(targetNodeIdsList, nodeIds);
+
+                            if (nodeIds.size() == 0) {
+                                log.warn(
+                                        "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed",
+                                        targetNodeIds, data.getDataId());
+                            }
+                        }                       
+                        
                         if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null) {
                             nodeIds.remove(data.getSourceNodeId());
                         }
+                        
+                        // should never route to self
+                        nodeIds.remove(engine.getNodeService().findIdentityNodeId());
+
                     }
                 }
 

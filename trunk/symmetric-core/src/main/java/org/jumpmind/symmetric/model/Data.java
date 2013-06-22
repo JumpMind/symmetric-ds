@@ -161,6 +161,14 @@ public class Data extends CsvData implements Serializable {
     public void setExternalData(String externalData) {
         putAttribute(ATTRIBUTE_EXTERNAL_DATA, externalData);
     }
+    
+    public void setNodeList(String nodeList) {
+        putAttribute(ATTRIBUTE_EXTERNAL_DATA, nodeList);
+    }
+    
+    public String getNodeList() {
+        return getAttribute(ATTRIBUTE_NODE_LIST);
+    }
 
     public Date getCreateTime() {
         return getAttribute(ATTRIBUTE_CREATE_TIME);
