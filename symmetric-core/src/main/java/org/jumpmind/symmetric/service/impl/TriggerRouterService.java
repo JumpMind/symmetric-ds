@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see ITriggerRouterService
@@ -236,18 +237,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<TriggerHistory> findTriggerHistories(String catalogName, String schemaName,
             String tableName) {
         List<TriggerHistory> listToReturn = new ArrayList<TriggerHistory>();
-        List<TriggerHistory> triggerHistories = sqlTemplate
-                .query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                        new TriggerHistoryMapper(), new Object[] { tableName },
-                        new int[] { Types.VARCHAR });
+        List<TriggerHistory> triggerHistories = getActiveTriggerHistories();
         if (triggerHistories != null && triggerHistories.size() > 0) {
             for (TriggerHistory triggerHistory : triggerHistories) {
                 boolean matches = true;
                 if (StringUtils.isNotBlank(catalogName)) {
                     matches = catalogName.equals(triggerHistory.getSourceCatalogName());
                 }
+                
                 if (matches && StringUtils.isNotBlank(schemaName)) {
                     matches = schemaName.equals(triggerHistory.getSourceSchemaName());
+                }
+                
+                if (matches && StringUtils.isNotBlank(tableName)) {
+                    boolean ignoreCase = parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE) && 
+                            !FormatUtils.isMixedCase(tableName);
+                    matches = ignoreCase ? triggerHistory.getSourceTableName().equalsIgnoreCase(tableName) : 
+                        triggerHistory.getSourceTableName().equals(tableName); 
                 }
 
                 if (matches) {
