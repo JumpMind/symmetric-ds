@@ -66,18 +66,24 @@ public class NonDmlEventsTest extends AbstractTest {
         Assert.assertNotNull(histories);
         Assert.assertEquals(1, histories.size());
 
-        String quote = rootServer.getDatabasePlatform().getDatabaseInfo().getDelimiterToken();
+        String serverQuote = rootServer.getDatabasePlatform().getDatabaseInfo().getDelimiterToken();
+        String clientQuote = clientServer.getDatabasePlatform().getDatabaseInfo()
+                .getDelimiterToken();
+
         for (int i = 0; i < 100; i++) {
             rootServer.getSqlTemplate().update(
-                    String.format("insert into %sCamelCase%s values (?,?)", quote, quote), i,
-                    "this is a test");
+                    String.format("insert into %sCamelCase%s values (?,?)", serverQuote,
+                            serverQuote), i, "this is a test");
         }
 
-        String countSql = String.format("select count(*) from %sCamelCase%s", quote, quote);
+        String serverCountSql = String.format("select count(*) from %sCamelCase%s", serverQuote,
+                serverQuote);
+        String clientCountSql = String.format("select count(*) from %sCamelCase%s", clientQuote,
+                clientQuote);
         Assert.assertEquals(100,
-                rootServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
+                rootServer.getDatabasePlatform().getSqlTemplate().queryForInt(serverCountSql));
         Assert.assertEquals(0,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
+                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         // we installed a dead trigger, so no data should have been captured
         Assert.assertFalse(pull("client"));
@@ -87,10 +93,7 @@ public class NonDmlEventsTest extends AbstractTest {
         Assert.assertTrue(pull("client"));
 
         Assert.assertEquals(100,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
-
-        String clientQuote = clientServer.getDatabasePlatform().getDatabaseInfo()
-                .getDelimiterToken();
+                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().sendSQL(
                 "client",
@@ -110,7 +113,7 @@ public class NonDmlEventsTest extends AbstractTest {
         Assert.assertTrue(pull("client"));
 
         Assert.assertEquals(102,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
+                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().sendSQL("client", null, null, testTable.getName(),
                 String.format("delete from %sCamelCase%s", clientQuote, clientQuote));
@@ -118,29 +121,36 @@ public class NonDmlEventsTest extends AbstractTest {
         Assert.assertTrue(pull("client"));
 
         Assert.assertEquals(0,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
+                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().reloadTable("client", null, null, testTable.getName(),
-                String.format("%sId%s < 50", quote, quote));
+                String.format("%sId%s < 50", serverQuote, serverQuote));
 
         Assert.assertTrue(pull("client"));
 
         Assert.assertEquals(50,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(countSql));
-        
+                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
+
         // test a wildcard table
         for (int i = 0; i < 10; i++) {
-            rootServer.getSqlTemplate().update("insert into a values (?)", i);
+            rootServer.getSqlTemplate().update(
+                    String.format("insert into %sA%s values (?)", serverQuote, serverQuote), i);
         }
-        
+
         Assert.assertFalse(pull("client"));
-        
+
         rootServer.getDataService().reloadTable("client", null, null, "A");
 
         Assert.assertTrue(pull("client"));
 
-        Assert.assertEquals(10,
-                clientServer.getDatabasePlatform().getSqlTemplate().queryForInt("select count(*) from A"));
+        Assert.assertEquals(
+                10,
+                clientServer
+                        .getDatabasePlatform()
+                        .getSqlTemplate()
+                        .queryForInt(
+                                String.format("select count(*) from %sA%s", clientQuote,
+                                        clientQuote)));
 
     }
 
