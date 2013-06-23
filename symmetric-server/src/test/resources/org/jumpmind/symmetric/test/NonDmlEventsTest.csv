@@ -123,6 +123,7 @@ catalog,
 schema,
 table,SYM_TRIGGER
 insert,"DEAD_CAMELCASE",,,"CamelCase","default","0","0","0","0",,,,"1=1","1=1","1=1",,,,,"0","0","1","0","2013-06-21 10:48:23.669","admin","2013-06-21 10:48:23.669"
+insert,"WILDCARD",,,"*,!CamelCase","default","0","0","0","0",,,,"1=1","1=1","1=1",,,,,"0","0","1","0","2013-06-22 21:10:33.127","admin","2013-06-22 21:11:23.787"
 catalog,
 schema,
 table,SYM_ROUTER
@@ -132,4 +133,5 @@ catalog,
 schema,
 table,SYM_TRIGGER_ROUTER
 insert,"DEAD_CAMELCASE","ROOT_2_CLIENT","1","50","","","0","2013-06-21 10:48:30.989","admin","2013-06-21 10:48:30.989"
+insert,"WILDCARD","ROOT_2_CLIENT","1","50","","","0","2013-06-22 21:10:46.738","admin","2013-06-22 21:10:46.738"
 commit,-9999
