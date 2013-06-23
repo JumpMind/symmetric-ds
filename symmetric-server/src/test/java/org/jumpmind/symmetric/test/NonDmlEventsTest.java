@@ -32,9 +32,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class NonDmlEventsTest extends AbstractTest {
 
-    // test 2 reload events in same batch
-    // test wildcard table reloads
-    // test sendSql
     // test sendSchema
     // test sendScript
     // test send reload to multiple nodes
