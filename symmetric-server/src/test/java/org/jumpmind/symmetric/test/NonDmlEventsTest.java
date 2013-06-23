@@ -133,23 +133,22 @@ public class NonDmlEventsTest extends AbstractTest {
 
         // test a wildcard table
         for (int i = 0; i < 10; i++) {
-            rootServer.getSqlTemplate().update(
-                    "insert into A values (?)", i);
+            rootServer.getSqlTemplate().update("insert into A values (?)", i);
         }
 
         Assert.assertFalse(pull("client"));
 
-        rootServer.getDataService().reloadTable("client", null, null, "A");
+        String msg = rootServer.getDataService()
+                .reloadTable("client", null, null, "A");
 
-        Assert.assertTrue(pull("client"));
+        Assert.assertTrue(
+                "Should have pulled data for the reload event for table A.  The reload table method returned the following text: "
+                        + msg, pull("client"));
 
         Assert.assertEquals(
                 10,
-                clientServer
-                        .getDatabasePlatform()
-                        .getSqlTemplate()
-                        .queryForInt(
-                                "select count(*) from A"));
+                clientServer.getDatabasePlatform().getSqlTemplate()
+                        .queryForInt("select count(*) from A"));
 
     }
 }
