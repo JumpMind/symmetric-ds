@@ -45,10 +45,10 @@ public class NonDmlEventsTest extends AbstractTest {
         testTable.addColumn(new Column("Notes", false, Types.VARCHAR, 255, 0));
 
         Table a = new Table("A");
-        a.addColumn(new Column("Id", true, Types.BIGINT, -1, -1));
+        a.addColumn(new Column("ID", true, Types.BIGINT, -1, -1));
 
         Table b = new Table("B");
-        b.addColumn(new Column("Id", true, Types.BIGINT, -1, -1));
+        b.addColumn(new Column("ID", true, Types.BIGINT, -1, -1));
 
         return new Table[] { testTable, a, b };
     }
@@ -134,7 +134,7 @@ public class NonDmlEventsTest extends AbstractTest {
         // test a wildcard table
         for (int i = 0; i < 10; i++) {
             rootServer.getSqlTemplate().update(
-                    String.format("insert into %sA%s values (?)", serverQuote, serverQuote), i);
+                    "insert into A values (?)", i);
         }
 
         Assert.assertFalse(pull("client"));
@@ -149,9 +149,7 @@ public class NonDmlEventsTest extends AbstractTest {
                         .getDatabasePlatform()
                         .getSqlTemplate()
                         .queryForInt(
-                                String.format("select count(*) from %sA%s", clientQuote,
-                                        clientQuote)));
+                                "select count(*) from A"));
 
     }
-
 }
