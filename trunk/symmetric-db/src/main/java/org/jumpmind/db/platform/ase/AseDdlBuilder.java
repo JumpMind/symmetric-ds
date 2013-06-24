@@ -65,7 +65,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE");
         // BIGINT is mapped back in the model reader
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC(19,0)");
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC(18,0)");
         // we're not using the native BIT type because it is rather limited
         // (cannot be NULL, cannot be indexed)
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
