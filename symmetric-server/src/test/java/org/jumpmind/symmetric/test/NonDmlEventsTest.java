@@ -130,10 +130,13 @@ public class NonDmlEventsTest extends AbstractTest {
 
         Assert.assertEquals(50,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
+        
+        Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "A");
+        Table clientTable = clientServer.getDatabasePlatform().readTableFromDatabase(null, null, "A");
 
         // test a wildcard table
         for (int i = 0; i < 10; i++) {
-            rootServer.getSqlTemplate().update("insert into A values (?)", i);
+            rootServer.getSqlTemplate().update(String.format("insert into %s values (?)", serverTable.getName()), i);
         }
 
         Assert.assertFalse(pull("client"));
@@ -148,7 +151,7 @@ public class NonDmlEventsTest extends AbstractTest {
         Assert.assertEquals(
                 10,
                 clientServer.getDatabasePlatform().getSqlTemplate()
-                        .queryForInt("select count(*) from A"));
+                        .queryForInt(String.format("select count(*) from %s", clientTable.getName())));
 
     }
 }
