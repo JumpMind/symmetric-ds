@@ -190,40 +190,6 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Returns the SQL to enable identity override mode.
-     *
-     * @param table The table to enable the mode for
-     *
-     * @return The SQL
-     */
-    protected String getEnableIdentityOverrideSql(Table table) {
-        StringBuffer result = new StringBuffer();
-
-        result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
-        result.append(" ON");
-
-        return result.toString();
-    }
-
-    /*
-     * Returns the SQL to disable identity override mode.
-     *
-     * @param table The table to disable the mode for
-     *
-     * @return The SQL
-     */
-    protected String getDisableIdentityOverrideSql(Table table) {
-        StringBuffer result = new StringBuffer();
-
-        result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
-        result.append(" OFF");
-
-        return result.toString();
-    }
-
-    /*
      * Returns the statement that turns on the ability to write delimited
      * identifiers.
      *
@@ -256,25 +222,6 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         ddl.append("'");
         ddl.append(identifier);
         ddl.append("'");
-    }
-
-    @Override
-    public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
-        boolean hasIdentity = targetTable.getAutoIncrementColumns().length > 0;
-
-        if (hasIdentity) {
-            ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
-            ddl.append(" ON");
-            printEndOfStatement(ddl);
-        }
-        super.writeCopyDataStatement(sourceTable, targetTable, ddl);
-        if (hasIdentity) {
-            ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
-            ddl.append(" OFF");
-            printEndOfStatement(ddl);
-        }
     }
 
     @Override
