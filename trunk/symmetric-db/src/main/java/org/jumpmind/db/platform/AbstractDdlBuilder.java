@@ -1618,6 +1618,34 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         println(ddl);
         ddl.append(")");
+
+        if (isSpecifyIdentityGapLimit()) {
+            writeIdentityGapLimit(ddl);
+        }
+    }
+
+    /**
+     * Writes the end of table statement indicating an identity gap maximum value.
+     */
+    protected void writeIdentityGapLimit(StringBuilder ddl) {
+        int gapSize = getGapLimitSize();
+        ddl.append("  with identity_gap = " + gapSize);
+    }
+
+    /**
+     * Should the identity gap maximum size be specified in table create statements.
+     */
+    protected static boolean isSpecifyIdentityGapLimit() {
+        return "true".equalsIgnoreCase(System.getProperty(
+                "org.jumpmind.symmetric.ddl.gap.limit", "false"));
+    }
+
+    /**
+     * Get the maximum identity gap size from the property.
+     */
+    protected static int getGapLimitSize() {
+        return Integer.valueOf(System.getProperty(
+                "org.jumpmind.symmetric.ddl.gap.max", "10000"));
     }
 
     /**
