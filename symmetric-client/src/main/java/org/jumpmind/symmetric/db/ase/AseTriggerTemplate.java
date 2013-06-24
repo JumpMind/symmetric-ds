@@ -195,7 +195,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
                 case Types.INTEGER:
                 case Types.BIGINT:
                     // ASE does not support bigint
-                    text += "NUMERIC(19,0)\n";
+                    text += "NUMERIC(18,0)\n";
                     break;
                 case Types.NUMERIC:
                 case Types.DECIMAL:

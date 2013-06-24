@@ -89,7 +89,7 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19)
+        if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 18)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
             column.setMappedTypeCode(Types.BIGINT);
