@@ -164,6 +164,23 @@ public class DatabasePlatformTest extends AbstractDbTest {
         Assert.assertEquals("The id column was not read in as an autoincrement column", true, table
                 .getColumnWithName("id").isAutoIncrement());
     }
+    
+    @Test 
+    public void testPostgresCreateAndReadNumericType() throws Exception {
+        if (platform.getName().equals(DatabaseNamesConstants.POSTGRESQL)) {
+           Table table = new Table("with_numeric");
+           table.addColumn(new Column("id", true, Types.DECIMAL, 0, 0));
+           platform.createTables(true, true, table);
+           
+           Table fromDatabase = platform.readTableFromDatabase(null, null, table.getName());
+           
+           Assert.assertNotNull(fromDatabase);
+           Assert.assertEquals(table.getName(), fromDatabase.getName());
+           Assert.assertEquals(Types.DECIMAL, fromDatabase.getColumn(0).getMappedTypeCode());
+           
+           Assert.assertEquals(DatabaseXmlUtil.toXml(table), DatabaseXmlUtil.toXml(fromDatabase));
+        }
+    }
 
     @Test
     public void testReadTestUppercase() throws Exception {

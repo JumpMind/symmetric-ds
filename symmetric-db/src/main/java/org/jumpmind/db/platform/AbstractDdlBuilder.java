@@ -1749,15 +1749,21 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         if (sizeSpec != null) {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
-                sqlType.append("(");
-                sqlType.append(sizeSpec.toString());
-                sqlType.append(")");
+                if (!"0".equals(sizeSpec)) {
+                    sqlType.append("(");
+                    sqlType.append(sizeSpec.toString());
+                    sqlType.append(")");
+                }
             } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {
-                sqlType.append("(");
-                sqlType.append(column.getSizeAsInt());
-                sqlType.append(",");
-                sqlType.append(column.getScale());
-                sqlType.append(")");
+                StringBuilder precisionAndScale = new StringBuilder();
+                precisionAndScale.append("(");
+                precisionAndScale.append(column.getSizeAsInt());
+                precisionAndScale.append(",");
+                precisionAndScale.append(column.getScale());
+                precisionAndScale.append(")");
+                if (!"(0,0)".equals(precisionAndScale.toString())) {
+                    sqlType.append(precisionAndScale);
+                }
             }
         }
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length())
