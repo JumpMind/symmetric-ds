@@ -34,13 +34,13 @@ public class ProcessInfoKey implements Serializable {
                 case MANUAL_LOAD:
                     return "Manual Load";
                 case PUSH_JOB:
-                    return "Push";
+                    return "Database Push";
                 case PULL_JOB:
-                    return "Pull";
+                    return "Database Pull";
                 case PUSH_HANDLER:
-                    return "Service Push";
+                    return "Service Database Push";
                 case PULL_HANDLER:
-                    return "Service Pull";
+                    return "Service Database Pull";
                 case ROUTER_JOB:
                     return "Routing";
                 case ROUTER_READER:
