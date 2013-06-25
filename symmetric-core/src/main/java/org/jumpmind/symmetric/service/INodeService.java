@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,13 +62,13 @@ public interface INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive);
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
-    
+
     public Collection<Node> findNodesWithOpenRegistration();
 
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
-    
+
     public List<NodeSecurity> findNodeSecurityWithLoadEnabled();
-    
+
     public List<String> findAllExternalIds();
 
     public NodeSecurity findNodeSecurity(String nodeId);
@@ -75,9 +76,9 @@ public interface INodeService {
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
 
     public void deleteNodeSecurity(String nodeId);
-    
-    public void deleteNode(String nodeId, boolean syncChange); 
-    
+
+    public void deleteNode(String nodeId, boolean syncChange);
+
     public String findSymmetricVersion();
 
     public String findIdentityNodeId();
@@ -94,9 +95,9 @@ public interface INodeService {
     public Node findIdentity();
 
     public Node findIdentity(boolean useCache);
-    
+
     public Node findIdentity(boolean useCache, boolean logSqlError);
-    
+
     public Node getCachedIdentity();
 
     public boolean deleteIdentity();
@@ -114,9 +115,9 @@ public interface INodeService {
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
     public void save(Node node);
-    
+
     public void updateNodeHost(NodeHost nodeHost);
-    
+
     public void updateNodeHostForCurrentNode();
 
     public void insertNodeIdentity(String nodeId);
@@ -124,15 +125,15 @@ public interface INodeService {
     public void insertNodeGroup(String groupId, String description);
 
     public boolean updateNodeSecurity(NodeSecurity security);
-    
+
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security);
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
-    
+
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
-    
+
     public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
-    
+
     public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
     public INodeIdCreator getNodeIdCreator();
@@ -153,7 +154,7 @@ public interface INodeService {
 
     /**
      * Get the current status of this node.
-     * 
+     *
      * @return {@link NodeStatus}
      */
     public NodeStatus getNodeStatus();
@@ -165,28 +166,30 @@ public interface INodeService {
     public void checkForOfflineNodes();
 
     /**
-     * Find nodes that have been offline for the configured timeframe before {@link IOfflineClientListener} 
+     * Find nodes that have been offline for the configured timeframe before {@link IOfflineClientListener}
      * and {@link IOfflineServerListener} will be called
-     * 
+     *
      * @return list of offline nodes
      */
     public List<Node> findOfflineNodes();
 
     /**
      * Find nodes that have been offline for a number of minutes
-     * 
+     *
      * @return list of offline nodes
      * @param minutesOffline
      *            the number of minutes that have passed that a node has not
      *            checked in for until it is considered offline
      */
     public List<Node> findOfflineNodes(long minutesOffline);
-    
+
+    public Map<String, Date> findLastHeartbeats();
+
     public List<String> findOfflineNodeIds(long minutesOffline);
 
     public void addOfflineServerListener(IOfflineServerListener listener);
 
     public boolean removeOfflineServerListener(IOfflineServerListener listener);
-    
+
     public NetworkedNode getRootNetworkedNode();
 }
