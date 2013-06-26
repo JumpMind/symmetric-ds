@@ -151,8 +151,13 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 if (column.getSizeAsInt() == 5) {
                     column.setMappedTypeCode(Types.SMALLINT);
                 } else if (column.getSizeAsInt() == 22) {
-                    column.setMappedTypeCode(Types.INTEGER);
-                } else if (column.getSizeAsInt() == 38){
+                    if (isColumnInteger((String) values.get("TABLE_NAME"),
+                            (String) values.get("COLUMN_NAME"))) {
+                        column.setMappedTypeCode(Types.INTEGER);
+                    } else {
+                        column.setMappedTypeCode(Types.REAL);
+                    }
+                } else if (column.getSizeAsInt() == 38) {
                     column.setMappedTypeCode(Types.BIGINT);
                 }
             } else if (column.getScale() <= -127 || column.getScale() >= 127) {
