@@ -52,15 +52,13 @@ public class FileTriggerTracker {
         fileObserver.addListener(currentListener);
         try {
             fileObserver.initialize();
-            this.lastSnapshot = lastSnapshot;
-            if (lastSnapshot == null || lastSnapshot.size() == 0) {
-                this.lastSnapshot = changesSinceLastSnapshot;
-                takeFullSnapshot(this.lastSnapshot);
-            } else {
-                DirectorySnapshot currentSnapshot = new DirectorySnapshot(fileTriggerRouter);
-                takeFullSnapshot(currentSnapshot);
-                changesSinceLastSnapshot.addAll(lastSnapshot.diff(currentSnapshot));
+            if (lastSnapshot == null) {
+                lastSnapshot = new DirectorySnapshot(fileTriggerRouter);
             }
+            this.lastSnapshot = lastSnapshot;
+            DirectorySnapshot currentSnapshot = new DirectorySnapshot(fileTriggerRouter);
+            takeFullSnapshot(currentSnapshot);
+            changesSinceLastSnapshot.addAll(lastSnapshot.diff(currentSnapshot));
         } catch (RuntimeException e) {
             throw e;
         } catch (IOException e) {
