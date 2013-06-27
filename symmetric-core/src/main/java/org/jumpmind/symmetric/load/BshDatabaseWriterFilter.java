@@ -96,7 +96,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
-        return false;
+        return loadFilters.containsKey(table.getName());
     }
 
     public void earlyCommit(DataContext context) {
