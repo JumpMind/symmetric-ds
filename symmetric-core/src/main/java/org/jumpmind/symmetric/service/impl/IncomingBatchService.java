@@ -264,7 +264,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public int deleteIncomingBatch(IncomingBatch batch) {
         return sqlTemplate.update(getSql("deleteIncomingBatchSql"),
-                new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { Types.NUMERIC,
+                new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { symmetricDialect.getSqlTypeForIds(),
                         Types.VARCHAR });
     }
     
@@ -317,7 +317,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC, Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }

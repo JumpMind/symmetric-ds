@@ -213,4 +213,6 @@ public interface ISymmetricDialect {
     
     public Map<String, String> getSqlReplacementTokens();
     
+    public int getSqlTypeForIds();
+    
 }

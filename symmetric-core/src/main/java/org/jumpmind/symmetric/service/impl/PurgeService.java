@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -133,7 +134,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     log.info("The outgoing purge process has completed");
                 }
             } else {
-                log.info("Could not get a lock to run an outgoing purge");
+                log.debug("Could not get a lock to run an outgoing purge");
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
@@ -193,7 +194,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }, params);
         return minMax;
     }
-
+    
     private int purgeByMinMax(long[] minMax, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
@@ -201,8 +202,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
         long ts = System.currentTimeMillis();
         int totalCount = 0;
         int totalDeleteStmts = 0;
+        int idSqlType = symmetricDialect.getSqlTypeForIds();
         Timestamp cutoffTime = new Timestamp(retentionTime.getTime());
         log.info("About to purge {}", identifier.toString().toLowerCase());
+        
         while (minId <= purgeUpToId) {
             totalDeleteStmts++;
             long maxId = minId + maxNumtoPurgeinTx;
@@ -219,31 +222,34 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteDataSql");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId,
                             OutgoingBatch.Status.OK.name() };
-                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, 
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR};
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, 
+                            idSqlType, idSqlType, idSqlType, idSqlType, Types.VARCHAR};
                     break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
                     args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId,
                             maxId };
-                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC};
+                    argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR, idSqlType, idSqlType};
 
                     break;
                 case OUTGOING_BATCH:
                     deleteSql = getSql("deleteOutgoingBatchSql");
                     args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId, minId,
                             maxId };
-                    argTypes = new int[] {Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC};
+                    argTypes = new int[] {Types.VARCHAR, idSqlType, idSqlType, idSqlType, idSqlType};
 
                     break;
                 case STRANDED_DATA:
                     deleteSql = getSql("deleteStrandedData");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC};
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
                     break;
             }
 
-            totalCount += sqlTemplate.update(deleteSql, args, argTypes);
+            log.debug("Running the following statement: {} with the following arguments: {}", deleteSql, Arrays.toString(args));
+            int count = sqlTemplate.update(deleteSql, args, argTypes);
+            log.debug("Deleted {} rows", count);
+            totalCount += count;
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
@@ -273,7 +279,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 }
 
             } else {
-                log.info("Could not get a lock to run an incoming purge");
+                log.debug("Could not get a lock to run an incoming purge");
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);

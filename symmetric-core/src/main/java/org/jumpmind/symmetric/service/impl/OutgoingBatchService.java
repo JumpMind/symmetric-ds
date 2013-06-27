@@ -143,7 +143,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC,
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(),
                         Types.VARCHAR });
     }
 
@@ -190,7 +190,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
-                    new int[] { Types.NUMERIC, Types.VARCHAR });
+                    new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         } else {
             /*
              * Pushing to an older version of symmetric might result in a batch
@@ -199,7 +199,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId },
-                    new int[] { Types.NUMERIC });
+                    new int[] { symmetricDialect.getSqlTypeForIds() });
         }
         if (list != null && list.size() > 0) {
             return list.get(0);
