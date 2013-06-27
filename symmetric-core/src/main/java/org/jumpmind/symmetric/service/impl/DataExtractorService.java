@@ -424,8 +424,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                         if (bytesSentCount >= maxBytesToSync && i < activeBatches.size() - 1) {
                             log.info(
-                                    "Reached the total byte threshold after {} of {} batches were extracted.  The remaining batches will be extracted on a subsequent sync",
-                                    new Object[] { batchesSentCount, activeBatches.size() });
+                                    "Reached the total byte threshold after {} of {} batches were extracted for {}.  The remaining batches will be extracted on a subsequent sync",
+                                    new Object[] { batchesSentCount, activeBatches.size(), targetNode.getNodeId() });
                             break;
                         }
                     }
