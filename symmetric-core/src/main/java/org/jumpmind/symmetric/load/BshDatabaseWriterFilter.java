@@ -91,12 +91,12 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         processLoadFilters(context, table, data, null, WriteMethod.AFTER_WRITE);
     }
 
-    public boolean handleError(DataContext context, Table table, CsvData data, Exception error) {        
+    public boolean handleError(DataContext context, Table table, CsvData data, Exception error) {
         return processLoadFilters(context, table, data, error, WriteMethod.HANDLE_ERROR);
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
-        return loadFilters.containsKey(table.getName());
+        return loadFilters.containsKey(table.getFullyQualifiedTableName());
     }
 
     public void earlyCommit(DataContext context) {
@@ -228,7 +228,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
             if (wildcardLoadFilters != null) {
                 loadFiltersForTable.addAll(wildcardLoadFilters);
             }
-            
+
             if (tableSpecificLoadFilters != null) {
                 loadFiltersForTable.addAll(tableSpecificLoadFilters);
             }
@@ -261,9 +261,9 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
                         }
                     }
                 }
-            } catch (EvalError ex) {     
+            } catch (EvalError ex) {
                 processError(currentFilter, table, ex);
-            } 
+            }
         }
 
         return writeRow;
