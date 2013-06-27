@@ -15,14 +15,14 @@ import org.jumpmind.symmetric.service.ILoadExtractService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.IParameterService;
 
-public class LoadExtractService extends AbstractService implements ILoadExtractService,
+public class InitialLoadExtractorService extends AbstractService implements ILoadExtractService,
         INodeCommunicationExecutor {
 
     IDataService dataService;
 
     IDataExtractorService dataExtractorService;
 
-    public LoadExtractService(IParameterService parameterService,
+    public InitialLoadExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IDataExtractorService dataExtractorService,
             IDataService dataService) {
         super(parameterService, symmetricDialect);
