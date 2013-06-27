@@ -168,7 +168,8 @@ public class DatabaseWriter implements IDataWriter {
             // use the last table we used
             start(context.getLastParsedTable());
         }
-        if (targetTable != null || !data.requiresTable() || 
+        if (targetTable != null || !data.requiresTable() ||
+                hasFilterThatHandlesMissingTable(context.getLastParsedTable()) ||
                 (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
