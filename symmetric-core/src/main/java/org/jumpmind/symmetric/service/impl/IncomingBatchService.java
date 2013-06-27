@@ -98,8 +98,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     
     @SuppressWarnings("deprecation")
     public boolean isRecordOkBatchesEnabled() {
-        return parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED) || 
-                !parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD);
+        boolean enabled = true;        
+        if (!parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED, true)) {
+        	enabled = false;
+        }
+        if (parameterService.is(ParameterConstants.INCOMING_BATCH_DELETE_ON_LOAD, false)) {
+        	enabled = false;
+        }
+        return enabled;
     }    
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
