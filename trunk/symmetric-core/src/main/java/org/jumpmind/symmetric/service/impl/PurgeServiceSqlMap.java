@@ -32,8 +32,8 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
 
         putSql("selectOutgoingBatchRangeSql" ,
-"select min(batch_id) as min_id, max(batch_id) as max_id from $(outgoing_batch) where                                           " + 
-"  create_time < ? and status = ? and batch_id < (select max(batch_id) from $(outgoing_batch))   " );
+"select min(batch_id) as min_id, max(batch_id) as max_id from $(outgoing_batch) where                         " + 
+"  create_time < ? and status = ? and batch_id < (select max(batch_id) from $(outgoing_batch))                " );
 
         putSql("deleteOutgoingBatchSql" ,
 "delete from $(outgoing_batch) where status = ? and batch_id between ?                " + 
@@ -42,7 +42,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteDataEventSql" ,
 "delete from $(data_event) where batch_id not in (select batch_id from               " + 
-"  $(outgoing_batch) where batch_id between ? and ? and status != ?)        " + 
+"  $(outgoing_batch) where batch_id between ? and ? and status != ?)                 " + 
 "  and batch_id between ? and ?                                                      " );
 
         putSql("selectDataRangeSql" ,
@@ -55,7 +55,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteStrandedData" ,
 "delete from $(data) where                                       " + 
 "  data_id between ? and ? and                                   " + 
-"  data_id < (select min(start_id) from $(data_gap)) and      " + 
+"  data_id < (select min(start_id) from $(data_gap)) and         " + 
 "  create_time < ? and                                           " + 
 "  data_id not in (select e.data_id from $(data_event) e where   " + 
 "  e.data_id between ? and ?)                                    " );
@@ -77,7 +77,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectIncomingBatchRangeSql" ,
 "select node_id, min(batch_id) as min_id, max(batch_id) as max_id from $(incoming_batch) where   " + 
-"  create_time < ? and status = ? group by node_id                              " );
+"  create_time < ? and status = ? group by node_id                                               " );
 
         putSql("deleteIncomingBatchSql" ,
 "delete from $(incoming_batch) where batch_id between ? and ? and node_id = ? and status = ?" );

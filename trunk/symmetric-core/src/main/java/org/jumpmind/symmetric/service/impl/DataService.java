@@ -1194,14 +1194,14 @@ public class DataService extends AbstractService implements IDataService {
         sqlTemplate.update(
                 getSql("updateDataGapSql"),
                 new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
-                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
-                        Types.NUMERIC });
+                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, symmetricDialect.getSqlTypeForIds(),
+                    symmetricDialect.getSqlTypeForIds() });
     }
 
     public void deleteDataGap(DataGap gap) {
         sqlTemplate.update(getSql("deleteDataGapSql"),
-                new Object[] { gap.getStartId(), gap.getEndId() }, new int[] { Types.NUMERIC,
-                        Types.NUMERIC });
+                new Object[] { gap.getStartId(), gap.getEndId() }, new int[] { symmetricDialect.getSqlTypeForIds(),
+            symmetricDialect.getSqlTypeForIds() });
 
     }
 
@@ -1212,16 +1212,6 @@ public class DataService extends AbstractService implements IDataService {
     public Date findCreateTimeOfData(long dataId) {
         return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class, dataId);
     }
-
-//    public Map<String, String> getRowDataAsMap(Data data) {
-//        Map<String, String> map = new HashMap<String, String>();
-//        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
-//        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
-//        for (int i = 0; i < columnNames.length; i++) {
-//            map.put(columnNames[i].toLowerCase(), columnData[i]);
-//        }
-//        return map;
-//    }
 
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat

@@ -247,9 +247,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         Object[] args = null;
         int[] types = null;
         
+        int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
         if (useGreaterThanDataId) {
             args = new Object[] { channelId, dataGaps.get(0).getStartId() };
-            types = new int[] { Types.VARCHAR, Types.NUMERIC };
+            types = new int[] { Types.VARCHAR, dataIdSqlType };
         } else {
             int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
                     : dataGaps.size());
@@ -261,7 +262,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
                 DataGap gap = dataGaps.get(i);
                 args[i * 2 + 1] = gap.getStartId();
-                types[i * 2 + 1] = Types.NUMERIC;
+                types[i * 2 + 1] = dataIdSqlType;
                 if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
                     // there were more gaps than we are going to use in the SQL.
                     // use
@@ -270,7 +271,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 } else {
                     args[i * 2 + 2] = gap.getEndId();
                 }
-                types[i * 2 + 2] = Types.NUMERIC;
+                types[i * 2 + 2] = dataIdSqlType;
             }
         }
 

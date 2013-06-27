@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -831,5 +832,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     public String getTemplateNumberPrecisionSpec() {
         return null;
+    }
+    
+    public int getSqlTypeForIds() {
+        return Types.NUMERIC;
     }
 }

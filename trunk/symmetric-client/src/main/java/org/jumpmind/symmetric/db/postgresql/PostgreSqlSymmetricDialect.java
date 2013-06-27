@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db.postgresql;
 
+import java.sql.Types;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -239,5 +241,10 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }    
-    
+
+    @Override
+    public int getSqlTypeForIds() {
+        return Types.BIGINT;
+    }
+
 }
