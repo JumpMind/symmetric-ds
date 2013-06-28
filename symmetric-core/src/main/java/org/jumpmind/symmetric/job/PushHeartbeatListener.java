@@ -103,7 +103,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
 
     public long getTimeBetweenHeartbeatsInSeconds() {
         return engine.getParameterService().getLong(
-                ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC, 600);
+                ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
     }
 
 }
