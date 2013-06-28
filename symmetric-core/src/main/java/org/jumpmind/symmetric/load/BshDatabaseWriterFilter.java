@@ -32,6 +32,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -96,7 +97,11 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
-        return loadFilters.containsKey(table.getFullyQualifiedTableName());
+        String tableName = table.getFullyQualifiedTableName();
+        if (isIgnoreCase()) {
+            tableName = tableName.toUpperCase();
+        }
+        return loadFilters.containsKey(tableName);
     }
 
     public void earlyCommit(DataContext context) {
@@ -220,7 +225,12 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
             wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
         }
-        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
+
+        String tableName = table.getFullyQualifiedTableName();
+        if (isIgnoreCase()) {
+            tableName = tableName.toUpperCase();
+        }
+        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
         int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
 
         if (size > 0) {
@@ -267,5 +277,10 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         }
 
         return writeRow;
+    }
+
+    protected boolean isIgnoreCase() {
+        return symmetricEngine.getParameterService()
+                .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
     }
 }
