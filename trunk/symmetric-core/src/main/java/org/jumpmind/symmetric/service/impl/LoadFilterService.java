@@ -45,7 +45,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
     private Map<NodeGroupLink, Map<String, List<LoadFilter>>> loadFilterCacheByNodeGroupLink;
 
     private long lastCacheTimeInMs;
-    
+
     private Date lastUpdateTime;
 
     private IConfigurationService configurationService;
@@ -94,6 +94,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
 
                 loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, Map<String, List<LoadFilter>>>();
                 List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
+                boolean ignoreCase = this.parameterService
+                        .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
 
                 for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
                     NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
@@ -106,6 +108,8 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                         String tableName = loadFilter.getTargetTableName();
                         if (StringUtils.isBlank(tableName)) {
                             tableName = FormatUtils.WILDCARD;
+                        } else if (ignoreCase) {
+                            tableName = tableName.toUpperCase();
                         }
                         String qualifiedName = Table.getFullyQualifiedTableName(
                                 loadFilter.getTargetCatalogName(),
@@ -156,7 +160,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             loadFilter.setLastUpdateBy(rs.getString("last_update_by"));
             loadFilter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             loadFilter.setLoadFilterOrder(rs.getInt("load_filter_order"));
-            loadFilter.setFailOnError(rs.getBoolean("fail_on_error"));            
+            loadFilter.setFailOnError(rs.getBoolean("fail_on_error"));
 
             try {
                 loadFilter.setLoadFilterType(LoadFilter.LoadFilterType.valueOf(rs.getString(
@@ -181,7 +185,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         loadFilter.setLastUpdateTime(new Date());
         Object[] args = { loadFilter.getAfterWriteScript(), loadFilter.getBatchCommitScript(),
                 loadFilter.getBatchCompleteScript(), loadFilter.getBatchRollbackScript(),
-                loadFilter.getBeforeWriteScript(), loadFilter.getHandleErrorScript(), 
+                loadFilter.getBeforeWriteScript(), loadFilter.getHandleErrorScript(),
                 loadFilter.getLoadFilterOrder(),
                 loadFilter.getLoadFilterType().name(),
                 loadFilter.getNodeGroupLink().getSourceNodeGroupId(),
@@ -201,7 +205,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         sqlTemplate.update(getSql("deleteLoadFilterSql"), loadFilterId);
         clearCache();
     }
-    
+
     public boolean refreshFromDatabase() {
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
