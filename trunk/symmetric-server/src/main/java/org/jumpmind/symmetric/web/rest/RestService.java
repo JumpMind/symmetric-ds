@@ -1136,7 +1136,7 @@ public class RestService {
 	        if (nodeHosts.size() > 0) {
 	        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
 	        }
-	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
+	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC));
 	        xmlNode.setRegistered(nodeSecurity.hasRegistered());
 	        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
 	        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
@@ -1210,9 +1210,9 @@ public class RestService {
 	        if (nodeHost != null && nodeHost.size() > 0) {
 	            status.setLastHeartbeat(nodeHost.get(0).getHeartbeatTime());
 	        }
-	        status.setHeartbeatInterval(engine.getParameterService().getInt("job.heartbeat.period.time.ms"));
+	        status.setHeartbeatInterval(engine.getParameterService().getInt(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC));
 	        if (status.getHeartbeatInterval() == 0) {
-	        	status.setHeartbeatInterval(300000);
+	        	status.setHeartbeatInterval(600);
 	        }
     	} else {
     		throw new NotFoundException();
