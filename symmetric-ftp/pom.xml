@@ -4,7 +4,7 @@
     <artifactId>symmetric-ftp</artifactId>
     <packaging>jar</packaging>
     <version>3.5.0-SNAPSHOT</version>
-    <name>symmetric-ftp</name>
+    <name>ftp</name>
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>

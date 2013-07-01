@@ -4,7 +4,7 @@
 	<artifactId>symmetric-postgres</artifactId>
 	<packaging>jar</packaging>
 	<version>3.5.0-SNAPSHOT</version>
-	<name>symmetric-postgres</name>
+	<name>postgres</name>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
