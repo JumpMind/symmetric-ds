@@ -551,10 +551,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (currentBatch.getStatus() == Status.NE ||
                         !isPreviouslyExtracted(currentBatch)) {
                     int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
+                    String semaphoreKey = streamToFileEnabled ? Long.toString(currentBatch.getBatchId()) : currentBatch.getNodeBatchId();
                     Semaphore lock = null;
                     try {
                         synchronized (locks) {
-                            lock = locks.get(currentBatch.getBatchId());
+                            lock = locks.get(semaphoreKey);
                             if (lock == null) {
                                 lock = new Semaphore(maxPermits);
                                 locks.put(currentBatch.getBatchId(), lock);
@@ -592,10 +593,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         throw ex;
                     } finally {
+                        lock.release();
                         synchronized (locks) {
-                            lock.release();
                             if (lock.availablePermits() == maxPermits) {
-                                locks.remove(currentBatch.getBatchId());
+                                locks.remove(semaphoreKey);
                             }
                         }
                     }
