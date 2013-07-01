@@ -449,6 +449,8 @@
                         </additionalClasspathElement>
                         <additionalClasspathElement> ${user.home}/.symmetricds/lib/sqljdbc4.jar 
                         </additionalClasspathElement>
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/jconn4.jar 
+                        </additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
