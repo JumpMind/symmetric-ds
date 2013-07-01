@@ -122,7 +122,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IStagingManager stagingManager;
     
-    private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
+    private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
 
     public DataExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
@@ -496,12 +496,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         !isPreviouslyExtracted(currentBatch)) {
                     int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
                     Semaphore lock = null;
+                    String semaphoreKey = streamToFileEnabled ? Long.toString(currentBatch.getBatchId()) : currentBatch.getNodeBatchId();
                     try {
                         synchronized (locks) {
                             lock = locks.get(currentBatch.getBatchId());
                             if (lock == null) {
                                 lock = new Semaphore(maxPermits);
-                                locks.put(currentBatch.getBatchId(), lock);
+                                locks.put(semaphoreKey, lock);
                             }
                             try {
                                 lock.acquire();
@@ -535,14 +536,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             resource.delete();
                         }
                         throw ex;
-                    } finally {
-                        synchronized (locks) {
-                            lock.release();
-                            if (lock.availablePermits() == maxPermits) {
-                                locks.remove(currentBatch.getBatchId());
-                            }
-                        }
-                    }
+					} finally {
+						lock.release();
+						synchronized (locks) {
+							if (lock.availablePermits() == maxPermits) {
+								locks.remove(semaphoreKey);
+							}
+						}
+					}
                 }
             }
 
