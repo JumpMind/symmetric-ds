@@ -126,7 +126,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IStagingManager stagingManager;
 
-    private Map<Long, Semaphore> locks = new HashMap<Long, Semaphore>();
+    private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
 
     public DataExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
@@ -558,7 +558,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             lock = locks.get(semaphoreKey);
                             if (lock == null) {
                                 lock = new Semaphore(maxPermits);
-                                locks.put(currentBatch.getBatchId(), lock);
+                                locks.put(semaphoreKey, lock);
                             }
                             try {
                                 lock.acquire();
