@@ -499,7 +499,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     String semaphoreKey = streamToFileEnabled ? Long.toString(currentBatch.getBatchId()) : currentBatch.getNodeBatchId();
                     try {
                         synchronized (locks) {
-                            lock = locks.get(currentBatch.getBatchId());
+                            lock = locks.get(semaphoreKey);
                             if (lock == null) {
                                 lock = new Semaphore(maxPermits);
                                 locks.put(semaphoreKey, lock);
