@@ -70,7 +70,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
- * 
+ *
  * @see SymmetricLauncher#main(String[])
  */
 public class SymmetricWebServer {
@@ -79,13 +79,13 @@ public class SymmetricWebServer {
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
             SystemConstants.SYSPROP_WEB_DIR, "../web");
-    
+
     protected static final String DEFAULT_SERVER_PROPERTIES = System.getProperty(
             SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, "../conf/symmetric-server.properties");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
-    
+
     public static final String DEFAULT_JMX_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_JMX_PORT, "31416");
 
@@ -110,24 +110,24 @@ public class SymmetricWebServer {
     protected String webHome = "/";
 
     protected int maxIdleTime = DEFAULT_MAX_IDLE_TIME;
-    
+
     protected boolean httpEnabled = true;
 
     protected int httpPort = Integer.parseInt(DEFAULT_HTTP_PORT);
-    
+
     protected boolean httpsEnabled = false;
 
     protected int httpsPort = -1;
-    
+
     protected boolean jmxEnabled = true;
-    
+
     protected int jmxPort = Integer.parseInt(DEFAULT_JMX_PORT);
 
     protected String basicAuthUsername = null;
 
     protected String basicAuthPassword = null;
 
-    protected String propertiesFile = null;       
+    protected String propertiesFile = null;
 
     protected String host = null;
 
@@ -146,11 +146,11 @@ public class SymmetricWebServer {
     public SymmetricWebServer(String propertiesUrl) {
         this(propertiesUrl, DEFAULT_WEBAPP_DIR);
     }
-    
+
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
         this(propertiesUrl, DEFAULT_WEBAPP_DIR);
         this.maxIdleTime = maxIdleTime;
-    }       
+    }
 
     public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl,
             boolean join, boolean noNio, boolean noDirectBuffer) {
@@ -198,6 +198,10 @@ public class SymmetricWebServer {
             } finally {
                 IOUtils.closeQuietly(fis);
             }
+        } else if (!serverPropertiesFile.exists()) {
+            log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
+        } else if (!serverPropertiesFile.isFile()) {
+            log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
         }
     }
 
@@ -218,11 +222,11 @@ public class SymmetricWebServer {
                     "Either an http or https port needs to be set before starting the server.");
         }
     }
-    
+
     public SymmetricWebServer start(int httpPort) throws Exception {
         return start(httpPort, 0, httpPort + 1, Mode.HTTP);
     }
-    
+
     public SymmetricWebServer start(int httpPort, int jmxPort) throws Exception {
         return start(httpPort, 0, jmxPort, Mode.HTTP);
     }
@@ -234,7 +238,7 @@ public class SymmetricWebServer {
     public SymmetricWebServer startMixed(int httpPort, int secureHttpPort, int jmxPort) throws Exception {
         return start(httpPort, secureHttpPort, jmxPort, Mode.MIXED);
     }
-    
+
     public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
 
         // indicate to the app that we are in stand alone mode
@@ -253,12 +257,12 @@ public class SymmetricWebServer {
         sm.setMaxInactiveInterval(maxIdleTime / 1000);
         sm.setSessionCookie(sm.getSessionCookie() + (httpPort > 0 ? httpPort : securePort));
         webapp.getServletContext().getContextHandler().setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
-        webapp.getServletContext().getContextHandler().setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));        
+        webapp.getServletContext().getContextHandler().setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));
         if (propertiesFile != null) {
             webapp.getServletContext().getContextHandler().setInitParameter(
                     WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
             webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
-                    Boolean.toString(false));            
+                    Boolean.toString(false));
         } else {
             webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
                     Boolean.toString(true));
@@ -282,7 +286,7 @@ public class SymmetricWebServer {
     protected ServletContext getServletContext() {
         return webapp != null ? webapp.getServletContext() : null;
     }
-    
+
     public RestService getRestService() {
         ServletContext servletContext = getServletContext();
         WebApplicationContext rootContext =
@@ -330,7 +334,7 @@ public class SymmetricWebServer {
 
             Constraint constraint = new Constraint();
             constraint.setName(Constraint.__BASIC_AUTH);
-            
+
             constraint.setRoles(new String[] { SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE });
             constraint.setAuthenticate(true);
 
@@ -379,7 +383,7 @@ public class SymmetricWebServer {
                     .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword
                     : SecurityConstants.KEYSTORE_PASSWORD;
-            SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory(); 
+            SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory();
             sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
@@ -504,19 +508,19 @@ public class SymmetricWebServer {
     public void setNoNio(boolean noNio) {
         this.noNio = noNio;
     }
-    
-    
+
+
     public boolean isNoNio() {
         return noNio;
-    }    
+    }
 
     public void setNoDirectBuffer(boolean noDirectBuffer) {
         this.noDirectBuffer = noDirectBuffer;
     }
-    
+
     public boolean isNoDirectBuffer() {
         return noDirectBuffer;
-    }       
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -533,30 +537,30 @@ public class SymmetricWebServer {
     public void setJmxPort(int jmxPort) {
         this.jmxPort = jmxPort;
     }
-    
+
     public void setHttpEnabled(boolean httpEnabled) {
         this.httpEnabled = httpEnabled;
     }
-    
+
     public boolean isHttpEnabled() {
         return httpEnabled;
     }
-    
+
     public void setHttpsEnabled(boolean httpsEnabled) {
         this.httpsEnabled = httpsEnabled;
     }
-    
+
     public boolean isHttpsEnabled() {
         return httpsEnabled;
     }
-    
+
     public void setJmxEnabled(boolean jmxEnabled) {
         this.jmxEnabled = jmxEnabled;
     }
-    
+
     public boolean isJmxEnabled() {
         return jmxEnabled;
     }
-      
+
 
 }
