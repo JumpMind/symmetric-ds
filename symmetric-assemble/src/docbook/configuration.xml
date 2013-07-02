@@ -1791,7 +1791,7 @@ Variable Transform ('variable'): This transformation type allows you to
 map a built-in dynamic variable to the given target column. The variable
 name is placed in transform_expression. The following variables are
 available:
-<code>Ssystem_date</code>
+<code>system_date</code>
 is the current system date,
 <code>system_timestamp</code>
 is the current system date and time,
