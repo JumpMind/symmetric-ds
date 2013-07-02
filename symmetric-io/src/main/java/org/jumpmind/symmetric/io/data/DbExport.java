@@ -64,7 +64,8 @@ public class DbExport {
     };
 
     public enum Compatible {
-        DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE, SQLITE, MARIADB
+        DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE,
+        MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE, SQLITE, MARIADB, ASE, SQLANYWHERE
     };
 
     private Format format = Format.SQL;
@@ -86,7 +87,7 @@ public class DbExport {
     private boolean useVariableDates;
 
     private boolean comments;
-    
+
     private String whereClause;
 
     private String catalog;
@@ -94,9 +95,9 @@ public class DbExport {
     private String schema;
 
     private String dir;
-    
+
     private boolean useQuotedIdentifiers = true;
-    
+
     private boolean useJdbcTimestampFormat = true;
 
     private IDatabasePlatform platform;
@@ -212,7 +213,7 @@ public class DbExport {
             if (sql == null) {
                 sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
             }
-            
+
             if (StringUtils.isNotBlank(whereClause)) {
                 sql = String.format("%s %s", sql, whereClause);
             }
@@ -293,19 +294,19 @@ public class DbExport {
     public void setNoData(boolean noData) {
         this.noData = noData;
     }
-    
+
     public void setUseQuotedIdentifiers(boolean useQuotedIdentifiers) {
         this.useQuotedIdentifiers = useQuotedIdentifiers;
     }
-    
+
     public boolean isUseQuotedIdentifiers() {
         return useQuotedIdentifiers;
     }
-    
+
     public void setWhereClause(String whereClause) {
         this.whereClause = whereClause;
     }
-    
+
     public String getWhereClause() {
         return whereClause;
     }
@@ -373,14 +374,14 @@ public class DbExport {
     public String getDir() {
         return dir;
     }
-    
+
     public void setUseJdbcTimestampFormat(boolean useJdbcTimestampFormat) {
         this.useJdbcTimestampFormat = useJdbcTimestampFormat;
     }
-    
+
     public boolean isUseJdbcTimestampFormat() {
         return useJdbcTimestampFormat;
-    }    
+    }
 
     class WriterWrapper {
         final private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -577,5 +578,5 @@ public class DbExport {
         }
 
     }
-    
+
 }
