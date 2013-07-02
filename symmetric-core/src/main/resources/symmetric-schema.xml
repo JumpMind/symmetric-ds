@@ -255,6 +255,9 @@
         <column name="sync_on_update_condition" type="LONGVARCHAR"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
         <column name="sync_on_insert_condition" type="LONGVARCHAR"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
         <column name="sync_on_delete_condition" type="LONGVARCHAR"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
+        <column name="custom_on_update_text" type="LONGVARCHAR"  description="Specify update trigger text to execute after the SymmetricDS trigger text runs." />
+        <column name="custom_on_insert_text" type="LONGVARCHAR"  description="Specify insert trigger text to execute after the SymmetricDS trigger text runs." />
+        <column name="custom_on_delete_text" type="LONGVARCHAR"  description="Specify delete trigger text to execute after the SymmetricDS trigger text runs." />
         <column name="external_select" type="LONGVARCHAR"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
         <column name="tx_id_expression" type="LONGVARCHAR"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
         <column name="excluded_column_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should not be synchronized from this table.  Note that if a primary key is found in this list, it will be ignored." />
