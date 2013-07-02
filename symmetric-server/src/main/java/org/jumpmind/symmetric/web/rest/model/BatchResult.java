@@ -21,11 +21,6 @@
 package org.jumpmind.symmetric.web.rest.model;
 
 public class BatchResult {
-
-	/**
-	 * The node ID for which batches are being acknowledged
-	 */
-	private String nodeId;
 	
 	/**
 	 * The batch ID for the batch being acknowledged
@@ -54,31 +49,14 @@ public class BatchResult {
 	 */
 	private String statusDescription;
 	
-	public BatchResult(String nodeId, long batchId, boolean success) {
+	public BatchResult(long batchId, boolean success) {
 	    this.status = success ? "OK" : "ER";
-	    this.nodeId = nodeId;
 	    this.batchId = batchId;
     }
 	
 	public BatchResult() {
     }
 		
-	/**
-	 * Returns the nodeId for the given batch result
-	 * @return
-	 */
-	public String getNodeId() {
-		return nodeId;
-	}
-	
-	/**
-	 * Sets the nodeId for the given batch result
-	 * @param nodeId
-	 */
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
-	
 	/**
 	 * Gets the batch id for the given batch result
 	 * @return

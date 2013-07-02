@@ -26,6 +26,11 @@ import java.util.List;
 public class BatchResults {
 
 	/**
+	 * The node ID for which batches are being acknowledged
+	 */
+	private String nodeId;
+
+	/**
 	 * A list of batchResults to be acknowledged on the Server
 	 */
 	List<BatchResult> batchResults = new ArrayList<BatchResult>();
@@ -44,5 +49,22 @@ public class BatchResults {
 	 */
 	public void setBatchResults(List<BatchResult> batchResults) {
 		this.batchResults = batchResults;
-	}	
+	}
+
+	/**
+	 * Gets the node id for the batch results
+	 * @return nodeId
+	 */
+	public String getNodeId() {
+		return nodeId;
+	}
+
+	/**
+	 * Sets the node id for the batch results
+	 * @param nodeId
+	 */
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
+	
 }

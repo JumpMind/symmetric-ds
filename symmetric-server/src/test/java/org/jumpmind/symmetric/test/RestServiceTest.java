@@ -203,8 +203,9 @@ public class RestServiceTest extends AbstractTest {
     
     protected BatchResults buildBatchResults(RegistrationInfo registrationInfo, PullDataResults results) {
         BatchResults batchResults = new BatchResults();
+        batchResults.setNodeId(registrationInfo.getNodeId());
         for (Batch batch : results.getBatches()) {
-            batchResults.getBatchResults().add(new BatchResult(registrationInfo.getNodeId(), batch.getBatchId(), true));            
+            batchResults.getBatchResults().add(new BatchResult(batch.getBatchId(), true));            
         }
         return batchResults;
     }
