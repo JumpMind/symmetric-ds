@@ -55,14 +55,22 @@ import org.slf4j.LoggerFactory;
 public class SymmetricEngineHolder {
 
     final Logger log = LoggerFactory.getLogger(getClass());
+    
+    private static Map<String, ServerSymmetricEngine> staticEngines = new HashMap<String, ServerSymmetricEngine>();
+
+    private static Set<EngineStarter> staticEnginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
     private Map<String, ServerSymmetricEngine> engines = new HashMap<String, ServerSymmetricEngine>();
 
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
+    private boolean staticEnginesMode = false;
+    
     private boolean multiServerMode = false;
 
     private boolean autoStart = true;
+    
+    private boolean autoCreate = true;
 
     private String singleServerPropertiesFile;
 
@@ -87,6 +95,22 @@ public class SymmetricEngineHolder {
     public boolean isMultiServerMode() {
         return multiServerMode;
     }
+    
+    public void setAutoCreate(boolean autoCreate) {
+		this.autoCreate = autoCreate;
+	}
+    
+    public boolean isAutoCreate() {
+		return autoCreate;
+	}
+    
+    public void setStaticEnginesMode(boolean staticEnginesMode) {
+		this.staticEnginesMode = staticEnginesMode;
+	}
+    
+    public boolean isStaticEnginesMode() {
+		return staticEnginesMode;
+	}
 
     public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
         this.singleServerPropertiesFile = singleServerPropertiesFile;
@@ -121,46 +145,58 @@ public class SymmetricEngineHolder {
     }
 
     public void start() {
-        if (isMultiServerMode()) {
-            File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
-            File[] files = null;
+    	if (staticEnginesMode) {
+    		log.info("In static engine mode");
+    	    engines = staticEngines;
+    	    enginesStarting = staticEnginesStarting;
+    	}
+    	
+		if (autoCreate) {
+			if (isMultiServerMode()) {
+				File enginesDir = new File(
+						AbstractCommandLauncher.getEnginesDir());
+				File[] files = null;
 
-            if (enginesDir != null) {
-                files = enginesDir.listFiles();
-            }
+				if (enginesDir != null) {
+					files = enginesDir.listFiles();
+				}
 
-            if (files == null) {
-                String firstAttempt = enginesDir.getAbsolutePath();
-                enginesDir = new File(".");
-                log.warn(
-                        "Unable to retrieve engine properties files from {}.  Trying current working directory {}",
-                        firstAttempt, enginesDir.getAbsolutePath());
+				if (files == null) {
+					String firstAttempt = enginesDir.getAbsolutePath();
+					enginesDir = new File(".");
+					log.warn(
+							"Unable to retrieve engine properties files from {}.  Trying current working directory {}",
+							firstAttempt, enginesDir.getAbsolutePath());
 
-                if (enginesDir != null) {
-                    files = enginesDir.listFiles();
-                }
-            }
+					if (enginesDir != null) {
+						files = enginesDir.listFiles();
+					}
+				}
 
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    engineCount++;
-                    File file = files[i];
-                    if (file.getName().endsWith(".properties")) {
-                        enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
-                    }
-                }
-            } else {
-                log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
-            }
+				if (files != null) {
+					for (int i = 0; i < files.length; i++) {
+						engineCount++;
+						File file = files[i];
+						if (file.getName().endsWith(".properties")) {
+							enginesStarting.add(new EngineStarter(file
+									.getAbsolutePath()));
+						}
+					}
+				} else {
+					log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
+				}
 
-        } else {
-            engineCount++;
-            enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
-        }
+			} else {
+				engineCount++;
+				enginesStarting.add(new EngineStarter(
+						singleServerPropertiesFile));
+			}
 
-        for (EngineStarter starter : enginesStarting) {
-            starter.start();
-        }
+			for (EngineStarter starter : enginesStarting) {
+				starter.start();
+			}
+
+		}
 
     }
 
@@ -382,7 +418,7 @@ public class SymmetricEngineHolder {
 
         @Override
         public void run() {
-            ISymmetricEngine engine = create(propertiesFile);
+            ISymmetricEngine engine = create(propertiesFile);        	
             if (engine != null && autoStart) {
                 engine.start();
             }
