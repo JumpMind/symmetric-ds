@@ -314,6 +314,14 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("syncOnDeleteCondition",
                 symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);
+
+        ddl = FormatUtils.replace("custom_on_insert_text",
+                trigger.getCustomOnInsertText()==null ? "" : trigger.getCustomOnInsertText(), ddl);
+        ddl = FormatUtils.replace("custom_on_update_text",
+                trigger.getCustomOnUpdateText()==null ? "" : trigger.getCustomOnUpdateText(), ddl);
+        ddl = FormatUtils.replace("custom_on_delete_text",
+                trigger.getCustomOnDeleteText()==null ? "" : trigger.getCustomOnDeleteText(), ddl);
+
         ddl = FormatUtils.replace("dataHasChangedCondition", symmetricDialect
                 .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
                 ddl);

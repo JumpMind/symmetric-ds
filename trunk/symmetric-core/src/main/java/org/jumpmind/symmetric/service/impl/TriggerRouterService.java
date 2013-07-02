@@ -91,7 +91,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IStatisticManager statisticManager;
 
     private IGroupletService groupletService;
-    
+
     private INodeService nodeService;
 
     private List<String> extraConfigTables = new ArrayList<String>();
@@ -244,16 +244,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 if (StringUtils.isNotBlank(catalogName)) {
                     matches = catalogName.equals(triggerHistory.getSourceCatalogName());
                 }
-                
+
                 if (matches && StringUtils.isNotBlank(schemaName)) {
                     matches = schemaName.equals(triggerHistory.getSourceSchemaName());
                 }
-                
+
                 if (matches && StringUtils.isNotBlank(tableName)) {
-                    boolean ignoreCase = parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE) && 
+                    boolean ignoreCase = parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE) &&
                             !FormatUtils.isMixedCase(tableName);
-                    matches = ignoreCase ? triggerHistory.getSourceTableName().equalsIgnoreCase(tableName) : 
-                        triggerHistory.getSourceTableName().equals(tableName); 
+                    matches = ignoreCase ? triggerHistory.getSourceTableName().equalsIgnoreCase(tableName) :
+                        triggerHistory.getSourceTableName().equals(tableName);
                 }
 
                 if (matches) {
@@ -304,7 +304,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
         return null;
-    } 
+    }
 
     /**
      * Get a list of trigger histories that are currently active
@@ -889,19 +889,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                         trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
                         trigger.isUseCaptureOldData() ? 1 : 0, trigger.isUseHandleKeyUpdates() ? 1 : 0,
-                		trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
-                		trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
-                		trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
-                		trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
-                		trigger.getSyncKeyNames(), trigger.getLastUpdateBy(),
-                		trigger.getLastUpdateTime(), trigger.getExternalSelect(),
-                		trigger.getTriggerId() }, new int[] {
+                        trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
+                        trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
+                        trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
+                        trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
+                        trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
+                        trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
+                        trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
+                        trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.VARCHAR, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
@@ -914,13 +915,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                             trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
-                            trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
-                            trigger.getSyncKeyNames(), trigger.getCreateTime(),
-                            trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                            trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
+                            trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
+                            trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
+                            trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
+                            trigger.getCreateTime(), trigger.getLastUpdateBy(),
+                            trigger.getLastUpdateTime(), trigger.getExternalSelect(),
+                            trigger.getTriggerId() }, new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
@@ -961,8 +965,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         // make sure channels are read from the database
                         configurationService.clearCache();
 
-                        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();                        
-                        
+                        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
                         if (StringUtils.isNotBlank(nodeId)) {
@@ -976,11 +980,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 createTriggersForTables = true;
                             }
                         }
-                        
+
                         if (!createTriggersForTables) {
                             triggersForCurrentNode.clear();
                         }
-                        
+
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer);
                         updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force);
                         resetTriggerRouterCacheByNodeGroupId();
@@ -1013,7 +1017,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return triggerIds;
     }
-    
+
     protected Trigger getTriggerFromList(String triggerId, List<Trigger> triggersThatShouldBeActive) {
         for (Trigger trigger : triggersThatShouldBeActive) {
             if (trigger.getTriggerId().equals(triggerId)) {
@@ -1058,7 +1062,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             history.getSourceTableName())) {
                         removeTrigger = true;
                      }
-                } 
+                }
             }
 
             if (removeTrigger) {
@@ -1621,6 +1625,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setSourceSchemaName(schema);
             String catalog = rs.getString("source_catalog_name");
             trigger.setSourceCatalogName(catalog);
+
             String condition = rs.getString("sync_on_insert_condition");
             if (!StringUtils.isBlank(condition)) {
                 trigger.setSyncOnInsertCondition(condition);
@@ -1629,10 +1634,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (!StringUtils.isBlank(condition)) {
                 trigger.setSyncOnUpdateCondition(condition);
             }
-
             condition = rs.getString("sync_on_delete_condition");
             if (!StringUtils.isBlank(condition)) {
                 trigger.setSyncOnDeleteCondition(condition);
+            }
+
+            String text = rs.getString("custom_on_insert_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomOnInsertText(text);
+            }
+            text = rs.getString("custom_on_update_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomOnUpdateText(text);
+            }
+            text = rs.getString("custom_on_delete_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomOnDeleteText(text);
             }
 
             condition = rs.getString("external_select");
