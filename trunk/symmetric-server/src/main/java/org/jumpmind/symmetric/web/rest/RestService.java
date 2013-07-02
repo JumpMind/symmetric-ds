@@ -935,7 +935,7 @@ public class RestService {
 
         ISymmetricEngine engine = getSymmetricEngine(engineName);        
         if (batchResults.getBatchResults().size()>0) {
-        	if (securityVerified(batchResults.getBatchResults().get(0).getNodeId(), engine, securityToken)) {
+        	if (securityVerified(batchResults.getNodeId(), engine, securityToken)) {
                 IAcknowledgeService ackService = engine.getAcknowledgeService();
                 List<BatchAck> batchAcks = convertBatchResultsToAck(batchResults);
                 ackService.ack(batchAcks);
@@ -951,6 +951,7 @@ public class RestService {
     	List<BatchAck> batchAcks = new ArrayList<BatchAck>();
     	for (BatchResult batchResult:batchResults.getBatchResults()) {
     		batchAck = new BatchAck(batchResult.getBatchId());
+			batchAck.setNodeId(batchResults.getNodeId());
     		if (batchResult.getStatus().equalsIgnoreCase("OK")) {
     			batchAck.setOk(true);
     		} else {
