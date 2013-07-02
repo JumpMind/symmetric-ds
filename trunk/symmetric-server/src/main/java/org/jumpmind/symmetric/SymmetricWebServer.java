@@ -166,7 +166,7 @@ public class SymmetricWebServer {
         this.webAppDir = webappDir;
         initFromProperties();
     }
-    
+
     protected void initFromProperties() {
         File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
         if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
@@ -199,9 +199,9 @@ public class SymmetricWebServer {
                 IOUtils.closeQuietly(fis);
             }
         } else if (!serverPropertiesFile.exists()) {
-            log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
+            log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
         } else if (!serverPropertiesFile.isFile()) {
-            log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
+            log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
         }
     }
 
