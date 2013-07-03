@@ -18,6 +18,11 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.4.8 (Released 2013-07-03)
+=========================================
+- 0001291: [Bug] Transforms can cause an error when attempting to use the create tables feature of SymmetricDS (chenson) - closed.
+- 0001305: [Bug] Possible lock up during extraction. If the max number of locks are reached on a batch the extract method can hang forever (chenson) - closed.
+- 0001306: [Improvement] Add setting in web.xml to allow the engines to be stored statically so multiple wars in an ear can reference the same engine (chenson) - closed.
 
 SymmetricDS - 3.4.7 (Released 2013-06-18)
 =========================================
