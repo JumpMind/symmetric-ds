@@ -72,10 +72,8 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
+"                                  $(custom_on_insert_text)                                                                                                                                             " +
 "                                end                                                                                                                                                                    " );
-
-
-
 
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               " +
@@ -102,7 +100,9 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                    end                                                                                                                                                                " +
+"                                  $(custom_on_update_text)                                                                                                                                             " +
 "                                  end                                                                                                                                                                  " );
+
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
@@ -122,7 +122,9 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                       close DataCursor                                                                                                                                                " +
 "                                       deallocate DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
+"                                  $(custom_on_delete_text)                                                                                                                                             " +
 "                                end                                                                                                                                                                    " );
+
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }

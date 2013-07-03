@@ -50,66 +50,72 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " + 
-"                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING NEW AS NEW                                                                                                                                                 " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                BEGIN ATOMIC                                                                                                                                                           " + 
-"                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " + 
-"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " + 
-"                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " + 
-"                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         " + 
-"                                            $(columns),                                                                                                                                                " + 
-"                                            '$(channelName)', $(txIdExpression), $(sourceNodeExpression),                                                                                              " + 
-"                                            $(externalSelect),                                                                                                                                         " + 
-"                                            CURRENT_TIMESTAMP);                                                                                                                                        " + 
-"                                    END IF;                                                                                                                                                            " + 
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
+"                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              " +
+"                                REFERENCING NEW AS NEW                                                                                                                                                 " +
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
+"                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
+"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
+"                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " +
+"                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         " +
+"                                            $(columns),                                                                                                                                                " +
+"                                            '$(channelName)', $(txIdExpression), $(sourceNodeExpression),                                                                                              " +
+"                                            $(externalSelect),                                                                                                                                         " +
+"                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
+"                                    END IF;                                                                                                                                                            " +
+"                                    $(custom_on_insert_text)                                                                                                                                           " +
 "                                END                                                                                                                                                                    " );
+
         sqlTemplates.put("updateTriggerTemplate" ,
-"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " + 
-"                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                BEGIN ATOMIC                                                                                                                                                           " + 
-"                                    DECLARE var_row_data VARCHAR(16336);                                                                                                                               " + 
-"                                    DECLARE var_old_data VARCHAR(16336);                                                                                                                               " + 
-"                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " + 
-"                                        SET var_row_data = $(columns);                                                                                                                                 " + 
-"                                        SET var_old_data = $(oldColumns);                                                                                                                              " + 
-"                                        IF $(dataHasChangedCondition) THEN                                                                                                                             " + 
-"                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             " + 
-"                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)         " + 
-"                                            VALUES('$(targetTableName)', 'U', $(triggerHistoryId),                                                                                                     " + 
-"                                                $(oldKeys),                                                                                                                                            " + 
-"                                                var_row_data,                                                                                                                                          " + 
-"                                                var_old_data,                                                                                                                                          " + 
-"                                                '$(channelName)',                                                                                                                                      " + 
-"                                                $(txIdExpression),                                                                                                                                     " + 
-"                                                $(sourceNodeExpression),                                                                                                                               " + 
-"                                                $(externalSelect),                                                                                                                                     " + 
-"                                                CURRENT_TIMESTAMP);                                                                                                                                    " + 
-"                                        END IF;                                                                                                                                                        " + 
-"                                    END IF;                                                                                                                                                            " + 
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
+"                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              " +
+"                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      " +
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
+"                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    DECLARE var_row_data VARCHAR(16336);                                                                                                                               " +
+"                                    DECLARE var_old_data VARCHAR(16336);                                                                                                                               " +
+"                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
+"                                        SET var_row_data = $(columns);                                                                                                                                 " +
+"                                        SET var_old_data = $(oldColumns);                                                                                                                              " +
+"                                        IF $(dataHasChangedCondition) THEN                                                                                                                             " +
+"                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             " +
+"                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)         " +
+"                                            VALUES('$(targetTableName)', 'U', $(triggerHistoryId),                                                                                                     " +
+"                                                $(oldKeys),                                                                                                                                            " +
+"                                                var_row_data,                                                                                                                                          " +
+"                                                var_old_data,                                                                                                                                          " +
+"                                                '$(channelName)',                                                                                                                                      " +
+"                                                $(txIdExpression),                                                                                                                                     " +
+"                                                $(sourceNodeExpression),                                                                                                                               " +
+"                                                $(externalSelect),                                                                                                                                     " +
+"                                                CURRENT_TIMESTAMP);                                                                                                                                    " +
+"                                        END IF;                                                                                                                                                        " +
+"                                    END IF;                                                                                                                                                            " +
+"                                    $(custom_on_update_text)                                                                                                                                           " +
 "                                END                                                                                                                                                                    " );
+
         sqlTemplates.put("deleteTriggerTemplate" ,
-"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " + 
-"                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              " + 
-"                                REFERENCING OLD AS OLD                                                                                                                                                 " + 
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " + 
-"                                BEGIN ATOMIC                                                                                                                                                           " + 
-"                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " + 
-"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " + 
-"                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       " + 
-"                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        " + 
-"                                            $(oldKeys),                                                                                                                                                " + 
-"                                            $(oldColumns),                                                                                                                                             " + 
-"                                            '$(channelName)',                                                                                                                                          " + 
-"                                            $(txIdExpression),                                                                                                                                         " + 
-"                                            $(sourceNodeExpression),                                                                                                                                   " + 
-"                                            $(externalSelect),                                                                                                                                         " + 
-"                                            CURRENT_TIMESTAMP);                                                                                                                                        " + 
-"                                    END IF;                                                                                                                                                            " + 
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
+"                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              " +
+"                                REFERENCING OLD AS OLD                                                                                                                                                 " +
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
+"                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
+"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
+"                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       " +
+"                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        " +
+"                                            $(oldKeys),                                                                                                                                                " +
+"                                            $(oldColumns),                                                                                                                                             " +
+"                                            '$(channelName)',                                                                                                                                          " +
+"                                            $(txIdExpression),                                                                                                                                         " +
+"                                            $(sourceNodeExpression),                                                                                                                                   " +
+"                                            $(externalSelect),                                                                                                                                         " +
+"                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
+"                                    END IF;                                                                                                                                                            " +
+"                                    $(custom_on_delete_text)                                                                                                                                           " +
 "                                END                                                                                                                                                                    " );
+
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
