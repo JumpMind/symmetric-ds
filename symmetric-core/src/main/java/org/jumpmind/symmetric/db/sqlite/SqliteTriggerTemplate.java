@@ -54,6 +54,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(triggerHistoryId),                                          \n"
                                 + "      $(columns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
+                                + "        $(custom_on_insert_text)                                                                            \n"
                                 + "end");
 
         sqlTemplates
@@ -67,7 +68,9 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
                                 + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),   \n" + "      $(externalSelect),   \n"
-                                + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n" + "end  ");
+                                + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
+                                + "      $(custom_on_insert_text)                                                                            \n"
+                                + "end  ");
 
         sqlTemplates
                 .put("deleteTriggerTemplate",
@@ -79,7 +82,8 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
                                 + "       $(oldColumns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
-                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );    \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );     \n"
+                                + "      $(custom_on_insert_text)                                                                            \n"
                                 + "end");
 
         sqlTemplates.put("initialLoadSqlTemplate",
