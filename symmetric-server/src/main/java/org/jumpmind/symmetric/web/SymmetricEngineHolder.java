@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.web;
 
@@ -39,9 +39,8 @@ import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
-import org.jumpmind.security.SecurityServiceFactory;
-import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -50,7 +49,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,7 +229,8 @@ public class SymmetricEngineHolder {
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
-                ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
+                ISecurityService service = AbstractSymmetricEngine
+                        .createSecurityService(properties);
                 properties.setProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
                         SecurityConstants.PREFIX_ENC + service.encrypt(password));
             } catch (Exception ex) {
@@ -280,8 +279,6 @@ public class SymmetricEngineHolder {
 
                         IConfigurationService configurationService = symmetricWebServer
                                 .getConfigurationService();
-                        ITriggerRouterService triggerRouterService = symmetricWebServer.
-                                getTriggerRouterService();
                         List<NodeGroup> groups = configurationService.getNodeGroups();
                         boolean foundGroup = false;
                         for (NodeGroup nodeGroup : groups) {
@@ -306,7 +303,6 @@ public class SymmetricEngineHolder {
                         if (!foundLink) {
                             configurationService.saveNodeGroupLink(new NodeGroupLink(
                                     serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
-                            triggerRouterService.syncTriggers();
                         }
 
                         IRegistrationService registrationService = symmetricWebServer

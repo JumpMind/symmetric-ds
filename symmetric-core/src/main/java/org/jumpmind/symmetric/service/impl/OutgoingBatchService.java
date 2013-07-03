@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
@@ -143,7 +144,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(),
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC,
                         Types.VARCHAR });
     }
 
@@ -153,16 +154,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             transaction = sqlTemplate.startSqlTransaction();
             insertOutgoingBatch(transaction, outgoingBatch);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;             
         } finally {
             close(transaction);
         }
@@ -190,7 +181,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
-                    new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                    new int[] { Types.NUMERIC, Types.VARCHAR });
         } else {
             /*
              * Pushing to an older version of symmetric might result in a batch
@@ -199,7 +190,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId },
-                    new int[] { symmetricDialect.getSqlTypeForIds() });
+                    new int[] { Types.NUMERIC });
         }
         if (list != null && list.size() > 0) {
             return list.get(0);

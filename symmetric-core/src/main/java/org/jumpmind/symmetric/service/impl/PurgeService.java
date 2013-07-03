@@ -1,29 +1,29 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -194,7 +194,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }, params);
         return minMax;
     }
-    
+
     private int purgeByMinMax(long[] minMax, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
@@ -202,10 +202,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         long ts = System.currentTimeMillis();
         int totalCount = 0;
         int totalDeleteStmts = 0;
-        int idSqlType = symmetricDialect.getSqlTypeForIds();
         Timestamp cutoffTime = new Timestamp(retentionTime.getTime());
         log.info("About to purge {}", identifier.toString().toLowerCase());
-        
         while (minId <= purgeUpToId) {
             totalDeleteStmts++;
             long maxId = minId + maxNumtoPurgeinTx;
@@ -222,34 +220,31 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteDataSql");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId,
                             OutgoingBatch.Status.OK.name() };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, 
-                            idSqlType, idSqlType, idSqlType, idSqlType, Types.VARCHAR};
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, 
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR};
                     break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
                     args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId,
                             maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR, idSqlType, idSqlType};
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC};
 
                     break;
                 case OUTGOING_BATCH:
                     deleteSql = getSql("deleteOutgoingBatchSql");
                     args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId, minId,
                             maxId };
-                    argTypes = new int[] {Types.VARCHAR, idSqlType, idSqlType, idSqlType, idSqlType};
+                    argTypes = new int[] {Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC};
 
                     break;
                 case STRANDED_DATA:
                     deleteSql = getSql("deleteStrandedData");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
+                    argTypes = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC};
                     break;
             }
 
-            log.debug("Running the following statement: {} with the following arguments: {}", deleteSql, Arrays.toString(args));
-            int count = sqlTemplate.update(deleteSql, args, argTypes);
-            log.debug("Deleted {} rows", count);
-            totalCount += count;
+            totalCount += sqlTemplate.update(deleteSql, args, argTypes);
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {

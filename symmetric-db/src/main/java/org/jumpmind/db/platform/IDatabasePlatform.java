@@ -125,15 +125,13 @@ public interface IDatabasePlatform {
     
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 
+    public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row, boolean useVariableDates);
+
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
     
     public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
     
-    public String alterCaseToMatchDatabaseDefaultCase(String value);
-    
     public void alterCaseToMatchDatabaseDefaultCase(Table table);
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
     
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
 

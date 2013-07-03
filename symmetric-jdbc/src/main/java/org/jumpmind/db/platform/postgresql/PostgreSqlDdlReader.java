@@ -142,11 +142,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 } else if (column.getMappedTypeCode() == Types.BINARY) {
                     column.setMappedTypeCode(Types.LONGVARBINARY);
                 }
-            } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {
-                column.setSizeAndScale(0, 0);
-                column.setMappedTypeCode(Types.DECIMAL);
             }
-            
         }
 
         String defaultValue = column.getDefaultValue();

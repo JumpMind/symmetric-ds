@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.db.platform.sqlite;
 
 import java.math.BigDecimal;
@@ -26,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -43,6 +25,8 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
+    private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
     public SqliteJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -52,11 +36,6 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
     public boolean isUniqueKeyViolation(Throwable ex) {
         SQLException sqlEx = findSQLException(ex);
         return (sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]"));
-    }
-    
-    @Override
-    public boolean supportsGetGeneratedKeys() {
-        return false;
     }
 
     @Override
@@ -101,13 +80,13 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if (arg!=null && argType == Types.DATE && arg instanceof Date) {
                 Date clone = (Date) (((Date) arg).clone());
-                arg = FormatUtils.TIMESTAMP_FORMATTER.format(DateUtils.truncate(clone,Calendar.DATE));
+                arg = dateTimeFormat.format(DateUtils.truncate(clone,Calendar.DATE));
                 args[i-1] = arg;
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {                
-                arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
-                args[i-1] = arg;
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
+                  arg =  dateTimeFormat.format(arg);
+                  args[i-1] = arg;
+                  StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             } else {
                 if (arg instanceof BigDecimal) {
                     arg =  ((BigDecimal) arg).doubleValue();
@@ -124,7 +103,7 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             for (int i = 0; i < args.length; i++) {
                 Object arg = args[i];
                 if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
-                    arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
+                    arg =  dateTimeFormat.format(arg);
                     args[i]=arg;
                 }
 

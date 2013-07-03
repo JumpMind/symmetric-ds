@@ -111,8 +111,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
-        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName,
-                tableName, keys, columns, nullKeyValues, getDdlBuilder());
+        return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp(), getDdlBuilder()
+                        .getDatabaseInfo().getDelimiterToken(), nullKeyValues);
     }
 
     public IDdlReader getDdlReader() {
@@ -427,7 +428,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     values[i] = row.getString(name);
                 } else if (!column.isTimestampWithTimezone() && 
                         (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
-                    values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
+                    Date date = row.getDateTime(name);
+                    if (useVariableDates) {
+                        long diff = date.getTime() - System.currentTimeMillis();
+                        values[i] = "${curdate" + diff + "}";
+                    } else if (type == Types.TIME) {
+                        values[i] = FormatUtils.TIME_FORMATTER.format(date);
+                    } else {
+                        values[i] = FormatUtils.TIMESTAMP_FORMATTER.format(date);
+                    }
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (encoding == BinaryEncoding.NONE) {
@@ -444,18 +453,72 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return values;
     }
-    
-    protected String getDateTimeStringValue(String name, int type, Row row,
+
+    public String replaceSql(String sql, BinaryEncoding encoding, Table table, Row row,
             boolean useVariableDates) {
-        Date date = row.getDateTime(name);
-        if (useVariableDates) {
-            long diff = date.getTime() - System.currentTimeMillis();
-            return "${curdate" + diff + "}";
-        } else if (type == Types.TIME) {
-            return FormatUtils.TIME_FORMATTER.format(date);
-        } else {
-            return FormatUtils.TIMESTAMP_FORMATTER.format(date);
+        final String QUESTION_MARK = "<!QUESTION_MARK!>";
+        String newSql = sql;
+        String quote = getDatabaseInfo().getValueQuoteToken();
+        String regex = "\\?";
+        
+        List<Column> columnsToProcess = new ArrayList<Column>();
+        columnsToProcess.addAll(table.getColumnsAsList());
+        columnsToProcess.addAll(table.getPrimaryKeyColumnsAsList());
+        
+        for (int i = 0; i < columnsToProcess.size(); i++) {
+            Column column = columnsToProcess.get(i);
+            String name = column.getName();
+            int type = column.getJdbcTypeCode();
+
+            if (row.get(name) != null) {
+                if (column.isOfTextType()) {
+                    try {
+                        String value = row.getString(name);
+                        value = value.replace("\\", "\\\\");
+                        value = value.replace("$", "\\$");
+                        value = value.replace("'", "''");
+                        value = value.replace("?", QUESTION_MARK);
+                        newSql = newSql.replaceFirst(regex, quote + value + quote);
+                    } catch (RuntimeException ex) {
+                        log.error("Failed to replace ? in {" + sql + "} with " + name + "="
+                                + row.getString(name));
+                        throw ex;
+                    }
+                } else if (column.isTimestampWithTimezone()) {
+                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
+                } else if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                    Date date = row.getDateTime(name);
+                    if (useVariableDates) {
+                        long diff = date.getTime() - System.currentTimeMillis();
+                        newSql = newSql.replaceFirst(regex, "${curdate" + diff + "}");
+                    } else if (type == Types.TIME) {
+                        newSql = newSql.replaceFirst(regex,
+                                "{ts " + quote + FormatUtils.TIME_FORMATTER.format(date) + quote + "}");
+                    } else {
+                        newSql = newSql.replaceFirst(regex,
+                                "{ts " + quote + FormatUtils.TIMESTAMP_FORMATTER.format(date) + quote + "}");
+                    }
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (encoding == BinaryEncoding.NONE) {
+                        newSql = newSql.replaceFirst(regex, quote + row.getString(name));
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        newSql = newSql.replaceFirst(regex,
+                                quote + new String(Base64.encodeBase64(bytes)) + quote);
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        newSql = newSql.replaceFirst(regex, quote
+                                + new String(Hex.encodeHex(bytes)) + quote);
+                    }
+                } else {
+                    newSql = newSql.replaceFirst(regex, row.getString(name));
+                }
+            } else {
+                newSql = newSql.replaceFirst(regex, "null");
+            }
         }
+        
+        newSql = newSql.replace(QUESTION_MARK, "?");
+        return newSql + getDatabaseInfo().getSqlCommandDelimiter();
     }
 
     public Map<String, String> getSqlScriptReplacementTokens() {
@@ -603,37 +666,34 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
     
-    public String alterCaseToMatchDatabaseDefaultCase(String value) {
-        if (StringUtils.isNotBlank(value)) {
-            boolean storesUpperCase = isStoresUpperCaseIdentifiers();
-            if (!FormatUtils.isMixedCase(value)) {
-                value = storesUpperCase ? value.toUpperCase() : value.toLowerCase();
-            }
-        }
-        return value;
-    }
-    
-    public void alterCaseToMatchDatabaseDefaultCase(Table... tables) {
-        for (Table table : tables) {
-            alterCaseToMatchDatabaseDefaultCase(table);
-        }
-    }
-    
     public void alterCaseToMatchDatabaseDefaultCase(Table table) {
-        table.setName(alterCaseToMatchDatabaseDefaultCase(table.getName()));
+        boolean storesUpperCase = isStoresUpperCaseIdentifiers();
+        if (!FormatUtils.isMixedCase(table.getName())) {
+            table.setName(storesUpperCase ? table.getName().toUpperCase() : table.getName()
+                    .toLowerCase());
+        }
 
         Column[] columns = table.getColumns();
         for (Column column : columns) {
-            column.setName(alterCaseToMatchDatabaseDefaultCase(column.getName()));
+            if (!FormatUtils.isMixedCase(column.getName())) {
+                column.setName(storesUpperCase ? column.getName().toUpperCase() : column.getName()
+                        .toLowerCase());
+            }
         }
 
         IIndex[] indexes = table.getIndices();
         for (IIndex index : indexes) {
-            index.setName(alterCaseToMatchDatabaseDefaultCase(index.getName()));
+            if (!FormatUtils.isMixedCase(index.getName())) {
+                index.setName(storesUpperCase ? index.getName().toUpperCase() : index.getName()
+                        .toLowerCase());
+            }
 
             IndexColumn[] indexColumns = index.getColumns();
             for (IndexColumn indexColumn : indexColumns) {
-                indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
+                if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                    indexColumn.setName(storesUpperCase ? indexColumn.getName().toUpperCase()
+                            : indexColumn.getName().toLowerCase());
+                }
             }
         }
     }

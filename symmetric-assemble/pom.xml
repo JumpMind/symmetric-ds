@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.4.8</version>
     <name>assemble</name>
     <licenses>
         <license>
@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.0-SNAPSHOT</version>
+        <version>3.4.8</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <properties>
@@ -26,17 +26,14 @@
     <modules>
         <module>../symmetric-parent</module>
         <module>../symmetric-util</module>
+        <module>../symmetric-fs</module>
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
         <module>../symmetric-jdbc</module>
         <module>../symmetric-io</module>
         <module>../symmetric-core</module>
-        <module>../symmetric-ftp</module>
-        <module>../symmetric-oracle</module>
-        <module>../symmetric-postgres</module>
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
-        <module>../symmetric-android</module>
     </modules>
     <build>
         <plugins>
@@ -73,7 +70,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-server.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-${project.version}</finalName>
+                            <finalName>symmetric-ds-${project.version}</finalName>
                         </configuration>
                     </execution>
                     <execution>
@@ -86,22 +83,9 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-client.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-${project.version}</finalName>
+                            <finalName>symmetric-client-${project.version}</finalName>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>android</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attached</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/src/assembly/assembly-android.xml</descriptor>
-                            </descriptors>
-                            <finalName>symmetric-${project.version}</finalName>
-                        </configuration>
-                    </execution>                    
                 </executions>
             </plugin>
             <plugin>

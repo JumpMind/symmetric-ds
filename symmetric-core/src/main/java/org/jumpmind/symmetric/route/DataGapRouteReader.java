@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.route;
 
@@ -247,10 +247,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
         Object[] args = null;
         int[] types = null;
         
-        int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
         if (useGreaterThanDataId) {
             args = new Object[] { channelId, dataGaps.get(0).getStartId() };
-            types = new int[] { Types.VARCHAR, dataIdSqlType };
+            types = new int[] { Types.VARCHAR, Types.NUMERIC };
         } else {
             int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
                     : dataGaps.size());
@@ -262,7 +261,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
                 DataGap gap = dataGaps.get(i);
                 args[i * 2 + 1] = gap.getStartId();
-                types[i * 2 + 1] = dataIdSqlType;
+                types[i * 2 + 1] = Types.NUMERIC;
                 if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
                     // there were more gaps than we are going to use in the SQL.
                     // use
@@ -271,7 +270,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 } else {
                     args[i * 2 + 2] = gap.getEndId();
                 }
-                types[i * 2 + 2] = dataIdSqlType;
+                types[i * 2 + 2] = Types.NUMERIC;
             }
         }
 

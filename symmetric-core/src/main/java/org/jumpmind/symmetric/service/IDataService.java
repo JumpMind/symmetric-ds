@@ -1,23 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
 package org.jumpmind.symmetric.service;
 
 import java.util.Date;
@@ -57,20 +56,21 @@ public interface IDataService {
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 
      *  @param nodeId the remote node where the SQL statement will be executed
-     * @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
-     * @param schemaName used to find the sym_trigger entry for table that will be associated with this event
-     * @param tableName used to find the sym_trigger entry for table that will be associated with this event
-     * @param sql the SQL statement to run on the remote node database
+     *  @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
+     *  @param schemaName used to find the sym_trigger entry for table that will be associated with this event
+     *  @param tableName used to find the sym_trigger entry for table that will be associated with this event
+     *  @param sql the SQL statement to run on the remote node database
+     *  @param isLoad indicate whether or not this event is part of the initial load
      *  @return message string indicating success or error
      */
-    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
     public void insertReloadEvent(ISqlTransaction transaction, Node targetNode,
-            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy);
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, long loadId, String createBy);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
     
@@ -95,10 +95,12 @@ public interface IDataService {
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
 
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy);
+    
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
-//    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
-//            boolean isLoad, long loadId, String createBy);
+    public void insertSqlEvent(Node targetNode, TriggerHistory triggerHistory, String sql,
+            boolean isLoad, long loadId, String createBy);
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 

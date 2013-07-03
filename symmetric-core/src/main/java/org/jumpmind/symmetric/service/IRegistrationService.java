@@ -1,23 +1,23 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
- */
+ * under the License.  */
+
 
 package org.jumpmind.symmetric.service;
 
@@ -34,17 +34,6 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
  */
 public interface IRegistrationService {
 
-	/**
-	 * Register a "Pull Only" node.  This type of node has no Symmetric configuration and can only be used to PULL data from another node. 
-	 * It can never track changes or push data to other nodes.  When a node of this type is registered, it must complete all symmetric client
-	 * functionality by itself including issue the pull, acknowledging batches, etc.
-	 * @param externalId
-	 * @param nodeGroupId
-	 * @param databaseType
-	 * @param databaseVersion
-	 */
-	public Node registerPullOnlyNode(String externalId, String nodeGroupId, String databaseType, String databaseVersion) throws IOException;
-	
     /**
      * Register a node for the given group name and external id if the
      * registration is open.

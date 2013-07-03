@@ -76,7 +76,7 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
     
     public String getDefaultCatalog() {
-        return "";
+        return null;
     }
     
     @Override

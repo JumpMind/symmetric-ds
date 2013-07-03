@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -77,19 +76,18 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
-        /*
-         * Oracle 10 added the recycle bin which contains dropped database
-         * objects not yet purged Since we don't want entries from the recycle
-         * bin, we filter them out
-         */
+        // Oracle 10 added the recycle bin which contains dropped database
+        // objects not yet purged
+        // Since we don't want entries from the recycle bin, we filter them out
         boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
 
-        /*
-         * System tables are in the system schema
-         */
-        String schema = (String) values.get(getResultSetSchemaName());
+        if (!tableHasBeenDeleted) {
+            String tableName = (String) values.get("TABLE_NAME");
 
-        if (!tableHasBeenDeleted && !"SYSTEM".equals(schema)) {
+            // system table ?
+            if (tableName.indexOf('$') > 0) {
+                return null;
+            }
 
             Table table = super.readTable(connection, metaData, values);
             if (table != null) {
@@ -104,8 +102,18 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {
-        String tablename = (String)values.get("TABLE_NAME");
-        return StringUtils.isNotBlank(tablename) && tablename.toLowerCase().startsWith("bin$");
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
+        try {
+            stmt = connection.prepareStatement("SELECT * FROM RECYCLEBIN WHERE OBJECT_NAME=?");
+            stmt.setString(1, (String) values.get("TABLE_NAME"));
+
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            close(rs);
+            close(stmt);
+        }
     }
 
     @Override
@@ -151,13 +159,6 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 if (column.getSizeAsInt() == 5) {
                     column.setMappedTypeCode(Types.SMALLINT);
                 } else if (column.getSizeAsInt() == 22) {
-                    // TODO: This is causing several Oracle unit tests to fail.
-//                    if (isColumnInteger((String) values.get("TABLE_NAME"),
-//                            (String) values.get("COLUMN_NAME"))) {
-//                        column.setMappedTypeCode(Types.INTEGER);
-//                    } else {
-//                        column.setMappedTypeCode(Types.REAL);
-//                    }
                     column.setMappedTypeCode(Types.INTEGER);
                 } else if (column.getSizeAsInt() == 38){
                     column.setMappedTypeCode(Types.BIGINT);
