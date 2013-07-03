@@ -778,4 +778,5 @@ Enter key password for <sym>
         </para>
     </section>
     <xi:include href="extensions.xml" />
+    <xi:include href="android.xml"/>
 </chapter>
