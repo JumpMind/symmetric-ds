@@ -165,7 +165,12 @@
             be activated for a <xref linkend="table_channel" xrefstyle="table"/> by indicating the data loader name in the <code>data_loader_type</code> column.
             </para>
             <para>
-            One possible use of this extension point is to route data to a NOSQL data sink.
+            SymmetricDS has two out of the box extensions of IDataLoaderFactory already implemented in its PostgresBulkDataLoaderFactory 
+            and OracleBulkDataLoaderFactory classes.  These extension points implement bulk data loading capabilities for Oracle, 
+            Postgres and Greenplum dialects.  See Appendix C. Database Notes for details.
+            </para>
+            <para>
+            Another possible use of this extension point is to route data to a NOSQL data sink.
             </para>
         </section>
         <section id="extensions-acknowledge-event-listener">
