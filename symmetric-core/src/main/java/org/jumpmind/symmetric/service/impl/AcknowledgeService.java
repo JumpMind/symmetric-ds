@@ -27,9 +27,10 @@ import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
+import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -62,8 +63,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 createSqlReplacementTokens()));
     }
 
-    public void ack(final BatchAck batch) {
+    public BatchAckResult ack(final BatchAck batch) {
 
+    	BatchAckResult result = new BatchAckResult(batch);
+    	
         if (batchEventListeners != null) {
             for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
                 batchEventListener.onAcknowledgeEvent(batch);
@@ -123,13 +126,17 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 }
 
+                //TODO: I should really be able to catch errors here, but can't do to how this is coded
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});
+                result.setOk(false);
             }
         }
+        return result;
     }
+    
 
     public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner) {
 
@@ -139,9 +146,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         batchEventListeners.add(statusChangeListner);
     }
 
-	public void ack(List<BatchAck> batches) {		
+	public List<BatchAckResult> ack(List<BatchAck> batches) {
+		
+		List<BatchAckResult> results = new ArrayList<BatchAckResult>();
 		for (BatchAck batch:batches) {
-			ack(batch);
-		}		
+			results.add(ack(batch));
+		}
+		return results;
 	}
 }

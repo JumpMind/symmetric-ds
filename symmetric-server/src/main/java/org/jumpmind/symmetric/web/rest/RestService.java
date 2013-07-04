@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.model.BatchAck;
+import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -68,6 +69,7 @@ import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.symmetric.web.rest.model.Batch;
+import org.jumpmind.symmetric.web.rest.model.BatchAckResults;
 import org.jumpmind.symmetric.web.rest.model.BatchResult;
 import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
@@ -920,29 +922,36 @@ public class RestService {
      * information about the error on the client including SQL Error Number and description
      */    
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public final void putAcknowledgeBatch(@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final BatchAckResults putAcknowledgeBatch(@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
     		@RequestBody BatchResults batchResults) {    
-    	putAcknowledgeBatch(getSymmetricEngine().getEngineName(),securityToken,
+    	BatchAckResults results = putAcknowledgeBatch(getSymmetricEngine().getEngineName(),securityToken,
     			batchResults);
+    	return results;
     }
     
     @RequestMapping(value = "/engine/{engine}/acknowledgebatch", method = RequestMethod.PUT)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public final void putAcknowledgeBatch(@PathVariable("engine") String engineName,
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final BatchAckResults putAcknowledgeBatch(@PathVariable("engine") String engineName,
     		@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
     		@RequestBody BatchResults batchResults) {    
 
-        ISymmetricEngine engine = getSymmetricEngine(engineName);        
+    	BatchAckResults finalResult = new BatchAckResults();
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        List<BatchAckResult> results=null;
         if (batchResults.getBatchResults().size()>0) {
         	if (securityVerified(batchResults.getNodeId(), engine, securityToken)) {
                 IAcknowledgeService ackService = engine.getAcknowledgeService();
                 List<BatchAck> batchAcks = convertBatchResultsToAck(batchResults);
-                ackService.ack(batchAcks);
+                results = ackService.ack(batchAcks);
         	} else {
         		throw new NotAllowedException();
         	}
         }
+        finalResult.setBatchAckResults(results);
+        return finalResult;
     }
 
     private List<BatchAck> convertBatchResultsToAck(BatchResults batchResults) {
