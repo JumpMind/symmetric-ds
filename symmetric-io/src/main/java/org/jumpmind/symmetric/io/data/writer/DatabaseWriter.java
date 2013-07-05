@@ -69,9 +69,9 @@ public class DatabaseWriter implements IDataWriter {
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };
-    
+
     public static final String CUR_DATA="DatabaseWriter.CurData";
-    
+
     protected IDatabasePlatform platform;
 
     protected ISqlTransaction transaction;
@@ -138,7 +138,10 @@ public class DatabaseWriter implements IDataWriter {
         this.currentDmlStatement = null;
         this.sourceTable = table;
         this.targetTable = lookupTableAtTarget(table);
-        if (this.targetTable != null || hasFilterThatHandlesMissingTable(table)) {
+        if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
+            this.targetTable = table;
+        }
+        if (this.targetTable != null) {
             String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
             this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable, quote);
             return true;
@@ -155,21 +158,20 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    
+
     public void write(CsvData data) {
         write(data, false);
     }
-        
-    
+
+
     protected void write(CsvData data, boolean fallback) {
-        if (data.requiresTable() && 
+        if (data.requiresTable() &&
                 (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
             // if we cross batches and the table isn't specified, then
             // use the last table we used
             start(context.getLastParsedTable());
         }
         if (targetTable != null || !data.requiresTable() ||
-                hasFilterThatHandlesMissingTable(context.getLastParsedTable()) ||
                 (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
             try {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
@@ -238,11 +240,11 @@ public class DatabaseWriter implements IDataWriter {
             }
         }
     }
-    
+
     protected void checkForEarlyCommit() {
         if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
             commit(true);
-            
+
             long sleep = writerSettings.getCommitSleepInterval();
             if (sleep > 0) {
                 /*
@@ -458,7 +460,7 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
-                this.lastUseConflictDetection = true;                
+                this.lastUseConflictDetection = true;
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
@@ -503,7 +505,7 @@ public class DatabaseWriter implements IDataWriter {
 
         String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
         String[] sourceColumnNames = sourceTable.getColumnNames();
-        
+
         for (int i = 0; i < sourceColumnNames.length && i < originalValues.length; i++) {
             for(int t = 0; t < targetColumnNames.length; t++) {
                 if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
@@ -699,7 +701,7 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys = targetTable.getColumnsAsList();
                     }
 
-                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause() 
+                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
                             || data.isNoBinaryOldData()) {
                         Iterator<Column> it = lookupKeys.iterator();
                         while (it.hasNext()) {
@@ -749,13 +751,13 @@ public class DatabaseWriter implements IDataWriter {
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
                     } else {
-                        context.put(CUR_DATA,getCurData(transaction)); 
+                        context.put(CUR_DATA,getCurData(transaction));
                         return LoadStatus.CONFLICT;
                     }
                 } catch (SqlException ex) {
                     if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
                             && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                        context.put(CUR_DATA,getCurData(transaction)); 
+                        context.put(CUR_DATA,getCurData(transaction));
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
@@ -859,7 +861,7 @@ public class DatabaseWriter implements IDataWriter {
         String xml = null;
         try {
             transaction.commit();
-            
+
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);
@@ -874,7 +876,7 @@ public class DatabaseWriter implements IDataWriter {
             } else {
                 platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
             }
-            
+
             platform.resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
@@ -918,9 +920,9 @@ public class DatabaseWriter implements IDataWriter {
 		} else if (sourceTable != null){
 			sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()),sql);
 			sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
-			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);			
+			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
 		}
-		
+
 		sql = platform.scrubSql(sql);
 //		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
 //		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
@@ -932,13 +934,13 @@ public class DatabaseWriter implements IDataWriter {
     	if (!StringUtils.isEmpty(string)) {
 			String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
 					.getDatabaseInfo().getDelimiterToken() : "";
-			return String.format("%s%s%s", quote, string, quote);	
+			return String.format("%s%s%s", quote, string, quote);
     	} else {
     		return string;
     	}
-    	
+
     }
-    
+
     protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data,
             boolean applyChangesOnly) {
         boolean needsUpdated = true;
@@ -989,7 +991,7 @@ public class DatabaseWriter implements IDataWriter {
             if (keyData == null || keyData.size() == 0) {
                 keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                         CsvData.ROW_DATA);
-            }            
+            }
         }
         return keyData;
     }
@@ -1133,7 +1135,7 @@ public class DatabaseWriter implements IDataWriter {
     public Table getTargetTable() {
         return targetTable;
     }
-    
+
     public Table getSourceTable() {
         return sourceTable;
     }
@@ -1154,7 +1156,7 @@ public class DatabaseWriter implements IDataWriter {
         return writerSettings;
     }
 
-    
+
 
     protected String getCurData(ISqlTransaction transaction) {
         String curVal = null;
@@ -1189,21 +1191,21 @@ public class DatabaseWriter implements IDataWriter {
 
             DmlStatement sqlStatement = platform
                     .createDmlStatement(DmlType.SELECT, targetTable);
-            
-            
+
+
             Row row = null;
-            List<Row> list =  transaction.query(sqlStatement.getSql(), 
+            List<Row> list =  transaction.query(sqlStatement.getSql(),
                     new ISqlRowMapper<Row>() {
                         public Row mapRow(Row row) {
                             return row;
                         }
             }
                     , args, null);
-            
+
             if (list != null && list.size() > 0) {
                 row=list.get(0);
-            } 
-        
+            }
+
             if (row != null) {
                 String[] existData = platform.getStringValues(context.getBatch().getBinaryEncoding(),
                         columns, row, false);
