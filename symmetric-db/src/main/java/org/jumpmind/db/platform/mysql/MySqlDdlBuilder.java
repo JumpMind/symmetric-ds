@@ -28,6 +28,7 @@ import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnChange;
+import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -201,6 +202,10 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
+            } else if (change instanceof CopyColumnValueChange) {
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                processChange(currentModel, desiredModel, copyColumnChange, ddl);
+                changeIt.remove();                           
             } else if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();

@@ -45,6 +45,7 @@ import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
+import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.IModelChange;
 import org.jumpmind.db.alter.ModelComparator;
 import org.jumpmind.db.alter.PrimaryKeyChange;
@@ -314,20 +315,20 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         createExternalForeignKeys(database, ddl);
     }
 
-    public String alterDatabase(Database currentModel, Database desiredModel) {
+    public String alterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         StringBuilder ddl = new StringBuilder();
-        alterDatabase(currentModel, desiredModel, ddl);
+        alterDatabase(currentModel, desiredModel, ddl, alterDatabaseInterceptors);
         return ddl.toString();
     }
 
-    public String alterTable(Table currentTable, Table desiredTable) {
+    public String alterTable(Table currentTable, Table desiredTable, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         Database currentModel = new Database();
         currentModel.addTable(currentTable);
 
         Database desiredModel = new Database();
         desiredModel.addTable(desiredTable);
 
-        return alterDatabase(currentModel, desiredModel);
+        return alterDatabase(currentModel, desiredModel, alterDatabaseInterceptors);
     }
 
     /**
@@ -336,16 +337,26 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * additions. Database-specific implementations can change aspect of this
      * algorithm by redefining the individual methods that compromise it.
      */
-    public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl) {
+    public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
-        List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
-        processChanges(currentModel, desiredModel, changes, ddl);
+        List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
+        if (alterDatabaseInterceptors != null) {
+            for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
+                detectedChanges = interceptor.intercept(detectedChanges, currentModel, desiredModel);
+            }
+        }
+        processChanges(currentModel, desiredModel, detectedChanges, ddl);
     }
 
-    public boolean isAlterDatabase(Database currentModel, Database desiredModel) {
+    public boolean isAlterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
-        List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
-        return changes.size() > 0;
+        List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
+        if (alterDatabaseInterceptors != null) {
+            for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
+                detectedChanges = interceptor.intercept(detectedChanges, currentModel, desiredModel);
+            }
+        }
+        return detectedChanges.size() > 0;
     }
 
     /**
@@ -427,7 +438,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 RemovePrimaryKeyChange.class, AddPrimaryKeyChange.class, PrimaryKeyChange.class,
                 RemoveColumnChange.class, AddColumnChange.class, ColumnAutoIncrementChange.class,
                 ColumnDefaultValueChange.class, ColumnRequiredChange.class,
-                ColumnDataTypeChange.class, ColumnSizeChange.class });
+                ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
 
         processTableStructureChanges(currentModel, desiredModel,
                 CollectionUtils.select(changes, predicate), ddl);
@@ -826,6 +837,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 }
             }
         }
+    }
+    
+    protected void processChange(Database currentModel, Database desiredModel,
+            CopyColumnValueChange change, StringBuilder ddl) {
+        ddl.append("UPDATE ");
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(" SET ");
+        printIdentifier(getColumnName(change.getTargetColumn()), ddl);
+        ddl.append("=");
+        printIdentifier(getColumnName(change.getSourceColumn()), ddl);
+        printEndOfStatement(ddl);
+        change.apply(currentModel, delimitedIdentifierModeOn);
+
     }
 
     protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {

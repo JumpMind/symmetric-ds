@@ -37,13 +37,13 @@ public interface IDdlBuilder {
 
     public String getConstraintName(String prefix, Table table, String secondPart, String suffix);
     
-    public boolean isAlterDatabase(Database currentModel, Database desiredModel);
+    public boolean isAlterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
     
     public String createTable(Table table);
     
-    public String alterDatabase(Database currentModel, Database desiredModel);
+    public String alterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
     
-    public String alterTable(Table currentTable, Table desiredTable);
+    public String alterTable(Table currentTable, Table desiredTable, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
     
     public String dropTables(Database database);
     
