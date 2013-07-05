@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -268,6 +269,10 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
         if (ext instanceof IDatabaseUpgradeListener) {
             engine.getSymmetricDialect().addDatabaseUpgradeListener((IDatabaseUpgradeListener) ext);
+        }
+        
+        if (ext instanceof IAlterDatabaseInterceptor) {
+            engine.getSymmetricDialect().addAlterDatabaseInterceptor((IAlterDatabaseInterceptor)ext);
         }
 
         if (ext instanceof IColumnTransform) {

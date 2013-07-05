@@ -26,6 +26,7 @@ import java.util.Set;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -196,6 +197,8 @@ public interface ISymmetricDialect {
     public void cleanupTriggers();
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener);
+    
+    public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor);
     
     public String getDriverName();
     

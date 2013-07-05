@@ -215,64 +215,68 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     }
 
-    protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error,
-            WriteMethod writeMethod) {
+    protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
+            Exception error, WriteMethod writeMethod) {
 
         boolean writeRow = true;
         LoadFilter currentFilter = null;
 
         List<LoadFilter> wildcardLoadFilters = null;
-        if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
-            wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
-        }
-
-        String tableName = table.getFullyQualifiedTableName();
-        if (isIgnoreCase()) {
-            tableName = tableName.toUpperCase();
-        }
-        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
-        int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
-
-        if (size > 0) {
-            List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
-            if (wildcardLoadFilters != null) {
-                loadFiltersForTable.addAll(wildcardLoadFilters);
+        if (table != null) {
+            if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
+                wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(
+                        table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
             }
 
-            if (tableSpecificLoadFilters != null) {
-                loadFiltersForTable.addAll(tableSpecificLoadFilters);
+            String tableName = table.getFullyQualifiedTableName();
+            if (isIgnoreCase()) {
+                tableName = tableName.toUpperCase();
             }
-            try {
-                Interpreter interpreter = getInterpreter(context);
-                bind(interpreter, context, table, data, error);
-                for (LoadFilter filter : loadFiltersForTable) {
-                    currentFilter = filter;
-                    addBatchScriptsToContext(context, filter);
-                    if (filter.isFilterOnDelete()
-                            && data.getDataEventType().equals(DataEventType.DELETE)
-                            || filter.isFilterOnInsert()
-                            && data.getDataEventType().equals(DataEventType.INSERT)
-                            || filter.isFilterOnUpdate()
-                            && data.getDataEventType().equals(DataEventType.UPDATE)) {
-                        Object result = null;
-                        if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
-                                && filter.getBeforeWriteScript() != null) {
-                            result = interpreter.eval(filter.getBeforeWriteScript());
-                        } else if (writeMethod.equals(WriteMethod.AFTER_WRITE)
-                                && filter.getAfterWriteScript() != null) {
-                            result = interpreter.eval(filter.getAfterWriteScript());
-                        } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR)
-                                && filter.getHandleErrorScript() != null) {
-                            result = interpreter.eval(filter.getHandleErrorScript());
-                        }
+            List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
+            int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0)
+                    + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
 
-                        if (result != null && result.equals(Boolean.FALSE)) {
-                            writeRow = false;
+            if (size > 0) {
+                List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
+                if (wildcardLoadFilters != null) {
+                    loadFiltersForTable.addAll(wildcardLoadFilters);
+                }
+
+                if (tableSpecificLoadFilters != null) {
+                    loadFiltersForTable.addAll(tableSpecificLoadFilters);
+                }
+                try {
+                    Interpreter interpreter = getInterpreter(context);
+                    bind(interpreter, context, table, data, error);
+                    for (LoadFilter filter : loadFiltersForTable) {
+                        currentFilter = filter;
+                        addBatchScriptsToContext(context, filter);
+                        if (filter.isFilterOnDelete()
+                                && data.getDataEventType().equals(DataEventType.DELETE)
+                                || filter.isFilterOnInsert()
+                                && data.getDataEventType().equals(DataEventType.INSERT)
+                                || filter.isFilterOnUpdate()
+                                && data.getDataEventType().equals(DataEventType.UPDATE)) {
+                            Object result = null;
+                            if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
+                                    && filter.getBeforeWriteScript() != null) {
+                                result = interpreter.eval(filter.getBeforeWriteScript());
+                            } else if (writeMethod.equals(WriteMethod.AFTER_WRITE)
+                                    && filter.getAfterWriteScript() != null) {
+                                result = interpreter.eval(filter.getAfterWriteScript());
+                            } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR)
+                                    && filter.getHandleErrorScript() != null) {
+                                result = interpreter.eval(filter.getHandleErrorScript());
+                            }
+
+                            if (result != null && result.equals(Boolean.FALSE)) {
+                                writeRow = false;
+                            }
                         }
                     }
+                } catch (EvalError ex) {
+                    processError(currentFilter, table, ex);
                 }
-            } catch (EvalError ex) {
-                processError(currentFilter, table, ex);
             }
         }
 

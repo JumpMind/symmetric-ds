@@ -38,6 +38,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlResultsListener;
@@ -97,6 +98,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsTransactionViews = false;
     
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
+    
+    protected List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = new ArrayList<IAlterDatabaseInterceptor>();
     
     protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
@@ -435,8 +438,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             Database modelFromDatabase = readSymmetricSchemaFromDatabase();
 
             IDdlBuilder builder = platform.getDdlBuilder();
-
-            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
+            
+            IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
+            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                 ISqlResultsListener resultsListener = new ISqlResultsListener() {
@@ -464,7 +468,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
-                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
+                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
 
                 log.debug("Alter SQL generated: {}", alterSql);
 
@@ -810,6 +814,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void cleanupTriggers() {
+    }
+    
+    public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor) {
+        alterDatabaseInterceptors.add(interceptor);
     }
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
