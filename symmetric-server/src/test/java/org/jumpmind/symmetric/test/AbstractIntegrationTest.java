@@ -117,7 +117,7 @@ public abstract class AbstractIntegrationTest {
                 server.setJoin(false);
                 server.start(51413);
 
-                server.waitForEnginesToComeOnline(60000);
+                server.waitForEnginesToComeOnline(240000);
 
                 serverTestService = new TestTablesService(server.getEngine());
 
