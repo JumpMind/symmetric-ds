@@ -175,7 +175,7 @@ abstract public class AbstractTest {
                 server.setJoin(false);
                 server.start();
 
-                server.waitForEnginesToComeOnline(60000);
+                server.waitForEnginesToComeOnline(240000);
 
                 webServers.put(name, server);
 
