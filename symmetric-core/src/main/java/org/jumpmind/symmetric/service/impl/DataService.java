@@ -291,9 +291,7 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = nodeService.findIdentity();                
 
         boolean transactional = parameterService
-                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
-        
-        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
+                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);                
         
         String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode.getNodeId();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
@@ -323,7 +321,7 @@ public class DataService extends AbstractService implements IDataService {
                  * knows that an initial load is currently happening
                  */
                 insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
-                        useReloadChannel, loadId, createBy);
+                        true, loadId, createBy);
 
                 /*
                  * Mark incoming batches as OK at the target node because we
@@ -351,7 +349,7 @@ public class DataService extends AbstractService implements IDataService {
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         if (triggerRouter.getInitialLoadOrder() >= 0 && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                             String xml = symmetricDialect.getCreateTableXML(triggerHistory, triggerRouter);
-                            insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, useReloadChannel, loadId, createBy);
+                            insertCreateEvent(transaction, targetNode, triggerRouter, triggerHistory, xml, true, loadId, createBy);
                             if (!transactional) {
                                 transaction.commit();
                             }
@@ -374,7 +372,7 @@ public class DataService extends AbstractService implements IDataService {
                     		(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD) ||
                     				!StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt()))
                     		) {
-                        insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, useReloadChannel, null, loadId, createBy);
+                        insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, true, null, loadId, createBy);
                         if (!transactional) {
                             transaction.commit();
                         }
@@ -430,7 +428,7 @@ public class DataService extends AbstractService implements IDataService {
             
             if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
                 insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(),
-                    useReloadChannel, loadId, createBy);
+                    true, loadId, createBy);
             }
 
             engine.getStatisticManager().incrementNodesLoaded(1);
@@ -482,8 +480,9 @@ public class DataService extends AbstractService implements IDataService {
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, String overrideDeleteStatement, long loadId, String createBy) {
         String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
         Trigger trigger = triggerRouter.getTrigger();
+        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, triggerHistory, isLoad ? Constants.CHANNEL_RELOAD : trigger
+                CsvUtils.escapeCsvData(sql), null, triggerHistory, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : trigger
                         .getChannelId(), null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
@@ -588,7 +587,7 @@ public class DataService extends AbstractService implements IDataService {
                 parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD
                         : trigger.getChannelId(), null, null);
         try {
-            if (isLoad) {
+            if (isLoad) {                
                 insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                         triggerRouter.getRouter().getRouterId(), isLoad, loadId, createBy);
             } else {
