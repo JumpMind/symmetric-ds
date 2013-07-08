@@ -403,8 +403,9 @@ public class DataService extends AbstractService implements IDataService {
                 TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
                         .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
                                 fileSyncSnapshotHistory.getTriggerId(), true);
+                // file sync reload event needs to be on the file sync channel to be processed
                 insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
-                        fileSyncSnapshotHistory, null, true, loadId, createBy);
+                        fileSyncSnapshotHistory, null, false, loadId, createBy);
                 if (!transactional) {
                     transaction.commit();
                 }
