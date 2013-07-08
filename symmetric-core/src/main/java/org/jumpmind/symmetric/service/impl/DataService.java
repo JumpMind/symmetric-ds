@@ -405,7 +405,7 @@ public class DataService extends AbstractService implements IDataService {
                                 fileSyncSnapshotHistory.getTriggerId(), true);
                 // file sync reload event needs to be on the file sync channel to be processed
                 insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
-                        fileSyncSnapshotHistory, null, false, loadId, createBy);
+                        fileSyncSnapshotHistory, null, true, loadId, createBy);
                 if (!transactional) {
                     transaction.commit();
                 }
@@ -748,7 +748,7 @@ public class DataService extends AbstractService implements IDataService {
             String channelId, String nodeId, DataEventType eventType, String routerId,
             boolean isLoad, long loadId, String createBy) {
         boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
-        channelId = useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : channelId;
+        channelId = useReloadChannel && isLoad && !Constants.CHANNEL_FILESYNC.equals(channelId) ? Constants.CHANNEL_RELOAD : channelId;
         OutgoingBatch outgoingBatch = new OutgoingBatch(
                 nodeId,
                 channelId, Status.NE);
