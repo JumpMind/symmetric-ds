@@ -506,8 +506,9 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy) {
         TriggerHistory history = findTriggerHistoryForGenericSync();
+        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, Constants.CHANNEL_CONFIG, null, null);
+                CsvUtils.escapeCsvData(sql), null, history, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : Constants.CHANNEL_CONFIG, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy);
@@ -526,8 +527,9 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
             String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
+        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, isLoad ? Constants.CHANNEL_RELOAD
+                CsvUtils.escapeCsvData(sql), null, history, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD
                         : channelId, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
@@ -744,6 +746,8 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertDataEventAndOutgoingBatch(ISqlTransaction transaction, long dataId,
             String channelId, String nodeId, DataEventType eventType, String routerId,
             boolean isLoad, long loadId, String createBy) {
+        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
+        channelId = useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : channelId;
         OutgoingBatch outgoingBatch = new OutgoingBatch(
                 nodeId,
                 channelId, Status.NE);
@@ -849,12 +853,12 @@ public class DataService extends AbstractService implements IDataService {
         return Database.sortByForeignKeys(tables);
     }
 
-    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord, String targetNodeId, boolean isReload, long loadId, String createBy) {
+    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord, String targetNodeId, boolean isLoad, long loadId, String createBy) {
         Data data = createData(transaction, null, null, tablePrefix + "_node_security",
                 " t.node_id = '" + nodeIdRecord + "'");
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNodeId,
-                    Constants.UNKNOWN_ROUTER_ID, isReload, loadId, createBy);
+                    Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy);
         }
     }
 
