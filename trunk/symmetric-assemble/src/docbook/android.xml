@@ -305,10 +305,6 @@ getContext().startService(intent);
 
 	<para>
 		That's all you have to do to integrate SymmetricDS with your Android
-		application. Users who are adventurous or are already familiar with
-		SymmetricDS can probably figure out how to setup the central
-		SymmetricDS server and configuration synchronization for the Notes
-		table. The second part of this article will describe exactly that. A
-		few transformation goodies will be thrown in as well.
+		application. 
 	</para>	
 </section>
