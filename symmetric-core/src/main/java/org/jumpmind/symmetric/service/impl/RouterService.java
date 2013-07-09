@@ -693,8 +693,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.setBatchId(batchIdToReuse);
                     batch.setCommonFlag(context.isProduceCommonBatches());
                     
-					log.info(
-							"About to insert a new batch for {} on the {} channel.  Batches in progress are: {}.",
+					log.debug(
+							"About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
 							new Object[] { nodeId, batch.getChannelId(),
 									context.getBatchesByNodes().values() });
 
