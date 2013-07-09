@@ -492,31 +492,35 @@ public class RouterService extends AbstractService implements IRouterService {
         return engine.getGroupletService().getTargetEnabled(triggerRouter, nodes);
     }
 
-    protected IDataToRouteReader startReading(ChannelRouterContext context) {
-        if (readThread == null) {
-            readThread = Executors.newCachedThreadPool(new ThreadFactory() {
-                final AtomicInteger threadNumber = new AtomicInteger(1);
-                final String namePrefix = parameterService.getEngineName().toLowerCase()
-                        + "-router-reader-";
+	protected IDataToRouteReader startReading(ChannelRouterContext context) {
+		IDataToRouteReader reader = new DataGapRouteReader(context, engine);
+		if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+			reader.run();
+		} else {
+			if (readThread == null) {
+				readThread = Executors.newCachedThreadPool(new ThreadFactory() {
+					final AtomicInteger threadNumber = new AtomicInteger(1);
+					final String namePrefix = parameterService.getEngineName()
+							.toLowerCase() + "-router-reader-";
 
-                public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r);
-                    t.setName(namePrefix + threadNumber.getAndIncrement());
-                    if (t.isDaemon()) {
-                        t.setDaemon(false);
-                    }
-                    if (t.getPriority() != Thread.NORM_PRIORITY) {
-                        t.setPriority(Thread.NORM_PRIORITY);
-                    }
-                    return t;
-                }
-            });
-        }
+					public Thread newThread(Runnable r) {
+						Thread t = new Thread(r);
+						t.setName(namePrefix + threadNumber.getAndIncrement());
+						if (t.isDaemon()) {
+							t.setDaemon(false);
+						}
+						if (t.getPriority() != Thread.NORM_PRIORITY) {
+							t.setPriority(Thread.NORM_PRIORITY);
+						}
+						return t;
+					}
+				});
+			}
+			readThread.execute(reader);
+		}
 
-        IDataToRouteReader reader = new DataGapRouteReader(context, engine);
-        readThread.execute(reader);
-        return reader;
-    }
+		return reader;
+	}
 
     /**
      * Pre-read data and fill up a queue so we can peek ahead to see if we have
@@ -688,6 +692,12 @@ public class RouterService extends AbstractService implements IRouterService {
                             Status.RT);
                     batch.setBatchId(batchIdToReuse);
                     batch.setCommonFlag(context.isProduceCommonBatches());
+                    
+					log.info(
+							"About to insert a new batch for {} on the {} channel.  Batches in progress are: {}.",
+							new Object[] { nodeId, batch.getChannelId(),
+									context.getBatchesByNodes().values() });
+
                     engine.getOutgoingBatchService().insertOutgoingBatch(batch);
                     processInfo.incrementBatchCount();
                     context.getBatchesByNodes().put(nodeId, batch);
