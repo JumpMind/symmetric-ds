@@ -55,51 +55,49 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                            \n" +
-" AFTER INSERT ON $(schemaName)$(tableName)                               \n" +
-" REFERENCING NEW AS NEW                                                  \n" +
-" FOR EACH ROW MODE DB2SQL                                                \n" +
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER INSERT ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING NEW AS NEW                                                  \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
 " call $(prefixName)_save_data(                                                   \n" +
-"   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" +
-"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" +
-"   '$(channelName)', 'I', $(triggerHistoryId),                           \n" +
-"   $(txIdExpression),                                                    \n" +
-"   $(externalSelect),                                                    \n" +
-"   '$(columnNames)',                                                     \n" +
-"   '$(pkColumnNames)');                                                  \n");
-
+"   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'I', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   '$(columnNames)',                                                       \n" + 
+"   '$(pkColumnNames)')                                                     \n" );
+        
         sqlTemplates.put("updateTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                            \n" +
-" AFTER UPDATE ON $(schemaName)$(tableName)                               \n" +
-" REFERENCING OLD AS OLD NEW AS NEW                                       \n" +
-" FOR EACH ROW MODE DB2SQL                                                \n" +
-" call $(prefixName)_save_data(                                                   \n" +
-"   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" +
-"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" +
-"   '$(channelName)', 'U', $(triggerHistoryId),                           \n" +
-"   $(txIdExpression),                                                    \n" +
-"   $(externalSelect),                                                    \n" +
-"   '$(columnNames)',                                                       \n" +
-"   '$(pkColumnNames)');                                                    \n");
-
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER UPDATE ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING OLD AS OLD NEW AS NEW                                       \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
+" call $(prefixName)_save_data(                                                   \n" + 
+"   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'U', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   '$(columnNames)',                                                       \n" + 
+"   '$(pkColumnNames)')                                                     \n" );
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
-"CREATE TRIGGER $(triggerName)                                            \n" +
-" AFTER DELETE ON $(schemaName)$(tableName)                               \n" +
-" REFERENCING OLD AS OLD                                                  \n" +
-" FOR EACH ROW MODE DB2SQL                                                \n" +
-" call $(prefixName)_save_data(                                                   \n" +
-"   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" +
-"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" +
-"   '$(channelName)', 'D', $(triggerHistoryId),                           \n" +
-"   $(txIdExpression),                                                    \n" +
-"   $(externalSelect),                                                    \n" +
-"   '$(columnNames)',                                                       \n" +
-"   '$(pkColumnNames)');                                                    \n");
-
-
+"CREATE TRIGGER $(triggerName)                                            \n" + 
+" AFTER DELETE ON $(schemaName)$(tableName)                               \n" + 
+" REFERENCING OLD AS OLD                                                  \n" + 
+" FOR EACH ROW MODE DB2SQL                                                \n" + 
+" call $(prefixName)_save_data(                                                   \n" + 
+"   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
+"   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
+"   '$(channelName)', 'D', $(triggerHistoryId),                           \n" + 
+"   $(txIdExpression),                                                    \n" + 
+"   $(externalSelect),                                                    \n" + 
+"   '$(columnNames)',                                                       \n" + 
+"   '$(pkColumnNames)')                                                     \n" );
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)     " );
-
+        
         //@formatter:on
 
     }
