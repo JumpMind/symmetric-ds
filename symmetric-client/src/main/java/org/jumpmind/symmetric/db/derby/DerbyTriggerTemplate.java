@@ -65,9 +65,8 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 "   '$(channelName)', 'I', $(triggerHistoryId),                           \n" +
 "   $(txIdExpression),                                                    \n" +
 "   $(externalSelect),                                                    \n" +
-"   '$(columnNames)',                                                       \n" +
-"   '$(pkColumnNames)');                                                    \n" +
-"   $(custom_on_insert_text)                                                \n" );
+"   '$(columnNames)',                                                     \n" +
+"   '$(pkColumnNames)');                                                  \n");
 
         sqlTemplates.put("updateTriggerTemplate" ,
 "CREATE TRIGGER $(triggerName)                                            \n" +
@@ -81,8 +80,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 "   $(txIdExpression),                                                    \n" +
 "   $(externalSelect),                                                    \n" +
 "   '$(columnNames)',                                                       \n" +
-"   '$(pkColumnNames)');                                                    \n" +
-"   $(custom_on_update_text)                                                \n" );
+"   '$(pkColumnNames)');                                                    \n");
 
         sqlTemplates.put("deleteTriggerTemplate" ,
 "CREATE TRIGGER $(triggerName)                                            \n" +
@@ -96,8 +94,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 "   $(txIdExpression),                                                    \n" +
 "   $(externalSelect),                                                    \n" +
 "   '$(columnNames)',                                                       \n" +
-"   '$(pkColumnNames)');                                                    \n" +
-"   $(custom_on_delete_text)                                                \n" );
+"   '$(pkColumnNames)');                                                    \n");
 
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
