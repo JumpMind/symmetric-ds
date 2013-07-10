@@ -39,12 +39,12 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 /*
- * A dialect is the interface that insulates SymmetricDS from database implementation specifics. 
+ * A dialect is the interface that insulates SymmetricDS from database implementation specifics.
  */
 public interface ISymmetricDialect {
 
-    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, 
-            Trigger trigger, TriggerHistory hist, Channel channel, 
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml,
+            Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table);
 
     /*
@@ -57,13 +57,13 @@ public interface ISymmetricDialect {
             String tableName, TriggerHistory oldHistory);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
-    
+
     public void verifyDatabaseIsCompatible();
 
     public void initTablesAndDatabaseObjects();
-    
+
     public void dropTablesAndDatabaseObjects();
-    
+
     public boolean createOrAlterTablesIfNecessary();
 
     public IDatabasePlatform getPlatform();
@@ -79,7 +79,7 @@ public interface ISymmetricDialect {
     public String getProductVersion();
 
     public BinaryEncoding getBinaryEncoding();
-    
+
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql);
@@ -99,9 +99,9 @@ public interface ISymmetricDialect {
     public int getMaxTriggerNameLength();
 
     public boolean supportsTransactionId();
-    
+
     /*
-     * Use this call to check to see if the implemented database dialect supports 
+     * Use this call to check to see if the implemented database dialect supports
      * a way to check on pending database transactions.
      */
     public boolean supportsTransactionViews();
@@ -120,7 +120,7 @@ public interface ISymmetricDialect {
     public void enableSyncTriggers(ISqlTransaction transaction);
 
     public String getSyncTriggersExpression();
-    
+
     public String getSourceNodeExpression();
 
     public String getCreateSymmetricDDL();
@@ -141,11 +141,11 @@ public interface ISymmetricDialect {
     public Table getTable(TriggerHistory triggerHistory, boolean useCache);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
-    
+
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args);
 
     @Deprecated
-    public Column[] orderColumns(String[] columnNames, Table table);   
+    public Column[] orderColumns(String[] columnNames, Table table);
 
     public boolean supportsOpenCursorsAcrossCommit();
 
@@ -157,65 +157,66 @@ public interface ISymmetricDialect {
     public String getInitialLoadTableAlias();
 
     public String preProcessTriggerSqlClause(String sqlClause);
-    
+
     public void truncateTable(String tableName);
-    
+
     public long getDatabaseTime();
-    
-    public boolean areDatabaseTransactionsPendingSince(long time);   
-    
+
+    public boolean areDatabaseTransactionsPendingSince(long time);
+
     /*
      * Returns true if the trigger select lob data back from the original table.
      */
     public boolean needsToSelectLobData();
-    
+
     /*
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
     public String getDataHasChangedCondition(Trigger trigger);
-    
+
     /*
      * Indicates whether captured data can contain gaps.
      */
     public boolean canGapsOccurInCapturedDataIds();
-    
+
     public String massageDataExtractionSql(String sql, Channel channel);
-    
+
     public String massageForLob(String sql, Channel channel);
-    
+
     /*
      * Indicates that the dialect relies on SQL that is to be inserted into the database for use
      * by embedded Java triggers.  H2 is an example dialect that needs this feature.
      * @return
      */
     public boolean escapesTemplatesForDatabaseInserts();
-    
+
     public String getMasterCollation();
- 
+
     public boolean supportsBatchUpdates();
-    
+
     public void cleanupTriggers();
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener);
-    
+
     public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor);
-    
+
     public String getDriverName();
-    
+
     public String getDriverVersion();
-    
+
     public String getSequenceName(SequenceIdentifier identifier);
 
     public String getSequenceKeyName(SequenceIdentifier identifier);
-    
+
     public String getTablePrefix();
-    
+
     public Database readSymmetricSchemaFromXml();
-    
+
     public String getTemplateNumberPrecisionSpec();
-    
+
     public Map<String, String> getSqlReplacementTokens();
-    
+
     public int getSqlTypeForIds();
-    
+
+    public AbstractTriggerTemplate getTriggerTemplate();
 }

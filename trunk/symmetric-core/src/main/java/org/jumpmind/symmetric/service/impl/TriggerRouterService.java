@@ -777,10 +777,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         newHistRecord.getNameForInsertTrigger(),
                         newHistRecord.getNameForUpdateTrigger(),
                         newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(),
-                        newHistRecord.getTriggerRowHash(), newHistRecord.getErrorMessage() },
+                        newHistRecord.getTriggerRowHash(), newHistRecord.getTriggerTemplateHash(),
+                        newHistRecord.getErrorMessage() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR });
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
+                        Types.VARCHAR });
     }
 
     public void deleteTriggerRouter(TriggerRouter triggerRouter) {
@@ -1304,6 +1306,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     || trigger.toHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                 reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                 forceRebuildOfTriggers = true;
+            } else if (symmetricDialect.getTriggerTemplate().toHashedValue() !=
+                    latestHistoryBeforeRebuild.getTriggerTemplateHash()) {
+                reason = TriggerReBuildReason.TRIGGER_TEMPLATE_CHANGED;
+                forceRebuildOfTriggers = true;
             } else if (force) {
                 reason = TriggerReBuildReason.FORCED;
                 forceRebuildOfTriggers = true;
@@ -1374,7 +1380,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         boolean triggerExists = false;
         boolean triggerRemoved = false;
 
-        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, symmetricDialect.getTriggerTemplate(), reason);
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
         if (trigger.isSyncOnInsert()) {
@@ -1571,6 +1577,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             hist.setSourceSchemaName(rs.getString("source_schema_name"));
             hist.setSourceCatalogName(rs.getString("source_catalog_name"));
             hist.setTriggerRowHash(rs.getLong("trigger_row_hash"));
+            hist.setTriggerTemplateHash(rs.getLong("trigger_template_hash"));
             hist.setErrorMessage(rs.getString("error_message"));
             if (this.retMap != null) {
                 this.retMap.put((long) hist.getTriggerHistoryId(), hist);
