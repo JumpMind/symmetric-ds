@@ -153,12 +153,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
         if (data != null && data.size() == 0) {
             data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
-        
+
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
             if (data == null) {
                 data = new HashMap<String, Object>(1);
             }
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());            
+            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         }
         return data;
     }
@@ -206,7 +206,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
             String additionalErrorMessage = "";
-            if (symmetricDialect != null && 
+            if (symmetricDialect != null &&
                     symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
                 boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();
                 additionalErrorMessage += String.format("\nOne possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
@@ -274,5 +274,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
      */
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
         log.debug("Completing batch {}", batch.getBatchId());
+    }
+
+    /**
+     * Override if a router is not configurable.
+     */
+    public boolean isConfigurable() {
+        return true;
     }
 }
