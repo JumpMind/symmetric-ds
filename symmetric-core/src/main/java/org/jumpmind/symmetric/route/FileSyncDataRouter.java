@@ -54,12 +54,12 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         String triggerId = newData.get("TRIGGER_ID");
         String routerId = newData.get("ROUTER_ID");
         String sourceNodeId = newData.get("LAST_UPDATE_BY");
-        
+
         if (triggerId == null) {
             Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
                     engine.getSymmetricDialect());
             triggerId = oldData.get("TRIGGER_ID");
-            routerId = oldData.get("ROUTER_ID");            
+            routerId = oldData.get("ROUTER_ID");
             sourceNodeId = oldData.get("LAST_UPDATE_BY");
         }
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
@@ -90,4 +90,8 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         return nodeIds;
     }
 
+    @Override
+    public boolean isConfigurable() {
+        return false;
+    }
 }

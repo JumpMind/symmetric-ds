@@ -85,7 +85,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
      * to false, then only one message will be published once for each set of
      * data that is routed (even though it may have been routed to several nodes
      * across several different batches).
-     * 
+     *
      * @param onePerBatch
      */
     public void setOnePerBatch(boolean onePerBatch) {
@@ -94,6 +94,10 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
+    }
+
+    public boolean isConfigurable() {
+        return false;
     }
 
 }
