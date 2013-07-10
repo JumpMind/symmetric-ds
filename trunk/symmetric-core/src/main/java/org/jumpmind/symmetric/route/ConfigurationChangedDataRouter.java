@@ -42,20 +42,20 @@ import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
-    
+
     public static final String ROUTER_TYPE = "configurationChanged";
 
     final String CTX_KEY_TABLE_RELOAD_NEEDED = "Reload.Table."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    
+
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    
+
     final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();    
+            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
@@ -84,7 +84,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             Set<Node> possibleTargetNodes, boolean initialLoad) {
 
         // the list of nodeIds that we will return
-        Set<String> nodeIds = null;        
+        Set<String> nodeIds = null;
 
         // the inbound data
         Map<String, String> columnValues = getDataMap(dataMetaData, engine != null ? engine.getSymmetricDialect() : null);
@@ -104,7 +104,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                     if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType()) &&
-                            !nodeThatMayBeRoutedTo.requires13Compatiblity() && 
+                            !nodeThatMayBeRoutedTo.requires13Compatiblity() &&
                             isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
                             nodeGroupLinks)
                             && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
@@ -122,20 +122,20 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     /*
                      * Don't route node security to it's own node. That node
                      * will get node security via registration and it will be
-                     * updated by initial load.  Otherwise, updates can be 
+                     * updated by initial load.  Otherwise, updates can be
                      * unpredictable in the order they will be applied at the
                      * node because updates are on a different channel than reloads
                      */
                     if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
                         if (nodeIds.contains(nodeIdInQuestion)) {
                             boolean remove = true;
-                            if (eventType == DataEventType.UPDATE) {                               
+                            if (eventType == DataEventType.UPDATE) {
                                 if ("1".equals(columnValues.get("REV_INITIAL_LOAD_ENABLED"))) {
                                     boolean reverseLoadQueued = engine.getParameterService().is(
                                             ParameterConstants.INTITAL_LOAD_REVERSE_FIRST)
                                             || "0".equals(columnValues.get("INITIAL_LOAD_ENABLED"));
                                     /*
-                                     * Only send the update if the client is going to be expected 
+                                     * Only send the update if the client is going to be expected
                                      * to queue up a reverse load.  The trigger to do this is the arrival
                                      * of sym_node_security with REV_INITIAL_LOAD_ENABLED set to 1.
                                      */
@@ -148,18 +148,18 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                                 nodeIds.remove(nodeIdInQuestion);
                             }
                         }
-                        
+
                         /*
                          * The parent node never needs node_security updates.
                          */
                         nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
                     }
-                    
+
                     /*
                      * Don't route insert events for a node to itself. they will
                      * be loaded during registration.  If we route them, then an old
                      * state can override the correct state
-                     * 
+                     *
                      * Don't send deletes to a node.  A node should be responsible for deleting
                      * itself.
                      */
@@ -192,7 +192,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                         if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType()) &&
                                 !nodeThatMayBeRoutedTo.requires13Compatiblity() &&
-                                nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {                            
+                                nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {
                             if (nodeIds == null) {
                                 nodeIds = new HashSet<String>();
                             }
@@ -200,7 +200,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         }
                     }
                 }
-                
+
             } else {
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                     if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType()) &&
@@ -232,11 +232,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     routingContext.put(CTX_KEY_FLUSH_CONFLICTS_NEEDED,
                             Boolean.TRUE);
                 }
-                
+
                 if (tableMatches(dataMetaData, TableConstants.SYM_LOAD_FILTER)) {
                     routingContext.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED,
                             Boolean.TRUE);
-                }                
+                }
 
                 if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
                     routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED,
@@ -385,12 +385,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
                 engine.getDataLoaderService().clearCache();
             }
-            
+
             if (routingContext.get(CTX_KEY_FLUSH_LOADFILTERS_NEEDED) != null) {
                 log.info("About to refresh the cache of load filters because new configuration came through the data router");
                 engine.getLoadFilterService().clearCache();
             }
-            
+
             insertReloadEvents(routingContext);
 
             if (routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
@@ -403,8 +403,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             }
         }
     }
-    
-    protected void insertReloadEvents(SimpleRouterContext routingContext) {        
+
+    protected void insertReloadEvents(SimpleRouterContext routingContext) {
         @SuppressWarnings("unchecked")
         List<TableReloadRequestKey> reloadRequestKeys = (List<TableReloadRequestKey>) routingContext
                 .get(CTX_KEY_TABLE_RELOAD_NEEDED);
@@ -415,13 +415,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (engine.getDataService().insertReloadEvent(request, reloadRequestKey.getReceivedFromNodeId() != null)) {
                     log.info(
                             "Inserted table reload request from config data router for node {} and trigger {}",
-                            reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());                    
-                } 
+                            reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());
+                }
             }
             routingContext.setRequestGapDetection(true);
         }
     }
-    
+
     private String tableName(String tableName) {
         return TableConstants.getTableName(engine != null ? engine.getTablePrefix()
                 : "sym", tableName);
@@ -438,4 +438,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         return matches;
     }
 
+    @Override
+    public boolean isConfigurable() {
+        return false;
+    }
 }
