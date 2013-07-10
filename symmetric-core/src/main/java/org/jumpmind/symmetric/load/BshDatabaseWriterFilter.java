@@ -142,12 +142,14 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
             Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.ROW_DATA);
             for (String columnName : sourceValues.keySet()) {
+                interpreter.set(columnName, sourceValues.get(columnName));
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
             }
 
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
+                interpreter.set(OLD_ + columnName, sourceValues.get(columnName));
                 interpreter.set(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
             }
         }

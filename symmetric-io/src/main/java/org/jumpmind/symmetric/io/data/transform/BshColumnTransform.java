@@ -70,16 +70,17 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             interpreter.set("sourceDmlType", data.getSourceDmlType());
             interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
             interpreter.set("context", context);
-            
+
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
+                interpreter.set(columnName, sourceValues.get(columnName));
             }
-            
+
             Set<String> keys = context.keySet();
             for (String key : keys) {
                 interpreter.set(key, context.get(key));
-            }            
-            
+            }
+
             Object result = interpreter.eval(column.getTransformExpression());
             if (result != null) {
                 return result.toString();
