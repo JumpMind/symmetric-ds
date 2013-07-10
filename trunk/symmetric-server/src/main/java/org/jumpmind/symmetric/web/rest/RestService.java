@@ -1146,7 +1146,7 @@ public class RestService {
 	        if (nodeHosts.size() > 0) {
 	        	xmlNode.setLastHeartbeat(nodeHosts.get(0).getHeartbeatTime());
 	        }
-	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC));
+	        xmlNode.setHeartbeatInterval(engine.getParameterService().getInt(ParameterConstants.HEARTBEAT_JOB_PERIOD_MS));
 	        xmlNode.setRegistered(nodeSecurity.hasRegistered());
 	        xmlNode.setInitialLoaded(nodeSecurity.hasInitialLoaded());
 	        xmlNode.setReverseInitialLoaded(nodeSecurity.hasReverseInitialLoaded());
