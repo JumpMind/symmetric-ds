@@ -896,4 +896,14 @@ abstract public class AbstractTriggerTemplate {
         }
 
     }
+
+    public int toHashedValue() {
+        int hashedValue = 0;
+        if (sqlTemplates != null) {
+            for (String key : sqlTemplates.keySet()) {
+                hashedValue += sqlTemplates.get(key).hashCode();
+            }
+        }
+        return hashedValue;
+    }
 }

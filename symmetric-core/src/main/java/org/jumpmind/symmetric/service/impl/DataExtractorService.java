@@ -194,7 +194,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         throw new IllegalStateException("Could not find a required table: "
                                 + triggerRouter.getTrigger().getSourceTableName());
                     }
-                    triggerHistory = new TriggerHistory(table, triggerRouter.getTrigger());
+                    triggerHistory = new TriggerHistory(table, triggerRouter.getTrigger(), symmetricDialect.getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
                 }
 
@@ -220,7 +220,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     triggerHistory = new TriggerHistory(symmetricDialect.getPlatform()
                             .getTableFromCache(trigger.getSourceCatalogName(),
                                     trigger.getSourceSchemaName(), trigger.getSourceTableName(),
-                                    false), trigger);
+                                    false), trigger, symmetricDialect.getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
                 }
 
@@ -310,7 +310,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo,
-            Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat, 
+            Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat,
             boolean useUpsertStatements, boolean useDelimiterIdentifiers) {
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(),
@@ -344,7 +344,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return Collections.emptyList();
     }
-        
+
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport transport) {
 
@@ -381,7 +381,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return Collections.emptyList();
 
     }
-    
+
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled) {
 
@@ -727,7 +727,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         return foundBatch;
     }
-    
+
     public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
             Date endBatchTime, String... channelIds) {
         boolean foundBatch = false;
@@ -751,7 +751,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer,
                                 targetNode.requires13Compatiblity()))).process(ctx);
                 foundBatch = true;
-            }            
+            }
         }
         return foundBatch;
     }

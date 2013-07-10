@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
@@ -52,11 +53,11 @@ public class TriggerHistory implements Serializable {
     private Date createTime;
 
     private String columnNames;
-    
+
     private String[] parsedColumnNames;
 
     private String pkColumnNames;
-    
+
     private String[] parsedPkColumnNames;
 
     private String nameForInsertTrigger;
@@ -81,6 +82,11 @@ public class TriggerHistory implements Serializable {
      */
     private long triggerRowHash;
 
+    /**
+     * This is a hash of the trigger templates used for generating the trigger text.
+     */
+    private long triggerTemplateHash;
+
     private TriggerReBuildReason lastTriggerBuildReason;
 
     public TriggerHistory() {
@@ -99,11 +105,11 @@ public class TriggerHistory implements Serializable {
         this.columnNames = columnNames;
     }
 
-    public TriggerHistory(Table table, Trigger trigger) {
-        this(table, trigger, null);
+    public TriggerHistory(Table table, Trigger trigger, AbstractTriggerTemplate triggerTemplate) {
+        this(table, trigger, triggerTemplate, null);
     }
 
-    public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
+    public TriggerHistory(Table table, Trigger trigger, AbstractTriggerTemplate triggerTemplate, TriggerReBuildReason reason) {
         this();
         this.lastTriggerBuildReason = reason;
         this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
@@ -115,9 +121,10 @@ public class TriggerHistory implements Serializable {
         this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(trigger
                 .getSyncKeysColumnsForTable(table)));
         this.triggerRowHash = trigger.toHashedValue();
-        tableHash = table.calculateTableHashcode();
+        this.triggerTemplateHash = triggerTemplate.toHashedValue();
+        this.tableHash = table.calculateTableHashcode();
     }
-    
+
     public TriggerHistory(Trigger trigger) {
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.sourceSchemaName = trigger.getSourceSchemaName();
@@ -145,7 +152,7 @@ public class TriggerHistory implements Serializable {
         }
         return parsedColumnNames;
     }
-    
+
     public int indexOfColumnName(String columnName, boolean ignoreCase) {
         String[] columnNames = getParsedColumnNames();
         int i = 0;
@@ -174,7 +181,7 @@ public class TriggerHistory implements Serializable {
     public void setTableHash(int tableHash) {
         this.tableHash = tableHash;
     }
-    
+
     public String getFullyQualifiedSourceTableName() {
         return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName);
     }
@@ -308,5 +315,13 @@ public class TriggerHistory implements Serializable {
         result = prime * result + ((sourceTableName == null) ? 0 : sourceTableName.hashCode());
         return result;
     }
-    
+
+    public long getTriggerTemplateHash() {
+        return triggerTemplateHash;
+    }
+
+    public void setTriggerTemplateHash(long triggerTemplateHash) {
+        this.triggerTemplateHash = triggerTemplateHash;
+    }
+
 }

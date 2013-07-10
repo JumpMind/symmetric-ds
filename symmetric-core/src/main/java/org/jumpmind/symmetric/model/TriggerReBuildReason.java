@@ -26,8 +26,12 @@ package org.jumpmind.symmetric.model;
  */
 public enum TriggerReBuildReason {
 
-    NEW_TRIGGERS("N"), TABLE_SCHEMA_CHANGED("S"), TABLE_SYNC_CONFIGURATION_CHANGED("C"), FORCED("F"), TRIGGERS_MISSING(
-            "T");
+    NEW_TRIGGERS("N"),
+    TABLE_SCHEMA_CHANGED("S"),
+    TABLE_SYNC_CONFIGURATION_CHANGED("C"),
+    FORCED("F"),
+    TRIGGERS_MISSING("T"),
+    TRIGGER_TEMPLATE_CHANGED("E");
 
     private String code;
 
@@ -49,6 +53,8 @@ public enum TriggerReBuildReason {
                 return TABLE_SYNC_CONFIGURATION_CHANGED;
             } else if (code.equals(FORCED.code)) {
                 return FORCED;
+            } else if (code.equals(TRIGGER_TEMPLATE_CHANGED.code)) {
+                return TRIGGER_TEMPLATE_CHANGED;
             }
         }
         return null;
