@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.service;
 
-public interface ILoadExtractService {
+public interface IInitialLoadExtractorService {
 
 
 }

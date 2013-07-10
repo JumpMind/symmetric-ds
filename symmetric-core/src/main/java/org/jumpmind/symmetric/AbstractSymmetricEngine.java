@@ -74,6 +74,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.IInitialLoadExtractorService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -99,6 +100,7 @@ import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
+import org.jumpmind.symmetric.service.impl.InitialLoadExtractorService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
@@ -206,6 +208,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected INodeCommunicationService nodeCommunicationService;
     
     protected IFileSyncService fileSyncService;
+    
+    protected IInitialLoadExtractorService initialLoadExtractorService;
 
     protected Date lastRestartTime = null;
 
@@ -305,6 +309,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService, nodeCommunicationService);
         this.fileSyncService = new FileSyncService(this);
+        this.initialLoadExtractorService = new InitialLoadExtractorService(parameterService,
+                symmetricDialect, dataExtractorService, dataService, nodeCommunicationService,
+                clusterService, nodeService, triggerRouterService, configurationService);
         this.jobManager = createJobManager();
 
         this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(
@@ -997,6 +1004,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IGroupletService getGroupletService() {
         return groupletService;
+    }
+    
+    public IInitialLoadExtractorService getInitialLoadExtractorService() {
+        return initialLoadExtractorService;
     }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
