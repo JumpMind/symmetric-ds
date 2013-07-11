@@ -79,6 +79,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.util.AppUtils;
 
+import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.TargetError;
 
@@ -578,9 +579,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             if (target != null) {
                                 ex = target;
                             }
+                        } else if (ex instanceof EvalError) {
+                            log.error("Failed to evalulate the script:\n{}", script);
                         }
 
-                        log.error("Failed to process file sync batch " + batchId, ex);
+                        log.error("Failed to process file sync batch " + batchId, ex);                        
 
                         incomingBatch.setErrorFlag(true);
                         incomingBatch.setStatus(IncomingBatch.Status.ER);

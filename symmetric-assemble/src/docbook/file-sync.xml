@@ -136,6 +136,15 @@ overwritten in <xref linkend="table_file_trigger_router" xrefstyle="table" />. T
 </varlistentry>
 <varlistentry>
 <term>
+<command>targetFileName</command>
+</term>
+<listitem>
+<para> The name of the file that is being synchronized. This variable can be overwritten by the
+<literal>before_copy_script</literal> to rename a file at the target. </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
 <command>processFile</command>
 </term>
 <listitem>

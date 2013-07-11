@@ -39,10 +39,14 @@ public class FileSyncTest extends AbstractTest {
     File chooseTargetServerDir = new File("target/fs_svr/choose_target");
     File chooseTargetClientDirA = new File("target/fs_clnt/choose_target/a");
     File chooseTargetClientDirB = new File("target/fs_clnt/choose_target/b");
+    
+    File changeNameSvrSourceDir = new File("target/fs_svr/change_name");
+    File changeNameClntTargetDir = new File("target/fs_clnt/change_name");
+
 
     File[] allDirs = new File[] { allSvrSourceDir, allClntTargetDir, pingbackClientDir,
             pingbackServerDir, chooseTargetClientDirA, chooseTargetClientDirB,
-            chooseTargetServerDir };
+            chooseTargetServerDir, changeNameSvrSourceDir };
 
     @Override
     protected String[] getGroupNames() {
@@ -65,6 +69,8 @@ public class FileSyncTest extends AbstractTest {
         testPingback();
 
         testChooseTargetDirectory(rootServer, clientServer);
+        
+        testChangeFileNameAndCreateTargetDir(rootServer, clientServer);
 
     }
 
@@ -161,8 +167,32 @@ public class FileSyncTest extends AbstractTest {
          Assert.assertTrue(clientThreeA.exists());
          Assert.assertFalse(clientThreeB.exists());
 
-
-
+    }
+    
+    protected void testChangeFileNameAndCreateTargetDir(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        if (changeNameClntTargetDir.exists()) {
+            FileUtils.deleteDirectory(changeNameClntTargetDir);
+        }
+        
+        File sourceFile = new File(changeNameSvrSourceDir, "source.txt");
+        File targetFile = new File(changeNameClntTargetDir, "target.txt");
+        
+        Assert.assertFalse(targetFile.exists());
+        Assert.assertFalse(targetFile.getParentFile().exists());
+        
+        FileUtils.write(sourceFile, "1234567890");
+        
+        pullFiles();
+        
+        Assert.assertTrue(targetFile.getParentFile().exists());
+        Assert.assertTrue(targetFile.exists());
+        
+        FileUtils.deleteQuietly(sourceFile);
+        
+        pullFiles();
+        
+        Assert.assertFalse(targetFile.exists());
     }
 
     protected boolean pullFiles() {
