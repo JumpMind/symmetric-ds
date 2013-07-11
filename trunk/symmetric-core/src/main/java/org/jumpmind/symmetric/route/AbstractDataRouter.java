@@ -55,18 +55,18 @@ public abstract class AbstractDataRouter implements IDataRouter {
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
             case UPDATE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
             case INSERT:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 Map<String, String> map = getNullData(OLD_, dataMetaData);
                 data.putAll(map);
                 break;
             case DELETE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getOldDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
@@ -97,12 +97,14 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect,
             String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, String> map = new HashMap<String, String>(columns.length);
+        Map<String, String> map = new HashMap<String, String>(columns.length * 2);
         if (rowData != null) {
             testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
-                String columnName = columns[i].toUpperCase();
-                map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
+                String columnName = columns[i];
+                columnName = prefix != null ? prefix + columnName : columnName;
+                map.put(columnName, rowData[i]);
+                map.put(columnName.toUpperCase(), rowData[i]);
             }
         }
         return map;
@@ -177,9 +179,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {
         String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, T> data = new HashMap<String, T>(columnNames.length);
+        Map<String, T> data = new HashMap<String, T>(columnNames.length * 2);
         for (String columnName : columnNames) {
-            data.put(prefix != null ? prefix + columnName : columnName, null);
+            columnName = prefix != null ? prefix + columnName : columnName;
+            data.put(columnName, null);
+            data.put(columnName.toUpperCase(), null);
         }
         return data;
     }
