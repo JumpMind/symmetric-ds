@@ -41,10 +41,6 @@ public class PullJob extends AbstractJob {
     
     public String getClusterLockName() {
         return ClusterConstants.PULL;
-    }
-    
-    public boolean isClusterable() {
-        return true;
-    }
+    }    
 
 }

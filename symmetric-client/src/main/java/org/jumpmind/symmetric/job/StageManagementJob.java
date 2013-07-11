@@ -40,10 +40,6 @@ public class StageManagementJob extends AbstractJob {
         return ClusterConstants.STAGE_MANAGEMENT;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
-
     @Override
     void doJob(boolean force) throws Exception {
         if (stagingManager != null) {

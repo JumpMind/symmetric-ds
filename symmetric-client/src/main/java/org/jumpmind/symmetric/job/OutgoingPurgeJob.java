@@ -43,8 +43,4 @@ public class OutgoingPurgeJob extends AbstractJob {
         return ClusterConstants.PURGE_OUTGOING;
     }
     
-    public boolean isClusterable() {
-        return true;
-    }
-    
 }

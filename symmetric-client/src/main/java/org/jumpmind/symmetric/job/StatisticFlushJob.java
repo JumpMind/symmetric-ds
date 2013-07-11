@@ -46,7 +46,4 @@ public class StatisticFlushJob extends AbstractJob {
         return ClusterConstants.STATISTICS;
     }
     
-    public boolean isClusterable() {
-        return false;
-    }
 }

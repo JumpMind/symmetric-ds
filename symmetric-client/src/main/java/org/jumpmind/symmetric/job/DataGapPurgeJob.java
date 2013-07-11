@@ -43,8 +43,4 @@ public class DataGapPurgeJob extends AbstractJob {
         return ClusterConstants.PURGE_DATA_GAPS;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
-
 }

@@ -230,10 +230,6 @@ public class AndroidJobManager implements IJobManager {
             return "AndroidJob";
         }
 
-        public boolean isClusterable() {
-            return false;
-        }
-
         public void pause() {
             paused = true;
         }
