@@ -1362,10 +1362,20 @@ public class DataService extends AbstractService implements IDataService {
             data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID", false));
             int triggerHistId = row.getInt("TRIGGER_HIST_ID");
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
-            data.setTriggerHistory(engine.getTriggerRouterService().getTriggerHistory(triggerHistId));
-            if (data.getTriggerHistory() == null) {
-                data.setTriggerHistory(new TriggerHistory(triggerHistId));
+            TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
+            if (triggerHistory == null) {
+                triggerHistory = new TriggerHistory(triggerHistId);
+            } else {
+                if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
+                    log.warn("There was a mismatch between the data table name {} and the trigger_hist table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name", 
+                            new Object[] {data.getTableName(), triggerHistory.getSourceTableName(), data.getDataId()});
+                    List<TriggerHistory> list = engine.getTriggerRouterService().getActiveTriggerHistories(data.getTableName());
+                    if (list.size() > 0) {
+                        triggerHistory = list.get(0);
+                    }
+                }
             }
+            data.setTriggerHistory(triggerHistory);
             return data;
         }
     }
