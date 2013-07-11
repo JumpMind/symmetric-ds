@@ -52,7 +52,4 @@ public class WatchdogJob extends AbstractJob {
         return ClusterConstants.WATCHDOG;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
 }

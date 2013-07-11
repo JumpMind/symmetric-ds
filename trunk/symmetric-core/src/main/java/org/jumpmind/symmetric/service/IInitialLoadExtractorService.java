@@ -22,5 +22,6 @@ package org.jumpmind.symmetric.service;
 
 public interface IInitialLoadExtractorService {
 
+	public void queueWork(boolean force);
 
 }

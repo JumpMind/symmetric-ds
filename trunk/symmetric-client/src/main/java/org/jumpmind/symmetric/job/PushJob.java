@@ -45,8 +45,4 @@ public class PushJob extends AbstractJob {
         return ClusterConstants.PUSH;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
-
 }

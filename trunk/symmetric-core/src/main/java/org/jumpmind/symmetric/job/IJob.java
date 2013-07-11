@@ -30,9 +30,7 @@ public interface IJob {
 
     public String getName();
     
-    public String getClusterLockName();
-    
-    public boolean isClusterable();
+    public String getClusterLockName();    
 
     public void pause();
 

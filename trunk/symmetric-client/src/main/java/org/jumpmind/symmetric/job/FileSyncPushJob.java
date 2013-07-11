@@ -37,11 +37,7 @@ public class FileSyncPushJob extends AbstractJob {
     public String getClusterLockName() {
         return ClusterConstants.FILE_SYNC_PUSH;
     }
-
-    public boolean isClusterable() {
-        return true;
-    }
-
+    
     @Override
     void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pushFilesToNodes(force);

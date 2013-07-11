@@ -48,9 +48,5 @@ public class RefreshCacheJob extends AbstractJob {
     public String getClusterLockName() {
         return ClusterConstants.REFRESH_CACHE;
     }
-    
-    public boolean isClusterable() {
-        return false;
-    }
 
 }

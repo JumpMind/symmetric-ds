@@ -44,7 +44,4 @@ public class RouterJob extends AbstractJob {
         return ClusterConstants.ROUTE;
     }
     
-    public boolean isClusterable() {
-        return true;
-    }
 }

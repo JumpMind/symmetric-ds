@@ -36,11 +36,7 @@ public class FileSyncTrackerJob extends AbstractJob {
     public String getClusterLockName() {
         return ClusterConstants.FILE_SYNC_TRACKER;
     }
-
-    public boolean isClusterable() {
-        return true;
-    }
-
+    
     @Override
     void doJob(boolean force) throws Exception {
         if (engine != null) {

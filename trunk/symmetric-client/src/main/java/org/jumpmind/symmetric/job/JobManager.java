@@ -62,6 +62,7 @@ public class JobManager implements IJobManager {
         this.jobs.add(new FileSyncTrackerJob(engine,taskScheduler));
         this.jobs.add(new FileSyncPullJob(engine,taskScheduler));
         this.jobs.add(new FileSyncPushJob(engine,taskScheduler));
+        this.jobs.add(new InitialLoadExtractorJob(engine,taskScheduler));
         
     }
 

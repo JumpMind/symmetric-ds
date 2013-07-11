@@ -49,8 +49,4 @@ public class HeartbeatJob extends AbstractJob {
         return ClusterConstants.HEARTBEAT;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
-
 }

@@ -43,9 +43,5 @@ public class SyncTriggersJob extends AbstractJob {
     public String getClusterLockName() {
         return ClusterConstants.SYNCTRIGGERS;
     }
-    
-    public boolean isClusterable() {
-        return true;
-    }
 
 }

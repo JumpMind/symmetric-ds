@@ -36,10 +36,6 @@ public class FileSyncPullJob extends AbstractJob {
         return ClusterConstants.FILE_SYNC_PULL;
     }
 
-    public boolean isClusterable() {
-        return true;
-    }
-
     @Override
     void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pullFilesFromNodes(force);

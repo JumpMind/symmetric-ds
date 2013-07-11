@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.IInitialLoadExtractorService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -274,6 +275,8 @@ public interface ISymmetricEngine {
     public ITransportManager getTransportManager();
     
     public INodeCommunicationService getNodeCommunicationService();
+    
+    public IInitialLoadExtractorService getInitialLoadExtractorService();
     
     public ISequenceService getSequenceService();
     
