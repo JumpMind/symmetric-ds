@@ -166,6 +166,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         command.append("processFile = true;\n");
                         command.append("sourceFileName = \"").append(snapshot.getFileName())
                                 .append("\";\n");
+                        command.append("targetFileName = sourceFileName;\n");                        
                         command.append("sourceFilePath = \"");
                         command.append(StringEscapeUtils.escapeJava(snapshot.getRelativeDir()))
                                 .append("\";\n");
@@ -194,6 +195,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             case MODIFY:
                             case SEED:
                                 if (file.exists()) {
+                                    command.append("  File targetBaseDirFile = new File(targetBaseDir);\n");
+                                    command.append("  if (!targetBaseDirFile.exists()) {\n");
+                                    command.append("    targetBaseDirFile.mkdirs();\n");
+                                    command.append("  }\n");
                                     command.append("  mv (batchDir + \"/\"");
                                     if (!snapshot.getRelativeDir().equals(".")) {
                                         command.append(" + sourceFilePath + \"/\"");
@@ -207,8 +212,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                                 .getRelativeDir()));
                                         targetFile.append("/");
                                     }
-                                    targetFile.append(snapshot.getFileName());
-                                    targetFile.append("\"");
+                                    targetFile.append("\" + targetFileName");
                                     command.append(targetFile);
                                     command.append(");\n");
                                     command.append("  fileList.put(").append(targetFile)
@@ -225,8 +229,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                             .getRelativeDir()));
                                     targetFile.append("/");
                                 }
-                                targetFile.append(snapshot.getFileName());
-                                targetFile.append("\"");
+                                targetFile.append("\" + targetFileName");
                                 command.append(targetFile);
                                 command.append("));\n");
                                 command.append("  fileList.put(").append(targetFile).append(",\"");
@@ -275,7 +278,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 snapshot.getTriggerId(), snapshot.getRouterId());
                     }
                 }
-
+                
                 script.append("return fileList;\n");
                 ZipEntry entry = new ZipEntry(batch.getBatchId() + "/sync.bsh");
                 zos.putNextEntry(entry);
