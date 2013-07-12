@@ -20,8 +20,10 @@
  */
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+
 public interface IInitialLoadExtractorService {
 
-	public void queueWork(boolean force);
+	public RemoteNodeStatuses queueWork(boolean force);
 
 }

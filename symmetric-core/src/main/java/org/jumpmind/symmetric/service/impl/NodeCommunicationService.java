@@ -83,6 +83,19 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
     }
+    
+    public NodeCommunication find(String nodeId, CommunicationType communicationType) {
+        NodeCommunication lock = sqlTemplate.queryForObject(
+                getSql("selectNodeCommunicationByNodeIdSql"), new NodeCommunicationMapper(),
+                nodeId, communicationType.name());
+        if (lock == null) {
+            lock = new NodeCommunication();
+            lock.setNodeId(nodeId);
+            lock.setCommunicationType(communicationType);
+            save(lock);
+        }
+        return lock;
+    }
 
     public List<NodeCommunication> list(CommunicationType communicationType) {
         initialize();

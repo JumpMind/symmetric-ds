@@ -29,12 +29,12 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -81,7 +81,8 @@ public class InitialLoadExtractorService extends AbstractService implements
         this.configurationService = configurationService;
     }
 
-    public void queueWork(boolean force) {
+    public RemoteNodeStatuses queueWork(boolean force) {
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity();
         if (identity != null) {
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
@@ -92,24 +93,11 @@ public class InitialLoadExtractorService extends AbstractService implements
                     List<NodeSecurity> nodeSecurities = nodeService
                             .findNodeSecurityWithLoadEnabled();
                     if (nodeSecurities != null) {
-                        boolean reverseLoadFirst = parameterService
-                                .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
                         for (NodeSecurity security : nodeSecurities) {
                             if (triggerRouterService.getActiveTriggerHistories().size() > 0) {
-                                boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-                                boolean initialLoadQueued = security.isInitialLoadEnabled();
-                                boolean thisMySecurityRecord = security.getNodeId().equals(
-                                        identity.getNodeId());
-                                boolean registered = security.getRegistrationTime() != null;
-                                boolean parent = identity.getNodeId().equals(
-                                        security.getCreatedAtNodeId());
-                                if (thisMySecurityRecord && reverseLoadQueued
-                                        && (reverseLoadFirst || !initialLoadQueued)) {
-                                    // queue up reverse initial load
-                                } else if (!thisMySecurityRecord && registered && parent
-                                        && initialLoadQueued
-                                        && (!reverseLoadFirst || !reverseLoadQueued)) {
-                                    // queue up initial load
+                                if (isReadyForInitialLoad(security, identity)
+                                        || isReadyForReverseInitialLoad(security, identity)) {
+                                    queue(security.getNodeId(), statuses);
                                 }
                             } else {
                                 List<NodeGroupLink> links = configurationService
@@ -129,9 +117,7 @@ public class InitialLoadExtractorService extends AbstractService implements
                                 }
                             }
                         }
-                    } else {
-
-                    }
+                    } 
                 } else {
                     log.debug("Not running intiial load extract service because the node is not registered");
                 }
@@ -141,16 +127,46 @@ public class InitialLoadExtractorService extends AbstractService implements
         } else {
             log.debug("Not running initial load extract service because this node does not have an identity");
         }
+        return statuses;
+    }
 
-        /*
-         * Called by the load extract job to queue up load requests. The logic
-         * should be similar to RouterService.insertInitialLoadEvents to figure
-         * out which nodes need a load extracted.
-         * 
-         * Look at FileSyncService.queueJob to see how to queue up work using
-         * the NodeCommunicationService (there is probably some duplicate code
-         * across PullService, PushService and FileSyncService)
-         */
+    protected boolean isReadyForInitialLoad(NodeSecurity security, Node identity) {
+        boolean reverseLoadFirst = parameterService
+                .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
+        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
+        boolean initialLoadQueued = security.isInitialLoadEnabled();
+        boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
+        boolean registered = security.getRegistrationTime() != null;
+        boolean parent = identity.getNodeId().equals(security.getCreatedAtNodeId());
+        if (!thisMySecurityRecord && registered && parent && initialLoadQueued
+                && (!reverseLoadFirst || !reverseLoadQueued)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean isReadyForReverseInitialLoad(NodeSecurity security, Node identity) {
+        boolean reverseLoadFirst = parameterService
+                .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
+        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
+        boolean initialLoadQueued = security.isInitialLoadEnabled();
+        boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
+        if (thisMySecurityRecord && reverseLoadQueued && (reverseLoadFirst || !initialLoadQueued)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected void queue(String nodeId, RemoteNodeStatuses statuses) {
+        final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.INITIAL_LOAD_EXTRACT;
+        int availableThreads = nodeCommunicationService
+                .getAvailableThreads(TYPE);
+        NodeCommunication lock = nodeCommunicationService.find(nodeId, TYPE);        
+        if (availableThreads > 0) {
+            nodeCommunicationService.execute(lock, statuses, this);
+        }
     }
 
     protected RemoteNodeStatuses queueJob(long minimumPeriodMs, CommunicationType type) {
