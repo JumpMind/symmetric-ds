@@ -32,6 +32,8 @@ public interface INodeCommunicationService {
     public List<NodeCommunication> list(CommunicationType communicationType);
 
     public void save(NodeCommunication nodeCommunication);
+    
+    public NodeCommunication find(String nodeId, CommunicationType communicationType);
 
     public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses, INodeCommunicationExecutor executor);
 

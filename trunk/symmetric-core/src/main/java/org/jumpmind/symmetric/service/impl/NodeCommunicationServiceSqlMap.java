@@ -34,6 +34,9 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectNodeCommunicationSql",
                 "select * from $(node_communication) where communication_type=? order by last_lock_time");
+        
+        putSql("selectNodeCommunicationByNodeIdSql",
+                "select * from $(node_communication) where node_id=? and communication_type=?");
 
         putSql("insertNodeCommunicationSql", "insert into $(node_communication) ("
                 + "lock_time,locking_server_id,last_lock_millis,success_count,fail_count,"
