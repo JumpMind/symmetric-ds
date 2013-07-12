@@ -497,7 +497,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 status.updateOutgoingStatus(batches, batchAcks);
             }
         } catch (IOException e) {
-            throw new IoException(e);
+            fireOffline(e, nodeCommunication.getNode(), status);
+            //throw new IoException(e);
         } finally {
             if (transport != null) {
                 transport.close();
@@ -649,7 +650,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
         } catch (IOException e) {
             fireOffline(e, nodeCommunication.getNode(), status);
-            throw new IoException(e);
+            //throw new IoException(e);
         } finally {
             if (transport != null) {
                 transport.close();
