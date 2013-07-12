@@ -55,7 +55,7 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
         putSql("aquireLockSql",
                 "update $(node_communication) set locking_server_id=?, lock_time=?, last_lock_time=? where "
                         + "  node_id=? and communication_type=? and "
-                        + " (lock_time is null or lock_time < ? or locking_server_id=?)   ");
+                        + " (lock_time is null or lock_time < ?)   ");
 
     }
 

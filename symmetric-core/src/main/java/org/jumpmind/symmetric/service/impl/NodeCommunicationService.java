@@ -288,12 +288,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
         boolean locked = sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now,
                 nodeCommunication.getNodeId(), nodeCommunication.getCommunicationType().name(),
-                lockTimeout, clusterService.getServerId()) == 1;
+                lockTimeout) == 1;
         if (locked) {
             nodeCommunication.setLastLockTime(now);
             nodeCommunication.setLockingServerId(clusterService.getServerId());
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
-            ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
             Runnable r = new Runnable() {
                 public void run() {
                     long ts = System.currentTimeMillis();
@@ -312,10 +311,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 }
             };
             if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
-                    r.run();
+                r.run();
             } else {
+                ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
                 service.execute(r);
-            }            
+            }     
         }
         return locked;
     }
