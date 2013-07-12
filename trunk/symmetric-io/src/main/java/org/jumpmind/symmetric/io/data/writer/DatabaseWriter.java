@@ -468,7 +468,7 @@ public class DatabaseWriter implements IDataWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                String[] values = (String[]) ArrayUtils.addAll(getRowData(data),
+                String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
                         getLookupKeyData(getLookupDataMap(data), this.currentDmlStatement));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
@@ -499,18 +499,20 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    protected String[] getRowData(CsvData data) {
+    protected String[] getRowData(CsvData data, String dataType) {
         String[] targetValues = new String[targetTable.getColumnCount()];
         String[] targetColumnNames = targetTable.getColumnNames();
 
-        String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
+        String[] originalValues = data.getParsedData(dataType);
         String[] sourceColumnNames = sourceTable.getColumnNames();
 
-        for (int i = 0; i < sourceColumnNames.length && i < originalValues.length; i++) {
-            for(int t = 0; t < targetColumnNames.length; t++) {
-                if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
-                    targetValues[t] = originalValues[i];
-                    break;
+        if (originalValues != null) {
+            for (int i = 0; i < sourceColumnNames.length && i < originalValues.length; i++) {
+                for (int t = 0; t < targetColumnNames.length; t++) {
+                    if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
+                        targetValues[t] = originalValues[i];
+                        break;
+                    }
                 }
             }
         }
@@ -625,17 +627,18 @@ public class DatabaseWriter implements IDataWriter {
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String[] columnValues = getRowData(data);
+            String[] rowData = getRowData(data, CsvData.ROW_DATA);
+            String[] oldData = getRowData(data, CsvData.OLD_DATA);
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
             ArrayList<Column> changedColumnsList = new ArrayList<Column>();
             for (int i = 0; i < targetTable.getColumnCount(); i++) {
                 Column column = targetTable.getColumn(i);
                 if (column != null) {
-                    if (doesColumnNeedUpdated(i, column, data, applyChangesOnly)) {
+                    if (doesColumnNeedUpdated(i, column, data, rowData, oldData, applyChangesOnly)) {
                         changedColumnNameList.add(column.getName());
                         changedColumnsList.add(column);
-                        changedColumnValueList.add(columnValues[i]);
+                        changedColumnValueList.add(rowData[i]);
                     }
                 }
             }
@@ -738,10 +741,10 @@ public class DatabaseWriter implements IDataWriter {
 
                 }
 
-                columnValues = (String[]) changedColumnValueList
+                rowData = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
-                String[] values = (String[]) ArrayUtils.addAll(columnValues,
+                String[] values = (String[]) ArrayUtils.addAll(rowData,
                         getLookupKeyData(lookupDataMap, currentDmlStatement));
 
                 try {
@@ -941,11 +944,9 @@ public class DatabaseWriter implements IDataWriter {
 
     }
 
-    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data,
+    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data, String[] rowData, String[] oldData,
             boolean applyChangesOnly) {
         boolean needsUpdated = true;
-        String[] oldData = data.getParsedData(CsvData.OLD_DATA);
-        String[] rowData = data.getParsedData(CsvData.ROW_DATA);
         if (!platform.getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
@@ -958,9 +959,9 @@ public class DatabaseWriter implements IDataWriter {
                     && StringUtils.isBlank(oldData[columnIndex]);
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || containsEmptyLobColumn;
-            if (containsEmptyLobColumn) {
+            if (containsEmptyLobColumn) {                
                 // indicate that we are considering the column to be changed
-                data.getChangedDataIndicators()[columnIndex] = true;
+                data.getChangedDataIndicators()[sourceTable.getColumnIndex(column.getName())] = true;
             }
         } else {
             /*
