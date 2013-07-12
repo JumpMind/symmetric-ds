@@ -87,7 +87,7 @@ public class OracleBulkDatabaseWriter extends DatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(),
-                        getRowData(data), targetTable.getColumns());
+                        getRowData(data, CsvData.ROW_DATA), targetTable.getColumns());
                 for (int i = 0; i < rowData.length; i++) {
 
                     List<Object> columnList = null;
