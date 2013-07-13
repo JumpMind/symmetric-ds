@@ -33,6 +33,7 @@ public class TableConstants {
     public static final String SYM_PARAMETER = "parameter";
     public static final String SYM_LOCK = "lock";
     public static final String SYM_OUTGOING_BATCH = "outgoing_batch";
+    public static final String SYM_EXTRACT_REQUEST = "extract_request";
     public static final String SYM_INCOMING_BATCH = "incoming_batch";
     public static final String SYM_TRIGGER = "trigger";
     public static final String SYM_ROUTER = "router";
@@ -156,6 +157,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_DATA_EVENT));
         tables.add(getTableName(tablePrefix, SYM_OUTGOING_BATCH));
         tables.add(getTableName(tablePrefix, SYM_INCOMING_BATCH));
+        tables.add(getTableName(tablePrefix, SYM_EXTRACT_REQUEST));
         tables.add(getTableName(tablePrefix, SYM_LOCK));
         tables.add(getTableName(tablePrefix, SYM_CONFLICT));
         tables.add(getTableName(tablePrefix, SYM_INCOMING_ERROR));

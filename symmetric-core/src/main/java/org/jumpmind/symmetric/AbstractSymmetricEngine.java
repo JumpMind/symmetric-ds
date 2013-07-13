@@ -311,7 +311,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = new FileSyncService(this);
         this.initialLoadExtractorService = new InitialLoadExtractorService(parameterService,
                 symmetricDialect, dataExtractorService, dataService, nodeCommunicationService,
-                clusterService, nodeService, triggerRouterService, configurationService);
+                clusterService, nodeService, triggerRouterService, configurationService,
+                outgoingBatchService, sequenceService, groupletService, statisticManager,
+                purgeService, stagingManager);
         this.jobManager = createJobManager();
 
         this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(

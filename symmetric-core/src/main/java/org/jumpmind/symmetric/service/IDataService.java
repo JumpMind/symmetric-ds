@@ -148,5 +148,7 @@ public interface IDataService {
     public long findMaxDataId();
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
+    
+    public List<IReloadListener> getReloadListeners();
         
 }

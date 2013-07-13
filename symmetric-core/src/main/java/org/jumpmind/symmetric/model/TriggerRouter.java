@@ -48,6 +48,8 @@ public class TriggerRouter implements Serializable {
     private String initialLoadSelect;
     
     private String initialLoadDeleteStmt;
+    
+    private int initialLoadBatchCount;
         
     private Trigger trigger;
 
@@ -143,6 +145,14 @@ public class TriggerRouter implements Serializable {
 	public void setInitialLoadDeleteStmt(String initialLoadDeleteStmt) {
 		this.initialLoadDeleteStmt = initialLoadDeleteStmt;
 	}
+	
+	public void setInitialLoadBatchCount(int initialLoadBatchCount) {
+        this.initialLoadBatchCount = initialLoadBatchCount;
+    }
+	
+	public int getInitialLoadBatchCount() {
+        return initialLoadBatchCount;
+    }
 
 	public boolean isRouted(DataEventType event) {
         switch (event) {
