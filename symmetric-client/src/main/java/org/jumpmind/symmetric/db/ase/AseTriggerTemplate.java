@@ -202,7 +202,9 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
                     break;
                 case Types.NUMERIC:
                 case Types.DECIMAL:
-                    text += "decimal\n";
+                    // Use same default scale and precision used by Sybase ASA
+                    // for a decimal with unspecified scale and precision.
+                    text += "decimal(30,6)\n";
                     break;
                 case Types.FLOAT:
                 case Types.REAL:

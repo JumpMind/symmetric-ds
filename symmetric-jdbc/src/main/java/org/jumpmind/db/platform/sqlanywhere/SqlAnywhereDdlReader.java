@@ -88,6 +88,10 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
             column.setMappedTypeCode(Types.BIGINT);
+        } else if (column.getMappedTypeCode() == Types.NUMERIC) {
+            // ASA truncates everything to the right of the decimal point unless
+            // we map to DOUBLE.
+            column.setMappedTypeCode(Types.DOUBLE);
         } else if (column.getDefaultValue() != null) {
             if (column.getMappedTypeCode() == Types.TIMESTAMP) {
                 // Sybase maintains the default values for DATE/TIME jdbc types,

@@ -109,7 +109,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
         settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
-        
+
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
@@ -117,7 +117,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting);
+                    byTable.put(qualifiedTableName, conflictSetting); // ADB
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {
