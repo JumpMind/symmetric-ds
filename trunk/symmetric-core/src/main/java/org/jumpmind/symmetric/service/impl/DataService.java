@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -339,7 +335,7 @@ public class DataService extends AbstractService implements IDataService {
             List<TriggerHistory> triggerHistories = triggerRouterService
                     .getActiveTriggerHistories();
 
-            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine.getTriggerRouterService().fillTriggerRoutersByHistIdAndSortHist(
                     sourceNode, targetNode, triggerHistories);
 
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
@@ -379,15 +375,35 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             }
-
+            
+            // TODO break up this big method into smaller ones
             for (TriggerHistory triggerHistory : triggerHistories) {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     if (triggerRouter.getInitialLoadOrder() >= 0  && 
                             engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
-                        insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
+                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_JOB_START)) {
+                            // calculate the number of batches needed for table.
+                            int numberOfBatches = triggerRouter.getInitialLoadBatchCount();
+                            if (numberOfBatches == 0) {
+                                // TODO set numberOfBatches based on count query using initial load select
+                            }
+                            
+                            int startBatchId = -1;
+                            int endBatchId = -1;
+                            for (int i =0; i < numberOfBatches; i++) {
+                                // needds to grab the start and end batch id
+                                insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
+                                        null, true, loadId, createBy);
+                            }
+                            
+                            // TODO call initial load extract service to insert into extract_request 
+                        } else {
+                            insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 null, true, loadId, createBy);
+                        }
+                        
                         if (!transactional) {
                             transaction.commit();
                         }
@@ -774,85 +790,6 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    private Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories) {
-
-        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
-                engine.getTriggerRouterService().getAllTriggerRoutersForReloadForCurrentNode(
-                        sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
-
-        final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
-                triggerHistories.size());
-
-        for (TriggerHistory triggerHistory : triggerHistories) {
-            List<TriggerRouter> triggerRoutersForTriggerHistory = new ArrayList<TriggerRouter>();
-            triggerRoutersByHistoryId.put(triggerHistory.getTriggerHistoryId(),
-                    triggerRoutersForTriggerHistory);
-
-            String triggerId = triggerHistory.getTriggerId();
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
-                    triggerRoutersForTriggerHistory.add(triggerRouter);
-                }
-            }
-        }
-
-        final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
-
-        Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
-            public int compare(TriggerHistory o1, TriggerHistory o2) {
-                List<TriggerRouter> triggerRoutersForTriggerHist1 = triggerRoutersByHistoryId
-                        .get(o1.getTriggerHistoryId());
-                int intialLoadOrder1 = 0;
-                for (TriggerRouter triggerRouter1 : triggerRoutersForTriggerHist1) {
-                    if (triggerRouter1.getInitialLoadOrder() > intialLoadOrder1) {
-                        intialLoadOrder1 = triggerRouter1.getInitialLoadOrder();
-                    }
-                }
-
-                List<TriggerRouter> triggerRoutersForTriggerHist2 = triggerRoutersByHistoryId
-                        .get(o2.getTriggerHistoryId());
-                int intialLoadOrder2 = 0;
-                for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
-                    if (triggerRouter2.getInitialLoadOrder() > intialLoadOrder2) {
-                        intialLoadOrder2 = triggerRouter2.getInitialLoadOrder();
-                    }
-                }
-
-                if (intialLoadOrder1 < intialLoadOrder2) {
-                    return -1;
-                } else if (intialLoadOrder1 > intialLoadOrder2) {
-                    return 1;
-                }
-
-                Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
-                        o1.getSourceSchemaName(), o1.getSourceTableName(), false);
-                Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
-                        o2.getSourceSchemaName(), o2.getSourceTableName(), false);
-
-                return new Integer(sortedTables.indexOf(table1)).compareTo(new Integer(sortedTables
-                        .indexOf(table2)));
-            };
-        };
-
-        Collections.sort(triggerHistories, comparator);
-
-        return triggerRoutersByHistoryId;
-
-    }
-
-    protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
-        List<Table> tables = new ArrayList<Table>(histories.size());
-        for (TriggerHistory triggerHistory : histories) {
-            Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
-                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
-                    false);
-            if (table != null) {
-                tables.add(table);
-            }
-        }
-        return Database.sortByForeignKeys(tables);
-    }
 
     private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord, String targetNodeId, boolean isLoad, long loadId, String createBy) {
         Data data = createData(transaction, null, null, tablePrefix + "_node_security",
@@ -889,7 +826,7 @@ public class DataService extends AbstractService implements IDataService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
                 catalogName, schemaName, tableName);
-        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine.getTriggerRouterService().fillTriggerRoutersByHistIdAndSortHist(
                 sourceNode, targetNode, triggerHistories);
         int eventCount = 0;
         for (TriggerHistory triggerHistory : triggerHistories) {
@@ -970,7 +907,8 @@ public class DataService extends AbstractService implements IDataService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
                 catalogName, schemaName, tableName);
-        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistIdAndSortHist(
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine.getTriggerRouterService().
+                fillTriggerRoutersByHistIdAndSortHist(
                 sourceNode, targetNode, triggerHistories);
         int eventCount = 0;
         ISqlTransaction transaction = null;
@@ -1342,6 +1280,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+    }
+    
+    public List<IReloadListener> getReloadListeners() {
+        return reloadListeners;
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {

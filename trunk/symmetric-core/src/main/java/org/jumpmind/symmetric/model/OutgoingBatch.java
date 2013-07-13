@@ -39,7 +39,7 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK("Ok"), ER("Error"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"),;
+        OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"),;
 
         private String description;
 
@@ -66,6 +66,8 @@ public class OutgoingBatch implements Serializable {
     private boolean loadFlag;
 
     private boolean errorFlag;
+    
+    private boolean extractJobFlag;
     
     private boolean commonFlag;
 
@@ -475,6 +477,14 @@ public class OutgoingBatch implements Serializable {
 
     public long getLoadId() {
         return loadId;
+    }
+    
+    public void setExtractJobFlag(boolean extractJobFlag) {
+        this.extractJobFlag = extractJobFlag;
+    }
+    
+    public boolean isExtractJobFlag() {
+        return extractJobFlag;
     }
 
 }

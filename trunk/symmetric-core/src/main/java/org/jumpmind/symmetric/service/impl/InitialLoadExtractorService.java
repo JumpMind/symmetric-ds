@@ -20,18 +20,25 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.writer.MultiBatchStagingWriter;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.ExtractRequest;
+import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
-import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -40,12 +47,17 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IInitialLoadExtractorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IPurgeService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 public class InitialLoadExtractorService extends AbstractService implements
         IInitialLoadExtractorService, INodeCommunicationExecutor {
@@ -64,13 +76,28 @@ public class InitialLoadExtractorService extends AbstractService implements
 
     private IConfigurationService configurationService;
 
+    private IOutgoingBatchService outgoingBatchService;
+
+    private ISequenceService sequenceService;
+
+    private IGroupletService groupletService;
+
+    private IStatisticManager statisticManager;
+
+    private IPurgeService purgeService;
+
+    private IStagingManager stagingManager;
+
     private boolean syncTriggersBeforeInitialLoadAttempted = false;
 
     public InitialLoadExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IDataExtractorService dataExtractorService,
             IDataService dataService, INodeCommunicationService nodeCommunicationService,
             IClusterService clusterService, INodeService nodeService,
-            ITriggerRouterService triggerRouterService, IConfigurationService configurationService) {
+            ITriggerRouterService triggerRouterService, IConfigurationService configurationService,
+            IOutgoingBatchService outgoingBatchService, ISequenceService sequenceService,
+            IGroupletService groupletService, IStatisticManager statisticManager,
+            IPurgeService purgeService, IStagingManager stagingManager) {
         super(parameterService, symmetricDialect);
         this.dataService = dataService;
         this.dataExtractorService = dataExtractorService;
@@ -79,50 +106,31 @@ public class InitialLoadExtractorService extends AbstractService implements
         this.nodeService = nodeService;
         this.triggerRouterService = triggerRouterService;
         this.configurationService = configurationService;
+        this.outgoingBatchService = outgoingBatchService;
+        this.sequenceService = sequenceService;
+        this.groupletService = groupletService;
+        this.statisticManager = statisticManager;
+        this.purgeService = purgeService;
+        this.stagingManager = stagingManager;
+        setSqlMap(new InitialLoadExtractorSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public RemoteNodeStatuses queueWork(boolean force) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity();
         if (identity != null) {
-            if (force || !clusterService.isInfiniteLocked(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
-                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
-                if (parameterService.isRegistrationServer()
-                        || (identitySecurity != null && !identitySecurity.isRegistrationEnabled() && identitySecurity
-                                .getRegistrationTime() != null)) {
-                    List<NodeSecurity> nodeSecurities = nodeService
-                            .findNodeSecurityWithLoadEnabled();
-                    if (nodeSecurities != null) {
-                        for (NodeSecurity security : nodeSecurities) {
-                            if (triggerRouterService.getActiveTriggerHistories().size() > 0) {
-                                if (isReadyForInitialLoad(security, identity)
-                                        || isReadyForReverseInitialLoad(security, identity)) {
-                                    queue(security.getNodeId(), statuses);
-                                }
-                            } else {
-                                List<NodeGroupLink> links = configurationService
-                                        .getNodeGroupLinksFor(parameterService.getNodeGroupId());
-                                if (links == null || links.size() == 0) {
-                                    log.warn(
-                                            "Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered",
-                                            security.getNodeId());
-                                } else {
-                                    log.warn(
-                                            "Could not queue up a load for {} because sync triggers has not yet run",
-                                            security.getNodeId());
-                                    if (!syncTriggersBeforeInitialLoadAttempted) {
-                                        syncTriggersBeforeInitialLoadAttempted = true;
-                                        triggerRouterService.syncTriggers();
-                                    }
-                                }
-                            }
-                        }
-                    } 
-                } else {
-                    log.debug("Not running intiial load extract service because the node is not registered");
+            if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
+                try {
+                    List<String> nodeIds = getExtractRequestNodes();
+                    for (String nodeId : nodeIds) {
+                        queue(nodeId, statuses);
+                    }
+                } finally {
+                    if (!force) {
+                        clusterService.unlock(ClusterConstants.INITIAL_LOAD_EXTRACT);
+                    }
                 }
-            } else {
-                log.debug("Not running intiial load extract service because the job has been disabled");
             }
         } else {
             log.debug("Not running initial load extract service because this node does not have an identity");
@@ -130,121 +138,83 @@ public class InitialLoadExtractorService extends AbstractService implements
         return statuses;
     }
 
-    protected boolean isReadyForInitialLoad(NodeSecurity security, Node identity) {
-        boolean reverseLoadFirst = parameterService
-                .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
-        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-        boolean initialLoadQueued = security.isInitialLoadEnabled();
-        boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
-        boolean registered = security.getRegistrationTime() != null;
-        boolean parent = identity.getNodeId().equals(security.getCreatedAtNodeId());
-        if (!thisMySecurityRecord && registered && parent && initialLoadQueued
-                && (!reverseLoadFirst || !reverseLoadQueued)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    protected boolean isReadyForReverseInitialLoad(NodeSecurity security, Node identity) {
-        boolean reverseLoadFirst = parameterService
-                .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
-        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-        boolean initialLoadQueued = security.isInitialLoadEnabled();
-        boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
-        if (thisMySecurityRecord && reverseLoadQueued && (reverseLoadFirst || !initialLoadQueued)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     protected void queue(String nodeId, RemoteNodeStatuses statuses) {
         final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.INITIAL_LOAD_EXTRACT;
-        int availableThreads = nodeCommunicationService
-                .getAvailableThreads(TYPE);
-        NodeCommunication lock = nodeCommunicationService.find(nodeId, TYPE);        
+        int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
+        NodeCommunication lock = nodeCommunicationService.find(nodeId, TYPE);
         if (availableThreads > 0) {
             nodeCommunicationService.execute(lock, statuses, this);
         }
     }
 
-    protected RemoteNodeStatuses queueJob(long minimumPeriodMs, CommunicationType type) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
-        List<NodeCommunication> nodes = nodeCommunicationService.list(type);
-        int availableThreads = nodeCommunicationService.getAvailableThreads(type);
-        for (NodeCommunication nodeCommunication : nodes) {
-            if (StringUtils.isNotBlank(nodeCommunication.getNode().getSyncUrl())
-                    || !parameterService.isRegistrationServer()) {
-                boolean meetsMinimumTime = true;
-                if (minimumPeriodMs > 0
-                        && nodeCommunication.getLastLockTime() != null
-                        && (System.currentTimeMillis() - nodeCommunication.getLastLockTime()
-                                .getTime()) < minimumPeriodMs) {
-                    meetsMinimumTime = false;
-                }
-                if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
-                    nodeCommunicationService.execute(nodeCommunication, statuses, this);
-                    availableThreads--;
-                }
-            } else {
-                log.warn(
-                        "File sync cannot communicate with node '{}' in the group '{}'.  The sync url is blank",
-                        nodeCommunication.getNode().getNodeId(), nodeCommunication.getNode()
-                                .getNodeGroupId());
-            }
-        }
+    public List<String> getExtractRequestNodes() {
+        return sqlTemplate.query(getSql("selectNodeIdsForExtractSql"), SqlConstants.STRING_MAPPER,
+                ExtractStatus.NE.name());
+    }
 
-        return statuses;
+    public List<ExtractRequest> getExtractRequestsForNode(String nodeId) {
+        return sqlTemplate.query(getSql("selectExtractRequestForNodeSql"),
+                new ExtractRequestMapper(), nodeId, Status.NE.name());
+    }
+
+    public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter,
+            long startBatchId, long endBatchId) {
     }
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        /*
-         * This is where the initial load events are inserted into sym_data.
-         * 
-         * DataService.insertReloadEvents currently inserts reload events. We
-         * would probably deprecate the method and move the logic here.
-         * 
-         * As we iterate over the list of TriggerRouters that need to be
-         * extracted we should check to see if an extract has already occurred
-         * (in the case of a restart midway through an initial load extraction).
-         * Each table that was extracted should have a done file.
-         * 
-         * Loop:
-         * 
-         * Use ILoadExtract to extract files. This should be configured in
-         * sym_trigger. We can add a column names load_extract_type
-         * 
-         * --- The default implementation will create a DataProcessor that reads
-         * its data using ExtractDataReader and SelectFromTableSource and writes
-         * its data using a new writer named MultipleFileExtractWriter.
-         * MultipleFileExtractWriter will use IStagingManager to get
-         * IStagedResources (see FileSyncZipDataWriter for an example of using a
-         * IStagedResource that always writes to a file). After the
-         * DataProcessor has run the MultipleFileExtractWriter will have a
-         * getFiles() method to get a handle to the files that were written. ---
-         * 
-         * Insert each set of sym_data events after the table is extracted and
-         * write the done file.
-         * 
-         * End Loop
-         * 
-         * Set sym_node_security.initial_load_enabled=0,
-         * initial_load_time=current_timestamp
-         */
-    }
 
-    interface ILoadExtract extends IExtensionPoint {
+        List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication.getNodeId());
+        if (requests.size() > 0) {
+            Node identity = nodeService.findIdentity();
+            Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
+            ExtractRequest request = requests.get(0);
+            List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(
+                    request.getStartBatchId(), request.getEndBatchId()).getBatches();
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
+                    .getNodeId(), nodeCommunication.getNodeId(),
+                    ProcessInfoKey.ProcessType.INITIAL_LOAD_EXTRACT_JOB));
+            List<OutgoingBatch> oneBatch = new ArrayList<OutgoingBatch>(1);
+            oneBatch.add(batches.get(0));
+            Channel channel = configurationService.getChannel(batches.get(0).getChannelId());
+            /* "trick" the extractor to extract one reload batch, but we will split it among the X batches
+            when writing it */
+            dataExtractorService.extract(processInfo, targetNode, oneBatch,
+                    new MultiBatchStagingWriter(identity.getNodeId(),
+                            Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
+                            toBatchIds(batches), channel.getMaxBatchSize()), true);
+        } else {
+            log.warn("An extract was requested, but no extract records where found for node {}",
+                    nodeCommunication.getNodeId());
+        }
 
-        public List<File> extract(Node targetNode, TriggerRouter triggerRouter,
-                LoadExtractFileHandleFactory fileHandleFactory);
+        // TODO:         
+        // in the data extractor service if the extract_job_flag=1 and the status is RQ then don't stream any batches
+        // if extract_job_flag=1 and the status is NE  and the batch is not staged then update the request back to a status of NE
+
+        // TODO: update the purge service to purge extract requests
 
     }
 
-    class LoadExtractFileHandleFactory {
-        public File getFileName(int loadId, Node targetNode, TriggerRouter triggerRouter,
-                int fileNumber) {
-            return null;
+    protected long[] toBatchIds(List<OutgoingBatch> batches) {
+        long[] batchIds = new long[batches.size()];
+        int index = 0;
+        for (OutgoingBatch outgoingBatch : batches) {
+            batchIds[index++] = outgoingBatch.getBatchId();
+        }
+        return batchIds;
+    }
+
+    class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
+        public ExtractRequest mapRow(Row row) {
+            ExtractRequest request = new ExtractRequest();
+            request.setNodeId(row.getString("node_id"));
+            request.setRequestId(row.getLong("request_id"));
+            request.setStartBatchId(row.getLong("start_batch_id"));
+            request.setEndBatchId(row.getLong("end_batch_id"));
+            request.setStatus(ExtractStatus.valueOf(row.getString("status").toUpperCase()));
+            request.setCreateTime(row.getDateTime("create_time"));
+            request.setLastUpdateTime(row.getDateTime("last_update_time"));
+            return request;
         }
     }
 

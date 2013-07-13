@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +47,7 @@ import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.Router;
@@ -1727,10 +1730,87 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<Trigger, Exception> getFailedTriggers() {
         return this.failureListener.getFailures();
     }
+    
+    public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
+            Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories) {
 
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
+        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
+                getAllTriggerRoutersForReloadForCurrentNode(
+                        sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+
+        final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
+                triggerHistories.size());
+
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRoutersForTriggerHistory = new ArrayList<TriggerRouter>();
+            triggerRoutersByHistoryId.put(triggerHistory.getTriggerHistoryId(),
+                    triggerRoutersForTriggerHistory);
+
+            String triggerId = triggerHistory.getTriggerId();
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
+                    triggerRoutersForTriggerHistory.add(triggerRouter);
+                }
+            }
+        }
+
+        final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
+
+        Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
+            public int compare(TriggerHistory o1, TriggerHistory o2) {
+                List<TriggerRouter> triggerRoutersForTriggerHist1 = triggerRoutersByHistoryId
+                        .get(o1.getTriggerHistoryId());
+                int intialLoadOrder1 = 0;
+                for (TriggerRouter triggerRouter1 : triggerRoutersForTriggerHist1) {
+                    if (triggerRouter1.getInitialLoadOrder() > intialLoadOrder1) {
+                        intialLoadOrder1 = triggerRouter1.getInitialLoadOrder();
+                    }
+                }
+
+                List<TriggerRouter> triggerRoutersForTriggerHist2 = triggerRoutersByHistoryId
+                        .get(o2.getTriggerHistoryId());
+                int intialLoadOrder2 = 0;
+                for (TriggerRouter triggerRouter2 : triggerRoutersForTriggerHist2) {
+                    if (triggerRouter2.getInitialLoadOrder() > intialLoadOrder2) {
+                        intialLoadOrder2 = triggerRouter2.getInitialLoadOrder();
+                    }
+                }
+
+                if (intialLoadOrder1 < intialLoadOrder2) {
+                    return -1;
+                } else if (intialLoadOrder1 > intialLoadOrder2) {
+                    return 1;
+                }
+
+                Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
+                        o1.getSourceSchemaName(), o1.getSourceTableName(), false);
+                Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
+                        o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+
+                return new Integer(sortedTables.indexOf(table1)).compareTo(new Integer(sortedTables
+                        .indexOf(table2)));
+            };
+        };
+
+        Collections.sort(triggerHistories, comparator);
+
+        return triggerRoutersByHistoryId;
+
     }
+
+    protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+        List<Table> tables = new ArrayList<Table>(histories.size());
+        for (TriggerHistory triggerHistory : histories) {
+            Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
+                    false);
+            if (table != null) {
+                tables.add(table);
+            }
+        }
+        return Database.sortByForeignKeys(tables);
+    }
+
 
     class TriggerRoutersCache {
 

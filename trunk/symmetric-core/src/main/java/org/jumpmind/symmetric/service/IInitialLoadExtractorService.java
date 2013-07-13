@@ -20,10 +20,20 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.util.List;
+
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 public interface IInitialLoadExtractorService {
 
 	public RemoteNodeStatuses queueWork(boolean force);
+	
+	public List<String> getExtractRequestNodes();
+	
+	public List<ExtractRequest> getExtractRequestsForNode(String nodeId);
+	
+	public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
 
 }

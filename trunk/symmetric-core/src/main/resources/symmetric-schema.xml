@@ -302,6 +302,7 @@
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. If this value is the same for multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to a negative number, then the table will be excluded from an initial load." />
         <column name="initial_load_select" type="LONGVARCHAR"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
         <column name="initial_load_delete_stmt" type="LONGVARCHAR"  description="The expression that is used to delete data when an initial load occurs.  If this field is empty, no delete will occur before the initial load.  If this field is not empty, the text will be used as a sql statement and executed for the initial load delete." />
+        <column name="initial_load_batch_count" type="INTEGER"  default="1" description="Only applicable if the initial load extract job is enabled. The number of batches to split an initial load of a table across.  If 0 then a select count(*) will be used to dynamically determine the number of batches based on the max_batch_size of the reload channel." />
         <column name="ping_back_enabled" type="BOOLEANINT" size="1" required="true" default="0" description="When enabled, the node will route data that originated from a node back to that node.  This attribute is only effective if sync_on_incoming_batch is set to 1."/>
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
@@ -421,6 +422,7 @@
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
         <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
+*        <column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />        
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
@@ -459,6 +461,18 @@
         <index name="idx_ob_in_error">
             <index-column name="error_flag" />
         </index>
+    </table>
+    
+    <table name="extract_request" description="">
+        <column name="request_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the source of the batch being loaded." />
+        <column name="status" type="CHAR" size="2"  description="NE, OK, ER" />            
+        <column name="start_batch_id" type="BIGINT" required="true" description="" />
+        <column name="end_batch_id" type="BIGINT" required="true" description="" />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
+        <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
+        <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
