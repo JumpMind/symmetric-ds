@@ -422,7 +422,7 @@
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
         <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
-*        <column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />        
+        <column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />        
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
