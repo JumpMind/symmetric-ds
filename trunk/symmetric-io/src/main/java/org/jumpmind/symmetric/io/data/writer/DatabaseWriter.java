@@ -961,7 +961,8 @@ public class DatabaseWriter implements IDataWriter {
                     || containsEmptyLobColumn;
             if (containsEmptyLobColumn) {                
                 // indicate that we are considering the column to be changed
-                data.getChangedDataIndicators()[sourceTable.getColumnIndex(column.getName())] = true;
+                Column sourceColumn = sourceTable.findColumn(column.getName(), false);
+                data.getChangedDataIndicators()[sourceTable.getColumnIndex(sourceColumn.getName())] = true;
             }
         } else {
             /*
