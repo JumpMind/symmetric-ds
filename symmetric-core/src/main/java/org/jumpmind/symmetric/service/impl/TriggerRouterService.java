@@ -808,12 +808,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 new Object[] { triggerRouter.getInitialLoadOrder(),
                         triggerRouter.getInitialLoadSelect(),
                         triggerRouter.getInitialLoadDeleteStmt(),
-                        triggerRouter.isPingBackEnabled() ? 1 : 0, triggerRouter.getLastUpdateBy(),
+                        triggerRouter.getInitialLoadBatchCount(),
+                        triggerRouter.isPingBackEnabled() ? 1 : 0,
+                        triggerRouter.getLastUpdateBy(),
                         triggerRouter.getLastUpdateTime(),
                         triggerRouter.isEnabled() ? 1 : 0,
                         triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
-                        Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.SMALLINT, Types.VARCHAR,
                         Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             sqlTemplate.update(
@@ -821,13 +823,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     new Object[] { triggerRouter.getInitialLoadOrder(),
                             triggerRouter.getInitialLoadSelect(),
                             triggerRouter.getInitialLoadDeleteStmt(),
+                            triggerRouter.getInitialLoadBatchCount(),
                             triggerRouter.isPingBackEnabled() ? 1 : 0,
                             triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(),
                             triggerRouter.getLastUpdateTime(),
                             triggerRouter.isEnabled() ? 1 : 0,
                             triggerRouter.getTrigger().getTriggerId(),
                             triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
-                            Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.SMALLINT, Types.TIMESTAMP,
                             Types.VARCHAR, Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR });
         }
     }
@@ -1695,6 +1698,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
             triggerRouter.setInitialLoadSelect(rs.getString("initial_load_select"));
+            triggerRouter.setInitialLoadBatchCount(rs.getInt("initial_load_batch_count"));
             triggerRouter.setEnabled(rs.getBoolean("enabled"));
             triggerRouter.setInitialLoadDeleteStmt(rs.getString("initial_load_delete_stmt"));
 

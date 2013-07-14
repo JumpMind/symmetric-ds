@@ -60,7 +60,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTriggerRoutersColumnList",
                 ""
-                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.ping_back_enabled, tr.enabled   ");
+                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order,tr.initial_load_select,tr.initial_load_delete_stmt,tr.initial_load_batch_count,tr.ping_back_enabled, tr.enabled   ");
 
         putSql("selectRoutersColumnList",
                 ""
@@ -168,13 +168,13 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("insertTriggerRouterSql",
                 ""
                         + "insert into $(trigger_router)                                                                                             "
-                        + "  (initial_load_order,initial_load_select, initial_load_delete_stmt, ping_back_enabled,create_time,last_update_by,last_update_time,enabled,trigger_id,router_id)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
+                        + "  (initial_load_order,initial_load_select,initial_load_delete_stmt,initial_load_batch_count,ping_back_enabled,create_time,last_update_by,last_update_time,enabled,trigger_id,router_id)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
 
         putSql("updateTriggerRouterSql",
                 ""
                         + "update $(trigger_router)                                                                             "
-                        + "  set initial_load_order=?,initial_load_select=?,initial_load_delete_stmt=?, ping_back_enabled=?,last_update_by=?,last_update_time=?,enabled=?   "
+                        + "  set initial_load_order=?,initial_load_select=?,initial_load_delete_stmt=?,initial_load_batch_count=?,ping_back_enabled=?,last_update_by=?,last_update_time=?,enabled=?   "
                         + "  where trigger_id=? and router_id=?                                                                       ");
 
         putSql("selectTriggerTargetSql",
