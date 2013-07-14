@@ -118,13 +118,35 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             updateOutgoingBatch(batch);
         }
     }
-
+    
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            updateOutgoingBatch(transaction, outgoingBatch);
+            transaction.commit();            
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;  
+        } finally {
+            close(transaction);
+        }
+    }
+
+    public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
-        sqlTemplate.update(
+        transaction.prepareAndExecute(
                 getSql("updateOutgoingBatchSql"),
                 new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(),
+                       outgoingBatch.isExtractJobFlag() ? 1: 0, 
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0,
                         outgoingBatch.getByteCount(), outgoingBatch.getExtractCount(),
                         outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
@@ -139,7 +161,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
                         outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(),
                         outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
-                        Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
@@ -177,7 +199,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
-                outgoingBatch.getLoadId(), outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
+                outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
                         .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
                         .getOtherEventCount(), outgoingBatch.getLastUpdatedHostName(),
                 outgoingBatch.getCreateBy());
@@ -584,6 +606,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 batch.setLoadFlag(rs.getBoolean("load_flag"));
                 batch.setErrorFlag(rs.getBoolean("error_flag"));
                 batch.setCommonFlag(rs.getBoolean("common_flag"));
+                batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
                 batch.setLoadId(rs.getLong("load_id"));
                 batch.setCreateBy(rs.getString("create_by"));
                 return batch;

@@ -31,6 +31,8 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
@@ -47,8 +49,6 @@ public interface IDataExtractorService {
     /**
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled);
-
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);    
     
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
@@ -59,5 +59,10 @@ public interface IDataExtractorService {
     public OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean streamToFileEnabled);
+    
+    public RemoteNodeStatuses queueWork(boolean force);
+    
+    public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
+
 
 }

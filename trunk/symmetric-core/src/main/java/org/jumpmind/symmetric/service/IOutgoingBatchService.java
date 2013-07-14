@@ -56,6 +56,8 @@ public interface IOutgoingBatchService {
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId);
 
     public void updateOutgoingBatch(OutgoingBatch batch);
+    
+    public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
 
     public void updateOutgoingBatches(List<OutgoingBatch> batches);
 

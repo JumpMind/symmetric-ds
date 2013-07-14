@@ -463,14 +463,14 @@
         </index>
     </table>
     
-    <table name="extract_request" description="">
-        <column name="request_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the source of the batch being loaded." />
-        <column name="status" type="CHAR" size="2"  description="NE, OK, ER" />            
-        <column name="start_batch_id" type="BIGINT" required="true" description="" />
-        <column name="end_batch_id" type="BIGINT" required="true" description="" />
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
-        <column name="router_id" type="VARCHAR" size="50" required="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
+    <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
+        <column name="request_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a request." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the batch being loaded." />
+        <column name="status" type="CHAR" size="2"  description="NE, OK" />            
+        <column name="start_batch_id" type="BIGINT" required="true" description="A load can be split across multiple batches.  This is the first of N batches the load will be split across." />
+        <column name="end_batch_id" type="BIGINT" required="true" description="This is the last of N batches the load will be split across." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" description="Unique identifier for a trigger associated with the extract request." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" description="Unique description of the router associated with the extract request." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
