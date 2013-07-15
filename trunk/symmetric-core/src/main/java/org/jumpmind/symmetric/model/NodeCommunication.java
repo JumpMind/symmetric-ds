@@ -28,7 +28,7 @@ public class NodeCommunication implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
-        PULL, PUSH, FILE_PUSH, FILE_PULL, INITIAL_LOAD_EXTRACT
+        PULL, PUSH, FILE_PUSH, FILE_PULL, EXTRACT
     };
     
     private transient Node node;

@@ -199,7 +199,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case FILE_PUSH:
                 threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
-            case INITIAL_LOAD_EXTRACT:
+            case EXTRACT:
                 threadCountParameter = ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER;                
                 break;
             default:
@@ -272,7 +272,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case FILE_PUSH:
                 parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
                 break;
-            case INITIAL_LOAD_EXTRACT:
+            case EXTRACT:
                 parameter = ParameterConstants.INITIAL_LOAD_EXTRACT_TIMEOUT_MS;
                 break;
             default:
@@ -292,7 +292,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         if (locked) {
             nodeCommunication.setLastLockTime(now);
             nodeCommunication.setLockingServerId(clusterService.getServerId());
-            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
+            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
             Runnable r = new Runnable() {
                 public void run() {
                     long ts = System.currentTimeMillis();

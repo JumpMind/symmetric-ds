@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -874,7 +876,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void queue(String nodeId, RemoteNodeStatuses statuses) {
-        final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.INITIAL_LOAD_EXTRACT;
+        final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.EXTRACT;
         int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
         NodeCommunication lock = nodeCommunicationService.find(nodeId, TYPE);
         if (availableThreads > 0) {
@@ -898,9 +900,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter,
             long startBatchId, long endBatchId) {
-        sqlTemplate.update(getSql("insertExtractRequestSql"), ExtractStatus.NE.name(),
-                startBatchId, endBatchId, triggerRouter.getTrigger().getTriggerId(), triggerRouter
-                        .getRouter().getRouterId());
+        sqlTemplate.insertWithGeneratedKey(getSql("insertExtractRequestSql"),
+                symmetricDialect.getSequenceKeyName(SequenceIdentifier.REQUEST),
+                symmetricDialect.getSequenceName(SequenceIdentifier.REQUEST), new Object[] {
+                        nodeId, ExtractStatus.NE.name(), startBatchId, endBatchId,
+                        triggerRouter.getTrigger().getTriggerId(),
+                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
+                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
     }
 
     protected void updateExtractRequestStatus(ISqlTransaction transaction, long extractId,
@@ -921,40 +927,47 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                     .getNodeId(), nodeCommunication.getNodeId(),
                     ProcessInfoKey.ProcessType.INITIAL_LOAD_EXTRACT_JOB));
-            List<OutgoingBatch> oneBatch = new ArrayList<OutgoingBatch>(1);
-            oneBatch.add(batches.get(0));
-            Channel channel = configurationService.getChannel(batches.get(0).getChannelId());
-            /*
-             * "trick" the extractor to extract one reload batch, but we will
-             * split it across the N batches when writing it
-             */
-            extractOutgoingBatch(processInfo, targetNode, 
-                    new MultiBatchStagingWriter(identity.getNodeId(), stagingManager, batches,
-                            channel.getMaxBatchSize()), batches.get(0), true);
-
-            ISqlTransaction transaction = null;
             try {
-                transaction = sqlTemplate.startSqlTransaction();
-                updateExtractRequestStatus(transaction, request.getRequestId(), ExtractStatus.OK);
+                List<OutgoingBatch> oneBatch = new ArrayList<OutgoingBatch>(1);
+                oneBatch.add(batches.get(0));
+                Channel channel = configurationService.getChannel(batches.get(0).getChannelId());
+                /*
+                 * "trick" the extractor to extract one reload batch, but we
+                 * will split it across the N batches when writing it
+                 */
+                extractOutgoingBatch(processInfo, targetNode,
+                        new MultiBatchStagingWriter(identity.getNodeId(), stagingManager, batches,
+                                channel.getMaxBatchSize()), batches.get(0), true);
 
-                for (OutgoingBatch outgoingBatch : batches) {
-                    outgoingBatch.setStatus(Status.NE);
-                    outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
-                }
-                transaction.commit();
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    updateExtractRequestStatus(transaction, request.getRequestId(),
+                            ExtractStatus.OK);
 
-            } catch (Error ex) {
-                if (transaction != null) {
-                    transaction.rollback();
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        outgoingBatch.setStatus(Status.NE);
+                        outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                    }
+                    transaction.commit();
+
+                } catch (Error ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } catch (RuntimeException ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } finally {
+                    close(transaction);
                 }
-                throw ex;
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
             } catch (RuntimeException ex) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
                 throw ex;
-            } finally {
-                close(transaction);
             }
 
         } else {

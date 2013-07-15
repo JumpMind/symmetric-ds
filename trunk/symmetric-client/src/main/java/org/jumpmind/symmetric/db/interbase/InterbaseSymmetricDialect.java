@@ -149,10 +149,12 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     @Override
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case DATA:
-            return "SYM_DATA_DATA_ID";
-        case TRIGGER_HIST:
-            return "SYM_TRIGGER_TRIGGER_HIST_ID";
+            case REQUEST:
+                return "SYM_EXTRACT_RE_ST_REQUEST_ID";
+            case DATA:
+                return "SYM_DATA_DATA_ID";
+            case TRIGGER_HIST:
+                return "SYM_TRIGGER_TRIGGER_HIST_ID";
         }
         return null;
     }

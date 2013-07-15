@@ -316,7 +316,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
                 maxNumberOfBatchesToSelect,
                 new OutgoingBatchMapper(includeDisabledChannels, true),
-                new Object[] { nodeId, OutgoingBatch.Status.NE.name(),
+                new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                         OutgoingBatch.Status.IG.name() }, null);
