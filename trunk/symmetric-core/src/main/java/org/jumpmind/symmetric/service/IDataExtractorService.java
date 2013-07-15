@@ -58,7 +58,7 @@ public interface IDataExtractorService {
     
     public OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch,
-            boolean streamToFileEnabled);
+            boolean streamToFileEnabled, boolean updateBatchStatistics);
     
     public RemoteNodeStatuses queueWork(boolean force);
     

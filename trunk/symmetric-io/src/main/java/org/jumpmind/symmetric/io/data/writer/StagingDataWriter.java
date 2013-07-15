@@ -55,12 +55,16 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     }
 
     public static List<IProtocolDataWriterListener> toList(IProtocolDataWriterListener... listeners) {
-        ArrayList<IProtocolDataWriterListener> list = new ArrayList<IProtocolDataWriterListener>(
-                listeners.length);
-        for (IProtocolDataWriterListener l : listeners) {
-            list.add(l);
+        if (listeners != null) {
+            ArrayList<IProtocolDataWriterListener> list = new ArrayList<IProtocolDataWriterListener>(
+                    listeners.length);
+            for (IProtocolDataWriterListener l : listeners) {
+                list.add(l);
+            }
+            return list;
+        } else {
+            return new ArrayList<IProtocolDataWriterListener>(0);
         }
-        return list;
     }
 
     @Override
