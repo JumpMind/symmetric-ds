@@ -32,13 +32,11 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -487,8 +485,7 @@ public class DataService extends AbstractService implements IDataService {
                         if (numberOfBatches <= 0) {
                             
                             Table table = platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName(), false);
-                            DmlStatement dmlStatement = platform.createDmlStatement(DmlType.COUNT, table);
-                            String sql = dmlStatement.getSql();
+                            String sql = String.format("select count(*) from %s ", table.getFullyQualifiedTableName(platform.getDatabaseInfo().getDelimiterToken()));
                             sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
                             sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
                             sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);

@@ -19,7 +19,7 @@ public class DataExtractorSqlMap extends AbstractSqlMap {
         
         putSql("updateExtractRequestStatus", "update $(extract_request) set status=? where request_id=?");
         
-        putSql("resetExtractRequestStatus", "update $(extract_request) set status=? where start_batch_id >= ? and end_batch_id <= ? and node_id=?");
+        putSql("resetExtractRequestStatus", "update $(extract_request) set status=? where start_batch_id <= ? and end_batch_id >= ? and node_id=?");
     }
 
 }
