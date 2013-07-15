@@ -161,7 +161,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         @Override
         public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses,
                 INodeCommunicationExecutor executor) {
-            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
+            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
             long ts = System.currentTimeMillis();
             boolean failed = false;
             try {

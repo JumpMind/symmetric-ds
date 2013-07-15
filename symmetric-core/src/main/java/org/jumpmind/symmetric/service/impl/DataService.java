@@ -855,6 +855,9 @@ public class DataService extends AbstractService implements IDataService {
         outgoingBatch.setCreateBy(createBy);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
+        if (status == Status.RQ) {
+            outgoingBatch.setExtractJobFlag(true);
+        }
         engine.getOutgoingBatchService().insertOutgoingBatch(transaction, outgoingBatch);
         insertDataEvent(transaction, new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
         return outgoingBatch.getBatchId();

@@ -56,7 +56,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("findOutgoingBatchByIdOnlySql" , "where batch_id=? " );        
 
         putSql("selectOutgoingBatchSql" ,"" + 
-"where node_id = ? and status in (?, ?, ?, ?, ?, ?) order by batch_id asc   " );
+"where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc   " );
 
         putSql("selectOutgoingBatchRangeSql" ,"" + 
 "where batch_id between ? and ? order by batch_id   " );
@@ -81,8 +81,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("countOutgoingBatchesErrorsSql" ,"" + 
 "select count(*) from $(outgoing_batch) where error_flag=1" );
-        
-        
+                
         putSql("countOutgoingBatchesUnsentSql" ,"" + 
 "select count(*) from $(outgoing_batch) where status != 'OK'" );
         

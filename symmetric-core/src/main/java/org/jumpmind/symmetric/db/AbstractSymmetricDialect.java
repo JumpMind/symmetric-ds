@@ -645,6 +645,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
+            case REQUEST:
+                return "sym_extract_r_st_request_id";
             case DATA:
                 return "sym_data_data_id";
             case TRIGGER_HIST:
@@ -655,6 +657,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getSequenceKeyName(SequenceIdentifier identifier) {
         switch (identifier) {
+            case REQUEST:
+                return "request_id";
             case DATA:
                 return "data_id";
             case TRIGGER_HIST:
