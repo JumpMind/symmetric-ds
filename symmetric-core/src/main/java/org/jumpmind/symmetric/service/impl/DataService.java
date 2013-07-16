@@ -1004,6 +1004,7 @@ public class DataService extends AbstractService implements IDataService {
                         .getTriggerHistoryId());
                 if (triggerRouters != null && triggerRouters.size() > 0) {
                     for (TriggerRouter triggerRouter : triggerRouters) {
+                        eventCount++;
                         insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 overrideInitialLoadSelect, false, -1, "reloadTable", Status.NE);
                     }
