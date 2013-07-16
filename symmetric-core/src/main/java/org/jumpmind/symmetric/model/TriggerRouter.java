@@ -49,7 +49,7 @@ public class TriggerRouter implements Serializable {
     
     private String initialLoadDeleteStmt;
     
-    private int initialLoadBatchCount;
+    private int initialLoadBatchCount = 1;
         
     private Trigger trigger;
 
