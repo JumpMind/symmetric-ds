@@ -34,8 +34,10 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -127,6 +129,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeStrandedBatches();
                     rowsPurged += purgeDataRows(retentionCutoff);
                     rowsPurged += purgeOutgoingBatch(retentionCutoff);
+                    rowsPurged += purgeExtractRequests();
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
@@ -195,6 +198,35 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return minMax;
     }
     
+    private long purgeExtractRequests() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -parameterService
+                .getInt(ParameterConstants.PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES));
+        log.info("Purging extract requests that are older than {}", retentionCutoff.getTime());
+        long count = sqlTemplate.update(getSql("deleteExtractRequestSql"),
+                ExtractRequest.ExtractStatus.OK.name(), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} extract requests", count);
+        }        	
+        return count;
+
+    }
+
+    private long purgeRegistrationRequests() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -parameterService
+                .getInt(ParameterConstants.PURGE_REGISTRATION_REQUEST_RETENTION_MINUTES));
+        log.info("Purging registration requests that are older than {}", retentionCutoff.getTime());
+        long count = sqlTemplate.update(getSql("deleteRegistrationRequestSql"),
+                RegistrationRequest.RegistrationStatus.OK.name(),
+                RegistrationRequest.RegistrationStatus.IG.name(),
+                RegistrationRequest.RegistrationStatus.RR.name(), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} registration requests", count);
+        }    
+        return count;
+    }
+
     private int purgeByMinMax(long[] minMax, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
@@ -271,6 +303,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     log.info("The incoming purge process is about to run");
                     purgedRowCount = purgeIncomingBatch(retentionCutoff);
                     purgedRowCount += purgeIncomingError();
+                    purgedRowCount += purgeRegistrationRequests();
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);
