@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -34,9 +14,6 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectNodeCommunicationSql",
                 "select * from $(node_communication) where communication_type=? order by last_lock_time");
-        
-        putSql("selectNodeCommunicationByNodeIdSql",
-                "select * from $(node_communication) where node_id=? and communication_type=?");
 
         putSql("insertNodeCommunicationSql", "insert into $(node_communication) ("
                 + "lock_time,locking_server_id,last_lock_millis,success_count,fail_count,"
@@ -55,7 +32,7 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
         putSql("aquireLockSql",
                 "update $(node_communication) set locking_server_id=?, lock_time=?, last_lock_time=? where "
                         + "  node_id=? and communication_type=? and "
-                        + " (lock_time is null or lock_time < ?)   ");
+                        + " (lock_time is null or lock_time < ? or locking_server_id=?)   ");
 
     }
 

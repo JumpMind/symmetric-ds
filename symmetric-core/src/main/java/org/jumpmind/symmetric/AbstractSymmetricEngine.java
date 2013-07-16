@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric;
 
@@ -44,8 +44,7 @@ import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
-import org.jumpmind.security.SecurityServiceFactory;
-import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
+import org.jumpmind.security.SecurityService;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -71,7 +70,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
@@ -96,7 +94,6 @@ import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
-import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
@@ -204,8 +201,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IStagingManager stagingManager;
 
     protected INodeCommunicationService nodeCommunicationService;
-    
-    protected IFileSyncService fileSyncService;    
 
     protected Date lastRestartTime = null;
 
@@ -244,12 +239,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
-    
-    protected abstract SecurityServiceType getSecurityServiceType();
 
     protected void init() {
         this.propertiesFactory = createTypedPropertiesFactory();
-        this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
+        this.securityService = createSecurityService(propertiesFactory.reload());
         TypedProperties properties = this.propertiesFactory.reload();
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
@@ -266,7 +259,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.symmetricDialect = createSymmetricDialect();
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
-        this.nodeService = new NodeService(parameterService, symmetricDialect, securityService);
+        this.nodeService = new NodeService(parameterService, symmetricDialect);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
@@ -287,10 +280,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, configurationService, sequenceService, clusterService);
         this.dataService = new DataService(this);
         this.routerService = buildRouterService();
-        this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
-                nodeService, dataService, transformService, statisticManager, stagingManager, clusterService, nodeCommunicationService);
+                nodeService, dataService, transformService, statisticManager, stagingManager);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(this);
@@ -299,12 +291,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 transportManager, statisticManager, configurationService);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
                 outgoingBatchService, registrationService, stagingManager);
+        this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService, nodeCommunicationService);
-        this.fileSyncService = new FileSyncService(this);
         this.jobManager = createJobManager();
 
         this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(
@@ -327,6 +319,20 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         return new NodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
+    }
+
+    public static ISecurityService createSecurityService(TypedProperties properties) {
+        try {
+            String className = properties.get(ParameterConstants.CLASS_NAME_SECURITY_SERVICE,
+                    SecurityService.class.getName());
+            ISecurityService securityService = (ISecurityService) Class.forName(className).newInstance();
+            securityService.init();
+            return securityService;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     abstract protected IStagingManager createStagingManager();
@@ -383,7 +389,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         node = nodeService.findIdentity();
 
-        if (node == null && parameterService.isRegistrationServer()
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("Inserting rows for node, security, identity and group for registration server");
             String nodeId = parameterService.getExternalId();
@@ -708,7 +714,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql) {
-        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql);
+        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
     }
 
     public RemoteNodeStatuses push() {
@@ -1056,10 +1062,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IDatabasePlatform getDatabasePlatform() {
         return getSymmetricDialect().getPlatform();
-    }
-    
-    public IFileSyncService getFileSyncService() {
-        return fileSyncService;
     }
 
 }

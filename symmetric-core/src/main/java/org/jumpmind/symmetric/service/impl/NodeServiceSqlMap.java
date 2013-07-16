@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -83,7 +63,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectExternalIdsSql",
                 "select distinct(external_id) from $(node) where sync_enabled=1 order by external_id asc   ");
-
+        
         putSql("findNodeSecurityWithLoadEnabledSql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
@@ -91,7 +71,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                           " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
                           " from $(node_security)          "
                         + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     ");
-
+        
         putSql("findAllNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
@@ -102,7 +82,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeSecuritySql", "delete from $(node_security) where node_id = ?");
 
         putSql("deleteNodeSql", "delete from $(node) where node_id = ?");
-
+        
         putSql("deleteNodeHostSql", "delete from $(node_host) where node_id = ?");
 
         putSql("findNodeIdentitySql", "inner join $(node_identity) i on c.node_id =   "
@@ -169,7 +149,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + "  total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?,   "
                         + "  last_restart_time=? where node_id=? and host_name=?                                                                                  ");
 
-        putSql("findNodeHeartbeatsSql",
+        putSql("findOfflineNodesSql", 
                 "select h.node_id, max(h.heartbeat_time) as heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
               + " where n.sync_enabled = 1 and n.node_id != ? and n.created_at_node_id = ? group by h.node_id, h.timezone_offset");
 

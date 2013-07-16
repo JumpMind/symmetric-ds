@@ -29,7 +29,6 @@ import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
-import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
@@ -267,10 +266,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
-            } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
-                processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                           
             } else if (change instanceof ColumnDefaultValueChange) {
                 processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
                 changeIt.remove();

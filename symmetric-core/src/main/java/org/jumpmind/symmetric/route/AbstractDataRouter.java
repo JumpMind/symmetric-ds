@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.route;
 
 import java.util.Collections;
@@ -55,18 +56,18 @@ public abstract class AbstractDataRouter implements IDataRouter {
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
             case UPDATE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
             case INSERT:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 Map<String, String> map = getNullData(OLD_, dataMetaData);
                 data.putAll(map);
                 break;
             case DELETE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getOldDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
@@ -75,12 +76,10 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 break;
         }
 
-        if (data != null) {
-            if (data.size() == 0) {
-                data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
-            }
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+        if (data.size() == 0) {
+            data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
+        data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         return data;
     }
 
@@ -97,14 +96,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect,
             String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, String> map = new HashMap<String, String>(columns.length * 2);
+        Map<String, String> map = new HashMap<String, String>(columns.length);
         if (rowData != null) {
             testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
-                String columnName = columns[i];
-                columnName = prefix != null ? prefix + columnName : columnName;
-                map.put(columnName, rowData[i]);
-                map.put(columnName.toUpperCase(), rowData[i]);
+                String columnName = columns[i].toUpperCase();
+                map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
             }
         }
         return map;
@@ -151,16 +148,16 @@ public abstract class AbstractDataRouter implements IDataRouter {
             default:
                 break;
         }
-
+        
         if (data != null && data.size() == 0) {
             data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
-
+        
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
-            if (data == null) {
-                data = new HashMap<String, Object>(1);
-            }
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+        	if (data == null) {
+        		data = new HashMap<String, Object>(1);
+        	}
+            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());        	
         }
         return data;
     }
@@ -179,11 +176,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {
         String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, T> data = new HashMap<String, T>(columnNames.length * 2);
+        Map<String, T> data = new HashMap<String, T>(columnNames.length);
         for (String columnName : columnNames) {
-            columnName = prefix != null ? prefix + columnName : columnName;
-            data.put(columnName, null);
-            data.put(columnName.toUpperCase(), null);
+            data.put(prefix != null ? prefix + columnName : columnName, null);
         }
         return data;
     }
@@ -210,7 +205,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
             String additionalErrorMessage = "";
-            if (symmetricDialect != null &&
+            String triggerHistTableName = dataMetaData.getTriggerHistory().getFullyQualifiedSourceTableName();
+            String triggerTableName = dataMetaData.getTriggerRouter().getTrigger().getFullyQualifiedSourceTableName();
+            if (!triggerHistTableName.equalsIgnoreCase(triggerTableName)) {
+                additionalErrorMessage += String.format("\nThe trigger hist table name (%s) does not match the trigger table name (%s).  Did the trigger hist table get reset and while the data table did not?", triggerHistTableName, triggerHistTableName);                
+            }
+            if (symmetricDialect != null && 
                     symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
                 boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();
                 additionalErrorMessage += String.format("\nOne possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
@@ -278,12 +278,5 @@ public abstract class AbstractDataRouter implements IDataRouter {
      */
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
         log.debug("Completing batch {}", batch.getBatchId());
-    }
-
-    /**
-     * Override if a router is not configurable.
-     */
-    public boolean isConfigurable() {
-        return true;
     }
 }

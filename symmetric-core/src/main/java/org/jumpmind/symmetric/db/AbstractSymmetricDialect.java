@@ -1,28 +1,27 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,7 +37,6 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlResultsListener;
@@ -98,8 +96,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsTransactionViews = false;
     
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
-    
-    protected List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = new ArrayList<IAlterDatabaseInterceptor>();
     
     protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
@@ -438,9 +434,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             Database modelFromDatabase = readSymmetricSchemaFromDatabase();
 
             IDdlBuilder builder = platform.getDdlBuilder();
-            
-            IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
-            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
+
+            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                 ISqlResultsListener resultsListener = new ISqlResultsListener() {
@@ -468,7 +463,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
-                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
+                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
 
                 log.debug("Alter SQL generated: {}", alterSql);
 
@@ -645,8 +640,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-            case REQUEST:
-                return "sym_extract_r_st_request_id";
             case DATA:
                 return "sym_data_data_id";
             case TRIGGER_HIST:
@@ -657,8 +650,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getSequenceKeyName(SequenceIdentifier identifier) {
         switch (identifier) {
-            case REQUEST:
-                return "request_id";
             case DATA:
                 return "data_id";
             case TRIGGER_HIST:
@@ -819,10 +810,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void cleanupTriggers() {
     }
-    
-    public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor) {
-        alterDatabaseInterceptors.add(interceptor);
-    }
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
         databaseUpgradeListeners.add(listener);
@@ -844,9 +831,5 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     public String getTemplateNumberPrecisionSpec() {
         return null;
-    }
-    
-    public int getSqlTypeForIds() {
-        return Types.NUMERIC;
     }
 }

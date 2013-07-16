@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -55,7 +35,6 @@ public abstract class AbstractServiceTest {
     @BeforeClass
     public static void setup() throws Exception {        
         if (engine == null) {
-            //Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
             try {
                 Class<?> clazz = Class.forName("org.jumpmind.symmetric.test.TestSetupUtil");
@@ -73,11 +52,10 @@ public abstract class AbstractServiceTest {
                 logger.error(ex.getMessage(), ex);
                 Assert.fail(ex.getMessage());
             }
-            //setLoggingLevelForTest(old);
         }
     }
 
-    protected static Level setLoggingLevelForTest(Level level) {
+    protected Level setLoggingLevelForTest(Level level) {
         org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
         Level old = logger.getLevel();
         logger.setLevel(level);

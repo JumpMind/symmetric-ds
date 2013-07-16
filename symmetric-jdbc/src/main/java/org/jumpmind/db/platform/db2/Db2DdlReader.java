@@ -166,7 +166,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                 }
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 String defaultValue = column.getDefaultValue();            
-                // DB2 stores default text values quoted
+                // DB2 stores default text values quoted.  Remove the quotes
                 if ((defaultValue.length() >= 2) && defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
                     defaultValue = defaultValue.substring(1, defaultValue.length()-1);
                 }

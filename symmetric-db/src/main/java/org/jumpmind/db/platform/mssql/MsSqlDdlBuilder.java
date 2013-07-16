@@ -37,7 +37,6 @@ import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
-import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.IModelChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
@@ -453,10 +452,6 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
-            } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
-                processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                
             } else if ((change instanceof ColumnChange) && (columnChanges != null)) {
                 /*
                  * We gather all changed columns because we can use the ALTER

@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.4.9</version>
     <name>parent</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -22,7 +22,7 @@
         <version.derby>10.9.1.0</version.derby>
         <version.hsqldb>2.2.8</version.hsqldb>
         <version.h2>1.3.164</version.h2>
-        <version.sqlite>3.7.15.SNAPSHOT.2</version.sqlite>
+        <version.sqlite>3.7.2</version.sqlite>
         <version.postgresql>9.2-1002-jdbc4</version.postgresql>
         <version.mysql>5.1.17</version.mysql>        
         <version.mariadb>1.1.1</version.mariadb>
@@ -245,118 +245,6 @@
             </extension>
         </extensions>
         <plugins>
-             <plugin>
-                 <groupId>com.mycila.maven-license-plugin</groupId>
-                 <artifactId>maven-license-plugin</artifactId>
-                 <version>1.10.b1</version>
-                 <configuration>
-                     <header>../symmetric-assemble/HEADER</header>
-                     <excludes>
-                        <exclude>**/*.vm</exclude>
-                        <exclude>**/CsvReader.java</exclude>
-                        <exclude>**/CsvWriter.java</exclude>
-                        <exclude>**/torque/doc/docbook/datamodel.css.vm                                                     </exclude>
-                        <exclude>**/torque/doc/docbook/datamodel.vm                                                         </exclude>
-                        <exclude>**/torque/doc/docbook/table.vm                                                             </exclude>
-                        <exclude>**/torque/doc/Control.vm                                                                   </exclude>
-                        <exclude>**/org/jumpmind/db/util/MultiInstanceofPredicate.java                                      </exclude>
-                        <exclude>**/org/jumpmind/db/util/CallbackClosure.java                                               </exclude>
-                        <exclude>**/org/jumpmind/db/model/TypeMap.java                                                      </exclude>
-                        <exclude>**/org/jumpmind/db/model/Database.java                                                     </exclude>
-                        <exclude>**/org/jumpmind/db/model/ModelException.java                                               </exclude>
-                        <exclude>**/org/jumpmind/db/model/ForeignKey.java                                                   </exclude>
-                        <exclude>**/org/jumpmind/db/model/IndexImpBase.java                                                 </exclude>
-                        <exclude>**/org/jumpmind/db/model/IndexColumn.java                                                  </exclude>
-                        <exclude>**/org/jumpmind/db/model/UniqueIndex.java                                                  </exclude>
-                        <exclude>**/org/jumpmind/db/model/IIndex.java                                                       </exclude>
-                        <exclude>**/org/jumpmind/db/model/Reference.java                                                    </exclude>
-                        <exclude>**/org/jumpmind/db/model/NonUniqueIndex.java                                               </exclude>
-                        <exclude>**/org/jumpmind/db/model/JdbcTypeCategoryEnum.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/model/Table.java                                                        </exclude>
-                        <exclude>**/org/jumpmind/db/model/Column.java                                                       </exclude>
-                        <exclude>**/org/jumpmind/db/alter/AddForeignKeyChange.java                                          </exclude>
-                        <exclude>**/org/jumpmind/db/alter/AddIndexChange.java                                               </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnDataTypeChange.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/alter/IModelChange.java                                                 </exclude>
-                        <exclude>**/org/jumpmind/db/alter/TableChange.java                                                  </exclude>
-                        <exclude>**/org/jumpmind/db/alter/RemoveColumnChange.java                                           </exclude>
-                        <exclude>**/org/jumpmind/db/alter/RemoveForeignKeyChange.java                                       </exclude>
-                        <exclude>**/org/jumpmind/db/alter/RemoveTableChange.java                                            </exclude>
-                        <exclude>**/org/jumpmind/db/alter/AddColumnChange.java                                              </exclude>
-                        <exclude>**/org/jumpmind/db/alter/AddPrimaryKeyChange.java                                          </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnDefaultValueChange.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnRequiredChange.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/alter/AddTableChange.java                                               </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ModelComparator.java                                              </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnSizeChange.java                                             </exclude>
-                        <exclude>**/org/jumpmind/db/alter/TableChangeImplBase.java                                          </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnChange.java                                                 </exclude>
-                        <exclude>**/org/jumpmind/db/alter/ColumnAutoIncrementChange.java                                    </exclude>
-                        <exclude>**/org/jumpmind/db/alter/RemoveIndexChange.java                                            </exclude>
-                        <exclude>**/org/jumpmind/db/alter/RemovePrimaryKeyChange.java                                       </exclude>
-                        <exclude>**/org/jumpmind/db/alter/PrimaryKeyChange.java                                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDdlBuilder.java                           </exclude>
-                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDdlBuilder.java                         </exclude>
-                        <exclude>**/org/jumpmind/db/platform/MetaDataColumnDescriptor.java                                  </exclude>
-                        <exclude>**/org/jumpmind/db/platform/ase/AseDdlBuilder.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/platform/IDatabasePlatform.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDdlBuilder.java                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/h2/H2DdlBuilder.java                                           </exclude>
-                        <exclude>**/org/jumpmind/db/platform/DatabaseMetaDataWrapper.java                                   </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDdlBuilder.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/DatabaseInfo.java                                              </exclude>
-                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDdlBuilder.java                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/DdlException.java                                              </exclude>
-                        <exclude>**/org/jumpmind/db/platform/AbstractDatabasePlatform.java                                  </exclude>
-                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDdlBuilder.java                                   </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDdlBuilder.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDdlBuilder.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/AbstractDdlBuilder.java                                        </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DdlBuilder.java                                 </exclude>
-                        <exclude>**/org/jumpmind/db/platform/db2/Db2DdlBuilder.java                                         </exclude>
-                        <exclude>**/org/jumpmind/db/platform/DefaultValueHelper.java                                        </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlBuilder.java                                   </exclude>
-                        <exclude>**/org/jumpmind/db/io/DatabaseXmlUtil.java                                                 </exclude>
-                        <exclude>**/schema/database.xsd                                                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/postgresql/package.html                                        </exclude>
-                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDdlReader.java                            </exclude>
-                        <exclude>**/org/jumpmind/db/platform/postgresql/PostgreSqlDatabasePlatform.java                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDatabasePlatform.java                   </exclude>
-                        <exclude>**/org/jumpmind/db/platform/sqlanywhere/SqlAnywhereDdlReader.java                          </exclude>
-                        <exclude>**/org/jumpmind/db/platform/JdbcDatabasePlatformFactory.java                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/ase/package.html                                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/ase/AseDdlReader.java                                          </exclude>
-                        <exclude>**/org/jumpmind/db/platform/ase/AseDatabasePlatform.java                                   </exclude>
-                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDdlReader.java                                </exclude>
-                        <exclude>**/org/jumpmind/db/platform/firebird/package.html                                          </exclude>
-                        <exclude>**/org/jumpmind/db/platform/firebird/FirebirdDatabasePlatform.java                         </exclude>
-                        <exclude>**/org/jumpmind/db/platform/h2/H2DatabasePlatform.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/h2/H2DdlReader.java                                            </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDdlReader.java                                      </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mysql/package.html                                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mysql/MySqlDatabasePlatform.java                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDdlReader.java                              </exclude>
-                        <exclude>**/org/jumpmind/db/platform/interbase/InterbaseDatabasePlatform.java                       </exclude>
-                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDdlReader.java                                    </exclude>
-                        <exclude>**/org/jumpmind/db/platform/oracle/package.html                                            </exclude>
-                        <exclude>**/org/jumpmind/db/platform/oracle/OracleDatabasePlatform.java                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDdlReader.java                                      </exclude>
-                        <exclude>**/org/jumpmind/db/platform/mssql/MsSqlDatabasePlatform.java                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/AbstractJdbcDdlReader.java                                     </exclude>
-                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDdlReader.java                                      </exclude>
-                        <exclude>**/org/jumpmind/db/platform/derby/DerbyDatabasePlatform.java                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/derby/package.html                                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DatabasePlatform.java                           </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb2/HsqlDb2DdlReader.java                                  </exclude>
-                        <exclude>**/org/jumpmind/db/platform/db2/Db2DdlReader.java                                          </exclude>
-                        <exclude>**/org/jumpmind/db/platform/db2/package.html                                               </exclude>
-                        <exclude>**/org/jumpmind/db/platform/db2/Db2DatabasePlatform.java                                   </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDatabasePlatform.java                             </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb/package.html                                            </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlReader.java                                    </exclude>                        
-                     </excludes>
-                 </configuration>
-            </plugin>                
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
                 <version>2.9</version>
@@ -375,18 +263,6 @@
                     <optimize>true</optimize>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.9</version>
-                <configuration>
-                    <signature>
-                      <groupId>org.codehaus.mojo.signature</groupId>
-                      <artifactId>java15</artifactId>
-                      <version>1.0</version>
-                    </signature>
-                </configuration>
-            </plugin>             
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.2</version>
@@ -449,8 +325,6 @@
                         </additionalClasspathElement>
                         <additionalClasspathElement> ${user.home}/.symmetricds/lib/sqljdbc4.jar 
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/jconn4.jar 
-                        </additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
@@ -461,18 +335,18 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -484,7 +358,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -495,13 +369,13 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -513,7 +387,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -524,54 +398,39 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-csv</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
-            <dependency>
-                <groupId>org.jumpmind.symmetric</groupId>
-                <artifactId>symmetric-oracle</artifactId>
-                <version>3.5.0-SNAPSHOT</version>                
-            </dependency>        
-            <dependency>
-                <groupId>org.jumpmind.symmetric</groupId>
-                <artifactId>symmetric-postgres</artifactId>
-                <version>3.5.0-SNAPSHOT</version>                
-            </dependency>        
-            <dependency>
-                <groupId>org.jumpmind.symmetric</groupId>
-                <artifactId>symmetric-ftp</artifactId>
-                <version>3.5.0-SNAPSHOT</version>                
-            </dependency>                
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
                 <type>test-jar</type>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-server</artifactId>
-                <version>3.5.0-SNAPSHOT</version>
+                <version>3.4.9</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
@@ -718,11 +577,6 @@
                 <artifactId>ant</artifactId>
                 <version>1.8.1</version>
             </dependency>
-            <dependency>
-                <groupId>bouncycastle</groupId>
-                <artifactId>bcprov-jdk15</artifactId>
-                <version>136</version>
-            </dependency>
             <!-- Commons -->
             <dependency>
                 <groupId>commons-io</groupId>
@@ -742,7 +596,7 @@
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
-                <version>1.3</version>
+                <version>1.2.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-cli</groupId>
@@ -799,7 +653,7 @@
             <dependency>
                 <groupId>org.beanshell</groupId>
                 <artifactId>bsh</artifactId>
-                <version>2.0b5</version>
+                <version>2.0b4</version>
             </dependency>
             <!-- Should the jetty stuff be split to another project: symmetric-jetty? -->
             <dependency>
@@ -892,8 +746,8 @@
                 <version>${version.h2}</version>
             </dependency>
             <dependency>
-                <groupId>org.jumpmind.symmetric.jdbc</groupId>
-                <artifactId>xerial-sqlite</artifactId>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
                 <version>${version.sqlite}</version>
             </dependency>
         </dependencies>

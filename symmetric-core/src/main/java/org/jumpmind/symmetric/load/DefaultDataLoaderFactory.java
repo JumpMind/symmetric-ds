@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.load;
 
 import java.util.HashMap;
@@ -66,7 +46,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                            DatabaseWriter writer = transformWriter
+                        	DatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
@@ -78,7 +58,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DatabaseWriter writer = transformWriter
+                        	DatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
@@ -109,7 +89,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
         settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
-
+        
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
@@ -117,7 +97,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting); // ADB
+                    byTable.put(qualifiedTableName, conflictSetting);
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {

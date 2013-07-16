@@ -1,29 +1,33 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -32,12 +36,12 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -114,11 +118,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                    (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
                                    meetsMinimumTime = false; 
                                 }
-                                if (availableThreads > 0 && meetsMinimumTime) {
-                                    if (nodeCommunicationService.execute(nodeCommunication, statuses,
-                                            this)) {
-                                        availableThreads--;
-                                    }
+                                if (availableThreads > 0 && !nodeCommunication.isLocked() && meetsMinimumTime) {
+                                    nodeCommunicationService.execute(nodeCommunication, statuses,
+                                            this);
+                                    availableThreads--;
                                 }
                             }
                         } else {
@@ -188,11 +191,54 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, transport);
             if (extractedBatches.size() > 0) {
+                Set<Long> batchIds = new HashSet<Long>(extractedBatches.size());
+                for (OutgoingBatch outgoingBatch : extractedBatches) {
+                    if (outgoingBatch.getStatus() == OutgoingBatch.Status.LD) {
+                       batchIds.add(outgoingBatch.getBatchId());
+                    }
+                }
                 
                 log.info("Push data sent to {}", remote);
+                BufferedReader reader = transport.readResponse();
+                String ackString = reader.readLine();
+                String ackExtendedString = reader.readLine();
+
+                log.debug("Reading ack: {}", ackString);
+                log.debug("Reading extend ack: {}", ackExtendedString);
+
+                String line = null;
+                do {
+                    line = reader.readLine();
+                    if (line != null) {
+                        log.info("Read another unexpected line {}", line);
+                    }
+                } while (line != null);
+
+                if (StringUtils.isBlank(ackString)) {
+                    log.error("Did not receive an acknowledgement for the batches sent");
+                }
+
+                List<BatchAck> batches = transportManager.readAcknowledgement(ackString,
+                        ackExtendedString);
+
+                long batchIdInError = Long.MAX_VALUE;
+                for (BatchAck batchInfo : batches) {
+                    batchIds.remove(batchInfo.getBatchId());
+                    if (!batchInfo.isOk()) {
+                        batchIdInError = batchInfo.getBatchId();
+                    }
+                    log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
+                            (batchInfo.isOk() ? "OK" : "ER"));
+                    acknowledgeService.ack(batchInfo);
+                }
                 
-                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
-                status.updateOutgoingStatus(extractedBatches, batchAcks);
+                for (Long batchId : batchIds) {
+                    if (batchId < batchIdInError) {
+                        log.error("We expected but did not receive an ack for batch {}", batchId);
+                    }
+                }
+
+                status.updateOutgoingStatus(extractedBatches, batches);
             }
             
             processInfo.setStatus(Status.DONE);

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.jumpmind.db.alter.AddColumnChange;
-import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Database;
@@ -131,10 +130,6 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
 
                 processChange(currentModel, desiredModel, removeColumnChange, ddl);
-                changeIt.remove();
-            } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
-                processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             }
         }

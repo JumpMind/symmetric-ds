@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
@@ -31,7 +11,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         // @formatter:off
-
+        
         putSql("countTriggerRoutersByRouterIdSql",
            "select count(*) from $(trigger_router) where router_id=?   ");
 
@@ -60,7 +40,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTriggerRoutersColumnList",
                 ""
-                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order,tr.initial_load_select,tr.initial_load_delete_stmt,tr.initial_load_batch_count,tr.ping_back_enabled, tr.enabled   ");
+                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.ping_back_enabled, tr.enabled   ");
 
         putSql("selectRoutersColumnList",
                 ""
@@ -76,7 +56,6 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  t.excluded_column_names, t.sync_key_names,                                                       "
                         + "  t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,                   "
                         + "  t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,                "
-                        + "  t.custom_on_insert_text,t.custom_on_update_text,t.custom_on_delete_text,                               "
                         + "  t.tx_id_expression,t.external_select,t.create_time as t_create_time,                             "
                         + "  t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by                   ");
 
@@ -98,7 +77,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("allTriggerHistSql",
                 ""
-                        + "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   "
+                        + "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message   "
                         + "  from $(trigger_hist)                                                                                                                                                                                                                                                      ");
 
         putSql("triggerHistBySourceTableWhereSql", ""
@@ -107,21 +86,21 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("latestTriggerHistSql",
                 ""
                         + "select                                                                                                                                                                                                                                                                       "
-                        + "  trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   "
+                        + "  trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message   "
                         + "  from $(trigger_hist) where trigger_hist_id = (select max(trigger_hist_id)                                                                                                                                                                                            "
                         + "  from $(trigger_hist) where trigger_id=? and source_table_name=? and inactive_time is null)                                                                                                                                                                                                                             ");
 
         putSql("triggerHistSql",
                 ""
                         + "select                                                                                                                                                                                                                                                                       "
-                        + "  trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   "
+                        + "  trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message   "
                         + "  from $(trigger_hist) where trigger_hist_id = ?                                                                                                                                                                                                                       ");
 
         putSql("insertTriggerHistorySql",
                 ""
                         + "insert into $(trigger_hist)                                                                                                                                                                                                                              "
-                        + "  (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                                                                                                                                          ");
+                        + "  (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                                                                                                                                          ");
 
         putSql("deleteTriggerSql", "" + "delete from $(trigger) where trigger_id=?   ");
 
@@ -133,9 +112,9 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "insert into $(trigger)                                                                                                         "
                         + "  (source_catalog_name,source_schema_name,source_table_name,channel_id,sync_on_update,sync_on_insert,sync_on_delete,                 "
                         + "  sync_on_incoming_batch,use_stream_lobs,use_capture_lobs,use_capture_old_data,use_handle_key_updates,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,   "
-                        + "  sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,custom_on_update_text,custom_on_insert_text,custom_on_delete_text,tx_id_expression,excluded_column_names, sync_key_names,            "
+                        + "  sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,excluded_column_names, sync_key_names,            "
                         + "  create_time,last_update_by,last_update_time,external_select,trigger_id)                                                            "
-                        + "  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                             ");
+                        + "  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                             ");
 
         putSql("updateTriggerSql",
                 ""
@@ -143,8 +122,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  set source_catalog_name=?,source_schema_name=?,source_table_name=?,                                                                            "
                         + "  channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                                               "
                         + "  sync_on_incoming_batch=?,use_stream_lobs=?,use_capture_lobs=?,use_capture_old_data=?,use_handle_key_updates=?,name_for_update_trigger=?,name_for_insert_trigger=?,        "
-                        + "  name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,sync_on_delete_condition=?,custom_on_update_text=?,custom_on_insert_text=?,custom_on_delete_text=?,                                             "
-                        + "  tx_id_expression=?,excluded_column_names=?,sync_key_names=?,last_update_by=?,last_update_time=?,external_select=?   "
+                        + "  name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,                                              "
+                        + "  sync_on_delete_condition=?,tx_id_expression=?,excluded_column_names=?,sync_key_names=?,last_update_by=?,last_update_time=?,external_select=?   "
                         + "  where trigger_id=?                                                                                                            ");
 
         putSql("insertRouterSql",
@@ -168,13 +147,13 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("insertTriggerRouterSql",
                 ""
                         + "insert into $(trigger_router)                                                                                             "
-                        + "  (initial_load_order,initial_load_select,initial_load_delete_stmt,initial_load_batch_count,ping_back_enabled,create_time,last_update_by,last_update_time,enabled,trigger_id,router_id)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
+                        + "  (initial_load_order,initial_load_select, initial_load_delete_stmt, ping_back_enabled,create_time,last_update_by,last_update_time,enabled,trigger_id,router_id)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
 
         putSql("updateTriggerRouterSql",
                 ""
                         + "update $(trigger_router)                                                                             "
-                        + "  set initial_load_order=?,initial_load_select=?,initial_load_delete_stmt=?,initial_load_batch_count=?,ping_back_enabled=?,last_update_by=?,last_update_time=?,enabled=?   "
+                        + "  set initial_load_order=?,initial_load_select=?,initial_load_delete_stmt=?, ping_back_enabled=?,last_update_by=?,last_update_time=?,enabled=?   "
                         + "  where trigger_id=? and router_id=?                                                                       ");
 
         putSql("selectTriggerTargetSql",
@@ -191,8 +170,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 "from $(router) r where r.source_node_group_id=? and r.target_node_group_id=? order by r.router_id   ");
 
         putSql("selectTriggerByIdSql", "" + "where t.trigger_id = ?   ");
-
-        putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );
+        
+        putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );       
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(trigger_router) where last_update_time is not null" );
 

@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.transport.http;
 
 import java.io.BufferedReader;
@@ -155,18 +156,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         pw.println(data);
         pw.flush();
     }
-    
-    public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("filesync/pull", remote, local,
-                securityToken, registrationUrl)));
-        if (requestProperties != null) {
-            for (String key : requestProperties.keySet()) {
-                conn.addRequestProperty(key, requestProperties.get(key));
-            }
-        }
-        return new HttpIncomingTransport(conn, parameterService);
-    }
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
@@ -185,16 +174,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
-                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false);
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
     }
-    
-    public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
-            String securityToken, String registrationUrl) throws IOException {
-        URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
-                getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
-                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), true);
-    }    
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
             throws IOException {
@@ -232,15 +213,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestMethod("GET");
         return conn;
-    }
-    
-    protected static InputStream getInputStreamFrom(HttpURLConnection connection) throws IOException {
-        String type = connection.getContentEncoding();
-        InputStream in = connection.getInputStream();
-        if (!StringUtils.isBlank(type) && type.equals("gzip")) {
-            in = new GZIPInputStream(in);
-        }
-        return in;
     }
 
     /**

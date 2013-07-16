@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
@@ -118,35 +119,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             updateOutgoingBatch(batch);
         }
     }
-    
-    public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            updateOutgoingBatch(transaction, outgoingBatch);
-            transaction.commit();            
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;  
-        } finally {
-            close(transaction);
-        }
-    }
 
-    public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
+    public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
-        transaction.prepareAndExecute(
+        sqlTemplate.update(
                 getSql("updateOutgoingBatchSql"),
                 new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(),
-                       outgoingBatch.isExtractJobFlag() ? 1: 0, 
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0,
                         outgoingBatch.getByteCount(), outgoingBatch.getExtractCount(),
                         outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
@@ -161,11 +140,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
                         outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(),
                         outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
-                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(),
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC,
                         Types.VARCHAR });
     }
 
@@ -175,16 +154,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             transaction = sqlTemplate.startSqlTransaction();
             insertOutgoingBatch(transaction, outgoingBatch);
             transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;             
         } finally {
             close(transaction);
         }
@@ -199,7 +168,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
-                outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
+                outgoingBatch.getLoadId(), outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
                         .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
                         .getOtherEventCount(), outgoingBatch.getLastUpdatedHostName(),
                 outgoingBatch.getCreateBy());
@@ -212,7 +181,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
-                    new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                    new int[] { Types.NUMERIC, Types.VARCHAR });
         } else {
             /*
              * Pushing to an older version of symmetric might result in a batch
@@ -221,7 +190,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
                     new OutgoingBatchMapper(true, false), new Object[] { batchId },
-                    new int[] { symmetricDialect.getSqlTypeForIds() });
+                    new int[] { Types.NUMERIC });
         }
         if (list != null && list.size() > 0) {
             return list.get(0);
@@ -316,7 +285,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
                 maxNumberOfBatchesToSelect,
                 new OutgoingBatchMapper(includeDisabledChannels, true),
-                new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+                new Object[] { nodeId, OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                         OutgoingBatch.Status.IG.name() }, null);
@@ -606,7 +575,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 batch.setLoadFlag(rs.getBoolean("load_flag"));
                 batch.setErrorFlag(rs.getBoolean("error_flag"));
                 batch.setCommonFlag(rs.getBoolean("common_flag"));
-                batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
                 batch.setLoadId(rs.getLong("load_id"));
                 batch.setCreateBy(rs.getString("create_by"));
                 return batch;

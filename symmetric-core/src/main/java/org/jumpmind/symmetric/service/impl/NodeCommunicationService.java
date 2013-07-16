@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
@@ -83,19 +63,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
     }
-    
-    public NodeCommunication find(String nodeId, CommunicationType communicationType) {
-        NodeCommunication lock = sqlTemplate.queryForObject(
-                getSql("selectNodeCommunicationByNodeIdSql"), new NodeCommunicationMapper(),
-                nodeId, communicationType.name());
-        if (lock == null) {
-            lock = new NodeCommunication();
-            lock.setNodeId(nodeId);
-            lock.setCommunicationType(communicationType);
-            save(lock);
-        }
-        return lock;
-    }
 
     public List<NodeCommunication> list(CommunicationType communicationType) {
         initialize();
@@ -105,10 +72,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
-            case FILE_PULL:
                 nodesToCommunicateWith = nodeService.findNodesToPull();
                 break;
-            case FILE_PUSH:
             case PUSH:
                 nodesToCommunicateWith = nodeService.findNodesToPushTo();
                 break;
@@ -193,17 +158,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
                 break;
-            case FILE_PULL:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            case FILE_PUSH:
-                threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
-                break;
-            case EXTRACT:
-                threadCountParameter = ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER;                
-                break;
-            default:
-                break;
         }
         int threadCount = parameterService.getInt(threadCountParameter, 1);
         
@@ -266,17 +220,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 parameter = ParameterConstants.PUSH_LOCK_TIMEOUT_MS;
                 break;
-            case FILE_PULL:
-                parameter = ParameterConstants.FILE_PULL_LOCK_TIMEOUT_MS;
-                break;
-            case FILE_PUSH:
-                parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
-                break;
-            case EXTRACT:
-                parameter = ParameterConstants.INITIAL_LOAD_EXTRACT_TIMEOUT_MS;
-                break;
-            default:
-                break;
         }
         return DateUtils.add(new Date(), Calendar.MILLISECOND,
                 -parameterService.getInt(parameter, 7200000));
@@ -288,11 +231,12 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
         boolean locked = sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now,
                 nodeCommunication.getNodeId(), nodeCommunication.getCommunicationType().name(),
-                lockTimeout) == 1;
+                lockTimeout, clusterService.getServerId()) == 1;
         if (locked) {
             nodeCommunication.setLastLockTime(now);
             nodeCommunication.setLockingServerId(clusterService.getServerId());
-            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
+            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNode());
+            ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
             Runnable r = new Runnable() {
                 public void run() {
                     long ts = System.currentTimeMillis();
@@ -311,11 +255,10 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 }
             };
             if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
-                r.run();
+                    r.run();
             } else {
-                ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
                 service.execute(r);
-            }     
+            }            
         }
         return locked;
     }
@@ -365,7 +308,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 attempts++;
             };
         } while (!unlocked);
-    }    
+    }  
 
     public void stop() {
         Collection<CommunicationType> services = new HashSet<NodeCommunication.CommunicationType>(

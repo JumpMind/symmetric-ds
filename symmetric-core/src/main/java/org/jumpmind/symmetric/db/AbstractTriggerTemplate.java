@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.db;
 
 import java.sql.Types;
@@ -44,7 +45,6 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
-@SuppressWarnings("deprecation")
 abstract public class AbstractTriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";
@@ -83,8 +83,6 @@ abstract public class AbstractTriggerTemplate {
 
     protected String blobColumnTemplate;
 
-    protected String imageColumnTemplate;
-
     protected String wrappedBlobColumnTemplate;
 
     protected String booleanColumnTemplate;
@@ -105,17 +103,17 @@ abstract public class AbstractTriggerTemplate {
 
     protected AbstractTriggerTemplate() {
     }
-
+    
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
 
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
             TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
-
+        
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
-
+        
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
@@ -172,7 +170,7 @@ abstract public class AbstractTriggerTemplate {
                 .getSourceCatalogName()) + "." : "")
                 + schemaPlus;
         return catalogPlus;
-    }
+    }    
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
@@ -184,10 +182,10 @@ abstract public class AbstractTriggerTemplate {
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
-
+        
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
-
+                triggerHistory.getParsedPkColumnNames(), true);        
+        
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getColumns();
@@ -243,14 +241,14 @@ abstract public class AbstractTriggerTemplate {
     public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
-
+        
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
-
+        
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
     		ddl = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
-    	}
+    	}    		
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
@@ -262,10 +260,10 @@ abstract public class AbstractTriggerTemplate {
     public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
-
+        
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
-
+        
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
@@ -314,14 +312,6 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("syncOnDeleteCondition",
                 symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);
-
-        ddl = FormatUtils.replace("custom_on_insert_text",
-                trigger.getCustomOnInsertText()==null ? "" : trigger.getCustomOnInsertText(), ddl);
-        ddl = FormatUtils.replace("custom_on_update_text",
-                trigger.getCustomOnUpdateText()==null ? "" : trigger.getCustomOnUpdateText(), ddl);
-        ddl = FormatUtils.replace("custom_on_delete_text",
-                trigger.getCustomOnDeleteText()==null ? "" : trigger.getCustomOnDeleteText(), ddl);
-
         ddl = FormatUtils.replace("dataHasChangedCondition", symmetricDialect
                 .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
                 ddl);
@@ -617,14 +607,6 @@ abstract public class AbstractTriggerTemplate {
                                 .contains(TypeMap.GEOMETRY))
                                 && StringUtils.isNotBlank(geometryColumnTemplate)) {
                             templateToUse = geometryColumnTemplate;
-                        } else if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
-                                .contains(TypeMap.IMAGE))
-                                && StringUtils.isNotBlank(imageColumnTemplate)) {
-                            if (isOld) {
-                                templateToUse = emptyColumnTemplate;
-                            } else {
-                                templateToUse = imageColumnTemplate;
-                            }
                         } else if (isOld && symmetricDialect.needsToSelectLobData()) {
                             templateToUse = emptyColumnTemplate;
                         } else {
@@ -872,14 +854,6 @@ abstract public class AbstractTriggerTemplate {
         this.dateColumnTemplate = dateColumnTemplate;
     }
 
-    public String getImageColumnTemplate() {
-        return imageColumnTemplate;
-    }
-
-    public void setImageColumnTemplate(String imageColumnTemplate) {
-        this.imageColumnTemplate = imageColumnTemplate;
-    }
-
     protected class ColumnString {
 
         String columnString;
@@ -895,15 +869,5 @@ abstract public class AbstractTriggerTemplate {
             return StringUtils.isBlank(columnString) ? "null" : columnString;
         }
 
-    }
-
-    public int toHashedValue() {
-        int hashedValue = 0;
-        if (sqlTemplates != null) {
-            for (String key : sqlTemplates.keySet()) {
-                hashedValue += sqlTemplates.get(key).hashCode();
-            }
-        }
-        return hashedValue;
     }
 }

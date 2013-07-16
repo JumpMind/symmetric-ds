@@ -35,7 +35,6 @@ import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
-import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -92,10 +91,6 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
                 processChange(currentModel, desiredModel, addColumnChange, ddl);
-                changeIt.remove();
-            } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
-                processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);

@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.service.impl;
 
@@ -27,10 +27,9 @@ import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.model.BatchAck;
-import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -63,10 +62,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 createSqlReplacementTokens()));
     }
 
-    public BatchAckResult ack(final BatchAck batch) {
+    public void ack(final BatchAck batch) {
 
-    	BatchAckResult result = new BatchAckResult(batch);
-    	
         if (batchEventListeners != null) {
             for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
                 batchEventListener.onAcknowledgeEvent(batch);
@@ -126,17 +123,13 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 }
 
-                //TODO: I should really be able to catch errors here, but can't do to how this is coded
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});
-                result.setOk(false);
             }
         }
-        return result;
     }
-    
 
     public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner) {
 
@@ -145,13 +138,4 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
         batchEventListeners.add(statusChangeListner);
     }
-
-	public List<BatchAckResult> ack(List<BatchAck> batches) {
-		
-		List<BatchAckResult> results = new ArrayList<BatchAckResult>();
-		for (BatchAck batch:batches) {
-			results.add(ack(batch));
-		}
-		return results;
-	}
 }

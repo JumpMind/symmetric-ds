@@ -27,7 +27,6 @@ import java.util.List;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
-import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
@@ -278,10 +277,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                     processChange(currentModel, desiredModel, removeColumnChange, ddl);
                     changeIt.remove();
                 }
-            } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
-                processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();
             }
         }
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {

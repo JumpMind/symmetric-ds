@@ -63,7 +63,7 @@ public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getDefaultSchema() {
-        return getDefaultCatalog();
+        return null;
     }
 
     public String getDefaultCatalog() {

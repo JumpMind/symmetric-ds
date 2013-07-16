@@ -1,22 +1,22 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
 package org.jumpmind.symmetric.load;
 
@@ -32,7 +32,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -57,7 +56,6 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     private static final String DATA = "data";
     private static final String ERROR = "error";
     private static final String ENGINE = "engine";
-    private static final String LOG = "log";
     private final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
     private final String BATCH_COMPLETE_SCRIPTS_KEY = String.format("%d.BatchCompleteScripts",
             hashCode());
@@ -92,16 +90,12 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         processLoadFilters(context, table, data, null, WriteMethod.AFTER_WRITE);
     }
 
-    public boolean handleError(DataContext context, Table table, CsvData data, Exception error) {
+    public boolean handleError(DataContext context, Table table, CsvData data, Exception error) {        
         return processLoadFilters(context, table, data, error, WriteMethod.HANDLE_ERROR);
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
-        String tableName = table.getFullyQualifiedTableName();
-        if (isIgnoreCase()) {
-            tableName = tableName.toUpperCase();
-        }
-        return loadFilters.containsKey(tableName);
+        return false;
     }
 
     public void earlyCommit(DataContext context) {
@@ -131,7 +125,6 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
             throws EvalError {
 
-        interpreter.set(LOG, log);
         interpreter.set(ENGINE, this.symmetricEngine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
@@ -142,14 +135,12 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
             Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.ROW_DATA);
             for (String columnName : sourceValues.keySet()) {
-                interpreter.set(columnName, sourceValues.get(columnName));
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
             }
 
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
-                interpreter.set(OLD_ + columnName, sourceValues.get(columnName));
                 interpreter.set(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
             }
         }
@@ -217,76 +208,62 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     }
 
-    protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
-            Exception error, WriteMethod writeMethod) {
+    protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error,
+            WriteMethod writeMethod) {
 
         boolean writeRow = true;
         LoadFilter currentFilter = null;
 
         List<LoadFilter> wildcardLoadFilters = null;
-        if (table != null) {
-            if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
-                wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(
-                        table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
+        if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
+            wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
+        }
+        List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(table.getFullyQualifiedTableName());
+        int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0) + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
+
+        if (size > 0) {
+            List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
+            if (wildcardLoadFilters != null) {
+                loadFiltersForTable.addAll(wildcardLoadFilters);
             }
-
-            String tableName = table.getFullyQualifiedTableName();
-            if (isIgnoreCase()) {
-                tableName = tableName.toUpperCase();
+            
+            if (tableSpecificLoadFilters != null) {
+                loadFiltersForTable.addAll(tableSpecificLoadFilters);
             }
-            List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
-            int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0)
-                    + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
+            try {
+                Interpreter interpreter = getInterpreter(context);
+                bind(interpreter, context, table, data, error);
+                for (LoadFilter filter : loadFiltersForTable) {
+                    currentFilter = filter;
+                    addBatchScriptsToContext(context, filter);
+                    if (filter.isFilterOnDelete()
+                            && data.getDataEventType().equals(DataEventType.DELETE)
+                            || filter.isFilterOnInsert()
+                            && data.getDataEventType().equals(DataEventType.INSERT)
+                            || filter.isFilterOnUpdate()
+                            && data.getDataEventType().equals(DataEventType.UPDATE)) {
+                        Object result = null;
+                        if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
+                                && filter.getBeforeWriteScript() != null) {
+                            result = interpreter.eval(filter.getBeforeWriteScript());
+                        } else if (writeMethod.equals(WriteMethod.AFTER_WRITE)
+                                && filter.getAfterWriteScript() != null) {
+                            result = interpreter.eval(filter.getAfterWriteScript());
+                        } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR)
+                                && filter.getHandleErrorScript() != null) {
+                            result = interpreter.eval(filter.getHandleErrorScript());
+                        }
 
-            if (size > 0) {
-                List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(size);
-                if (wildcardLoadFilters != null) {
-                    loadFiltersForTable.addAll(wildcardLoadFilters);
-                }
-
-                if (tableSpecificLoadFilters != null) {
-                    loadFiltersForTable.addAll(tableSpecificLoadFilters);
-                }
-                try {
-                    Interpreter interpreter = getInterpreter(context);
-                    bind(interpreter, context, table, data, error);
-                    for (LoadFilter filter : loadFiltersForTable) {
-                        currentFilter = filter;
-                        addBatchScriptsToContext(context, filter);
-                        if (filter.isFilterOnDelete()
-                                && data.getDataEventType().equals(DataEventType.DELETE)
-                                || filter.isFilterOnInsert()
-                                && data.getDataEventType().equals(DataEventType.INSERT)
-                                || filter.isFilterOnUpdate()
-                                && data.getDataEventType().equals(DataEventType.UPDATE)) {
-                            Object result = null;
-                            if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
-                                    && filter.getBeforeWriteScript() != null) {
-                                result = interpreter.eval(filter.getBeforeWriteScript());
-                            } else if (writeMethod.equals(WriteMethod.AFTER_WRITE)
-                                    && filter.getAfterWriteScript() != null) {
-                                result = interpreter.eval(filter.getAfterWriteScript());
-                            } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR)
-                                    && filter.getHandleErrorScript() != null) {
-                                result = interpreter.eval(filter.getHandleErrorScript());
-                            }
-
-                            if (result != null && result.equals(Boolean.FALSE)) {
-                                writeRow = false;
-                            }
+                        if (result != null && result.equals(Boolean.FALSE)) {
+                            writeRow = false;
                         }
                     }
-                } catch (EvalError ex) {
-                    processError(currentFilter, table, ex);
                 }
-            }
+            } catch (EvalError ex) {     
+                processError(currentFilter, table, ex);
+            } 
         }
 
         return writeRow;
-    }
-
-    protected boolean isIgnoreCase() {
-        return symmetricEngine.getParameterService()
-                .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
     }
 }

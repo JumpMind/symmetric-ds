@@ -1,27 +1,28 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
@@ -42,13 +43,10 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     protected IParameterService parameterService;
     
     protected INodeService nodeService;
-    
-    protected ISecurityService securityService;
 
-    public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService, ISecurityService securityService) {
+    public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService) {
         this.parameterService = parameterService;
         this.nodeService = nodeService;
-        this.securityService = securityService;
     }        
     
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
@@ -106,7 +104,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
     }
     
     public String generatePassword(Node node) {
-        return securityService.nextSecureHexString(30);
+        return new SecurityService().nextSecureHexString(30);
     }
  
     protected String evaluateScript(Node node, String remoteHost, String remoteAddress) {

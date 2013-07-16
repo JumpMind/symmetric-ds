@@ -1,23 +1,24 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
+ * with this work for additional information regarding 
  * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under the License. 
  */
+
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -71,7 +72,7 @@ public class Trigger implements Serializable {
     private boolean useCaptureLobs = false;
 
     private boolean useCaptureOldData = true;
-
+    
     private boolean useHandleKeyUpdates = false;
 
     private String nameForInsertTrigger;
@@ -85,12 +86,6 @@ public class Trigger implements Serializable {
     private String syncOnInsertCondition = DEFAULT_CONDITION;
 
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
-
-    private String customOnUpdateText;
-
-    private String customOnInsertText;
-
-    private String customOnDeleteText;
 
     private String excludedColumnNames = null;
 
@@ -168,7 +163,7 @@ public class Trigger implements Serializable {
                     log.error("The sync key column '{}' was specified for the '{}' trigger but was not found in the table", syncKey, triggerId);
                 }
             }
-
+            
             if (columns.size() > 0) {
                 return columns.toArray(new Column[columns.size()]);
             } else {
@@ -363,30 +358,6 @@ public class Trigger implements Serializable {
         this.syncOnDeleteCondition = syncOnDeleteCondition;
     }
 
-    public String getCustomOnUpdateText() {
-        return customOnUpdateText;
-    }
-
-    public void setCustomOnUpdateText(String customOnUpdateText) {
-        this.customOnUpdateText = customOnUpdateText;
-    }
-
-    public String getCustomOnInsertText() {
-        return customOnInsertText;
-    }
-
-    public void setCustomOnInsertText(String customOnInsertText) {
-        this.customOnInsertText = customOnInsertText;
-    }
-
-    public String getCustomOnDeleteText() {
-        return customOnDeleteText;
-    }
-
-    public void setCustomOnDeleteText(String customOnDeleteText) {
-        this.customOnDeleteText = customOnDeleteText;
-    }
-
     public String getExcludedColumnNames() {
         return excludedColumnNames;
     }
@@ -488,7 +459,7 @@ public class Trigger implements Serializable {
             return Collections.EMPTY_LIST;
         }
     }
-
+    
     public String getFullyQualifiedSourceTableName() {
         return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName, null);
     }
@@ -519,7 +490,7 @@ public class Trigger implements Serializable {
         hashedValue += useCaptureLobs ? "useCaptureLobs".hashCode() : 0;
         hashedValue += useCaptureOldData ? "useCaptureOldData".hashCode() : 0;
         hashedValue += useHandleKeyUpdates ? "useHandleKeyUpdates".hashCode() : 0;
-
+        
 
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();
@@ -543,18 +514,6 @@ public class Trigger implements Serializable {
 
         if (null != syncOnDeleteCondition) {
             hashedValue += syncOnDeleteCondition.hashCode();
-        }
-
-        if (null != customOnUpdateText) {
-            hashedValue += customOnUpdateText.hashCode();
-        }
-
-        if (null != customOnInsertText) {
-            hashedValue += customOnInsertText.hashCode();
-        }
-
-        if (null != customOnDeleteText) {
-            hashedValue += customOnDeleteText.hashCode();
         }
 
         if (null != excludedColumnNames) {
