@@ -100,6 +100,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private List<String> extraConfigTables = new ArrayList<String>();
 
     private Date lastUpdateTime;
+    
+    private Object cacheLock = new Object(); 
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -600,7 +602,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (cache == null
                 || refreshCache
                 || System.currentTimeMillis() - this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
-            synchronized (this) {
+            synchronized (cacheLock) {
                 this.triggerRouterCacheTime = System.currentTimeMillis();
                 Map<String, TriggerRoutersCache> newTriggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
                 List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(myNodeGroupId);
@@ -671,7 +673,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Map<String, Trigger> cache = this.triggersCache;
         if (cache == null || !cache.containsKey(triggerId) || refreshCache
                 || (System.currentTimeMillis() - this.triggersCacheTime) > triggerCacheTimeoutInMs) {
-            synchronized (this) {
+            synchronized (cacheLock) {
                 this.triggersCacheTime = System.currentTimeMillis();
                 List<Trigger> triggers = new ArrayList<Trigger>(getTriggers());
                 triggers.addAll(buildTriggersForSymmetricTables(Version.version()));
@@ -695,7 +697,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Map<String, Router> cache = this.routersCache;
         if (cache == null || refreshCache
                 || System.currentTimeMillis() - this.routersCacheTime > routerCacheTimeoutInMs) {
-            synchronized (this) {
+            synchronized (cacheLock) {
                 this.routersCacheTime = System.currentTimeMillis();
                 List<Router> routers = getRouters();
                 cache = new HashMap<String, Router>(routers.size());
@@ -1011,7 +1013,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void clearCache() {
-        synchronized (this.getClass()) {
+        synchronized (cacheLock) {
             this.triggerRouterCacheTime = 0;
             this.routersCacheTime = 0;
             this.triggersCacheTime = 0;
@@ -1079,6 +1081,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 dropTriggers(history, sqlBuffer);
             }
         }
+    }
+    
+    public void dropTriggers(TriggerHistory history) {
+        dropTriggers(history, null);
     }
 
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
