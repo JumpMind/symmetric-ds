@@ -1081,7 +1081,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected Table lookupTableAtTarget(Table sourceTable) {
-        String tableNameKey = sourceTable.getFullyQualifiedTableName();
+        String tableNameKey = sourceTable.getTableKey();
         Table table = targetTables.get(tableNameKey);
         if (table == null) {
             table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
@@ -1109,6 +1109,8 @@ public class DatabaseWriter implements IDataWriter {
                         }
                     }
                 }
+                
+                targetTables.put(tableNameKey, table);
             }
         }
         return table;

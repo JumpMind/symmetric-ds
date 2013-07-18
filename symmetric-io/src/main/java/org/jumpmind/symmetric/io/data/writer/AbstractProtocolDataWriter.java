@@ -131,12 +131,13 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
             }
             
+            String tableKey = table.getTableKey();
             println(CsvConstants.TABLE, table.getName());
-            if (!processedTables.containsKey(table.getName()) || 
-                    !processedTables.get(table.getName()).equals(table)) {
+            if (!processedTables.containsKey(tableKey) || 
+                    !processedTables.get(tableKey).equals(table)) {
                 println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
                 println(CsvConstants.COLUMNS, table.getColumns());
-                this.processedTables.put(table.getName(), table);
+                this.processedTables.put(tableKey, table);
             }
             return true;
         } else {

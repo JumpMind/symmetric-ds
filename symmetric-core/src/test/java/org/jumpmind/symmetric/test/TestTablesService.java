@@ -104,7 +104,7 @@ public class TestTablesService extends AbstractService {
                         + tableName + " where test_id=?", id);
                 Assert.assertEquals(
                         "The blob column for test_use_stream_lob was not loaded into the client database",
-                        expected, values != null ? new String((byte[]) values.get("TEST_BLOB")) : null);
+                        expected, values != null && values.get("TEST_BLOB") != null ? new String((byte[]) values.get("TEST_BLOB")) : null);
             }
         }
     }

@@ -307,6 +307,23 @@ public class Table implements Serializable, Cloneable {
         }
     }
     
+    public void setPrimaryKeys(String[] primaryKeys) {
+        if (primaryKeys != null) {
+            for (Column column : columns) {
+                boolean foundMatch = false;
+                for (String primaryKey : primaryKeys) {
+                    if (column.getName().equals(primaryKey)) {
+                        column.setPrimaryKey(true);
+                        foundMatch = true;
+                    }
+                }
+                if (!foundMatch) {
+                    column.setPrimaryKey(false);
+                }
+            }
+        }
+    }
+    
     public void addColumns(String[] columnNames) {
         if (columnNames != null) {
             for (String columnName : columnNames) {
@@ -879,7 +896,7 @@ public class Table implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         result.append("Table [name=");
         result.append(getName());
@@ -896,7 +913,7 @@ public class Table implements Serializable, Cloneable {
      * @return The string representation
      */
     public String toVerboseString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         result.append("Table [name=");
         result.append(getName());
@@ -923,6 +940,10 @@ public class Table implements Serializable, Cloneable {
         }
 
         return result.toString();
+    }
+    
+    public String getTableKey() {
+        return getFullyQualifiedTableName() + "-" + calculateTableHashcode();
     }
 
     public String getFullyQualifiedTableName() {
@@ -1134,7 +1155,7 @@ public class Table implements Serializable, Cloneable {
         }
         return columnNames;
     }
-
+    
     public int calculateTableHashcode() {
         final int PRIME = 31;
         int result = 1;
@@ -1149,7 +1170,9 @@ public class Table implements Serializable, Cloneable {
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
                 result = PRIME * result + column.getName().hashCode();
-                result = PRIME * result + column.getMappedType().hashCode();
+                if (column.getMappedType() != null) {
+                    result = PRIME * result + column.getMappedType().hashCode();
+                }
                 result = PRIME * result + column.getSizeAsInt();
             }
         }

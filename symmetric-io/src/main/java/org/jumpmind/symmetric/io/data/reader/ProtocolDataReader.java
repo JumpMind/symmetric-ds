@@ -71,6 +71,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected boolean noBinaryOldData = false;
     protected BatchType batchType;
     protected int lineNumber = 0;
+    protected String[] tokens;
 
     public ProtocolDataReader(BatchType batchType, String targetNodeId, StringBuilder input) {
         this(batchType, targetNodeId, new BufferedReader(new StringReader(input.toString())));
@@ -130,25 +131,39 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
             String catalogName = null;
             String[] parsedOldData = null;
             long bytesRead = 0;
-            while (csvReader.readRecord()) {
+            Table table = null;
+            while (tokens != null || csvReader.readRecord()) {
                 lineNumber++;
                 context.put(CTX_LINE_NUMBER, lineNumber);
-                String[] tokens = csvReader.getValues();
+                if (tokens == null) {
+                    tokens = csvReader.getValues();
+                }
                 bytesRead += logDebugAndCountBytes(tokens);
                 if (batch != null) {
                     statistics.get(batch)
                             .increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);
                     bytesRead = 0;
                 }
+                
+                if (table != null
+                        && !(tokens[0].equals(CsvConstants.TABLE)
+                                || tokens[0].equals(CsvConstants.KEYS) || tokens[0]
+                                    .equals(CsvConstants.COLUMNS))) {
+                    //tokens = null;
+                    return table;
+                }
+                
                 if (tokens[0].equals(CsvConstants.INSERT)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.INSERT);
                     data.putParsedData(CsvData.ROW_DATA,
                             CollectionUtils.copyOfRange(tokens, 1, tokens.length));
+                    tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
                     parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
+                    
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
@@ -159,6 +174,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
                             context.getLastParsedTable().getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
                     CsvData data = new CsvData();
@@ -167,40 +183,48 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.putParsedData(CsvData.PK_DATA,
                             CollectionUtils.copyOfRange(tokens, 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    tokens = null;
                     return data;
 
                 } else if (tokens[0].equals(CsvConstants.BATCH)) {
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId,
                             binaryEncoding, sourceNodeId, targetNodeId, false);
                     statistics.put(batch, new DataReaderStatistics());
+                    tokens = null;
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NO_BINARY_OLD_DATA)) {
                     if (tokens.length > 1) {
                         noBinaryOldData = Boolean.parseBoolean(tokens[1]);
                     }
+                    
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
                     this.sourceNodeId = tokens[1];
+                    
                 } else if (tokens[0].equals(CsvConstants.BINARY)) {
                     this.binaryEncoding = BinaryEncoding.valueOf(tokens[1]);
+                    
                 } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
                     this.channelId = tokens[1];
+                    
                 } else if (tokens[0].equals(CsvConstants.SCHEMA)) {
                     schemaName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null
                             : tokens[1];
+                    
                 } else if (tokens[0].equals(CsvConstants.CATALOG)) {
                     catalogName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null
                             : tokens[1];
+                    
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    Table table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName,
                             tableName));
                     if (table != null) {
                         context.setLastParsedTable(table);
-                        return table;
                     } else {
                         table = new Table(catalogName, schemaName, tableName);
                         context.setLastParsedTable(table);
                     }
+                    
                 } else if (tokens[0].equals(CsvConstants.KEYS)) {
                     if (keys == null) {
                         keys = new HashSet<String>(tokens.length);
@@ -209,7 +233,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         keys.add(tokens[i]);
                     }
                 } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
-                    Table table = context.getLastParsedTable();
                     table.removeAllColumns();
                     for (int i = 1; i < tokens.length; i++) {
                         Column column = new Column(tokens[i], keys != null
@@ -217,37 +240,44 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         table.addColumn(column);
                     }
                     context.getParsedTables().put(table.getFullyQualifiedTableName(), table);
-                    return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     if (batch != null) {
                         batch.setComplete(true);
                     }
+                    tokens = null;
                     return null;
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.SQL);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
+                    tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.BSH)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.BSH);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
+                    tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.CREATE)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.CREATE);
                     data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
+                    tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.IGNORE)) {
                     if (batch != null) {
                         batch.setIgnored(true);
                     }
+                    
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
+                    
                 }
+                
+                tokens = null;
             }
         } catch (IOException ex) {
             throw new IoException(ex);
