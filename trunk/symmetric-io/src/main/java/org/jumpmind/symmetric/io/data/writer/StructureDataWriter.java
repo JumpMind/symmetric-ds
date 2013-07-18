@@ -103,7 +103,9 @@ public class StructureDataWriter implements IDataWriter {
     }
 
     public boolean start(Table table) {
-        this.currentTable = table;
+        this.currentTable = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), false);
+        this.currentTable = currentTable.copyAndFilterColumns(table.getColumnNames(),
+                table.getPrimaryKeyColumnNames(), true);        
         return true;
     }
 

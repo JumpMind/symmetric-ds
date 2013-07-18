@@ -148,7 +148,8 @@ public class RestServiceTest extends AbstractTest {
         Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());
         
         // test that when we request jdbc timestamp format sql statements come back in that format
-        Assert.assertTrue(results.getBatches().get(1).getSqlStatements().get(0).contains("{ts '"));
+        String testSql = results.getBatches().get(1).getSqlStatements().get(0);
+        Assert.assertTrue("The following sql was supposed to contain '{ts '" + testSql, testSql.contains("{ts '"));
         
         // make sure we have delimited identifiers
         Assert.assertTrue(results.getBatches().get(1).getSqlStatements().get(0).contains("\""));
