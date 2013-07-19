@@ -413,6 +413,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return Collections.emptyList();
 
     }
+    
+    public boolean extractOutgoingBatch(String nodeId, long batchId, Writer writer) {
+        boolean extracted = false;
+        Node targetNode = nodeService.findNode(nodeId);
+        if (targetNode != null) {
+            OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
+            if (batch != null) {
+                IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
+                        writer, targetNode.requires13Compatiblity());
+                List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(1);
+                batches.add(batch);
+                batches = extract(new ProcessInfo(), targetNode, batches, dataWriter,
+                        ExtractMode.TO_STREAM);
+                extracted = batches.size() > 0;
+            }
+        }
+        return extracted;
+    }
 
     protected List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             List<OutgoingBatch> activeBatches, IDataWriter dataWriter, ExtractMode mode) {

@@ -60,6 +60,8 @@ public interface IDataExtractorService {
             IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean streamToFileEnabled, boolean updateBatchStatistics);
     
+    public boolean extractOutgoingBatch(String nodeId, long batchId, Writer writer);
+    
     public RemoteNodeStatuses queueWork(boolean force);
     
     public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
