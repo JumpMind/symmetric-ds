@@ -37,17 +37,12 @@ public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-    protected long timeToLiveInMs;
 
     protected File directory;
 
-    protected long memoryThresholdInBytes;
-
     protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
 
-    public StagingManager(long memoryThresholdInBytes, long timeToLiveInMs, String directory) {
-        this.timeToLiveInMs = timeToLiveInMs;
-        this.memoryThresholdInBytes = memoryThresholdInBytes;
+    public StagingManager(String directory) {
         this.directory = new File(directory);
         this.directory.mkdirs();
         refreshResourceList();
@@ -60,7 +55,7 @@ public class StagingManager implements IStagingManager {
                             State.DONE.getExtensionName() }, true);
             for (File file : files) {
                 try {
-                    StagedResource resource = new StagedResource(memoryThresholdInBytes, directory,
+                    StagedResource resource = new StagedResource(0, directory,
                             file, this);
                     String path = resource.getPath();
                     if (!resourceList.containsKey(path)) {
@@ -71,14 +66,6 @@ public class StagingManager implements IStagingManager {
                 }
             }
         }
-    }
-
-    /**
-     * Clean up resources that are older than {@link #timeToLiveInMs} and have
-     * been marked as done.
-     */
-    public long clean() {
-        return clean(this.timeToLiveInMs);
     }
 
     /**
@@ -137,7 +124,7 @@ public class StagingManager implements IStagingManager {
     /**
      * Create a handle that can be written to
      */
-    public IStagedResource create(Object... path) {
+    public IStagedResource create(long memoryThresholdInBytes, Object... path) {
         String filePath = buildFilePath(path);
         StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath,
                 this);

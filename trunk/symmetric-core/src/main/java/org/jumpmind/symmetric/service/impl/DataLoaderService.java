@@ -380,13 +380,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 l.syncStarted(ctx);
             }
 
+            long memoryThresholdInBytes = parameterService
+                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             long totalNetworkMillis = System.currentTimeMillis();
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                 IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
                         transport.openReader());
-                IDataWriter dataWriter = new StagingDataWriter(sourceNode.getNodeId(),
+                IDataWriter dataWriter = new StagingDataWriter(memoryThresholdInBytes, sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(processInfo, sourceNode.getNodeId(), listener));
                 new DataProcessor(dataReader, dataWriter).process(ctx);
