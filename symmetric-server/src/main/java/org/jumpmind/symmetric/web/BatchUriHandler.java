@@ -21,15 +21,12 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -54,8 +51,9 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
                 int dashIndex = nodeIdBatchId.lastIndexOf("-");
                 if (dashIndex > 0) {
                     String nodeId = nodeIdBatchId.substring(0, dashIndex);
-                    String batchId = nodeIdBatchId.substring(dashIndex+1, nodeIdBatchId.length());
-                    if (!write(batchId, nodeId, res.getOutputStream())) {
+                    String batchId = nodeIdBatchId.substring(dashIndex + 1, nodeIdBatchId.length());
+                    if (!dataExtractorService.extractOutgoingBatch(nodeId, Long.parseLong(batchId),
+                            res.getWriter())) {
                         ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
                     } else {
                         res.flushBuffer();
@@ -69,16 +67,6 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
         } else {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-    }
-
-    public boolean write(String batchId, String nodeId, OutputStream os) throws IOException {
-        
-        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, IoConstants.ENCODING), nodeId,
-                Long.valueOf(batchId), Long.valueOf(batchId));
-    }
-
-    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
-        this.dataExtractorService = dataExtractorService;
     }
 
 }
