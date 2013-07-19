@@ -365,6 +365,10 @@ public class OutgoingBatch implements Serializable {
     public void incrementDataEventCount() {
         this.dataEventCount++;
     }
+    
+    public void incrementInsertEventCount() {
+        this.insertEventCount++;
+    }
 
     public void incrementByteCount(int size) {
         this.byteCount += size;

@@ -124,6 +124,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         INodeCommunicationExecutor {
 
     final static long MS_PASSED_BEFORE_BATCH_REQUERIED = 5000;
+        
+    private enum ExtractMode { TO_STREAM, TO_PAYLOAD };
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -358,7 +360,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         useDelimiterIdentifiers, symmetricDialect.getBinaryEncoding(),
                         useJdbcTimestampFormat, useUpsertStatements);
                 List<OutgoingBatch> extractedBatches = extract(processInfo, targetNode,
-                        activeBatches, writer, true);
+                        activeBatches, writer, ExtractMode.TO_PAYLOAD);
 
                 List<OutgoingBatchWithPayload> batchesWithPayload = new ArrayList<OutgoingBatchWithPayload>();
                 for (OutgoingBatch batch : extractedBatches) {
@@ -402,11 +404,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         transport.openWriter(), targetNode.requires13Compatiblity());
 
-                boolean streamToFileEnabled = parameterService
-                        .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
-
                 return extract(processInfo, targetNode, activeBatches, dataWriter,
-                        streamToFileEnabled);
+                        ExtractMode.TO_STREAM);
             }
 
         }
@@ -416,8 +415,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
-            List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled) {
-
+            List<OutgoingBatch> activeBatches, IDataWriter dataWriter, ExtractMode mode) {
+        boolean streamToFileEnabled = parameterService
+                .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>(activeBatches.size());
         if (activeBatches.size() > 0) {
             Set<String> channelsProcessed = new HashSet<String>();
@@ -464,13 +464,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setStatus(Status.NE);
                             currentBatch.setExtractJobFlag(false);
                         }
+                    } else {
+                        processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
+                        currentBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter,
+                                    currentBatch, streamToFileEnabled, true);                        
                     }
-
-                    processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
-                    currentBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter,
-                            currentBatch, streamToFileEnabled, true);
-
-                    if (streamToFileEnabled) {
+                                        
+                    if (streamToFileEnabled || mode == ExtractMode.TO_PAYLOAD) {
                         processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                         currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch,
                                 dataWriter);
@@ -612,7 +612,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     transformExtractWriter.close();
                 }
-            } else if ((currentBatch.getStatus() == Status.NE || !isPreviouslyExtracted(currentBatch))) {
+            } else if (!isPreviouslyExtracted(currentBatch)) {
                 int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
                 String semaphoreKey = useStagingDataWriter ? Long.toString(currentBatch
                         .getBatchId()) : currentBatch.getNodeBatchId();
@@ -951,7 +951,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             try {
                 Channel channel = configurationService.getChannel(batches.get(0).getChannelId());
                 /*
-                 * "trick" the extractor to extract one reload batch, but we
+                 * "Trick" the extractor to extract one reload batch, but we
                  * will split it across the N batches when writing it
                  */
                 extractOutgoingBatch(processInfo, targetNode,
@@ -1075,8 +1075,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void write(CsvData data) {
-            this.currentDataWriter.write(data);
             this.outgoingBatch.incrementDataEventCount();
+            this.outgoingBatch.incrementInsertEventCount();
             this.currentDataWriter.write(data);
             if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
                 this.currentDataWriter.end(table);
@@ -1102,6 +1102,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         protected void startNewBatch() {
             this.outgoingBatch = this.batches.remove(0);
+            this.outgoingBatch.setDataEventCount(0);
+            this.outgoingBatch.setInsertEventCount(0);
             this.currentDataWriter = new StagingDataWriter(sourceNodeId,
                     Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
                     (IProtocolDataWriterListener[]) null);
