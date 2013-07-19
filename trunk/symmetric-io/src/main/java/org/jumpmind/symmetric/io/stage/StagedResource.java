@@ -39,6 +39,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +143,7 @@ public class StagedResource implements IStagedResource {
             if (file.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
-                            "UTF-8"));
+                            IoConstants.ENCODING));
                     readers.put(thread, reader);
                 } catch (IOException ex) {
                     throw new IoException(ex);

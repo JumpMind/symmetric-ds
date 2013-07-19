@@ -40,6 +40,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -101,7 +102,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     public ProtocolDataReader(BatchType batchType, String targetNodeId, File file) {
         try {
             FileInputStream fis = new FileInputStream(file);
-            InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+            InputStreamReader in = new InputStreamReader(fis, IoConstants.ENCODING);
             this.targetNodeId = targetNodeId;
             this.batchType = batchType;
             this.reader = new BufferedReader(in);
