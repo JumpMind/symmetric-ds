@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -71,7 +72,8 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
     }
 
     public boolean write(String batchId, String nodeId, OutputStream os) throws IOException {
-        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, "UTF-8"), nodeId,
+        
+        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, IoConstants.ENCODING), nodeId,
                 Long.valueOf(batchId), Long.valueOf(batchId));
     }
 

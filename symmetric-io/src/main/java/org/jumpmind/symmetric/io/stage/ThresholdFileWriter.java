@@ -31,6 +31,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 
+import org.jumpmind.symmetric.io.IoConstants;
+
 /**
  * Write to an internal buffer up until the threshold. When the threshold is
  * reached, flush the buffer to the file and write to the file from that point
@@ -85,7 +87,7 @@ public class ThresholdFileWriter extends Writer {
             fileWriter.write(cbuf, off, len);
         } else if (len + buffer.length() > threshhold) {
             file.getParentFile().mkdirs();
-            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
             fileWriter.write(buffer.toString());
             fileWriter.write(cbuf, off, len);
             fileWriter.flush();
@@ -96,7 +98,7 @@ public class ThresholdFileWriter extends Writer {
 
     public BufferedReader getReader() throws IOException {
         if (file != null && file.exists()) {
-            return new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            return new BufferedReader(new InputStreamReader(new FileInputStream(file), IoConstants.ENCODING));
         } else {
             return new BufferedReader(new StringReader(buffer.toString()));
         }
