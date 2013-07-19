@@ -358,7 +358,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         useDelimiterIdentifiers, symmetricDialect.getBinaryEncoding(),
                         useJdbcTimestampFormat, useUpsertStatements);
                 List<OutgoingBatch> extractedBatches = extract(processInfo, targetNode,
-                        activeBatches, writer, false);
+                        activeBatches, writer, true);
 
                 List<OutgoingBatchWithPayload> batchesWithPayload = new ArrayList<OutgoingBatchWithPayload>();
                 for (OutgoingBatch batch : extractedBatches) {
@@ -418,6 +418,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             List<OutgoingBatch> activeBatches, IDataWriter dataWriter, boolean streamToFileEnabled) {
 
+        List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>(activeBatches.size());
         if (activeBatches.size() > 0) {
             Set<String> channelsProcessed = new HashSet<String>();
             long batchesSelectedAtMs = System.currentTimeMillis();
@@ -490,6 +491,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             break;
                         }
                     }
+                    
+                    processedBatches.add(currentBatch);
                 }
 
             } catch (RuntimeException e) {
@@ -542,7 +545,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             }
 
-            return activeBatches;
+            return processedBatches;
         } else {
             return Collections.emptyList();
         }
@@ -740,10 +743,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
                     long byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                     statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);
-                    if (byteCount == 0) {
-                        log.warn("The data writer reported sending 0 bytes for batch {}",
-                                currentBatch.getNodeBatchId());
-                    }
                 } else {
                     log.warn("Could not find recorded statistics for batch {}",
                             currentBatch.getNodeBatchId());
