@@ -46,7 +46,6 @@ public class TestTablesService extends AbstractService {
     // TODO support insert of blob test for postgres and informix
     public boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
         if (symmetricDialect.isBlobSyncSupported()) {
-            if (!DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
@@ -61,9 +60,6 @@ public class TestTablesService extends AbstractService {
                         transaction.close();
                     }
                 }
-            } else {
-                return false;
-            }
         } else {
             return false;
         }
@@ -96,16 +92,19 @@ public class TestTablesService extends AbstractService {
         }
     }
 
-    public void assertTestUseStreamBlobInDatabase(int id, String tableName, String expected,
+    public void assertTestBlobIsInDatabase(int id, String tableName, String expected,
             String serverDatabaseName) {
         if (symmetricDialect.isBlobSyncSupported()) {
-            if (!DatabaseNamesConstants.INFORMIX.equals(serverDatabaseName)) {
-                Map<String, Object> values = sqlTemplate.queryForMap("select test_blob from "
-                        + tableName + " where test_id=?", id);
-                Assert.assertEquals(
-                        "The blob column for test_use_stream_lob was not loaded into the client database",
-                        expected, values != null && values.get("TEST_BLOB") != null ? new String((byte[]) values.get("TEST_BLOB")) : null);
-            }
+            int rowCount = sqlTemplate.queryForInt("select count(*) from "
+                    + tableName + " where test_id=?", id);
+            Assert.assertEquals("The " + id + " row for table " + tableName + " did not exist", 1, rowCount);
+            
+            Map<String, Object> values = sqlTemplate.queryForMap("select test_blob from "
+                    + tableName + " where test_id=?", id);            
+            Assert.assertEquals(
+                    "The blob column for test_use_stream_lob was not loaded into the client database",
+                    expected, values != null && values.get("TEST_BLOB") != null ? new String(
+                            (byte[]) values.get("TEST_BLOB")) : null);
         }
     }
 
