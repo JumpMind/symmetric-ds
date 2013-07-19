@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -131,12 +132,12 @@ public class TransformWriter extends NestedDataWriter {
     }
 
     public void write(CsvData data) {
-        if (data.requiresTable() && sourceTable == null && 
+        if (data.requiresTable() && sourceTable == null &&
                 context.getLastParsedTable() != null) {
             // if we cross batches and the table isn't specified, then
             // use the last table we used
             start(context.getLastParsedTable());
-        }        
+        }
         DataEventType eventType = data.getDataEventType();
         if (activeTransforms != null && activeTransforms.size() > 0 && isTransformable(eventType)) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
@@ -144,7 +145,7 @@ public class TransformWriter extends NestedDataWriter {
             Map<String, String> oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.OLD_DATA);
             Map<String, String> sourceKeyValues = null;
-            
+
             if (data.contains(CsvData.PK_DATA)) {
                 sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
             } else if (oldSourceValues.size() > 0) {
@@ -254,7 +255,7 @@ public class TransformWriter extends NestedDataWriter {
                         || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
                         || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
                         || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
-                    if (transformColumn.getSourceColumnName() == null
+                    if (StringUtils.isBlank(transformColumn.getSourceColumnName())
                             || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
                         IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
                                 .get(transformColumn.getTransformType()) : null;
