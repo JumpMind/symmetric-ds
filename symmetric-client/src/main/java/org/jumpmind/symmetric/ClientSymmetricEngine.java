@@ -279,12 +279,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IStagingManager createStagingManager() {
-        long memoryThresholdInBytes = parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-        long timeToLiveInMs = parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS);
         String directory = parameterService.getTempDirectory();
-        return new StagingManager(memoryThresholdInBytes, timeToLiveInMs, directory);
+        return new StagingManager(directory);
     }
 
     protected static void waitForAvailableDatabase(DataSource dataSource) {

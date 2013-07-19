@@ -76,9 +76,9 @@ public class StagingDataWriterTest {
         String origCsv = IOUtils.toString(is);
         is.close();
 
-        StagingManager stagingManager = new StagingManager(threshold, 0l, DIR.getAbsolutePath());
+        StagingManager stagingManager = new StagingManager(DIR.getAbsolutePath());
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", origCsv);
-        StagingDataWriter writer = new StagingDataWriter("aaa", "test", stagingManager, new BatchListener());
+        StagingDataWriter writer = new StagingDataWriter(threshold, "aaa", "test", stagingManager, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer);
         processor.process(new DataContext());
 

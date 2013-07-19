@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -43,7 +44,8 @@ public class StageManagementJob extends AbstractJob {
     @Override
     void doJob(boolean force) throws Exception {
         if (stagingManager != null) {
-            stagingManager.clean();
+            stagingManager.clean(engine.getParameterService()
+                    .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));
         }
     }
 

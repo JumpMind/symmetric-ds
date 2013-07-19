@@ -39,6 +39,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.symmetric.TestConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
@@ -686,7 +687,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     
     @After
     public void cleanup() {
-        getSymmetricEngine().getStagingManager().clean();
+        getSymmetricEngine().getStagingManager().clean(getSymmetricEngine().getParameterService()
+                .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));
     }
 
 }

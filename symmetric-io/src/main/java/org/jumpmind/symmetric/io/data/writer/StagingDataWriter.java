@@ -41,10 +41,13 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     private String category;
     
     private Map<Batch, IStagedResource> stagedResources = new HashMap<Batch, IStagedResource>();
+    
+    private long memoryThresholdInBytes;
 
-    public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
+    public StagingDataWriter(long memoryThresholdInBytes, String sourceNodeId, String category, IStagingManager stagingManager,
             IProtocolDataWriterListener... listeners) {
         this(sourceNodeId, category, stagingManager, toList(listeners));
+        this.memoryThresholdInBytes = memoryThresholdInBytes;
     }
 
     public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
@@ -80,7 +83,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
             resource = stagingManager.find(category, location, batch.getBatchId());
             if (resource == null || resource.getState() == State.DONE) {
                 log.debug("Creating staged resource for batch {}", batch.getSourceNodeBatchId());
-                resource = stagingManager.create(category, location, batch.getBatchId());
+                resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
             }
             stagedResources.put(batch, resource);
         }

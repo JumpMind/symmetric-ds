@@ -577,10 +577,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             TransformWriter transformExtractWriter = null;
             if (useStagingDataWriter) {
+                long memoryThresholdInBytes = parameterService
+                        .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);                
                 transformExtractWriter = createTransformDataWriter(
                         sourceNode,
                         targetNode,
-                        new ProcessInfoDataWriter(new StagingDataWriter(nodeService
+                        new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, nodeService
                                 .findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING,
                                 stagingManager), processInfo));
             } else {
@@ -1046,8 +1048,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public void open(DataContext context) {
             this.context = context;
-            this.outgoingBatch = batches.remove(0);
-            this.currentDataWriter = new StagingDataWriter(sourceNodeId,
+            this.nextBatch();
+            long memoryThresholdInBytes = parameterService
+                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+            this.currentDataWriter = new StagingDataWriter(memoryThresholdInBytes, sourceNodeId,
                     Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
                     (IProtocolDataWriterListener[]) null);
             this.currentDataWriter.open(context);
@@ -1077,11 +1081,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public void write(CsvData data) {
             this.outgoingBatch.incrementDataEventCount();
             this.outgoingBatch.incrementInsertEventCount();
-            this.currentDataWriter.write(data);
+            this.currentDataWriter.write(data);            
             if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
                 this.currentDataWriter.end(table);
                 this.currentDataWriter.end(batch, false);
-                this.currentDataWriter.close();
+                Statistics stats = this.currentDataWriter.getStatistics().get(batch);
+                this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                this.currentDataWriter.close();                
                 startNewBatch();
             }
 
@@ -1090,6 +1096,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public void end(Table table) {
             if (this.currentDataWriter != null) {
                 this.currentDataWriter.end(table);
+                Statistics stats = this.currentDataWriter.getStatistics().get(batch);
+                this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));                
             }
         }
 
@@ -1099,12 +1107,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 this.currentDataWriter.end(this.batch, inError);
             }
         }
-
-        protected void startNewBatch() {
+        
+        protected void nextBatch() {
             this.outgoingBatch = this.batches.remove(0);
             this.outgoingBatch.setDataEventCount(0);
             this.outgoingBatch.setInsertEventCount(0);
-            this.currentDataWriter = new StagingDataWriter(sourceNodeId,
+        }
+
+        protected void startNewBatch() {
+            this.nextBatch();
+            long memoryThresholdInBytes = parameterService
+                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);            
+            this.currentDataWriter = new StagingDataWriter(memoryThresholdInBytes, sourceNodeId,
                     Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
                     (IProtocolDataWriterListener[]) null);
             this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),

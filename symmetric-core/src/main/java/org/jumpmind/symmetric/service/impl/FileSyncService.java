@@ -343,7 +343,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         OutgoingBatch currentBatch = null;
 
         IStagingManager stagingManager = engine.getStagingManager();
-        IStagedResource stagedResource = stagingManager.create(Constants.STAGING_CATEGORY_OUTGOING,
+        long memoryThresholdInBytes = parameterService
+                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        IStagedResource stagedResource = stagingManager.create(memoryThresholdInBytes, Constants.STAGING_CATEGORY_OUTGOING,
                 processInfo.getSourceNodeId(), targetNode.getNodeId(), "filesync.zip");
 
         try {

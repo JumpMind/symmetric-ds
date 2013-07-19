@@ -99,13 +99,9 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
             public IStagedResource find(Object... path) {
                 return null;
             }
-
-            public IStagedResource create(Object... path) {
+            
+            public IStagedResource create(long memoryThresholdInBytes, Object... path) {
                 return null;
-            }
-
-            public long clean() {
-                return 0;
             }
             
             public long clean(long timeToLiveInMs) {
