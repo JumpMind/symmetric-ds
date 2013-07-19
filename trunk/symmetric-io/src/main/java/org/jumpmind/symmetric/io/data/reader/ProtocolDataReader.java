@@ -149,7 +149,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         && !(tokens[0].equals(CsvConstants.TABLE)
                                 || tokens[0].equals(CsvConstants.KEYS) || tokens[0]
                                     .equals(CsvConstants.COLUMNS))) {
-                    //tokens = null;
                     return table;
                 }
                 
