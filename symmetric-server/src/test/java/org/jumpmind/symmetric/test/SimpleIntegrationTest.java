@@ -170,6 +170,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(
                 "test_customer on the client did not contain the expected number of rows", 2,
                 clientTestService.count("test_customer"));
+        
         Assert.assertEquals("Initial load was not successful according to the client",
                 NodeStatus.DATA_LOAD_COMPLETED, clientNodeService.getNodeStatus());
 
@@ -177,10 +178,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                         .isInitialLoadEnabled());
 
-        clientTestService.assertTestUseStreamBlobInDatabase(100, "test_use_stream_lob",
+        clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
                 THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
-        clientTestService.assertTestUseStreamBlobInDatabase(100, "test_use_capture_lob",
+        
+        clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
                 THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
+        
     }
 
     @Test(timeout = 120000)
