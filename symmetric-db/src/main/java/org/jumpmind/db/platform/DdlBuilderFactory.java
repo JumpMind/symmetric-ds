@@ -51,33 +51,33 @@ final public class DdlBuilderFactory {
     public static final IDdlBuilder createDdlBuilder(String databaseName) {
         if (DatabaseNamesConstants.DB2.equals(databaseName)) {
             return new Db2DdlBuilder();
-        } else if (DatabaseNamesConstants.DERBY.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.DERBY.equalsIgnoreCase(databaseName)) {
             return new DerbyDdlBuilder();
-        } else if (DatabaseNamesConstants.FIREBIRD.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.FIREBIRD.equalsIgnoreCase(databaseName)) {
             return new FirebirdDdlBuilder();
-        } else if (DatabaseNamesConstants.GREENPLUM.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.GREENPLUM.equalsIgnoreCase(databaseName)) {
             return new GreenplumDdlBuilder();
-        } else if (DatabaseNamesConstants.H2.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.H2.equalsIgnoreCase(databaseName)) {
             return new H2DdlBuilder();
-        } else if (DatabaseNamesConstants.HSQLDB.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.HSQLDB.equalsIgnoreCase(databaseName)) {
             return new HsqlDbDdlBuilder();
-        } else if (DatabaseNamesConstants.HSQLDB2.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.HSQLDB2.equalsIgnoreCase(databaseName)) {
             return new HsqlDb2DdlBuilder();
-        } else if (DatabaseNamesConstants.INFORMIX.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.INFORMIX.equalsIgnoreCase(databaseName)) {
             return new InformixDdlBuilder();
-        } else if (DatabaseNamesConstants.INTERBASE.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.INTERBASE.equalsIgnoreCase(databaseName)) {
             return new InterbaseDdlBuilder();
-        } else if (DatabaseNamesConstants.MSSQL.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.MSSQL.equalsIgnoreCase(databaseName)) {
             return new MsSqlDdlBuilder();
-        } else if (DatabaseNamesConstants.MYSQL.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.MYSQL.equalsIgnoreCase(databaseName)) {
             return new MySqlDdlBuilder();
-        } else if (DatabaseNamesConstants.ORACLE.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.ORACLE.equalsIgnoreCase(databaseName)) {
             return new OracleDdlBuilder();
-        } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)) {
             return new PostgreSqlDdlBuilder();
-        } else if (DatabaseNamesConstants.SQLITE.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.SQLITE.equalsIgnoreCase(databaseName)) {
             return new SqliteDdlBuilder();  
-        } else if (DatabaseNamesConstants.ASE.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.ASE.equalsIgnoreCase(databaseName)) {
             return new AseDdlBuilder();
         } else {
             return null;
