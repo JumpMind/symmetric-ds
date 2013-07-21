@@ -73,13 +73,19 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     private final void initialize() {
         if (!initialized) {
-            try {
-                int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"), clusterService.getServerId());
-                if (locksCleared > 0) {
-                    log.info("Cleared {} node communication locks for {}", locksCleared, clusterService.getServerId());
+            synchronized (this) {
+                if (!initialized) {
+                    try {
+                        int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"),
+                                clusterService.getServerId());
+                        if (locksCleared > 0) {
+                            log.info("Cleared {} node communication locks for {}", locksCleared,
+                                    clusterService.getServerId());
+                        }
+                    } finally {
+                        initialized = true;
+                    }
                 }
-            } finally {
-                initialized = true;
             }
         }
     }
