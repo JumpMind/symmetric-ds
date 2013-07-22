@@ -109,8 +109,6 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
         settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
-        settings.setMetadataIgnoreCase(parameterService
-                .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
@@ -118,11 +116,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         if (conflictSettings != null) {
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
-                if (parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
-                    qualifiedTableName = qualifiedTableName.toUpperCase();
-                }
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting);
+                    byTable.put(qualifiedTableName, conflictSetting); // ADB
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {
