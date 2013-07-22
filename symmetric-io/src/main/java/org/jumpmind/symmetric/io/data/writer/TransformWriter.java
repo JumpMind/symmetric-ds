@@ -62,9 +62,10 @@ public class TransformWriter extends NestedDataWriter {
 
     protected TransformPoint transformPoint;
     protected IDatabasePlatform platform;
-    protected Map<String, List<TransformTable>> transformsBySourceTable;
     protected Table sourceTable;
     protected List<TransformTable> activeTransforms;
+
+    private Map<String, List<TransformTable>> transformsBySourceTable;
 
     static protected Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
 
@@ -103,6 +104,9 @@ public class TransformWriter extends NestedDataWriter {
             for (TransformTable transformTable : transforms) {
                 if (transformPoint == transformTable.getTransformPoint()) {
                     String sourceTableName = transformTable.getFullyQualifiedSourceTableName();
+                    if (platform.isMetadataIgnoreCase()) {
+                        sourceTableName = sourceTableName.toUpperCase();
+                    }
                     List<TransformTable> tables = transformsByTable.get(sourceTableName);
                     if (tables == null) {
                         tables = new ArrayList<TransformTable>();
@@ -116,7 +120,7 @@ public class TransformWriter extends NestedDataWriter {
     }
 
     public boolean start(Table table) {
-        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName());
+        activeTransforms = getTransformsBySourceTable(table.getFullyQualifiedTableName());
         if (activeTransforms != null && activeTransforms.size() > 0) {
             this.sourceTable = table;
             return true;
@@ -124,6 +128,13 @@ public class TransformWriter extends NestedDataWriter {
             this.sourceTable = null;
             return super.start(table);
         }
+    }
+
+    protected List<TransformTable> getTransformsBySourceTable(String tableName) {
+        if (platform.isMetadataIgnoreCase()) {
+            tableName = tableName.toUpperCase();
+        }
+        return transformsBySourceTable.get(tableName);
     }
 
     protected boolean isTransformable(DataEventType eventType) {
