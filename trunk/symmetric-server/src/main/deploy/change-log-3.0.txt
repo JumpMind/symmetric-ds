@@ -19,6 +19,64 @@
     under the License.
 ====
 
+SymmetricDS - 3.5.0 (Released 2013-07-17)
+=========================================
+- 0001307: [Improvement] Allow users to insert custom trigger text in the Symmetric triggers. (abrougher) - closed.
+- 0001188: [Improvement] Inserting leading or trailing spaces in column ROUTER_EXPRESSION on table ROUTER produce ER in outgoing batch (chenson) - closed.
+- 0001192: [Bug] Unrouted batches can't be extracted http://localhost:31415/batch/-1-50 [^] gets a 404 (chenson) - closed.
+- 0001193: [Improvement] rename snapshot files from yyyyMMddhhmmss.jar to {engine.name}-yyyyMMddhhmmss.zip (chenson) - closed.
+- 0001194: [Improvement] Use a constant router_id for the virtual sym_ tables instead of an ever incrementing number (chenson) - closed.
+- 0000032: [New Feature] Implement file synchronization (chenson) - closed.
+- 0000370: [New Feature] SymmetricDS support for Sybase Database (abrougher) - closed.
+- 0001052: [Improvement] Install a default ssl cert if none exists when ssl is turned on so that ssl works by default (chenson) - closed.
+- 0001064: [New Feature] Add interactive command line sql tool. dbsql (chenson) - closed.
+- 0001182: [New Feature] Open source the android client implementation (chenson) - closed.
+- 0001199: [Improvement] EXCLUDED COLUMNS in triggers can't participate in lookuptable router expressions (chenson) - closed.
+- 0001204: [Bug] Invalid target node on "lookup table data router", trouble cache key resolution (chenson) - closed.
+- 0001210: [Bug] Wildcards don't work on Derby, DB2, and HSQLDB (chenson) - closed.
+- 0001218: [Improvement] bind a logger as the "log" variable to the beanshell router, column transform and load filter to make debugging easier (chenson) - closed.
+- 0001222: [Bug] db. properties are not overridable as -D system properties (chenson) - closed.
+- 0001226: [Bug] Table sym_node_group_channel_window exceeds the max table name length for Sybase ASE 12. (chenson) - closed.
+- 0001231: [Improvement] Bind initialLoad flag to the beanshell data router so it can making routing decisions on initial load (chenson) - closed.
+- 0001237: [Improvement] JdbcSqlTransaction not logging sql and args for some methods (chenson) - closed.
+- 0001245: [Bug] Mariab driver doesn't recognize tables in a different database (chenson) - closed.
+- 0001247: [Task] Change license to GPL 3.0 (chenson) - closed.
+- 0001249: [New Feature] Add REST API methods to allow a "Pull Only" client (gwilmer) - closed.
+- 0001260: [Bug] A null pointer happens when trying to schedule load when sync triggers has never run (chenson) - closed.
+- 0001262: [Bug] Locally suspended channels are ignored when a node is pushing during extraction. (abrougher) - closed.
+- 0001270: [Improvement] Update sqlite jdbc driver to the latest version to fix result set metadata issue. Allows unit tests to pass. (chenson) - closed.
+- 0001271: [Bug] Table creation on reload creates columns with default of 'NULL' incorrectly. (chenson) - closed.
+- 0001273: [Improvement] Add new parameter to dbexport to request that dates and time NOT be in JDBC format (chenson) - closed.
+- 0001274: [Improvement] Do not query the RECYCLEBIN while reading table metadata to see if the table has been recycled. (chenson) - closed.
+- 0001203: [Bug] SymmetricDS cannot operate on Oracle tables with dollar sign in name (chenson) - closed.
+- 0001277: [Bug] NPE during conflict resolution (use_version -> newer_wins) (chenson) - closed.
+- 0001278: [Bug] The IDatabaseWriterFilter should always be passed the source table, not the target table (chenson) - closed.
+- 0000949: [Bug] reload table doesn't work with wildcard triggers (chenson) - closed.
+- 0001223: [Bug] the sendSql JMX method and command can end up with multiple batches due to timing issue (chenson) - closed.
+- 0001272: [Improvement] Add support for the MySQL POINT data type. (abrougher) - closed.
+- 0001295: [Bug] Numeric type on postgres should be read in as a JDBC decimal type (chenson) - closed.
+- 0001296: [Bug] Prevent invalid size DDL of (0) or (0,0) to be written for data types that have size (chenson) - closed.
+- 0001301: [Bug] BSH Load filter will not execute unless table exists on the target database. (abrougher) - closed.
+- 0001302: [Improvement] Speed up queries against sym_data, sym_data_gap and sym_outgoing_batch on postgres (chenson) - closed.
+- 0001056: [Bug] Sync on incoming batch causes ping-back when in common batch mode (chenson) - closed.
+- 0001143: [Improvement] (Firebird) 64-bit Sym_UDF.dll (chenson) - closed.
+- 0001236: [Improvement] Hash trigger text in sym_trigger_hist so we know when triggers change to force a rebuild. (abrougher) - closed.
+- 0001297: [Improvement] The load filter target table value should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001298: [Improvement] The conflict resolution target table value should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001299: [Improvement] The transform source table should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001303: [Bug] REST API doesn't return heartbeat interval properly when getting node status (gwilmer) - closed.
+- 0001309: [Bug] Reload node events are not taking place in the correct order. (chenson) - closed.
+- 0001317: [Improvement] Bind column names using original case versus requiring router expressions to reference them in UPPER case. (abrougher) - closed.
+- 0001318: [Improvement] Bind column names using original case and UPPER case for load filters. (abrougher) - closed.
+- 0001321: [Improvement] Attempt recovery from corrupt trigger_hist table by looking up trigger_hist rows by table name when the table name mismatches (chenson) - closed.
+- 0001322: [Bug] node_communication locks don't time out (chenson) - closed.
+- 0001325: [Improvement] Add sym_registration_request to the purge process (chenson) - closed.
+- 0001329: [Bug] ArrayOutOfBoundsException - during removal of column (chenson) - closed.
+- 0001330: [Bug] stream.to.file.threshold.bytes and stream.to.file.ttl.ms were documented as overridable in the database but weren't really (chenson) - closed.
+- 0001332: [Bug] The /batch url always extracts from the database. It should extract the same way the pull does (use staging). (chenson) - closed.
+- 0001333: [Bug] Transforms with a source column containing an empty string or white space fail. (abrougher) - closed.
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
+
 SymmetricDS - 3.4.9 (Released 2013-07-16) 
 =========================================
 - 0001323: [Bug] Missing columns at target table can cause columns after the missing columns to not be updated (chenson) - closed.
