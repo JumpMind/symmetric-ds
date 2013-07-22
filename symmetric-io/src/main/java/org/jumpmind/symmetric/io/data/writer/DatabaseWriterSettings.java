@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 public class DatabaseWriterSettings {
 
     protected long maxRowsBeforeCommit = 10000;
-    
+
     // Milliseconds to sleep between commits.
     protected long commitSleepInterval = 5;
 
@@ -40,49 +40,51 @@ public class DatabaseWriterSettings {
     protected boolean usePrimaryKeysFromSource = true;
 
     protected Conflict defaultConflictSetting;
-    
+
     protected boolean createTableFailOnError = true;
-    
+
     protected boolean alterTable = true;
-    
+
     protected boolean createTableDropFirst = false;
-    
+
     protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
-    
+
     protected boolean ignoreMissingTables = true;
 
     protected boolean saveCurrentValueOnError = false;
-    
+
     protected Map<String, Conflict> conflictSettingsByChannel;
 
     protected Map<String, Conflict> conflictSettingsByTable;
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
-    
+
     protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
-    
+
     protected List<ResolvedData> resolvedData;
-    
+
+    protected boolean metadataIgnoreCase;
+
     public boolean isAlterTable() {
         return alterTable;
     }
-    
+
     public void setAlterTable(boolean alterTable) {
         this.alterTable = alterTable;
     }
-    
+
     public boolean isCreateTableDropFirst() {
         return createTableDropFirst;
     }
-    
+
     public void setCreateTableDropFirst(boolean createTableDropFirst) {
         this.createTableDropFirst = createTableDropFirst;
     }
-    
+
     public boolean isCreateTableFailOnError() {
         return createTableFailOnError;
     }
-    
+
     public void setCreateTableFailOnError(boolean createTableFailOnError) {
         this.createTableFailOnError = createTableFailOnError;
     }
@@ -118,11 +120,11 @@ public class DatabaseWriterSettings {
     public void setDefaultConflictSetting(Conflict defaultConflictSetting) {
         this.defaultConflictSetting = defaultConflictSetting;
     }
-    
+
     public boolean isCreateTableAlterCaseToMatchDatabaseDefault() {
         return createTableAlterCaseToMatchDatabaseDefault;
     }
-    
+
     public void setCreateTableAlterCaseToMatchDatabaseDefault(
             boolean createTableAlterCaseToMatchDatabaseDefault) {
         this.createTableAlterCaseToMatchDatabaseDefault = createTableAlterCaseToMatchDatabaseDefault;
@@ -151,7 +153,7 @@ public class DatabaseWriterSettings {
     public void setDatabaseWriterFilters(List<IDatabaseWriterFilter> databaseWriterFilters) {
         this.databaseWriterFilters = databaseWriterFilters;
     }
-    
+
     public void setResolvedData(ResolvedData... resolvedData) {
         this.resolvedData = new ArrayList<ResolvedData>();
         if (resolvedData != null) {
@@ -160,24 +162,24 @@ public class DatabaseWriterSettings {
             }
         }
     }
-    
+
     public void setResolvedData(List<ResolvedData> resolvedData) {
         this.resolvedData = resolvedData;
     }
-    
+
     public List<ResolvedData> getResolvedData() {
         return resolvedData;
     }
-    
+
     public void setDatabaseWriterErrorHandlers(
             List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers) {
         this.databaseWriterErrorHandlers = databaseWriterErrorHandlers;
     }
-    
+
     public List<IDatabaseWriterErrorHandler> getDatabaseWriterErrorHandlers() {
         return databaseWriterErrorHandlers;
     }
-    
+
     public ResolvedData getResolvedData (long rowNumber) {
         if (resolvedData != null) {
             for (ResolvedData data : resolvedData) {
@@ -188,15 +190,15 @@ public class DatabaseWriterSettings {
         }
         return null;
     }
-    
+
     public void setIgnoreMissingTables(boolean ignoreMissingTables) {
         this.ignoreMissingTables = ignoreMissingTables;
     }
-    
+
     public boolean isIgnoreMissingTables() {
         return ignoreMissingTables;
     }
-    
+
     public void addErrorHandler(IDatabaseWriterErrorHandler handler) {
         if (this.databaseWriterErrorHandlers == null) {
             this.databaseWriterErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
@@ -206,12 +208,20 @@ public class DatabaseWriterSettings {
 
     public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;
-        String fullyQualifiedName = table.getFullyQualifiedTableName();
         if (conflictSettingsByTable != null) {
-            Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
+
+            String tableName = table.getFullyQualifiedTableName();
+            if (metadataIgnoreCase) {
+                tableName = tableName.toUpperCase();
+            }
+            Conflict found = conflictSettingsByTable.get(tableName);
 
             if (found == null) {
-                found = conflictSettingsByTable.get(table.getName());
+                tableName = table.getName();
+                if (metadataIgnoreCase) {
+                    tableName = tableName.toUpperCase();
+                }
+                found = conflictSettingsByTable.get(tableName);
             }
 
             if (found != null
@@ -251,6 +261,14 @@ public class DatabaseWriterSettings {
 
     public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
         this.saveCurrentValueOnError = saveCurrentValueOnError;
+    }
+
+    public boolean isMetadataIgnoreCase() {
+        return metadataIgnoreCase;
+    }
+
+    public void setMetadataIgnoreCase(boolean metadataIgnoreCase) {
+        this.metadataIgnoreCase = metadataIgnoreCase;
     }
 
 }
