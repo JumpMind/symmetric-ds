@@ -63,8 +63,6 @@ public class DatabaseWriterSettings {
 
     protected List<ResolvedData> resolvedData;
 
-    protected boolean metadataIgnoreCase;
-
     public boolean isAlterTable() {
         return alterTable;
     }
@@ -208,20 +206,12 @@ public class DatabaseWriterSettings {
 
     public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;
+        String fullyQualifiedName = table.getFullyQualifiedTableName();
         if (conflictSettingsByTable != null) {
-
-            String tableName = table.getFullyQualifiedTableName();
-            if (metadataIgnoreCase) {
-                tableName = tableName.toUpperCase();
-            }
-            Conflict found = conflictSettingsByTable.get(tableName);
+            Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
 
             if (found == null) {
-                tableName = table.getName();
-                if (metadataIgnoreCase) {
-                    tableName = tableName.toUpperCase();
-                }
-                found = conflictSettingsByTable.get(tableName);
+                found = conflictSettingsByTable.get(table.getName());
             }
 
             if (found != null
@@ -261,14 +251,6 @@ public class DatabaseWriterSettings {
 
     public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
         this.saveCurrentValueOnError = saveCurrentValueOnError;
-    }
-
-    public boolean isMetadataIgnoreCase() {
-        return metadataIgnoreCase;
-    }
-
-    public void setMetadataIgnoreCase(boolean metadataIgnoreCase) {
-        this.metadataIgnoreCase = metadataIgnoreCase;
     }
 
 }
