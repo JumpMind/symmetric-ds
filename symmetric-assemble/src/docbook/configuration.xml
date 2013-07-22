@@ -1416,6 +1416,36 @@ browser. Do an explain plan to make sure you are properly using indexes.
 </important>
 </section>
 
+<section id="configuration-initial-load-batches">
+<title>Splitting an Initial Load for a Table Across Multiple Batches</title>
+<para>
+By default, all data for a given table will be initial loaded in a single batch, regardless
+of the max batch size parameter on the reload channel.  That is, for a table with one million
+rows, all rows for that table will be initial loaded and sent to the destination node in a 
+single batch. For large tables, this can result in a batch that can take a long time to
+extract and load.  
+</para>
+
+<para>
+Initial loads for a table can be broken into multiple batches by specifying 
+<literal>initial.load.use.extract.job.enabled</literal> to true.  This parameter allows
+SymmetricDS to pre-extract initial load batches versus having them extracted when 
+the batch is pulled or pushed.  When using this parameter, there are two ways to tell 
+SymmetricDS the number of batches to create for a given table.  The first is to specify
+a positive integer in the initial_load_batch_count column on 
+<xref linkend="table_trigger_router" xrefstyle="table" />.  This 
+number will dictate the number of batches created for the initial load of the given table.
+The second way is to specify 0 for initial_load_batch_count on 
+<xref linkend="table_trigger_router" xrefstyle="table" /> and 
+specify a max_batch_size on the reload channel in <xref linkend="table_channel" xrefstyle="table" />.  
+When 0 is specified for 
+initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during 
+the extract process and create N batches based on the total number of records found 
+in the table divided by the max_batch_size on the reload channel. 
+</para>
+
+</section>
+
 <section id="configuration-initial-load-reverse">
 <title>Reverse Initial Loads</title>
 <para>
