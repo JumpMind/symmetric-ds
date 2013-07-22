@@ -88,7 +88,8 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
             column.setMappedTypeCode(Types.BIGINT);
-        } else if (column.getMappedTypeCode() == Types.NUMERIC) {
+        } else if (column.getMappedTypeCode() == Types.NUMERIC
+                || column.getMappedTypeCode() == Types.DECIMAL) {
             // ASA truncates everything to the right of the decimal point unless
             // we map to DOUBLE.
             column.setMappedTypeCode(Types.DOUBLE);
