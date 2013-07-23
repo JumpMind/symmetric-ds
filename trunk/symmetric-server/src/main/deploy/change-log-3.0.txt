@@ -76,6 +76,7 @@ SymmetricDS - 3.5.0 (Released 2013-07-17)
 - 0001332: [Bug] The /batch url always extracts from the database. It should extract the same way the pull does (use staging). (chenson) - closed.
 - 0001333: [Bug] Transforms with a source column containing an empty string or white space fail. (abrougher) - closed.
 - 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
+- 0001336: [Bug] Restart of Android job manager fails when job parameters are changed in the database (chenson) - closed.
 
 SymmetricDS - 3.4.9 (Released 2013-07-16) 
 =========================================
