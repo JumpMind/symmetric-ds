@@ -39,11 +39,9 @@ public class AndroidJobManager implements IJobManager {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected Timer timer;
-
     protected ISymmetricEngine engine;
 
-    protected List<IJob> jobs;
+    protected Job job;
 
     protected long lastPullTime = System.currentTimeMillis();
 
@@ -57,46 +55,40 @@ public class AndroidJobManager implements IJobManager {
 
     public AndroidJobManager(ISymmetricEngine engine) {
         this.engine = engine;
-        this.jobs = new ArrayList<IJob>();
-        this.jobs.add(new Job());
-
     }
 
     public List<IJob> getJobs() {
+        List<IJob> jobs = new ArrayList<IJob>(1);
+        if (job != null) {
+            jobs.add(job);
+        }
         return jobs;
     }
 
     public void startJobs() {
-        for (IJob job : jobs) {
-            if (!job.isStarted()) {
-                job.start();
-            }
+        if (job == null) {
+            job = new Job();
+            job.start();
         }
     }
 
     public void stopJobs() {
-        for (IJob job : jobs) {
-            if (job.isStarted()) {
-                job.stop();
-            }
+        if (job != null) {
+            job.stop();
         }
     }
 
     public IJob getJob(String name) {
-        for (IJob job : jobs) {
-            if (job.getName().equals(name)) {
-                return job;
-            }
-        }
-        return null;
+        return job != null ? job : null;
     }
 
     public void destroy() {
-        timer.cancel();
-        timer = null;
+        stopJobs();
     }
 
     class Job extends TimerTask implements IJob {
+
+        Timer timer;
 
         Date lastFinishTime;
 
@@ -222,8 +214,13 @@ public class AndroidJobManager implements IJobManager {
 
         public synchronized boolean stop() {
             cancel();
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
             started = false;
-            return false;
+            job = null;
+            return true;
         }
 
         public String getName() {
@@ -290,4 +287,5 @@ public class AndroidJobManager implements IJobManager {
             throw new NotImplementedException();
         }
     }
+
 }
