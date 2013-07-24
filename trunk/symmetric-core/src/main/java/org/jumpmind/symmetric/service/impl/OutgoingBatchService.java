@@ -118,13 +118,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             updateOutgoingBatch(batch);
         }
     }
-    
+
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
             updateOutgoingBatch(transaction, outgoingBatch);
-            transaction.commit();            
+            transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
@@ -134,7 +134,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;  
+            throw ex;
         } finally {
             close(transaction);
         }
@@ -146,7 +146,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         transaction.prepareAndExecute(
                 getSql("updateOutgoingBatchSql"),
                 new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(),
-                       outgoingBatch.isExtractJobFlag() ? 1: 0, 
+                       outgoingBatch.isExtractJobFlag() ? 1: 0,
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0,
                         outgoingBatch.getByteCount(), outgoingBatch.getExtractCount(),
                         outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
@@ -184,7 +184,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;             
+            throw ex;
         } finally {
             close(transaction);
         }
@@ -393,7 +393,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
     }
-    
+
     public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels) {
         OutgoingBatches batches = new OutgoingBatches();
         List<OutgoingBatch> batchList = new ArrayList<OutgoingBatch>();
@@ -490,7 +490,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                 Status status = Status.valueOf(rs.getString("status"));
                 DataEventType eventType = DataEventType.getEventType(rs.getString("event_type"));
-                int count = rs.getInt("count");
+                int count = rs.getInt("cnt");
 
                 Date lastUpdateTime = rs.getDateTime("last_update_time");
                 if (summary.getLastUpdateTime() == null
@@ -525,7 +525,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 return null;
             }
         });
-        
+
         List<OutgoingLoadSummary> loads = new ArrayList<OutgoingLoadSummary>(loadSummaries.values());
         Iterator<OutgoingLoadSummary> it = loads.iterator();
         while (it.hasNext()) {
@@ -534,7 +534,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 it.remove();
             }
         }
-        
+
         return loads;
     }
 
