@@ -29,7 +29,7 @@ public class SqliteDmlStatement extends DmlStatement {
     public SqliteDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+        super(type, catalogName, null, tableName, keysColumns, columns, 
                 nullKeyValues, databaseInfo, useQuotedIdentifiers);
     }
     
