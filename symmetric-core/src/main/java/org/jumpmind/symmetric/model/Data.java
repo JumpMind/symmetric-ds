@@ -163,7 +163,7 @@ public class Data extends CsvData implements Serializable {
     }
     
     public void setNodeList(String nodeList) {
-        putAttribute(ATTRIBUTE_EXTERNAL_DATA, nodeList);
+        putAttribute(ATTRIBUTE_NODE_LIST, nodeList);
     }
     
     public String getNodeList() {
