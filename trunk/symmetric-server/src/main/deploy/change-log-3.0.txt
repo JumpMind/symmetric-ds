@@ -18,8 +18,17 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.1 (Released 2013-07-24) 
+=========================================
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
+- 0001342: [Bug] Upgrade to 3.5.0 causes sym_trigger_hist to be rebuilt (chenson) - closed.
+- 0001343: [Bug] alter of default column value on postgres is not working (chenson) - closed.
+- 0001344: [Bug] Sybase ASE can not return columns with the alias "count". (abrougher) - closed.
+- 0001345: [Bug] The reload table JMX method and command isn't working (chenson) - closed.
+- 0001339: [Bug] When using PayloadType.SQL Symmetric doesn't pay attention to target database catalog and schema rules (gwilmer) - closed.
 
-SymmetricDS - 3.5.0 (Released 2013-07-17)
+
+SymmetricDS - 3.5.0 (Released 2013-07-22)
 =========================================
 - 0001307: [Improvement] Allow users to insert custom trigger text in the Symmetric triggers. (abrougher) - closed.
 - 0001188: [Improvement] Inserting leading or trailing spaces in column ROUTER_EXPRESSION on table ROUTER produce ER in outgoing batch (chenson) - closed.
