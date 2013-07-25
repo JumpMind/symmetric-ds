@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="../logs/symmetric.log" />
+        <param name="MaxFileSize" value="10000KB" />
+        <param name="MaxBackupIndex" value="3" />
+        <param name="Append" value="true" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.err" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%X{engineName}] - %c{1} - %m%n" />
+        </layout>
+    </appender>
+    
+    <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>
+
+    <category name="org">
+        <priority value="WARN" />
+    </category>
+
+    <category name="org.springframework">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind">
+        <priority value="INFO" />
+    </category>
+    
+    <category name="org.jumpmind.symmetric">
+        <priority value="DEBUG" />
+    </category>        
+    
+    <category name="org.jumpmind.symmetric.io.data.writer">
+        <priority value="DEBUG" />
+    </category>
+     
+    <!-- Disable the not found override properties file warnings to avoid confusion -->
+    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
+        <priority value="ERROR" />
+    </category>    
+
+    <category name="org.jumpmind.symmetric.job.HeartbeatJob">
+        <priority value="INFO" />
+    </category>    
+
+    <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
+    <root>
+        <priority value="INFO" />
+        <appender-ref ref="ROLLING" />
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="BUFFERED" />
+    </root>
+
+</log4j:configuration>
