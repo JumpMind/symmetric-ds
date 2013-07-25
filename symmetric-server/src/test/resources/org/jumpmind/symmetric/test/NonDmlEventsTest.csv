@@ -122,6 +122,7 @@ insert,"filesync","3","100","100","10000","0","1","1","1","1","0","default","def
 catalog,
 schema,
 table,SYM_TRIGGER
+insert,"NODE_SPECIFIC",,,"NODE_SPECIFIC","default","0","0","0","0",,,,"1=1","1=1","1=1",,,,,"1","1","1","0","2013-06-21 10:48:23.669","admin","2013-06-21 10:48:23.669"
 insert,"DEAD_CAMELCASE",,,"CamelCase","default","0","0","0","0",,,,"1=1","1=1","1=1",,,,,"0","0","1","0","2013-06-21 10:48:23.669","admin","2013-06-21 10:48:23.669"
 insert,"WILDCARD",,,"*,!CamelCase","default","0","0","0","0",,,,"1=1","1=1","1=1",,,,,"0","0","1","0","2013-06-22 21:10:33.127","admin","2013-06-22 21:11:23.787"
 catalog,
@@ -129,9 +130,11 @@ schema,
 table,SYM_ROUTER
 insert,"CLIENT_2_ROOT",,,,"client","root","default",,"1","1","1","2013-06-21 10:37:23.472","admin","2013-06-21 10:37:23.472"
 insert,"ROOT_2_CLIENT",,,,"root","client","default",,"1","1","1","2013-06-21 10:37:43.636","admin","2013-06-21 10:37:43.636"
+insert,"ROOT_2_NODE",,,,"root","client","column","NODE_ID=:NODE_ID","1","1","1","2013-06-21 10:37:43.636","admin","2013-06-21 10:37:43.636"
 catalog,
 schema,
 table,SYM_TRIGGER_ROUTER
 insert,"DEAD_CAMELCASE","ROOT_2_CLIENT","1","50","","","0","2013-06-21 10:48:30.989","admin","2013-06-21 10:48:30.989"
 insert,"WILDCARD","ROOT_2_CLIENT","1","50","","","0","2013-06-22 21:10:46.738","admin","2013-06-22 21:10:46.738"
+insert,"NODE_SPECIFIC","ROOT_2_NODE","1","50","","","0","2013-06-22 21:10:46.738","admin","2013-06-22 21:10:46.738"
 commit,-9999

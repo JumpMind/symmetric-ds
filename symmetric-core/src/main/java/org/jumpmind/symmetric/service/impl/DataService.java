@@ -261,7 +261,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         
         String channelId = triggerRouter.getTrigger().getChannelId();
-        if (isLoad && !Constants.CHANNEL_FILESYNC.equals(triggerRouter.getTrigger().getChannelId()) &&
+        if (!Constants.CHANNEL_FILESYNC.equals(triggerRouter.getTrigger().getChannelId()) &&
                 parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
             channelId = Constants.CHANNEL_RELOAD;
         }

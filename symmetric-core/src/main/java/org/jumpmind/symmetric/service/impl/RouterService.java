@@ -624,32 +624,32 @@ public class RouterService extends AbstractService implements IRouterService {
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getDataEventType())) {
-                    IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
-                    context.addUsedDataRouter(dataRouter);
-                    long ts = System.currentTimeMillis();
-                    nodeIds = dataRouter.routeToNodes(context, dataMetaData,
-                            findAvailableNodes(triggerRouter, context), false);
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                    
+                    String targetNodeIds = data.getNodeList();
+                    if (StringUtils.isNotBlank(targetNodeIds)) {
+                        List<String> targetNodeIdsList = Arrays.asList(targetNodeIds.split(","));
+                        nodeIds = CollectionUtils.intersection(targetNodeIdsList, toNodeIds(findAvailableNodes(triggerRouter, context)));
 
-                    if (nodeIds != null) {                        
-                        String targetNodeIds = data.getNodeList();
-                        if (StringUtils.isNotBlank(targetNodeIds)) {
-                            List<String> targetNodeIdsList = Arrays
-                                    .asList(targetNodeIds.split(","));
-                            nodeIds = CollectionUtils.intersection(targetNodeIdsList, nodeIds);
+                        if (nodeIds.size() == 0) {
+                            log.warn(
+                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed",
+                                    targetNodeIds, data.getDataId());
+                        }
+                    } else {
+                        IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                        context.addUsedDataRouter(dataRouter);
+                        long ts = System.currentTimeMillis();
+                        nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                                findAvailableNodes(triggerRouter, context), false);
+                        context.incrementStat(System.currentTimeMillis() - ts,
+                                ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                    }
 
-                            if (nodeIds.size() == 0) {
-                                log.warn(
-                                        "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed",
-                                        targetNodeIds, data.getDataId());
-                            }
-                        }                       
-                        
+                    if (nodeIds != null) {
                         if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null) {
                             nodeIds.remove(data.getSourceNodeId());
                         }
-                        
+
                         // should never route to self
                         nodeIds.remove(engine.getNodeService().findIdentityNodeId());
 

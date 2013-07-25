@@ -27,8 +27,13 @@ import junit.framework.Assert;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.web.rest.RestService;
 
 public class NonDmlEventsTest extends AbstractTest {
 
@@ -49,13 +54,17 @@ public class NonDmlEventsTest extends AbstractTest {
 
         Table b = new Table("B");
         b.addColumn(new Column("ID", true, Types.BIGINT, -1, -1));
+        
+        Table nodeSpecific = new Table("NODE_SPECIFIC");
+        nodeSpecific.addColumn(new Column("NODE_ID", true, Types.BIGINT, -1, -1));
 
-        return new Table[] { testTable, a, b };
+        return new Table[] { testTable, a, b, nodeSpecific };
     }
 
     @Override
     protected void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
+                
         loadConfigAndRegisterNode("client", "root");
 
         // pull to clear out any heartbeat events
@@ -152,6 +161,32 @@ public class NonDmlEventsTest extends AbstractTest {
                 10,
                 clientServer.getDatabasePlatform().getSqlTemplate()
                         .queryForInt(String.format("select count(*) from %s", clientTable.getName())));
+        
 
+        testRoutingOfReloadEvents(rootServer, clientServer);
+        
+    }
+    
+    protected void testRoutingOfReloadEvents(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
+            throws Exception {
+        rootServer.getParameterService().saveParameter(ParameterConstants.REST_API_ENABLED, true, "unit_test");
+        rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "2");
+        rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "3");
+        RestService restService = getRegServer().getRestService();
+        // register a few more nodes to make sure that when we insert reload events they are only routed to the node we want
+        restService.postRegisterNode("2", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
+        restService.postRegisterNode("3", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
+        
+        Assert.assertEquals(0, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
+        Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "NODE_SPECIFIC");
+        Assert.assertNotNull(serverTable);
+        Assert.assertTrue(rootServer.getDataService().reloadTable(clientServer.getNodeService().findIdentityNodeId(), null, null, serverTable.getName()).startsWith("Successfully created"));
+        rootServer.route();
+        Assert.assertEquals(1, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
+        
+        OutgoingBatches batches = rootServer.getOutgoingBatchService().getOutgoingBatches(clientServer.getNodeService().findIdentityNodeId(), true);
+
+        Assert.assertEquals(1, batches.getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
+        
     }
 }
