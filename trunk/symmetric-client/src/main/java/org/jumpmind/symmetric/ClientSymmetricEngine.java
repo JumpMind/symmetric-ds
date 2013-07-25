@@ -395,6 +395,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         snapshotsDir.mkdirs();
         return snapshotsDir;        
     }
+    
+    public ApplicationContext getSpringContext() {
+        return springContext;
+    }
 
     public File snapshot() {
         

@@ -169,6 +169,18 @@ abstract public class AbstractService implements IService {
             transaction.close();
         }
     }
+    
+    protected Set<String> toNodeIds(Set<Node> nodes) {
+        return toNodeIds(nodes, null);
+    }
+    
+    protected Set<String> toNodeIds(Set<Node> nodes, Set<String> nodeIds) {
+        nodeIds = nodeIds == null ? new HashSet<String>(nodes.size()) : nodeIds;
+        for (Node node : nodes) {
+            nodeIds.add(node.getNodeId());
+        }
+        return nodeIds;
+    }
 
     protected String getRootMessage(Exception ex) {
         Throwable cause = ExceptionUtils.getRootCause(ex);
