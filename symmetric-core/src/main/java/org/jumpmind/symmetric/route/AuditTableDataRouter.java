@@ -58,7 +58,7 @@ public class AuditTableDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE
                 || eventType == DataEventType.DELETE) {

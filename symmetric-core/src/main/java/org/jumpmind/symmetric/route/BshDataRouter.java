@@ -53,7 +53,7 @@ public class BshDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad) {
+            boolean initialLoad, boolean initialLoadSelectUsed) {
         try {
             long ts = System.currentTimeMillis();
             Interpreter interpreter = getInterpreter(context);

@@ -111,7 +111,7 @@ public class ConfigurationChangedDataRouterTest {
                 THREE_TIER_NETWORKED_ROOT);
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn1", nodeIds.iterator().next());
@@ -125,7 +125,7 @@ public class ConfigurationChangedDataRouterTest {
                 THREE_TIER_NETWORKED_ROOT);
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("laptop1").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("laptop1", nodeIds.iterator().next());
@@ -141,7 +141,7 @@ public class ConfigurationChangedDataRouterTest {
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
         
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn2"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn2"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn2", nodeIds.iterator().next());
@@ -156,7 +156,7 @@ public class ConfigurationChangedDataRouterTest {
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode());
         
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "corp"), nodes, true);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "corp"), nodes, true, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("corp", nodeIds.iterator().next());  
@@ -172,7 +172,7 @@ public class ConfigurationChangedDataRouterTest {
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
         
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn1", nodeIds.iterator().next());
@@ -186,7 +186,7 @@ public class ConfigurationChangedDataRouterTest {
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "laptop1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertEquals("rgn1", nodeIds.iterator().next());
@@ -201,7 +201,7 @@ public class ConfigurationChangedDataRouterTest {
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s1").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s2").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("dw").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "s1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "s1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(2, nodeIds.size());
         Assert.assertTrue(nodeIds.contains("s1"));
@@ -217,7 +217,7 @@ public class ConfigurationChangedDataRouterTest {
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s1").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s2").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("dw").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "dw"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "dw"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(3, nodeIds.size());
         Assert.assertTrue(nodeIds.contains("s1"));
@@ -234,7 +234,7 @@ public class ConfigurationChangedDataRouterTest {
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s1").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("dw").getNode());
         nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("regsvr").getNode());
-        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "s1"), nodes, false);
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "s1"), nodes, false, false);
         Assert.assertNotNull(nodeIds);
         Assert.assertEquals(1, nodeIds.size());
         Assert.assertTrue(nodeIds.contains("regsvr"));

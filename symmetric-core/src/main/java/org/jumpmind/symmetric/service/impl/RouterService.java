@@ -123,12 +123,12 @@ public class RouterService extends AbstractService implements IRouterService {
      * For use in data load events
      */
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
-            Node node, boolean initialLoad) {
+            Node node, boolean initialLoad, boolean initialLoadSelectUsed) {
         IDataRouter router = getDataRouter(dataMetaData.getRouter());
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet,
-                initialLoad);
+                initialLoad, initialLoadSelectUsed);
         return nodeIds != null && nodeIds.contains(node.getNodeId());
     }
 
@@ -624,7 +624,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getDataEventType())) {
-                    
+
                     String targetNodeIds = data.getNodeList();
                     if (StringUtils.isNotBlank(targetNodeIds)) {
                         List<String> targetNodeIdsList = Arrays.asList(targetNodeIds.split(","));
@@ -640,7 +640,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.addUsedDataRouter(dataRouter);
                         long ts = System.currentTimeMillis();
                         nodeIds = dataRouter.routeToNodes(context, dataMetaData,
-                                findAvailableNodes(triggerRouter, context), false);
+                                findAvailableNodes(triggerRouter, context), false, false);
                         context.incrementStat(System.currentTimeMillis() - ts,
                                 ChannelRouterContext.STAT_DATA_ROUTER_MS);
                     }

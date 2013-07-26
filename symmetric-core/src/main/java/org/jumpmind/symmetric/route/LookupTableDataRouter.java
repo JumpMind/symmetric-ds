@@ -65,7 +65,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
 
         Set<String> nodeIds = null;
         Router router = dataMetaData.getRouter();

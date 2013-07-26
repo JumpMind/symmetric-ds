@@ -81,7 +81,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> possibleTargetNodes, boolean initialLoad) {
+            Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed) {
 
         // the list of nodeIds that we will return
         Set<String> nodeIds = null;

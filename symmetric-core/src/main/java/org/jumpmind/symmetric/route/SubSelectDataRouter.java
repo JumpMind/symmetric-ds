@@ -69,12 +69,12 @@ public class SubSelectDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
         String sql = FormatUtils.replaceToken(SQL, "prefixName", symmetricDialect.getTablePrefix(),
                 true);
         String subSelect = dataMetaData.getRouter().getRouterExpression();
         Set<String> nodeIds = null;
-        if (!StringUtils.isBlank(subSelect) && !initialLoad) {
+        if (!StringUtils.isBlank(subSelect) && !initialLoadSelectUsed) {
             try {
                 Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect, true);
                 sqlParams.put("NODE_GROUP_ID", dataMetaData.getRouter().getNodeGroupLink()
@@ -91,7 +91,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
                         dataMetaData.getRouter().getRouterId());
                 throw ex;
             }
-        } else if (initialLoad) {
+        } else if (initialLoadSelectUsed) {
             nodeIds = toNodeIds(nodes, null);
         } else {
             throw new InvalidSqlException("The subselect expression is missing for the %s router", dataMetaData.getRouter().getRouterId());
