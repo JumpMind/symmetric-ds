@@ -1250,14 +1250,16 @@ public class Table implements Serializable, Cloneable {
     }
     
     public void copyColumnTypesFrom(Table table) {
-        if (columns != null) {
-            for (Column column : columns) {
-                Column sourceColumn = table.getColumnWithName(column.getName());
-                if (sourceColumn != null) {
-                    column.setJdbcTypeCode(sourceColumn.getJdbcTypeCode());
-                    column.setJdbcTypeName(sourceColumn.getJdbcTypeName());                    
-                    column.setMappedTypeCode(sourceColumn.getMappedTypeCode());                    
-                    column.setMappedType(sourceColumn.getMappedType());
+        if (table != null) {
+            if (columns != null) {
+                for (Column column : columns) {
+                    Column sourceColumn = table.getColumnWithName(column.getName());
+                    if (sourceColumn != null) {
+                        column.setJdbcTypeCode(sourceColumn.getJdbcTypeCode());
+                        column.setJdbcTypeName(sourceColumn.getJdbcTypeName());
+                        column.setMappedTypeCode(sourceColumn.getMappedTypeCode());
+                        column.setMappedType(sourceColumn.getMappedType());
+                    }
                 }
             }
         }
