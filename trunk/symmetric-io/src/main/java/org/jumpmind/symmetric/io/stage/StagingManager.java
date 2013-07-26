@@ -37,7 +37,6 @@ public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-
     protected File directory;
 
     protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
