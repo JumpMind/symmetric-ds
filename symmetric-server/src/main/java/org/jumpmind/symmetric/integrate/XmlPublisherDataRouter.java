@@ -58,7 +58,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
             Element xml = getXmlFromCache(context, engine.getSymmetricDialect().getBinaryEncoding(),
