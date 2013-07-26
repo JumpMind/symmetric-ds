@@ -493,6 +493,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch,
                                 dataWriter);
                     }
+                    
+                    processedBatches.add(currentBatch);
 
                     if (currentBatch.getStatus() != Status.OK) {
                         currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
@@ -500,17 +502,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                         bytesSentCount += currentBatch.getByteCount();
                         batchesSentCount++;
-
-                        if (bytesSentCount >= maxBytesToSync && i < activeBatches.size() - 1) {
+                        
+                        if (bytesSentCount >= maxBytesToSync && processedBatches.size() < activeBatches.size()) {
                             log.info(
-                                    "Reached the total byte threshold after {} of {} batches were extracted for {}.  The remaining batches will be extracted on a subsequent sync",
+                                    "Reached the total byte threshold after {} of {} batches were extracted for node '{}'.  The remaining batches will be extracted on a subsequent sync",
                                     new Object[] { batchesSentCount, activeBatches.size(),
                                             targetNode.getNodeId() });
                             break;
                         }
-                    }
-                    
-                    processedBatches.add(currentBatch);
+                    }                                       
                 }
 
             } catch (RuntimeException e) {
@@ -931,7 +931,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public List<ExtractRequest> getExtractRequestsForNode(String nodeId) {
         return sqlTemplate.query(getSql("selectExtractRequestForNodeSql"),
-                new ExtractRequestMapper(), nodeId, Status.NE.name());
+                new ExtractRequestMapper(), nodeId, ExtractRequest.ExtractStatus.NE.name());
     }
 
     protected void resetExtractRequest(OutgoingBatch batch) {
