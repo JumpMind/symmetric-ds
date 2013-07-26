@@ -371,7 +371,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             }
 
             if (routingContext.get(CTX_KEY_RESYNC_NEEDED) != null
-                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)
+                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED) ) {
                 log.info("About to syncTriggers because new configuration came through the data router");
                 engine.getTriggerRouterService().syncTriggers();
             }
