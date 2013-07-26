@@ -44,7 +44,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
         Set<String> nodeIds = new HashSet<String>();
         IFileSyncService fileSyncService = engine.getFileSyncService();
         IRouterService routerService = engine.getRouterService();
@@ -80,7 +80,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
                 ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
             }
             dataMetaData.setRouter(router);
-            nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false));
+            nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false, false));
             nodeIds.remove(sourceNodeId);
         } else {
             log.error(

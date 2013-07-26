@@ -93,7 +93,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
-            DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+            DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);

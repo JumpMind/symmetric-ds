@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed);
 
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch);
 

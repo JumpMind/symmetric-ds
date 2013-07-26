@@ -43,7 +43,7 @@ public interface IRouterService extends IService {
     public long getUnroutedDataCount();
     
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
-            Node node, boolean initialLoad);
+            Node node, boolean initialLoad, boolean initialLoadSelectUsed);
  
     public void addDataRouter(String name, IDataRouter dataRouter);
     
