@@ -136,8 +136,9 @@ public class DatabaseWriter implements IDataWriter {
         }
         this.lastData = null;
         this.currentDmlStatement = null;
-        this.sourceTable = table;
-        this.targetTable = lookupTableAtTarget(table);
+        this.sourceTable = table;        
+        this.targetTable = lookupTableAtTarget(this.sourceTable);
+        this.sourceTable.copyColumnTypesFrom(this.targetTable);
         if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
             this.targetTable = table;
         }
