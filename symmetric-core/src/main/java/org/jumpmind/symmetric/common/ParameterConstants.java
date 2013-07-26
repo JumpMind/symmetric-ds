@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 final public class ParameterConstants {
 
     public static final String ALL = "ALL";
-    
+
     private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
     private ParameterConstants() {
@@ -53,22 +53,22 @@ final public class ParameterConstants {
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
-    
+
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
     public final static String PULL_LOCK_TIMEOUT_MS = "pull.lock.timeout.ms";
-    
+
     public final static String PUSH_THREAD_COUNT_PER_SERVER = "push.thread.per.server.count";
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
-    
+
     public final static String FILE_PULL_THREAD_COUNT_PER_SERVER = "file.pull.thread.per.server.count";
     public final static String FILE_PULL_MINIMUM_PERIOD_MS = "file.pull.period.minimum.ms";
     public final static String FILE_PULL_LOCK_TIMEOUT_MS = "file.pull.lock.timeout.ms";
-    
+
     public final static String FILE_PUSH_THREAD_COUNT_PER_SERVER = "file.push.thread.per.server.count";
     public final static String FILE_PUSH_MINIMUM_PERIOD_MS = "file.push.period.minimum.ms";
-    public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";    
+    public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
@@ -82,7 +82,7 @@ final public class ParameterConstants {
     public final static String NODE_GROUP_ID = "group.id";
     public final static String EXTERNAL_ID = "external.id";
     public final static String SCHEMA_VERSION = "schema.version";
-    
+
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
     public final static String AUTO_RELOAD_SYM_ON_UPGRADE = "auto.reload.sym.tables.on.upgrade";
@@ -92,6 +92,7 @@ final public class ParameterConstants {
     public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
+    public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";
     public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
     public final static String AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
@@ -104,7 +105,7 @@ final public class ParameterConstants {
     public final static String INITIAL_LOAD_USE_RELOAD_CHANNEL = "initial.load.use.reload.channel";
     public final static String INTITAL_LOAD_REVERSE_FIRST = "initial.load.reverse.first";
     public final static String INTITAL_LOAD_USE_EXTRACT_JOB = "initial.load.use.extract.job.enabled";
-    
+
     public final static String INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER = "initial.load.extract.thread.per.server.count";
     public final static String INITIAL_LOAD_EXTRACT_TIMEOUT_MS = "initial.load.extract.timeout.ms";
     public final static String INITIAL_LOAD_EXTRACT_JOB_START = "start.initial.load.extract.job";
@@ -116,7 +117,7 @@ final public class ParameterConstants {
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
     public final static String CONCURRENT_WORKERS = "http.concurrent.workers.max";
-    public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";         
+    public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
 
     public final static String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
     public final static String ROUTING_FLUSH_JDBC_BATCH_SIZE = "routing.flush.jdbc.batch.size";
@@ -142,7 +143,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
     public final static String DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT = "dataloader.sleep.time.after.early.commit";
     public final static String DATA_LOADER_TREAT_DATETIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
-    
+
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
@@ -151,7 +152,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     public final static String DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC = "oracle.template.precision";
     public final static String DBDIALECT_ORACLE_USE_HINTS = "oracle.use.hints";
-    
+
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
 
     public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";
@@ -174,13 +175,13 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";
     public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
     public final static String CACHE_TIMEOUT_TRANSFORM_IN_MS = "cache.transform.time.ms";
-    public final static String CACHE_TIMEOUT_LOAD_FILTER_IN_MS = "cache.load.filter.time.ms";    
+    public final static String CACHE_TIMEOUT_LOAD_FILTER_IN_MS = "cache.load.filter.time.ms";
     public final static String CACHE_TIMEOUT_CONFLICT_IN_MS = "cache.conflict.time.ms";
     public final static String CACHE_TIMEOUT_TABLES_IN_MS = "cache.table.time.ms";
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
-    
+
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
@@ -189,7 +190,7 @@ final public class ParameterConstants {
     public final static String DB_JNDI_NAME = "db.jndi.name";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
-    
+
     public final static String NODE_ID_CREATOR_SCRIPT = "node.id.creator.script";
     public final static String NODE_ID_CREATOR_MAX_NODES = "node.id.creator.max.nodes";
 
@@ -216,33 +217,33 @@ final public class ParameterConstants {
     public final static String HEARTBEAT_JOB_PERIOD_MS = "job.heartbeat.period.time.ms";
     public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
     public final static String HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS = "heartbeat.update.node.with.batch.status";
-    
+
     public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
-    
+
     public final static String CURRENT_ACTIVITY_HISTORY_KEEP_COUNT = "statistic.activity.history.keep.count";
-    
+
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
-    
-    public final static String DB_MASTER_COLLATION = "db.master.collation";   
-        
+
+    public final static String DB_MASTER_COLLATION = "db.master.collation";
+
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
-    
+
     public final static String SERVER_LOG_FILE = "server.log.file";
-    
+
     public final static String REST_API_ENABLED = "rest.api.enable";
-    
+
     public final static String REST_HEARTBEAT_ON_PULL = "rest.api.heartbeat.on.pull";
 
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
-    
+
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
-    
+
     public static Set<String> getAllParameterTags() {
         TreeSet<String> tags = new TreeSet<String>();
         Collection<ParameterMetaData> meta = parameterMetaData.values();
