@@ -1014,8 +1014,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     nodeCommunication.getNodeId());
         }
 
-        // TODO: update the purge service to purge extract requests
-
     }
 
     class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
