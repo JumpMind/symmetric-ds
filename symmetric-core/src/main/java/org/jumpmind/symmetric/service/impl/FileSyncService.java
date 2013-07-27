@@ -361,8 +361,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     processInfo.incrementBatchCount();
                     processInfo.setCurrentBatchId(currentBatch.getBatchId());
 
-                    engine.getDataExtractorService().extractOutgoingBatch(processInfo, targetNode,
-                            dataWriter, currentBatch, false, true);
+                    ((DataExtractorService) engine.getDataExtractorService()).extractOutgoingBatch(
+                            processInfo, targetNode, dataWriter, currentBatch, false, true,
+                            DataExtractorService.ExtractMode.FOR_SYM_CLIENT);
 
                     /*
                      * check to see if max bytes to sync has been reached and
