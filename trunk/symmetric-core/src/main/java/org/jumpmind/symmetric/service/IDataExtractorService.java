@@ -25,7 +25,6 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -54,13 +53,9 @@ public interface IDataExtractorService {
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
     
     public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
-            Date endBatchTime, String... channelIds);
+            Date endBatchTime, String... channelIds);    
     
-    public OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
-            IDataWriter dataWriter, OutgoingBatch currentBatch,
-            boolean streamToFileEnabled, boolean updateBatchStatistics);
-    
-    public boolean extractOutgoingBatch(String nodeId, long batchId, Writer writer);
+    public boolean extractOnlyOutgoingBatch(String nodeId, long batchId, Writer writer);
     
     public RemoteNodeStatuses queueWork(boolean force);
     

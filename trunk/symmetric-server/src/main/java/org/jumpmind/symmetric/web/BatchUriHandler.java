@@ -52,7 +52,7 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
                 if (dashIndex > 0) {
                     String nodeId = nodeIdBatchId.substring(0, dashIndex);
                     String batchId = nodeIdBatchId.substring(dashIndex + 1, nodeIdBatchId.length());
-                    if (!dataExtractorService.extractOutgoingBatch(nodeId, Long.parseLong(batchId),
+                    if (!dataExtractorService.extractOnlyOutgoingBatch(nodeId, Long.parseLong(batchId),
                             res.getWriter())) {
                         ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
                     } else {
