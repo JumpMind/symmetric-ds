@@ -250,33 +250,37 @@ public class TransformWriter extends NestedDataWriter {
         try {
             DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-                IncludeOnType includeOn = transformColumn.getIncludeOn();
-                if (includeOn == IncludeOnType.ALL
-                        || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
-                        || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
-                        || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
-                    if (StringUtils.isBlank(transformColumn.getSourceColumnName())
-                            || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                        IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
-                                .get(transformColumn.getTransformType()) : null;
-                        if (transform == null || transform instanceof ISingleValueColumnTransform) {
-                            try {
-                                String value = (String) transformColumn(context, data,
-                                        transformColumn, sourceValues, oldSourceValues);
-                                data.put(transformColumn, value, false);
-                            } catch (IgnoreColumnException e) {
-                                // Do nothing. We are ignoring the column
-                                if (log.isDebugEnabled()) {
-                                    log.debug(
-                                            "A transform indicated we should ignore the target column {}",
-                                            transformColumn.getTargetColumnName());
+                if (!transformColumn.isPk()) {
+                    IncludeOnType includeOn = transformColumn.getIncludeOn();
+                    if (includeOn == IncludeOnType.ALL
+                            || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
+                            || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
+                            || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
+                        if (StringUtils.isBlank(transformColumn.getSourceColumnName())
+                                || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
+                            IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
+                                    .get(transformColumn.getTransformType()) : null;
+                            if (transform == null
+                                    || transform instanceof ISingleValueColumnTransform) {
+                                try {
+                                    String value = (String) transformColumn(context, data,
+                                            transformColumn, sourceValues, oldSourceValues);
+                                    data.put(transformColumn, value, false);
+                                } catch (IgnoreColumnException e) {
+                                    // Do nothing. We are ignoring the column
+                                    if (log.isDebugEnabled()) {
+                                        log.debug(
+                                                "A transform indicated we should ignore the target column {}",
+                                                transformColumn.getTargetColumnName());
+                                    }
                                 }
                             }
+                        } else {
+                            log.warn(
+                                    "Could not find a source column of {} for the transformation: {}",
+                                    transformColumn.getSourceColumnName(),
+                                    transformation.getTransformId());
                         }
-                    } else {
-                        log.warn("Could not find a source column of {} for the transformation: {}",
-                                transformColumn.getSourceColumnName(),
-                                transformation.getTransformId());
                     }
                 }
             }
