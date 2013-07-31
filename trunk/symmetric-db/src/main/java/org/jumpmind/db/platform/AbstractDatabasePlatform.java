@@ -479,7 +479,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return text;
     }
 
-    protected java.util.Date parseDate(int type, String value, boolean useVariableDates) {
+    public java.util.Date parseDate(int type, String value, boolean useVariableDates) {
         if (StringUtils.isNotBlank(value)) {
             try {
                 boolean useTimestamp = (type == Types.TIMESTAMP)
