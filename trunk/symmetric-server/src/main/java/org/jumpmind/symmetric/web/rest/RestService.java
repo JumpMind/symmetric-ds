@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.MDC;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
@@ -1311,6 +1312,7 @@ public class RestService {
             throw new NotAllowedException("The REST API was not enabled for %s",
                     engine.getEngineName());
         } else {
+            MDC.put("engineName", engine.getEngineName());
             return engine;
         }
     }
