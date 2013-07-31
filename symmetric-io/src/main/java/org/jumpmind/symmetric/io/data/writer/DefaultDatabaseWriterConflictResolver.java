@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
@@ -244,13 +245,13 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
         Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                 CsvData.ROW_DATA);
         String loadingStr = newData.get(columnName);
-        
+
         Date loadingTs = null;
         Date existingTs = null;
         if (column.getMappedTypeCode() == -101) {
             // Get the existingTs with timezone
             String existingStr = writer.getTransaction().queryForObject(sql, String.class,
-                    objectValues);            
+                    objectValues);
             // If you are in this situation because of an instance where the conflict exists
             // because the row doesn't exist, then existing simply needs to be null
             if (existingStr != null) {
@@ -273,6 +274,8 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     new String[] { loadingStr }, new Column[] { column });
             if (values[0] instanceof Date) {
                 loadingTs = (Date) values[0];
+            } else if (values[0] instanceof String) {
+                loadingTs = writer.getPlatform().parseDate(Types.VARCHAR, (String)values[0], false);
             } else {
                 throw new ParseException("Could not parse " + columnName + " with a value of "
                         + loadingStr + " for purposes of conflict detection");

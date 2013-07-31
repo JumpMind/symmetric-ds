@@ -47,7 +47,7 @@ public interface IDatabasePlatform {
 
     /**
      * Returns information about this platform.
-     * 
+     *
      * @return The info object
      */
     public DatabaseInfo getDatabaseInfo();
@@ -60,7 +60,7 @@ public interface IDatabasePlatform {
     /**
      * Returns the ddl reader (which reads a database model from a live
      * database) for this platform.
-     * 
+     *
      * @return The model reader
      */
     public IDdlReader getDdlReader();
@@ -96,7 +96,7 @@ public interface IDatabasePlatform {
 
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
             boolean continueOnError);
-    
+
     public void createTables(boolean dropTablesFirst,
             boolean continueOnError, Table... tables);
 
@@ -104,7 +104,7 @@ public interface IDatabasePlatform {
 
     public void alterTables(boolean continueOnError, Table... desiredTables);
 
-    public void dropDatabase(Database database, boolean continueOnError);    
+    public void dropDatabase(Database database, boolean continueOnError);
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table);
 
@@ -116,25 +116,25 @@ public interface IDatabasePlatform {
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
             String[] values);
-    
+
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
             String[] values, boolean useVariableDates);
-    
+
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData, boolean useVariableDates);
-    
+
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
-    
+
     public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
-    
+
     public String alterCaseToMatchDatabaseDefaultCase(String value);
-    
+
     public void alterCaseToMatchDatabaseDefaultCase(Table table);
-    
+
     public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
-    
+
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
 
     public boolean isLob(int type);
@@ -142,23 +142,25 @@ public interface IDatabasePlatform {
     public boolean isClob(int type);
 
     public boolean isBlob(int type);
-    
+
     public List<Column> getLobColumns(Table table);
 
     public Map<String, String> getSqlScriptReplacementTokens();
-    
+
     public String scrubSql(String sql);
-    
+
     public boolean isStoresLowerCaseIdentifiers();
-    
+
     public boolean isStoresUpperCaseIdentifiers();
-    
+
     public boolean isStoresMixedCaseQuotedIdentifiers();
-    
+
     public <T> T getDataSource();
-    
+
     public void setMetadataIgnoreCase(boolean value);
-    
+
     public boolean isMetadataIgnoreCase();
+
+    public java.util.Date parseDate(int type, String value, boolean useVariableDates);
 
 }
