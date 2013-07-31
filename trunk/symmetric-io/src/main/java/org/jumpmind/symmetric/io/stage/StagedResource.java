@@ -117,17 +117,19 @@ public class StagedResource implements IStagedResource {
     public void setState(State state) {
         if (file.exists()) {
             File newFile = buildFile(state);
-            if (newFile.exists()) {
-                FileUtils.deleteQuietly(newFile);
-            }
-            if (!file.renameTo(newFile)) {
-                String msg = String
-                        .format("Had trouble renaming file.  The current name is %s and the desired state was %s",
-                                file.getAbsolutePath(), state);
-                log.warn(msg);
-                throw new IllegalStateException(msg);
-            } else {
-                this.file = newFile;
+            if (!newFile.equals(file)) {
+                if (newFile.exists()) {
+                    FileUtils.deleteQuietly(newFile);
+                }
+                if (!file.renameTo(newFile)) {
+                    String msg = String
+                            .format("Had trouble renaming file.  The current name is %s and the desired state was %s",
+                                    file.getAbsolutePath(), state);
+                    log.warn(msg);
+                    throw new IllegalStateException(msg);
+                } else {
+                    this.file = newFile;
+                }
             }
         } else if (memoryBuffer != null && state == State.DONE) {
             this.memoryBuffer.setLength(0);
