@@ -670,7 +670,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
                             currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
-                            changeBatchStatus(Status.QY, currentBatch, mode);
+                            if (updateBatchStatistics) {
+                                changeBatchStatus(Status.QY, currentBatch, mode);
+                            }
                             IDataReader dataReader = new ExtractDataReader(
                                     symmetricDialect.getPlatform(), new SelectFromSymDataSource(
                                             currentBatch, sourceNode, targetNode));
@@ -979,6 +981,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
             ExtractRequest request = requests.get(0);
+            log.debug(
+                    "Extracting batches for request {}. Starting at batch {}.  Ending at batch {}",
+                    new Object[] { request.getRequestId(), request.getStartBatchId(),
+                            request.getEndBatchId() });
             List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(
                     request.getStartBatchId(), request.getEndBatchId()).getBatches();
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
@@ -1021,6 +1027,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
             } catch (RuntimeException ex) {
+                log.debug(
+                        "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
+                        new Object[] { request.getRequestId(), request.getStartBatchId(),
+                                request.getEndBatchId() });
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
                 throw ex;
             }
