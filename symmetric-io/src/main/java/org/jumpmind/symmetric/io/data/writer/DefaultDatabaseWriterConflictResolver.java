@@ -29,6 +29,7 @@ import java.util.TimeZone;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -274,7 +275,9 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                     new String[] { loadingStr }, new Column[] { column });
             if (values[0] instanceof Date) {
                 loadingTs = (Date) values[0];
-            } else if (values[0] instanceof String) {
+            } else if (values[0] instanceof String &&
+                    column.getJdbcTypeName().equalsIgnoreCase(TypeMap.DATETIME2)) {
+                // SQL Server DateTime2 type is treated as a string internally.
                 loadingTs = writer.getPlatform().parseDate(Types.VARCHAR, (String)values[0], false);
             } else {
                 throw new ParseException("Could not parse " + columnName + " with a value of "
