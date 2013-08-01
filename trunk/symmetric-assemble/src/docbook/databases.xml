@@ -245,9 +245,9 @@
     <section id="ap02-oracle">
         <title>Oracle</title>
         <para>SymmetricDS has bulk loading capability available for Oracle.  SymmetricDS specifies data loader types on
-        a channel by channel basis.  To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk 
-        Loader ("oracle_bulk") in the data_loader_type column of sym_channel.          
-        </para>        
+        a channel by channel basis.  To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk
+        Loader ("oracle_bulk") in the data_loader_type column of sym_channel.
+        </para>
         <para>
             While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
         </para>
@@ -315,7 +315,7 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
         and resync the triggers.  The error can happen when the captured data in a row exceeds 4k and lob columns do not exist
         in the table.  By enabling <code>use_capture_lobs</code> the concatanated varchar string is cast to a clob which
         allows a length of more than 4k.
-        </para>        
+        </para>
     </section>
     <section id="ap02-mysql">
         <title>MySQL</title>
@@ -360,8 +360,8 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
     <section id="ap02-postgresql">
         <title>PostgreSQL</title>
         <para>SymmetricDS has bulk loading capability available for Postgres.  SymmetricDS specifies data loader types on
-        a channel by channel basis.  To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk 
-        Loader ("postgres_bulk") in the data_loader_type column of sym_channel.          
+        a channel by channel basis.  To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk
+        Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
         </para>
         <para>
             Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
@@ -407,19 +407,19 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
         GRANT CREATE ON SCHEMA {schema name} TO {user name};
 ]]></programlisting>
         </para>
-        
+
     </section>
     <section id="ap02-greenplum">
         <title>Greenplum</title>
         <para>
-            Greenplum is a data warehouse based on PostgreSQL.  It is supported as a target platform in SymmetricDS.  
+            Greenplum is a data warehouse based on PostgreSQL.  It is supported as a target platform in SymmetricDS.
         </para>
-        
+
         <para>SymmetricDS has bulk loading capability available for Greenplum.  SymmetricDS specifies data loader types on
-        a channel by channel basis.  To utilize Greenplum Bulk loading versus straight JDBC insert, specify the Postgres Bulk 
-        Loader ("postgres_bulk") in the data_loader_type column of sym_channel.          
+        a channel by channel basis.  To utilize Greenplum Bulk loading versus straight JDBC insert, specify the Postgres Bulk
+        Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
         </para>
-        
+
     </section>
     <section id="ap02-sql-server">
         <title>MS SQL Server</title>
@@ -666,7 +666,14 @@ ontape -s -L 0
     <section id="ap02-ase">
         <title>Sybase Active Server Enterprise</title>
         <para>
-            Active Server Enterprise was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+            Active Server Enterprise (ASE) was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+        </para>
+        <para>
+            On ASE, each new trigger in a table for the same operation (insert, update, or delete) overwrites the previous one.
+            No warning message displays before the overwrite occurs. When SymmetricDS is installed and configured to synchronize a table, it
+            will install triggers that could overwrite already existing triggers on the database. New triggers created after SymmetricDS is installed
+            will overwrite the SymmetricDS triggers. Custom trigger text can be added to the SymmetricDS triggers by modifying
+            CUSTOM_ON_INSERT_TEXT, CUSTOM_ON_UPDATE_TEXT, and CUSTOM_ON_DELETE_TEXT on the <xref linkend="table_trigger" xrefstyle="table"/> table.
         </para>
     </section>
     <section id="ap02-sqlanywhere">
