@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +41,11 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
     public static final String NAME = "bsh";
+
+    /*
+     * Static context object used to maintain objects in memory for reference between BSH transforms.
+     */
+    private static Map<String, Object> bshContext = new HashMap<String, Object>();
 
     public String getName() {
         return NAME;
@@ -70,6 +76,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             interpreter.set("sourceDmlType", data.getSourceDmlType());
             interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
             interpreter.set("context", context);
+            interpreter.set("bshContext", bshContext);
 
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
