@@ -109,6 +109,7 @@ public abstract class TypeMap
     public static final String LONGNVARCHAR = "LONGNVARCHAR";
     public static final String NCLOB = "NCLOB";
     public static final String IMAGE = "IMAGE";
+    public static final String DATETIME2 = "DATETIME2";
 
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap _typeNameToTypeCode = new HashMap();
