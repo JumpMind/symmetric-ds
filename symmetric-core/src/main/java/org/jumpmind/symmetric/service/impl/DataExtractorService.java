@@ -274,7 +274,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                 writer, targetNode.requires13Compatiblity());
-        DataProcessor processor = new DataProcessor(dataReader, dataWriter);
+        DataProcessor processor = new DataProcessor(dataReader, dataWriter, "configuration extract");
         DataContext ctx = new DataContext();
         ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
@@ -627,6 +627,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             long extractTimeInMs = 0l;
             long byteCount = 0l;
+            long transformTimeInMs = 0l;
 
             if (currentBatch.getStatus() == Status.IG) {
                 Batch batch = new Batch(BatchType.EXTRACT, currentBatch.getBatchId(),
@@ -679,10 +680,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             DataContext ctx = new DataContext();
                             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
-                            new DataProcessor(dataReader, transformExtractWriter).process(ctx);
+                            new DataProcessor(dataReader, transformExtractWriter, "extract").process(ctx);
                             extractTimeInMs = System.currentTimeMillis() - ts;
                             Statistics stats = transformExtractWriter.getNestedWriter()
                                     .getStatistics().values().iterator().next();
+                            transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
+                            extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                         }
                     }
@@ -773,7 +776,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
-                new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo))
+                new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo), "send from stage")
                         .process(ctx);
                 if (dataWriter.getStatistics().size() > 0) {
                     Statistics stats = dataWriter.getStatistics().values().iterator().next();
@@ -821,7 +824,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     new DataProcessor(dataReader, createTransformDataWriter(
                             nodeService.findIdentity(), targetNode,
                             new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer,
-                                    targetNode.requires13Compatiblity()))).process(ctx);
+                                    targetNode.requires13Compatiblity())), "extract range").process(ctx);
                     foundBatch = true;
                 }
             }
@@ -850,7 +853,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                 new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
                         targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                                writer, targetNode.requires13Compatiblity()))).process(ctx);
+                                writer, targetNode.requires13Compatiblity())), "extract range").process(ctx);
                 foundBatch = true;
             }
         }

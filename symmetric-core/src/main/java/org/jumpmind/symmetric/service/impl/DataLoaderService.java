@@ -391,11 +391,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 IDataWriter dataWriter = new StagingDataWriter(memoryThresholdInBytes, sourceNode.getNodeId(),
                         Constants.STAGING_CATEGORY_INCOMING, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(processInfo, sourceNode.getNodeId(), listener));
-                new DataProcessor(dataReader, dataWriter).process(ctx);
+                new DataProcessor(dataReader, dataWriter, "transfer to stage").process(ctx);
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                        targetNodeId, transport.openReader()), null, listener) {
+                        targetNodeId, transport.openReader()), null, listener, "data load") {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(processInfo, sourceNode.getNodeId(), batch.getChannelId(),
@@ -758,7 +758,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 
                 processInfo.setStatus(ProcessInfo.Status.LOADING);
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                        batch.getTargetNodeId(), resource), null, listener) {
+                        batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(),

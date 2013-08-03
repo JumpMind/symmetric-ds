@@ -65,18 +65,12 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         try {
             Interpreter interpreter = getInterpreter(context);
-            interpreter.set("log", log);
-            interpreter.set("sqlTemplate", platform.getSqlTemplate());
             interpreter.set("currentValue", newValue);
             interpreter.set("oldValue", oldValue);
-            interpreter.set("sourceNodeId", context.getBatch().getSourceNodeId());
-            interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
             interpreter.set("channelId", context.getBatch().getChannelId());
             interpreter.set("includeOn", column.getIncludeOn());
             interpreter.set("sourceDmlType", data.getSourceDmlType());
             interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
-            interpreter.set("context", context);
-            interpreter.set("bshContext", bshContext);
 
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
@@ -87,8 +81,22 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             for (String key : keys) {
                 interpreter.set(key, context.get(key));
             }
+            
+            String transformExpression = column.getTransformExpression();
+            String methodName = String.format("transform_%d()",Math.abs(transformExpression.hashCode()));
+            if (context.get(methodName) == null) {
+                interpreter.set("log", log);
+                interpreter.set("sqlTemplate", platform.getSqlTemplate());
+                interpreter.set("sourceNodeId", context.getBatch().getSourceNodeId());
+                interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
+                interpreter.set("context", context);
+                interpreter.set("bshContext", bshContext);
+                
+                interpreter.eval(String.format("%s {\n%s\n}", methodName, transformExpression));
+                context.put(methodName, Boolean.TRUE);
+            }
 
-            Object result = interpreter.eval(column.getTransformExpression());
+            Object result = interpreter.eval(methodName);
             if (result != null) {
                 return result.toString();
             } else {
@@ -109,8 +117,8 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             } else if (ex instanceof IgnoreRowException) {
                 throw (IgnoreRowException) ex;
             } else {
-                log.error("Beanshell script error for target column {} on transform {}", column.getTargetColumnName(),
-                        column.getTransformId());
+                log.error(String.format("Beanshell script error for target column %s on transform %s", column.getTargetColumnName(),
+                        column.getTransformId()), ex);
                 throw new TransformColumnException(ex);
             }
         }

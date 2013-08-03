@@ -79,7 +79,7 @@ public class StagingDataWriterTest {
         StagingManager stagingManager = new StagingManager(DIR.getAbsolutePath());
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", origCsv);
         StagingDataWriter writer = new StagingDataWriter(threshold, "aaa", "test", stagingManager, new BatchListener());
-        DataProcessor processor = new DataProcessor(reader, writer);
+        DataProcessor processor = new DataProcessor(reader, writer, "test");
         processor.process(new DataContext());
 
         Assert.assertEquals(1, batchesWritten.size());
