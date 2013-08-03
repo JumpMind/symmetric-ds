@@ -117,7 +117,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     log.error(
                             "Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.",
                             outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
-                } else {
+                } else if (!outgoingBatch.isCommonFlag()) {
                     IStagedResource stagingResource = stagingManger.find(
                             Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
                             outgoingBatch.getBatchId());
