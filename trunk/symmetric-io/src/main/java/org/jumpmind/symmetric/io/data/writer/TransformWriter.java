@@ -29,6 +29,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -53,6 +54,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
+import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,7 @@ public class TransformWriter extends NestedDataWriter {
     protected Map<String, List<TransformTable>> transformsBySourceTable;
     protected Table sourceTable;
     protected List<TransformTable> activeTransforms;
+    protected Batch batch;
 
     static protected Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
 
@@ -88,7 +91,7 @@ public class TransformWriter extends NestedDataWriter {
     public static Map<String, IColumnTransform<?>> getColumnTransforms() {
         return columnTransforms;
     }
-
+    
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, TransformTable... transforms) {
         super(targetWriter);
@@ -114,7 +117,14 @@ public class TransformWriter extends NestedDataWriter {
         }
         return transformsByTable;
     }
+    
+    @Override
+    public void start(Batch batch) {
+        this.batch = batch;
+        super.start(batch);
+    }
 
+    @Override
     public boolean start(Table table) {
         activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName());
         if (activeTransforms != null && activeTransforms.size() > 0) {
@@ -140,6 +150,7 @@ public class TransformWriter extends NestedDataWriter {
         }
         DataEventType eventType = data.getDataEventType();
         if (activeTransforms != null && activeTransforms.size() > 0 && isTransformable(eventType)) {
+            long ts = System.currentTimeMillis();
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
             Map<String, String> oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
@@ -180,10 +191,16 @@ public class TransformWriter extends NestedDataWriter {
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
                 Table table = transformedData.buildTargetTable();
                 CsvData csvData = transformedData.buildTargetCsvData();
+                long transformTimeInMs = System.currentTimeMillis() - ts;
                 if (this.nestedWriter.start(table) || !csvData.requiresTable()) {
                     this.nestedWriter.write(csvData);
                     this.nestedWriter.end(table);
                 }
+                Statistics stats = this.nestedWriter.getStatistics().get(batch);
+                if (stats != null) {
+                    stats.increment(DataWriterStatisticConstants.TRANSFORMMILLIS, transformTimeInMs);
+                }
+                ts = System.currentTimeMillis();
             }
 
         } else {

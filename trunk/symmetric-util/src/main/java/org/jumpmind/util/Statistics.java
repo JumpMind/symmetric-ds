@@ -70,5 +70,10 @@ public class Statistics {
         timers.remove(category);
         return time;
     }
+    
+    @Override
+    public String toString() {
+        return stats.toString();
+    }
 
 }

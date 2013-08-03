@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
+import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,19 +44,22 @@ public class DataProcessor {
     protected CsvData currentData;
 
     protected Batch currentBatch;
+    
+    protected String name;
 
     public DataProcessor() {
     }
 
-    public DataProcessor(IDataReader dataReader, IDataWriter defaultDataWriter) {
-        this(dataReader, defaultDataWriter, null);
+    public DataProcessor(IDataReader dataReader, IDataWriter defaultDataWriter, String name) {
+        this(dataReader, defaultDataWriter, null, name);
     }
 
     public DataProcessor(IDataReader dataReader, IDataWriter defaultDataWriter,
-            IDataProcessorListener listener) {
+            IDataProcessorListener listener, String name) {
         this.dataReader = dataReader;
         this.defaultDataWriter = defaultDataWriter;
         this.listener = listener;
+        this.name = name;
     }
 
     /**
@@ -174,6 +178,8 @@ public class DataProcessor {
     protected int forEachDataInTable(DataContext context, boolean processTable, Batch batch) {
         int dataRow = 0;
         IgnoreBatchException ignore = null;
+        long startTime = System.currentTimeMillis();
+        long ts = System.currentTimeMillis();
         do {
             batch.startTimer(STAT_READ_DATA);
             currentData = dataReader.nextData();
@@ -192,6 +198,15 @@ public class DataProcessor {
                         processTable = false;
                     }
                 }
+            }
+            
+            if (System.currentTimeMillis() - ts > 60000) {
+                Statistics stats = context.getWriter().getStatistics().get(batch);
+                log.info(
+                        "Batch {} for node '{}' has been {} processing for {} seconds.  The following stats have been gathered: {}",
+                        new Object[] { batch.getBatchId(), batch.getTargetNodeId(), name, 
+                                (System.currentTimeMillis() - startTime) / 1000, stats.toString() });
+                ts = System.currentTimeMillis();
             }
         } while (currentData != null);
 

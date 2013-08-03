@@ -197,28 +197,28 @@ public class DbImport {
         CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
-        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
-        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
     
     protected void importTablesFromSymXml(InputStream in) {
         SymXmlDataReader reader = new SymXmlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
-        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromSql(InputStream in) {
         SqlDataReader reader = new SqlDataReader(in);
         DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
-        DataProcessor dataProcessor = new DataProcessor(reader, writer);
+        DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
