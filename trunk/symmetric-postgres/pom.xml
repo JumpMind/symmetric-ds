@@ -3,13 +3,13 @@
 	<groupId>org.jumpmind.symmetric</groupId>
 	<artifactId>symmetric-postgres</artifactId>
 	<packaging>jar</packaging>
-	<version>3.5.2</version>
+	<version>3.5.3-SNAPSHOT</version>
 	<name>postgres</name>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.2</version>
+        <version>3.5.3-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
