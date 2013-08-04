@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
+import org.jumpmind.symmetric.io.data.transform.TransformColumnException;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
@@ -418,6 +419,8 @@ public class TransformWriter extends NestedDataWriter {
             String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
             returnValue = transform.transform(platform, context, transformColumn, data,
                     sourceValues, value, oldValue);
+        } else {
+            throw new TransformColumnException(String.format("Could not locate a column transform of type '%s'", transformColumn.getTransformType()));
         }
         return returnValue;
     }
