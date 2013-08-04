@@ -18,6 +18,23 @@
     specific language governing permissions and limitations
     under the License.
 ====
+
+SymmetricDS - 3.5.2 (Released 2013-08-04) 
+=========================================
+- 0001363: [Bug] SQL Server DateTime2 type does not work with conflict resolution. (abrougher) - closed.
+- 0001366: [Bug] If a custom column transformation isn't found the engine silently ignores it. An error should be thrown. (chenson) - closed.
+- 0001364: [Improvement] Speed up bsh column transform by evaluating a transform as a method once and then call that method for each data element (chenson) - closed.
+- 0001365: [Improvement] Print out statistics if data rows in associated with a table/batch take longer than 60 seconds to process (chenson) - closed.
+- 0001346: [Bug] reloadTable JMX method and command should always route to the node_list (chenson) - closed.
+- 0001347: [Bug] Initial load ignores subselect routers and routes to all nodes. (chenson) - closed.
+- 0001348: [Bug] Table object passed to DatabaseWriterFilters do not have types on them any more (chenson) - closed.
+- 0001350: [Bug] Push batch not getting acked when multiple batches exist and it passed the transport.max.bytes.to.sync threshold (chenson) - closed.
+- 0001351: [Bug] PK transform columns transformations run twice (chenson) - closed.
+- 0001353: [Bug] The batch URL feature is broken (chenson) - closed.
+- 0001360: [Bug] rest service should set the engine name for logging (chenson) - closed.
+- 0001361: [Bug] StagedResource.setState should support setting the state to itself without failing (chenson) - closed.
+- 0001362: [Bug] Background initial load extract was allowing the client to start pulling data for a table that was currently extracting (chenson) - closed.
+
 SymmetricDS - 3.5.1 (Released 2013-07-24) 
 =========================================
 - 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
