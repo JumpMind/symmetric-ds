@@ -3,14 +3,14 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-jdbc</artifactId>
     <packaging>jar</packaging>
-    <version>3.5.2-SNAPSHOT</version>
+    <version>3.5.2</version>
     <name>jdbc</name>
     <url>http://symmetricds.org</url>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.2-SNAPSHOT</version>
+        <version>3.5.2</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
