@@ -33,5 +33,6 @@
     
     <bean id="oracleBulkLoaderFactory" class="org.jumpmind.symmetric.ext.OracleBulkDataLoaderFactory" />
     
+    <bean id="mssqlBulkLoaderFactory" class="org.jumpmind.symmetric.ext.MsSqlBulkDataLoaderFactory" />
 
 </beans>
