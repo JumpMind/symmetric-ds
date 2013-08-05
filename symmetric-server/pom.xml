@@ -77,6 +77,10 @@
         </dependency>        
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-mssql</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-ftp</artifactId>
         </dependency>        
         <dependency>

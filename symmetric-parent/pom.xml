@@ -548,6 +548,11 @@
             </dependency>        
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-mssql</artifactId>
+                <version>3.5.2-SNAPSHOT</version>                
+            </dependency>        
+            <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-ftp</artifactId>
                 <version>3.5.3-SNAPSHOT</version>                
             </dependency>                
