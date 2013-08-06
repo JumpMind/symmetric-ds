@@ -549,13 +549,15 @@ public class Database implements Serializable, Cloneable {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
         Database result = (Database) super.clone();
         result.name = name;
         result.idMethod = idMethod;
         result.version = version;
-        result.tables = (ArrayList<Table>) tables.clone();
+        result.tables = new ArrayList<Table>(tables.size());
+        for (Table table : tables) {
+            result.tables.add((Table)table.clone());
+        }
 
         return result;
     }

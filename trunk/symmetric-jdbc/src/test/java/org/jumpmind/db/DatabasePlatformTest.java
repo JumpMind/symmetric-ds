@@ -32,6 +32,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,6 +65,55 @@ public class DatabasePlatformTest extends AbstractDbTest {
     public void turnOffDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         logger.setLevel(originalLevel);
+    }
+    
+    @Test
+    public void testTableRebuild() throws Exception {
+        Table table = new Table("TEST_REBUILD");
+        table.addColumn(new Column("ID1", true));
+        table.getColumnWithName("ID1").setTypeCode(Types.INTEGER);
+        table.getColumnWithName("ID1").setRequired(true);
+        
+        table.addColumn(new Column("NOTES"));
+        table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
+        table.getColumnWithName("NOTES").setSize("20");
+        table.getColumnWithName("NOTES").setDefaultValue("1234");
+        
+        Table origTable = (Table)table.clone();
+        
+        Table tableFromDatabase = dropCreateAndThenReadTable(table);
+        
+        Assert.assertNotNull(tableFromDatabase);
+        Assert.assertEquals(2, tableFromDatabase.getColumnCount());
+        
+        ISqlTemplate template = platform.getSqlTemplate();
+        Assert.assertEquals(1, template.update(String.format("insert into %s values(?,?)", tableFromDatabase.getName()), 1, "test"));
+        
+        table.addColumn(new Column("ID2", true));
+        table.getColumnWithName("ID2").setTypeCode(Types.VARCHAR);
+        table.getColumnWithName("ID2").setSize("20");
+        table.getColumnWithName("ID2").setRequired(true);
+        table.getColumnWithName("ID2").setDefaultValue("value");
+        
+        table.addColumn(new Column("NOTES2"));
+        table.getColumnWithName("NOTES2").setTypeCode(Types.VARCHAR);
+        table.getColumnWithName("NOTES2").setSize("20");
+        table.getColumnWithName("NOTES2").setDefaultValue("1234");
+        
+        // alter to add two columns that will cause a table rebuild
+        platform.alterTables(false, table);
+        tableFromDatabase = platform.getTableFromCache(table.getName(), true);
+        Assert.assertNotNull(tableFromDatabase);
+        Assert.assertEquals(4, tableFromDatabase.getColumnCount());
+        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s", tableFromDatabase.getName())));
+
+        // alter to remove two columns that will cause a table rebuild
+        platform.alterTables(false, origTable);
+        tableFromDatabase = platform.getTableFromCache(origTable.getName(), true);
+        Assert.assertNotNull(tableFromDatabase);
+        Assert.assertEquals(2, tableFromDatabase.getColumnCount());
+        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s", tableFromDatabase.getName())));
+
     }
         
     @Test 
@@ -143,7 +193,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
             Assert.assertNotSame(id1, id2);
         }
     }
-
+    
     protected String getSequenceName(IDatabasePlatform platform) {
         if (platform.getName().equals(DatabaseNamesConstants.ORACLE)) {
             return "TEST_UPGRADE_ID";
