@@ -607,6 +607,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
             boolean updateBatchStatistics, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
+            
             Node sourceNode = nodeService.findIdentity();
 
             TransformWriter transformExtractWriter = null;
@@ -649,7 +650,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     transformExtractWriter.close();
                 }
-            } else if (!isPreviouslyExtracted(currentBatch)) {
+            } else if (!isPreviouslyExtracted(currentBatch)) {                
                 int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
                 String semaphoreKey = useStagingDataWriter ? Long.toString(currentBatch
                         .getBatchId()) : currentBatch.getNodeBatchId();
@@ -670,6 +671,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
+                            currentBatch.resetStats();
                             currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                             if (updateBatchStatistics) {
                                 changeBatchStatus(Status.QY, currentBatch, mode);
