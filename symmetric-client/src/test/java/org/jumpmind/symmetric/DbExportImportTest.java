@@ -107,7 +107,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         String csv = export.exportTables(new Table[] { table });
 
-        Assert.assertEquals("\"A\",\"B\"\n,", csv.trim().toUpperCase());
+        Assert.assertEquals("\"A\",\"B\""+System.getProperty("line.separator")+",", csv.trim().toUpperCase());
 
     }
 
