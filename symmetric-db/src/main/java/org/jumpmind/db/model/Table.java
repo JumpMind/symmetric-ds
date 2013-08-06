@@ -848,7 +848,6 @@ public class Table implements Serializable, Cloneable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object clone() throws CloneNotSupportedException {
         Table result = (Table) super.clone();
@@ -856,10 +855,24 @@ public class Table implements Serializable, Cloneable {
         result.schema = schema;
         result.name = name;
         result.type = type;
-        result.primaryKeyConstraintName = primaryKeyConstraintName;
-        result.columns = (ArrayList<Column>) columns.clone();
-        result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
-        result.indices = (ArrayList<IIndex>) indices.clone();
+        result.columns = new ArrayList<Column>(columns.size());
+        for (Column col : columns) {
+            if (col != null) {
+                result.columns.add((Column) col.clone());
+            }
+        }
+        result.foreignKeys = new ArrayList<ForeignKey>(foreignKeys.size());
+        for (ForeignKey fk : foreignKeys) {
+            if (fk != null) {
+                result.foreignKeys.add((ForeignKey) fk.clone());
+            }
+        }
+        result.indices = new ArrayList<IIndex>(indices.size());
+        for (IIndex i : indices) {
+            if (i != null) {
+                result.indices.add((IIndex) i.clone());
+            }
+        }
         return result;
     }
 
@@ -1074,30 +1087,7 @@ public class Table implements Serializable, Cloneable {
 
     public Table copy() {
         try {
-            Table result = (Table) super.clone();
-            result.catalog = catalog;
-            result.schema = schema;
-            result.name = name;
-            result.type = type;
-            result.columns = new ArrayList<Column>(columns.size());
-            for (Column col : columns) {
-                if (col != null) {
-                    result.columns.add((Column) col.clone());
-                }
-            }
-            result.foreignKeys = new ArrayList<ForeignKey>(foreignKeys.size());
-            for (ForeignKey fk : foreignKeys) {
-                if (fk != null) {
-                    result.foreignKeys.add((ForeignKey) fk.clone());
-                }
-            }
-            result.indices = new ArrayList<IIndex>(indices.size());
-            for (IIndex i : indices) {
-                if (i != null) {
-                    result.indices.add((IIndex) i.clone());
-                }
-            }
-            return result;
+            return (Table)this.clone();
         } catch (CloneNotSupportedException ex) {
             throw new RuntimeException(ex);
         }

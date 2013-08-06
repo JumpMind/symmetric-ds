@@ -603,13 +603,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         // We're using a copy of the current model so that the table structure
         // changes can modify it
-        Database copyOfCurrentModel = null;
-
-        try {
-            copyOfCurrentModel = (Database) currentModel.clone();
-        } catch (CloneNotSupportedException ex) {
-            throw new DdlException(ex);
-        }
+        Database copyOfCurrentModel = copy(currentModel);
 
         for (Iterator<Map.Entry<String, List<TableChange>>> tableChangeIt = changesPerTable
                 .entrySet().iterator(); tableChangeIt.hasNext();) {
@@ -718,7 +712,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         StringBuilder tableDdl = new StringBuilder();
 
-        Table sourceTable = currentModel.findTable(tableName, delimitedIdentifierModeOn);
+        Database originalModel = copy(currentModel);
+        Table sourceTable = originalModel.findTable(tableName, delimitedIdentifierModeOn);
         Table targetTable = desiredModel.findTable(tableName, delimitedIdentifierModeOn);
 
         // we're enforcing a full rebuild in case of the addition of a required
@@ -770,10 +765,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             Table realTargetTable = getRealTargetTableFor(desiredModel, sourceTable, targetTable);
 
             if (canMigrateData) {
-                Table tempTable = getTemporaryTableFor(desiredModel, targetTable);
-
+                Table tempTable = getTemporaryTableFor(sourceTable);
                 dropTemporaryTable(tempTable, ddl);
-                createTemporaryTable(desiredModel, tempTable, ddl);
+                createTemporaryTable(tempTable, ddl);
                 writeCopyDataStatement(sourceTable, tempTable, ddl);
                 /*
                  * Note that we don't drop the indices here because the DROP
@@ -793,6 +787,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(tableDdl);
         }
     }
+    
+    protected Database copy(Database currentModel) {
+        try {
+            return (Database) currentModel.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new DdlException(ex);
+        }
+    }
+    
 
     /**
      * Allows database-specific implementations to handle changes in a database
@@ -862,23 +865,21 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * database directly supports temporary tables. The default implementation
      * simply appends an underscore to the table name and uses that as the table
      * name.
-     *
-     * @param targetModel
-     *            The target database
      * @param targetTable
      *            The target table
+     *
      * @return The temporary table
      */
-    protected Table getTemporaryTableFor(Database targetModel, Table targetTable) {
-        return getTemporaryTableFor(targetModel, targetTable, "_");
+    protected Table getTemporaryTableFor(Table targetTable) {
+        return getTemporaryTableFor(targetTable, "_");
     }
 
-    public Table getBackupTableFor(Database model, Table sourceTable) {
-        return getTemporaryTableFor(model, sourceTable, "x");
+    public Table getBackupTableFor(Table sourceTable) {
+        return getTemporaryTableFor(sourceTable, "x");
     }
 
     public Table createBackupTableFor(Database model, Table sourceTable, StringBuilder ddl) {
-        Table backupTable = getBackupTableFor(model, sourceTable);
+        Table backupTable = getBackupTableFor(sourceTable);
         writeTableCreationStmt(backupTable, ddl);
         printEndOfStatement(ddl);
         writeCopyDataStatement(sourceTable, backupTable, ddl);
@@ -893,7 +894,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeCopyDataStatement(backupTable, targetTable, columnMap, ddl);
     }
 
-    protected Table getTemporaryTableFor(Database targetModel, Table targetTable, String suffix) {
+    protected Table getTemporaryTableFor(Table targetTable, String suffix) {
         Table table = new Table();
 
         table.setCatalog(targetTable.getCatalog());
@@ -914,13 +915,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Outputs the DDL to create the given temporary table. Per default this is
      * simply a call to {@link #createTable(Table, Map)}.
-     *
-     * @param database
-     *            The database model
      * @param table
      *            The table
      */
-    protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
+    protected void createTemporaryTable(Table table, StringBuilder ddl) {
         createTable(table, ddl, true, false);
     }
 
