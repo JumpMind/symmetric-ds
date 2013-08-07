@@ -422,6 +422,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
              */
                 return;
             }
+            
         }
         
         // First we drop primary keys as necessary
@@ -521,6 +522,11 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
+        boolean hasDefault = change.getColumn().getParsedDefaultValue() != null;
+        if (hasDefault) {
+            dropDefaultConstraint(change.getChangedTable().getName(), change.getColumn().getName(), ddl);
+        }
+        
         ddl.append("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
@@ -564,6 +570,23 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("END");
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+    
+    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
+        println(              "DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
+        println(              "WHILE 1=1                                                                                    ", ddl);
+        println(              "BEGIN                                                                                        ", ddl);
+        println(String.format("SELECT TOP 1 @sql = N'alter table '%s' drop constraint ['+dc.NAME+N']'                       ", tableName), ddl);
+        println(              "from sys.default_constraints dc                                                              ", ddl);
+        println(              "JOIN sys.columns c                                                                           ", ddl);
+        println(              "    ON c.default_object_id = dc.object_id                                                    ", ddl);
+        println(              "WHERE                                                                                        ", ddl);
+        println(String.format("    dc.parent_object_id = OBJECT_ID('%s')                                                    ", tableName), ddl);
+        println(String.format("AND c.name = N'%s'                                                                           ", columnName), ddl);
+        println(              "IF @@ROWCOUNT = 0 BREAK                                                                      ", ddl);
+        println(              "EXEC (@sql)                                                                                  ", ddl);
+        println(              "END                                                                                          ", ddl);
+        printEndOfStatement(ddl);        
     }
 
     /*
