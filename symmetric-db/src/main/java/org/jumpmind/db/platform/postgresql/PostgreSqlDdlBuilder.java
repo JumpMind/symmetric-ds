@@ -300,7 +300,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append(" DROP CONSTRAINT ");
-        ddl.append(change.getChangedTable().getPrimaryKeyConstraintName());
+        printIdentifier(change.getChangedTable().getPrimaryKeyConstraintName(), ddl);
         printEndOfStatement(ddl);
 
         ddl.append("ALTER TABLE ");
