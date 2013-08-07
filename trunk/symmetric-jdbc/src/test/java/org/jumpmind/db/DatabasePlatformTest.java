@@ -87,7 +87,9 @@ public class DatabasePlatformTest extends AbstractDbTest {
         Assert.assertEquals(2, tableFromDatabase.getColumnCount());
         
         ISqlTemplate template = platform.getSqlTemplate();
-        Assert.assertEquals(1, template.update(String.format("insert into %s values(?,?)", tableFromDatabase.getName()), 1, "test"));
+        String delimiter = platform.getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+        Assert.assertEquals(1, template.update(String.format("insert into %s%s%s values(?,?)", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
         
         table.addColumn(new Column("ID2", true));
         table.getColumnWithName("ID2").setTypeCode(Types.VARCHAR);
