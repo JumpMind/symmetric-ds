@@ -80,7 +80,9 @@ public class PrimaryKeyChange extends TableChangeImplBase
         {
             Column column = table.findColumn(_oldPrimaryKeyColumns[idx].getName(), caseSensitive);
 
-            column.setPrimaryKey(false);
+            if (column != null) {
+                column.setPrimaryKey(false);
+            }
         }
         for (int idx = 0; idx < _newPrimaryKeyColumns.length; idx++)
         {
