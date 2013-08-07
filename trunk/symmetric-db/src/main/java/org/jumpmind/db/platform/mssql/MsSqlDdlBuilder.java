@@ -576,7 +576,7 @@ public class MsSqlDdlBuilder extends AbstractDdlBuilder {
         println(              "DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
         println(              "WHILE 1=1                                                                                    ", ddl);
         println(              "BEGIN                                                                                        ", ddl);
-        println(String.format("SELECT TOP 1 @sql = N'alter table '%s' drop constraint ['+dc.NAME+N']'                       ", tableName), ddl);
+        println(String.format("SELECT TOP 1 @sql = N'alter table ''%s'' drop constraint ['+dc.NAME+N']'                       ", tableName), ddl);
         println(              "from sys.default_constraints dc                                                              ", ddl);
         println(              "JOIN sys.columns c                                                                           ", ddl);
         println(              "    ON c.default_object_id = dc.object_id                                                    ", ddl);
