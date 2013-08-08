@@ -285,8 +285,9 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns,
             StringBuilder ddl) {
         super.writeExternalPrimaryKeysCreateStmt(table, primaryKeyColumns, ddl);
-        ddl.append("REORG TABLE ");
+        ddl.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE ");
         printlnIdentifier(getTableName(table.getName()), ddl);
+        ddl.append("')");
         printEndOfStatement(ddl);
     }
 }
