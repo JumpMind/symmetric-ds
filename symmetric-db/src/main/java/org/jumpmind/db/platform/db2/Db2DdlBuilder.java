@@ -250,6 +250,8 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
+        writeReorgStmt(change.getChangedTable(), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
@@ -285,9 +287,13 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns,
             StringBuilder ddl) {
         super.writeExternalPrimaryKeysCreateStmt(table, primaryKeyColumns, ddl);
+        writeReorgStmt(table, ddl);
+        printEndOfStatement(ddl);
+    }
+
+    protected void writeReorgStmt(Table table, StringBuilder ddl) {
         ddl.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE ");
         printlnIdentifier(getTableName(table.getName()), ddl);
         ddl.append("')");
-        printEndOfStatement(ddl);
     }
 }
