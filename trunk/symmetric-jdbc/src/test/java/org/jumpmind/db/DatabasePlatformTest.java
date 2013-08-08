@@ -114,7 +114,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
         tableFromDatabase = platform.getTableFromCache(origTable.getName(), true);
         Assert.assertNotNull(tableFromDatabase);
         Assert.assertEquals(2, tableFromDatabase.getColumnCount());
-        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s", tableFromDatabase.getName())));
+        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
     }
         
