@@ -146,8 +146,10 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
+
         // DB2 provides only limited ways to alter a column, so we don't use
         // them
+
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -164,7 +166,25 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
                 } else {
                     return;
                 }
-            } else if (change instanceof RemoveColumnChange) {
+            } 
+        }
+        
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
+
+            if (change instanceof PrimaryKeyChange) {
+                processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof RemovePrimaryKeyChange) {
+                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
+                changeIt.remove();
+            }
+        }
+        
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
+
+            if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange)change, ddl);
                 changeIt.remove();                
             } else if (change instanceof CopyColumnValueChange) {
@@ -179,12 +199,6 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
 
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
-                changeIt.remove();
-            } else if (change instanceof PrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
-                changeIt.remove();
-            } else if (change instanceof RemovePrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             }
         }
