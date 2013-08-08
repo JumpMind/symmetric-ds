@@ -107,7 +107,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
         tableFromDatabase = platform.getTableFromCache(table.getName(), true);
         Assert.assertNotNull(tableFromDatabase);
         Assert.assertEquals(4, tableFromDatabase.getColumnCount());
-        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s", tableFromDatabase.getName())));
+        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
         // alter to remove two columns that will cause a table rebuild
         platform.alterTables(false, origTable);
