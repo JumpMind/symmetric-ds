@@ -1009,7 +1009,7 @@ public class RestService {
     
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    protected RestError handleError(Exception ex, HttpServletRequest req) {
+    public RestError handleError(Exception ex, HttpServletRequest req) {
         int httpErrorCode = 500;
         Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
         if (annotation != null) {
