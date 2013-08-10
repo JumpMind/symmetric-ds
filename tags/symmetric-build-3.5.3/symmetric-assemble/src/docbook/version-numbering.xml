@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<appendix version="5.0" xml:id="version-numbering" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Version Numbering</title>
+    <para>
+        The software is released with a version number based on the
+        <ulink url="http://apr.apache.org/versioning.html">
+            Apache Portable Runtime Project
+        </ulink>
+        version guidelines. In summary, the version is denoted as three integers in the
+        format of MAJOR.MINOR.PATCH. Major versions are incompatible at the API level, and
+        they can include any kind of change. Minor versions are compatible with older
+        versions at the API and binary level, and they can introduce new functions or remove
+        old ones. Patch versions are perfectly compatible, and they are released to fix
+        defects.
+    </para>
+</appendix>
