@@ -186,7 +186,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (StringUtils.isNotBlank(alterSql.trim())) {
             log.info("Running alter sql:\n{}", alterSql);
             String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute();
+            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
         } else {
             log.info("Tables up to date.  No alters found for {}", tablesProcessed);
         }
