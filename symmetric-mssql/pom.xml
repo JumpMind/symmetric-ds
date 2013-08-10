@@ -3,14 +3,14 @@
 	<groupId>org.jumpmind.symmetric</groupId>
 	<artifactId>symmetric-mssql</artifactId>
 	<packaging>jar</packaging>
-	<version>3.5.3-SNAPSHOT</version>
+	<version>3.5.3</version>
 	<name>mssql</name>
 	<url>http://symmetricds.org</url>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.3-SNAPSHOT</version>
+        <version>3.5.3</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
