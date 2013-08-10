@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.RandomTimeSlot;
 import org.slf4j.Logger;
@@ -102,11 +103,21 @@ abstract public class AbstractJob implements Runnable, IJob {
                 started = true;
             } else {
                 int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
-                log.info("Starting {} on periodic schedule: every {}ms", jobName,
-                        timeBetweenRunsInMs);
+                long currentTimeMillis = System.currentTimeMillis();
+                long lastRunTime = currentTimeMillis - timeBetweenRunsInMs;
+                Lock lock = engine.getClusterService().findLocks().get(getClusterLockName());
+                if (lock != null && lock.getLastLockTime() != null) {
+                    long newRunTime = lock.getLastLockTime().getTime();
+                    if (lastRunTime < newRunTime) {
+                        lastRunTime = newRunTime;
+                    }
+                }
+                Date firstRun = new Date(lastRunTime + timeBetweenRunsInMs + startDelay);
+                log.info("Starting {} on periodic schedule: every {}ms with the first run at {}", new Object[] {jobName,
+                        timeBetweenRunsInMs, firstRun});
                 if (timeBetweenRunsInMs > 0) {
                     this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
-                            new Date(System.currentTimeMillis() + startDelay), timeBetweenRunsInMs);
+                            firstRun, timeBetweenRunsInMs);
                     started = true;
                 } else {
                     log.error("Failed to schedule this job, {}", jobName);
