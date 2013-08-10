@@ -671,11 +671,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
-                            currentBatch.resetStats();
                             currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                             if (updateBatchStatistics) {
                                 changeBatchStatus(Status.QY, currentBatch, mode);
                             }
+                            currentBatch.resetStats();
                             IDataReader dataReader = new ExtractDataReader(
                                     symmetricDialect.getPlatform(), new SelectFromSymDataSource(
                                             currentBatch, sourceNode, targetNode));
@@ -1309,6 +1309,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             data.setNoBinaryOldData(requiresLobSelectedFromSource
                                     || symmetricDialect.getName().equals(
                                             DatabaseNamesConstants.MSSQL));
+                            
+                            outgoingBatch.incrementDataEventCount();
                         } else {
                             log.error(
                                     "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
