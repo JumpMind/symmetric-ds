@@ -875,10 +875,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
+            } else if (argType == Types.DECIMAL && arg != null) {
+                setDecimalValue(ps, i, arg, argType);
             } else {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
         }
+    }
+
+    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
     }
 
     protected int verifyArgType(Object arg, int argType) {

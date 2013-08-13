@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -67,7 +68,7 @@ public class SqlAnywhereDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected SqlAnywhereJdbcSqlTemplate createSqlTemplate() {
-        return new SqlAnywhereJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        return new SqlAnywhereJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo(), JdbcUtils.getNativeJdbcExtractory());
     }
 
     public String getName() {
