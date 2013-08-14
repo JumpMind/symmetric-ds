@@ -92,7 +92,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             }
 
             Object[] params = new Object[] { new Integer(i), value,
-                    new Integer(value.precision()), new Integer(value.scale()) };
+                    new Integer(precision), new Integer(scale) };
             try {
                 Method method = clazz.getMethod("setBigDecimal", parameterTypes);
                 method.invoke(nativeStatement, params);
