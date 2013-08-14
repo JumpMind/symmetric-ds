@@ -66,12 +66,31 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             Class<?> clazz = nativeStatement.getClass();
             Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class,
                     int.class };
-            BigDecimal value = null;
+            BigDecimal value = null;            
             if (arg instanceof BigDecimal) {
                 value = (BigDecimal)arg;
             } else if (arg != null) {
                 value = new BigDecimal(arg.toString());
-            }            
+            }
+            
+            int precision = 1;
+            int scale = 0;
+            if (value != null) {
+                scale = value.scale();
+                precision = value.precision();
+                if (precision < scale) {
+                    precision = scale + 1;
+                }
+                
+                if (precision > 127) {
+                    precision = 127;
+                    
+                    if (scale > 127) {
+                        scale = 127;
+                    }
+                }                
+            }
+
             Object[] params = new Object[] { new Integer(i), value,
                     new Integer(value.precision()), new Integer(value.scale()) };
             try {
@@ -87,7 +106,8 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         } else {
             super.setDecimalValue(ps, i, arg, argType);
         }
-    }
+    }   
+ 
 
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
         PreparedStatement stmt = ps;
