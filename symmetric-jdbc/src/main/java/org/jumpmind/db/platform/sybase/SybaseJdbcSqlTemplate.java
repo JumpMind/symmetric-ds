@@ -86,7 +86,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                     precision = 127;
                     
                     if (scale > 127) {
-                        scale = 127;
+                        scale = 126;
                     }
                 }                
             }
