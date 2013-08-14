@@ -20,99 +20,26 @@
  */
 package org.jumpmind.db.platform.ase;
 
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
-import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.platform.sybase.SybaseJdbcSqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class AseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate {
-
-    static final Logger log = LoggerFactory.getLogger(AseJdbcSqlTemplate.class);
-
-    private NativeJdbcExtractor nativeJdbcExtractor;
+public class AseJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
 
     public AseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo, NativeJdbcExtractor nativeJdbcExtractor) {
-        super(dataSource, settings, lobHandler, databaseInfo);
-        this.nativeJdbcExtractor = nativeJdbcExtractor;
-        primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo,
+            NativeJdbcExtractor nativeJdbcExtractor) {
+        super(dataSource, settings, lobHandler, databaseInfo, nativeJdbcExtractor);
     }
 
     @Override
     public ISqlTransaction startSqlTransaction() {
         return new AseJdbcSqlTransaction(this);
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
-    }
-
-    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType)
-            throws SQLException {
-        PreparedStatement nativeStatement = getNativeStmt(ps);
-        if (nativeStatement != null
-                && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass()
-                        .getName())) {
-            Class<?> clazz = nativeStatement.getClass();
-            Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class,
-                    int.class };
-            Method method = null;
-            try {
-                method = clazz.getMethod("setBigDecimal", parameterTypes);
-                BigDecimal value = null;
-                if (arg instanceof BigDecimal) {
-                    value = (BigDecimal)arg;
-                } else if (arg != null) {
-                    value = new BigDecimal(arg.toString());
-                }
-                Object[] params = new Object[] { new Integer(i), value,
-                        new Integer(value.precision()), new Integer(value.scale()) };
-                method.invoke(nativeStatement, params);
-            } catch (Exception e) {
-                log.warn("Had trouble calling the Sybase stmt.setBigDecimal(int,BigDecimal,int,int) method", e);
-                super.setDecimalValue(ps, i, arg, argType);
-            }
-        } else {
-            super.setDecimalValue(ps, i, arg, argType);
-        }
-    }
-
-    private PreparedStatement getNativeStmt(PreparedStatement ps) {
-        PreparedStatement stmt = ps;
-        try {
-            stmt = nativeJdbcExtractor.getNativePreparedStatement(ps);
-        } catch (SQLException ex) {
-            log.debug("Could not find a native preparedstatement using {}", nativeJdbcExtractor
-                    .getClass().getName());
-        }
-        return stmt;
-    }
-
-    @Override
-    public void setValues(PreparedStatement ps, Object[] args)
-            throws SQLException {
-        super.setValues(ps, args);
-        if (args != null && args.length > 0) {
-            int[] argTypes = new int[args.length];
-            for (int i = 0; i < argTypes.length; i++) {
-                argTypes[i] = SqlTypeValue.TYPE_UNKNOWN;
-            }
-            setValues(ps, args, argTypes, getLobHandler().getDefaultHandler());
-        }
     }
 
 }
