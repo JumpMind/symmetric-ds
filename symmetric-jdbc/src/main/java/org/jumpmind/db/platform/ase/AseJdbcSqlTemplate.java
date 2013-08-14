@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
-import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereJdbcSqlTemplate;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
@@ -74,15 +73,21 @@ public class AseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate 
             Method method = null;
             try {
                 method = clazz.getMethod("setBigDecimal", parameterTypes);
-                BigDecimal value = (BigDecimal) arg;
+                BigDecimal value = null;
+                if (arg instanceof BigDecimal) {
+                    value = (BigDecimal)arg;
+                } else if (arg != null) {
+                    value = new BigDecimal(arg.toString());
+                }
                 Object[] params = new Object[] { new Integer(i), value,
                         new Integer(value.precision()), new Integer(value.scale()) };
                 method.invoke(nativeStatement, params);
             } catch (Exception e) {
-                log.info("Can't find stmt.setBigDecimal(int,BigDecimal,int,int) method: "
-                        + e.getMessage());
-                return;
+                log.warn("Had trouble calling the Sybase stmt.setBigDecimal(int,BigDecimal,int,int) method", e);
+                super.setDecimalValue(ps, i, arg, argType);
             }
+        } else {
+            super.setDecimalValue(ps, i, arg, argType);
         }
     }
 
