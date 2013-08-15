@@ -815,7 +815,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     Version.version(), node.getSymmetricVersion());
         } else {
             if (node != null && Version.isOlderThanVersion(node.getSymmetricVersion(), Version.version())) {
-                log.info("The current version of {} is newer than the last running version of {}", 
+                log.debug("The current version of {} is newer than the last running version of {}", 
                         Version.version(), node.getSymmetricVersion());
             }
             configurationValid = true;
