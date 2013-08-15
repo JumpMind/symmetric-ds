@@ -1231,14 +1231,15 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             final String node2disable, final String routingVarcharFieldValue, final boolean rollback) {
         ISymmetricDialect dialect = getDbDialect();
         IDatabasePlatform platform = dialect.getPlatform();
+        String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
-            transaction.prepare(String.format("insert into %s (ROUTING_VARCHAR) values(?)",
-                    tableName));
+            transaction.prepare(String.format("insert into %s (%s) values(?)",
+                    tableName, columnName));
             for (int i = 0; i < count; i++) {
                 transaction.addRow(i, new Object[] { routingVarcharFieldValue },
                         new int[] { Types.VARCHAR });
@@ -1265,8 +1266,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     }
 
     protected void update(String tableName, String value) {
+        IDatabasePlatform platform = getDbDialect().getPlatform();
+        String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         getSqlTemplate().update(
-                String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName), value);
+                String.format("insert into %s (%s) values(?)", tableName, columnName), value);
     }
 
     protected void execute(final String sql, final String node2disable) {
