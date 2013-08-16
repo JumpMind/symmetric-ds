@@ -235,7 +235,7 @@ public class DatabaseWriter implements IDataWriter {
         } else {
             if (sourceTable != null) {
                 // If the source table was found but the target table is still unknown throw an exception
-                throw new SqlException(String.format("Could not find a target table matching the source table %s",
+                throw new SqlException(String.format("Could not find the target table %s",
                         sourceTable.getFullyQualifiedTableName()));
             } else {
                 throw new SqlException("The target table was not specified");
