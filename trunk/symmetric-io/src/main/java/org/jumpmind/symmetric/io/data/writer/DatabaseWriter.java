@@ -136,7 +136,7 @@ public class DatabaseWriter implements IDataWriter {
         }
         this.lastData = null;
         this.currentDmlStatement = null;
-        this.sourceTable = table;        
+        this.sourceTable = table;
         this.targetTable = lookupTableAtTarget(this.sourceTable);
         this.sourceTable.copyColumnTypesFrom(this.targetTable);
         if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
@@ -234,7 +234,7 @@ public class DatabaseWriter implements IDataWriter {
             }
         } else {
             if (sourceTable != null) {
-                throw new SqlException(String.format("Could not find the target table %s",
+                throw new SqlException(String.format("Could not find the source table %s",
                         sourceTable.getFullyQualifiedTableName()));
             } else {
                 throw new SqlException("The target table was not specified");
@@ -960,7 +960,7 @@ public class DatabaseWriter implements IDataWriter {
                     && StringUtils.isBlank(oldData[columnIndex]);
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || containsEmptyLobColumn;
-            if (containsEmptyLobColumn) {                
+            if (containsEmptyLobColumn) {
                 // indicate that we are considering the column to be changed
                 Column sourceColumn = sourceTable.findColumn(column.getName(), false);
                 data.getChangedDataIndicators()[sourceTable.getColumnIndex(sourceColumn.getName())] = true;
@@ -1110,7 +1110,7 @@ public class DatabaseWriter implements IDataWriter {
                         }
                     }
                 }
-                
+
                 targetTables.put(tableNameKey, table);
             }
         }
