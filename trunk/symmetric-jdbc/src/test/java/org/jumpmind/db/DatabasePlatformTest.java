@@ -117,6 +117,28 @@ public class DatabasePlatformTest extends AbstractDbTest {
         Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
     }
+    
+    @Test
+    public void testAddDefaultValueToVarcharColumn() throws Exception {
+        Table table = new Table("TEST_ADD_DEFAULT");
+        table.addColumn(new Column("ID1", true));
+        table.getColumnWithName("ID1").setTypeCode(Types.INTEGER);
+        table.getColumnWithName("ID1").setRequired(true);
+        
+        table.addColumn(new Column("NOTES"));
+        table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
+        table.getColumnWithName("NOTES").setSize("20");
+        
+        dropCreateAndThenReadTable(table);
+        
+        final String DEFAULT_VALUE = "SOMETHING";
+        table.getColumnWithName("NOTES").setDefaultValue(DEFAULT_VALUE);
+        
+        platform.alterTables(false, table);
+        Table tableFromDatabase = platform.getTableFromCache(table.getName(), true);
+        
+        Assert.assertEquals(DEFAULT_VALUE, tableFromDatabase.getColumnWithName("NOTES").getDefaultValue());
+    }
         
     @Test 
     public void testExportDefaultValueWithUnderscores() {
