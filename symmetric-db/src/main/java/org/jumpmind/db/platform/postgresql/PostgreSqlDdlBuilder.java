@@ -359,7 +359,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             Column column = change.getChangedColumn();
             printIdentifier(getColumnName(column), ddl);
             ddl.append(" SET DEFAULT ");
-            ddl.append(change.getNewDefaultValue());
+            printDefaultValue(change.getNewDefaultValue(), column.getMappedTypeCode(), ddl);
             printEndOfStatement(ddl);
         }
     }
