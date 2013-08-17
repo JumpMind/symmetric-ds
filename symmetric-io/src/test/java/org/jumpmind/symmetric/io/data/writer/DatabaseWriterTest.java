@@ -32,6 +32,7 @@ import java.util.UUID;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
@@ -595,7 +596,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         RoundingMode mode = RoundingMode.DOWN;
         
         if (values[5] != null
-                && (!(platform instanceof OracleDatabasePlatform || platform instanceof MsSqlDatabasePlatform))) {
+                && (!(platform instanceof OracleDatabasePlatform
+                        || platform instanceof MsSqlDatabasePlatform || platform instanceof AseDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
         if (values[10] != null) {
