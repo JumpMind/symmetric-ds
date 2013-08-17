@@ -168,10 +168,11 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
     @Test
     public void testUpgradePrimaryKeyAutoIncrementFromIntToBigInt() throws Exception {
-        boolean upgradeSupported = platform.getName() != DatabaseNamesConstants.DERBY &&
-                platform.getName() != DatabaseNamesConstants.HSQLDB2 && 
-                        platform.getName() != DatabaseNamesConstants.INFORMIX && 
-                        platform.getName() != DatabaseNamesConstants.DB2;
+        boolean upgradeSupported = !platform.getName().equals(DatabaseNamesConstants.DERBY)
+                && !platform.getName().equals(DatabaseNamesConstants.HSQLDB2)
+                && !platform.getName().equals(DatabaseNamesConstants.INFORMIX)
+                && !platform.getName().equals(DatabaseNamesConstants.DB2)
+                && !platform.getName().equals(DatabaseNamesConstants.ASE);
 
         if (upgradeSupported) {
             Table table = new Table("TEST_UPGRADE");
