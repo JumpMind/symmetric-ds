@@ -530,9 +530,12 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(null,
                     null,
                     TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+            String routerid = triggerRouterService.buildSymmetricTableRouterId(
+                    fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
+                    targetNode.getNodeGroupId());
             TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
                     .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
-                            fileSyncSnapshotHistory.getTriggerId(), true);
+                            routerid, true);
             // file sync reload event needs to be on the file sync channel to be
             // processed
             insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,

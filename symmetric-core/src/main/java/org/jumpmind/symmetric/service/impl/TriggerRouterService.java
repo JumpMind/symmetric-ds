@@ -428,6 +428,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return triggerRouters;
     }
+    
+    public String buildSymmetricTableRouterId(String triggerId, String sourceNodeGroupId, String targetNodeGroupId) {
+        return String.format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId);
+    }
 
     protected TriggerRouter buildTriggerRoutersForSymmetricTables(String version, Trigger trigger,
             NodeGroupLink nodeGroupLink) {
@@ -435,7 +439,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         triggerRouter.setTrigger(trigger);
 
         Router router = triggerRouter.getRouter();
-        router.setRouterId(trigger.getTriggerId());
+        router.setRouterId(buildSymmetricTableRouterId(trigger.getTriggerId(), nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink.getTargetNodeGroupId()));
         if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(
                 trigger.getSourceTableName())) {
             router.setRouterType(FileSyncDataRouter.ROUTER_TYPE);
@@ -716,11 +720,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
-        List<TriggerRouter> triggers = (List<TriggerRouter>) sqlTemplate.query(
+        List<TriggerRouter> triggerRouters = (List<TriggerRouter>) sqlTemplate.query(
                 getTriggerRouterSql("activeTriggersForSourceNodeGroupSql"),
                 new TriggerRouterMapper(), sourceNodeGroupId);
-        mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggers);
-        return triggers;
+        mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggerRouters);
+        return triggerRouters;
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(

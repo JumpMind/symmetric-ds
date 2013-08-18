@@ -56,6 +56,8 @@ public interface ITriggerRouterService {
      */
     public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
+    public String buildSymmetricTableRouterId(String triggerId, String sourceNodeGroupId, String targetNodeGroupId);
+    
     public Trigger getTriggerForCurrentNodeById(String triggerId);
     
     public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
