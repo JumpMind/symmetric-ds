@@ -87,9 +87,9 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     @Test
     public void testReplaceCharactersForTriggerName() {
         Assert.assertEquals("123456_54321",
-                TriggerRouterService.replaceCharsForTriggerName("123456_54321"));
+                TriggerRouterService.replaceCharsToShortenName("123456_54321"));
         Assert.assertEquals("tst_1234_rght_n",
-                TriggerRouterService.replaceCharsForTriggerName("test_1234_right::_on"));
+                TriggerRouterService.replaceCharsToShortenName("test_1234_right::_on"));
     }
 
     @Test
