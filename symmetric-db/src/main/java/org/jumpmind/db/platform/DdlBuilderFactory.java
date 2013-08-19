@@ -34,6 +34,7 @@ import org.jumpmind.db.platform.mssql.MsSqlDdlBuilder;
 import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 
 /**
@@ -46,7 +47,7 @@ final public class DdlBuilderFactory {
 
     /**
      * @param databaseName see {@link DatabaseNamesConstants}
-     * @return the associated ddl builder 
+     * @return the associated ddl builder
      */
     public static final IDdlBuilder createDdlBuilder(String databaseName) {
         if (DatabaseNamesConstants.DB2.equals(databaseName)) {
@@ -76,9 +77,11 @@ final public class DdlBuilderFactory {
         } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)) {
             return new PostgreSqlDdlBuilder();
         } else if (DatabaseNamesConstants.SQLITE.equalsIgnoreCase(databaseName)) {
-            return new SqliteDdlBuilder();  
+            return new SqliteDdlBuilder();
         } else if (DatabaseNamesConstants.ASE.equalsIgnoreCase(databaseName)) {
             return new AseDdlBuilder();
+        } else if (DatabaseNamesConstants.SQLANYWHERE.equalsIgnoreCase(databaseName)) {
+            return new SqlAnywhereDdlBuilder();
         } else {
             return null;
         }
