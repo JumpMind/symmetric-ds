@@ -18,6 +18,17 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.4 (Released 2013-08-20) 
+=========================================
+- 0001393: [Bug] Setting a batch to status of IG causes exception when initial.load.use.extract.job.enabled is set to true (chenson) - closed.
+- 0001392: [Bug] When initial.load.use.extract.job.enabled is set to true the byte count and data count aren't being captured (chenson) - closed.
+- 0001335: [Bug] dbexport doesn't work with SQL Anywhere (abrougher) - closed.
+- 0001388: [Bug] "The current version of 3.5.3 is newer than the last running version of 3.4.5" prints out many times in the log file at INFO (chenson) - closed.
+- 0001389: [Bug] Postgres alter to add a default varchar value to a column without a default value fails (chenson) - closed.
+- 0001390: [Bug] Not routing configuration properly when a source node group has multiple target node groups (chenson) - closed.
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (chenson) - closed.
+- 0001382: [Bug] Bad external_data: The bean shell router should unbind external data if it is void because the interpreter is reused (chenson) - closed.
+
 SymmetricDS - 3.5.3 (Released 2013-08-10)
 =========================================
 - 0001368: [Bug] On extraction retries the data_event_count is not reset (chenson) - closed.
