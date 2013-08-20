@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<appendix version="5.0" xml:id="upgrading" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Upgrading from 2.x</title>
+    <para>
+        Please test carefully when upgrading SymmetricDS 2 to SymmetricDS 3. Note that
+        <xref linkend="table_outgoing_batch" xrefstyle="table" />
+        table's primary key changed. The automatic upgrade backs up and copies the table. This might take some time if the
+        table is large.
+    </para>
+    <para>
+        The following parameters are no longer supported:
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <literal>db.spring.bean.name</literal>
+                    - The connection pool is no longer wired in via the Spring Framework
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>db.tx.timeout.seconds</literal>
+                    - Transactions are no longer managed by the Spring Framework
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>db.default.schema</literal>
+                    - The default schema is always the schema associated with the database user
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>db.jndi.name</literal>
+                    - JNDI data sources are no longer supported
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>auto.upgrade</literal>
+                    - Database upgrade is controlled by
+                    <literal>auto.config.database</literal>
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>routing.data.reader.type</literal>
+                    - As of this release, there is only one data reader type.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>job.purge.max.num.data.events.to.delete.in.tx</literal>
+                    - The name of this property changed to
+                    <literal>job.purge.max.num.data.event.batches.to.delete.in.tx</literal>
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>web.base.servlet.path</literal>
+                    - No longer needed
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>dataloader.allow.missing.delete</literal>
+                    - Controlled by conflict detection and resolution
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>dataloader.enable.fallback.insert</literal>
+                    - Controlled by conflict detection and resolution
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>dataloader.enable.fallback.update</literal>
+                    - Controlled by conflict detection and resolution
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>dataloader.enable.fallback.savepoint</literal>
+                    - No longer needed
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>db.force.delimited.identifier.mode.on</literal>
+                    - No longer needed
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>db.force.delimited.identifier.mode.off</literal>
+                    - No longer needed
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+    <para>
+        The way extension points work has changed. SymmetricDS services are no longer Spring injectable into extension
+        points. Please use the
+        <literal>ISymmetricEngineAware</literal>
+        interface to get a handle to the engine which gives access to services.
+    </para>
+    <para>
+        The following extension points are no longer supported:
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <literal>IDataLoaderFilter</literal>
+                    - Replaced by IDatabaseWriterFilter
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>IBatchListener</literal>
+                    - Replaced by IDatabaseWriterFilter
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>IExtractorFilter</literal>
+                    - No longer supported. Rarely used.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>IColumnFilter</literal>
+                    - No longer needed. Please use the transformation feature.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+</appendix>

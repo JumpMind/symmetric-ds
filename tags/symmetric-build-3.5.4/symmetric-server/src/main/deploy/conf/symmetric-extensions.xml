@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:lang="http://www.springframework.org/schema/lang"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd" default-lazy-init="true">
+
+    <!-- 
+      This example shows how to publish XML messages to MqSeries.  The following properties
+      would need to be added to symmetric.properties or another property file specified by the
+      sym launcher command.
+      
+      jms.msg.publish.enabled=true
+      jms.topic.username=
+      jms.topic.password=
+      jms.topic.destinationname=jms/SomeTopic
+      jms.topic.maxconsumers=1
+      jms.topic.hostname=
+      jms.topic.port=
+      jms.topic.useconnectionpooling=true
+      jms.topic.transporttype=1
+      jms.topic.queuemanager=
+      jms.topic.pubsubdomain=true
+      jms.topic.clientid=
+
+    <bean id="jmsPublisher" class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
+        <property name="publisher">
+            <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+                <property name="enabled" value="$[sym.jms.publisher.enabled]" />
+                <property name="jmsTemplateBeanName" value="mqJmsTemplate" />
+            </bean>
+        </property>
+        <property name="nodeGroups">
+            <list>
+                <value>corp</value>
+            </list>
+        </property>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+                <value>SALE</value>
+                <value>SALE_LINE_ITEM</value>
+            </list>
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+                <value>STORE_ID</value>
+                <value>REGISTER_ID</value>
+                <value>BUSINESS_DAY</value>
+                <value>TRANSACTION_ID</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="unauthenticatedTopicConnectionFactory" class="com.ibm.mq.jms.MQConnectionFactory"
+        lazy-init="true" >
+        <property name="hostName" value="$[sym.jms.mq.topic.hostname]" />
+        <property name="port" value="$[sym.jms.mq.topic.port]" />
+        <property name="description" value="SymmetricDS Topic Publish" />
+        <property name="useConnectionPooling" value="$[sym.jms.mq.topic.useconnectionpooling]" />
+        <property name="transportType" value="$[sym.jms.mq.topic.transporttype]" />
+        <property name="queueManager" value="$[sym.jms.mq.topic.queuemanager]" />
+        <property name="clientId" value="$[sym.jms.mq.topic.clientid]" />
+    </bean>
+
+    <bean id="topicConnectionFactory"
+        class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" lazy-init="true">
+        <property name="targetConnectionFactory" ref="unauthenticatedTopicConnectionFactory" />
+        <property name="username" value="$[sym.jms.mq.topic.username]" />
+        <property name="password" value="$[sym.jms.mq.topic.password]" />
+    </bean>
+    
+    <bean id="mqJmsTemplate" class="org.springframework.jms.core.JmsTemplate" lazy-init="true">
+        <property name="connectionFactory" ref="topicConnectionFactory" />
+        <property name="defaultDestinationName" value="$[sym.jms.mq.topic.destinationname]" />
+        <property name="sessionTransacted" value="true" />
+        <property name="pubSubDomain" value="$[sym.jms.mq.topic.pubsubdomain]" />
+    </bean>    
+     -->
+     
+     <!--
+       This example shows how to publish to ActiveMQ.
+       
+    <bean id="activeMqJmsPublisher" class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
+        <property name="publisher">
+            <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+                <property name="jmsTemplateBeanName" value="mqJmsTemplate" />
+            </bean>
+        </property>
+        <property name="nodeGroups">
+            <list>
+                <value>server</value>
+            </list>
+        </property>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+                <value>TEST</value>
+            </list>
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+                <value>ID</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL">
+            <value>tcp://localhost:61616</value>
+        </property>
+    </bean>
+
+    <bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="TLOG" />
+    </bean>
+
+    <bean id="mqJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory">
+            <ref local="jmsFactory" />
+        </property>
+        <property name="defaultDestination" ref="destination" />
+    </bean>      
+      -->
+     
+     <!-- This example shows how to create a node id generator 
+    <lang:bsh id="nodeIdGeneratorScript" refresh-check-delay="10000"
+              script-source="file:../samples/node-id-generator.bsh"
+              script-interfaces="org.jumpmind.symmetric.config.INodeIdGenerator">
+    </lang:bsh>     
+    -->
+     
+
+</beans>
