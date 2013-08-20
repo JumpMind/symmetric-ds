@@ -466,7 +466,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
 
-                    if (currentBatch.isExtractJobFlag()) {
+                    if (currentBatch.isExtractJobFlag() && currentBatch.getStatus() != Status.IG) {
                         if (parameterService.is(ParameterConstants.INTITAL_LOAD_USE_EXTRACT_JOB)) {
                             if (currentBatch.getStatus() != Status.RQ && currentBatch.getStatus() != Status.IG
                                     && !isPreviouslyExtracted(currentBatch)) {
@@ -1022,14 +1022,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 
                 // re-query the batches to see if they have been OK'd while extracting
-                batches = outgoingBatchService.getOutgoingBatchRange(
+                List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
                         request.getStartBatchId(), request.getEndBatchId()).getBatches();
                 
                 areBatchesOk = true;
                 
                 // check to see if batches have been OK'd by another reload request
                 // while extracting
-                for (OutgoingBatch outgoingBatch : batches) {
+                for (OutgoingBatch outgoingBatch : checkBatches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
                     }
