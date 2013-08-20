@@ -3,12 +3,12 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ftp</artifactId>
     <packaging>jar</packaging>
-    <version>3.5.4</version>
+    <version>3.5.5-SNAPSHOT</version>
     <name>ftp</name>
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.5-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <dependencies>
