@@ -259,9 +259,22 @@ public class TransformedData implements Cloneable {
 
     public CsvData buildTargetCsvData() {
         CsvData data = new CsvData(this.targetDmlType);
+        data.putParsedData(CsvData.OLD_DATA, getOldColumnValues());
         data.putParsedData(CsvData.ROW_DATA, getColumnValues());
         data.putParsedData(CsvData.PK_DATA, getKeyValues());
         data.putAttribute(getClass().getName(), this);
         return data;
+    }
+
+    public String[] getOldColumnValues() {
+        List<String> names = retrieve(columnsBy, true);
+        List<String> values = new ArrayList<String>();
+        for( String name : names ) {
+            if( oldSourceValues.containsKey(name) )
+                values.add(oldSourceValues.get(name));
+            else
+                values.add(null);
+        }
+        return values.toArray(new String[values.size()]);
     }
 }
