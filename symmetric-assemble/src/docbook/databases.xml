@@ -350,6 +350,11 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             load.  To enable this feature set the <code>db.treat.date.time.as.varchar.enabled</code> property
             to <code>true</code>.
         </para>
+        <para>
+            If you are using UTF-8 encoding in the database, you might consider using the 
+            <code>characterEncoding</code> parameter in the JDBC URL.
+            <programlisting>jdbc:mysql://hostname/databasename?tinyInt1isBit=false&characterEncoding=utf8</programlisting>
+        </para>
     </section>
     <section id="ap02-mariadb">
         <title>MariaDB</title>
