@@ -202,10 +202,13 @@ public class DataProcessor {
             
             if (System.currentTimeMillis() - ts > 60000) {
                 Statistics stats = context.getWriter().getStatistics().get(batch);
-                log.info(
-                        "Batch {} for node '{}' has been {} processing for {} seconds.  The following stats have been gathered: {}",
-                        new Object[] { batch.getBatchId(), batch.getTargetNodeId(), name, 
-                                (System.currentTimeMillis() - startTime) / 1000, stats.toString() });
+                if (stats != null) {
+                    log.info(
+                            "Batch {} for node '{}' has been {} processing for {} seconds.  The following stats have been gathered: {}",
+                            new Object[] { batch.getBatchId(), batch.getTargetNodeId(), name,
+                                    (System.currentTimeMillis() - startTime) / 1000,
+                                    stats.toString() });
+                }
                 ts = System.currentTimeMillis();
             }
         } while (currentData != null);
