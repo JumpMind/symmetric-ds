@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectExpressionKey;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
@@ -668,6 +669,7 @@ public class DatabaseWriter implements IDataWriter {
                                     lookupColumns.remove(column);
                                     lookupColumns.add(column);
                                 }
+                                removeExcludedColumns(conflict, lookupColumns);
                                 lookupKeys = lookupColumns;
                                 break;
                             case USE_OLD_DATA:
@@ -777,6 +779,27 @@ public class DatabaseWriter implements IDataWriter {
             throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        }
+    }
+
+    private void removeExcludedColumns(Conflict conflict,
+            ArrayList<Column> lookupColumns) {
+        String excludedString = conflict.getDetectExpressionValue(
+                DetectExpressionKey.EXCLUDED_COLUMN_NAMES);
+        if (!StringUtils.isBlank(excludedString)) {
+            String excludedColumns[] = excludedString.split(",");
+            if (excludedColumns.length > 0) {
+                Iterator<Column> iter = lookupColumns.iterator();
+                while (iter.hasNext()) {
+                    Column column = iter.next();
+                    for (String excludedColumn : excludedColumns) {
+                        if (excludedColumn.trim().equalsIgnoreCase(column.getName())) {
+                            iter.remove();
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
