@@ -37,9 +37,13 @@ public class Conflict implements Serializable {
     public enum ResolveConflict {
         NEWER_WINS, MANUAL, IGNORE, FALLBACK
     };
-    
+
     public enum PingBack {
         OFF, SINGLE_ROW, REMAINING_ROWS
+    }
+
+    public enum DetectExpressionKey {
+        EXCLUDED_COLUMN_NAMES
     }
 
     private String conflictId;
@@ -105,7 +109,7 @@ public class Conflict implements Serializable {
     public void setTargetTableName(String targetTableName) {
         this.targetTableName = targetTableName;
     }
-    
+
     public DetectConflict getDetectType() {
         return detectType;
     }
@@ -125,21 +129,36 @@ public class Conflict implements Serializable {
     public boolean isResolveChangesOnly() {
         return resolveChangesOnly;
     }
-    
+
     public void setResolveChangesOnly(boolean resolveChangesOnly) {
         this.resolveChangesOnly = resolveChangesOnly;
     }
-    
+
     public boolean isResolveRowOnly() {
         return resolveRowOnly;
     }
-    
+
     public void setResolveRowOnly(boolean resolveRowOnly) {
         this.resolveRowOnly = resolveRowOnly;
     }
 
     public String getDetectExpression() {
         return detectExpression;
+    }
+
+    public String getDetectExpressionValue(DetectExpressionKey key) {
+        String value = null;
+        if (key != null && detectExpression != null) {
+            String[] parms = detectExpression.split(";");
+            for (String parm : parms) {
+                String[] args = parm.split("=");
+                if (args.length==2 && args[0].trim().equalsIgnoreCase(key.name())) {
+                    value = args[1].trim();
+                    break;
+                }
+            }
+        }
+        return value;
     }
 
     public void setDetectExpression(String conflictColumnName) {
@@ -169,11 +188,11 @@ public class Conflict implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public void setPingBack(PingBack pingBack) {
         this.pingBack = pingBack;
     }
-   
+
     public PingBack getPingBack() {
         return pingBack;
     }
