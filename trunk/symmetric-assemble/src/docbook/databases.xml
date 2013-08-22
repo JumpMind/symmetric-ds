@@ -351,9 +351,9 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             to <code>true</code>.
         </para>
         <para>
-            If you are using UTF-8 encoding in the database, you might consider using the 
+            If you are using UTF-8 encoding in the database, you might consider using the
             <code>characterEncoding</code> parameter in the JDBC URL.
-            <programlisting>jdbc:mysql://hostname/databasename?tinyInt1isBit=false&characterEncoding=utf8</programlisting>
+            <programlisting><![CDATA[jdbc:mysql://hostname/databasename?tinyInt1isBit=false&characterEncoding=utf8]]></programlisting>
         </para>
     </section>
     <section id="ap02-mariadb">
