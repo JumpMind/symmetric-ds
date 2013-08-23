@@ -270,10 +270,11 @@ public class TransformedData implements Cloneable {
         List<String> names = retrieve(columnsBy, true);
         List<String> values = new ArrayList<String>();
         for( String name : names ) {
-            if( oldSourceValues.containsKey(name) )
+            if(oldSourceValues.containsKey(name)) {
                 values.add(oldSourceValues.get(name));
-            else
+            } else {
                 values.add(null);
+            }
         }
         return values.toArray(new String[values.size()]);
     }
