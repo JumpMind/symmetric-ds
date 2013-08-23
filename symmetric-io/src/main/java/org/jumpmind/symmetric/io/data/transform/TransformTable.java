@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 
 public class TransformTable implements Cloneable {
 
@@ -44,8 +45,8 @@ public class TransformTable implements Cloneable {
     protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
-    protected Date createTime;    
-    protected Date lastUpdateTime;    
+    protected Date createTime;
+    protected Date lastUpdateTime;
     protected String lastUpdateBy;
 
     public TransformTable(String sourceTableName, String targetTableName,
@@ -251,6 +252,7 @@ public class TransformTable implements Cloneable {
 
     public TransformTable enhanceWithImpliedColumns(Map<String, String> sourceKeyValues,
             Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
+
         TransformTable copiedVersion;
         try {
             copiedVersion = (TransformTable) this.clone();
@@ -267,52 +269,89 @@ public class TransformTable implements Cloneable {
 
             if (columnPolicy == ColumnPolicy.IMPLIED) {
                 for (String column : sourceKeyValues.keySet()) {
-                    boolean add = true;
+                    boolean hasInsert = false;
+                    boolean hasUpdate = false;
+                    boolean hasDelete = false;
+
                     if (primaryKeyColumns != null) {
                         for (TransformColumn xCol : primaryKeyColumns) {
-                            if (StringUtils.isNotBlank(xCol.getSourceColumnName())
-                                    && xCol.getSourceColumnName().equals(column)) {
-                                add = false;
-                            }
-                            if (StringUtils.isNotBlank(xCol.getTargetColumnName())
-                                    && xCol.getTargetColumnName().equals(column)) {
-                                add = false;
+                            if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && xCol.getSourceColumnName().equals(column)) ||
+                                    StringUtils.isNotBlank(xCol.getTargetColumnName()) && xCol.getTargetColumnName().equals(column)) {
+                                if (xCol.includeOn == IncludeOnType.ALL) {
+                                    hasInsert = hasUpdate = hasDelete = true;
+                                    break;
+                                } else if (xCol.includeOn == IncludeOnType.INSERT) {
+                                    hasInsert = true;
+                                } else if (xCol.includeOn == IncludeOnType.UPDATE) {
+                                    hasUpdate = true;
+                                } else if (xCol.includeOn == IncludeOnType.DELETE) {
+                                    hasDelete = true;
+                                }
                             }
                         }
                     }
 
-                    if (add) {
-                        TransformColumn newCol = new TransformColumn();
-                        newCol.setTransformId(transformId);
-                        newCol.setPk(true);
-                        newCol.setTransformType(CopyColumnTransform.NAME);
-                        newCol.setSourceColumnName(column);
-                        newCol.setTargetColumnName(column);
+                    if (!hasInsert && !hasUpdate && !hasDelete) {
+                        TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.ALL, true);
                         copiedVersion.primaryKeyColumns.add(newCol);
                         copiedVersion.transformColumns.add(newCol);
+                    } else {
+                        if (!hasInsert) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.INSERT, true);
+                            copiedVersion.primaryKeyColumns.add(newCol);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
+                        if (!hasUpdate) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.UPDATE, true);
+                            copiedVersion.primaryKeyColumns.add(newCol);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
+                        if (!hasDelete) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.DELETE, true);
+                            copiedVersion.primaryKeyColumns.add(newCol);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
                     }
+
                 }
 
                 for (String column : sourceValues.keySet()) {
-                    boolean add = true;
+                    boolean hasInsert = false;
+                    boolean hasUpdate = false;
+                    boolean hasDelete = false;
+
                     for (TransformColumn xCol : copiedVersion.transformColumns) {
-                        if (StringUtils.isNotBlank(xCol.getSourceColumnName())
-                                && xCol.getSourceColumnName().equals(column)) {
-                            add = false;
-                        }
-                        if (StringUtils.isNotBlank(xCol.getTargetColumnName())
-                                && xCol.getTargetColumnName().equals(column)) {
-                            add = false;
+                        if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && xCol.getSourceColumnName().equals(column)) ||
+                                (StringUtils.isNotBlank(xCol.getTargetColumnName()) && xCol.getTargetColumnName().equals(column))) {
+                            if (xCol.includeOn == IncludeOnType.ALL) {
+                                hasInsert = hasUpdate = hasDelete = true;
+                                break;
+                            } else if (xCol.includeOn == IncludeOnType.INSERT) {
+                                hasInsert = true;
+                            } else if (xCol.includeOn == IncludeOnType.UPDATE) {
+                                hasUpdate = true;
+                            } else if (xCol.includeOn == IncludeOnType.DELETE) {
+                                hasDelete = true;
+                            }
                         }
                     }
 
-                    if (add) {
-                        TransformColumn newCol = new TransformColumn();
-                        newCol.setTransformId(transformId);
-                        newCol.setTransformType(CopyColumnTransform.NAME);
-                        newCol.setSourceColumnName(column);
-                        newCol.setTargetColumnName(column);
+                    if (!hasInsert && !hasUpdate && !hasDelete) {
+                        TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.ALL, false);
                         copiedVersion.transformColumns.add(newCol);
+                    } else {
+                        if (!hasInsert) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.INSERT, false);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
+                        if (!hasUpdate) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.UPDATE, false);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
+                        if (!hasDelete) {
+                            TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.DELETE, false);
+                            copiedVersion.transformColumns.add(newCol);
+                        }
                     }
                 }
             }
@@ -322,29 +361,40 @@ public class TransformTable implements Cloneable {
             throw new IllegalStateException(e);
         }
     }
-    
+
+    private TransformColumn createImplicitTransformColumn(String column, IncludeOnType includeOnType, boolean pk) {
+        TransformColumn newCol = new TransformColumn();
+        newCol.setTransformId(transformId);
+        newCol.setPk(pk);
+        newCol.setIncludeOn(includeOnType);
+        newCol.setTransformType(CopyColumnTransform.NAME);
+        newCol.setSourceColumnName(column);
+        newCol.setTargetColumnName(column);
+        return newCol;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
-    
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
-    
+
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
-    
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
-    
+
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
 }
