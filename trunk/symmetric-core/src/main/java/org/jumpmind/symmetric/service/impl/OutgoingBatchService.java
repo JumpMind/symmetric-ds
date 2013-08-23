@@ -85,7 +85,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 createSqlReplacementTokens()));
     }
 
-    public void markAllAsSentForNode(String nodeId) {
+    public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel) {
         OutgoingBatches batches = null;
         do {
             batches = getOutgoingBatches(nodeId, true);
@@ -101,9 +101,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             });
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
-                outgoingBatch.setStatus(Status.OK);
-                outgoingBatch.setErrorFlag(false);
-                updateOutgoingBatch(outgoingBatch);
+                if (includeConfigChannel || !outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+                    outgoingBatch.setStatus(Status.OK);
+                    outgoingBatch.setErrorFlag(false);
+                    updateOutgoingBatch(outgoingBatch);
+                }
             }
         } while (batches.getBatches().size() > 0);
     }
