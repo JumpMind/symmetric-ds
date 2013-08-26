@@ -25,15 +25,10 @@ public class SqlTemplateSettings {
     protected int fetchSize = 1000;
     protected int queryTimeout;
     protected int batchSize = 100;
+    protected boolean readStringsAsBytes;
     
     public SqlTemplateSettings() {     
-    }
-        
-    public SqlTemplateSettings(int fetchSize, int queryTimeout, int batchSize) {
-        this.fetchSize = fetchSize;
-        this.queryTimeout = queryTimeout;
-        this.batchSize = batchSize;
-    }
+    }      
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
@@ -57,6 +52,14 @@ public class SqlTemplateSettings {
     
     public int getBatchSize() {
         return batchSize;
+    }
+    
+    public void setReadStringsAsBytes(boolean readStringsAsBytes) {
+        this.readStringsAsBytes = readStringsAsBytes;
+    }
+    
+    public boolean isReadStringsAsBytes() {
+        return readStringsAsBytes;
     }
 
 }

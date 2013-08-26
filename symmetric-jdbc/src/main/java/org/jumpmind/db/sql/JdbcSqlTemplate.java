@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
@@ -62,7 +63,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected DataSource dataSource;
 
-    protected boolean requiresAutoCommitFalseToSetFetchSize = false;
+    protected boolean requiresAutoCommitFalseToSetFetchSize = false;    
 
     protected SqlTemplateSettings settings;
 
@@ -461,6 +462,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      *            is the ResultSet holding the data
      * @param index
      *            is the column index
+     * @param readStringsAsBytes TODO
      * @return the value object
      * @throws SQLException
      *             if thrown by the JDBC API
@@ -468,9 +470,18 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Clob
      * @see java.sql.Timestamp
      */
-    public static Object getResultSetValue(ResultSet rs, int index) throws SQLException {
-        Object obj = rs.getObject(index);
+    public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {        
         ResultSetMetaData metaData = rs.getMetaData();
+        Object obj = null;
+        int jdbcType = metaData.getColumnType(index);
+        if (readStringsAsBytes && TypeMap.isTextType(jdbcType)) {
+            byte[] bytes = rs.getBytes(index);
+            if (bytes != null) {
+                obj = new String(bytes);
+            }
+        } else {
+            obj = rs.getObject(index);
+        }
         String className = null;
         if (obj != null) {
             className = obj.getClass().getName();
@@ -517,7 +528,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (typeName != null && typeName.equals("timestamptz")) {
                 obj = rs.getString(index);
             }
-        }
+        } 
         return obj;
     }
 
