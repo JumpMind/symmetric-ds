@@ -106,7 +106,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             while (rs!=null && rs.next()) {
-                Row row = getMapForRow(rs);
+                Row row = getMapForRow(rs, sqlTemplate.getSettings().isReadStringsAsBytes());
                 T value = mapper.mapRow(row);
                 if (value != null) {
                     return value;
@@ -118,13 +118,13 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected static Row getMapForRow(ResultSet rs) throws SQLException {
+    protected static Row getMapForRow(ResultSet rs, boolean readStringsAsBytes) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
-            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i);
+            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i, readStringsAsBytes);
             mapOfColValues.put(key, obj);
         }
         return mapOfColValues;

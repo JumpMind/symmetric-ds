@@ -225,7 +225,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     rs = st.executeQuery();
                     List<T> list = new ArrayList<T>();
                     while (rs.next()) {
-                        Row row = JdbcSqlReadCursor.getMapForRow(rs);
+                        Row row = JdbcSqlReadCursor.getMapForRow(rs, jdbcSqlTemplate.getSettings().isReadStringsAsBytes());
                         T value = mapper.mapRow(row);
                         list.add(value);
                     }
