@@ -18,6 +18,16 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.5 (Released 2013-08-27) 
+=========================================
+- 0001381: [Bug] transform_table.target_table_name should be optional according the documentation. the transform code requires that is be set (chenson) - closed.
+- 0001395: [Improvement] When data is transformed the old values are not retained. (abrougher) - closed.
+- 0001396: [Bug] Null pointer in log message when initial load extract job is turned on and a table takes longer than 60 seconds to extract (chenson) - closed.
+- 0001399: [Bug] Config and heartbeat batches can be lost if initial load is scheduled (chenson) - closed.
+- 0001405: [Bug] If sym_trigger_router.initial_load_delete_stmt is not set, then the initial.load.delete.first.sql property should be used (chenson) - closed.
+- 0001400: [Bug] Implied transforms are not implying individual DML transforms. (abrougher) - closed.
+- 0001397: [Improvement] Conflict detection mechanism USE_CHANGED_DATA should be able to specify columns to ignore. (abrougher) - closed.
+
 SymmetricDS - 3.5.4 (Released 2013-08-20) 
 =========================================
 - 0001393: [Bug] Setting a batch to status of IG causes exception when initial.load.use.extract.job.enabled is set to true (chenson) - closed.
