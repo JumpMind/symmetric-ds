@@ -174,6 +174,18 @@ public class TransformTable implements Cloneable {
         return columns;
     }
 
+    public TransformColumn getTransformColumn(String targetColumn, IncludeOnType includeOn) {
+        if (transformColumns != null) {
+            for (TransformColumn column : transformColumns) {
+                if (StringUtils.equals(targetColumn, column.getTargetColumnName()) &&
+                        includeOn == column.getIncludeOn()) {
+                    return column;
+                }
+            }
+        }
+        return null;
+    }
+
     public void addTransformColumn(TransformColumn column) {
         if (transformColumns == null) {
             transformColumns = new ArrayList<TransformColumn>();

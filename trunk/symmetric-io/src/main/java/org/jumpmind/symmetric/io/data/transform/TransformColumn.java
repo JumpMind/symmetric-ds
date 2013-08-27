@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
+
 public class TransformColumn {
 
     public enum IncludeOnType {
@@ -60,8 +62,8 @@ public class TransformColumn {
     protected String transformExpression;
     protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;
-    protected Date createTime;    
-    protected Date lastUpdateTime;    
+    protected Date createTime;
+    protected Date lastUpdateTime;
     protected String lastUpdateBy;
 
 
@@ -148,29 +150,63 @@ public class TransformColumn {
     public String getTransformId() {
         return transformId;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
-    
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
-    
+
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
-    
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
-    
+
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        TransformColumn tc = (TransformColumn) obj;
+        if (tc != null &&
+                StringUtils.equals(sourceColumnName, tc.sourceColumnName) &&
+                StringUtils.equals(targetColumnName, tc.targetColumnName) &&
+                pk == tc.pk &&
+                transformType.equals(tc.transformType) &&
+                StringUtils.equals(transformExpression, tc.transformExpression) &&
+                includeOn == tc.includeOn &&
+                StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public TransformColumn clone() {
+        TransformColumn clone = new TransformColumn();
+        clone.setTransformId(transformId);
+        clone.setSourceColumnName(sourceColumnName);
+        clone.setTargetColumnName(targetColumnName);
+        clone.setPk(pk);
+        clone.setTransformType(transformType);
+        clone.setTransformExpression(transformExpression);
+        clone.setTransformOrder(transformOrder);
+        clone.setIncludeOn(includeOn);
+        clone.setCreateTime(createTime == null ? null : new Date(createTime.getTime()));
+        clone.setLastUpdateTime(lastUpdateTime == null ? null : new Date(lastUpdateTime.getTime()));
+        clone.setLastUpdateBy(lastUpdateBy);
+        return clone;
+    }
+
 }
