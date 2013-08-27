@@ -450,9 +450,10 @@ public class DataService extends AbstractService implements IDataService {
                     TriggerRouter triggerRouter = iterator.previous();
                     if (triggerRouter.getInitialLoadOrder() >= 0
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
-                                    targetNode) &&
-
-                            !StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
+                                    targetNode)
+                            && (!StringUtils.isBlank(parameterService
+                                    .getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL)) || !StringUtils
+                                    .isEmpty(triggerRouter.getInitialLoadDeleteStmt()))) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 true, null, loadId, createBy);
                         if (!transactional) {
