@@ -20,10 +20,13 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
@@ -33,10 +36,10 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /*
- * Synchronization support for the H2 database platform. 
+ * Synchronization support for the H2 database platform.
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
-    
+
     static final String SQL_DROP_FUNCTION = "DROP ALIAS $(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'" ;
 
@@ -44,7 +47,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         super(parameterService, platform);
         this.triggerTemplate = new H2TriggerTemplate(this);
     }
-    
+
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
@@ -86,9 +89,9 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
             }
         }
     }
-    
+
     @Override
-    protected void createRequiredDatabaseObjects() {        
+    protected void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
@@ -96,7 +99,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         }
 
     }
-    
+
     @Override
     protected void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
@@ -142,10 +145,18 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         return BinaryEncoding.BASE64;
     }
 
-
     @Override
     public boolean supportsTransactionId() {
         return true;
+    }
+
+    @Override
+    public void cleanupTriggers() {
+        List<String> names = platform.getSqlTemplate().query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA() AND TABLE_NAME LIKE '"+parameterService.getTablePrefix().toUpperCase()+"_%_CONFIG'", new StringMapper());
+        for (String name : names) {
+            platform.getSqlTemplate().update("drop table " + name);
+            log.info("Dropped table {}", name);
+        }
     }
 
 }
