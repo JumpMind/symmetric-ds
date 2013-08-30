@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -321,65 +322,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             List<Object> list = new ArrayList<Object>(values.length);
             for (int i = 0; i < values.length; i++) {
                 String value = values[i];
-                Object objectValue = value;
                 Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
                 try {
                     if (column != null) {
-                        int type = column.getMappedTypeCode();
-                        if ((value == null || (getDdlBuilder().getDatabaseInfo()
-                                .isEmptyStringNulled() && value.equals("")))
-                                && column.isRequired()
-                                && column.isOfTextType()) {
-                            objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                        }
-                        if (value != null) {
-                            if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
-                                objectValue = parseDate(type, value, useVariableDates);
-                            } else if (type == Types.CHAR) {
-                                String charValue = value.toString();
-                                if ((StringUtils.isBlank(charValue) && getDdlBuilder()
-                                        .getDatabaseInfo().isBlankCharColumnSpacePadded())
-                                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder()
-                                                .getDatabaseInfo()
-                                                .isNonBlankCharColumnSpacePadded())) {
-                                    objectValue = StringUtils.rightPad(value.toString(),
-                                            column.getSizeAsInt(), ' ');
-                                }
-                            } else if (type == Types.BIGINT) {
-                                objectValue = parseBigInteger(value);
-                            } else if (type == Types.INTEGER || type == Types.SMALLINT
-                                    || type == Types.BIT) {
-                                objectValue = parseIntegerObjectValue(value);
-                            } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                                    || type == Types.FLOAT || type == Types.DOUBLE
-                                    || type == Types.REAL) {
-                                // The number will have either one period or one
-                                // comma for the decimal point, but we need a
-                                // period
-                                objectValue = new BigDecimal(value.replace(',', '.'));
-                            } else if (type == Types.BOOLEAN) {
-                                objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                            } else if (!(column.getJdbcTypeName()!=null && column.getJdbcTypeName().toUpperCase()
-                                    .contains(TypeMap.GEOMETRY)) && 
-                                    (type == Types.BLOB || type == Types.LONGVARBINARY
-                                    || type == Types.BINARY || type == Types.VARBINARY ||
-                                    // SQLServer ntext type
-                                    type == -10)) {
-                                if (encoding == BinaryEncoding.NONE) {
-                                    objectValue = value.getBytes();
-                                } else if (encoding == BinaryEncoding.BASE64) {
-                                    objectValue = Base64.decodeBase64(value.getBytes());
-                                } else if (encoding == BinaryEncoding.HEX) {
-                                    objectValue = Hex.decodeHex(value.toCharArray());
-                                }
-                            } else if (type == Types.ARRAY) {
-                                objectValue = createArray(column, value);
-                            }
-                        }
-                        if (objectValue instanceof String) {
-                            objectValue = cleanTextForTextBasedColumns((String) objectValue);
-                        }
-                        list.add(objectValue);
+                        list.add(getObjectValue(value, column, encoding, useVariableDates));
                     }
                 } catch (Exception ex) {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
@@ -394,6 +340,63 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } else {
             return null;
         }
+    }
+    
+    protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
+            boolean useVariableDates) throws DecoderException {
+        Object objectValue = value;
+        int type = column.getMappedTypeCode();
+        if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
+                .equals(""))) && column.isRequired() && column.isOfTextType()) {
+            objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
+        }
+        if (value != null) {
+            if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
+                objectValue = parseDate(type, value, useVariableDates);
+            } else if (type == Types.CHAR) {
+                String charValue = value.toString();
+                if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo()
+                        .isBlankCharColumnSpacePadded())
+                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo()
+                                .isNonBlankCharColumnSpacePadded())) {
+                    objectValue = StringUtils
+                            .rightPad(value.toString(), column.getSizeAsInt(), ' ');
+                }
+            } else if (type == Types.BIGINT) {
+                objectValue = parseBigInteger(value);
+            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
+                objectValue = parseIntegerObjectValue(value);
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
+                    || type == Types.DOUBLE || type == Types.REAL) {
+                // The number will have either one period or one
+                // comma for the decimal point, but we need a
+                // period
+                objectValue = new BigDecimal(value.replace(',', '.'));
+            } else if (type == Types.BOOLEAN) {
+                objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
+            } else if (!(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
+                    .contains(TypeMap.GEOMETRY))
+                    && (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
+                            || type == Types.VARBINARY ||
+                    // SQLServer ntext type
+                    type == -10)) {
+                if (encoding == BinaryEncoding.NONE) {
+                    objectValue = value.getBytes();
+                } else if (encoding == BinaryEncoding.BASE64) {
+                    objectValue = Base64.decodeBase64(value.getBytes());
+                } else if (encoding == BinaryEncoding.HEX) {
+                    objectValue = Hex.decodeHex(value.toCharArray());
+                }
+            } else if (type == Types.ARRAY) {
+                objectValue = createArray(column, value);
+            }
+        }
+        if (objectValue instanceof String) {
+            objectValue = cleanTextForTextBasedColumns((String) objectValue);
+        }
+
+        return objectValue;
+
     }
     
     protected Number parseBigInteger(String value) {
