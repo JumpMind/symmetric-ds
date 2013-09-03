@@ -983,6 +983,7 @@ public class DatabaseWriter implements IDataWriter {
             boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode())
                     && StringUtils.isBlank(oldData[columnIndex]);
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
+                    || data.getParsedData(CsvData.OLD_DATA) == null
                     || containsEmptyLobColumn;
             if (containsEmptyLobColumn) {
                 // indicate that we are considering the column to be changed
