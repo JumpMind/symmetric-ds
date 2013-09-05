@@ -63,7 +63,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected DataSource dataSource;
 
-    protected boolean requiresAutoCommitFalseToSetFetchSize = false;    
+    protected boolean requiresAutoCommitFalseToSetFetchSize = false;
 
     protected SqlTemplateSettings settings;
 
@@ -470,7 +470,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Clob
      * @see java.sql.Timestamp
      */
-    public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {        
+    public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();
         Object obj = null;
         int jdbcType = metaData.getColumnType(index);
@@ -528,7 +528,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (typeName != null && typeName.equals("timestamptz")) {
                 obj = rs.getString(index);
             }
-        } 
+        }
         return obj;
     }
 
@@ -886,7 +886,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            } else if (argType == Types.DECIMAL && arg != null) {
+            } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
                 setDecimalValue(ps, i, arg, argType);
             } else {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
