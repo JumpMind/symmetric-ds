@@ -23,7 +23,7 @@ package org.jumpmind.db.sql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
@@ -40,8 +40,8 @@ public class SqlScriptTest {
         SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);
-        Assert.assertEquals(2, template.queryForInt("select count(*) from test"));
-        Assert.assertEquals(3, template.queryForObject("select test from test where test_id=2", String.class).split("\r\n|\r|\n").length);
+        assertEquals(2, template.queryForInt("select count(*) from test"));
+        assertEquals(3, template.queryForObject("select test from test where test_id=2", String.class).split("\r\n|\r|\n").length);
         ds.destroy();
     }
     

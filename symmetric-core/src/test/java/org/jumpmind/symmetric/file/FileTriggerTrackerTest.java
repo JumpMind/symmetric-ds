@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.file;
 
 import java.io.File;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.model.FileSnapshot;
@@ -55,7 +55,7 @@ public class FileTriggerTrackerTest {
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
-        Assert.assertEquals(4, snapshot.size());        
+        assertEquals(4, snapshot.size());        
     }
     
     @Test
@@ -66,7 +66,7 @@ public class FileTriggerTrackerTest {
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
-        Assert.assertEquals(2, snapshot.size());        
+        assertEquals(2, snapshot.size());        
     }
     
     @Test
@@ -77,8 +77,8 @@ public class FileTriggerTrackerTest {
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);       
         tracker.takeFullSnapshot(snapshot);
-        Assert.assertEquals(1, snapshot.size());
-        Assert.assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
+        assertEquals(1, snapshot.size());
+        assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
     }   
     
     @Test
@@ -90,8 +90,8 @@ public class FileTriggerTrackerTest {
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         
         tracker.takeFullSnapshot(snapshot);
-        Assert.assertEquals(1, snapshot.size());
-        Assert.assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory2, directory));
+        assertEquals(1, snapshot.size());
+        assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory2, directory));
     }      
     
     @Test
@@ -103,10 +103,10 @@ public class FileTriggerTrackerTest {
         tracker.trackChanges();
         FileUtils.deleteQuietly(fileInDirectory1);
         DirectorySnapshot snapshot = tracker.trackChanges();
-        Assert.assertEquals(1, snapshot.size());
+        assertEquals(1, snapshot.size());
         FileSnapshot change = snapshot.get(0);
-        Assert.assertEquals(change.getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
-        Assert.assertEquals(change.getLastEventType(), LastEventType.DELETE);
+        assertEquals(change.getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
+        assertEquals(change.getLastEventType(), LastEventType.DELETE);
     }    
     
     @Test

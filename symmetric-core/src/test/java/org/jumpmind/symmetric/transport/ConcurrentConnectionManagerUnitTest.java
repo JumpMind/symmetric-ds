@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.transport;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.statistic.MockStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
@@ -45,11 +45,11 @@ public class ConcurrentConnectionManagerUnitTest {
         current = new ConcurrentConnectionManager.Reservation(nodeId,  System.currentTimeMillis()+10000, ReservationType.HARD);
         reservations.put(nodeId, current);
 
-        Assert.assertEquals(2, reservations.size());
+        assertEquals(2, reservations.size());
         mgr.removeTimedOutReservations(reservations);
-        Assert.assertEquals(2, reservations.size());
+        assertEquals(2, reservations.size());
         current.timeToLiveInMs = System.currentTimeMillis()-10000;
         mgr.removeTimedOutReservations(reservations);
-        Assert.assertEquals(1, reservations.size());
+        assertEquals(1, reservations.size());
     }
 }

@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.model;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -36,6 +36,6 @@ public class CsvDataTest {
         CsvData newData = new CsvData();
         newData.putCsvData(CsvData.ROW_DATA, rowData);
         String result = newData.getParsedData(CsvData.ROW_DATA)[0];
-        Assert.assertEquals(TEST, result);
+        assertEquals(TEST, result);
     }
 }

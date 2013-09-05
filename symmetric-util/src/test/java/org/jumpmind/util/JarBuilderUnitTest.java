@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.jar.JarFile;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class JarBuilderUnitTest {
         final String TEST_JAR_DIR = "target/test.jar.dir";
         File outputFile = new File("target/test.jar");
         outputFile.delete();
-        Assert.assertFalse(outputFile.exists());
+        assertFalse(outputFile.exists());
         
         FileUtils.deleteDirectory(new File(TEST_JAR_DIR));
                 
@@ -51,15 +51,15 @@ public class JarBuilderUnitTest {
         JarBuilder jarFile = new JarBuilder(new File(TEST_JAR_DIR), outputFile, new File[] { new File(TEST_JAR_DIR), new File("target/file1.txt") }, "3.0.0");
         jarFile.build();
         
-        Assert.assertTrue(outputFile.exists());
+        assertTrue(outputFile.exists());
         
         JarFile finalJar = new JarFile(outputFile);
-        Assert.assertNotNull(finalJar.getEntry("subdir/file2.txt"));
-        Assert.assertNotNull(finalJar.getEntry("file2.txt"));
-        Assert.assertNull(finalJar.getEntry("target/test.jar.dir"));
-        Assert.assertNull(finalJar.getEntry("test.jar.dir"));
-        Assert.assertNull(finalJar.getEntry("file1.txt"));
-        Assert.assertNotNull(finalJar.getEntry("file3.txt"));
+        assertNotNull(finalJar.getEntry("subdir/file2.txt"));
+        assertNotNull(finalJar.getEntry("file2.txt"));
+        assertNull(finalJar.getEntry("target/test.jar.dir"));
+        assertNull(finalJar.getEntry("test.jar.dir"));
+        assertNull(finalJar.getEntry("file1.txt"));
+        assertNotNull(finalJar.getEntry("file3.txt"));
         finalJar.close();
     }
 

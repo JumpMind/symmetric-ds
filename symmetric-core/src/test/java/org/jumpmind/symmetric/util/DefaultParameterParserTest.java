@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.util;
 
 import java.util.Map;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.properties.DefaultParameterParser;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
@@ -36,17 +36,17 @@ public class DefaultParameterParserTest {
         DefaultParameterParser parser = new DefaultParameterParser("/symmetric-default.properties");
         Map<String, ParameterMetaData> metaData = parser.parse();
         
-        Assert.assertNotNull(metaData);
-        Assert.assertTrue(metaData.size() > 0);
+        assertNotNull(metaData);
+        assertTrue(metaData.size() > 0);
         ParameterMetaData meta = metaData.get(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
-        Assert.assertNotNull(meta);
-        Assert.assertTrue(meta.getDescription().length() > 0);
-        Assert.assertTrue(meta.isDatabaseOverridable());
+        assertNotNull(meta);
+        assertTrue(meta.getDescription().length() > 0);
+        assertTrue(meta.isDatabaseOverridable());
 
         meta = metaData.get(ParameterConstants.NODE_GROUP_ID);
-        Assert.assertNotNull(meta);
-        Assert.assertTrue(meta.getDescription().length() > 0);
-        Assert.assertFalse(meta.isDatabaseOverridable());
+        assertNotNull(meta);
+        assertTrue(meta.getDescription().length() > 0);
+        assertFalse(meta.isDatabaseOverridable());
 
     
     }

@@ -23,7 +23,7 @@ package org.jumpmind.db.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -49,10 +49,10 @@ public class DatabaseTest {
         
         list = Database.sortByForeignKeys(list);
         
-        Assert.assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
-        Assert.assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
-        Assert.assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        Assert.assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
+        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
+        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
         
     }
     
@@ -89,10 +89,10 @@ public class DatabaseTest {
         
         list = Database.sortByForeignKeys(list);
         
-        Assert.assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
-        Assert.assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
-        Assert.assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t3));
-        Assert.assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t5));
+        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t3));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t5));
         
     }    
     

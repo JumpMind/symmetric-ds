@@ -28,7 +28,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.TestConstants;
@@ -88,9 +88,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
     @Test
     public void testNothingToExtract() {
         ExtractResults results = extract();
-        Assert.assertNotNull(results.getBatches());
-        Assert.assertEquals(0, results.getBatches().size());
-        Assert.assertTrue(StringUtils.isBlank(results.getCsv()));
+        assertNotNull(results.getBatches());
+        assertEquals(0, results.getBatches().size());
+        assertTrue(StringUtils.isBlank(results.getCsv()));
     }
 
     @Test
@@ -100,8 +100,8 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                 Integer.MAX_VALUE, new BigDecimal(Double.toString(Math.PI))));
         routeAndCreateGaps();
         ExtractResults results = extract();
-        Assert.assertNotNull(results.getBatches());
-        Assert.assertEquals(1, results.getBatches().size());
+        assertNotNull(results.getBatches());
+        assertEquals(1, results.getBatches().size());
         assertNumberOfLinesThatStartWith(1, "insert,", results.getCsv());
         long batchId = results.getBatches().get(0).getBatchId();
         assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());

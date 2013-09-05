@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.sql.Time;
 import java.util.Calendar;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class NodeGroupChannelWindowTest {
@@ -37,11 +37,11 @@ public class NodeGroupChannelWindowTest {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 13);
         cal.set(Calendar.MINUTE, 5);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, 1);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, -100);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
     }
     
     @Test
@@ -53,11 +53,11 @@ public class NodeGroupChannelWindowTest {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 13);
         cal.set(Calendar.MINUTE, 5);
-        Assert.assertFalse(window.inTimeWindow(cal.getTime()));
+        assertFalse(window.inTimeWindow(cal.getTime()));
         cal.set(Calendar.HOUR_OF_DAY, 22);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.set(Calendar.HOUR_OF_DAY, 2);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));        
+        assertTrue(window.inTimeWindow(cal.getTime()));        
     }    
     
     @Test
@@ -69,11 +69,11 @@ public class NodeGroupChannelWindowTest {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 13);
         cal.set(Calendar.MINUTE, 5);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, 1);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, -100);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
     }
     
     @Test
@@ -85,11 +85,11 @@ public class NodeGroupChannelWindowTest {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 17);
         cal.set(Calendar.MINUTE, 5);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, 1);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, -100);
-        Assert.assertTrue(window.inTimeWindow(cal.getTime()));
+        assertTrue(window.inTimeWindow(cal.getTime()));
     }
     
     @Test
@@ -102,11 +102,11 @@ public class NodeGroupChannelWindowTest {
         cal.set(Calendar.HOUR_OF_DAY, 8);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 30);
-        Assert.assertFalse(window.inTimeWindow(cal.getTime()));
+        assertFalse(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, 423);
-        Assert.assertFalse(window.inTimeWindow(cal.getTime()));
+        assertFalse(window.inTimeWindow(cal.getTime()));
         cal.add(Calendar.DATE, -1);
-        Assert.assertFalse(window.inTimeWindow(cal.getTime()));
+        assertFalse(window.inTimeWindow(cal.getTime()));
     }
     
     

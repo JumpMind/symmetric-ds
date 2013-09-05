@@ -20,16 +20,16 @@
  */
 package org.jumpmind.symmetric.file;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class FileSyncUtilsTest {
 
     @Test
     public void testGetRelativePathsUnix() {
-        Assert.assertEquals("stuff/xyz.dat", FileSyncUtils.getRelativePath("/var/data/stuff/xyz.dat", "/var/data/", "/"));
-        Assert.assertEquals("../../b/c", FileSyncUtils.getRelativePath("/a/b/c", "/a/x/y/", "/"));
-        Assert.assertEquals("../../b/c", FileSyncUtils.getRelativePath("/m/n/o/a/b/c", "/m/n/o/a/x/y/", "/"));
+        assertEquals("stuff/xyz.dat", FileSyncUtils.getRelativePath("/var/data/stuff/xyz.dat", "/var/data/", "/"));
+        assertEquals("../../b/c", FileSyncUtils.getRelativePath("/a/b/c", "/a/x/y/", "/"));
+        assertEquals("../../b/c", FileSyncUtils.getRelativePath("/m/n/o/a/b/c", "/m/n/o/a/x/y/", "/"));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class FileSyncUtilsTest {
         String base = "C:\\Windows\\Speech\\Common\\sapisvr.exe";
 
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
-        Assert.assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
+        assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class FileSyncUtilsTest {
         String base = "C:\\Windows\\Speech\\Common\\";
 
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
-        Assert.assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
+        assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class FileSyncUtilsTest {
         String base = "C:\\Windows\\Speech\\Common\\foo.txt";
 
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
-        Assert.assertEquals("..\\..\\Boot\\Fonts", relPath);
+        assertEquals("..\\..\\Boot\\Fonts", relPath);
     }
     
     @Test
@@ -66,7 +66,7 @@ public class FileSyncUtilsTest {
         String expected = "..\\..\\Boot";
 
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
-        Assert.assertEquals(expected, relPath);
+        assertEquals(expected, relPath);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class FileSyncUtilsTest {
 
         try {
             FileSyncUtils.getRelativePath(target, base, "\\");
-            Assert.fail();
+            fail();
 
         } catch (PathResolutionException ex) {
             // expected exception

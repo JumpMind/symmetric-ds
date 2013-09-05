@@ -25,7 +25,7 @@ import java.io.File;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.stage.ThresholdFileWriter;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class ThresholdFileWriterTest {
@@ -39,10 +39,10 @@ public class ThresholdFileWriterTest {
         writer.write(TEST_STR);
 
         // File does not exist since we did not meet the threshold
-        Assert.assertFalse(file.exists());
+        assertFalse(file.exists());
         
         // Check the contents of the buffer (not yet written to a file)
-        Assert.assertEquals(TEST_STR, IOUtils.toString(writer.getReader()));
+        assertEquals(TEST_STR, IOUtils.toString(writer.getReader()));
         
         writer.close();
     }
@@ -50,20 +50,20 @@ public class ThresholdFileWriterTest {
     @Test
     public void testWriteToFile() throws Exception {
         File file = getTestFile();
-        Assert.assertFalse(file.exists());
+        assertFalse(file.exists());
 
         ThresholdFileWriter writer = new ThresholdFileWriter( TEST_STR.length() - 1, new StringBuilder(), file);
         writer.write(TEST_STR);
         writer.close();
 
         // The write string exceeded the threshold so the writer should have created/written to the file
-        Assert.assertTrue(file.exists());
+        assertTrue(file.exists());
         
         BufferedReader reader = writer.getReader();
-        Assert.assertEquals(TEST_STR, IOUtils.toString(reader));
+        assertEquals(TEST_STR, IOUtils.toString(reader));
         reader.close();
 
-        Assert.assertTrue(file.delete());
+        assertTrue(file.delete());
     }
 
     private File getTestFile() {

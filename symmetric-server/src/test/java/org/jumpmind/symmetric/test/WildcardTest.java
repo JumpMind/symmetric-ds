@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.test;
 
 import java.sql.Types;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -68,27 +68,27 @@ public class WildcardTest extends AbstractTest {
 
         loadConfigAtRegistrationServer();
 
-        Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from a"));
-        Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from b"));
-        Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
+        assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from a"));
+        assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from b"));
+        assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
 
         rootServer.openRegistration("client", "client");
 
         pull("client");
 
         Node clientNode = clientServer.getNodeService().findIdentity();
-        Assert.assertNotNull(clientNode);
+        assertNotNull(clientNode);
 
         rootServer.getDataService().reloadNode(clientNode.getNodeId(), false, "unit test");
 
         pull("client");
 
         // load succeeded
-        Assert.assertEquals(10, clientServer.getSqlTemplate().queryForInt("select count(*) from a"));
-        Assert.assertEquals(100, clientServer.getSqlTemplate()
+        assertEquals(10, clientServer.getSqlTemplate().queryForInt("select count(*) from a"));
+        assertEquals(100, clientServer.getSqlTemplate()
                 .queryForInt("select count(*) from b"));
         // c was excluded
-        Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
+        assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
 
         for (int i = 100; i < 200; i++) {
             rootServer.getSqlTemplate().update("insert into b (id, notes) values(?,?)", i,
@@ -102,9 +102,9 @@ public class WildcardTest extends AbstractTest {
 
         pull("client");
 
-        Assert.assertEquals(200, clientServer.getSqlTemplate()
+        assertEquals(200, clientServer.getSqlTemplate()
                 .queryForInt("select count(*) from b"));
-        Assert.assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
+        assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
 
     }
 

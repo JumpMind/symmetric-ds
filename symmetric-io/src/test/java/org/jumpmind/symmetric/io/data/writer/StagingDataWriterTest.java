@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -82,19 +82,19 @@ public class StagingDataWriterTest {
         DataProcessor processor = new DataProcessor(reader, writer, "test");
         processor.process(new DataContext());
 
-        Assert.assertEquals(1, batchesWritten.size());
-        Assert.assertEquals(origCsv, batchesWritten.get(0));
+        assertEquals(1, batchesWritten.size());
+        assertEquals(origCsv, batchesWritten.get(0));
 
         StagedResource resource = (StagedResource) stagingManager.find("test", "aaa", 1);
-        Assert.assertNotNull(resource);
+        assertNotNull(resource);
         if (threshold > origCsv.length()) {
-            Assert.assertFalse(resource.getFile().exists());
+            assertFalse(resource.getFile().exists());
         } else {
-            Assert.assertTrue(resource.getFile().exists());
+            assertTrue(resource.getFile().exists());
         }
         
         resource.delete();
-        Assert.assertFalse(resource.getFile().exists());
+        assertFalse(resource.getFile().exists());
 
     }
 
