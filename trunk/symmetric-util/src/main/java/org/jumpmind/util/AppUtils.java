@@ -56,7 +56,8 @@ public class AppUtils {
         String hostName = System.getProperty("host.name", UNKNOWN);
         if (UNKNOWN.equals(hostName)) {
             try {
-                hostName = InetAddress.getLocalHost().getHostName();
+                hostName = InetAddress.getByName(
+                        InetAddress.getLocalHost().getHostAddress()).getHostName();
             } catch (Exception ex) {
                 log.warn(ex.getMessage(), ex);
             }
@@ -131,7 +132,7 @@ public class AppUtils {
     /**
      * Useful method to sleep that catches and ignores the
      * {@link InterruptedException}
-     * 
+     *
      * @param ms
      *            milliseconds to sleep
      */
@@ -152,7 +153,7 @@ public class AppUtils {
 
     /**
      * Checks to see if a specific port is available.
-     * 
+     *
      * @param port
      *            the port to check for availability
      */
@@ -186,7 +187,7 @@ public class AppUtils {
 
         return false;
     }
-    
+
     public static void unzip(InputStream in, File toDir) {
         try {
             ZipInputStream is = new ZipInputStream(in);
