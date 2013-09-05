@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.test;
 import java.sql.Types;
 import java.util.List;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -72,8 +72,8 @@ public class NonDmlEventsTest extends AbstractTest {
 
         List<TriggerHistory> histories = rootServer.getTriggerRouterService().findTriggerHistories(
                 null, null, testTable.getName());
-        Assert.assertNotNull(histories);
-        Assert.assertEquals(1, histories.size());
+        assertNotNull(histories);
+        assertEquals(1, histories.size());
 
         String serverQuote = rootServer.getDatabasePlatform().getDatabaseInfo().getDelimiterToken();
         String clientQuote = clientServer.getDatabasePlatform().getDatabaseInfo()
@@ -89,19 +89,19 @@ public class NonDmlEventsTest extends AbstractTest {
                 serverQuote);
         String clientCountSql = String.format("select count(*) from %sCamelCase%s", clientQuote,
                 clientQuote);
-        Assert.assertEquals(100,
+        assertEquals(100,
                 rootServer.getDatabasePlatform().getSqlTemplate().queryForInt(serverCountSql));
-        Assert.assertEquals(0,
+        assertEquals(0,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         // we installed a dead trigger, so no data should have been captured
-        Assert.assertFalse(pull("client"));
+        assertFalse(pull("client"));
 
         rootServer.getDataService().reloadTable("client", null, null, testTable.getName());
 
-        Assert.assertTrue(pull("client"));
+        assertTrue(pull("client"));
 
-        Assert.assertEquals(100,
+        assertEquals(100,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().sendSQL(
@@ -119,25 +119,25 @@ public class NonDmlEventsTest extends AbstractTest {
                 String.format("insert into %sCamelCase%s values (102,'direct insert')",
                         clientQuote, clientQuote));
 
-        Assert.assertTrue(pull("client"));
+        assertTrue(pull("client"));
 
-        Assert.assertEquals(102,
+        assertEquals(102,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().sendSQL("client", null, null, testTable.getName(),
                 String.format("delete from %sCamelCase%s", clientQuote, clientQuote));
 
-        Assert.assertTrue(pull("client"));
+        assertTrue(pull("client"));
 
-        Assert.assertEquals(0,
+        assertEquals(0,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
 
         rootServer.getDataService().reloadTable("client", null, null, testTable.getName(),
                 String.format("%sId%s < 50", serverQuote, serverQuote));
 
-        Assert.assertTrue(pull("client"));
+        assertTrue(pull("client"));
 
-        Assert.assertEquals(50,
+        assertEquals(50,
                 clientServer.getDatabasePlatform().getSqlTemplate().queryForInt(clientCountSql));
         
         Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "A");
@@ -148,16 +148,16 @@ public class NonDmlEventsTest extends AbstractTest {
             rootServer.getSqlTemplate().update(String.format("insert into %s values (?)", serverTable.getName()), i);
         }
 
-        Assert.assertFalse(pull("client"));
+        assertFalse(pull("client"));
 
         String msg = rootServer.getDataService()
                 .reloadTable("client", null, null, "A");
 
-        Assert.assertTrue(
+        assertTrue(
                 "Should have pulled data for the reload event for table A.  The reload table method returned the following text: "
                         + msg, pull("client"));
 
-        Assert.assertEquals(
+        assertEquals(
                 10,
                 clientServer.getDatabasePlatform().getSqlTemplate()
                         .queryForInt(String.format("select count(*) from %s", clientTable.getName())));
@@ -177,16 +177,16 @@ public class NonDmlEventsTest extends AbstractTest {
         restService.postRegisterNode("2", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
         restService.postRegisterNode("3", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
         
-        Assert.assertEquals(0, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
+        assertEquals(0, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
         Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "NODE_SPECIFIC");
-        Assert.assertNotNull(serverTable);
-        Assert.assertTrue(rootServer.getDataService().reloadTable(clientServer.getNodeService().findIdentityNodeId(), null, null, serverTable.getName()).startsWith("Successfully created"));
+        assertNotNull(serverTable);
+        assertTrue(rootServer.getDataService().reloadTable(clientServer.getNodeService().findIdentityNodeId(), null, null, serverTable.getName()).startsWith("Successfully created"));
         rootServer.route();
-        Assert.assertEquals(1, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
+        assertEquals(1, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
         
         OutgoingBatches batches = rootServer.getOutgoingBatchService().getOutgoingBatches(clientServer.getNodeService().findIdentityNodeId(), true);
 
-        Assert.assertEquals(1, batches.getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
+        assertEquals(1, batches.getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
         
     }
 }

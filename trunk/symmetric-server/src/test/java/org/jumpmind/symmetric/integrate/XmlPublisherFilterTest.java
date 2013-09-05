@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.util.Context;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -83,7 +83,7 @@ public class XmlPublisherFilterTest {
             filter.batchComplete(context);
         }
 
-        Assert.assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS.trim(), output.toString().trim());
+        assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS.trim(), output.toString().trim());
 
     }
 

@@ -51,7 +51,7 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.util.AppUtils;
 import org.junit.After;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -203,7 +203,7 @@ abstract public class AbstractTest {
         IDataLoaderService dataLoaderService = regEngine.getDataLoaderService();
         boolean inError = false;
         InputStream is = getClass().getResourceAsStream(getClass().getSimpleName() + ".csv");
-        Assert.assertNotNull("Could not find configuration as a resource", is);
+        assertNotNull("Could not find configuration as a resource", is);
         List<IncomingBatch> batches = dataLoaderService.loadDataBatch(IOUtils.toString(is));
         for (IncomingBatch batch : batches) {
             if (batch.getStatus() == Status.ER) {
@@ -211,7 +211,7 @@ abstract public class AbstractTest {
             }
         }
 
-        Assert.assertFalse("Failed to load configuration", inError);
+        assertFalse("Failed to load configuration", inError);
 
     }
 

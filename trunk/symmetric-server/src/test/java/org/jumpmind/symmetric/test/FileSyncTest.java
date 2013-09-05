@@ -24,7 +24,7 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 public class FileSyncTest extends AbstractTest {
 
@@ -60,7 +60,7 @@ public class FileSyncTest extends AbstractTest {
 
         loadConfigAndRegisterNode("client", "server");
         
-        Assert.assertFalse(pullFiles());
+        assertFalse(pullFiles());
 
         testInitialLoadFromServerToClient(rootServer, clientServer);
 
@@ -76,18 +76,18 @@ public class FileSyncTest extends AbstractTest {
 
     protected void testInitialLoadFromServerToClient(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-        Assert.assertFalse("The initial load file should not exist at the client",
+        assertFalse("The initial load file should not exist at the client",
                 allClntTargetInitialLoadFile.exists());
-        Assert.assertTrue("The initial load file should exist at the server",
+        assertTrue("The initial load file should exist at the server",
                 allSvrSourceInitialLoadFile.exists());
-        Assert.assertFalse(pullFiles());
-        Assert.assertFalse("The initial load file should not exist at the client",
+        assertFalse(pullFiles());
+        assertFalse("The initial load file should not exist at the client",
                 allClntTargetInitialLoadFile.exists());
-        Assert.assertTrue("The initial load file should exist at the server",
+        assertTrue("The initial load file should exist at the server",
                 allSvrSourceInitialLoadFile.exists());
         rootServer.reloadNode(clientServer.getNodeService().findIdentityNodeId(), "unit_test");
-        Assert.assertTrue(pullFiles());
-        Assert.assertTrue("The initial load file should exist at the client",
+        assertTrue(pullFiles());
+        assertTrue("The initial load file should exist at the client",
                 allClntTargetInitialLoadFile.exists());
     }
 
@@ -100,30 +100,30 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
 
         File allFile1Target = new File(allClntTargetDir, allFile1.getName());
-        Assert.assertTrue(allFile1Target.exists());
-        Assert.assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target));
+        assertTrue(allFile1Target.exists());
+        assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target));
 
         allFile1.delete();
 
         pullFiles();
 
-        Assert.assertFalse(allFile1Target.exists());
+        assertFalse(allFile1Target.exists());
     }
 
     protected void testPingback() throws Exception {
         File serverFile = new File(pingbackServerDir, "ping.txt");
-        Assert.assertFalse(serverFile.exists());
+        assertFalse(serverFile.exists());
 
-        Assert.assertFalse("Should not have pulled any files", pullFiles());
+        assertFalse("Should not have pulled any files", pullFiles());
 
         File clientFile = new File(pingbackClientDir, "ping.txt");
         FileUtils.write(clientFile, "test");
 
-        Assert.assertTrue(pushFiles());
+        assertTrue(pushFiles());
 
-        Assert.assertTrue(serverFile.exists());
+        assertTrue(serverFile.exists());
 
-        Assert.assertFalse("Should not have pulled any files", pullFiles());
+        assertFalse("Should not have pulled any files", pullFiles());
 
     }
 
@@ -143,29 +143,29 @@ public class FileSyncTest extends AbstractTest {
          File clientThreeA = new File(chooseTargetClientDirA, "3.txt");
          File clientThreeB = new File(chooseTargetClientDirB, "3.txt");
 
-         Assert.assertFalse(clientOneA.exists());
-         Assert.assertFalse(clientOneB.exists());
+         assertFalse(clientOneA.exists());
+         assertFalse(clientOneB.exists());
          
          FileUtils.write(one, "abc");
          
          pullFiles();
          
-         Assert.assertTrue(clientOneA.exists());
-         Assert.assertFalse(clientOneB.exists());
+         assertTrue(clientOneA.exists());
+         assertFalse(clientOneB.exists());
          
          FileUtils.write(two, "abcdef");
          
          pullFiles();
 
-         Assert.assertFalse(clientTwoA.exists());
-         Assert.assertTrue(clientTwoB.exists());
+         assertFalse(clientTwoA.exists());
+         assertTrue(clientTwoB.exists());
                   
          FileUtils.write(three, "abcdef");
          
          pullFiles();
          
-         Assert.assertTrue(clientThreeA.exists());
-         Assert.assertFalse(clientThreeB.exists());
+         assertTrue(clientThreeA.exists());
+         assertFalse(clientThreeB.exists());
 
     }
     
@@ -178,21 +178,21 @@ public class FileSyncTest extends AbstractTest {
         File sourceFile = new File(changeNameSvrSourceDir, "source.txt");
         File targetFile = new File(changeNameClntTargetDir, "target.txt");
         
-        Assert.assertFalse(targetFile.exists());
-        Assert.assertFalse(targetFile.getParentFile().exists());
+        assertFalse(targetFile.exists());
+        assertFalse(targetFile.getParentFile().exists());
         
         FileUtils.write(sourceFile, "1234567890");
         
         pullFiles();
         
-        Assert.assertTrue(targetFile.getParentFile().exists());
-        Assert.assertTrue(targetFile.exists());
+        assertTrue(targetFile.getParentFile().exists());
+        assertTrue(targetFile.exists());
         
         FileUtils.deleteQuietly(sourceFile);
         
         pullFiles();
         
-        Assert.assertFalse(targetFile.exists());
+        assertFalse(targetFile.exists());
     }
 
     protected boolean pullFiles() {

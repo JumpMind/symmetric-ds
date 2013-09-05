@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
@@ -125,7 +125,7 @@ public abstract class AbstractIntegrationTest {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
         return server != null ? server.getEngine() : null;
@@ -163,12 +163,12 @@ public abstract class AbstractIntegrationTest {
     protected void checkForFailedTriggers(boolean server, boolean client) {
         if (server) {
             ITriggerRouterService service = getServer().getTriggerRouterService();
-            Assert.assertEquals(0, service.getFailedTriggers().size());
+            assertEquals(0, service.getFailedTriggers().size());
         }
 
         if (client) {
             ITriggerRouterService service = getClient().getTriggerRouterService();
-            Assert.assertEquals(0, service.getFailedTriggers().size());
+            assertEquals(0, service.getFailedTriggers().size());
         }
     }
 
@@ -215,14 +215,14 @@ public abstract class AbstractIntegrationTest {
         IOutgoingBatchService outgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_CLIENT_NODE.getNodeId(), false);        
-        Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+        assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
     
     protected void assertNoPendingBatchesOnClient() {
         IOutgoingBatchService outgoingBatchService = getClient().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_ROOT_NODE.getNodeId(), false);        
-        Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+        assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
 
 }

@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(true, valid);
+        assertEquals(true, valid);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(false, valid);
+        assertEquals(false, valid);
     }
     
     @Test
@@ -73,7 +73,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(false, valid);
+        assertEquals(false, valid);
     }
     
     @Test
@@ -90,7 +90,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(false, valid);
+        assertEquals(false, valid);
     }
     
     @Test
@@ -108,7 +108,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(false, valid);
+        assertEquals(false, valid);
     }
     
     @Test
@@ -124,6 +124,6 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        Assert.assertEquals(false, valid);
+        assertEquals(false, valid);
     }
 }

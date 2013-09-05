@@ -23,19 +23,19 @@ package org.jumpmind.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class FormatUtilsTest {
 
     @Test
     public void testReplaceTokens() {
-        Assert.assertEquals("test", FormatUtils.replaceTokens("test", null, true));
-        Assert.assertEquals("test", FormatUtils.replaceTokens("test", new HashMap<String, String>(), true));
+        assertEquals("test", FormatUtils.replaceTokens("test", null, true));
+        assertEquals("test", FormatUtils.replaceTokens("test", new HashMap<String, String>(), true));
         Map<String, String> params = new HashMap<String, String>();
         params.put("test", "1");
-        Assert.assertEquals("test1", FormatUtils.replaceTokens("test$(test)", params, true));
-        Assert.assertEquals("test0001", FormatUtils.replaceTokens("test$(test|%04d)", params, true));
+        assertEquals("test1", FormatUtils.replaceTokens("test$(test)", params, true));
+        assertEquals("test0001", FormatUtils.replaceTokens("test$(test|%04d)", params, true));
     }
     
     @Test
@@ -44,20 +44,20 @@ public class FormatUtilsTest {
         String afterSql = "insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '2.0', null, null, XXXX, null, 0, 0, '00000', 'engine')";
         Map<String,String> replacementTokens = new HashMap<String, String>();
         replacementTokens.put("current_timestamp", "XXXX");
-        Assert.assertEquals(afterSql, FormatUtils.replaceTokens(beforeSql, replacementTokens, false));
+        assertEquals(afterSql, FormatUtils.replaceTokens(beforeSql, replacementTokens, false));
         
     }
     
     @Test
     public void testIsWildcardMatch() {
-        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_1", "TEST_*"));
-        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_2", "TEST_*"));
-        Assert.assertTrue(FormatUtils.isWildCardMatch("TEST_TEST_TEST", "TEST_*"));
-        Assert.assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH", "TEST_*"));
-        Assert.assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "TEST_*"));
-        Assert.assertTrue(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "*TEST*"));
-        Assert.assertFalse(FormatUtils.isWildCardMatch("B_A", "*A*B"));
-        Assert.assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));        
-        Assert.assertFalse(FormatUtils.isWildCardMatch("TEST_NO_MATCH", "TEST_*,!TEST_NO_MATCH"));
+        assertTrue(FormatUtils.isWildCardMatch("TEST_1", "TEST_*"));
+        assertTrue(FormatUtils.isWildCardMatch("TEST_2", "TEST_*"));
+        assertTrue(FormatUtils.isWildCardMatch("TEST_TEST_TEST", "TEST_*"));
+        assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH", "TEST_*"));
+        assertFalse(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "TEST_*"));
+        assertTrue(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "*TEST*"));
+        assertFalse(FormatUtils.isWildCardMatch("B_A", "*A*B"));
+        assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));        
+        assertFalse(FormatUtils.isWildCardMatch("TEST_NO_MATCH", "TEST_*,!TEST_NO_MATCH"));
     }
 }

@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.util;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.model.Node;
@@ -51,7 +51,7 @@ public class DefaultNodeIdCreatorTest {
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.selectNodeId(node, null, null);
-        Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class DefaultNodeIdCreatorTest {
         node.setExternalId(EXPECTED_NODE_ID);
         node.setNodeId(EXPECTED_NODE_ID);
         String selectedNodeId = generator.selectNodeId(node, null, null);
-        Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class DefaultNodeIdCreatorTest {
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.generateNodeId(node, null, null);
-        Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class DefaultNodeIdCreatorTest {
         Node node = new Node();
         node.setExternalId("100");
         String selectedNodeId = generator.generateNodeId(node, null, null);
-        Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class DefaultNodeIdCreatorTest {
         node.setExternalId("100");
         try {
             generator.generateNodeId(node, null, null);
-            Assert.fail("Should have received exception");
+            fail("Should have received exception");
         } catch (Exception e) {
             // Expected
         }
@@ -124,7 +124,7 @@ public class DefaultNodeIdCreatorTest {
         node.setExternalId(EXPECTED_NODE_ID);
         node.setNodeId(EXPECTED_NODE_ID);
         String selectedNodeId = generator.generateNodeId(node, null, null);
-        Assert.assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
 
 }

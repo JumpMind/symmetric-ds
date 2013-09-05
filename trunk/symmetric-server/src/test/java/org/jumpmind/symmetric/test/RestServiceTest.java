@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.web.rest.model.BatchResults;
 import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
 import org.jumpmind.util.FormatUtils;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 public class RestServiceTest extends AbstractTest {
 
@@ -75,35 +75,35 @@ public class RestServiceTest extends AbstractTest {
         parameterService.saveParameter(ParameterConstants.REST_API_ENABLED, Boolean.TRUE,
                 "unit_test");
 
-        Assert.assertNotNull("Could not find the rest service in the application context",
+        assertNotNull("Could not find the rest service in the application context",
                 restService);
 
         List<Node> nodes = nodeService.findAllNodes();
 
-        Assert.assertEquals("Expected there to only be one node registered", 1, nodes.size());
-        Assert.assertEquals("The only node we expected to be registered is a server node",
+        assertEquals("Expected there to only be one node registered", 1, nodes.size());
+        assertEquals("The only node we expected to be registered is a server node",
                 "server", nodes.get(0).getNodeGroupId());
 
         RegistrationInfo registrationInfo = restService.postRegisterNode("client", "client",
                 DatabaseNamesConstants.SQLITE, "3.0", "hostName");
 
-        Assert.assertNotNull("Registration should have returned a result object", registrationInfo);
-        Assert.assertFalse("Registration should not have been open",
+        assertNotNull("Registration should have returned a result object", registrationInfo);
+        assertFalse("Registration should not have been open",
                 registrationInfo.isRegistered());
-        Assert.assertEquals("Expected there to only be one node registered", 1, nodes.size());
+        assertEquals("Expected there to only be one node registered", 1, nodes.size());
 
         engine.openRegistration("client", "client");
 
         registrationInfo = restService.postRegisterNode("client", "client",
                 DatabaseNamesConstants.SQLITE, "3.0", "hostName");
 
-        Assert.assertNotNull("Registration should have returned a result object", registrationInfo);
-        Assert.assertTrue("Registration should have been open", registrationInfo.isRegistered());
-        Assert.assertEquals("client", registrationInfo.getNodeId());
+        assertNotNull("Registration should have returned a result object", registrationInfo);
+        assertTrue("Registration should have been open", registrationInfo.isRegistered());
+        assertEquals("client", registrationInfo.getNodeId());
 
         try {
             restService.getPullData(registrationInfo.getNodeId(), "wrong password", false, false, true, null);
-            Assert.fail("We should have received an exception");
+            fail("We should have received an exception");
         } catch (NotAllowedException ex) {
         }
 
@@ -117,23 +117,23 @@ public class RestServiceTest extends AbstractTest {
         
         results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(1, results.getNbrBatches());
-        Assert.assertEquals(4, results.getBatches().get(0).getBatchId());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(1, results.getNbrBatches());
+        assertEquals(4, results.getBatches().get(0).getBatchId());
         
         log.info(results.getBatches().get(0).getSqlStatements().get(0));
         
         // pull a second time without acking.  should get the same results
         results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, false, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(1, results.getNbrBatches());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(1, results.getNbrBatches());
         
         // test that when we don't request jdbc timestamp format sql statements come back in that format
-        Assert.assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("{ts '"));
+        assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("{ts '"));
         
         // make sure we have no delimited identifiers
-        Assert.assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("\""));
+        assertFalse(results.getBatches().get(0).getSqlStatements().get(0).contains("\""));
         
         engine.getSqlTemplate().update("update a set notes=? where id=?", "changed", 1);
         engine.getSqlTemplate().update("update a set notes=? where id=?", "changed again", 1);
@@ -142,17 +142,17 @@ public class RestServiceTest extends AbstractTest {
         
         results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), true, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(2, results.getNbrBatches());
-        Assert.assertNotSame(results.getBatches().get(1).getBatchId(), results.getBatches().get(0).getBatchId());
-        Assert.assertEquals(2, results.getBatches().get(1).getSqlStatements().size());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(2, results.getNbrBatches());
+        assertNotSame(results.getBatches().get(1).getBatchId(), results.getBatches().get(0).getBatchId());
+        assertEquals(2, results.getBatches().get(1).getSqlStatements().size());
         
         // test that when we request jdbc timestamp format sql statements come back in that format
         String testSql = results.getBatches().get(1).getSqlStatements().get(0);
-        Assert.assertTrue("The following sql was supposed to contain '{ts '" + testSql, testSql.contains("{ts '"));
+        assertTrue("The following sql was supposed to contain '{ts '" + testSql, testSql.contains("{ts '"));
         
         // make sure we have delimited identifiers
-        Assert.assertTrue(results.getBatches().get(1).getSqlStatements().get(0).contains("\""));
+        assertTrue(results.getBatches().get(1).getSqlStatements().get(0).contains("\""));
         log.info(results.getBatches().get(1).getSqlStatements().get(0));
         log.info(results.getBatches().get(1).getSqlStatements().get(1));
         
@@ -168,13 +168,13 @@ public class RestServiceTest extends AbstractTest {
         
         results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, true, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(1, results.getNbrBatches());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(1, results.getNbrBatches());
         List<String> sqls = results.getBatches().get(0).getSqlStatements();
-        Assert.assertEquals(5, sqls.size());
+        assertEquals(5, sqls.size());
         for (String sql : sqls) {
             log.info(sql);
-            Assert.assertTrue(sql, sql.toLowerCase().startsWith("insert or replace"));
+            assertTrue(sql, sql.toLowerCase().startsWith("insert or replace"));
         }
                 
         ackBatches(restService, registrationInfo, results, buildBatchResults(registrationInfo, results));
@@ -190,12 +190,12 @@ public class RestServiceTest extends AbstractTest {
         
         results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(3, results.getNbrBatches());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(3, results.getNbrBatches());
         List<Batch> batches = results.getBatches();
         for (Batch batch : batches) {
-            Assert.assertEquals(1, batch.getSqlStatements().size());
-            Assert.assertTrue(batch.getSqlStatements().get(0).toLowerCase().startsWith("delete from"));
+            assertEquals(1, batch.getSqlStatements().size());
+            assertTrue(batch.getSqlStatements().get(0).toLowerCase().startsWith("delete from"));
         }
         
         ackBatches(restService, registrationInfo, results, buildBatchResults(registrationInfo, results));
@@ -219,8 +219,8 @@ public class RestServiceTest extends AbstractTest {
     protected void assertPullReturnsNoData(RestService restService, RegistrationInfo registrationInfo) {
         PullDataResults results = restService.getPullData("server", registrationInfo.getNodeId(),
                 registrationInfo.getNodePassword(), false, false, true, null);
-        Assert.assertNotNull("Should have a non null results object", results);
-        Assert.assertEquals(0, results.getNbrBatches());
+        assertNotNull("Should have a non null results object", results);
+        assertEquals(0, results.getNbrBatches());
         
     }
 

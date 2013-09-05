@@ -34,7 +34,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -83,13 +83,13 @@ public class DatabasePlatformTest extends AbstractDbTest {
         
         Table tableFromDatabase = dropCreateAndThenReadTable(table);
         
-        Assert.assertNotNull(tableFromDatabase);
-        Assert.assertEquals(2, tableFromDatabase.getColumnCount());
+        assertNotNull(tableFromDatabase);
+        assertEquals(2, tableFromDatabase.getColumnCount());
         
         ISqlTemplate template = platform.getSqlTemplate();
         String delimiter = platform.getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-        Assert.assertEquals(1, template.update(String.format("insert into %s%s%s values(?,?)", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
+        assertEquals(1, template.update(String.format("insert into %s%s%s values(?,?)", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
         
         table.addColumn(new Column("ID2", true));
         table.getColumnWithName("ID2").setTypeCode(Types.VARCHAR);
@@ -105,16 +105,16 @@ public class DatabasePlatformTest extends AbstractDbTest {
         // alter to add two columns that will cause a table rebuild
         platform.alterTables(false, table);
         tableFromDatabase = platform.getTableFromCache(table.getName(), true);
-        Assert.assertNotNull(tableFromDatabase);
-        Assert.assertEquals(4, tableFromDatabase.getColumnCount());
-        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
+        assertNotNull(tableFromDatabase);
+        assertEquals(4, tableFromDatabase.getColumnCount());
+        assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
         // alter to remove two columns that will cause a table rebuild
         platform.alterTables(false, origTable);
         tableFromDatabase = platform.getTableFromCache(origTable.getName(), true);
-        Assert.assertNotNull(tableFromDatabase);
-        Assert.assertEquals(2, tableFromDatabase.getColumnCount());
-        Assert.assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
+        assertNotNull(tableFromDatabase);
+        assertEquals(2, tableFromDatabase.getColumnCount());
+        assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
     }
     
@@ -137,7 +137,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
         platform.alterTables(false, table);
         Table tableFromDatabase = platform.getTableFromCache(table.getName(), true);
         
-        Assert.assertEquals(DEFAULT_VALUE, tableFromDatabase.getColumnWithName("NOTES").getDefaultValue());
+        assertEquals(DEFAULT_VALUE, tableFromDatabase.getColumnWithName("NOTES").getDefaultValue());
     }
         
     @Test 
@@ -153,7 +153,7 @@ public class DatabasePlatformTest extends AbstractDbTest {
         
         Table tableFromDatabase = dropCreateAndThenReadTable(table);
         
-        Assert.assertEquals(table.getColumnWithName("NOTES").getDefaultValue(), 
+        assertEquals(table.getColumnWithName("NOTES").getDefaultValue(), 
                 tableFromDatabase.getColumnWithName("NOTES").getDefaultValue());
         
     }
@@ -186,9 +186,9 @@ public class DatabasePlatformTest extends AbstractDbTest {
 
             Table tableFromDatabase = dropCreateAndThenReadTable(table);
 
-            Assert.assertNotNull(tableFromDatabase);
+            assertNotNull(tableFromDatabase);
             
-            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
+            assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
 
             String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
             insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
@@ -202,20 +202,20 @@ public class DatabasePlatformTest extends AbstractDbTest {
             IDdlBuilder builder = platform.getDdlBuilder();
             String alterSql = builder.alterTable(tableFromDatabase, table);
 
-            Assert.assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
+            assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
 
             new SqlScript(alterSql, platform.getSqlTemplate(), true, platform.getSqlScriptReplacementTokens()).execute(true);
 
             tableFromDatabase = platform.getTableFromCache(table.getName(), true);
 
-            Assert.assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
-            Assert.assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
+            assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
+            assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
 
             long id2 = platform.getSqlTemplate()
                     .insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
                             new Object[] { "test" }, new int[] { Types.VARCHAR });
 
-            Assert.assertNotSame(id1, id2);
+            assertNotSame(id1, id2);
         }
     }
     
@@ -235,8 +235,8 @@ public class DatabasePlatformTest extends AbstractDbTest {
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
                 false);
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
-        Assert.assertNotNull("Could not find " + SIMPLE_TABLE, table);
-        Assert.assertEquals("The id column was not read in as an autoincrement column", true, table
+        assertNotNull("Could not find " + SIMPLE_TABLE, table);
+        assertEquals("The id column was not read in as an autoincrement column", true, table
                 .getColumnWithName("id").isAutoIncrement());
     }
     
@@ -249,19 +249,19 @@ public class DatabasePlatformTest extends AbstractDbTest {
            
            Table fromDatabase = platform.readTableFromDatabase(null, null, table.getName());
            
-           Assert.assertNotNull(fromDatabase);
-           Assert.assertEquals(table.getName(), fromDatabase.getName());
-           Assert.assertEquals(Types.DECIMAL, fromDatabase.getColumn(0).getMappedTypeCode());
+           assertNotNull(fromDatabase);
+           assertEquals(table.getName(), fromDatabase.getName());
+           assertEquals(Types.DECIMAL, fromDatabase.getColumn(0).getMappedTypeCode());
            
-           Assert.assertEquals(DatabaseXmlUtil.toXml(table), DatabaseXmlUtil.toXml(fromDatabase));
+           assertEquals(DatabaseXmlUtil.toXml(table), DatabaseXmlUtil.toXml(fromDatabase));
         }
     }
 
     @Test
     public void testReadTestUppercase() throws Exception {
         Table table = platform.getTableFromCache(UPPERCASE_TABLE, true);
-        Assert.assertNotNull("Could not find " + UPPERCASE_TABLE, table);
-        Assert.assertEquals("The id column was not read in as an autoincrement column", true, table
+        assertNotNull("Could not find " + UPPERCASE_TABLE, table);
+        assertEquals("The id column was not read in as an autoincrement column", true, table
                 .getColumnWithName("id").isAutoIncrement());
     }
 
