@@ -18,6 +18,12 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.6 (Released 2013-09-05)
+=========================================
+- 0001356: [Bug] money field type with PostgreSQL (chenson) - closed.
+- 0001410: [Bug] When USE_CAPTURE_OLD_DATA is not set, the database writer will not update non null columns to null. (abrougher) - closed.
+- 0001409: [Bug] The database uninstall feature does not remove the sym_ H2 trigger tables. (abrougher) - closed.
+
 SymmetricDS - 3.5.5 (Released 2013-08-27) 
 =========================================
 - 0001381: [Bug] transform_table.target_table_name should be optional according the documentation. the transform code requires that is be set (chenson) - closed.
