@@ -457,7 +457,7 @@ insert into sym_data (
 
           <programlisting><![CDATA[http://localhost:31416/]]></programlisting>
 
-          In order to use JConsole, you must enable the JVM.  You can edit the startup scripts to set the following system
+          In order to use jconsole, you must enable JMX remote management in the JVM. You can edit the startup scripts to set the following system
           parameters.
 
           <programlisting><![CDATA[
