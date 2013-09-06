@@ -30,6 +30,8 @@
         <test.root>h2</test.root>
         <test.client>h2</test.client>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyMMdd_HHmm</maven.build.timestamp.format>
+        <project.build.timestamp>${maven.build.timestamp}</project.build.timestamp>
     </properties>
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
@@ -461,18 +463,18 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-util</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -484,7 +486,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -495,13 +497,13 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-jdbc</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -513,7 +515,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -524,59 +526,59 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-csv</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-oracle</artifactId>
-                <version>3.5.7-SNAPSHOT</version>                
+                <version>3.5.6-SNAPSHOT</version>                
             </dependency>        
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-postgres</artifactId>
-                <version>3.5.7-SNAPSHOT</version>                
+                <version>3.5.6-SNAPSHOT</version>                
             </dependency>        
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-mssql</artifactId>
-                <version>3.5.7-SNAPSHOT</version>                
+                <version>3.5.6-SNAPSHOT</version>                
             </dependency>        
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-ftp</artifactId>
-                <version>3.5.7-SNAPSHOT</version>                
+                <version>3.5.6-SNAPSHOT</version>                
             </dependency>                
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
                 <type>test-jar</type>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-client</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-server</artifactId>
-                <version>3.5.7-SNAPSHOT</version>
+                <version>3.5.6-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
