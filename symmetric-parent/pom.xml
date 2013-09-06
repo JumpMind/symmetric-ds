@@ -30,8 +30,8 @@
         <test.root>h2</test.root>
         <test.client>h2</test.client>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.build.timestamp.format>yyMMdd_HHmm</maven.build.timestamp.format>
-        <project.build.timestamp>${maven.build.timestamp}</project.build.timestamp>
+        <BUILD_NUMBER>0</BUILD_NUMBER>
+        <JOB_NAME>DEV</JOB_NAME>
     </properties>
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
@@ -401,6 +401,16 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Project-Group>${project.groupId}</Project-Group>
+                            <Project-Artifact>${project.artifactId}</Project-Artifact>                            
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                            <Build-Version>${project.version}</Build-Version>
+                            <Build-Number>${BUILD_NUMBER}</Build-Number>
+                            <Build-Job>${JOB_NAME}</Build-Job>
+                        </manifestEntries>
+                    </archive>                
                     <outputDirectory>${basedir}/target</outputDirectory>
                 </configuration>
             </plugin>
