@@ -30,8 +30,8 @@ final public class Version {
 
     private static AbstractVersion version = new AbstractVersion() {
         @Override
-        protected String getPropertiesFileLocation() {
-            return "/META-INF/maven/org.jumpmind.symmetric/symmetric-core/pom.properties";
+        protected String getArtifactName() {
+            return "symmetric-core";
         }
     };
 

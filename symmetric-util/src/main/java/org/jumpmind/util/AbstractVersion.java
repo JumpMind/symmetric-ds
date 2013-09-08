@@ -22,8 +22,12 @@ package org.jumpmind.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -43,20 +47,34 @@ abstract public class AbstractVersion {
 
     private String version = null;
 
-    abstract protected String getPropertiesFileLocation();
+    abstract protected String getArtifactName();
+
+    protected Attributes findManifestAttributes() {
+        InputStream is = null;
+        try {
+            Enumeration<URL> resources = getClass().getClassLoader().getResources(
+                    "META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                is = resources.nextElement().openStream();
+                Manifest manifest = new Manifest(is);
+                Attributes attributes = manifest.getMainAttributes();
+                if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
+                    return attributes;
+                }
+            }
+        } catch (IOException e) {
+            // nothing to do, really
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+        return null;
+    }
 
     public String version() {
         if (version == null) {
-            InputStream is = AbstractVersion.class.getResourceAsStream(getPropertiesFileLocation());
-            if (is != null) {
-                Properties p = new Properties();
-                try {
-                    p.load(is);
-                    version = p.getProperty("version");
-                } catch (IOException e) {
-                    version = "unknown";
-                    log.warn(e, e);
-                }
+            Attributes attributes = findManifestAttributes();
+            if (attributes != null) {
+                version = attributes.getValue("Build-Version");
             } else {
                 version = "development";
             }
