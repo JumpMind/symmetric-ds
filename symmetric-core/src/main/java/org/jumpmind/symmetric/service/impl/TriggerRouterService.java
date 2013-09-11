@@ -766,33 +766,42 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getTriggerRoutersByChannel(nodeGroupId, false);
     }
 
-    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId, boolean refreshCache) {
+    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId,
+            boolean refreshCache) {
         long triggerRouterCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
-
-        if (triggerRouterCacheByChannel == null
+        Map<String, List<TriggerRouter>> testValue = triggerRouterCacheByChannel;
+        if (testValue == null
                 || refreshCache
                 || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
-
             synchronized (cacheLock) {
-                this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
-
-                sqlTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"), new TriggerRouterMapper() {
-                    @Override
-                    public TriggerRouter mapRow(Row rs) {
-                        TriggerRouter tr = super.mapRow(rs);
-                        List<TriggerRouter> list = triggerRouterCacheByChannel.get(tr.getTrigger().getChannelId());
-                        if (list == null) {
-                            list = new ArrayList<TriggerRouter>();
-                            triggerRouterCacheByChannel.put(tr.getTrigger().getChannelId(), list);
-                        }
-                        list.add(tr);
-                        return tr;
-                    };
-                }, nodeGroupId, nodeGroupId);
+                testValue = triggerRouterCacheByChannel;
+                if (testValue == null || refreshCache
+                        || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
+                    final  Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
+                    this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
+                    sqlTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"),
+                            new TriggerRouterMapper() {
+                                @Override
+                                public TriggerRouter mapRow(Row rs) {
+                                    TriggerRouter tr = super.mapRow(rs);
+                                    List<TriggerRouter> list = newValue.get(tr
+                                            .getTrigger().getChannelId());
+                                    if (list == null) {
+                                        list = new ArrayList<TriggerRouter>();
+                                        newValue.put(tr.getTrigger()
+                                                .getChannelId(), list);
+                                    }
+                                    list.add(tr);
+                                    return tr;
+                                };
+                            }, nodeGroupId, nodeGroupId);
+                    triggerRouterCacheByChannel = newValue;
+                    testValue = newValue;
+                }
             }
         }
-        return triggerRouterCacheByChannel;
+        return testValue;
     }
 
     public void insert(TriggerHistory newHistRecord) {
