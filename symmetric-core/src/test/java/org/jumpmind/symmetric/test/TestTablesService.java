@@ -92,8 +92,7 @@ public class TestTablesService extends AbstractService {
         }
     }
 
-    public void assertTestBlobIsInDatabase(int id, String tableName, String expected,
-            String serverDatabaseName) {
+    public void assertTestBlobIsInDatabase(int id, String tableName, String expected) {
         if (symmetricDialect.isBlobSyncSupported()) {
             int rowCount = sqlTemplate.queryForInt("select count(*) from "
                     + tableName + " where test_id=?", id);
