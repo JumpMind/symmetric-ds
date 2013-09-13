@@ -179,12 +179,48 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                         .isInitialLoadEnabled());
 
         clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
-                THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
+                THIS_IS_A_TEST);
         
         clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
-                THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
+                THIS_IS_A_TEST);
         
     }
+    
+    @Test(timeout = 120000)
+    public void testLobSyncUsingStreaming() throws Exception {
+        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
+        if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
+            String rowData = getServer()
+                    .getSqlTemplate()
+                    .queryForObject(
+                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                            String.class);
+            assertTrue("Did not find the id in the row data", rowData.contains("200"));
+            assertEquals("\"200\",,,,,,", rowData);
+            clientPull();
+            clientTestService.assertTestBlobIsInDatabase(200, "test_use_stream_lob", text);
+        }
+    }
+
+    @Test(timeout = 120000)
+    public void testLobSyncUsingCapture() throws Exception {
+        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
+        if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
+            String rowData = getServer()
+                    .getSqlTemplate()
+                    .queryForObject(
+                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                            String.class);
+            assertTrue("Did not find the id in the row data", rowData.contains("200"));
+            clientPull();
+            clientTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", text);
+
+            String updateText = "The text was updated";
+            serverTestService.updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
+            clientPull();
+            serverTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", updateText);
+        }
+    }    
 
     @Test(timeout = 120000)
     public void syncToClient() {
@@ -1028,7 +1064,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     protected void testAutoConfigureTablesAfterAlreadyCreated(ISymmetricEngine engine) {
         ISymmetricDialect dialect = engine.getSymmetricDialect();
         assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());
-    }
+    }   
+    
 
     // @Test(timeout = 120000)
     // public void testSyncShellCommandError() throws Exception {
@@ -1286,46 +1323,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     // oldMaxRowsBeforeCommit);
     // }
     //
-    // @Test(timeout = 120000)
-    // public void testLobSyncUsingStreaming() throws Exception {
-    // String text =
-    // "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-    // if (insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
-    // String rowData = getServer().getSqlTemplate()
-    // .queryForObject(
-    // "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
-    // String.class);
-    // assertTrue("Did not find the id in the row data",
-    // rowData.contains("200"));
-    // assertEquals("\"200\",,,,,,", rowData);
-    // clientPull();
-    // assertTestUseStreamBlobInClientDatabase(200, "test_use_stream_lob",
-    // text);
-    // }
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testLobSyncUsingCapture() throws Exception {
-    // String text =
-    // "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-    // if (insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
-    // String rowData = getServer().getSqlTemplate()
-    // .queryForObject(
-    // "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
-    // String.class);
-    // assertTrue("Did not find the id in the row data",
-    // rowData.contains("200"));
-    // clientPull();
-    // assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob",
-    // text);
-    //
-    // String updateText = "The text was updated";
-    // updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
-    // clientPull();
-    // assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob",
-    // updateText);
-    // }
-    // }
     //
     // @Test(timeout = 120000)
     // public void testSyncDisabled() {
