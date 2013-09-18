@@ -230,11 +230,16 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
                         table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
             }
 
-            String tableName = table.getFullyQualifiedTableName();
-            if (isIgnoreCase()) {
-                tableName = tableName.toUpperCase();
+            List<LoadFilter> tableSpecificLoadFilters = new ArrayList<LoadFilter>();
+            List<LoadFilter> filters = loadFilters.get(table.getFullyQualifiedTableName());
+            if (filters != null) {
+                tableSpecificLoadFilters.addAll(filters);
             }
-            List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
+            filters = loadFilters.get(table.getName());
+            if (filters != null) {
+                tableSpecificLoadFilters.addAll(filters);
+            }
+
             int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0)
                     + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters.size() : 0);
 
