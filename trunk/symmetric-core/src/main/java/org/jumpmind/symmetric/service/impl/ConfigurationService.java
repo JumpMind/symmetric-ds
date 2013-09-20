@@ -300,7 +300,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                                 .getBoolean("use_row_data_to_route"));
                                         nodeChannel.setUsePkDataToRoute(row
                                                 .getBoolean("use_pk_data_to_route"));
-                                        nodeChannel.setContainsBigLobs(row
+                                        nodeChannel.setContainsBigLob(row
                                                 .getBoolean("contains_big_lob"));
                                         nodeChannel.setBatchAlgorithm(row
                                                 .getString("batch_algorithm"));

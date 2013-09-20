@@ -187,7 +187,7 @@ public class NodeChannel implements Serializable {
         channel.setExtractPeriodMillis(extractPeriodMillis);
     }
 
-    public void setContainsBigLobs(boolean containsBigLobs) {
+    public void setContainsBigLob(boolean containsBigLobs) {
         this.channel.setContainsBigLob(containsBigLobs);
     }
 
