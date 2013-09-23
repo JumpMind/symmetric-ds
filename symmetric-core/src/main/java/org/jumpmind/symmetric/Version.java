@@ -59,6 +59,8 @@ final public class Version {
         return Version.version.isOlderMinorVersion(version);
     }
 
-
+    public static int getBuildTime() {
+        return version.getBuildTime();
+    }
 
 }

@@ -46,6 +46,8 @@ abstract public class AbstractVersion {
     public static final int PATCH_INDEX = 2;
 
     private String version = null;
+    
+    private int buildTime = -1;
 
     abstract protected String getArtifactName();
 
@@ -80,6 +82,18 @@ abstract public class AbstractVersion {
             }
         }
         return version;
+    }
+
+    public int getBuildTime() {
+        if (buildTime == -1) {
+            Attributes attributes = findManifestAttributes();
+            try {
+                buildTime = Integer.parseInt(attributes.getValue("Build-Time").split("-")[0]);
+            } catch (Exception e) {
+                buildTime = 0;
+            }
+        }
+        return buildTime;
     }
 
     public String versionWithUnderscores() {
