@@ -18,6 +18,10 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.8 (Released 2013-09-24) 
+=========================================
+- 0001426: [Bug] Postgres datetime with timezone not formatted correctly when timezone_hour offset = 0 and timezone_minute offset < 0 (gwilmer) - closed.
+
 SymmetricDS - 3.5.7 (Released 2013-09-14) 
 =========================================
 - 0001413: [Bug] SymmetricDS not returning the fully qualified hostname (abrougher) - closed.
