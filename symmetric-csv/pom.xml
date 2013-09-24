@@ -20,9 +20,8 @@
 
 	<licenses>
 		<license>
-			<name>LGPL</name>
-			<url>http://www.gnu.org/licenses/lgpl.txt</url>
-			<comments>A business-friendly OSS license</comments>
+			<name>GPL</name>
+			<url>http://www.gnu.org/licenses/gpl.txt</url>
 		</license>
 	</licenses>
 
