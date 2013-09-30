@@ -102,6 +102,13 @@ public class FileSyncTest extends AbstractTest {
         File allFile1Target = new File(allClntTargetDir, allFile1.getName());
         assertTrue(allFile1Target.exists());
         assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target));
+        
+        // test update
+        FileUtils.write(allFile1, file1Contents, true);
+
+        pullFiles();
+        
+        assertEquals(file1Contents + file1Contents, FileUtils.readFileToString(allFile1Target));
 
         allFile1.delete();
 

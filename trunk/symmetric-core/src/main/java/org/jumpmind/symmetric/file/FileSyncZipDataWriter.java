@@ -199,12 +199,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     command.append("  if (!targetBaseDirFile.exists()) {\n");
                                     command.append("    targetBaseDirFile.mkdirs();\n");
                                     command.append("  }\n");
-                                    command.append("  mv (batchDir + \"/\"");
+                                    command.append("  org.apache.commons.io.FileUtils.copyFile(new java.io.File(batchDir + \"/\"");
                                     if (!snapshot.getRelativeDir().equals(".")) {
                                         command.append(" + sourceFilePath + \"/\"");
                                     }
                                     command.append(" + sourceFileName");
-                                    command.append(", ");
+                                    command.append("), new java.io.File(");
                                     StringBuilder targetFile = new StringBuilder(
                                             "targetBaseDir + \"/");
                                     if (!snapshot.getRelativeDir().equals(".")) {
@@ -214,7 +214,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     }
                                     targetFile.append("\" + targetFileName");
                                     command.append(targetFile);
-                                    command.append(");\n");
+                                    command.append("), true);\n");
                                     command.append("  fileList.put(").append(targetFile)
                                             .append(",\"");
                                     command.append(eventType.getCode());
