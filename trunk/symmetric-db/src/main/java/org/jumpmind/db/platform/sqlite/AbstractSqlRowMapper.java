@@ -25,19 +25,18 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 abstract public class AbstractSqlRowMapper<T> implements ISqlRowMapper<T> {
 
     protected boolean booleanValue(Object v) {
-        if (v instanceof Integer) {
-            return ((Integer) v).intValue() == 1;
-        }
-        return v != null && (v.equals("1") || v.equals("99"));
+        return intValue(v) > 0;
     }
 
     protected int intValue(Object v) {
         if (v != null) {
-            return Integer.parseInt(v.toString());
-        } else {
-            return 0;
-        }
+            try {
+                return Integer.parseInt(v.toString());
+            } catch (NumberFormatException e) {
 
+            }
+        }
+        return 0;
     }
 
 }
