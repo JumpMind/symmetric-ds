@@ -93,13 +93,14 @@ public class FileSyncTest extends AbstractTest {
 
     protected void testPullAllFromServerToClient(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-        File allFile1 = new File(allSvrSourceDir, "1.txt");
+        File allFile1 = new File(allSvrSourceDir, "subdir/1.txt");
+        allFile1.getParentFile().mkdirs();
         String file1Contents = "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz";
         FileUtils.write(allFile1, file1Contents);
 
         pullFiles();
 
-        File allFile1Target = new File(allClntTargetDir, allFile1.getName());
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
         assertTrue(allFile1Target.exists());
         assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target));
         
