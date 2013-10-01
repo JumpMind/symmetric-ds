@@ -199,12 +199,14 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     command.append("  if (!targetBaseDirFile.exists()) {\n");
                                     command.append("    targetBaseDirFile.mkdirs();\n");
                                     command.append("  }\n");
-                                    command.append("  org.apache.commons.io.FileUtils.copyFile(new java.io.File(batchDir + \"/\"");
+                                    command.append("  java.io.File sourceFile = new java.io.File(batchDir + \"/\""); 
                                     if (!snapshot.getRelativeDir().equals(".")) {
                                         command.append(" + sourceFilePath + \"/\"");
                                     }
                                     command.append(" + sourceFileName");
-                                    command.append("), new java.io.File(");
+                                    command.append(");\n");
+                                    
+                                    command.append("  java.io.File targetFile = new java.io.File(");
                                     StringBuilder targetFile = new StringBuilder(
                                             "targetBaseDir + \"/");
                                     if (!snapshot.getRelativeDir().equals(".")) {
@@ -214,7 +216,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     }
                                     targetFile.append("\" + targetFileName");
                                     command.append(targetFile);
-                                    command.append("), true);\n");
+                                    command.append(");\n");                                    
+                                    command.append("  if (sourceFile.isDirectory()) {\n");
+                                    command.append("    org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");                                    
+                                    command.append("  } else {\n");
+                                    command.append("    org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");                                    
+                                    command.append("  }\n");
                                     command.append("  fileList.put(").append(targetFile)
                                             .append(",\"");
                                     command.append(eventType.getCode());
