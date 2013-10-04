@@ -75,7 +75,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }        
 
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         if (this.functionTemplateKeySuffix.equals(PRE_5_1_23)) {
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
@@ -120,7 +120,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);

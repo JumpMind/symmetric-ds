@@ -69,7 +69,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     " + 
@@ -105,7 +105,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);

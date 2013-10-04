@@ -59,12 +59,12 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
 
     }
 
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
 
     }
 

@@ -545,6 +545,24 @@ public class Database implements Serializable, Cloneable {
     public void resetTableIndexCache() {
         tableIndexCache.clear();
     }
+    
+    public void removeAllTablesExcept(String... tableNames) {
+        Iterator<Table> tableIterator = this.tables.iterator();
+        while(tableIterator.hasNext()) {
+            Table table = tableIterator.next();
+            boolean foundTable = false;
+            for (String tableName : tableNames) {
+                if (tableName.equals(table.getName())) {
+                    foundTable = true;
+                    break;
+                }
+            }
+            
+            if (!foundTable) {
+                tableIterator.remove();
+            }
+        }
+    }
 
     /**
      * {@inheritDoc}

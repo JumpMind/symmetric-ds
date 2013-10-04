@@ -34,7 +34,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
     }
 
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
           String sql = "  create function dbo.$(functionName) (\n" + 

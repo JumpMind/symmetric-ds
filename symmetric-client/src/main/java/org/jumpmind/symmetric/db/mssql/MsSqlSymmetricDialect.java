@@ -75,7 +75,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
@@ -113,7 +113,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);

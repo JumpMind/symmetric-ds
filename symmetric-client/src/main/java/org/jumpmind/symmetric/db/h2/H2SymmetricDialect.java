@@ -91,7 +91,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
@@ -101,7 +101,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
