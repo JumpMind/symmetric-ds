@@ -160,6 +160,8 @@ public interface ITriggerRouterService {
     
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
     
+    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force, boolean verifyTrigger);
+    
     public void syncTriggers(Table table, boolean genAlways);
     
     public void dropTriggers(TriggerHistory history);
