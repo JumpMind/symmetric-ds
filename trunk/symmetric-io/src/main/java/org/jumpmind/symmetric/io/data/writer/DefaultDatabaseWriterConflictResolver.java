@@ -60,77 +60,84 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
         switch (originalEventType) {
             case INSERT:
-                switch (conflict.getResolveType()) {
-                    case FALLBACK:
-                        performFallbackToUpdate(writer, data, conflict, true);
-                        break;
-                    case NEWER_WINS:
-                        if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
-                                conflict, writer, data))
-                                || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
-                                        conflict, writer, data))) {
+                if (resolvedData!=null) {
+                    attemptToResolve(resolvedData, data, writer, conflict);
+                } else {
+                    switch (conflict.getResolveType()) {
+                        case FALLBACK:
                             performFallbackToUpdate(writer, data, conflict, true);
-                        } else {
-                            if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();
+                            break;
+                        case NEWER_WINS:
+                            if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
+                                    conflict, writer, data))
+                                    || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
+                                            conflict, writer, data))) {
+                                performFallbackToUpdate(writer, data, conflict, true);
+                            } else {
+                                if (!conflict.isResolveRowOnly()) {
+                                    throw new IgnoreBatchException();
+                                }
                             }
-                        }
-                        break;
-                    case IGNORE:
-                        ignore(writer, conflict);
-                        break;
-                    case MANUAL:
-                    default:
-                        attemptToResolve(resolvedData, data, writer, conflict);
-                        break;
-
+                            break;
+                        case IGNORE:
+                            ignore(writer, conflict);
+                            break;
+                        case MANUAL:
+                        default:
+                            attemptToResolve(resolvedData, data, writer, conflict);
+                            break;
+    
+                    }
                 }
                 break;
-
+                
             case UPDATE:
-                switch (conflict.getResolveType()) {
-                    case FALLBACK:
-                        if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
-                            CsvData withoutOldData =  data.copyWithoutOldData();
-                            try {
-                                // we already tried to update using the pk
-                                performFallbackToInsert(writer, withoutOldData, conflict, true);
-                            } catch (ConflictException ex) {
-                                performFallbackToUpdate(writer, withoutOldData, conflict, true);
+                if (resolvedData!=null) {
+                    attemptToResolve(resolvedData, data, writer, conflict);
+                } else {
+                    switch (conflict.getResolveType()) {
+                        case FALLBACK:
+                            if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
+                                CsvData withoutOldData =  data.copyWithoutOldData();
+                                try {
+                                    // we already tried to update using the pk
+                                    performFallbackToInsert(writer, withoutOldData, conflict, true);
+                                } catch (ConflictException ex) {
+                                    performFallbackToUpdate(writer, withoutOldData, conflict, true);
+                                }
+                            } else {
+                                try {
+                                    performFallbackToUpdate(writer, data, conflict, true);
+                                } catch (ConflictException ex) {
+                                    performFallbackToInsert(writer, data, conflict, true);
+                                }
                             }
-                        } else {
-                            try {
-                                performFallbackToUpdate(writer, data, conflict, true);
-                            } catch (ConflictException ex) {
-                                performFallbackToInsert(writer, data, conflict, true);
+                            break;
+                        case NEWER_WINS:
+                            if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
+                                    conflict, writer, data))
+                                    || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
+                                            conflict, writer, data))) {
+                                try {
+                                    performFallbackToUpdate(writer, data, conflict, false);
+                                } catch (ConflictException ex) {
+                                    performFallbackToInsert(writer, data, conflict, true);
+                                }
+    
+                            } else {
+                                if (!conflict.isResolveRowOnly()) {
+                                    throw new IgnoreBatchException();
+                                }
                             }
-                        }
-                        break;
-                    case NEWER_WINS:
-                        if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(
-                                conflict, writer, data))
-                                || (conflict.getDetectType() == DetectConflict.USE_VERSION && isVersionNewer(
-                                        conflict, writer, data))) {
-                            try {
-                                performFallbackToUpdate(writer, data, conflict, false);
-                            } catch (ConflictException ex) {
-                                performFallbackToInsert(writer, data, conflict, true);
-                            }
-
-                        } else {
-                            if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();
-                            }
-                        }
-                        break;
-                    case IGNORE:
-                        ignore(writer, conflict);
-                        break;
-                    case MANUAL:
-                    default:
-                        attemptToResolve(resolvedData, data, writer, conflict);
-                        break;
-
+                            break;
+                        case IGNORE:
+                            ignore(writer, conflict);
+                            break;
+                        case MANUAL:
+                        default:
+                            attemptToResolve(resolvedData, data, writer, conflict);
+                            break;
+                    }
                 }
                 break;
 
