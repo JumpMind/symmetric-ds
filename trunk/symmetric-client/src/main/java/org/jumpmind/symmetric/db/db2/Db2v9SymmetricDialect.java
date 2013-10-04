@@ -40,7 +40,7 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();

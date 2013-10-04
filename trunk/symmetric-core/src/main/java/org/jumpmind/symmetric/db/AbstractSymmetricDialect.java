@@ -199,9 +199,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
     
-    abstract protected void dropRequiredDatabaseObjects();
+    public abstract void dropRequiredDatabaseObjects();
     
-    abstract protected void createRequiredDatabaseObjects();
+    public abstract void createRequiredDatabaseObjects();
 
     abstract public BinaryEncoding getBinaryEncoding();
 
@@ -430,12 +430,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     /*
      * @return true if SQL was executed.
      */
-    public boolean createOrAlterTablesIfNecessary() {
+    public boolean createOrAlterTablesIfNecessary(String... tableNames) {
         try {            
             log.info("Checking if SymmetricDS tables need created or altered");
             
             Database modelFromXml = readSymmetricSchemaFromXml();
             Database modelFromDatabase = readSymmetricSchemaFromDatabase();
+
+            if (tableNames != null && tableNames.length > 0) {
+                tableNames = platform.alterCaseToMatchDatabaseDefaultCase(tableNames);
+                modelFromXml.removeAllTablesExcept(tableNames);
+                modelFromDatabase.removeAllTablesExcept(tableNames);
+            }
 
             IDdlBuilder builder = platform.getDdlBuilder();
             

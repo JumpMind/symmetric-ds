@@ -59,7 +59,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
 
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
@@ -108,7 +108,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);

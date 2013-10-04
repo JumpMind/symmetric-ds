@@ -58,7 +58,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
@@ -103,7 +103,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (installed(SQL_FUNCTION_INSTALLED, escape)) {
             uninstall(SQL_DROP_FUNCTION, escape);

@@ -606,6 +606,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
     
+    public String[] alterCaseToMatchDatabaseDefaultCase(String[] values) {
+        String[] newValues = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            newValues[i] = alterCaseToMatchDatabaseDefaultCase(values[i]);            
+        }
+        return newValues;
+    }
+    
     public String alterCaseToMatchDatabaseDefaultCase(String value) {
         if (StringUtils.isNotBlank(value)) {
             boolean storesUpperCase = isStoresUpperCaseIdentifiers();

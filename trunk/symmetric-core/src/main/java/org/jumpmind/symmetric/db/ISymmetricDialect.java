@@ -64,7 +64,11 @@ public interface ISymmetricDialect {
 
     public void dropTablesAndDatabaseObjects();
 
-    public boolean createOrAlterTablesIfNecessary();
+    public boolean createOrAlterTablesIfNecessary(String... tables);
+    
+    public void dropRequiredDatabaseObjects();
+    
+    public void createRequiredDatabaseObjects();    
 
     public IDatabasePlatform getPlatform();
 

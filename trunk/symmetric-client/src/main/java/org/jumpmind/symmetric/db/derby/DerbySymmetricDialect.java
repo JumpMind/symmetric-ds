@@ -51,7 +51,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
             String sql = "CREATE FUNCTION $(functionName)(STR VARCHAR(10000)) RETURNS                                                                                                                                            " + 
@@ -123,7 +123,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (installed(SQL_FUNCTION_INSTALLED, escape)) {
             uninstall(SQL_DROP_FUNCTION, escape);

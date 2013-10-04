@@ -60,7 +60,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
     	
         if (transactionIdSupported()) {
             supportsTransactionId = true;
@@ -136,7 +136,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION+ "() cascade", triggersDisabled);

@@ -47,7 +47,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
     
     @Override
-    protected void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjects() {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
@@ -63,7 +63,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
     
     @Override
-    protected void dropRequiredDatabaseObjects() {
+    public void dropRequiredDatabaseObjects() {
     }
 
     public void purgeRecycleBin() {

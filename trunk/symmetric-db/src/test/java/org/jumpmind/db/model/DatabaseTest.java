@@ -117,4 +117,21 @@ public class DatabaseTest {
         // for now just make sure it doesn't blow up
         
     }
+
+    @Test
+    public void testRemoveAllTablesExcept() throws Exception {
+        Database database = new Database();
+        
+        database.addTable(new Table("SYM_DATA"));
+        database.addTable(new Table("SYM_DOO_DADS"));
+        
+        assertEquals(2, database.getTableCount());
+        
+        database.removeAllTablesExcept("SYM_DATA");
+        
+        assertEquals(1, database.getTableCount());
+        assertNotNull(database.findTable("SYM_DATA"));
+        
+        
+    }
 }
