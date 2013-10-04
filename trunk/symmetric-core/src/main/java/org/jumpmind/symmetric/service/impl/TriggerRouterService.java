@@ -1029,7 +1029,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         }
 
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer);
-                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force);
+                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force, true);
                         resetTriggerRouterCacheByNodeGroupId();
                     } finally {
                         clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
@@ -1241,26 +1241,26 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(),
                     ignoreCase)) {
                 log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                updateOrCreateDatabaseTriggers(trigger, table, null, force);
+                updateOrCreateDatabaseTriggers(trigger, table, null, force, true);
                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
             }
         }
     }
 
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
-            boolean force) {
+            boolean force, boolean verifyInDatabase) {
         for (Trigger trigger : triggers) {
-            updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force);
+            updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase);
         }
     }
 
     protected void updateOrCreateDatabaseTrigger(Trigger trigger, List<Trigger> triggers,
-            StringBuilder sqlBuffer, boolean force) {
+            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase) {
         Set<Table> tables = getTablesForTrigger(trigger, triggers);
 
         if (tables != null && tables.size() > 0) {
             for (Table table : tables) {
-                updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force);
+                updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force, verifyInDatabase);
             }
         } else {
             log.error(
@@ -1274,11 +1274,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
     }
-
+    
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force) {
+        syncTrigger(trigger, listener, force, true);
+    }
+
+    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
         StringBuilder sqlBuffer = new StringBuilder();
         clearCache();
-        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+        List<Trigger> triggersForCurrentNode = null;
+        if (verifyInDatabase) {
+            triggersForCurrentNode = getTriggersForCurrentNode();
+        } else {
+            triggersForCurrentNode = new ArrayList<Trigger>();
+            triggersForCurrentNode.add(trigger);
+        }
         try {
             if (listener != null) {
                 addTriggerCreationListeners(listener);
@@ -1294,7 +1304,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
                 updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                    force);
+                    force, verifyInDatabase);
             } else {
                 List<TriggerHistory> histories = getActiveTriggerHistories(trigger);
                 for (TriggerHistory triggerHistory : histories) {
@@ -1309,19 +1319,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(Trigger trigger, Table table,
-            StringBuilder sqlBuffer, boolean force) {
+            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase) {
         TriggerHistory newestHistory = null;
         TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
         String errorMessage = null;
-        Channel channel = configurationService.getChannel(trigger.getChannelId());
-        if (channel == null) {
-            errorMessage = String
-                    .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
-                            trigger.getTriggerId(), trigger.getChannelId(),
-                            Constants.CHANNEL_DEFAULT);
-            log.error(errorMessage);
-            trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+        
+        if (verifyInDatabase) {
+            Channel channel = configurationService.getChannel(trigger.getChannelId());
+            if (channel == null) {
+                errorMessage = String
+                        .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
+                                trigger.getTriggerId(), trigger.getChannelId(),
+                                Constants.CHANNEL_DEFAULT);
+                log.error(errorMessage);
+                trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+            }
         }
 
         try {
