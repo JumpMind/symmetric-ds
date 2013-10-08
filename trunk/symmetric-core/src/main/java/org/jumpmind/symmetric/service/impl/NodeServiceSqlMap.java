@@ -133,7 +133,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + "  free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version,   "
                         + "  timezone_offset, heartbeat_time, last_restart_time, create_time from $(node_host) h");
 
-        putSql("selectNodeHostByNodeIdSql", "where node_id=?");
+        putSql("selectNodeHostByNodeIdSql", "where node_id=? order by heartbeat_time desc");
 
         putSql("selectNodePrefixSql",
                           "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
