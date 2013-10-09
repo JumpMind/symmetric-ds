@@ -678,7 +678,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.resetStats();
                             IDataReader dataReader = new ExtractDataReader(
                                     symmetricDialect.getPlatform(), new SelectFromSymDataSource(
-                                            currentBatch, sourceNode, targetNode));
+                                            currentBatch, sourceNode, targetNode, processInfo));
                             DataContext ctx = new DataContext();
                             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
@@ -819,7 +819,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 if (targetNode != null) {
                     IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(batch, sourceNode, targetNode));
+                            new SelectFromSymDataSource(batch, sourceNode, targetNode, new ProcessInfo()));
                     DataContext ctx = new DataContext();
                     ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -849,7 +849,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
             if (targetNode != null) {
                 IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode));
+                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode, new ProcessInfo()));
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -1228,8 +1228,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private SelectFromTableSource reloadSource;
 
         private Node targetNode;
+        
+        private ProcessInfo processInfo;
 
-        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node sourceNode, Node targetNode) {
+        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
+                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+            this.processInfo = processInfo;
             this.outgoingBatch = outgoingBatch;
             this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
                     outgoingBatch.getChannelId(), symmetricDialect.getBinaryEncoding(),
@@ -1278,6 +1282,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         TriggerRouter triggerRouter = triggerRouterService
                                 .getTriggerRouterForCurrentNode(triggerId, routerId, false);
                         if (triggerRouter != null) {
+                            processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
                             SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
                                     triggerRouter, triggerHistory, data.getRowData());
                             this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
