@@ -78,9 +78,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     st = pstmt;                    
                     st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
                     st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
-                    long ts = System.currentTimeMillis();
                     rs = pstmt.executeQuery();
-                    log.debug("It took {}ms to execute {}", System.currentTimeMillis()-ts, sql);
 
                 } else {
                     st = c.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
@@ -112,9 +110,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     public T next() {
         try {
-            long ts = System.currentTimeMillis();
             while (rs!=null && rs.next()) {
-                log.debug("It took {}ms to fetch the next row", System.currentTimeMillis()-ts);
                 Row row = getMapForRow(rs, sqlTemplate.getSettings().isReadStringsAsBytes());
                 T value = mapper.mapRow(row);
                 if (value != null) {
