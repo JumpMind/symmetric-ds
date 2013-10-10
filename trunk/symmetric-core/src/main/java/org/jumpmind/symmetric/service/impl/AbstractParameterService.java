@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -129,7 +130,14 @@ abstract public class AbstractParameterService {
     }
 
     public String getTempDirectory() {
-        return getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
+    	String engineName = this.getEngineName();
+    	String tmpDirBase = getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
+
+    	if (StringUtils.trimToNull(engineName) == null) {
+    		return tmpDirBase;
+    	} else {
+    		return tmpDirBase+File.separator+engineName;
+    	}
     }
 
     protected abstract TypedProperties rereadApplicationParameters();
