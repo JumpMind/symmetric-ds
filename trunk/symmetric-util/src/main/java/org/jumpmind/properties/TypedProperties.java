@@ -53,6 +53,15 @@ public class TypedProperties extends Properties {
     public TypedProperties() {
     }
     
+    @Override
+    public synchronized Object put(Object key, Object value) {
+        if (value != null) {
+            return super.put(key, value);
+        } else {
+            return null;
+        }
+    }
+    
     public TypedProperties(File file) {
         FileInputStream fis = null;
         try {
