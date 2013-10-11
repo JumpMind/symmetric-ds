@@ -236,6 +236,27 @@ abstract public class AbstractTest {
         return pulled;
     }
 
+    protected boolean push(String name) {
+        int tries = 0;
+        boolean push = false;
+        boolean lastPush = false;
+        boolean errorOccurred = false;
+        while (!errorOccurred && (lastPush || (!push && tries < 10))) {
+            RemoteNodeStatuses statuses = getWebServer(name).getEngine().push();
+            try {
+                statuses.waitForComplete(60000);
+            } catch (InterruptedException ex) {
+                log.warn(ex.getMessage());
+            }
+            lastPush = statuses.wasDataProcessed();
+            errorOccurred = statuses.errorOccurred();
+            push |= lastPush;
+            AppUtils.sleep(100);
+            tries++;
+        }
+        return push;
+    }
+    
     protected boolean pullFiles(String name) {
         int tries = 0;
         boolean pulled = false;
