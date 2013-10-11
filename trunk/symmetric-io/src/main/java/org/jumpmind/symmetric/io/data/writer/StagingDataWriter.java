@@ -108,7 +108,11 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
         IStagedResource resource = getStagedResource(batch);
         BufferedWriter writer = resource.getWriter();
         try {
-            writer.append(data);
+            int size = data.length();
+            for (int i = 0; i < size; i = i + 1024) {
+                int end = i + 1024;
+                writer.append(data, i, end < size ? end : size);
+            }
         } catch (IOException ex) {
             throw new IoException(ex);
         }
