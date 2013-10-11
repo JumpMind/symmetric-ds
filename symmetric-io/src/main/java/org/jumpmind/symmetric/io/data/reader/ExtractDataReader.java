@@ -40,8 +40,12 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExtractDataReader implements IDataReader {
+    
+    protected static final Logger log = LoggerFactory.getLogger(ExtractDataReader.class);
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
@@ -175,6 +179,7 @@ public class ExtractDataReader implements IDataReader {
                             } else {
                                 valueForCsv = new String(binaryData);
                             }
+                            binaryData = null;
                         }
                     } else {
                         valueForCsv = sqlTemplate.queryForClob(sql, args);

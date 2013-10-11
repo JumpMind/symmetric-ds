@@ -146,6 +146,9 @@ public class CsvData {
             String[] parsedData = parsedCsvData.get(key);
             if (parsedData != null) {
                 data = CsvUtils.escapeCsvData(parsedData);
+                // swap out data for parsed data so we don't 
+                // don't double the amount of memory being used
+                putCsvData(key, data);
             }
         }
         return data;

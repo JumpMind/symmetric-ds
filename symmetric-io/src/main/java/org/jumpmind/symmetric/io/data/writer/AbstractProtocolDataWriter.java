@@ -242,16 +242,17 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     abstract protected void print(Batch batch, String data);
 
     protected long println(String... data) {
-        StringBuilder buffer = new StringBuilder();
+        long byteCount = 0;
         for (int i = 0; i < data.length; i++) {
             if (i != 0) {
-                buffer.append(delimiter);
+                print(batch, delimiter);
+                byteCount += delimiter.length();
             }
-            buffer.append(data[i]);
+            print(batch, data[i]);
+            byteCount += data[i].length();
         }
-        buffer.append("\n");
-        print(batch, buffer.toString());
-        long byteCount = buffer.length();
+        print(batch, "\n");
+        byteCount += "\n".length();
         statistics.get(batch).increment(DataWriterStatisticConstants.BYTECOUNT, byteCount);
         return byteCount;
     }
