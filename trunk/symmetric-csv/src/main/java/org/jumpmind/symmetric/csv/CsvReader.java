@@ -38,6 +38,9 @@ import java.util.HashMap;
  * stream.
  */
 public class CsvReader {
+    
+    private static int MAX_BUFFER_EXPANSION_SIZE = 1048576;
+    
     private Reader inputStream = null;
 
     private String fileName = null;
@@ -1137,8 +1140,8 @@ public class CsvReader {
 
         if (userSettings.CaptureRawRecord && dataBuffer.Count > 0) {
             if (rawBuffer.Buffer.length - rawBuffer.Position < dataBuffer.Count - dataBuffer.LineStart) {
-                int newLength = rawBuffer.Buffer.length
-                        + Math.max(dataBuffer.Count - dataBuffer.LineStart, rawBuffer.Buffer.length);
+                int newLength = Math.max(rawBuffer.Buffer.length + dataBuffer.Count
+                        - dataBuffer.LineStart, newLength(rawBuffer.Buffer.length));
 
                 char[] holder = new char[newLength];
 
@@ -1286,6 +1289,7 @@ public class CsvReader {
         }
 
         columnBuffer.Position = 0;
+        columnBuffer.Buffer = new char[StaticSettings.INITIAL_COLUMN_BUFFER_SIZE];
 
         startedColumn = false;
 
@@ -1304,7 +1308,7 @@ public class CsvReader {
 
         if (columnsCount == values.length) {
             // holder array needs to grow to be able to hold another column
-            int newLength = values.length * 2;
+            int newLength = newLength(values.length);
 
             String[] holder = new String[newLength];
 
@@ -1334,10 +1338,18 @@ public class CsvReader {
         startedWithQualifier=false;
         columnsCount++;
     }
+    
+    private final int newLength (int oldLength) {
+        if (oldLength < MAX_BUFFER_EXPANSION_SIZE) {
+            return oldLength*2;
+        } else {
+            return oldLength+MAX_BUFFER_EXPANSION_SIZE;
+        }
+    }
 
     private void appendLetter(char letter) {
         if (columnBuffer.Position == columnBuffer.Buffer.length) {
-            int newLength = columnBuffer.Buffer.length * 2;
+            int newLength = newLength(columnBuffer.Buffer.length);
 
             char[] holder = new char[newLength];
 
@@ -1348,20 +1360,26 @@ public class CsvReader {
         columnBuffer.Buffer[columnBuffer.Position++] = letter;
         dataBuffer.ColumnStart = dataBuffer.Position + 1;
     }
+    
+    protected void expandColumnBuffer() {
+        int roomLeftInColumnBuffer = columnBuffer.Buffer.length - columnBuffer.Position;
+        int dataLeftInDataBuffer = dataBuffer.Position - dataBuffer.ColumnStart;
+        if (roomLeftInColumnBuffer < dataLeftInDataBuffer) {
+            int newLength = Math.max(columnBuffer.Buffer.length + dataLeftInDataBuffer
+                    - roomLeftInColumnBuffer, newLength(columnBuffer.Buffer.length));
+
+            char[] holder = new char[newLength];
+            
+            System.arraycopy(columnBuffer.Buffer, 0, holder, 0, columnBuffer.Position);
+
+            columnBuffer.Buffer = holder;
+        }        
+    }
 
     private void updateCurrentValue() {
         if (startedColumn && dataBuffer.ColumnStart < dataBuffer.Position) {
-            if (columnBuffer.Buffer.length - columnBuffer.Position < dataBuffer.Position - dataBuffer.ColumnStart) {
-                int newLength = columnBuffer.Buffer.length
-                        + Math.max(dataBuffer.Position - dataBuffer.ColumnStart, columnBuffer.Buffer.length);
-
-                char[] holder = new char[newLength];
-
-                System.arraycopy(columnBuffer.Buffer, 0, holder, 0, columnBuffer.Position);
-
-                columnBuffer.Buffer = holder;
-            }
-
+            expandColumnBuffer();
+            
             System.arraycopy(dataBuffer.Buffer, dataBuffer.ColumnStart, columnBuffer.Buffer, columnBuffer.Position,
                     dataBuffer.Position - dataBuffer.ColumnStart);
 
