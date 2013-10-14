@@ -70,6 +70,7 @@ public class FileSnapshot implements Serializable {
     private String fileName;
     private LastEventType lastEventType;
     private long crc32Checksum;
+    private long oldCrc32Checksum;
     private long fileSize;
     private long fileModifiedTime;
     private Date createTime = new Date();
@@ -137,7 +138,7 @@ public class FileSnapshot implements Serializable {
         }
 
     }
-
+    
     public String getTriggerId() {
         return triggerId;
     }
@@ -184,6 +185,14 @@ public class FileSnapshot implements Serializable {
 
     public void setCrc32Checksum(long crc32Checksum) {
         this.crc32Checksum = crc32Checksum;
+    }
+    
+    public long getOldCrc32Checksum() {
+        return oldCrc32Checksum;
+    }
+    
+    public void setOldCrc32Checksum(long oldCrc32Checksum) {
+        this.oldCrc32Checksum = oldCrc32Checksum;
     }
 
     public long getFileSize() {
