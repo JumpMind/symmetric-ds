@@ -21,9 +21,17 @@
 package org.jumpmind.symmetric.test;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.model.FileConflictStrategy;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.service.IFileSyncService;
+
 import static org.junit.Assert.*;
 
 public class FileSyncTest extends AbstractTest {
@@ -71,6 +79,12 @@ public class FileSyncTest extends AbstractTest {
         testChooseTargetDirectory(rootServer, clientServer);
         
         testChangeFileNameAndCreateTargetDir(rootServer, clientServer);
+        
+        testSourceWins(rootServer, clientServer);
+        
+        testTargetWins(rootServer, clientServer);
+        
+        testReportError(rootServer, clientServer);
 
     }
 
@@ -201,6 +215,77 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         assertFalse(targetFile.exists());
+    }
+    
+    protected void testSourceWins(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        
+        File allFile1 = new File(allSvrSourceDir, "svr_wins/test.txt");
+        allFile1.getParentFile().mkdirs();
+        String file1Contents = "server value";
+        FileUtils.write(allFile1, file1Contents);
+
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
+        allFile1Target.getParentFile().mkdirs();
+        FileUtils.write(allFile1Target, "client value");
+
+        pullFiles();
+        
+        assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target));
+
+        
+    }    
+    
+    protected void testTargetWins(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        IFileSyncService fileSyncService = rootServer.getFileSyncService();
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        fileTriggerRouter.setConflictStrategy(FileConflictStrategy.TARGET_WINS);
+        fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
+        
+        pull("client");
+        
+        File allFile1 = new File(allSvrSourceDir, "tgt_wins/test.txt");
+        allFile1.getParentFile().mkdirs();
+        FileUtils.write(allFile1, "server value");
+
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
+        allFile1Target.getParentFile().mkdirs();
+        FileUtils.write(allFile1Target, "client value");
+
+        pullFiles();
+        
+        assertEquals("client value", FileUtils.readFileToString(allFile1Target));
+        
+        
+        
+    }
+    
+    protected void testReportError(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        
+        IFileSyncService fileSyncService = rootServer.getFileSyncService();
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        fileTriggerRouter.setConflictStrategy(FileConflictStrategy.REPORT_ERROR);
+        fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
+        
+        pull("client");
+        
+        File allFile1 = new File(allSvrSourceDir, "report_error/test.txt");
+        allFile1.getParentFile().mkdirs();
+        FileUtils.write(allFile1, "server value");
+
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
+        allFile1Target.getParentFile().mkdirs();
+        FileUtils.write(allFile1Target, "client value");
+
+        pullFiles();
+        
+        assertEquals("client value", FileUtils.readFileToString(allFile1Target));
+        OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(1, batches.size());
+        
     }
 
     protected boolean pullFiles() {

@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
@@ -110,6 +111,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshot.setRouterId(columnData.get("ROUTER_ID"));
             snapshot.setFileModifiedTime(Long.parseLong(columnData.get("FILE_MODIFIED_TIME")));
             snapshot.setCrc32Checksum(Long.parseLong(columnData.get("CRC32_CHECKSUM")));
+            String oldChecksum = columnData.get("OLD_CRC32_CHECKSUM");
+            if (StringUtils.isNotBlank(oldChecksum)) {
+                snapshot.setOldCrc32Checksum(Long.parseLong(oldChecksum));
+            }
             snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));
             snapshot.setFileName(columnData.get("FILE_NAME"));
@@ -187,7 +192,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
                             command.append(fileTrigger.getBeforeCopyScript()).append("\n");
                         }
-
+                        
                         command.append("if (processFile) {\n");
 
                         switch (eventType) {
@@ -216,11 +221,35 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     }
                                     targetFile.append("\" + targetFileName");
                                     command.append(targetFile);
-                                    command.append(");\n");                                    
-                                    command.append("  if (sourceFile.isDirectory()) {\n");
-                                    command.append("    org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");                                    
-                                    command.append("  } else {\n");
-                                    command.append("    org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");                                    
+                                    command.append(");\n");
+                                    
+                                    // no need to copy directory if it already exists
+                                    command.append("  if (targetFile.exists() && targetFile.isDirectory()) {\n");
+                                    command.append("      processFile = false;\n");
+                                    command.append("  }\n");
+                                    
+                                    // conflict resolution
+                                    FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
+                                    if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
+                                            conflictStrategy == FileConflictStrategy.REPORT_ERROR) {
+                                        command.append("  if (targetFile.exists() && !targetFile.isDirectory()) {\n");
+                                        command.append("    long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
+                                        command.append("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + ") {\n");
+                                        if (conflictStrategy == FileConflictStrategy.REPORT_ERROR) {
+                                            command.append("      throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
+                                        } else {
+                                            command.append("      processFile = false;\n");
+                                        }
+                                        command.append("    }\n");
+                                        command.append("  }\n");
+                                    } 
+                                    
+                                    command.append("  if (processFile) {\n");
+                                    command.append("    if (sourceFile.isDirectory()) {\n");
+                                    command.append("      org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");                                    
+                                    command.append("    } else {\n");
+                                    command.append("      org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");                                    
+                                    command.append("    }\n");
                                     command.append("  }\n");
                                     command.append("  fileList.put(").append(targetFile)
                                             .append(",\"");
