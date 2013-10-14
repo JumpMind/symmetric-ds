@@ -155,7 +155,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         if (!installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
             String sql = "CREATE OR REPLACE function $(functionName) return varchar is                                                                                                                                           "
                     + "   begin                                                                                                                                                                "
-                    + "      return sym_pkg.disable_trigger;                                                                                                                                   "
+                    + "      return "+getSymmetricPackageName()+".disable_trigger;                                                                                                                                   "
                     + "   end;                                                                                                                                                                 ";
             install(sql, triggerDisabled);
         }
@@ -167,7 +167,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "      disable_node_id varchar(50);                                                                                                                                       "
                     + "      procedure setValue (a IN number);                                                                                                                                  "
                     + "      procedure setNodeValue (node_id IN varchar);                                                                                                                       "
-                    + "  end sym_pkg;                                                                                                                                                           ";
+                    + "  end "+getSymmetricPackageName()+";                                                                                                                                                           ";
             install(sql, pkgPackage);
             
             sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
@@ -179,7 +179,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "     begin                                                                                                                                                              "
                     + "         $(functionName).disable_node_id := node_id;                                                                                                                           "
                     + "     end;                                                                                                                                                               "
-                    + " end sym_pkg;                                                                                                                                                           ";
+                    + " end "+getSymmetricPackageName()+";                                                                                                                                                           ";
             install(sql, pkgPackage);
         }
 
