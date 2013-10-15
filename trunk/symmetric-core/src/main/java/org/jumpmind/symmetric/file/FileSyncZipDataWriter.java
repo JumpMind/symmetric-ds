@@ -231,11 +231,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     // conflict resolution
                                     FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
                                     if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
-                                            conflictStrategy == FileConflictStrategy.REPORT_ERROR) {
+                                            conflictStrategy == FileConflictStrategy.MANUAL) {
                                         command.append("  if (targetFile.exists() && !targetFile.isDirectory()) {\n");
                                         command.append("    long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
                                         command.append("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + ") {\n");
-                                        if (conflictStrategy == FileConflictStrategy.REPORT_ERROR) {
+                                        if (conflictStrategy == FileConflictStrategy.MANUAL) {
                                             command.append("      throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
                                         } else {
                                             command.append("      processFile = false;\n");

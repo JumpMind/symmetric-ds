@@ -84,7 +84,7 @@ public class FileSyncTest extends AbstractTest {
         
         testTargetWins(rootServer, clientServer);
         
-        testReportError(rootServer, clientServer);
+        testManual(rootServer, clientServer);
 
     }
 
@@ -261,17 +261,17 @@ public class FileSyncTest extends AbstractTest {
         
     }
     
-    protected void testReportError(ISymmetricEngine rootServer,
+    protected void testManual(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
         
         IFileSyncService fileSyncService = rootServer.getFileSyncService();
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
-        fileTriggerRouter.setConflictStrategy(FileConflictStrategy.REPORT_ERROR);
+        fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         
         pull("client");
         
-        File allFile1 = new File(allSvrSourceDir, "report_error/test.txt");
+        File allFile1 = new File(allSvrSourceDir, "manual/test.txt");
         allFile1.getParentFile().mkdirs();
         FileUtils.write(allFile1, "server value");
 
