@@ -85,7 +85,8 @@ public class FileSyncTest extends AbstractTest {
         testTargetWins(rootServer, clientServer);
         
         testManual(rootServer, clientServer);
-
+        
+        testUpdateManual(rootServer,clientServer);
     }
 
     protected void testInitialLoadFromServerToClient(ISymmetricEngine rootServer,
@@ -285,6 +286,54 @@ public class FileSyncTest extends AbstractTest {
         OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
         List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
         assertEquals(1, batches.size());
+        
+        allFile1Target.delete();
+        
+        pullFiles();
+
+        assertEquals("server value", FileUtils.readFileToString(allFile1Target));
+
+        batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
+        
+    }
+    
+    protected void testUpdateManual(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
+        
+        IFileSyncService fileSyncService = rootServer.getFileSyncService();
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
+        fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
+        
+        pull("client");
+        
+        File allFile1 = new File(allSvrSourceDir, "manual/test2.txt");
+        allFile1.getParentFile().mkdirs();
+        FileUtils.write(allFile1, "base value");
+
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
+        allFile1Target.getParentFile().mkdirs();
+
+        pullFiles();
+        
+        assertEquals("base value", FileUtils.readFileToString(allFile1Target));
+        batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
+        
+        FileUtils.write(allFile1, "new value",true);
+        
+        pullFiles();
+        
+        assertEquals("base valuenew value", FileUtils.readFileToString(allFile1Target));
+        batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
         
     }
 
