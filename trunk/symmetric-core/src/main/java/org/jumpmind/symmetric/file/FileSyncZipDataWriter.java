@@ -106,12 +106,15 @@ public class FileSyncZipDataWriter implements IDataWriter {
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE) {
             Map<String, String> columnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
+            Map<String, String> oldColumnData = data.toColumnNameValuePairs(
+                    snapshotTable.getColumnNames(), CsvData.OLD_DATA);
+     
             FileSnapshot snapshot = new FileSnapshot();
             snapshot.setTriggerId(columnData.get("TRIGGER_ID"));
             snapshot.setRouterId(columnData.get("ROUTER_ID"));
             snapshot.setFileModifiedTime(Long.parseLong(columnData.get("FILE_MODIFIED_TIME")));
             snapshot.setCrc32Checksum(Long.parseLong(columnData.get("CRC32_CHECKSUM")));
-            String oldChecksum = columnData.get("OLD_CRC32_CHECKSUM");
+            String oldChecksum = oldColumnData.get("CRC32_CHECKSUM");
             if (StringUtils.isNotBlank(oldChecksum)) {
                 snapshot.setOldCrc32Checksum(Long.parseLong(oldChecksum));
             }
@@ -234,7 +237,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                             conflictStrategy == FileConflictStrategy.MANUAL) {
                                         command.append("  if (targetFile.exists() && !targetFile.isDirectory()) {\n");
                                         command.append("    long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
-                                        command.append("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + ") {\n");
+                                        command.append("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + "L) {\n");
                                         if (conflictStrategy == FileConflictStrategy.MANUAL) {
                                             command.append("      throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
                                         } else {
