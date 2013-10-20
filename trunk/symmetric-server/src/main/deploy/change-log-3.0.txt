@@ -18,6 +18,14 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.10 (Released 2013-10-20) 
+==========================================
+- 0001429: [Bug] sym_pkg is hard coded in the oracle dialect so the prefix parameter doesn't work on Oracle (chenson) - closed.
+- 0001438: [Improvement] Improve memory footprint usage when big lobs are in flight (chenson) - closed.
+- 0001440: [Improvement] Implement simple conflict resolution for file sync (chenson) - closed.
+- 0001442: [Bug] Statements are being prepared too often. Results in poor data loading performance on Firebird (and possibly other platforms) (chenson) - closed.
+- 0001447: [Improvement] Change error message if a batch fails to transport because of an EOF error to be more intuitive. (chenson) - closed.
+
 SymmetricDS - 3.5.9 (Released 2013-10-10) 
 =========================================
 - 0001430: [Bug] When a file is modified on Windows it is not unpacked at the target of a file sync (chenson) - closed.
