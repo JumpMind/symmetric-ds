@@ -542,7 +542,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     if (isStreamClosedByClient(e)) {
                         log.warn(
-                                "Failed to extract batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed.  The error was: {}",
+                                "Failed to transport batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed or there was a network error.  The error was: {}",
                                 currentBatch, getRootMessage(e));
                     } else {
                         if (e instanceof ProtocolException) {
