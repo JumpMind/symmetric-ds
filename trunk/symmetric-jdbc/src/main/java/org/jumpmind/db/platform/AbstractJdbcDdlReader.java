@@ -52,6 +52,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.SqlException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -534,29 +535,38 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     public Table readTable(final String catalog, final String schema, final String table) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
-            public Table execute(Connection connection) throws SQLException {
-                DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                metaData.setMetaData(connection.getMetaData());
-                metaData.setCatalog(catalog);
-                metaData.setSchemaPattern(schema);
-                metaData.setTableTypes(null);
-
-                ResultSet tableData = null;
-                try {
-                    tableData = metaData.getTables(getTableNamePattern(table));
-                    if (tableData != null && tableData.next()) {
-                        Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
-                        return readTable(connection, metaData, values);
-                    } else {
-                        return null;
+        try {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate(); 
+            return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
+                public Table execute(Connection connection) throws SQLException {
+                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                    metaData.setMetaData(connection.getMetaData());
+                    metaData.setCatalog(catalog);
+                    metaData.setSchemaPattern(schema);
+                    metaData.setTableTypes(null);
+    
+                    ResultSet tableData = null;
+                    try {
+                        tableData = metaData.getTables(getTableNamePattern(table));
+                        if (tableData != null && tableData.next()) {
+                            Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
+                            return readTable(connection, metaData, values);
+                        } else {
+                            return null;
+                        }
+                    } finally {
+                        close(tableData);
                     }
-                } finally {
-                    close(tableData);
                 }
+            }));
+        } catch (SqlException e) {
+            if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+                return null;
+            } else {
+                throw e;
             }
-        }));
+        }
+        
 
     }
 
