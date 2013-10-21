@@ -69,7 +69,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected ISymmetricEngine symmetricEngine = null;
+    protected ISymmetricEngine engine = null;
 
     protected Map<String, List<LoadFilter>> loadFilters = null;
 
@@ -77,10 +77,10 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         BEFORE_WRITE, AFTER_WRITE, BATCH_COMPLETE, BATCH_COMMIT, BATCH_ROLLBACK, HANDLE_ERROR
     };
 
-    public BshDatabaseWriterFilter(ISymmetricEngine symmetricEngine,
+    public BshDatabaseWriterFilter(ISymmetricEngine engine,
             Map<String, List<LoadFilter>> loadFilters) {
 
-        this.symmetricEngine = symmetricEngine;
+        this.engine = engine;
         this.loadFilters = loadFilters;
     }
 
@@ -97,11 +97,16 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     }
 
     public boolean handlesMissingTable(DataContext context, Table table) {
-        String tableName = table.getFullyQualifiedTableName();
-        if (isIgnoreCase()) {
-            tableName = tableName.toUpperCase();
+        if (engine!=null && engine.getParameterService()!=null && 
+                engine.getParameterService().is(ParameterConstants.BSH_LOAD_FILTER_HANDLES_MISSING_TABLES)) {
+            return true;
+        } else {
+            String tableName = table.getFullyQualifiedTableName();
+            if (isIgnoreCase()) {
+                tableName = tableName.toUpperCase();
+            }
+            return loadFilters.containsKey(tableName);
         }
-        return loadFilters.containsKey(tableName);
     }
 
     public void earlyCommit(DataContext context) {
@@ -132,7 +137,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
             throws EvalError {
 
         interpreter.set(LOG, log);
-        interpreter.set(ENGINE, this.symmetricEngine);
+        interpreter.set(ENGINE, this.engine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
         interpreter.set(DATA, data);
@@ -225,7 +230,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
         List<LoadFilter> wildcardLoadFilters = null;
         if (table != null) {
-            if (!table.getName().toLowerCase().startsWith(symmetricEngine.getTablePrefix() + "_")) {
+            if (!table.getName().toLowerCase().startsWith(engine.getTablePrefix() + "_")) {
                 wildcardLoadFilters = loadFilters.get(Table.getFullyQualifiedTableName(
                         table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD));
             }
@@ -286,7 +291,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
     }
 
     protected boolean isIgnoreCase() {
-        return symmetricEngine.getParameterService()
+        return engine.getParameterService()
                 .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
     }
 }

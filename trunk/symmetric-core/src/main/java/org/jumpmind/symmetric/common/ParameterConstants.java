@@ -241,6 +241,8 @@ final public class ParameterConstants {
 
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
 
+    public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
