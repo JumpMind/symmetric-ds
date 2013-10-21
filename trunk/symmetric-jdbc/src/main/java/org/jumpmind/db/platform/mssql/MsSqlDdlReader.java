@@ -65,35 +65,43 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
-        String tableName = (String) values.get("TABLE_NAME");
-
-        for (int idx = 0; idx < KNOWN_SYSTEM_TABLES.length; idx++) {
-            if (KNOWN_SYSTEM_TABLES[idx].equals(tableName)) {
-                return null;
-            }
-        }
-
-        Table table = super.readTable(connection, metaData, values);
-
-        if (table != null) {
-            // Sql Server does not return the auto-increment status via the
-            // database metadata
-            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
-
-            // TODO: Replace this manual filtering using named pks once they are
-            // available
-            // This is then probably of interest to every platform
-            for (int idx = 0; idx < table.getIndexCount();) {
-                IIndex index = table.getIndex(idx);
-
-                if (index.isUnique() && existsPKWithName(metaData, table, index.getName())) {
-                    table.removeIndex(idx);
-                } else {
-                    idx++;
+        try {
+            String tableName = (String) values.get("TABLE_NAME");
+    
+            for (int idx = 0; idx < KNOWN_SYSTEM_TABLES.length; idx++) {
+                if (KNOWN_SYSTEM_TABLES[idx].equals(tableName)) {
+                    return null;
                 }
             }
+    
+            Table table = super.readTable(connection, metaData, values);
+    
+            if (table != null) {
+                // Sql Server does not return the auto-increment status via the
+                // database metadata
+                determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
+    
+                // TODO: Replace this manual filtering using named pks once they are
+                // available
+                // This is then probably of interest to every platform
+                for (int idx = 0; idx < table.getIndexCount();) {
+                    IIndex index = table.getIndex(idx);
+    
+                    if (index.isUnique() && existsPKWithName(metaData, table, index.getName())) {
+                        table.removeIndex(idx);
+                    } else {
+                        idx++;
+                    }
+                }
+            }
+            return table; 
+        } catch (SqlException e) {
+            if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+                return null;
+            } else {
+                throw e;
+            }
         }
-        return table; 
     }
 
     @Override
