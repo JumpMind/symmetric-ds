@@ -96,7 +96,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             }
             return table; 
         } catch (SqlException e) {
-            if (e.getMessage().contains("does not exist")) {
+            if (e.getMessage()!=null && e.getMessage().contains("does not exist")) {
                 return null;
             } else {
                 throw e;
