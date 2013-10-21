@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -96,7 +97,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             }
             return table; 
         } catch (SqlException e) {
-            if (e.getMessage()!=null && e.getMessage().contains("does not exist")) {
+            if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
                 throw e;
