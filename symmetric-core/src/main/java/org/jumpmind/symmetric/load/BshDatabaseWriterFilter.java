@@ -141,7 +141,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
         interpreter.set(DATA, data);
-        interpreter.set(ERROR, error);
+        interpreter.set(ERROR, error);        
 
         if (data != null) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
@@ -237,7 +237,7 @@ public class BshDatabaseWriterFilter implements IDatabaseWriterFilter, IDatabase
 
             String tableName = table.getFullyQualifiedTableName();
             if (isIgnoreCase()) {
-                tableName = tableName.toUpperCase();
+                tableName = Table.getFullyQualifiedTableName(table.getCatalog(), table.getSchema(), table.getName().toUpperCase(), "");
             }
             List<LoadFilter> tableSpecificLoadFilters = loadFilters.get(tableName);
             int size = (wildcardLoadFilters != null ? wildcardLoadFilters.size() : 0)
