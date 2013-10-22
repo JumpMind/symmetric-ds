@@ -381,10 +381,11 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     process &= filter.beforeWrite(this.context, this.sourceTable, data);
-                    // re-lookup target table in case the source has changed
+                    // re-lookup target table in case the source table has changed
                     Table oldTargetTable = targetTable;
                     targetTable = lookupTableAtTarget(this.sourceTable);
                     if (!oldTargetTable.equals(targetTable)) {
+                        // allow for auto increment columns to be inserted into if appropriate
                         String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
                         transaction.allowInsertIntoAutoIncrementColumns(false, oldTargetTable, quote);
                         transaction.allowInsertIntoAutoIncrementColumns(true, targetTable, quote);
