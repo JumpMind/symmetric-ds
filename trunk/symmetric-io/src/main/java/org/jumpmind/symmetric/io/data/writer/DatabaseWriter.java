@@ -381,19 +381,19 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     process &= filter.beforeWrite(this.context, this.sourceTable, data);
-                    // re-lookup target table in case the source table has changed
-                    Table oldTargetTable = targetTable;
-                    targetTable = lookupTableAtTarget(this.sourceTable);
-                    if (targetTable == null) {
-                        throw new IllegalStateException("Unable to locate table " +this.sourceTable.getFullyQualifiedTableName()+" in target database.");
-                    } else if (!targetTable.equals(oldTargetTable)) {
-                        // allow for auto increment columns to be inserted into if appropriate
-                        String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
-                        if (oldTargetTable!=null) {
-                            transaction.allowInsertIntoAutoIncrementColumns(false, oldTargetTable, quote);
-                        }
-                        transaction.allowInsertIntoAutoIncrementColumns(true, targetTable, quote);
+                }
+                // re-lookup target table in case the source table has changed
+                Table oldTargetTable = targetTable;
+                targetTable = lookupTableAtTarget(this.sourceTable);
+                if (targetTable == null) {
+                    throw new IllegalStateException("Unable to locate table " +this.sourceTable.getFullyQualifiedTableName()+" in target database.");
+                } else if (!targetTable.equals(oldTargetTable)) {
+                    // allow for auto increment columns to be inserted into if appropriate
+                    String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+                    if (oldTargetTable!=null) {
+                        transaction.allowInsertIntoAutoIncrementColumns(false, oldTargetTable, quote);
                     }
+                    transaction.allowInsertIntoAutoIncrementColumns(true, targetTable, quote);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
