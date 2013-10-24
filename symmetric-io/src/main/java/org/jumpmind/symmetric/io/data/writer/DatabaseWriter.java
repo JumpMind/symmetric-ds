@@ -384,7 +384,9 @@ public class DatabaseWriter implements IDataWriter {
                 }
                 // re-lookup target table in case the source table has changed
                 Table oldTargetTable = targetTable;
-                targetTable = lookupTableAtTarget(this.sourceTable);
+                if (this.sourceTable!=null) {
+                    targetTable = lookupTableAtTarget(this.sourceTable);
+                }
                 if (targetTable!=null && !targetTable.equals(oldTargetTable)) {
                     // allow for auto increment columns to be inserted into if appropriate
                     String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
