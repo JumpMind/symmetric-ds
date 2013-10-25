@@ -34,9 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -44,6 +41,7 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlResultsListener;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.LogSqlResultsListener;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -402,24 +400,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     protected void prefixConfigDatabase(Database targetTables) {
-        try {
-            String prefix = parameterService.getTablePrefix()
-                    + (StringUtils.isNotBlank(parameterService.getTablePrefix()) ? "_" : "");
-
-            Table[] tables = targetTables.getTables();
-
-            boolean storesUpperCaseIdentifiers = platform.isStoresUpperCaseIdentifiers();
-            for (Table table : tables) {
-                String name = String.format("%s%s", prefix, table.getName());
-                table.setName(storesUpperCaseIdentifiers ? name.toUpperCase() : name.toLowerCase());
-                fixForeignKeys(table, prefix, storesUpperCaseIdentifiers);
-                fixIndexes(table, prefix, storesUpperCaseIdentifiers);
-                fixColumnNames(table, storesUpperCaseIdentifiers);
-            }
-
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        platform.prefixDatabase(parameterService.getTablePrefix(), targetTables);
     }
 
     public Table getTable(TriggerHistory triggerHistory, boolean useCache) {
@@ -449,21 +430,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                ISqlResultsListener resultsListener = new ISqlResultsListener() {
-                    
-                    public void sqlErrored(String sql, SqlException ex, int lineNumber,
-                            boolean dropStatement, boolean sequenceCreate) {
-                        if (dropStatement || sequenceCreate) {
-                            log.info("DDL failed: {}", sql);
-                        } else {
-                            log.warn("DDL failed: {}", sql);
-                        }
-                    }
-                    
-                    public void sqlApplied(String sql, int rowsUpdated, int rowsRetrieved, int lineNumber) {
-                        log.info("DDL applied: {}", sql);
-                    }
-                };
+                
+                ISqlResultsListener resultsListener = new LogSqlResultsListener(log);
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener
@@ -527,21 +495,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
     
     public Database readSymmetricSchemaFromDatabase() {
-        Database modelFromXml = readSymmetricSchemaFromXml();
-
-        Database modelFromDatabase = new Database();
-
-        Table[] tablesFromXml = modelFromXml.getTables();
-        for (Table tableFromXml : tablesFromXml) {
-            Table tableFromDatabase = platform.getTableFromCache(platform.getDefaultCatalog(),
-                    platform.getDefaultSchema(), tableFromXml.getName(), true);
-            if (tableFromDatabase != null) {
-                modelFromDatabase.addTable(tableFromDatabase);
-            }
-        }
-
-        return modelFromDatabase;
-
+        return platform.readFromDatabase(readSymmetricSchemaFromXml().getTables());
     }
 
     protected Database readDatabaseFromXml(String resourceName) throws IOException {
@@ -563,52 +517,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             }
         }
         return database;
-    }
-
-    protected void fixColumnNames(Table table, boolean storesUpperCaseIdentifiers) {
-        Column[] columns = table.getColumns();
-        for (Column column : columns) {
-            column.setName(storesUpperCaseIdentifiers ? column.getName().toUpperCase() : column
-                    .getName().toLowerCase());
-        }
-    }
-
-    protected void fixForeignKeys(Table table, String tablePrefix,
-            boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
-        ForeignKey[] keys = table.getForeignKeys();
-        for (ForeignKey key : keys) {
-            String prefixedName = tablePrefix + key.getForeignTableName();
-            prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase() : prefixedName
-                    .toLowerCase();
-            key.setForeignTableName(prefixedName);
-
-            String keyName = tablePrefix + key.getName();
-            keyName = storesUpperCaseIdentifiers ? keyName.toUpperCase() : keyName.toLowerCase();
-            key.setName(keyName);
-
-            Reference[] refs = key.getReferences();
-            for (Reference reference : refs) {
-                reference.setForeignColumnName(storesUpperCaseIdentifiers ? reference
-                        .getForeignColumnName().toUpperCase() : reference.getForeignColumnName()
-                        .toLowerCase());
-                reference.setLocalColumnName(storesUpperCaseIdentifiers ? reference
-                        .getLocalColumnName().toUpperCase() : reference.getLocalColumnName()
-                        .toLowerCase());
-            }
-        }
-    }
-
-    protected void fixIndexes(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers)
-            throws CloneNotSupportedException {
-        IIndex[] indexes = table.getIndices();
-        if (indexes != null) {
-            for (IIndex index : indexes) {
-                String prefixedName = tablePrefix + index.getName();
-                prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase()
-                        : prefixedName.toLowerCase();
-                index.setName(prefixedName);
-            }
-        }
     }
 
     public IDatabasePlatform getPlatform() {

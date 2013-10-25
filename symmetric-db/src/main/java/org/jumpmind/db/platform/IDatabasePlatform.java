@@ -85,6 +85,8 @@ public interface IDatabasePlatform {
      */
     public Database readDatabase(String catalog, String schema, String[] tableTypes);
 
+    public Database readFromDatabase(Table... tables);
+    
     public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
 
     public void resetCachedTableModel();
@@ -138,6 +140,8 @@ public interface IDatabasePlatform {
     public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
 
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
+    
+    public void prefixDatabase(String prefix, Database targetTables);
 
     public boolean isLob(int type);
 

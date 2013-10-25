@@ -45,8 +45,10 @@ import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
@@ -200,6 +202,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             model.setName(MODEL_DEFAULT_NAME);
         }
         return model;
+    }
+        
+    
+    public Database readFromDatabase(Table... tables) {
+        Database fromDb = new Database();
+        for (Table tableFromXml : tables) {
+            Table tableFromDatabase = getTableFromCache(getDefaultCatalog(),
+                    getDefaultSchema(), tableFromXml.getName(), true);
+            if (tableFromDatabase != null) {
+                fromDb.addTable(tableFromDatabase);
+            }
+        }
+        return fromDb;
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
@@ -598,6 +613,74 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             IOUtils.closeQuietly(is);
         }
     }        
+    
+    public void prefixDatabase(String prefix, Database targetTables) {
+        try {
+            if (StringUtils.isNotBlank(prefix) && !prefix.endsWith("_")) {
+                prefix = prefix + "_";
+            }
+            Table[] tables = targetTables.getTables();
+
+            boolean storesUpperCaseIdentifiers = isStoresUpperCaseIdentifiers();
+            for (Table table : tables) {
+                String name = String.format("%s%s", prefix, table.getName());
+                table.setName(storesUpperCaseIdentifiers ? name.toUpperCase() : name.toLowerCase());
+                prefixForeignKeys(table, prefix, storesUpperCaseIdentifiers);
+                prefixIndexes(table, prefix, storesUpperCaseIdentifiers);
+                prefixColumnNames(table, storesUpperCaseIdentifiers);
+            }
+
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }    
+
+    protected void prefixColumnNames(Table table, boolean storesUpperCaseIdentifiers) {
+        Column[] columns = table.getColumns();
+        for (Column column : columns) {
+            column.setName(storesUpperCaseIdentifiers ? column.getName().toUpperCase() : column
+                    .getName().toLowerCase());
+        }
+    }
+
+    protected void prefixForeignKeys(Table table, String tablePrefix,
+            boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
+        ForeignKey[] keys = table.getForeignKeys();
+        for (ForeignKey key : keys) {
+            String prefixedName = tablePrefix + key.getForeignTableName();
+            prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase() : prefixedName
+                    .toLowerCase();
+            key.setForeignTableName(prefixedName);
+
+            String keyName = tablePrefix + key.getName();
+            keyName = storesUpperCaseIdentifiers ? keyName.toUpperCase() : keyName.toLowerCase();
+            key.setName(keyName);
+
+            Reference[] refs = key.getReferences();
+            for (Reference reference : refs) {
+                reference.setForeignColumnName(storesUpperCaseIdentifiers ? reference
+                        .getForeignColumnName().toUpperCase() : reference.getForeignColumnName()
+                        .toLowerCase());
+                reference.setLocalColumnName(storesUpperCaseIdentifiers ? reference
+                        .getLocalColumnName().toUpperCase() : reference.getLocalColumnName()
+                        .toLowerCase());
+            }
+        }
+    }
+
+    protected void prefixIndexes(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers)
+            throws CloneNotSupportedException {
+        IIndex[] indexes = table.getIndices();
+        if (indexes != null) {
+            for (IIndex index : indexes) {
+                String prefixedName = tablePrefix + index.getName();
+                prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase()
+                        : prefixedName.toLowerCase();
+                index.setName(prefixedName);
+            }
+        }
+    }
+
     
     public void alterCaseToMatchDatabaseDefaultCase(Database database) {
         Table[] tables = database.getTables();
