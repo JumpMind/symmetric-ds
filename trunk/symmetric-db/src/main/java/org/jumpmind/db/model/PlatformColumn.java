@@ -1,7 +1,5 @@
 package org.jumpmind.db.model;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.io.Serializable;
 
 public class PlatformColumn implements Serializable, Cloneable {
@@ -12,9 +10,9 @@ public class PlatformColumn implements Serializable, Cloneable {
     
     private String type;
     
-    private String size;
+    private int size = -1;
     
-    private int decimalDigits;
+    private int decimalDigits = -1;
     
     public void setName(String name) {
         this.name = name;
@@ -24,11 +22,11 @@ public class PlatformColumn implements Serializable, Cloneable {
         return name;
     }
     
-    public void setSize(String size) {
+    public void setSize(int size) {
         this.size = size;
     }
     
-    public String getSize() {
+    public int getSize() {
         return size;
     }
     
@@ -46,18 +44,7 @@ public class PlatformColumn implements Serializable, Cloneable {
     
     public int getDecimalDigits() {
         return decimalDigits;
-    }
-    
-    public String toSizeSpec() {
-        String sizeSpec = null;
-        if (isNotBlank(size)) {
-            sizeSpec = size;
-            if (decimalDigits > -1) {
-                sizeSpec = sizeSpec + "," + decimalDigits;
-            }
-        }
-        return sizeSpec;
-    }
+    }    
         
     @Override
     public Object clone() throws CloneNotSupportedException {

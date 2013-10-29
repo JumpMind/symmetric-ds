@@ -1773,12 +1773,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
 
-        Object size = column.getSizeAsInt();
+        Integer size = column.getSizeAsInt();
         if (platformColumn != null) {
             size = platformColumn.getSize();
         }
         
-        if (size == null && platformColumn == null) {
+        if ((size == null || size == 0) && platformColumn == null) {
             size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
         }
         
@@ -1789,7 +1789,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         
         if (size != null) {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
-                if (!"0".equals(size)) {
+                if (size > 0) {
                     sqlType.append("(");
                     sqlType.append(size.toString());
                     sqlType.append(")");
