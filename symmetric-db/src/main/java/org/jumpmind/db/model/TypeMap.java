@@ -19,6 +19,9 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
+
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -112,13 +115,13 @@ public abstract class TypeMap
     public static final String DATETIME2 = "DATETIME2";
 
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
-    private static HashMap _typeNameToTypeCode = new HashMap();
+    private static HashMap<String, Integer> _typeNameToTypeCode = new HashMap<String, Integer>();
 
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */
-    private static HashMap _typeCodeToTypeName = new HashMap();
+    private static HashMap<Integer, String> _typeCodeToTypeName = new HashMap<Integer, String>();
 
-    /** Conatins the types per category. */
-    private static HashMap _typesPerCategory = new HashMap();
+    /** Contains the types per category. */
+    private static HashMap<JdbcTypeCategoryEnum, Set<Integer>> _typesPerCategory = new HashMap<JdbcTypeCategoryEnum, Set<Integer>>();
 
     static
     {
@@ -150,7 +153,8 @@ public abstract class TypeMap
         registerJdbcType(Types.TINYINT,       TINYINT,       JdbcTypeCategoryEnum.NUMERIC);
         registerJdbcType(Types.VARBINARY,     VARBINARY,     JdbcTypeCategoryEnum.BINARY);
         registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(-101,                TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
+        registerJdbcType(ORACLE_TIMESTAMPTZ,  TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
+        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
 
         // only available in JDK 1.4 and above:
         if (PlatformUtils.supportsJava14JdbcTypes())
@@ -209,11 +213,11 @@ public abstract class TypeMap
         _typeNameToTypeCode.put(typeName.toUpperCase(), typeId);
         _typeCodeToTypeName.put(typeId, typeName.toUpperCase());
 
-        Set typesInCategory = (Set)_typesPerCategory.get(category);
+        Set<Integer> typesInCategory = _typesPerCategory.get(category);
 
         if (typesInCategory == null)
         {
-            typesInCategory = new HashSet();
+            typesInCategory = new HashSet<Integer>();
             _typesPerCategory.put(category, typesInCategory);
         }
         typesInCategory.add(typeId);
@@ -228,7 +232,7 @@ public abstract class TypeMap
      */
     public static boolean isNumericType(int jdbcTypeCode)
     {
-        Set typesInCategory = (Set)_typesPerCategory.get(JdbcTypeCategoryEnum.NUMERIC);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.NUMERIC);
 
         return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
     }
@@ -242,7 +246,7 @@ public abstract class TypeMap
      */
     public static boolean isDateTimeType(int jdbcTypeCode)
     {
-        Set typesInCategory = (Set)_typesPerCategory.get(JdbcTypeCategoryEnum.DATETIME);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.DATETIME);
 
         return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
     }
@@ -256,7 +260,7 @@ public abstract class TypeMap
      */
     public static boolean isTextType(int jdbcTypeCode)
     {
-        Set typesInCategory = (Set)_typesPerCategory.get(JdbcTypeCategoryEnum.TEXTUAL);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.TEXTUAL);
 
         return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
     }
@@ -270,7 +274,7 @@ public abstract class TypeMap
      */
     public static boolean isBinaryType(int jdbcTypeCode)
     {
-        Set typesInCategory = (Set)_typesPerCategory.get(JdbcTypeCategoryEnum.BINARY);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.BINARY);
 
         return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
     }
@@ -284,7 +288,7 @@ public abstract class TypeMap
      */
     public static boolean isSpecialType(int jdbcTypeCode)
     {
-        Set typesInCategory = (Set)_typesPerCategory.get(JdbcTypeCategoryEnum.SPECIAL);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.SPECIAL);
 
         return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
     }

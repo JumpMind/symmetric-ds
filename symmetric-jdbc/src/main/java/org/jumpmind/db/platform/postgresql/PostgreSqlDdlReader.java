@@ -19,6 +19,9 @@ package org.jumpmind.db.platform.postgresql;
  * under the License.
  */
 
+import static org.jumpmind.db.model.ColumnTypes.MAPPED_TIMESTAMPTZ;
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -106,7 +109,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
             // lets use the same type code that oracle uses
-            return -101;            
+            return MAPPED_TIMESTAMPTZ;            
         } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
         } else {

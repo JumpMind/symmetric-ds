@@ -256,7 +256,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
 
         Date loadingTs = null;
         Date existingTs = null;
-        if (column.getMappedTypeCode() == -101) {
+        if (column.isTimestampWithTimezone()) {
             // Get the existingTs with timezone
             String existingStr = writer.getTransaction().queryForObject(sql, String.class,
                     objectValues);

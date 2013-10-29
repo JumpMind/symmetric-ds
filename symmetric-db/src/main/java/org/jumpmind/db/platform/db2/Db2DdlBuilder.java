@@ -37,6 +37,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -45,7 +46,8 @@ import org.jumpmind.db.platform.PlatformUtils;
 public class Db2DdlBuilder extends AbstractDdlBuilder {
 
     public Db2DdlBuilder() {
-        super();
+        super(DatabaseNamesConstants.DB2);
+        
         // the BINARY types are also handled by Db2Builder.getSqlType(Column)
         databaseInfo.setBlobsWorkInWhereClause(false);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);

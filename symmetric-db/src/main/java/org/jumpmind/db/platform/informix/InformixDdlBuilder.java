@@ -30,10 +30,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class InformixDdlBuilder extends AbstractDdlBuilder {
 
     public InformixDdlBuilder() {
+        
+        super(DatabaseNamesConstants.INFORMIX);
+        
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);

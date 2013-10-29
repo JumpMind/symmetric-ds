@@ -61,6 +61,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.ModelException;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -121,11 +122,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected boolean sqlCommentsOn = false;
 
     protected boolean scriptModeOn = false;
+    
+    protected String databaseName;
 
     /**
      * Creates a new sql builder.
      */
-    public AbstractDdlBuilder() {
+    public AbstractDdlBuilder(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     /**
@@ -1758,30 +1762,44 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The full SQL type string including the size
      */
     protected String getSqlType(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         String nativeType = getNativeType(column);
+        if (platformColumn != null) {
+            nativeType = platformColumn.getType();
+        }
+        
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
         StringBuffer sqlType = new StringBuffer();
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
 
-        Object sizeSpec = column.getSize();
-
-        if (sizeSpec == null) {
-            sizeSpec = databaseInfo.getDefaultSize(column.getMappedTypeCode());
+        Object size = column.getSizeAsInt();
+        if (platformColumn != null) {
+            size = platformColumn.getSize();
         }
-        if (sizeSpec != null) {
+        
+        if (size == null && platformColumn == null) {
+            size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
+        }
+        
+        int scale = column.getScale();
+        if (platformColumn != null) {
+            scale = platformColumn.getDecimalDigits();
+        }
+        
+        if (size != null) {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
-                if (!"0".equals(sizeSpec)) {
+                if (!"0".equals(size)) {
                     sqlType.append("(");
-                    sqlType.append(sizeSpec.toString());
+                    sqlType.append(size.toString());
                     sqlType.append(")");
                 }
             } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {
                 StringBuilder precisionAndScale = new StringBuilder();
                 precisionAndScale.append("(");
-                precisionAndScale.append(column.getSizeAsInt());
+                precisionAndScale.append(size);
                 precisionAndScale.append(",");
-                precisionAndScale.append(column.getScale());
+                precisionAndScale.append(scale);
                 precisionAndScale.append(")");
                 if (!"(0,0)".equals(precisionAndScale.toString())) {
                     sqlType.append(precisionAndScale);
@@ -1803,7 +1821,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected String getNativeType(Column column) {
         String nativeType = (String) databaseInfo.getNativeType(column.getMappedTypeCode());
-
         return nativeType == null ? column.getMappedType() : nativeType;
     }
 

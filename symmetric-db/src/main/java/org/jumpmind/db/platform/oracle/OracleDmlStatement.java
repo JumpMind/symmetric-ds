@@ -40,10 +40,11 @@ public class OracleDmlStatement extends DmlStatement {
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getMappedTypeCode() == -101) {
+                String name = columns[i].getJdbcTypeName();
+                if (columns[i].isTimestampWithTimezone()) {
                     sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                             .append(",");
-                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                } else if (name != null && name.toUpperCase().contains(TypeMap.GEOMETRY)) {
                     sql.append("SYM_WKT2GEOM(?)").append(",");
                 } else {
                     sql.append("?").append(",");
@@ -63,7 +64,7 @@ public class OracleDmlStatement extends DmlStatement {
                 if (nullValues[i]) {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" is NULL")
                             .append(separator);
-                } else if (columns[i].getMappedTypeCode() == -101) {
+                } else if (columns[i].isTimestampWithTimezone()) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                             .append(separator);

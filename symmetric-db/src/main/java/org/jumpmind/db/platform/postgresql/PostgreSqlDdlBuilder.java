@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 /*
  * The SQL Builder for PostgresSql.
@@ -45,6 +46,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     public PostgreSqlDdlBuilder() {
+        super(DatabaseNamesConstants.POSTGRESQL);
+        
         // this is the default length though it might be changed when building
         // PostgreSQL
         // in file src/include/postgres_ext.h

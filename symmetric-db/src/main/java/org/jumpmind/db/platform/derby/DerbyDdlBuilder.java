@@ -31,6 +31,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -39,6 +40,8 @@ import org.jumpmind.db.platform.PlatformUtils;
 public class DerbyDdlBuilder extends AbstractDdlBuilder {
 
     public DerbyDdlBuilder() {
+        super(DatabaseNamesConstants.DERBY);
+        
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setBlobsWorkInWhereClause(false);

@@ -36,6 +36,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 /*
  * The SQL Builder for the HsqlDb database.
@@ -43,6 +44,9 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
 
     public HsqlDb2DdlBuilder() {
+        
+        super(DatabaseNamesConstants.HSQLDB2);
+        
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);

@@ -35,6 +35,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /*
@@ -43,6 +44,9 @@ import org.jumpmind.db.platform.PlatformUtils;
 public class FirebirdDdlBuilder extends AbstractDdlBuilder {
 
     public FirebirdDdlBuilder() {
+        
+        super(DatabaseNamesConstants.FIREBIRD);
+        
         databaseInfo.setMaxIdentifierLength(31);
         databaseInfo.setRequiresAutoCommitForDdl(true);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);

@@ -19,12 +19,17 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -97,6 +102,8 @@ public class Column implements Cloneable, Serializable {
     private boolean distributionKey;
     
     private int precisionRadix;
+    
+    private Map<String, PlatformColumn> platformColumns;
 
     public Column() {
     }
@@ -486,6 +493,25 @@ public class Column implements Cloneable, Serializable {
         }
         return defaultValue;
     }    
+    
+    public void addPlatformColumn(PlatformColumn platformColumn) {
+        if (platformColumns == null) {
+            platformColumns = new HashMap<String, PlatformColumn>();
+        }
+        platformColumns.put(platformColumn.getName(), platformColumn);
+    }
+    
+    public Map<String, PlatformColumn> getPlatformColumns() {
+        return platformColumns;
+    }
+    
+    public PlatformColumn findPlatformColumn(String name) {
+        PlatformColumn platformColumn = null;
+        if (platformColumns != null) {
+            platformColumn = platformColumns.get(name);
+        }
+        return platformColumn;
+    }
 
     /**
      * Sets the default value of the column. Note that this expression will be
@@ -517,6 +543,14 @@ public class Column implements Cloneable, Serializable {
         result.scale = scale;
         result.size = size;
         result.sizeAsInt = sizeAsInt;
+        
+        if (platformColumns != null) {
+            result.platformColumns = new HashMap<String, PlatformColumn>(platformColumns.size());
+            
+            for (Map.Entry<String, PlatformColumn> entry : platformColumns.entrySet()) {
+                result.platformColumns.put(entry.getKey(), (PlatformColumn)entry.getValue().clone());
+            }
+        }
 
         return result;
     }
@@ -654,7 +688,8 @@ public class Column implements Cloneable, Serializable {
     }
     
     public boolean isTimestampWithTimezone() {
-        return jdbcTypeCode == -101 || (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
+        return jdbcTypeCode == ORACLE_TIMESTAMPLTZ || jdbcTypeCode == ORACLE_TIMESTAMPTZ || 
+                (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
     }
     
     public boolean containsJdbcTypes() {

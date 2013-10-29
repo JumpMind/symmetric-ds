@@ -115,7 +115,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (columns[i].getMappedTypeCode() == -101) {
+                if (columns[i].isTimestampWithTimezone()) {
                     sql.append("cast(? as timestamp with time zone)").append(",");
                 } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
                     sql.append("cast(? as uuid)").append(",");
@@ -141,7 +141,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 if (nullValues[i]) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                     .append(" is NULL").append(separator);
-                } else if (columns[i].getMappedTypeCode() == -101) {
+                } else if (columns[i].isTimestampWithTimezone()) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = cast(? as timestamp with time zone)").append(separator);
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
