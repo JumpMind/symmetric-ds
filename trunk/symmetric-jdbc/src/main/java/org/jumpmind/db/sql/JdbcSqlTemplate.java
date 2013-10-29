@@ -20,6 +20,9 @@
  */
 package org.jumpmind.db.sql;
 
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
+import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -899,7 +902,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     protected int verifyArgType(Object arg, int argType) {
-        if (argType == -101 || argType == Types.OTHER) {
+        if (argType == ORACLE_TIMESTAMPTZ || argType == ORACLE_TIMESTAMPLTZ || argType == Types.OTHER) {
             return SqlTypeValue.TYPE_UNKNOWN;
         } else if ((argType == Types.INTEGER && arg instanceof BigInteger) ||
                 (argType == Types.BIGINT && arg instanceof BigDecimal)) {

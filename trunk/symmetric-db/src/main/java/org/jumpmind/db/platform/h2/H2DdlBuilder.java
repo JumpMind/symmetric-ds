@@ -44,6 +44,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 /*
  * The SQL Builder for the H2 database. 
@@ -51,6 +52,9 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class H2DdlBuilder extends AbstractDdlBuilder {
 
     public H2DdlBuilder() {
+        
+        super(DatabaseNamesConstants.H2);
+        
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);

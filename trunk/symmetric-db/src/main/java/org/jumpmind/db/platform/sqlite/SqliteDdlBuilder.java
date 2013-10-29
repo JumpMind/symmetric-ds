@@ -28,10 +28,13 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
     
-    public SqliteDdlBuilder() {
+    public SqliteDdlBuilder() {        
+        super(DatabaseNamesConstants.SQLITE);
+    
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_SERIALIZABLE);
         databaseInfo.setPrimaryKeyEmbedded(true);
         databaseInfo.setNonPKIdentityColumnsSupported(false);

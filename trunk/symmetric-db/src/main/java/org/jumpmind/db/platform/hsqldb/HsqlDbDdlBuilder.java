@@ -32,6 +32,7 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 /*
  * The SQL Builder for the HsqlDb database.
@@ -39,6 +40,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
 
     public HsqlDbDdlBuilder() {
+        
+        super(DatabaseNamesConstants.HSQLDB);
 
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);

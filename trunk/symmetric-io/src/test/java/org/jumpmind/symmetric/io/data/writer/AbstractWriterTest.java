@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.AbstractDbTest;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -46,7 +45,7 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 
-abstract public class AbstractWriterTest extends AbstractDbTest {
+abstract public class AbstractWriterTest {
 
     protected static IDatabasePlatform platform;
 

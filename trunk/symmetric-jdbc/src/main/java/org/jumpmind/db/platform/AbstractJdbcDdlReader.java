@@ -46,6 +46,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -879,6 +880,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = new Column();
+        PlatformColumn platformColumn = new PlatformColumn();
+        platformColumn.setName(platform.getName());
+        
         column.setName((String) values.get("COLUMN_NAME"));
         String defaultValue = (String) values.get("COLUMN_DEF");
         if (defaultValue == null) {
@@ -896,23 +900,31 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
 
         column.setJdbcTypeCode((Integer) values.get("DATA_TYPE"));
-        column.setJdbcTypeName((String) values.get("TYPE_NAME"));
+               
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
 
-        String size = (String) values.get("COLUMN_SIZE");
-        int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
+        String typeName = (String) values.get("TYPE_NAME");
+        String columnSize = (String) values.get("COLUMN_SIZE");
+        int decimalDigits = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
 
-        if (size == null) {
-            size = (String) _defaultSizes.get(new Integer(column.getMappedTypeCode()));
+        platformColumn.setType(typeName);
+        platformColumn.setSize(columnSize);
+        platformColumn.setDecimalDigits(decimalDigits);
+        column.addPlatformColumn(platformColumn);
+        
+        column.setJdbcTypeName(typeName);
+        
+        if (columnSize == null) {
+            columnSize = (String) _defaultSizes.get(new Integer(column.getMappedTypeCode()));
         }
         // we're setting the size after the precision and radix in case
         // the database prefers to return them in the size value
-        column.setSize(size);
-        if (scale != 0) {
+        column.setSize(columnSize);
+        if (decimalDigits != 0) {
             // if there is a scale value, set it after the size (which probably
             // did not contain
             // a scale specification)
-            column.setScale(scale);
+            column.setScale(decimalDigits);
         }
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
         column.setDescription((String) values.get("REMARKS"));

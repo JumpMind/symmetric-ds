@@ -150,7 +150,7 @@ Sorry, no documentation available
 <!--
 Defines a column in a table.
 -->
-<!ELEMENT column (inheritance*)>
+<!ELEMENT column (inheritance*, platform-column*)>
 <!--
 @attr name             The name of this column.
 @attr javaName         The name of the Java field generated from this column.
@@ -206,6 +206,14 @@ Defines a column in a table.
   inputValidator   CDATA #IMPLIED
   javaNamingMethod (nochange | underscore | javaname) #IMPLIED
   description      CDATA #IMPLIED
+>
+
+<!ELEMENT platform-column EMPTY>
+
+<!ATTLIST platform-column
+  name CDATA #REQUIRED
+  type CDATA #REQUIRED
+  size CDATA #IMPLIED
 >
 
 <!--

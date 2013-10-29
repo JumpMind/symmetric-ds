@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 /*
  * The SQL Builder for MySQL.
@@ -45,6 +46,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
 
     public MySqlDdlBuilder() {
+        
+        super(DatabaseNamesConstants.MYSQL);
 
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);

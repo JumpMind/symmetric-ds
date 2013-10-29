@@ -19,6 +19,8 @@ package org.jumpmind.db.io;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
@@ -31,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,6 +43,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.UniqueIndex;
@@ -215,6 +219,26 @@ public class DatabaseXmlUtil {
                             if (table != null) {
                                 table.addColumn(column);
                             }
+                        } else if (name.equalsIgnoreCase("platform-column")) {
+                            PlatformColumn platformColumn = new PlatformColumn();
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if (attributeName.equalsIgnoreCase("name")) {
+                                    platformColumn.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("type")) {
+                                    platformColumn.setType(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("size")) {
+                                    platformColumn.setSize(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("decimalDigits")) {
+                                    if (isNotBlank(attributeValue)) {
+                                        platformColumn.setDecimalDigits(Integer.parseInt(attributeValue));
+                                    }
+                                }
+                            }
+                            if (table != null && table.getColumnCount() > 0) {
+                                table.getColumn(table.getColumnCount()-1).addPlatformColumn(platformColumn);
+                            }                            
                         } else if (name.equalsIgnoreCase("foreign-key")) {
                             fk = new ForeignKey();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -405,7 +429,28 @@ public class DatabaseXmlUtil {
                 if (column.getJavaName() != null) {
                     output.write(" javaName=\"" + column.getJavaName() + "\"");
                 }
-                output.write("/>\n");
+                
+                if (column.getPlatformColumns() != null && column.getPlatformColumns().size() > 0) {
+                    Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
+                            .values();
+                        output.write(">\n");
+                        for (PlatformColumn platformColumn : platformColumns) {
+                            output.write("\t\t\t<platform-column name=\""
+                                    + platformColumn.getName() + "\"");
+                            output.write(" type=\"" + platformColumn.getType() + "\"");
+                            if (isNotBlank(platformColumn.getSize())) {
+                                output.write(" size=\"" + platformColumn.getSize() + "\"");
+                            }
+                            if (platformColumn.getDecimalDigits() > 0) {
+                                output.write(" decimalDigits=\""
+                                        + platformColumn.getDecimalDigits() + "\"");
+                            }
+                            output.write("/>\n");
+                        }
+                        output.write("\t\t</column>\n");                    
+                } else {
+                    output.write("/>\n");
+                }
             }
 
             for (ForeignKey fk : table.getForeignKeys()) {

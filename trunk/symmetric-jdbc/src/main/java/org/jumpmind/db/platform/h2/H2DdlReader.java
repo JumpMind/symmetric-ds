@@ -52,13 +52,17 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
-            column.setSize(values.get("CHARACTER_MAXIMUM_LENGTH").toString());
+            String size = values.get("CHARACTER_MAXIMUM_LENGTH").toString();
+            column.setSize(size);
+            column.findPlatformColumn(platform.getName()).setSize(size);
         }
         if (values.get("COLUMN_DEFAULT") != null) {
             column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
         }
         if (values.get("NUMERIC_SCALE") != null) {
-            column.setScale((Integer) values.get("NUMERIC_SCALE"));
+            int scale = (Integer) values.get("NUMERIC_SCALE");
+            column.setScale(scale);
+            column.findPlatformColumn(platform.getName()).setDecimalDigits(scale);
         }
         if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
