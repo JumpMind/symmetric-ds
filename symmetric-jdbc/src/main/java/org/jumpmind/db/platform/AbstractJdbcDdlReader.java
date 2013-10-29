@@ -19,6 +19,8 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -907,10 +909,16 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         String columnSize = (String) values.get("COLUMN_SIZE");
         int decimalDigits = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
 
-        platformColumn.setType(typeName);
-        platformColumn.setSize(columnSize);
-        platformColumn.setDecimalDigits(decimalDigits);
-        column.addPlatformColumn(platformColumn);
+        try {
+            platformColumn.setType(typeName);
+            if (isNotBlank(columnSize)) {
+                platformColumn.setSize(Integer.parseInt(columnSize));
+            }
+            platformColumn.setDecimalDigits(decimalDigits);
+            column.addPlatformColumn(platformColumn);
+        } catch (Exception ex) {
+            log.warn(ex.getMessage(), ex);
+        }
         
         column.setJdbcTypeName(typeName);
         

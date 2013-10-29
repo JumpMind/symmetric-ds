@@ -19,6 +19,8 @@ package org.jumpmind.db.platform.h2;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -52,9 +54,12 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
-            String size = values.get("CHARACTER_MAXIMUM_LENGTH").toString();
-            column.setSize(size);
-            column.findPlatformColumn(platform.getName()).setSize(size);
+            String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
+            if (isNotBlank(maxLength)) {
+                Integer size = new Integer(maxLength);
+                column.setSize(size.toString());
+                column.findPlatformColumn(platform.getName()).setSize(size);
+            }
         }
         if (values.get("COLUMN_DEFAULT") != null) {
             column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
