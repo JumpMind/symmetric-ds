@@ -50,9 +50,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         " select count(*) from information_schema.routines " + 
         " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;    
 
-    private boolean supportsTransactionId = false;
-
-    private String transactionIdExpression = "null";
+    private Boolean supportsTransactionId = null;
         
     public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -61,13 +59,6 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     
     @Override
     public void createRequiredDatabaseObjects() {
-    	
-        if (transactionIdSupported()) {
-            supportsTransactionId = true;
-            transactionIdExpression = TRANSACTION_ID_EXPRESSION;        	
-        } else {
-            log.warn("Capturing of transaction identifiers is not supported in this version of postgres");
-        }
 
     	ISqlTransaction transaction = null;
         try {
@@ -154,17 +145,6 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     }
 
-    private boolean transactionIdSupported() {
-    	
-    	boolean transactionIdSupported = false;
-    	
-    	if (platform.getSqlTemplate().queryForInt("select count(*) from information_schema.routines where routine_name='txid_current'") > 0) {
-    		transactionIdSupported = true;
-    	}
-    	
-    	return transactionIdSupported;
-    }
-    
     @Override
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
@@ -226,11 +206,25 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return transactionIdExpression;
+        if (supportsTransactionId()) {
+            return TRANSACTION_ID_EXPRESSION;
+        } else {
+            return "null";
+        }
     }
 
     @Override
     public boolean supportsTransactionId() {
+        if (supportsTransactionId == null) {
+            if (platform
+                    .getSqlTemplate()
+                    .queryForInt(
+                            "select count(*) from information_schema.routines where routine_name='txid_current'") > 0) {
+                supportsTransactionId = true;
+            } else {
+                supportsTransactionId = false;
+            }
+        }
         return supportsTransactionId;
     }
 
