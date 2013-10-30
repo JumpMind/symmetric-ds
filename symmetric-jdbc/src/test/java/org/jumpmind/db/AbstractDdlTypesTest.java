@@ -97,7 +97,7 @@ abstract public class AbstractDdlTypesTest {
     protected void dropTable() {
         Table table = platform.readTableFromDatabase(null, null, tableName());
         if (table != null) {
-            platform.dropTables(false, table);
+            platform.dropTables(true, table);
         }
     }
 
