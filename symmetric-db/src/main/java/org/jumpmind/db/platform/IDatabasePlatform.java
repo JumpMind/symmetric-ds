@@ -107,6 +107,8 @@ public interface IDatabasePlatform {
     public void alterTables(boolean continueOnError, Table... desiredTables);
 
     public void dropDatabase(Database database, boolean continueOnError);
+    
+    public void dropTables(boolean continueOnError, Table...tables);
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table);
 
