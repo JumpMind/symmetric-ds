@@ -20,7 +20,6 @@ package org.jumpmind.db.platform.postgresql;
  */
 
 import static org.jumpmind.db.model.ColumnTypes.MAPPED_TIMESTAMPTZ;
-import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +32,7 @@ import java.util.Map;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -120,6 +120,15 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
+        
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+        if (platformColumn != null && "serial".equals(platformColumn.getType()) ||
+                "serial4".equals(platformColumn.getType())) {
+            platformColumn.setType("int4");
+        } else if (platformColumn != null && "bigserial".equals(platformColumn.getType()) ||
+                "serial8".equals(platformColumn.getType())) {
+            platformColumn.setType("int8");            
+        }
 
         if (column.getSize() != null) {
             if (column.getSizeAsInt() <= 0) {
@@ -145,9 +154,13 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 } else if (column.getMappedTypeCode() == Types.BINARY) {
                     column.setMappedTypeCode(Types.LONGVARBINARY);
                 }
-            } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {
+            } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {                
                 column.setSizeAndScale(0, 0);
                 column.setMappedTypeCode(Types.DECIMAL);
+                if (platformColumn != null) {
+                    platformColumn.setSize(-1);
+                    platformColumn.setDecimalDigits(-1);
+                }
             }
             
         }

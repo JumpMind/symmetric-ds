@@ -96,11 +96,9 @@ abstract public class AbstractDdlTypesTest {
     }
 
     protected void dropTable() {
-        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        try {
-            sqlTemplate.update("drop table " + tableName());
-        } catch (SqlException ex) {
-            log.info("failed to drop {} because: {}", tableName(), ex.getMessage());
+        Table table = platform.readTableFromDatabase(null, null, tableName());
+        if (table != null) {
+            platform.dropTables(false, table);
         }
     }
 

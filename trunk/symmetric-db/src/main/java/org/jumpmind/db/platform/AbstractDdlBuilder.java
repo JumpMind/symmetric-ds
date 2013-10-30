@@ -1787,7 +1787,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             scale = platformColumn.getDecimalDigits();
         }
         
-        if (size != null) {
+        if (size != null && size >= 0) {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
                 if (size > 0) {
                     sqlType.append("(");
@@ -1798,8 +1798,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 StringBuilder precisionAndScale = new StringBuilder();
                 precisionAndScale.append("(");
                 precisionAndScale.append(size);
-                precisionAndScale.append(",");
-                precisionAndScale.append(scale);
+                if (scale >= 0) {
+                    precisionAndScale.append(",");
+                    precisionAndScale.append(scale);
+                }
                 precisionAndScale.append(")");
                 if (!"(0,0)".equals(precisionAndScale.toString())) {
                     sqlType.append(precisionAndScale);

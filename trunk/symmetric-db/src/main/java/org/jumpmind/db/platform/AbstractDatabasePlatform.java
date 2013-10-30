@@ -133,6 +133,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public long getClearCacheModelTimeoutInMs() {
         return clearCacheModelTimeoutInMs;
     }
+    
+    public void dropTables(boolean continueOnError, Table...tables) {
+        Database db = new Database();
+        for (Table table : tables) {
+            db.addTable(table);
+        }
+        dropDatabase(db, continueOnError);
+    }
 
     public void dropDatabase(Database database, boolean continueOnError) {
         String sql = ddlBuilder.dropTables(database);
