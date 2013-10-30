@@ -13,7 +13,6 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.SqlException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
