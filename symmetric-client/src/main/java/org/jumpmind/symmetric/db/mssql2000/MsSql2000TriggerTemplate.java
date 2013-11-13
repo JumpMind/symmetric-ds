@@ -50,6 +50,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after insert as                                                                                                                             " +
             "   begin                                                                                                                                                                  " +
+            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
@@ -75,12 +76,13 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          deallocate DataCursor                                                                                                                                           " +
             "     end                                                                                                                                                                  " +
             "     $(custom_on_insert_text)                                                                                                                                             " +
-            "     set nocount off                                                                                                                                                      " +
+            "     if (@NCT = 0) set nocount off                                                                                                                                        " +
             "   end                                                                                                                                                                    " );
 
         sqlTemplates.put("updateTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " +
             "   begin     " +
+            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
@@ -109,12 +111,13 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          deallocate DataCursor                                                                                                                                           " +
             "       end                                                                                                                                                                " +
             "       $(custom_on_update_text)                                                                                                                                             " +
-            "       set nocount off                                                                                                                                                      " +
+            "       if (@NCT = 0) set nocount off                                                                                                                                      " +
             "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " +
             "   begin                                                                                                                                                                  " +
+            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @OldPk varchar(2000)                                                                                                                                         " +
@@ -150,12 +153,13 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          deallocate InsertCursor                                                                                                                                           " +
             "       end                                                                                                                                                                " +
             "       $(custom_on_update_text)                                                                                                                                             " +
-            "       set nocount off                                                                                                                                                      " +
+            "       if (@NCT = 0) set nocount off                                                                                                                                      " +
             "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("deleteTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             " +
             "  begin                                                                                                                                                                  " +
+            "    declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
             "    set nocount on;                                                                                                                                                             " +
             "    declare @TransactionId varchar(1000)                                                                                                                                 " +
             "    declare @OldPk varchar(2000)                                                                                                                                         " +
@@ -178,7 +182,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "         deallocate DataCursor                                                                                                                                           " +
             "    end                                                                                                                                                                  " +
             "     $(custom_on_delete_text)                                                                                                                                             " +
-            "     set nocount off                                                                                                                                                      " +
+            "     if (@NCT = 0) set nocount off                                                                                                                                       " +
             "  end                                                                                                                                                                    " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
