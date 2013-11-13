@@ -61,6 +61,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
 "                                  set nocount on      " +
 "                                  declare @clientapplname varchar(50)  " +
 "                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
@@ -90,7 +91,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
 "                                  $(custom_on_insert_text) " +
-"                                  set nocount off      " +
+"                                  if (@NCT = 0) set nocount off " +
 "                                end                                                                                                                                                                    " );
 
 
@@ -99,6 +100,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
 "                                  set nocount on      " +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
@@ -131,13 +133,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                    end                                                                                                                                                                " +
 "                                  $(custom_on_update_text) " +
-"                                  set nocount off      " +
+"                                  if (@NCT = 0) set nocount off " +
 "                                  end                                                                                                                                                                  " );
 
 
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               " +
 "                                begin                                                                                                                                                                  " +
+"                                  declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
 "                                  set nocount on      " +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         " +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
@@ -164,7 +167,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       deallocate cursor DataCursor                                                                                                                                           " +
 "                                  end                                                                                                                                                                  " +
 "                                  $(custom_on_delete_text) " +
-"                                  set nocount off          " +
+"                                  if (@NCT = 0) set nocount off " +
 "                                end                                                                                                                                                                    " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
