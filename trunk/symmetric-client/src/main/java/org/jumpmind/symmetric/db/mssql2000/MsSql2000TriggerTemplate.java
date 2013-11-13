@@ -50,7 +50,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after insert as                                                                                                                             " +
             "   begin                                                                                                                                                                  " +
-            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
+            "     declare @NCT int " +
+            "     set @NCT = @@OPTIONS & 512 " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
@@ -82,7 +83,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " +
             "   begin     " +
-            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
+            "     declare @NCT int " +
+            "     set @NCT = @@OPTIONS & 512 " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
@@ -117,7 +119,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             " +
             "   begin                                                                                                                                                                  " +
-            "     declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
+            "     declare @NCT int " +
+            "     set @NCT = @@OPTIONS & 512 " +
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @OldPk varchar(2000)                                                                                                                                         " +
@@ -159,7 +162,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
             "create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             " +
             "  begin                                                                                                                                                                  " +
-            "    declare @NCT int = @@OPTIONS & 512                                                                                                                                   " +
+            "    declare @NCT int " +
+            "    set @NCT = @@OPTIONS & 512 " +
             "    set nocount on;                                                                                                                                                             " +
             "    declare @TransactionId varchar(1000)                                                                                                                                 " +
             "    declare @OldPk varchar(2000)                                                                                                                                         " +
