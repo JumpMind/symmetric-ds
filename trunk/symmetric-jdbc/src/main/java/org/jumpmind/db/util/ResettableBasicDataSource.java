@@ -36,9 +36,12 @@ public class ResettableBasicDataSource extends BasicDataSource {
     }
 
     @Override
-    public synchronized void close() throws SQLException {
+    public synchronized void close() {
         try {
-            super.close();
+            try {
+                super.close();
+            } catch (SQLException e) {
+            }
         } finally {
             closed = false;
         }
