@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
@@ -57,11 +56,11 @@ public class BasicDataSourceFactory {
         }
     }
     
-    public static BasicDataSource create(TypedProperties properties) {
+    public static ResettableBasicDataSource create(TypedProperties properties) {
         return create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
     }
 
-    public static BasicDataSource create(TypedProperties properties,
+    public static ResettableBasicDataSource create(TypedProperties properties,
             ISecurityService securityService) {
         properties = properties.copy();
         properties.putAll(System.getProperties());
