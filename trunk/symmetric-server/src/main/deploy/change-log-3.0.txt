@@ -18,6 +18,18 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.11 (Released 2013-11-15) 
+==========================================
+- 0001269: [New Feature] Update ddl utils xml to support specific database types so create schema commands replicate the same schema on same databases (chenson) - closed.
+- 0001448: [Improvement] Provide global parameter to specify that BSH database writer filters will handle missing tables (mhanes) - closed.
+- 0001449: [Improvement] Add support for allowing a database writer filter to change the target tables catalog, schema and table name (chenson) - closed.
+- 0001450: [Bug] ignore case parameter should apply to only the table (not schema and catalog) for now in the load filter (chenson) - closed.
+- 0001451: [Improvement] Expose apis to prefix a Database and read a list of Table from the physical database (chenson) - closed.
+- 0001457: [Bug] PostgreSQL timestamp with timezone columns won't sync for very old, European dates. (mhanes) - closed.
+- 0001458: [Improvement] Add support for Oracle's TIMESTAMP WITH LOCAL TIME ZONE data type (chenson) - closed.
+- 0001460: [Bug] On postgres, when sync triggers is run from symadmin tool the generated triggers put null into the transaction id field (chenson) - closed.
+- 0001462: [Bug] Stored procedure with NOCOUNT is rolled back (elong) - closed.
+
 SymmetricDS - 3.5.10 (Released 2013-10-20) 
 ==========================================
 - 0001429: [Bug] sym_pkg is hard coded in the oracle dialect so the prefix parameter doesn't work on Oracle (chenson) - closed.
