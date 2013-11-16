@@ -40,6 +40,10 @@ public class Table implements Serializable, Cloneable {
 
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5541154961302342608L;
+    
+    private String oldCatalog = null;
+    
+    private String oldSchema = null;
 
     /** The catalog of this table as read from the database. */
     private String catalog = null;
@@ -129,6 +133,7 @@ public class Table implements Serializable, Cloneable {
      *            The catalog
      */
     public void setCatalog(String catalog) {
+        this.oldCatalog = this.catalog != null ? this.catalog : catalog;
         this.catalog = catalog;
     }
 
@@ -148,6 +153,7 @@ public class Table implements Serializable, Cloneable {
      *            The schema
      */
     public void setSchema(String schema) {
+        this.oldSchema = this.schema != null ? this.schema : schema;
         this.schema = schema;
     }
 
@@ -1083,6 +1089,22 @@ public class Table implements Serializable, Cloneable {
             }
         }
         return orderedColumns;
+    }
+    
+    public String getOldCatalog() {
+        return oldCatalog;
+    }
+    
+    public void setOldCatalog(String oldCatalog) {
+        this.oldCatalog = oldCatalog;
+    }
+    
+    public String getOldSchema() {
+        return oldSchema;
+    }
+    
+    public void setOldSchema(String oldSchema) {
+        this.oldSchema = oldSchema;
     }
 
     public Table copy() {
