@@ -112,8 +112,7 @@ public class StructureDataWriter implements IDataWriter {
                 table.getPrimaryKeyColumnNames(), true);   
         /*
          * restore the schema and catalog from the passed in table because they
-         * might have not been set, but get set to the default after the table
-         * is looked up locally
+         * might have not been originally set, but were set when looking up the table locally
          */
         this.currentTable.setSchema(table.getSchema());
         this.currentTable.setCatalog(table.getCatalog());
