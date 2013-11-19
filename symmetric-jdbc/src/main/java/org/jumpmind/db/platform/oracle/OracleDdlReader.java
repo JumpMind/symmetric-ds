@@ -287,6 +287,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             ResultSet resultSet = prepStmt.executeQuery();
 
             if (!resultSet.next()) {
+                resultSet.close();
                 return false;
             }
             // we have a trigger, so lets check the sequence
@@ -297,7 +298,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             prepStmt.setString(1, seqName);
 
             resultSet = prepStmt.executeQuery();
-            return resultSet.next();
+            boolean resultFound = resultSet.next();
+            resultSet.close();
+            return resultFound;
         } finally {
             if (prepStmt != null) {
                 prepStmt.close();
@@ -370,6 +373,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     log.warn("Skipping index " + name + " of type " + type);
                 }
             }
+            
+            rs.close();
         } finally {
             if (stmt != null) {
                 stmt.close();
