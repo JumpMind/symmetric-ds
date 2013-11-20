@@ -1217,22 +1217,25 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                             "Running the following query to get metadata about whether a column is an auto increment column: \n{}",
                             query);
                 }
-                ResultSet rs = stmt.executeQuery(query.toString());
-                ResultSetMetaData rsMetaData = rs.getMetaData();
+                ResultSet rs = null;
+                try {
+                    rs = stmt.executeQuery(query.toString());
+                    ResultSetMetaData rsMetaData = rs.getMetaData();
 
-                for (int idx = 0; idx < columnsToCheck.length; idx++) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(columnsToCheck[idx] + " is auto increment? "
-                                + rsMetaData.isAutoIncrement(idx + 1));
+                    for (int idx = 0; idx < columnsToCheck.length; idx++) {
+                        if (log.isDebugEnabled()) {
+                            log.debug(columnsToCheck[idx] + " is auto increment? "
+                                    + rsMetaData.isAutoIncrement(idx + 1));
+                        }
+                        if (rsMetaData.isAutoIncrement(idx + 1)) {
+                            columnsToCheck[idx].setAutoIncrement(true);
+                        }
                     }
-                    if (rsMetaData.isAutoIncrement(idx + 1)) {
-                        columnsToCheck[idx].setAutoIncrement(true);
-                    }
+                } finally {
+                    close(rs);
                 }
             } finally {
-                if (stmt != null) {
-                    stmt.close();
-                }
+                close(stmt);
             }
         } catch (SQLException ex) {
             StringBuilder msg = new StringBuilder(
@@ -1339,7 +1342,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     }
                     return schemas;
                 } finally {
-                    JdbcSqlTemplate.close(rs);
+                    close(rs);
                 }
             }
         });
@@ -1361,7 +1364,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     }
                     return list;
                 } finally {
-                    JdbcSqlTemplate.close(rs);
+                    close(rs);
                 }
             }
         });
@@ -1382,7 +1385,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     }
                     return list;
                 } finally {
-                    JdbcSqlTemplate.close(rs);
+                    close(rs);
                 }
             }
         });
