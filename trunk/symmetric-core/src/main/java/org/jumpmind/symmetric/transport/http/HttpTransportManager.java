@@ -26,8 +26,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -35,6 +37,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.IoConstants;
@@ -281,7 +284,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(connector);
         sb.append(WebConstants.NODE_ID);
         sb.append("=");
-        sb.append(nodeId);
+        try {
+            sb.append(URLEncoder.encode(nodeId, IoConstants.ENCODING));
+        } catch (UnsupportedEncodingException e) {
+            throw new IoException(e);
+        }
         return sb.toString();
     }
 }
