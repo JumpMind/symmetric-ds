@@ -32,25 +32,27 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
-public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
+public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform implements
+        IDatabasePlatform {
 
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
-    
+
     private Map<String, String> sqlScriptReplacementTokens;
-    
+
     public SqliteDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         sqlScriptReplacementTokens = new HashMap<String, String>();
-        sqlScriptReplacementTokens.put("current_timestamp", "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
-        sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}","$1");
-        sqlScriptReplacementTokens.put("\\{d([^<]*?)\\}","$1");
+        sqlScriptReplacementTokens.put("current_timestamp",
+                "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
+        sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}", "$1");
+        sqlScriptReplacementTokens.put("\\{d([^<]*?)\\}", "$1");
     }
-    
+
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
-    
+
     public String getName() {
         return DatabaseNamesConstants.SQLITE;
     }
@@ -62,24 +64,53 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
     public String getDefaultCatalog() {
         return null;
     }
-    
+
     @Override
     protected SqliteDdlBuilder createDdlBuilder() {
-        return  new SqliteDdlBuilder();
+        return new SqliteDdlBuilder();
     }
 
     @Override
     protected SqliteDdlReader createDdlReader() {
         return new SqliteDdlReader(this);
-    }    
-    
-    
-    protected ISqlTemplate createSqlTemplate() {
-        return new SqliteJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo()); 
     }
-    
+
+    protected ISqlTemplate createSqlTemplate() {
+        return new SqliteJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+    }
+
     @Override
     protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
         return row.getString(name);
+    }
+
+    @Override
+    protected Object parseBigDecimal(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            return super.parseBigDecimal(value);
+        }
+    }
+
+    @Override
+    protected Object parseBigInteger(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            return super.parseBigInteger(value);
+        }
+    }
+
+    @Override
+    protected Object parseInteger(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            return super.parseInteger(value);
+        }
     }
 }
