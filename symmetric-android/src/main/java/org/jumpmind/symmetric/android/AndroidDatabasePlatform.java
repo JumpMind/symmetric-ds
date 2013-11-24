@@ -72,8 +72,37 @@ public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
     }
     
     @Override
-    protected Number parseIntegerObjectValue(String value) {
-        return new BigDecimal(value);
+    protected Object parseBigDecimal(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            return super.parseBigDecimal(value);
+        }
+    }
+
+    @Override
+    protected Object parseBigInteger(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            return super.parseBigInteger(value);
+        }
+    }
+
+    @Override
+    protected Object parseInteger(String value) {
+        /* sqlite allows blank data in integer fields */
+        if ("".equals(value)) {
+            return value;
+        } else {
+            try {
+                return super.parseInteger(value);
+            } catch (NumberFormatException ex) {
+                return new BigDecimal(value);
+            }
+        }
     }
 
 }
