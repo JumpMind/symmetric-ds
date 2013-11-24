@@ -563,6 +563,14 @@ public class Database implements Serializable, Cloneable {
             }
         }
     }
+    
+    public Database copy() {
+        try {
+            return (Database) this.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * {@inheritDoc}
