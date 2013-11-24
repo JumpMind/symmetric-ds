@@ -14,6 +14,16 @@ public class PlatformColumn implements Serializable, Cloneable {
     
     private int decimalDigits = -1;
     
+    public PlatformColumn(String name, String type, int size, int decimalDigits) {
+        this.name = name;
+        this.type = type;
+        this.size = size;
+        this.decimalDigits = decimalDigits;
+    }
+    
+    public PlatformColumn() {
+    }
+    
     public void setName(String name) {
         this.name = name;
     }

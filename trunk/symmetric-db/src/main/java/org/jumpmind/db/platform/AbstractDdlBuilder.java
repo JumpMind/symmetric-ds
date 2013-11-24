@@ -325,7 +325,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return ddl.toString();
     }
 
-    public String alterTable(Table currentTable, Table desiredTable, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
+    public String alterTable(Table currentTable, Table desiredTable, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {        
         Database currentModel = new Database();
         currentModel.addTable(currentTable);
 
@@ -333,6 +333,42 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         desiredModel.addTable(desiredTable);
 
         return alterDatabase(currentModel, desiredModel, alterDatabaseInterceptors);
+    }
+    
+    /*
+     * When the platform columns were added alters were not taken into
+     * consideration.
+     */
+    protected void removeCurrentPlatformColumnsIfTheyDoNotExistInDesired(Database currentModel,
+            Database desiredModel) {
+        Table[] currentTables = currentModel.getTables();
+
+        for (Table currentTable : currentTables) {
+            /* Warning - we don't current support altering tables across different catalogs and schemas */
+            Table desiredTable = desiredModel.findTable(currentTable.getName(), false);
+            if (desiredTable != null) {
+                Column[] currentColumns = currentTable.getColumns();
+                for (Column currentColumn : currentColumns) {
+                    Column desiredColumn = desiredTable.getColumnWithName(currentColumn.getName());
+                    if (desiredColumn != null) {
+                        Map<String, PlatformColumn> currentPlatformColumns = currentColumn
+                                .getPlatformColumns();
+                        Map<String, PlatformColumn> desiredPlatformColumns = desiredColumn
+                                .getPlatformColumns();
+
+                        if (currentPlatformColumns != null) {
+                            Set<String> currentPlatformKeys = currentPlatformColumns.keySet();
+                            for (String key : currentPlatformKeys) {
+                                if (desiredPlatformColumns == null
+                                        || !desiredPlatformColumns.containsKey(key)) {
+                                    currentPlatformColumns.remove(key);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -342,6 +378,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * algorithm by redefining the individual methods that compromise it.
      */
     public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
+        
+        currentModel = currentModel.copy();
+        removeCurrentPlatformColumnsIfTheyDoNotExistInDesired(currentModel, desiredModel);
+
         ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {

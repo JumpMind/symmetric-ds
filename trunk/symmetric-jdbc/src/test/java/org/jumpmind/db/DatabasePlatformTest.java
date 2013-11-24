@@ -65,7 +65,7 @@ public class DatabasePlatformTest {
     public void turnOffDebug() {
         Logger logger = Logger.getLogger("org.jumpmind.db");
         logger.setLevel(originalLevel);
-    }
+    }    
     
     @Test
     public void testTableRebuild() throws Exception {
