@@ -123,12 +123,9 @@ public class DataService extends AbstractService implements IDataService {
                             try {
                                 transaction = sqlTemplate.startSqlTransaction();
 
-                                String deleteStatement = StringUtils.isNotBlank(request
-                                        .getReloadDeleteStmt()) ? request.getReloadDeleteStmt()
-                                        : triggerRouter.getInitialLoadDeleteStmt();
-                                if (StringUtils.isNotBlank(deleteStatement)) {
-                                    insertPurgeEvent(transaction, targetNode, triggerRouter,
-                                            triggerHistory, false, deleteStatement, -1, null);
+                                if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+	                                String overrideDeleteStatement = StringUtils.isNotBlank(request.getReloadDeleteStmt()) ? request.getReloadDeleteStmt() : null;
+                                    insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, false, overrideDeleteStatement, -1, null);
                                 }
 
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
