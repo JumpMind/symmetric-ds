@@ -128,7 +128,7 @@ public class DataService extends AbstractService implements IDataService {
                                         : triggerRouter.getInitialLoadDeleteStmt();
                                 if (StringUtils.isNotBlank(deleteStatement)) {
                                     insertPurgeEvent(transaction, targetNode, triggerRouter,
-                                            triggerHistory, false, request.getReloadDeleteStmt(), -1, null);
+                                            triggerHistory, false, deleteStatement, -1, null);
                                 }
 
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
@@ -241,6 +241,7 @@ public class DataService extends AbstractService implements IDataService {
                 request.setReloadSelect(rs.getString("reload_select"));
                 request.setReloadEnabled(rs.getBoolean("reload_enabled"));
                 request.setReloadTime(rs.getDateTime("reload_time"));
+                request.setReloadDeleteStmt(rs.getString("reload_delete_stmt"));
                 request.setCreateTime(rs.getDateTime("create_time"));
                 request.setLastUpdateBy(rs.getString("last_update_by"));
                 request.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -260,11 +261,7 @@ public class DataService extends AbstractService implements IDataService {
             triggerHistory = lookupTriggerHistory(triggerRouter.getTrigger());
         }
         
-        String channelId = triggerRouter.getTrigger().getChannelId();
-        if (!Constants.CHANNEL_FILESYNC.equals(triggerRouter.getTrigger().getChannelId()) &&
-                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
-            channelId = Constants.CHANNEL_RELOAD;
-        }
+        String channelId = getChannelIdForTrigger(triggerRouter.getTrigger());
 
         // initial_load_select for table can be overridden by populating the
         // row_data
@@ -278,6 +275,15 @@ public class DataService extends AbstractService implements IDataService {
             data.setNodeList(targetNode.getNodeId());
             return insertData(transaction, data);
         }
+    }
+
+    private String getChannelIdForTrigger(Trigger trigger) {
+        String channelId = trigger.getChannelId();
+        if (!Constants.CHANNEL_FILESYNC.equals(trigger.getChannelId()) &&
+                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
+            channelId = Constants.CHANNEL_RELOAD;
+        }
+        return channelId;
     }
 
     public void insertReloadEvents(Node targetNode, boolean reverse) {
@@ -568,11 +574,8 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, String overrideDeleteStatement, long loadId, String createBy) {
         String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
-        Trigger trigger = triggerRouter.getTrigger();
-        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
-        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, triggerHistory, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : trigger
-                        .getChannelId(), null, null);
+        String channelId = getChannelIdForTrigger(triggerRouter.getTrigger());
+        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, triggerHistory, channelId, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                     triggerRouter.getRouter().getRouterId(), isLoad, loadId, createBy, Status.NE);
