@@ -222,7 +222,11 @@ public class DmlStatement {
 
     protected String buildSelectSqlAll(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
-        appendColumns(sql, columns, true);
+        if (columns != null && columns.length > 0) {
+            appendColumns(sql, columns, true);            
+        } else {
+            sql.append("*");
+        }
         sql.append(" from ").append(tableName);
         return sql.toString();
     }
