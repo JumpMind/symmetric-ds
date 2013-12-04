@@ -41,6 +41,10 @@
              the class with the appropriate SymmetricDS component.
         </para>
         <para>
+             Extensions should be configured in the <literal>conf/symmetric-extensions.xml</literal> file as Spring beans.  The jar file that contains
+             the extension should be placed in the web/WEB-INF/lib directory.
+        </para>        
+        <para>
              If an extension point needs access to SymmetricDS services or needs to connect to the database
              it may implement the <literal>ISymmetricEngineAware</literal> interface in order to
              get a handle to the <literal>ISymmetricEngine</literal>.
@@ -55,9 +59,6 @@
      return new String[] { "root" };
  }
 ]]></programlisting>
-        </para>
-        <para>
-             Extensions are configured in the <literal>conf/symmetric-extensions.xml</literal> file.
         </para>
         <section id="extensions-parameter-filter">
             <title>IParameterFilter</title>
