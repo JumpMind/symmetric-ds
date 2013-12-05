@@ -214,7 +214,6 @@ public class SymmetricEngineHolder {
             engine.setDeploymentType(deploymentType);
             if (!engines.containsKey(engine.getEngineName())) {
                 engines.put(engine.getEngineName(), engine);
-                engineCount++;
             } else {
                 log.error(
                         "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
@@ -323,6 +322,7 @@ public class SymmetricEngineHolder {
             }
 
             engine = create(symmetricProperties.getAbsolutePath());
+            engineCount++;
             if (engine != null && autoStart) {
                 engine.start();
             } else {
