@@ -73,7 +73,7 @@ public class TransformationTest extends AbstractTest {
         assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         pull("client");
         assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
-        rootTemplate.update("delete from TRANSFORM_TABLE_A_SRC");
+        rootTemplate.update(String.format("delete from %s", rootTableName));
         assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         pull("client");
         assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
