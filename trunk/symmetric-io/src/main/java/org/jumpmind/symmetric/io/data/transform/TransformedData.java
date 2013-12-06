@@ -268,12 +268,26 @@ public class TransformedData implements Cloneable {
 
     public String[] getOldColumnValues() {
         List<String> names = retrieve(columnsBy, true);
+        List<String> keyNames = retrieve(keysBy, true);
+        List<String> keyValues = retrieve(keysBy, false);
         List<String> values = new ArrayList<String>();
-        for( String name : names ) {
-            if(oldSourceValues.containsKey(name)) {
-                values.add(oldSourceValues.get(name));
+        for (String name : names) {
+            if (keyNames.contains(name)) {
+                /*
+                 * Must always use the transformed value for the key else
+                 * deletes and updates won't work.
+                 */
+                values.add(keyValues.get(keyNames.indexOf(name)));
             } else {
-                values.add(null);
+                if (oldSourceValues.containsKey(name)) {
+                    values.add(oldSourceValues.get(name));
+                } else {
+                    /*
+                     * TODO copy transforms should probably copy the old value
+                     * to the new value. Currently, it will be null.
+                     */
+                    values.add(null);
+                }
             }
         }
         return values.toArray(new String[values.size()]);
