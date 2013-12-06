@@ -20,7 +20,57 @@
  */
 package org.jumpmind.symmetric.test;
 
-public class TransformationTest {
+import static org.junit.Assert.assertEquals;
 
+import java.sql.Types;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.symmetric.ISymmetricEngine;
+
+public class TransformationTest extends AbstractTest {
+
+    Table srcTableA;
+
+    Table tgtTableA;
+
+    @Override
+    protected Table[] getTables(String name) {
+        srcTableA = new Table("TRANSFORM_TABLE_A_SRC");
+        srcTableA.addColumn(new Column("SRC_ID", true, Types.VARCHAR, 255, 0));
+        srcTableA.addColumn(new Column("COL1", false, Types.INTEGER, -1, -1));
+
+        tgtTableA = new Table("TRANSFORM_TABLE_A_TGT");
+        tgtTableA.addColumn(new Column("TGT_ID", true, Types.VARCHAR, 255, 0));
+        tgtTableA.addColumn(new Column("COL1", false, Types.INTEGER, -1, -1));
+
+        return new Table[] { srcTableA, tgtTableA };
+    }
+
+    @Override
+    protected String[] getGroupNames() {
+        return new String[] { "root", "client" };
+    }
+
+    @Override
+    protected void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
+            throws Exception {
+        loadConfigAndRegisterNode("client", "root");
+        testDeletesWithTransformedIdWork(rootServer, clientServer);
+    }
+
+    protected void testDeletesWithTransformedIdWork(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        ISqlTemplate rootTemplate = rootServer.getDatabasePlatform().getSqlTemplate();
+        ISqlTemplate clientTemplate = clientServer.getDatabasePlatform().getSqlTemplate();
+        rootTemplate.update("insert into TRANSFORM_TABLE_A_SRC values(?,?)", 1, 1);
+        assertEquals(0, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        pull("client");
+        assertEquals(1, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        rootTemplate.update("delete from TRANSFORM_TABLE_A_SRC");
+        assertEquals(1, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        pull("client");
+        assertEquals(0, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+    }
 }
