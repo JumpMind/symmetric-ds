@@ -62,15 +62,20 @@ public class TransformationTest extends AbstractTest {
 
     protected void testDeletesWithTransformedIdWork(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
+        
+        String rootTableName = rootServer.getDatabasePlatform().getTableFromCache("TRANSFORM_TABLE_A_SRC", false).getName();
+        String clientTableName = clientServer.getDatabasePlatform().getTableFromCache("TRANSFORM_TABLE_A_TGT", false).getName();
+        
         ISqlTemplate rootTemplate = rootServer.getDatabasePlatform().getSqlTemplate();
         ISqlTemplate clientTemplate = clientServer.getDatabasePlatform().getSqlTemplate();
-        rootTemplate.update("insert into TRANSFORM_TABLE_A_SRC values(?,?)", 1, 1);
-        assertEquals(0, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        
+        rootTemplate.update(String.format("insert into %s values(?,?)", rootTableName), 1, 1);
+        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         pull("client");
-        assertEquals(1, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         rootTemplate.update("delete from TRANSFORM_TABLE_A_SRC");
-        assertEquals(1, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         pull("client");
-        assertEquals(0, clientTemplate.queryForInt("select count(*) from TRANSFORM_TABLE_A_TGT"));
+        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
     }
 }
