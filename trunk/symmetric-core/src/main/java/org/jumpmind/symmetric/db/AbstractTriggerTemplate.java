@@ -582,7 +582,9 @@ abstract public class AbstractTriggerTemplate {
                         templateToUse = numberColumnTemplate;
                         break;
                     case Types.CHAR:
+                    case Types.NCHAR:
                     case Types.VARCHAR:
+                    case ColumnTypes.NVARCHAR:                        
                         templateToUse = stringColumnTemplate;
                         break;
                     case ColumnTypes.SQLXML:
@@ -592,6 +594,7 @@ abstract public class AbstractTriggerTemplate {
                         templateToUse = arrayColumnTemplate;
                         break;
                     case Types.LONGVARCHAR:
+                    case ColumnTypes.LONGNVARCHAR:
                         if (!isLob) {
                             templateToUse = stringColumnTemplate;
                             break;
