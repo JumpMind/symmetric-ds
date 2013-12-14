@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
+import org.jumpmind.symmetric.file.FileConflictException;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -586,7 +587,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             log.error("Failed to evalulate the script:\n{}", script);
                         }
 
-                        log.error("Failed to process file sync batch " + batchId, ex);                        
+                        if (ex instanceof FileConflictException) {
+                            log.error(ex.getMessage() + ".  Failed to process file sync batch " + batchId);
+                        } else {
+                            log.error("Failed to process file sync batch " + batchId, ex);
+                        }
 
                         incomingBatch.setErrorFlag(true);
                         incomingBatch.setStatus(IncomingBatch.Status.ER);
