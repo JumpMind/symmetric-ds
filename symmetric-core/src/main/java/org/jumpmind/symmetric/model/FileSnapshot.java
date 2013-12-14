@@ -35,7 +35,7 @@ public class FileSnapshot implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum LastEventType {
-        CREATE("C"), MODIFY("M"), DELETE("D"), SEED("S");
+        CREATE("C"), MODIFY("M"), DELETE("D");
         private LastEventType(String code) {
             this.code = code;
         }
@@ -51,12 +51,8 @@ public class FileSnapshot implements Serializable {
                 return CREATE;
             } else if ("M".equals(code)) {
                 return MODIFY;
-
             } else if ("D".equals(code)) {
                 return DELETE;
-
-            } else if ("S".equals(code)) {
-                return SEED;
 
             } else {
                 return null;

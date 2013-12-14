@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IRouterService;
 
@@ -54,6 +55,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         String triggerId = newData.get("TRIGGER_ID");
         String routerId = newData.get("ROUTER_ID");
         String sourceNodeId = newData.get("LAST_UPDATE_BY");
+        String lastEventType = newData.get("LAST_EVENT_TYPE");
 
         if (triggerId == null) {
             Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
@@ -61,27 +63,39 @@ public class FileSyncDataRouter extends AbstractDataRouter {
             triggerId = oldData.get("TRIGGER_ID");
             routerId = oldData.get("ROUTER_ID");
             sourceNodeId = oldData.get("LAST_UPDATE_BY");
+            lastEventType = oldData.get("LAST_EVENT_TYPE");
         }
+        
+        LastEventType eventType = LastEventType.fromCode(lastEventType);
+
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId);
         if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
-            Router router = fileTriggerRouter.getRouter();
-            Map<String, IDataRouter> routers = routerService.getRouters();
-            IDataRouter dataRouter = null;
-            if (StringUtils.isNotBlank(router.getRouterType())) {
-                dataRouter = routers.get(router.getRouterType());
-            }
+            if (eventType == null || eventType == LastEventType.DELETE
+                    && fileTriggerRouter.getFileTrigger().isSyncOnDelete()
+                    || eventType == LastEventType.MODIFY
+                    && fileTriggerRouter.getFileTrigger().isSyncOnModified()
+                    || eventType == LastEventType.CREATE
+                    && fileTriggerRouter.getFileTrigger().isSyncOnCreate()) {
 
-            if (dataRouter == null) {
-                dataRouter = routers.get("default");
-            }
+                Router router = fileTriggerRouter.getRouter();
+                Map<String, IDataRouter> routers = routerService.getRouters();
+                IDataRouter dataRouter = null;
+                if (StringUtils.isNotBlank(router.getRouterType())) {
+                    dataRouter = routers.get(router.getRouterType());
+                }
 
-            if (context instanceof ChannelRouterContext) {
-                ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
+                if (dataRouter == null) {
+                    dataRouter = routers.get("default");
+                }
+
+                if (context instanceof ChannelRouterContext) {
+                    ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
+                }
+                dataMetaData.setRouter(router);
+                nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false, false));
+                nodeIds.remove(sourceNodeId);
             }
-            dataMetaData.setRouter(router);
-            nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false, false));
-            nodeIds.remove(sourceNodeId);
         } else {
             log.error(
                     "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
