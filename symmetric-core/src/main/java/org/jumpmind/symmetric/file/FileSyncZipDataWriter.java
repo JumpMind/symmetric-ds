@@ -292,26 +292,28 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         
                         
                         if (process) {
-                            if (file.exists()) {
-                                byteCount += file.length();
-                                ZipEntry entry = new ZipEntry(entryName.toString());
-                                entry.setSize(file.length());
-                                entry.setTime(file.lastModified());
-                                zos.putNextEntry(entry);
-                                if (file.isFile()) {
-                                    FileInputStream fis = new FileInputStream(file);
-                                    try {
-                                        IOUtils.copy(fis, zos);
-                                    } finally {
-                                        IOUtils.closeQuietly(fis);
+                            if (eventType != LastEventType.DELETE) {
+                                if (file.exists()) {
+                                    byteCount += file.length();
+                                    ZipEntry entry = new ZipEntry(entryName.toString());
+                                    entry.setSize(file.length());
+                                    entry.setTime(file.lastModified());
+                                    zos.putNextEntry(entry);
+                                    if (file.isFile()) {
+                                        FileInputStream fis = new FileInputStream(file);
+                                        try {
+                                            IOUtils.copy(fis, zos);
+                                        } finally {
+                                            IOUtils.closeQuietly(fis);
+                                        }
                                     }
+                                    zos.closeEntry();
+                                    entries.put(entryName.toString(), eventType);
+                                } else {
+                                    log.warn(
+                                            "Could not find the {} file to package for synchronization.  Skipping it.",
+                                            file.getAbsolutePath());
                                 }
-                                zos.closeEntry();
-                                entries.put(entryName.toString(), eventType);
-                            } else if (eventType != LastEventType.DELETE) {
-                                log.warn(
-                                        "Could not find the {} file to package for synchronization.  Skipping it.",
-                                        file.getAbsolutePath());
                             }
 
                             command.append("}\n\n");
