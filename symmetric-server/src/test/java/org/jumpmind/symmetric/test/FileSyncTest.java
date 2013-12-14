@@ -87,6 +87,8 @@ public class FileSyncTest extends AbstractTest {
         testManual(rootServer, clientServer);
         
         testUpdateManual(rootServer,clientServer);
+        
+        testCreateAndUpdateInSameBatch(rootServer, clientServer);
     }
 
     protected void testInitialLoadFromServerToClient(ISymmetricEngine rootServer,
@@ -336,9 +338,44 @@ public class FileSyncTest extends AbstractTest {
         assertEquals(0, batches.size());
         
     }
+    
+    protected void testCreateAndUpdateInSameBatch(ISymmetricEngine rootServer,
+            ISymmetricEngine clientServer) throws Exception {
+        OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
+        
+        File allFile1 = new File(allSvrSourceDir, "createAndUpdate/test.txt");
+        allFile1.getParentFile().mkdirs();
+        FileUtils.write(allFile1, "create value ");
+        
+        trackChangesOnServer();
+        
+        FileUtils.write(allFile1, "plus update", true);
+
+        trackChangesOnServer();
+        
+        File allFile1Target = new File(allClntTargetDir, allFile1.getParentFile().getName() + "/" + allFile1.getName());
+        allFile1Target.getParentFile().mkdirs();
+
+        pullFiles();
+
+        batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
+        batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
+        assertEquals(0, batches.size());
+
+        assertTrue(allFile1Target.exists());
+        
+        assertEquals("create value plus update", FileUtils.readFileToString(allFile1Target));
+                
+    }
+    
+    protected void trackChangesOnServer() {
+        getWebServer("server").getEngine().getFileSyncService().trackChanges(true);
+    }
 
     protected boolean pullFiles() {
-        getWebServer("server").getEngine().getFileSyncService().trackChanges(true);
+        trackChangesOnServer();
         getWebServer("server").getEngine().getRouterService().routeData(true);
         return pullFiles("client");
     }
