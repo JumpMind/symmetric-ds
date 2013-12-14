@@ -131,7 +131,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
                     deleteFromFileIncoming();
                 } finally {
-                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
+                    if (!force) {
+                        engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
+                    }
                 }
             } else {
                 log.debug("Did not run the track file sync changes process because it was locked");
