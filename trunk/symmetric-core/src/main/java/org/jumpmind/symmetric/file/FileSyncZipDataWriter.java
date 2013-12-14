@@ -199,7 +199,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         switch (eventType) {
                             case CREATE:
                             case MODIFY:
-                            case SEED:
                                 if (file.exists()) {
                                     command.append("  File targetBaseDirFile = new File(targetBaseDir);\n");
                                     command.append("  if (!targetBaseDirFile.exists()) {\n");

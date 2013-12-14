@@ -48,7 +48,7 @@ public class FileTriggerTracker {
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
         fileObserver = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                 fileTriggerRouter.getFileTrigger().createIOFileFilter());
-        currentListener = new SnapshotUpdater(changesSinceLastSnapshot, false);
+        currentListener = new SnapshotUpdater(changesSinceLastSnapshot);
         fileObserver.addListener(currentListener);
         try {
             fileObserver.initialize();
@@ -79,7 +79,7 @@ public class FileTriggerTracker {
         pollForChanges();
         DirectorySnapshot changes = changesSinceLastSnapshot;
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
-        SnapshotUpdater newListener = new SnapshotUpdater(changesSinceLastSnapshot, false);
+        SnapshotUpdater newListener = new SnapshotUpdater(changesSinceLastSnapshot);
         fileObserver.addListener(newListener);
         fileObserver.removeListener(currentListener);
         currentListener = newListener;
@@ -92,58 +92,46 @@ public class FileTriggerTracker {
         FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter
                 .getFileTrigger().getBaseDir(), fileTriggerRouter.getFileTrigger()
                 .createIOFileFilter());
-        observer.addListener(new SnapshotUpdater(snapshot, true));
+        observer.addListener(new SnapshotUpdater(snapshot));
         observer.checkAndNotify();
     }
 
     class SnapshotUpdater extends FileAlterationListenerAdaptor {
 
         DirectorySnapshot snapshot;
-        boolean populateAll = false;
 
-        SnapshotUpdater(DirectorySnapshot snapshot, boolean populateAll) {
+        SnapshotUpdater(DirectorySnapshot snapshot) {
             this.snapshot = snapshot;
-            this.populateAll = populateAll;
         }
 
         public void onFileDelete(File file) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnDelete()) {
                 log.debug("File delete detected: {}", file.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
                         LastEventType.DELETE));
-            }
         }
 
         public void onFileCreate(File file) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCreate()) {
                 log.debug("File create detected: {}", file.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
                         LastEventType.CREATE));
-            }
         }
 
         public void onFileChange(File file) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnModified()) {
                 log.debug("File change detected: {}", file.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
                         LastEventType.MODIFY));
-            }
         }
 
         public void onDirectoryDelete(File directory) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnDelete()) {
                 log.debug("File delete detected: {}", directory.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), directory,
                         LastEventType.DELETE));
-            }
         }
 
         public void onDirectoryCreate(File directory) {
-            if (populateAll || snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCreate()) {
                 log.debug("File create detected: {}", directory.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), directory,
                         LastEventType.CREATE));
-            }
         }
 
         public void onDirectoryChange(File directory) {
