@@ -25,10 +25,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -153,7 +151,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                     zos = new ZipOutputStream(stagedResource.getOutputStream());
                 }
 
-                Set<String> commands = new HashSet<String>();
+                Map<String, LastEventType> entries = new HashMap<String, LastEventType>();
                 StringBuilder script = new StringBuilder("fileList = new HashMap();\n");
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
@@ -283,7 +281,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             command.append(fileTrigger.getAfterCopyScript()).append("\n");
                         }
 
-                        if (!commands.contains(command.toString())) {
+                        LastEventType previousEventForEntry = entries.get(entryName.toString());
+                        boolean process = true;
+                        if (previousEventForEntry != null) {
+                            if ((previousEventForEntry == eventType)
+                                    || (previousEventForEntry == LastEventType.CREATE && eventType == LastEventType.MODIFY)) {
+                                process = false;
+                            }
+                        }
+                        
+                        
+                        if (process) {
                             if (file.exists()) {
                                 byteCount += file.length();
                                 ZipEntry entry = new ZipEntry(entryName.toString());
@@ -299,6 +307,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     }
                                 }
                                 zos.closeEntry();
+                                entries.put(entryName.toString(), eventType);
                             } else if (eventType != LastEventType.DELETE) {
                                 log.warn(
                                         "Could not find the {} file to package for synchronization.  Skipping it.",
@@ -307,7 +316,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
                             command.append("}\n\n");
                             script.append(command.toString());
-                            commands.add(command.toString());
 
                         }
 
