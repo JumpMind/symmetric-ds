@@ -84,7 +84,7 @@ public class StagingManager implements IStagingManager {
             long purgedMemSize = 0;
             for (String key : keys) {
                 IStagedResource resource = resourceList.get(key);
-                boolean resourceIsOld = (System.currentTimeMillis() - resource.getCreateTime()) > ttlInMs;
+                boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
                 if ((resource.getState() == State.READY || resource.getState() == State.DONE)
                         && (resourceIsOld || !resource.exists())) {
                     if (resource.isFileResource()) {
