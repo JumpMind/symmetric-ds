@@ -1121,6 +1121,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         StagingDataWriter currentDataWriter;
 
         List<OutgoingBatch> batches;
+        
+        List<OutgoingBatch> finishedBatches;
 
         IStagingManager stagingManager;
 
@@ -1142,6 +1144,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.maxBatchSize = maxBatchSize;
             this.stagingManager = stagingManager;
             this.batches = new ArrayList<OutgoingBatch>(batches);
+            this.finishedBatches = new ArrayList<OutgoingBatch>(batches.size());
         }
 
         public void open(DataContext context) {
@@ -1207,9 +1210,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         protected void nextBatch() {
+            if (this.outgoingBatch != null) {
+                this.finishedBatches.add(outgoingBatch);
+            }
             this.outgoingBatch = this.batches.remove(0);
             this.outgoingBatch.setDataEventCount(0);
             this.outgoingBatch.setInsertEventCount(0);
+            
+            /*
+             * Update the last update time so the batch 
+             * isn't purged prematurely
+             */
+            for (OutgoingBatch batch : finishedBatches) {
+                IStagedResource resource = getStagedResource(batch);
+                if (resource != null) {
+                    resource.refreshLastUpdateTime();
+                }
+            }
         }
 
         protected void startNewBatch() {
