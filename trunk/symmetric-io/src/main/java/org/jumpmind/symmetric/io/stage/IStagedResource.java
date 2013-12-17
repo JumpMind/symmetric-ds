@@ -59,6 +59,8 @@ public interface IStagedResource {
     
     public long getLastUpdateTime();
     
+    public void refreshLastUpdateTime();
+    
     public boolean isFileResource();
     
     public void delete();

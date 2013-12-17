@@ -135,7 +135,7 @@ public class StagedResource implements IStagedResource {
             this.memoryBuffer.setLength(0);
             this.memoryBuffer = null;
         }
-        this.lastUpdateTime = System.currentTimeMillis();
+        refreshLastUpdateTime();
         this.state = state;
     }
 
@@ -276,6 +276,10 @@ public class StagedResource implements IStagedResource {
 
     public long getLastUpdateTime() {
         return lastUpdateTime;
+    }
+    
+    public void refreshLastUpdateTime() {
+        this.lastUpdateTime = System.currentTimeMillis();
     }
 
     public void delete() {
