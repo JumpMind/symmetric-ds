@@ -57,7 +57,7 @@ public interface IStagedResource {
     
     public void setState(State state);
     
-    public long getCreateTime();
+    public long getLastUpdateTime();
     
     public boolean isFileResource();
     

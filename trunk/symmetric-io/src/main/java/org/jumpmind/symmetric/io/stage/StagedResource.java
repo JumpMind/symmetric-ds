@@ -57,7 +57,7 @@ public class StagedResource implements IStagedResource {
 
     private StringBuilder memoryBuffer;
 
-    private long createTime;
+    private long lastUpdateTime;
 
     private State state;
     
@@ -81,7 +81,7 @@ public class StagedResource implements IStagedResource {
                 .getAbsolutePath().length());
         this.path = this.path.substring(0, path.lastIndexOf("."));
         if (file.exists()) {
-            createTime = file.lastModified();
+            lastUpdateTime = file.lastModified();
             String fileName = file.getName();
             String extension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
             this.state = State.valueOf(extension.toUpperCase());
@@ -98,7 +98,7 @@ public class StagedResource implements IStagedResource {
         this.stagingManager = stagingManager;
         this.file = new File(directory, String.format("%s.%s", path,
                 State.CREATE.getExtensionName()));
-        createTime = System.currentTimeMillis();
+        lastUpdateTime = System.currentTimeMillis();
         this.state = State.CREATE;
     }
     
@@ -135,6 +135,7 @@ public class StagedResource implements IStagedResource {
             this.memoryBuffer.setLength(0);
             this.memoryBuffer = null;
         }
+        this.lastUpdateTime = System.currentTimeMillis();
         this.state = state;
     }
 
@@ -273,8 +274,8 @@ public class StagedResource implements IStagedResource {
         return (file.exists() && file.length() > 0) || (memoryBuffer != null && memoryBuffer.length() > 0);
     }
 
-    public long getCreateTime() {
-        return createTime;
+    public long getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
     public void delete() {
