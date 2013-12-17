@@ -13,7 +13,7 @@ public class DataExtractorSqlMap extends AbstractSqlMap {
         // @formatter:off
         putSql("selectNodeIdsForExtractSql", "select distinct(node_id) from $(extract_request) where status=?");
         
-        putSql("selectExtractRequestForNodeSql", "select * from $(extract_request) where node_id=? and status=?");
+        putSql("selectExtractRequestForNodeSql", "select * from $(extract_request) where node_id=? and status=? order by request_id");
         
         putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, status, start_batch_id, end_batch_id, trigger_id, router_id, last_update_time, create_time) values(null, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
         

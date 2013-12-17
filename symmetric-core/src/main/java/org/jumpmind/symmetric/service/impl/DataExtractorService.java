@@ -979,14 +979,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 extractId);
     }
 
+    /**
+     * This is a callback method used by the NodeCommunicationService that extracts an initial load
+     * in the background.
+     */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-
+        long ts = System.currentTimeMillis();
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication.getNodeId());
-        if (requests.size() > 0) {
+        /*
+         * Process extract requests for until it has taken longer than 30 seconds, and then
+         * allow the process to return so progress status can be seen.
+         */
+        for (int i = 0; i < requests.size()
+                && (System.currentTimeMillis() - ts) <= Constants.LONG_OPERATION_THRESHOLD; i++) {
+            ExtractRequest request = requests.get(i);
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
-            ExtractRequest request = requests.get(0);
-            log.debug(
+            log.info(
                     "Extracting batches for request {}. Starting at batch {}.  Ending at batch {}",
                     new Object[] { request.getRequestId(), request.getStartBatchId(),
                             request.getEndBatchId() });
@@ -999,7 +1008,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             try {
                 boolean areBatchesOk = true;
 
-                // check to see if batches have been OK'd by another reload request
+                /*
+                 * check to see if batches have been OK'd by another reload
+                 * request 
+                 */
                 for (OutgoingBatch outgoingBatch : batches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
@@ -1019,22 +1031,30 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     batches, channel.getMaxBatchSize()), batches.get(0), false,
                             false, ExtractMode.FOR_SYM_CLIENT);
 
+                } else {
+                    log.info("Batches already had an OK status for request {}, batches {} to {}.  Not extracting", new Object[] { request.getRequestId(), request.getStartBatchId(),
+                            request.getEndBatchId() });
                 }
-                
-                // re-query the batches to see if they have been OK'd while extracting
+
+                /*
+                 * re-query the batches to see if they have been OK'd while
+                 * extracting
+                 */
                 List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
                         request.getStartBatchId(), request.getEndBatchId()).getBatches();
-                
+
                 areBatchesOk = true;
-                
-                // check to see if batches have been OK'd by another reload request
-                // while extracting
+
+                /*
+                 * check to see if batches have been OK'd by another reload
+                 * request while extracting
+                 */
                 for (OutgoingBatch outgoingBatch : checkBatches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
                     }
                 }
-                
+
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
@@ -1046,6 +1066,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             outgoingBatch.setStatus(Status.NE);
                             outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
                         }
+                    } else {
+                        log.info("Batches already had an OK status for request {}, batches {} to {}.  Not updating the status to NE", new Object[] { request.getRequestId(), request.getStartBatchId(),
+                                request.getEndBatchId() });
                     }
                     transaction.commit();
 
@@ -1063,6 +1086,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     close(transaction);
                 }
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
+
             } catch (RuntimeException ex) {
                 log.debug(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
@@ -1071,11 +1095,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
                 throw ex;
             }
-        } else {
-            log.warn("An extract was requested, but no extract records where found for node {}",
-                    nodeCommunication.getNodeId());
         }
-
     }
 
     class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
