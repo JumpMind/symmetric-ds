@@ -87,7 +87,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel) {
         OutgoingBatches batches = null;
+        int configCount;
         do {
+            configCount = 0;
             batches = getOutgoingBatches(nodeId, true);
             List<OutgoingBatch> list = batches.getBatches();
             /*
@@ -100,14 +102,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     return -new Long(o1.getBatchId()).compareTo(o2.getBatchId());
                 }
             });
-            for (OutgoingBatch outgoingBatch : batches.getBatches()) {
+                        
+            for (OutgoingBatch outgoingBatch : list) {
                 if (includeConfigChannel || !outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
                     updateOutgoingBatch(outgoingBatch);
+                } else {
+                    configCount++;
                 }
             }
-        } while (batches.getBatches().size() > 0);
+        } while (batches.getBatches().size() > configCount);
     }
 
     public void updateAbandonedRoutingBatches() {
