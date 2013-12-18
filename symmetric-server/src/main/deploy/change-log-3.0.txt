@@ -18,6 +18,27 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.12 (Released 2013-12-18)
+==========================================
+- 0001465: [Bug] REST API - default schema and/or catalog are filled in for generated sql statement even if they are blank in sym_trigger (chenson) - closed.
+- 0001466: [Bug] REST API - setting the target schema and/or catalog does not work when using the REST API (chenson) - closed.
+- 0001467: [Bug] trigger creation failed with MSSQL database column of nvarchar and ntext data type using the microsoft jdbc driver (chenson) - closed.
+- 0001468: [Bug] Sync triggers on Oracle: Maximum open cursors exceeded (elong) - closed.
+- 0001471: [Bug] Reload from TABLE_RELOAD_REQUEST does not support deletes (elong) - closed.
+- 0001472: [Bug] Node Ids don't work in URLs if they have spaces in them. Need to urlencode the node id. (chenson) - closed.
+- 0001473: [Bug] Oracle DDL Util issue isn't correctly recognizing varchar2() columns (chenson) - closed.
+- 0001474: [Bug] sync blocks with java error when a field with affinity 'INTEGER' contains a (empty) string (chenson) - closed.
+- 0001479: [Improvement] When using DmlStatement if columns are not provided then generate a select * for the SELECT_ALL type (chenson) - closed.
+- 0001480: [Bug] SymmetricEngineHolder doesn't update engine count when installing a new engine (mhanes) - closed.
+- 0001481: [Bug] Updates and Deletes can fail when a transform exists that have PKs where the source and target column names are different (chenson) - closed.
+- 0001475: [Bug] Replication From Branch to Central Broken (Firebird at Both Ends) (chenson) - closed.
+- 0001488: [Bug] If a create event and update event for a file happen in the same batch the building of the zip file fails (chenson) - closed.
+- 0001489: [Improvement] Don't log stack trace on a file sync conflict. Just log the message. (chenson) - closed.
+- 0001486: [Bug] File Sync "sync_on_delete" not honored. (chenson) - closed.
+- 0001490: [Improvement] Background extract process currently just handles one request at a time. Change to handle multiple requests. (chenson) - closed.
+- 0001491: [Bug] Mark outgoing batches as OK during the start of an initial load can hang until the config channel has been pulled (chenson) - closed.
+- 0001492: [Bug] Staging manager bases purging of staging files based on create time of the resource, not the last modified time of the file. (chenson) - closed.
+
 SymmetricDS - 3.5.11 (Released 2013-11-15) 
 ==========================================
 - 0001269: [New Feature] Update ddl utils xml to support specific database types so create schema commands replicate the same schema on same databases (chenson) - closed.
