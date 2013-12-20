@@ -249,7 +249,10 @@ abstract public class AbstractTriggerTemplate {
 
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
-    		ddl = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
+    		String temp = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
+    		if (StringUtils.trimToNull(temp)!=null) {
+    			ddl=temp;
+    		}
     	}
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
