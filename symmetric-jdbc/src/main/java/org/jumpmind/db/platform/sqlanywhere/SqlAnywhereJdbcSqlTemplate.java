@@ -35,4 +35,12 @@ public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
         super(dataSource, settings, lobHandler, databaseInfo, nativeJdbcExtractor);
     }
 
+    public boolean supportsGetGeneratedKeys() {
+    	return false;
+    }
+    
+    protected String getSelectLastInsertIdSql(String sequenceName) {
+        return "select @@identity";
+    }
+
 }
