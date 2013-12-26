@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -50,6 +49,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -482,17 +482,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
-        final Map<Long, OutgoingLoadSummary> loadSummaries = new TreeMap<Long, OutgoingLoadSummary>();
+        final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
         sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
             public OutgoingLoadSummary mapRow(Row rs) {
                 long loadId = rs.getLong("load_id");
-                OutgoingLoadSummary summary = loadSummaries.get(loadId);
+                String nodeId = rs.getString("node_id");
+                String loadNodeId = String.format("%010d-%s", loadId, nodeId);
+                OutgoingLoadSummary summary = loadSummaries.get(loadNodeId);
                 if (summary == null) {
                     summary = new OutgoingLoadSummary();
                     summary.setLoadId(loadId);
-                    summary.setNodeId(rs.getString("node_id"));
+                    summary.setNodeId(nodeId);
                     summary.setCreateBy(rs.getString("create_by"));
-                    loadSummaries.put(loadId, summary);
+                    loadSummaries.put(loadNodeId, summary);
                 }
 
                 Status status = Status.valueOf(rs.getString("status"));

@@ -59,6 +59,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private Data lastDataProcessed;
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
+    private long lastLoadId = -1;
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -167,5 +168,13 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
     }    
+    
+    public void setLastLoadId(long lastLoadId) {
+        this.lastLoadId = lastLoadId;
+    }
+    
+    public long getLastLoadId() {
+        return lastLoadId;
+    }
 
 }
