@@ -47,7 +47,6 @@ import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.Router;
@@ -1789,11 +1788,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories) {
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
 
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
                 getAllTriggerRoutersForReloadForCurrentNode(
-                        sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+                        sourceNodeGroupId, targetNodeGroupId));
 
         final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
                 triggerHistories.size());

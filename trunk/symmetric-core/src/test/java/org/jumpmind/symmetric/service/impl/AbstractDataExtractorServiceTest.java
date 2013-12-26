@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;

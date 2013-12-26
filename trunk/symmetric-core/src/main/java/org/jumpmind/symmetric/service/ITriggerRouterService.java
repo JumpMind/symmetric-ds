@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -179,7 +178,7 @@ public interface ITriggerRouterService {
     public Map<Trigger, Exception> getFailedTriggers();
     
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            Node sourceNode, Node targetNode, List<TriggerHistory> triggerHistories);
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);
     
     public void clearCache();
 

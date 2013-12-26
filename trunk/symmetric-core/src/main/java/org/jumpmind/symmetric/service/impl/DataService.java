@@ -313,9 +313,9 @@ public class DataService extends AbstractService implements IDataService {
             List<TriggerHistory> triggerHistories = triggerRouterService
                     .getActiveTriggerHistories();
 
-            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine
-                    .getTriggerRouterService().fillTriggerRoutersByHistIdAndSortHist(sourceNode,
-                            targetNode, triggerHistories);
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
+                    .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(), 
+                            targetNode.getNodeGroupId(), triggerHistories);
             
             callReloadListeners(true, targetNode, transactional, transaction);
 
@@ -914,8 +914,9 @@ public class DataService extends AbstractService implements IDataService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
                 catalogName, schemaName, tableName);
-        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine.getTriggerRouterService().fillTriggerRoutersByHistIdAndSortHist(
-                sourceNode, targetNode, triggerHistories);
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService.
+                fillTriggerRoutersByHistIdAndSortHist(
+                sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerHistories);
         int eventCount = 0;
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
@@ -995,9 +996,9 @@ public class DataService extends AbstractService implements IDataService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.findTriggerHistories(
                 catalogName, schemaName, tableName);
-        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = engine.getTriggerRouterService().
-                fillTriggerRoutersByHistIdAndSortHist(
-                sourceNode, targetNode, triggerHistories);
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
+                .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
+                        targetNode.getNodeGroupId(), triggerHistories);
         int eventCount = 0;
         ISqlTransaction transaction = null;
         try {

@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -707,6 +708,18 @@ public class RouterService extends AbstractService implements IRouterService {
                         batchIdToReuse = batch.getBatchId();
                     }
                 }
+                
+                if (dataMetaData.getData().getDataEventType() == DataEventType.RELOAD) {
+                    long loadId = context.getLastLoadId();
+                    if (loadId < 0) {
+                        loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        context.setLastLoadId(loadId);
+                    }
+                    batch.setLoadId(loadId);
+                } else {
+                    context.setLastLoadId(-1);
+                }
+
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataEventCount();
                 if (!context.isProduceCommonBatches()

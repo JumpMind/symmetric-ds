@@ -139,5 +139,9 @@ public class OutgoingLoadSummary implements Serializable {
     public String getCreateBy() {
         return createBy;
     }
+    
+    public String getLoadNodeId() {
+        return String.format("%010d-%s", loadId, nodeId);
+    }
 
 }
