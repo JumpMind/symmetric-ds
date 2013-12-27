@@ -571,6 +571,9 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, String overrideDeleteStatement, long loadId, String createBy) {
         String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
+        sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
+        sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
+        sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
         String channelId = getChannelIdForTrigger(triggerRouter.getTrigger());
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, triggerHistory, channelId, null, null);
         if (isLoad) {
