@@ -198,7 +198,9 @@
                 <listitem>
                     <para>Indicates that when a conflict is detected by USE_TIMESTAMP or USE_VERSION that the either the
                         source or the target will win based on the which side has the newer timestamp or higher version
-                        number.
+                        number.  The
+                        <ns:literal>resolve_row_only</ns:literal>
+                        column controls whether the entire batch should be ignore or just the row in conflict.
                     </para>
                 </listitem>
             </varlistentry>
