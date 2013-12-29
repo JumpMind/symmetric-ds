@@ -81,8 +81,9 @@ public class SymmetricService extends Service {
                             for (String propKey : map.keySet()) {
                                 properties.setProperty(propKey, map.get(propKey));
                             }
+                        } else {
+                            properties = new Properties();
                         }
-                        Log.i(TAG, properties.getClass().getName());
                         symmetricEngine = new AndroidSymmetricEngine(registrationUrl, externalId,
                                 nodeGroupId, properties, databaseHelper, getApplicationContext());
                         Log.i(TAG, "engine created");
