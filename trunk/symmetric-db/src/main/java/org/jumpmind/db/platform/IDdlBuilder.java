@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.platform;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -67,5 +68,7 @@ public interface IDdlBuilder {
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn);
     
     public DatabaseInfo getDatabaseInfo();
+    
+    public String getColumnTypeDdl(Table table, Column column);
 
 }
