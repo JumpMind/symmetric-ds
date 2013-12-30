@@ -1754,6 +1754,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // see comments in columnsDiffer about null/"" defaults
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" ");
+        writeColumnType(table, column, ddl);
+    }
+    
+    public String getColumnTypeDdl(Table table, Column column) {
+        StringBuilder ddl = new StringBuilder();
+        writeColumnType(table, column, ddl);
+        return ddl.toString();
+    }
+    
+    protected void writeColumnType(Table table, Column column, StringBuilder ddl) {
         ddl.append(getSqlType(column));
         writeColumnDefaultValueStmt(table, column, ddl);
         if (column.isRequired()) {
