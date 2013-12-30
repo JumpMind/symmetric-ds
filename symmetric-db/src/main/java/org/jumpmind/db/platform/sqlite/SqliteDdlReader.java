@@ -131,6 +131,10 @@ public class SqliteDdlReader implements IDdlReader {
         return new ArrayList<String>(0);
     }
     
+    public List<String> getTableTypes() {
+        return new ArrayList<String>(0);
+    }
+    
     public List<String> getColumnNames(String catalog, String schema, String tableName) {
         return new ArrayList<String>(0);
     }

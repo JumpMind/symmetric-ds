@@ -1296,6 +1296,26 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         return result;
     }
+    
+    public List<String> getTableTypes() {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+            public List<String> execute(Connection connection) throws SQLException {
+                ArrayList<String> types = new ArrayList<String>();
+                DatabaseMetaData meta = connection.getMetaData();
+                ResultSet rs = null;
+                try {
+                    rs = meta.getTableTypes();
+                    while (rs.next()) {
+                        types.add(rs.getString(1));
+                    }
+                    return types;
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+            }
+        });
+    }
 
     public List<String> getCatalogNames() {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
