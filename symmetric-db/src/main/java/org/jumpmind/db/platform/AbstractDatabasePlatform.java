@@ -536,7 +536,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                             return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
                         }
                     } else if (type == Types.TIME) {
-                        return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
+                        if (value.indexOf(".") == 8) {
+                            return Timestamp.valueOf("1970-01-01 " + value);
+                        } else {
+                           return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
+                        }
                     } else {
                         return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
                     }
@@ -550,7 +554,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
-
+    
     public boolean isLob(int type) {
         return isClob(type) || isBlob(type);
     }
