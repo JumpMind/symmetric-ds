@@ -560,6 +560,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
     
+
+    public Table makeAllColumnsPrimaryKeys(Table table) {
+    	Table result = table.copy();
+        for (Column column : result.getColumns()) {
+        	if (!isLob(column.getMappedTypeCode())) {
+        		column.setPrimaryKey(true);
+        	}
+        }
+        return result;
+    }
+    
     public boolean isLob(int type) {
         return isClob(type) || isBlob(type);
     }

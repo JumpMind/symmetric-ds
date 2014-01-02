@@ -171,4 +171,5 @@ public interface IDatabasePlatform {
 
     public java.util.Date parseDate(int type, String value, boolean useVariableDates);
 
+    public Table makeAllColumnsPrimaryKeys(Table table);
 }
