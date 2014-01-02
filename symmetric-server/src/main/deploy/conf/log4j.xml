@@ -52,6 +52,10 @@
         <priority value="INFO" />
     </category>
     
+    <category name="com.mangofactory.swagger.filters.AnnotatedParameterFilter">
+        <priority value="ERROR" />
+    </category>
+    
     <!-- To print out SQL 
     <category name="org.jumpmind.db.sql">
         <priority value="DEBUG" />
