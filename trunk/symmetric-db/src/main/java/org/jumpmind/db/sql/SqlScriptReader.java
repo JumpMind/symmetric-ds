@@ -41,10 +41,20 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
     private String delimiter = QUERY_ENDS;
 
     private Map<String, String> replacementTokens;
+    
+    private boolean usePrefixSuffixForReplacementTokens = false;
 
     public SqlScriptReader(Reader in) {
         super(in);
     }
+    
+    public void setUsePrefixSuffixForReplacementTokens(boolean usePrefixSuffixForReplacementTokens) {
+        this.usePrefixSuffixForReplacementTokens = usePrefixSuffixForReplacementTokens;
+    }
+    
+   public boolean isUsePrefixSuffixForReplacementTokens() {
+        return usePrefixSuffixForReplacementTokens;
+   }
 
     public void setDelimiter(String delimiter) {
         this.delimiter = delimiter;
@@ -78,11 +88,9 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
                                 sql.append("\n");
                             }
                             sql.append(line.substring(0, line.lastIndexOf(delimiter)).trim());
-                            String toExecute = sql.toString();
-                            toExecute = FormatUtils.replaceTokens(toExecute, replacementTokens,
-                                    false);
+                            String toExecute = prepareForExecute(sql);
                             if (StringUtils.isNotBlank(toExecute)) {
-                                return toExecute.trim();
+                                return toExecute;
                             }
                         } else {
                             sql.append("\n");
@@ -93,7 +101,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
                 } while (line != null);
 
                 if (sql != null) {
-                    return sql.toString();
+                    return prepareForExecute(sql);
                 } else {
                     return null;
                 }
@@ -106,7 +114,18 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         }
 
     }
-
+    
+    protected String prepareForExecute(StringBuilder sql) {
+        String toExecute = sql.toString();
+        toExecute = FormatUtils.replaceTokens(toExecute, replacementTokens,
+                usePrefixSuffixForReplacementTokens);
+        if (StringUtils.isNotBlank(toExecute)) {
+            return toExecute.trim();
+        } else {
+            return null;
+        }
+    }
+ 
     protected String trimComments(String line) {
         int inLiteralStart = -1;
         int inLiteralEnd = -1;
