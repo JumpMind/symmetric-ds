@@ -1142,13 +1142,7 @@ public class Table implements Serializable, Cloneable {
 
         return table;
     }
-
-    public void makeAllColumnsPrimaryKeys() {
-        for (Column column : columns) {
-            column.setPrimaryKey(true);
-        }
-    }
-
+   
     public String[] getColumnNames() {
         String[] columnNames = new String[columns.size()];
         int i = 0;
