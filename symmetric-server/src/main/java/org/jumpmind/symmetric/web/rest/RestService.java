@@ -99,6 +99,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+
 /**
  * This is a REST API for SymmetricDS. The API will be active only if
  * rest.api.enable=true. The property is turned off by default. The REST API is
@@ -169,6 +172,7 @@ public class RestService {
      *   {"engines":[{"name":"RootSugarDB-root"}]}
      * </pre>
      */
+    @ApiOperation(value = "Obtain a list of configured Engines")
     @RequestMapping(value = "/enginelist", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -210,6 +214,7 @@ public class RestService {
 	 * {"name":"server01","externalId":"server01","registrationServer":true,"syncUrl":"http://machine-name:31415/sync/RootSugarDB-root","batchToSendCount":0,"batchInErrorCount":0,"lastHeartbeat":1356013562000,"registered":true,"initialLoaded":true,"reverseInitialLoaded":false}
 	 * </pre>
 	 */
+    @ApiOperation(value = "Obtain node information for the single engine")
     @RequestMapping(value = "engine/node", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -220,6 +225,7 @@ public class RestService {
     /**
      * Provides Node information for the specified engine
      */
+    @ApiOperation(value = "Obtain node information for he specified engine")
     @RequestMapping(value = "engine/{engine}/node", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -254,6 +260,7 @@ public class RestService {
      * {"nodes":[{"name":"client01","externalId":"client01","registrationServer":false,"syncUrl":"http://gwilmer-laptop:31418/sync/ClientSugarDB-client01","batchToSendCount":0,"batchInErrorCount":0,"lastHeartbeat":null,"registered":true,"initialLoaded":true,"reverseInitialLoaded":false}]}
      * </pre>
      */
+    @ApiOperation(value = "Obtain list of children for the single engine")
     @RequestMapping(value = "engine/children", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -265,6 +272,7 @@ public class RestService {
      * Provides a list of children {@link Node} that are registered with this
      * engine.
      */
+    @ApiOperation(value = "Obtain list of children for the specified engine")
     @RequestMapping(value = "engine/{engine}/children", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -278,6 +286,7 @@ public class RestService {
      * and operational information about the installation and can be used to diagnose
      * state of the node 
      */
+    @ApiOperation(value = "Take a diagnostic snapshot for the single engine")
     @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -292,6 +301,7 @@ public class RestService {
      * {"nbrResults":1,"results":[{"rowNum":1,"columnData":[{"ordinal":1,"name":"node_id","value":"root"}]}]}
      * 
      */
+    @ApiOperation(value = "Execute the specified SQL statement on the single engine")
     @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -302,6 +312,7 @@ public class RestService {
     /**
      * Executes a select statement on the node and returns results.
      */
+    @ApiOperation(value = "Execute the specified SQL statement for the specified engine")
     @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -313,6 +324,7 @@ public class RestService {
     /**
      * Takes a snapshot for the specified engine and streams it to the client.
      */
+    @ApiOperation(value = "Take a diagnostic snapshot for the specified engine")
     @RequestMapping(value = "engine/{engine}/snapshot", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -338,6 +350,7 @@ public class RestService {
      * @param file
      *            A file stream that contains the profile itself.
      */
+    @ApiOperation(value = "Load a configuration file to the single engine")
     @RequestMapping(value = "engine/profile", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -351,6 +364,7 @@ public class RestService {
      * @param file
      *            A file stream that contains the profile itself.
      */
+    @ApiOperation(value = "Load a configuration file to the specified engine")
     @RequestMapping(value = "engine/{engine}/profile", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -363,6 +377,7 @@ public class RestService {
     /**
      * Starts the single engine on the node
      */
+    @ApiOperation(value = "Start the single engine")
     @RequestMapping(value = "engine/start", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -373,6 +388,7 @@ public class RestService {
     /**
      * Starts the specified engine on the node
      */
+    @ApiOperation(value = "Start the specified engine")
     @RequestMapping(value = "engine/{engine}/start", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -383,6 +399,7 @@ public class RestService {
     /**
      * Stops the single engine on the node
      */
+    @ApiOperation(value = "Stop the single engine")
     @RequestMapping(value = "engine/stop", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -393,6 +410,7 @@ public class RestService {
     /**
      * Stops the specified engine on the node
      */
+    @ApiOperation(value = "Stop the specified engine")
     @RequestMapping(value = "engine/{engine}/stop", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -404,6 +422,7 @@ public class RestService {
      * Creates instances of triggers for each entry configured table/trigger for
      * the single engine on the node
      */
+    @ApiOperation(value = "Sync triggers on the single engine")
     @RequestMapping(value = "engine/synctriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -416,6 +435,7 @@ public class RestService {
      * Creates instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
      */
+    @ApiOperation(value = "Sync triggers on the specified engine")
     @RequestMapping(value = "engine/{engine}/synctriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -428,6 +448,7 @@ public class RestService {
      * Removes instances of triggers for each entry configured table/trigger for
      * the single engine on the node
      */
+    @ApiOperation(value = "Drop triggers on the single engine")
     @RequestMapping(value = "engine/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -439,6 +460,7 @@ public class RestService {
      * Removes instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
      */
+    @ApiOperation(value = "Drop triggers on the specified engine")
     @RequestMapping(value = "engine/{engine}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -450,6 +472,7 @@ public class RestService {
      * Removes instances of triggers for the specified table for the single
      * engine on the node
      */
+    @ApiOperation(value = "Drop triggers for the specified table on the single engine")
     @RequestMapping(value = "engine/table/{table}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -462,6 +485,7 @@ public class RestService {
      * engine on the node
      * 
      */
+    @ApiOperation(value = "Drop triggers for the specified table on the specified engine")
     @RequestMapping(value = "engine/{engine}/table/{table}/droptriggers", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -474,6 +498,7 @@ public class RestService {
      * Uninstalls all SymmetricDS objects from the given node (database) for the
      * single engine on the node
      */
+    @ApiOperation(value = "Uninstall SymmetricDS on the single engine")
     @RequestMapping(value = "engine/uninstall", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -486,6 +511,7 @@ public class RestService {
      * specified engine on the node
      * 
      */
+    @ApiOperation(value = "Uninstall SymmetricDS on the specified engine")
     @RequestMapping(value = "engine/{engine}/uninstall", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -496,6 +522,7 @@ public class RestService {
     /**
      * Reinitializes the given node (database) for the single engine on the node
      */
+    @ApiOperation(value = "Reinitiailize SymmetricDS on the single engine")
     @RequestMapping(value = "engine/reinitialize", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -508,6 +535,7 @@ public class RestService {
      * node
      * 
      */
+    @ApiOperation(value = "Reinitiailize SymmetricDS on the specified engine")
     @RequestMapping(value = "engine/{engine}/reinitialize", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -518,6 +546,7 @@ public class RestService {
     /**
      * Refreshes cache for the single engine on the node
      */
+    @ApiOperation(value = "Refresh caches on the single engine")
     @RequestMapping(value = "engine/refreshcache", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -529,6 +558,7 @@ public class RestService {
      * Refreshes cache for the specified engine on the node node
      * 
      */
+    @ApiOperation(value = "Refresh caches on the specified engine")
     @RequestMapping(value = "engine/{engine}/refreshcache", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -573,6 +603,7 @@ public class RestService {
      * "lastHeartbeat":"2012-11-17 15:15:00.033","hearbeatInterval":null}
      * </pre>
      */
+    @ApiOperation(value = "Obtain the status of the single engine")
     @RequestMapping(value = "/engine/status", method = RequestMethod.GET)
     @ResponseBody
     public final NodeStatus getStatus() {
@@ -584,6 +615,7 @@ public class RestService {
      * 
      * @return {@link NodeStatus}
      */
+    @ApiOperation(value = "Obtain the status of the specified engine")
     @RequestMapping(value = "/engine/{engine}/status", method = RequestMethod.GET)
     @ResponseBody
     public final NodeStatus getStatusByEngine(@PathVariable("engine") String engineName) {
@@ -595,6 +627,7 @@ public class RestService {
      * 
      * @return Set<{@link ChannelStatus}>
      */
+    @ApiOperation(value = "Obtain the channel status of the single engine")
     @RequestMapping(value = "/engine/channelstatus", method = RequestMethod.GET)
     @ResponseBody
     public final Set<ChannelStatus> getChannelStatus(@PathVariable("engine") String engineName) {
@@ -606,6 +639,7 @@ public class RestService {
      * 
      * @return Set<{@link ChannelStatus}>
      */
+    @ApiOperation(value = "Obtain the channel status of the specified engine")
     @RequestMapping(value = "/engine/{engine}/channelstatus", method = RequestMethod.GET)
     @ResponseBody
     public final Set<ChannelStatus> getChannelStatusByEngine(
@@ -616,6 +650,7 @@ public class RestService {
     /**
      * Removes (unregisters and cleans up) a node for the single engine 
      */
+    @ApiOperation(value = "Remove specified node (unregister and clean up) for the single engine")
     @RequestMapping(value = "/engine/removenode", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -626,6 +661,7 @@ public class RestService {
     /**
      * Removes (unregisters and cleans up) a node for the single engine 
      */
+    @ApiOperation(value = "Remove specified node (unregister and clean up) for the specified engine")
     @RequestMapping(value = "/engine/{engine}/removenode", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -662,6 +698,7 @@ public class RestService {
      * The nodeId, syncUrl and nodePassword should be stored for subsequent calls to the REST API.
      * </pre>
      */
+    @ApiOperation(value = "Register the specified node for the single engine")
     @RequestMapping(value = "/engine/registernode", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -675,6 +712,7 @@ public class RestService {
                 databaseType, databaseVersion, hostName);
     }
 
+    @ApiOperation(value = "Register the specified node for the specified engine")
     @RequestMapping(value = "/engine/{engine}/registernode", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -736,6 +774,7 @@ public class RestService {
      * {"nbrBatches":0,"batches":[]}
      * </pre>
      */
+    @ApiOperation(value = "Pull pending batches for the specified node for the single engine")
     @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -753,6 +792,7 @@ public class RestService {
                 useJdbcTimestampFormat, useUpsertStatements, useDelimitedIdentifiers, hostName);
     }
         
+    @ApiOperation(value = "Pull pending batches for the specified node for the specified engine")
     @RequestMapping(value = "/engine/{engine}/pulldata", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -819,6 +859,7 @@ public class RestService {
      * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
      * See {@link Heartbeat} for request body requirements
      */
+    @ApiOperation(value = "Send a heartbeat for the single engine")
     @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -838,6 +879,7 @@ public class RestService {
      * @param nodeID - Required - The client nodeId this to which this heartbeat belongs
      * See {@link Heartbeat} for request body requirements
      */
+    @ApiOperation(value = "Send a heartbeat for the specified engine")
     @RequestMapping(value = "/engine/{engine}/heartbeat", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -922,6 +964,7 @@ public class RestService {
      * if the status is "ER".  In error status the status description should contain relevant
      * information about the error on the client including SQL Error Number and description
      */    
+    @ApiOperation(value = "Acknowledge a set of batches for the single engine")
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -932,6 +975,7 @@ public class RestService {
     	return results;
     }
     
+    @ApiOperation(value = "Acknowledge a set of batches for the specified engine")
     @RequestMapping(value = "/engine/{engine}/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -982,6 +1026,7 @@ public class RestService {
      * the initial load by the client calling the pull method.
      * @param nodeID
      */
+    @ApiOperation(value = "Request an initial load for the specified node for the single engine")
     @RequestMapping(value = "/engine/requestinitialload", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -995,6 +1040,7 @@ public class RestService {
      * the initial load by the client calling the pull method.
      * @param nodeID
      */
+    @ApiOperation(value = "Request an initial load for the specified node for the specified engine")
     @RequestMapping(value = "/engine/{engine}/requestinitialload", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
