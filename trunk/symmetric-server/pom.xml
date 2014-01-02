@@ -271,6 +271,11 @@
             <groupId>bouncycastle</groupId>
             <artifactId>bcprov-jdk15</artifactId>
             <scope>provided</scope>
+        </dependency>  
+         <dependency>
+            <groupId>com.mangofactory</groupId>
+            <artifactId>swagger-springmvc</artifactId>
+            <version>0.6.5</version>
         </dependency>                   
     </dependencies>
 </project>
