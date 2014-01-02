@@ -551,6 +551,8 @@ abstract public class AbstractTriggerTemplate {
                     columnsText.append(".");
                 }
                 columnsText.append(columnName);
+            } else {
+            	columnsText.append("null");            	
             }
             columnsText.append(",");
         }
