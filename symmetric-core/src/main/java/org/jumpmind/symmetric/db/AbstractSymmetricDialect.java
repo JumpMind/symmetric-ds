@@ -404,8 +404,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public Table getTable(TriggerHistory triggerHistory, boolean useCache) {
-        return platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
-                triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), !useCache);
+        if (triggerHistory != null) {
+            return platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
+                    !useCache);
+        } else {
+            return null;
+        }
     }
     
     /*
