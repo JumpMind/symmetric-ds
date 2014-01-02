@@ -1339,8 +1339,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         try {
 
             if (table.getPrimaryKeyColumnCount() == 0) {
-                table = table.copy();
-                table.makeAllColumnsPrimaryKeys();
+                table = platform.makeAllColumnsPrimaryKeys(table);
             }
 
             TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
