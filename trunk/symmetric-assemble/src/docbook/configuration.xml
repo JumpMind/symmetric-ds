@@ -1256,7 +1256,7 @@ user. A SQL statement is run against each table to get the data load
 that will be streamed to the target node. The selected data is filtered
 through the configured router for the table being loaded. If the data
 set is going to be large, then SQL criteria can optionally be provided
-to pair down the data that is selected out of the database.</para>
+to pare down the data that is selected out of the database.</para>
 
 <para>
 An initial load cannot occur until after a node is registered. An
@@ -1421,27 +1421,27 @@ browser. Do an explain plan to make sure you are properly using indexes.
 <para>
 By default, all data for a given table will be initial loaded in a single batch, regardless
 of the max batch size parameter on the reload channel.  That is, for a table with one million
-rows, all rows for that table will be initial loaded and sent to the destination node in a 
+rows, all rows for that table will be initial loaded and sent to the destination node in a
 single batch. For large tables, this can result in a batch that can take a long time to
-extract and load.  
+extract and load.
 </para>
 
 <para>
-Initial loads for a table can be broken into multiple batches by specifying 
+Initial loads for a table can be broken into multiple batches by specifying
 <literal>initial.load.use.extract.job.enabled</literal> to true.  This parameter allows
-SymmetricDS to pre-extract initial load batches versus having them extracted when 
-the batch is pulled or pushed.  When using this parameter, there are two ways to tell 
+SymmetricDS to pre-extract initial load batches versus having them extracted when
+the batch is pulled or pushed.  When using this parameter, there are two ways to tell
 SymmetricDS the number of batches to create for a given table.  The first is to specify
-a positive integer in the initial_load_batch_count column on 
-<xref linkend="table_trigger_router" xrefstyle="table" />.  This 
+a positive integer in the initial_load_batch_count column on
+<xref linkend="table_trigger_router" xrefstyle="table" />.  This
 number will dictate the number of batches created for the initial load of the given table.
-The second way is to specify 0 for initial_load_batch_count on 
-<xref linkend="table_trigger_router" xrefstyle="table" /> and 
-specify a max_batch_size on the reload channel in <xref linkend="table_channel" xrefstyle="table" />.  
-When 0 is specified for 
-initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during 
-the extract process and create N batches based on the total number of records found 
-in the table divided by the max_batch_size on the reload channel. 
+The second way is to specify 0 for initial_load_batch_count on
+<xref linkend="table_trigger_router" xrefstyle="table" /> and
+specify a max_batch_size on the reload channel in <xref linkend="table_channel" xrefstyle="table" />.
+When 0 is specified for
+initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
+the extract process and create N batches based on the total number of records found
+in the table divided by the max_batch_size on the reload channel.
 </para>
 
 </section>
@@ -2363,7 +2363,7 @@ following figure. </para>
 <title>File Sync Push and Pull Jobs</title>
 <para>
 In addition to the push and pull jobs used to synchronize database changes, two additional push and pull jobs
-have been introduced as of version 3.5.  These two new jobs are responsible for the sending of 
+have been introduced as of version 3.5.  These two new jobs are responsible for the sending of
 files resulting from the file synchronization configuration.  These jobs are further discussed
 in <xref linkend="filesync-operation" />.
 </para>
@@ -2417,7 +2417,7 @@ The process of examining triggers and rebuilding them is automatically
 run during startup and each night by the SyncTriggersJob. The user can
 also manually run the process at any time by invoking the
 <literal>syncTriggers()</literal>
-method over JMX. 
+method over JMX.
 </para>
 </section>
 <section id="purge-job">
