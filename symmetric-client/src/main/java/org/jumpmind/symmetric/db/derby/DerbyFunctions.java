@@ -102,22 +102,26 @@ public class DerbyFunctions {
         for (String columnName : columnNames) {
             if (StringUtils.isNotBlank(columnName)) {
                 int index = findColumnIndex(metaData, columnName);
-                int type = metaData.getColumnType(index);
-                switch (type) {
-                    case Types.BLOB:
-                        builder.append(blobToString(columnName, tableName,
-                                getPrimaryKeyWhereString(pkColumnNames, rs)));
-                        builder.append(",");
-                        break;
-                    case Types.CLOB:
-                        builder.append(clobToString(columnName, tableName,
-                                getPrimaryKeyWhereString(pkColumnNames, rs)));
-                        builder.append(",");
-                        break;
-                    default:
-                        builder.append(escape(rs.getString(index)));
-                        builder.append(",");
-                        break;
+                if (index >= 0) {
+                    int type = metaData.getColumnType(index);
+                    switch (type) {
+                        case Types.BLOB:
+                            builder.append(blobToString(columnName, tableName,
+                                    getPrimaryKeyWhereString(pkColumnNames, rs)));
+                            builder.append(",");
+                            break;
+                        case Types.CLOB:
+                            builder.append(clobToString(columnName, tableName,
+                                    getPrimaryKeyWhereString(pkColumnNames, rs)));
+                            builder.append(",");
+                            break;
+                        default:
+                            builder.append(escape(rs.getString(index)));
+                            builder.append(",");
+                            break;
+                    }
+                } else {
+                    builder.append(",");
                 }
             } else {
                 builder.append(",");
