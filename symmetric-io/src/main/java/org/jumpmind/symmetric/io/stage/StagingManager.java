@@ -46,6 +46,12 @@ public class StagingManager implements IStagingManager {
         this.directory.mkdirs();
         refreshResourceList();
     }
+    
+    public Collection<String> getResourceReferences() {
+        synchronized (StagingManager.class) {
+            return resourceList.keySet();
+        }
+    }
 
     protected void refreshResourceList() {
         synchronized (StagingManager.class) {
@@ -145,10 +151,9 @@ public class StagingManager implements IStagingManager {
         }
         return buffer.toString();
     }
-
-    public IStagedResource find(Object... path) {
-        String filePath = buildFilePath(path);
-        IStagedResource resource = resourceList.get(filePath);
+    
+    public IStagedResource find(String path) {
+        IStagedResource resource = resourceList.get(path);
         if (resource != null) {
             if (!resource.exists()
                     && (resource.getState() == State.READY || resource.getState() == State.DONE)) {
@@ -158,6 +163,10 @@ public class StagingManager implements IStagingManager {
         }
 
         return resource;
+    }
+
+    public IStagedResource find(Object... path) {
+        return find(buildFilePath(path));
     }
 
 }

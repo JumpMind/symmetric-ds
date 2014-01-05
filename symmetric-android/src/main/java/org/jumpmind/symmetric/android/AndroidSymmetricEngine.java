@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.android;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -106,6 +107,14 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
             
             public long clean(long timeToLiveInMs) {
                 return 0;
+            }
+            
+            public IStagedResource find(String path) {
+                return null;
+            }
+            
+            public Collection<String> getResourceReferences() {
+                return null;
             }
         };
     }
