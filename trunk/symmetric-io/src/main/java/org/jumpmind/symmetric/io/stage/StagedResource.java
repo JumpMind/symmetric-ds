@@ -79,7 +79,7 @@ public class StagedResource implements IStagedResource {
         this.path = file.getAbsolutePath();
         this.path = this.path.substring(directory.getAbsolutePath().length(), file
                 .getAbsolutePath().length());
-        this.path = this.path.substring(0, path.lastIndexOf("."));
+        this.path = this.path.substring(1, path.lastIndexOf("."));
         if (file.exists()) {
             lastUpdateTime = file.lastModified();
             String fileName = file.getName();
