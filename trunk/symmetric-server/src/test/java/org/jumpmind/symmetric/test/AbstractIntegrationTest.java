@@ -72,6 +72,7 @@ public abstract class AbstractIntegrationTest {
 
             clientDatabase = properties.getProperty("test.client");
             client = new ClientSymmetricEngine(properties);
+            client.getStagingManager().clean(0);
             clientTestService = new TestTablesService(client);
             TestSetupUtil
                     .dropAndCreateDatabaseTables(properties.getProperty("test.client"), client);

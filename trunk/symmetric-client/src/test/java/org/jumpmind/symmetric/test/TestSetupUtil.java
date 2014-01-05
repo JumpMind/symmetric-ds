@@ -70,6 +70,7 @@ abstract public class TestSetupUtil {
             properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sql);
         }
         ISymmetricEngine engine = new ClientSymmetricEngine(properties);
+        engine.getStagingManager().clean(0);
         dropAndCreateDatabaseTables(properties.getProperty("test.root"), engine);
         return engine;
     }
