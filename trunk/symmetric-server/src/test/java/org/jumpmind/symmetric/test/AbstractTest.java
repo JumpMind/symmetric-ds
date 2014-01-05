@@ -155,7 +155,8 @@ abstract public class AbstractTest {
 
                 ISymmetricEngine engine = new ClientSymmetricEngine(properties);
                 IDatabasePlatform platform = engine.getDatabasePlatform();
-                engine.uninstall();
+                engine.getStagingManager().clean(0);
+                engine.uninstall();                
 
                 Database database = platform.getDdlReader().readTables(
                         platform.getDefaultCatalog(), platform.getDefaultSchema(),
