@@ -18,6 +18,21 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.13 (Released 2014-01-06) 
+==========================================
+- 0001496: [Bug] Triggers not created when "handle key updates" enabled (mhanes) - closed.
+- 0001502: [Improvement] Assign a load id to batches that contain reload events when the batch is created during routing (chenson) - closed.
+- 0001505: [Task] Add blurb about the resolve_row_only column's functionality in the NEWER_WINS resolve type documentation. (chenson) - closed.
+- 0001506: [Bug] NullPointerException on Android when INTENTKEY_PROPERTIES is not provided in the Intent when starting service (chenson) - closed.
+- 0001507: [Improvement] API Improvement - Added getTableTypes() to IDdlReader (chenson) - closed.
+- 0001511: [Bug] Firebird TIME fields don't synchronize properly because of the fractional seconds component (chenson) - closed.
+- 0001512: [Bug] sqlscriptreader has bug where tokens aren't replaced if the script has a single sql statement with no end of statement token (chenson) - closed.
+- 0001513: [Improvement] Add API Operation description to the REST API (mhanes) - closed.
+- 0001514: [Bug] Stream Lobs for SQL Server fails with bad trigger syntax (mhanes) - closed.
+- 0001469: [Bug] Time and Timestamp field issues on Firebird and Postgres databases (chenson) - closed.
+- 0001498: [Bug] Table reload broken on Sybase ASA 9 (elong) - closed.
+- 0001504: [Improvement] Add variables to initial load delete SQL (elong) - closed.
+
 SymmetricDS - 3.5.12 (Released 2013-12-18)
 ==========================================
 - 0001465: [Bug] REST API - default schema and/or catalog are filled in for generated sql statement even if they are blank in sym_trigger (chenson) - closed.
