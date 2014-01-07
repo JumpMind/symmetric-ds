@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -636,7 +637,25 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     transformService.deleteTransformTable(transformTable.getTransformId());
                 }
             }
-
+            
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
+                    parameterService.getTablePrefix(), TableConstants.SYM_ROUTER));
+            if (table != null) {
+                List<Router> objects = triggerRouterService.getRouters();
+                for (Router router : objects) {
+                    triggerRouterService.deleteRouter(router);
+                }
+            }
+            
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
+                    parameterService.getTablePrefix(), TableConstants.SYM_CONFLICT));
+            if (table != null) {
+                List<ConflictNodeGroupLink> objects = dataLoaderService.getConflictSettingsNodeGroupLinks();
+                for (ConflictNodeGroupLink obj : objects) {
+                    dataLoaderService.delete(obj);
+                }
+            }
+            
             table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
                     parameterService.getTablePrefix(), TableConstants.SYM_NODE_GROUP_LINK));
             if (table != null) {
@@ -653,11 +672,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             triggerRouterService.syncTriggers();      
             
         } catch (SqlException ex) {
-            /*
-             * Log at debug level, because the system could be partially installed which
-             * would cause errors at this step.
-             */
-            log.debug("Error while trying to uninstall", ex);
+            log.warn("Error while trying remove triggers on tables", ex);
         }
         
         // remove any additional triggers that may remain because they were not in trigger history
