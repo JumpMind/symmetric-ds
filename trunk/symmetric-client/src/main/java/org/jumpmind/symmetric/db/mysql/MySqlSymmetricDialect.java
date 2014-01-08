@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 
@@ -144,7 +143,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName, TriggerHistory oldHistory) {
+            String triggerName, String tableName) {
         catalogName = catalogName == null ? "" : (catalogName + ".");
         final String sql = "drop trigger " + catalogName + triggerName;
         logSql(sql, sqlBuffer);

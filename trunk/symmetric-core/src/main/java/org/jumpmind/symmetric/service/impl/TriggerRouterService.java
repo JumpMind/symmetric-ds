@@ -1125,19 +1125,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (StringUtils.isNotBlank(history.getNameForInsertTrigger())) {
             symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                     history.getSourceSchemaName(), history.getNameForInsertTrigger(),
-                    history.getSourceTableName(), history);
+                    history.getSourceTableName());
         }
 
         if (StringUtils.isNotBlank(history.getNameForDeleteTrigger())) {
             symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                     history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
-                    history.getSourceTableName(), history);
+                    history.getSourceTableName());
         }
 
         if (StringUtils.isNotBlank(history.getNameForUpdateTrigger())) {
             symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                     history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
-                    history.getSourceTableName(), history);
+                    history.getSourceTableName());
         }
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
@@ -1412,13 +1412,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 // table
                 symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(),
-                        trigger.getSourceTableName(), newestHistory);
+                        trigger.getSourceTableName());
                 symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(),
-                        trigger.getSourceTableName(), newestHistory);
+                        trigger.getSourceTableName());
                 symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(),
-                        trigger.getSourceTableName(), newestHistory);
+                        trigger.getSourceTableName());
             }
 
             if (this.triggerCreationListeners != null) {
@@ -1483,7 +1483,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
             symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
                     oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
-                            : trigger.getSourceTableName(), oldhist);
+                            : trigger.getSourceTableName());
             triggerExists = false;
             triggerRemoved = true;
         }

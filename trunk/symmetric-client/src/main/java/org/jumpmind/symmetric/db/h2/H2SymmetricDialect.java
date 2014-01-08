@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /*
@@ -58,14 +57,14 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
 
         if (!exists && !StringUtils.isBlank(triggerName)) {
-            removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
+            removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName);
         }
         return exists;
     }
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory) {
+            String tableName) {
         String prefix = Table.getQualifiedTablePrefix(catalogName, schemaName, getPlatform().getDatabaseInfo().getDelimiterToken());
         final String dropSql = String.format("DROP TRIGGER IF EXISTS %s%s", prefix, triggerName);
         logSql(dropSql, sqlBuffer);
@@ -78,10 +77,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 				log.debug(
 						"Dropping trigger {} for {}",
 						triggerName,
-						oldHistory != null ? oldHistory
-								.getFullyQualifiedSourceTableName() : Table
-								.getFullyQualifiedTableName(catalogName,
-										schemaName, tableName));
+                        Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
 				platform.getSqlTemplate().update(dropSql);
                 platform.getSqlTemplate().update(dropTable);
             } catch (Exception e) {
