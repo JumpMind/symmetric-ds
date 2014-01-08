@@ -429,9 +429,9 @@ net stop symmetricds</programlisting>
             <programlisting>/sbin/chkconfig --del sym_service</programlisting>
         </para>
         </listitem>
-        <listitem>Using <literal>install_initd</literal> command (Suse Linux):
+        <listitem>Using <literal>install_initd</literal> command (CentOS Linux, Oracle Linux, SUSE Linux):
         <para>
-            On Suse Linux install the service by calling:
+            On CentOS Linux, Oracle Linux, and SUSE Linux install the service by calling:
             <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
             Remove the service by calling:
             <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
