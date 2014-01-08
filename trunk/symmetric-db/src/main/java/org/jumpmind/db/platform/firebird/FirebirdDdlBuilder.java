@@ -93,7 +93,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         super.createTable(table, ddl, temporary, recreate);
 
-        if (!temporary) {
+        if (!temporary && !recreate) {
             // creating generator and trigger for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
 

@@ -118,7 +118,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
         super.createTable(table, ddl, temporary, recreate);
 
-        if (!temporary) {
+        if (!temporary && !recreate) {
             for (int idx = 0; idx < columns.length; idx++) {
                 createAutoIncrementTrigger(table, columns[idx], ddl);
             }

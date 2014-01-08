@@ -141,14 +141,14 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        if (!temporary) {
-        for (int idx = 0; idx < table.getColumnCount(); idx++) {
-            Column column = table.getColumn(idx);
+        if (!temporary && !recreate) {
+            for (int idx = 0; idx < table.getColumnCount(); idx++) {
+                Column column = table.getColumn(idx);
 
-            if (column.isAutoIncrement()) {
-                createAutoIncrementSequence(table, column, ddl);
+                if (column.isAutoIncrement()) {
+                    createAutoIncrementSequence(table, column, ddl);
+                }
             }
-        }
         }
         super.createTable(table, ddl, temporary, recreate);
     }
