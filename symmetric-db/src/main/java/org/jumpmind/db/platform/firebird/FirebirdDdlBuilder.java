@@ -93,12 +93,12 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         super.createTable(table, ddl, temporary, recreate);
 
-        if (!temporary && !recreate) {
+        if (!temporary) {
             // creating generator and trigger for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
 
             for (int idx = 0; idx < columns.length; idx++) {
-                writeAutoIncrementCreateStmts(table, columns[idx], ddl);
+                writeAutoIncrementCreateStmts(table, columns[idx], ddl, recreate);
             }
         }
     }
@@ -120,10 +120,12 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
      * Writes the creation statements to make the given column an auto-increment
      * column.
      */
-    private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl) {
-        ddl.append("CREATE GENERATOR ");
-        printIdentifier(getGeneratorName(table, column), ddl);
-        printEndOfStatement(ddl);
+    private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl, boolean recreate) {
+        if (!recreate) {
+            ddl.append("CREATE GENERATOR ");
+            printIdentifier(getGeneratorName(table, column), ddl);
+            printEndOfStatement(ddl);
+        }
 
         ddl.append("CREATE TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
@@ -370,7 +372,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
-            writeAutoIncrementCreateStmts(curTable, change.getNewColumn(), ddl);
+            writeAutoIncrementCreateStmts(curTable, change.getNewColumn(), ddl, false);
         }
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
