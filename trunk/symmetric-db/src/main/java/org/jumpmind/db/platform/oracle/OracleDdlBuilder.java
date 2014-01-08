@@ -110,7 +110,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // lets create any sequences
         Column[] columns = table.getAutoIncrementColumns();
 
-        if (!temporary) {
+        if (!temporary && !recreate) {
             for (int idx = 0; idx < columns.length; idx++) {
                 createAutoIncrementSequence(table, columns[idx], ddl);
             }
@@ -118,7 +118,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
         super.createTable(table, ddl, temporary, recreate);
 
-        if (!temporary && !recreate) {
+        if (!temporary) {
             for (int idx = 0; idx < columns.length; idx++) {
                 createAutoIncrementTrigger(table, columns[idx], ddl);
             }
