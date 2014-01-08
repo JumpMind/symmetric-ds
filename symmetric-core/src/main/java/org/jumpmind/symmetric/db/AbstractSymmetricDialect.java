@@ -257,14 +257,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
     
     protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName, TriggerHistory oldHistory) {
+            String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         return "drop trigger " + schemaName + triggerName;
     }
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName, TriggerHistory oldHistory) {
-        String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName, oldHistory);
+            String triggerName, String tableName) {
+        String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {

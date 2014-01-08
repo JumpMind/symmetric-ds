@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /*
@@ -162,7 +161,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory) {
+            String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String dropSql = "drop trigger " + triggerName + " on " + schemaName + tableName;
         logSql(dropSql, sqlBuffer);

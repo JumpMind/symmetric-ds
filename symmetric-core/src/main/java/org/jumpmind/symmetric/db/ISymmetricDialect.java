@@ -54,7 +54,7 @@ public interface ISymmetricDialect {
     public String getEngineName();
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory);
+            String tableName);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
