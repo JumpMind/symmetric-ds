@@ -393,14 +393,29 @@ net stop symmetricds</programlisting>
     <section id="running-service-unix">
         <title>Running as a *nix Service</title>
         <para>
-            SymmetricDS uses the
+            SymmetricDS uses the 32 bit
             <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
             product from Tanuki Software to run in the background as a Unix system service.
             The Java Service Wrapper executable is named <filename class="file">sym_service</filename>
             so it can be easily identified from a list of running processes.
             The service configuration is found in <filename class="filename">conf/sym_service.conf</filename>.
-            Edit this file if you want to change the default port number (8080), initial memory size
+            Edit this file if you want to change the initial memory size
             (256 MB), log file size (10 MB), or other settings.
+        </para>
+        <para>If you need a 64 bit wrapper, you'll need to download the Java Service Wrapper 64 bit version, 
+            then do the following:
+           <orderedlist>
+                <listitem>Unzip the download to some directory, say /tmp</listitem>
+                <listitem>Change directory to the unzip location</listitem>
+                <listitem>Run the following three commands:
+                <programlisting>
+                cp ./bin/wrapper /opt/symmetric-ds/bin/sym_service
+                cp ./lib/wrapper.jar /opt/symmetric-ds/lib/wrapper.jar
+                cp ./lib/libwrapper.so /opt/symmetric-ds/lib/libwrapper.so
+                </programlisting>
+                where <literal>/opt/symmetric-ds</literal> should be replaced with wherever you have installed SymmetricDS.
+                </listitem>
+            </orderedlist>
         </para>
         <para>
             An init script is provided to work with standard Unix run configuration levels.
@@ -429,9 +444,9 @@ net stop symmetricds</programlisting>
             <programlisting>/sbin/chkconfig --del sym_service</programlisting>
         </para>
         </listitem>
-        <listitem>Using <literal>install_initd</literal> command (CentOS Linux, Oracle Linux, SUSE Linux):
+        <listitem>Using <literal>install_initd</literal> command (Suse Linux):
         <para>
-            On CentOS Linux, Oracle Linux, and SUSE Linux install the service by calling:
+            On Suse Linux install the service by calling:
             <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
             Remove the service by calling:
             <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
