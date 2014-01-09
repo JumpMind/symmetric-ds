@@ -36,13 +36,13 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 /**
  * Represents a table in the database model.
  */
-public class Table implements Serializable, Cloneable {
+public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5541154961302342608L;
-    
+
     private String oldCatalog = null;
-    
+
     private String oldSchema = null;
 
     /** The catalog of this table as read from the database. */
@@ -68,7 +68,7 @@ public class Table implements Serializable, Cloneable {
 
     /** The indices applied to this table. */
     private ArrayList<IIndex> indices = new ArrayList<IIndex>();
-    
+
     private String primaryKeyConstraintName;
 
     public Table() {
@@ -246,7 +246,7 @@ public class Table implements Serializable, Cloneable {
     public Column[] getColumns() {
         return (Column[]) columns.toArray(new Column[columns.size()]);
     }
-    
+
     /**
      * Returns the columns in this table.
      * 
@@ -312,7 +312,7 @@ public class Table implements Serializable, Cloneable {
             addColumn((Column) it.next());
         }
     }
-    
+
     public void setPrimaryKeys(String[] primaryKeys) {
         if (primaryKeys != null) {
             for (Column column : columns) {
@@ -329,7 +329,7 @@ public class Table implements Serializable, Cloneable {
             }
         }
     }
-    
+
     public void addColumns(String[] columnNames) {
         if (columnNames != null) {
             for (String columnName : columnNames) {
@@ -654,7 +654,7 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
-    
+
     public int getPrimaryKeyColumnIndex(String columnName) {
         int idx = 0;
         List<Column> primaryKeyColumns = getPrimaryKeyColumnsAsList();
@@ -783,7 +783,7 @@ public class Table implements Serializable, Cloneable {
             return new ArrayList<Column>(0);
         }
     }
-    
+
     /**
      * Returns the primary key columns of this table.
      * 
@@ -793,7 +793,7 @@ public class Table implements Serializable, Cloneable {
         List<Column> pkColumns = getPrimaryKeyColumnsAsList();
         return pkColumns.toArray(new Column[pkColumns.size()]);
     }
-    
+
     /**
      * Returns the columns in this table that are not a PK.
      * 
@@ -886,13 +886,10 @@ public class Table implements Serializable, Cloneable {
     public boolean equals(Object obj) {
         if (obj instanceof Table) {
             Table other = (Table) obj;
-
             // Note that this compares case sensitive
-            // TODO: For now we ignore catalog and schema (type should be
-            // irrelevant anyways)
             return new EqualsBuilder()
-            .append(catalog, other.catalog)
-            .append(schema, other.schema)
+                    .append(catalog, other.catalog)
+                    .append(schema, other.schema)
                     .append(name, other.name)
                     .append(columns, other.columns)
                     .append(new HashSet<ForeignKey>(foreignKeys),
@@ -906,11 +903,9 @@ public class Table implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        // TODO: For now we ignore catalog and schema (type should be irrelevant
-        // anyways)
-        return new HashCodeBuilder(17, 37).append(name).append(columns)
-                .append(new HashSet<ForeignKey>(foreignKeys)).append(new HashSet<IIndex>(indices))
-                .toHashCode();
+        return new HashCodeBuilder(17, 37).append(name).append(catalog).append(schema)
+                .append(columns).append(new HashSet<ForeignKey>(foreignKeys))
+                .append(new HashSet<IIndex>(indices)).toHashCode();
     }
 
     @Override
@@ -960,7 +955,7 @@ public class Table implements Serializable, Cloneable {
 
         return result.toString();
     }
-    
+
     public String getTableKey() {
         return getFullyQualifiedTableName() + "-" + calculateTableHashcode();
     }
@@ -973,9 +968,9 @@ public class Table implements Serializable, Cloneable {
             String tableName) {
         return getFullyQualifiedTableName(catalogName, schemaName, tableName, null);
     }
-    
+
     public String getQualifiedColumnName(Column column) {
-        return getFullyQualifiedTableName() + "." + column.getName();        
+        return getFullyQualifiedTableName() + "." + column.getName();
     }
 
     public static String getQualifiedTablePrefix(String catalogName, String schemaName) {
@@ -1090,26 +1085,26 @@ public class Table implements Serializable, Cloneable {
         }
         return orderedColumns;
     }
-    
+
     public String getOldCatalog() {
         return oldCatalog;
     }
-    
+
     public void setOldCatalog(String oldCatalog) {
         this.oldCatalog = oldCatalog;
     }
-    
+
     public String getOldSchema() {
         return oldSchema;
     }
-    
+
     public void setOldSchema(String oldSchema) {
         this.oldSchema = oldSchema;
     }
 
     public Table copy() {
         try {
-            return (Table)this.clone();
+            return (Table) this.clone();
         } catch (CloneNotSupportedException ex) {
             throw new RuntimeException(ex);
         }
@@ -1142,7 +1137,7 @@ public class Table implements Serializable, Cloneable {
 
         return table;
     }
-   
+
     public String[] getColumnNames() {
         String[] columnNames = new String[columns.size()];
         int i = 0;
@@ -1161,7 +1156,7 @@ public class Table implements Serializable, Cloneable {
         }
         return columnNames;
     }
-    
+
     public int calculateTableHashcode() {
         final int PRIME = 31;
         int result = 1;
@@ -1220,27 +1215,27 @@ public class Table implements Serializable, Cloneable {
             return " ";
         }
     }
-    
+
     public static String[] getArrayColumns(Column[] cols) {
-        if (cols!=null) {
+        if (cols != null) {
             String[] columns = new String[cols.length];
-            for (int i=0;i<cols.length;i++) {
-                columns[i] =cols[i].getName();
+            for (int i = 0; i < cols.length; i++) {
+                columns[i] = cols[i].getName();
             }
             return columns;
         } else {
             return null;
         }
     }
-    
+
     public void setPrimaryKeyConstraintName(String primaryKeyConstraintName) {
         this.primaryKeyConstraintName = primaryKeyConstraintName;
     }
-    
+
     public String getPrimaryKeyConstraintName() {
         return primaryKeyConstraintName;
     }
-    
+
     public boolean containsJdbcTypes() {
         Column[] columns = getColumns();
         if (columns != null && columns.length > 0) {
@@ -1254,7 +1249,7 @@ public class Table implements Serializable, Cloneable {
             return false;
         }
     }
-    
+
     public void copyColumnTypesFrom(Table table) {
         if (table != null) {
             if (columns != null) {
@@ -1269,6 +1264,10 @@ public class Table implements Serializable, Cloneable {
                 }
             }
         }
+    }
+    
+    public int compareTo(Table o) {
+        return this.getFullyQualifiedTableName().compareTo(o.getFullyQualifiedTableName());
     }
 
 }

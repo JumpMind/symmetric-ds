@@ -8,10 +8,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +24,9 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +75,9 @@ public class SnapshotUtil {
                     serviceWrapperLogFile.getAbsolutePath());
         }
 
-        List<TriggerHistory> triggerHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
-        List<Table> tables = new ArrayList<Table>();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
+        List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
+        TreeSet<Table> tables = new TreeSet<Table>();
         for (TriggerHistory triggerHistory : triggerHistories) {
             Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
                     triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
@@ -83,6 +86,16 @@ public class SnapshotUtil {
                 tables.add(table);
             }
         }
+        
+        List<Trigger> triggers = triggerRouterService.getTriggers();
+        for (Trigger trigger : triggers) {
+            Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(), trigger.getSourceTableName(),
+                    false);
+            if (table != null) {
+                tables.add(table);
+            }            
+        }               
 
         FileWriter fwriter = null;
         try {
@@ -120,13 +133,11 @@ public class SnapshotUtil {
             export.exportTables(
                     fos,
                     new String[] {
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY),
                             TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
-                            TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_NODE_SECURITY),
-                            TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_NODE_HOST),
-                            TableConstants.getTableName(tablePrefix,
-                                    TableConstants.SYM_TRIGGER_HIST),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST),
                             TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK),
                             TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION)});
         } catch (IOException e) {
