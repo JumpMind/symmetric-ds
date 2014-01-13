@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -46,6 +47,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
@@ -932,14 +934,20 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean sql(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String sql = preprocessSqlStatement(data);
-            transaction.prepare(sql);
-            if (log.isDebugEnabled()) {
-                log.debug("About to run: {}", sql);
-            }
-            long count = transaction.prepareAndExecute(sql);
-            if (log.isDebugEnabled()) {
-                log.debug("{} rows updated when running: {}", count, sql);
+            String script = data.getParsedData(CsvData.ROW_DATA)[0];
+            List<String> sqlStatements = getSqlStatements(script);
+            long count = 0;
+            for (String sql : sqlStatements) {
+
+                sql = preprocessSqlStatement(sql);
+                transaction.prepare(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to run: {}", sql);
+                }
+                count += transaction.prepareAndExecute(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} rows updated when running: {}", count, sql);
+                }
             }
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
@@ -949,10 +957,24 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
+    
+    protected List<String> getSqlStatements(String script) {
+        List<String> sqlStatements = new ArrayList<String>();
+        SqlScriptReader scriptReader = new SqlScriptReader(new StringReader(script));
+        try {
+            String sql = scriptReader.readSqlStatement();
+            while (sql != null) {
+                sqlStatements.add(sql);
+                sql = scriptReader.readSqlStatement();
+            }
+            return sqlStatements;
+        } finally {
+            IOUtils.closeQuietly(scriptReader);
+        }
+    }
 
-    protected String preprocessSqlStatement(CsvData data) {
 
-		String sql = data.getParsedData(CsvData.ROW_DATA)[0];
+    protected String preprocessSqlStatement(String sql) {
 		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
 		if (targetTable != null) {
 			sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()),sql);
@@ -965,8 +987,17 @@ public class DatabaseWriter implements IDataWriter {
 		}
 
 		sql = platform.scrubSql(sql);
-//		sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
-//		sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
+		
+        sql = FormatUtils.replace("sourceNodeId", (String) context.get("sourceNodeId"), sql);
+        sql = FormatUtils.replace("sourceNodeExternalId",
+                (String) context.get("sourceNodeExternalId"), sql);
+        sql = FormatUtils.replace("sourceNodeGroupId", (String) context.get("sourceNodeGroupId"),
+                sql);
+        sql = FormatUtils.replace("targetNodeId", (String) context.get("targetNodeId"), sql);
+        sql = FormatUtils.replace("targetNodeExternalId",
+                (String) context.get("targetNodeExternalId"), sql);
+        sql = FormatUtils.replace("targetNodeGroupId", (String) context.get("targetNodeGroupId"),
+                sql);
 
 		return sql;
     }
