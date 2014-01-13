@@ -373,8 +373,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         final DataContext ctx = new DataContext();        
         Throwable error = null;
         try {
-            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, nodeService.findIdentity());
+            Node targetNode = nodeService.findIdentity();
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_GROUP_ID, targetNode.getNodeGroupId());
+            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
             
             for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
                 l.syncStarted(ctx);

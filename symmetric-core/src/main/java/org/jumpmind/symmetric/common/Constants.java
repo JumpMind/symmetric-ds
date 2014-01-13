@@ -36,7 +36,19 @@ final public class Constants {
     
     public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
     
+    public static final String DATA_CONTEXT_TARGET_NODE_ID = "targetNodeId";
+    
+    public static final String DATA_CONTEXT_TARGET_NODE_GROUP_ID = "targetNodeGroupId";
+    
+    public static final String DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID = "targetNodeExternalId";
+    
     public static final String DATA_CONTEXT_SOURCE_NODE = "sourceNode";
+    
+    public static final String DATA_CONTEXT_SOURCE_NODE_ID = "sourceNodeId";
+                                            
+    public static final String DATA_CONTEXT_SOURCE_NODE_GROUP_ID = "sourceNodeGroupId";
+                                            
+    public static final String DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID = "sourceNodeExternalId";
         
     public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
 
