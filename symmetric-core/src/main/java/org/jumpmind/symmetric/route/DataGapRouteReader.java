@@ -166,8 +166,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
             if (cursor != null) {
                 cursor.close();
             }
-            copyToQueue(new EOD());
             reading = false;
+            copyToQueue(new EOD());
         }
 
     }
@@ -191,13 +191,18 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     public Data take() throws InterruptedException {
-        Data data = dataQueue.poll(takeTimeout, TimeUnit.SECONDS);
+        Data data = null;
+        do {
+            data = dataQueue.poll(takeTimeout, TimeUnit.SECONDS);
 
-        if (data == null) {
-            throw new SymmetricException("The read of the data to route queue has timed out");
-        } else if (data instanceof EOD) {
-            data = null;
-        }
+            if (data == null && !reading) {
+                throw new SymmetricException("The read of the data to route queue has timed out");
+            } else if (data instanceof EOD) {
+                data = null;
+            } 
+            
+        } while (data == null && reading);
+        
         return data;
     }
 
