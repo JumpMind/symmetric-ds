@@ -148,9 +148,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
             if (column.getScale() == 0) {
-                if (column.getSizeAsInt() == 5) {
-                    column.setMappedTypeCode(Types.SMALLINT);
-                } else if (column.getSizeAsInt() == 22) {
+                if (column.getSizeAsInt() == 22) {
                     // TODO: This is causing several Oracle unit tests to fail.
 //                    if (isColumnInteger((String) values.get("TABLE_NAME"),
 //                            (String) values.get("COLUMN_NAME"))) {
