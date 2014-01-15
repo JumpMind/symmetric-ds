@@ -116,6 +116,8 @@ public interface IDataService {
     public Date findCreateTimeOfEvent(long dataId);
     
     public Date findCreateTimeOfData(long dataId);
+    
+    public Date findNextCreateTimeOfDataStartingAt(long dataId);
 
     public Data createData(String catalogName, String schemaName, String tableName);
 

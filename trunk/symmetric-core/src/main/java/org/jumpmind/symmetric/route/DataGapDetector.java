@@ -241,6 +241,9 @@ public class DataGapDetector {
         long gapTimoutInMs = parameterService
                 .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         Date createTime = dataService.findCreateTimeOfData(dataId);
+        if (createTime == null) {
+            createTime = dataService.findNextCreateTimeOfDataStartingAt(dataId);
+        }
         if (createTime != null && System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
             return true;
         } else {
