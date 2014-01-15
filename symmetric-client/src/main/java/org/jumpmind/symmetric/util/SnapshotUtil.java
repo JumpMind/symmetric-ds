@@ -24,6 +24,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
+import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -196,24 +197,7 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fos);
         }
 
-        fos = null;
-        try {
-            fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
-            Properties runtimeProperties = new Properties();
-            runtimeProperties.setProperty("unrouted.data.count",
-                    Long.toString(engine.getRouterService().getUnroutedDataCount()));
-            runtimeProperties.setProperty("outgoing.errors.count",
-                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
-            runtimeProperties.setProperty("outgoing.tosend.count",
-                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
-            runtimeProperties.setProperty("incoming.errors.count",
-                    Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
-            runtimeProperties.store(fos, "runtime-stats.properties");
-        } catch (IOException e) {
-            log.warn("Failed to export thread information", e);
-        } finally {
-            IOUtils.closeQuietly(fos);
-        }
+        writeRuntimeStats(engine, tmpDir);
 
         fos = null;
         try {
@@ -234,6 +218,39 @@ public class SnapshotUtil {
             return jarFile;
         } catch (IOException e) {
             throw new IoException("Failed to package snapshot files into archive", e);
+        }
+    }
+    
+    protected static void writeRuntimeStats(ISymmetricEngine engine, File tmpDir) {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
+            Properties runtimeProperties = new Properties();
+            runtimeProperties.setProperty("unrouted.data.count",
+                    Long.toString(engine.getRouterService().getUnroutedDataCount()));
+            runtimeProperties.setProperty("outgoing.errors.count",
+                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
+            runtimeProperties.setProperty("outgoing.tosend.count",
+                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
+            runtimeProperties.setProperty("incoming.errors.count",
+                    Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
+            
+            List<DataGap> gaps = engine.getDataService().findDataGaps();
+            runtimeProperties.setProperty("data.gap.count",
+                    Long.toString(gaps.size()));
+            if (gaps.size() > 0) {
+                runtimeProperties.setProperty("data.gap.start.id",
+                        Long.toString(gaps.get(0).getStartId()));
+                runtimeProperties.setProperty("data.gap.end.id",
+                        Long.toString(gaps.get(gaps.size()-1).getStartId()));                
+
+            }
+            
+            runtimeProperties.store(fos, "runtime-stats.properties");
+        } catch (IOException e) {
+            log.warn("Failed to export thread information", e);
+        } finally {
+            IOUtils.closeQuietly(fos);
         }
     }
 
