@@ -77,6 +77,9 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("findDataCreateTimeSql", ""
                 + "select create_time from $(data) where data_id=?   ");
+        
+        putSql("findNextDataCreateTimeSql", ""
+                + "select create_time from $(data) where data_id in (select min(data_id) from $(data) where data_id >= ?)");
 
         putSql("findDataGapsByStatusSql",
                 ""
