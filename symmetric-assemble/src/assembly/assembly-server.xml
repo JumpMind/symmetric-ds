@@ -66,6 +66,11 @@
             <fileMode>755</fileMode>
         </file>
         <file>
+            <source>../symmetric-server/src/main/deploy/bin/setenv</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
             <source>../symmetric-server/src/main/deploy/bin/dbexport</source>
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
