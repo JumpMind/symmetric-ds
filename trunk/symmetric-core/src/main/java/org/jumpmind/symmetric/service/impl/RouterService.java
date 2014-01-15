@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -792,6 +793,11 @@ public class RouterService extends AbstractService implements IRouterService {
         long maxDataIdAlreadyRouted = sqlTemplate
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
+        List<DataGap> gaps = engine.getDataService().findDataGaps();
+        for (int i = 0; i < gaps.size()-2; i++) {
+            DataGap gap = gaps.get(i);
+            leftToRoute += (gap.getEndId() - gap.getStartId());
+        }
         if (leftToRoute > 0) {
             return leftToRoute;
         } else {
