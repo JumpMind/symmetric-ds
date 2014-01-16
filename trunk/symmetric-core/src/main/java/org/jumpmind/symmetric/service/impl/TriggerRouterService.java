@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -1338,7 +1339,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         try {
 
-            if (table.getPrimaryKeyColumnCount() == 0) {
+            boolean foundPk = false;
+            Column[] columns = trigger.filterExcludedColumns(table.getColumns());
+            for (Column column : columns) {
+                foundPk |= column.isPrimaryKey();
+            }
+            if (!foundPk) {
                 table = platform.makeAllColumnsPrimaryKeys(table);
             }
 
