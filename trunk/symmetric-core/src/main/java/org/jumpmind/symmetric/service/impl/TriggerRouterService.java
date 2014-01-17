@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -199,14 +200,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setSourceCatalogName(catalogName);
             trigger.setSourceSchemaName(schemaName);
             trigger.setSourceTableName(table);
-            trigger.setTriggerId(table);
+            String triggerId = table;
+            if (table.length() > 50) {
+                triggerId = table.substring(0,13) + "_" + UUID.randomUUID().toString();
+            }
+            trigger.setTriggerId(triggerId);
             trigger.setLastUpdateBy(lastUpdateBy);
             trigger.setLastUpdateTime(new Date());
             trigger.setCreateTime(new Date());
             saveTrigger(trigger);
         }
     }
-
+    
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables,
             String lastUpdateBy) {
         for (Table table : tables) {
