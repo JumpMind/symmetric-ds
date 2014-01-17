@@ -18,6 +18,19 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.14 (Released 2014-01-17) 
+==========================================
+- 0001434: [Improvement] Build up classpath differently so path too long error isn't encountered in windows (elong) - closed.
+- 0001518: [Bug] rebuild of trigger hist fails on some platforms (postgres, firebird, oracle) when upgrading from 3.1 to 3.5 (chenson) - closed.
+- 0001521: [Improvement] For system snapshot capture not only outbound table definitions, but also incoming table definitions (chenson) - closed.
+- 0001524: [Improvement] When applying a SQL event, support multiple SQL statements. Support additional replacement tokens. (chenson) - closed.
+- 0001527: [Improvement] Add information about data gaps to the snapshot (chenson) - closed.
+- 0001528: [Bug] Routing can get stuck if there are lots of gaps that range across a large amount of data that has already been routed (chenson) - closed.
+- 0001531: [Bug] isDataGapExpired() in DataGapDectector can leave old gaps if the next data id is not present (chenson) - closed.
+- 0001532: [Bug] integer value logged correctly at server, but inserted as different value at client (chenson) - closed.
+- 0001533: [Bug] Unable to create trigger if primary key column excluded (chenson) - closed.
+- 0001520: [Improvement] Add further details about Linux installation as a service options (mhanes) - closed.
+
 SymmetricDS - 3.5.13 (Released 2014-01-06) 
 ==========================================
 - 0001496: [Bug] Triggers not created when "handle key updates" enabled (mhanes) - closed.
