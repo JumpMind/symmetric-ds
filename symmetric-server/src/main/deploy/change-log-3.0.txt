@@ -20,6 +20,7 @@
 ====
 SymmetricDS - 3.5.14 (Released 2014-01-17) 
 ==========================================
+- 0001534: [Bug] API - createTriggersOnChannelForTables() fails when it encounters a table name that is longer than 50 characters (chenson) - closed.
 - 0001434: [Improvement] Build up classpath differently so path too long error isn't encountered in windows (elong) - closed.
 - 0001518: [Bug] rebuild of trigger hist fails on some platforms (postgres, firebird, oracle) when upgrading from 3.1 to 3.5 (chenson) - closed.
 - 0001521: [Improvement] For system snapshot capture not only outbound table definitions, but also incoming table definitions (chenson) - closed.
