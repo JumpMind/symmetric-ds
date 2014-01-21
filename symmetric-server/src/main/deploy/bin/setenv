@@ -27,16 +27,16 @@ cd bin
 
 SYM_OPTIONS="-Dfile.encoding=utf-8 \
 -Duser.language=en \
--Djava.io.tmpdir=\"$SYM_HOME/tmp\" \
+-Djava.io.tmpdir=$SYM_HOME/tmp \
 -Dorg.eclipse.jetty.server.Request.maxFormContentSize=800000 \
 -Dorg.eclipse.jetty.server.Request.maxFormKeys=100000 \
--Dsym.keystore.file=\"$SYM_HOME/security/keystore\" \
--Djavax.net.ssl.trustStore=\"$SYM_HOME/security/cacerts\" \
--Dlog4j.configuration=\"file:$SYM_HOME/conf/log4j.xml\" \
+-Dsym.keystore.file=$SYM_HOME/security/keystore \
+-Djavax.net.ssl.trustStore=$SYM_HOME/security/cacerts \
+-Dlog4j.configuration=file:$SYM_HOME/conf/log4j.xml \
 -Dsun.net.client.defaultReadTimeout=1800000 \
 -Dsun.net.client.defaultConnectTimeout=1800000 \
 -XX:+HeapDumpOnOutOfMemoryError \
--XX:HeapDumpPath=\"$SYM_HOME/tmp\""
+-XX:HeapDumpPath=$SYM_HOME/tmp"
 export SYM_OPTIONS
 
 SYM_JAVA=java
