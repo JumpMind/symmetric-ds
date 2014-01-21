@@ -550,7 +550,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         }
 
                         if (parameterService
-                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || StringUtils.isBlank(node.getDatabaseType())) {
+                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || StringUtils.isBlank(node.getDatabaseType()) ||
+                                ! node.getSyncUrl().equals(parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
 
