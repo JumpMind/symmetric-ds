@@ -21,4 +21,4 @@
 #
  
 . "`dirname "$0"`/setenv"
-exec "$SYM_JAVA" -cp "$CLASSPATH" org.jumpmind.symmetric.SymmetricLauncher "$@"
+exec "$SYM_JAVA" $SYM_OPTIONS -cp "$CLASSPATH" org.jumpmind.symmetric.SymmetricLauncher "$@"
