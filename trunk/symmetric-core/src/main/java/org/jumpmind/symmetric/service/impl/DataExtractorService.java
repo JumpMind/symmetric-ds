@@ -1257,6 +1257,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private Table sourceTable;
 
         private TriggerHistory lastTriggerHistory;
+        
+        private String lastRouterId;
 
         private boolean requiresLobSelectedFromSource;
 
@@ -1339,8 +1341,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
                         if (trigger != null) {
-                            if ((lastTriggerHistory == null || lastTriggerHistory
-                                    .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId())) {
+                            if (lastTriggerHistory == null || lastTriggerHistory
+                                    .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
+                                    lastRouterId == null || !lastRouterId.equals(routerId)) {
                                 this.sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                                         routerId, triggerHistory, false, true);
                                 this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
@@ -1363,6 +1366,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
 
                     lastTriggerHistory = triggerHistory;
+                    lastRouterId = routerId;
                 } else {
                     closeCursor();
                 }
