@@ -18,6 +18,12 @@
     specific language governing permissions and limitations
     under the License.
 ====
+SymmetricDS - 3.5.15 (Released 2014-01-22) 
+==========================================
+- 0001536: [Improvement] Change to sync.url not picked up (elong) - closed.
+- 0001538: [Bug] Target schema and catalog are not picked up on second router to the same node if different from the first router (chenson) - closed.
+- 0001539: [Bug] Fix *nix sym and setenv shell scripts after bug introduced in 3.5.14 (elong) - closed.
+
 SymmetricDS - 3.5.14 (Released 2014-01-17) 
 ==========================================
 - 0001534: [Bug] API - createTriggersOnChannelForTables() fails when it encounters a table name that is longer than 50 characters (chenson) - closed.
