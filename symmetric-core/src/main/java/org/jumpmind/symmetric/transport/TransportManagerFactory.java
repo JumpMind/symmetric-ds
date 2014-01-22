@@ -51,53 +51,59 @@ public class TransportManagerFactory {
         this.symmetricEngine = symmetricEngine;
     }
 
-    public ITransportManager create() {
+    public static void initHttps(final String httpSslVerifiedServerNames,
+            boolean allowSelfSignedCerts) {
         try {
-            String transport = symmetricEngine.getParameterService().getString(
-                    ParameterConstants.TRANSPORT_TYPE);
-            if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
-                final String httpSslVerifiedServerNames = symmetricEngine.getParameterService()
-                        .getString(ServerConstants.HTTPS_VERIFIED_SERVERS);
-                if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                    HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                        public boolean verify(String s, SSLSession sslsession) {
-                            boolean verified = false;
-                            if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                                if (httpSslVerifiedServerNames
-                                        .equalsIgnoreCase(Constants.TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL)) {
-                                    verified = true;
-                                } else {
-                                    String[] names = httpSslVerifiedServerNames.split(",");
-                                    for (String string : names) {
-                                        if (s != null && s.equals(string.trim())) {
-                                            verified = true;
-                                            break;
-                                        }
+            if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String s, SSLSession sslsession) {
+                        boolean verified = false;
+                        if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                            if (httpSslVerifiedServerNames
+                                    .equalsIgnoreCase(Constants.TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL)) {
+                                verified = true;
+                            } else {
+                                String[] names = httpSslVerifiedServerNames.split(",");
+                                for (String string : names) {
+                                    if (s != null && s.equals(string.trim())) {
+                                        verified = true;
+                                        break;
                                     }
                                 }
                             }
-                            return verified;
                         }
-                    });
-                }
-
-                // Allow self signed certs based on the parameter value.
-                boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
-                        ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
-                if (allowSelfSignedCerts) {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
-                }
-
-                return new HttpTransportManager(symmetricEngine);
-
-            } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
-                return new InternalTransportManager(symmetricEngine);
-            } else {
-                throw new IllegalStateException("An invalid transport type of " + transport
-                        + " was specified.");
+                        return verified;
+                    }
+                });
             }
+
+            if (allowSelfSignedCerts) {
+                HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
+            }
+
         } catch (GeneralSecurityException ex) {
             throw new SecurityException(ex);
+        }
+
+    }
+
+    public ITransportManager create() {
+        String transport = symmetricEngine.getParameterService().getString(
+                ParameterConstants.TRANSPORT_TYPE);
+        if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
+            String httpSslVerifiedServerNames = symmetricEngine.getParameterService().getString(
+                    ServerConstants.HTTPS_VERIFIED_SERVERS);
+            // Allow self signed certs based on the parameter value.
+            boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
+                    ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
+            initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
+            return new HttpTransportManager(symmetricEngine);
+
+        } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
+            return new InternalTransportManager(symmetricEngine);
+        } else {
+            throw new IllegalStateException("An invalid transport type of " + transport
+                    + " was specified.");
         }
     }
 
