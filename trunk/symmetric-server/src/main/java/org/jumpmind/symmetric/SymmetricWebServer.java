@@ -58,6 +58,7 @@ import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -136,8 +137,12 @@ public class SymmetricWebServer {
     protected boolean noDirectBuffer = false;
 
     protected String webAppDir = DEFAULT_WEBAPP_DIR;
-
+    
     protected String name = "SymmetricDS";
+    
+    protected String httpSslVerifiedServerNames = "all";
+    
+    protected boolean allowSelfSignedCerts = true;
 
     public SymmetricWebServer() {
         this(null, DEFAULT_WEBAPP_DIR);
@@ -192,6 +197,8 @@ public class SymmetricWebServer {
                 httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT, httpsPort);
                 jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT, jmxPort);
                 host = serverProperties.get(ServerConstants.HOST_BIND_NAME, host);
+                httpSslVerifiedServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS, httpSslVerifiedServerNames);
+                allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, allowSelfSignedCerts);
 
             } catch (IOException ex) {
                 log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
@@ -241,6 +248,8 @@ public class SymmetricWebServer {
 
     public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
 
+        TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
+        
         // indicate to the app that we are in stand alone mode
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
 
