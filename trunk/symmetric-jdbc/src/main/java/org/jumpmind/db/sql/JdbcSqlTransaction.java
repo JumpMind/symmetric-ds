@@ -163,11 +163,19 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public int queryForInt(String sql, Object... args) {
-        return queryForObject(sql, Integer.class, args);
+        Integer val = queryForObject(sql, Integer.class, args);
+        if (val == null) {
+            val = Integer.MIN_VALUE;
+        }
+        return val;
     }
 
     public long queryForLong(String sql, Object... args) {
-        return queryForObject(sql, Long.class, args);
+        Long val = queryForObject(sql, Long.class, args);
+        if (val == null) {
+            val = Long.MIN_VALUE;
+        }
+        return val;
     }
     
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {

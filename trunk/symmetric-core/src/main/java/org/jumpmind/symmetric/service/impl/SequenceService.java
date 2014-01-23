@@ -74,7 +74,9 @@ public class SequenceService extends AbstractService implements ISequenceService
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            return nextVal(transaction, name);
+            long val = nextVal(transaction, name);
+            transaction.commit();
+            return val;
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
@@ -160,7 +162,9 @@ public class SequenceService extends AbstractService implements ISequenceService
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            return currVal(transaction, name);
+            long val = currVal(transaction, name);
+            transaction.commit();
+            return val;
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
