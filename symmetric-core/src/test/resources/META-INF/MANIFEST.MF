@@ -6,7 +6,7 @@ Build-Jdk: 1.6.0_26
 Build-Job: DEV
 Build-Number: 0
 Build-Time: 20130908-1042
-Build-Version: 3.5.5
+Build-Version: 3.5.15
 Project-Artifact: symmetric-core
 Project-Group: org.jumpmind.symmetric
 
