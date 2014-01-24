@@ -189,7 +189,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean unlock(String action, String serverId) {
         String lastLockingServerId = serverId.equals(Lock.STOPPED) ? null : serverId;
-        return sqlTemplate.update(getSql("releaseLockSql"), new Object[] { lastLockingServerId, action,
+        return sqlTemplate.update(getSql("releaseLockSql"), new Object[] { new Date(), lastLockingServerId, action,
                 serverId }) > 0;
     }
 
