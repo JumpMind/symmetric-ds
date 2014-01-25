@@ -494,6 +494,12 @@ public class Column implements Cloneable, Serializable {
         return defaultValue;
     }    
     
+    public void removePlatformColumn(String databaseName) {
+        if (platformColumns != null) {
+            platformColumns.remove(databaseName);
+        }
+    }
+    
     public void addPlatformColumn(PlatformColumn platformColumn) {
         if (platformColumns == null) {
             platformColumns = new HashMap<String, PlatformColumn>();
