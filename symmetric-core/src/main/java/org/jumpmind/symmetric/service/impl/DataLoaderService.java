@@ -374,6 +374,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Throwable error = null;
         try {
             Node targetNode = nodeService.findIdentity();
+            ctx.put(Constants.DATA_CONTEXT_ENGINE, engine);
             if (targetNode != null) {
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());

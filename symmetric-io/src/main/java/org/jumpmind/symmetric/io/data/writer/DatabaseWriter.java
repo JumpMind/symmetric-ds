@@ -871,6 +871,7 @@ public class DatabaseWriter implements IDataWriter {
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("SOURCE_NODE_ID", batch.getSourceNodeId());
             variables.put("TARGET_NODE_ID", batch.getTargetNodeId());
+            variables.putAll(context.getContext());
             ISqlTemplate template = platform.getSqlTemplate();
             Class<?> templateClass = template.getClass();
             if (templateClass.getSimpleName().equals("JdbcSqlTemplate")) {
