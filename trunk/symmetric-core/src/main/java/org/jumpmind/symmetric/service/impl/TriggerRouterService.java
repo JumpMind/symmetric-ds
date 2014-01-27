@@ -1796,6 +1796,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<Trigger, Exception> getFailedTriggers() {
         return this.failureListener.getFailures();
     }
+    
+    public TriggerHistory findTriggerHistoryForGenericSync() {
+        String triggerTableName = TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_TRIGGER);
+        TriggerHistory history = findTriggerHistory(null, null, triggerTableName
+                .toUpperCase());
+        if (history == null) {
+            history = findTriggerHistory(null, null, triggerTableName);
+        }
+        return history;
+    }
+
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {

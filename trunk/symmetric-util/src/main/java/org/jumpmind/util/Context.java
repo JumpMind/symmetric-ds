@@ -44,4 +44,8 @@ public class Context {
         return context.keySet();
     }
     
+    public Map<String, Object> getContext() {
+        return context;
+    }
+    
 }

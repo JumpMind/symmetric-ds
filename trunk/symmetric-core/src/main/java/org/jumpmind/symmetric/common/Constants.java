@@ -34,6 +34,8 @@ final public class Constants {
     
     public static final String NONE_TOKEN = "$(none)";
     
+    public static final String DATA_CONTEXT_ENGINE = "engine";
+    
     public static final String DATA_CONTEXT_TARGET_NODE = "targetNode";
     
     public static final String DATA_CONTEXT_TARGET_NODE_ID = "targetNodeId";
