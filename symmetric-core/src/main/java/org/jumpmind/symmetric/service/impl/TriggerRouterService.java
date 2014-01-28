@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -107,6 +108,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private Date lastUpdateTime;
 
     private Object cacheLock = new Object();
+    
+    private ThreadPoolExecutor syncTriggersExecutor;
 
     /**
      * Cache the history for performance. History never changes and does not
