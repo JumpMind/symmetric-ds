@@ -162,9 +162,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
                         FileTrigger fileTrigger = triggerRouter.getFileTrigger();
 
-                        String targetBaseDir = triggerRouter.getTargetBaseDir();
+                        String targetBaseDir = triggerRouter.getTargetBaseDir().replace('\\', '/');
                         if (StringUtils.isBlank(targetBaseDir)) {
-                            targetBaseDir = fileTrigger.getBaseDir();
+                            targetBaseDir = fileTrigger.getBaseDir().replace('\\', '/');
                         }
                         targetBaseDir = StringEscapeUtils.escapeJava(targetBaseDir);
 

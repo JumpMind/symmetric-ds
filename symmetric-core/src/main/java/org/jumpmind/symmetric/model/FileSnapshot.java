@@ -96,22 +96,21 @@ public class FileSnapshot implements Serializable {
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
         this.fileName = file.getName();
-        this.relativeDir = file.getPath();
-        if (this.relativeDir.replace('\\', '/').startsWith(fileTriggerRouter.getFileTrigger()
-                .getBaseDir().replace('\\', '/'))) {
-            this.relativeDir = this.relativeDir.substring(fileTriggerRouter.getFileTrigger().getBaseDir().length());
+        this.relativeDir = file.getPath().replace('\\', '/');
+        String baseDir = fileTriggerRouter.getFileTrigger().getBaseDir().replace('\\', '/');
+        if (this.relativeDir.startsWith(baseDir)) {
+            this.relativeDir = this.relativeDir.substring(baseDir.length());
         }
 
         if (this.relativeDir.endsWith(fileName)) {
             this.relativeDir = this.relativeDir.substring(0, this.relativeDir.lastIndexOf(fileName));
         }
 
-        String fileSeparator = System.getProperty("file.separator");
-        if (this.relativeDir.startsWith(fileSeparator)) {
+        if (this.relativeDir.startsWith("/")) {
             this.relativeDir = this.relativeDir.substring(1);
         }
 
-        if (this.relativeDir.endsWith(fileSeparator)) {
+        if (this.relativeDir.endsWith("/")) {
             this.relativeDir = this.relativeDir.substring(0, this.relativeDir.length()-1);
         }
 
