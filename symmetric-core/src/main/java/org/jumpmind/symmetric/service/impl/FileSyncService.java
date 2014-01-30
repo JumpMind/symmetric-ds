@@ -115,7 +115,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     String filePath = file.getParentFile().getPath().replace('\\', '/');
                                     String fileName = file.getName();
                                     String nodeId = findSourceNodeIdFromFileIncoming(filePath,
-                                            fileName, fileSnapshot.getFileModifiedTime());
+                                            fileName, fileSnapshot.getFileModifiedTime(), fileSnapshot.getLastEventType());
                                     if (StringUtils.isNotBlank(nodeId)) {
                                         fileSnapshot.setLastUpdateBy(nodeId);
                                     }
@@ -142,9 +142,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     protected String findSourceNodeIdFromFileIncoming(String filePath, String fileName,
-            long lastUpdateDate) {
+            long lastUpdateDate, LastEventType lastEventType) {
         return sqlTemplate.queryForString(getSql("findNodeIdFromFileIncoming"), filePath, fileName,
-                lastUpdateDate);
+                lastUpdateDate, lastEventType.getCode());
     }
 
     protected void deleteFromFileIncoming() {
