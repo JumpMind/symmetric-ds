@@ -27,6 +27,7 @@
         <version.mysql>5.1.17</version.mysql>        
         <version.mariadb>1.1.1</version.mariadb>
         <version.slf4j>1.6.4</version.slf4j>
+        <version.powermock>1.5.3</version.powermock>
         <test.root>h2</test.root>
         <test.client>h2</test.client>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -913,6 +914,30 @@
                 <artifactId>xerial-sqlite</artifactId>
                 <version>${version.sqlite}</version>
             </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.9.5</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>${version.powermock}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-junit4</artifactId>
+                <version>${version.powermock}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-core</artifactId>
+                <version>${version.powermock}</version>
+                <scope>test</scope>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
 </project>
