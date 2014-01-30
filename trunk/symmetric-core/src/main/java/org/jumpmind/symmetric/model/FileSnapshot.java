@@ -91,6 +91,7 @@ public class FileSnapshot implements Serializable {
     }
 
     public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType) {
+        boolean isDelete = lastEventType == LastEventType.DELETE;
         this.triggerId = fileTriggerRouter.getFileTrigger().getTriggerId();
         this.routerId = fileTriggerRouter.getRouter().getRouterId();
         this.lastEventType = lastEventType;
@@ -118,13 +119,16 @@ public class FileSnapshot implements Serializable {
             this.relativeDir = ".";
         }
 
-        this.fileSize = file.length();
-        this.fileModifiedTime = file.lastModified();
-        if (file.isFile() && lastEventType != LastEventType.DELETE) {
+        this.fileSize = isDelete ? 0 : file.length();
+        this.fileModifiedTime = isDelete ? 0 : file.lastModified();
+
+        if (file.isFile() && !isDelete) {
             try {
                 this.crc32Checksum = FileUtils.checksumCRC32(file);
             } catch (FileNotFoundException ex) {
                 this.lastEventType = LastEventType.DELETE;
+                this.fileSize = 0;
+                this.fileModifiedTime = 0;
             } catch (IOException ex) {
                 throw new IoException(ex);
             }
@@ -172,6 +176,10 @@ public class FileSnapshot implements Serializable {
 
     public void setLastEventType(LastEventType lastEventType) {
         this.lastEventType = lastEventType;
+        if (lastEventType == LastEventType.DELETE) {
+            this.fileModifiedTime = 0;
+            this.fileSize = 0;
+        }
     }
 
     public long getCrc32Checksum() {
