@@ -121,7 +121,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     } else {
                                         fileSnapshot.setLastUpdateBy(null);
                                     }
-                                    log.info("Captured change " + fileSnapshot.getLastEventType()
+                                    log.debug("Captured change " + fileSnapshot.getLastEventType()
                                             + " change of " + fileSnapshot.getFileName() + " (lastmodified="
                                             + fileSnapshot.getFileModifiedTime() + ",size="
                                             + fileSnapshot.getFileSize() + ") from "
