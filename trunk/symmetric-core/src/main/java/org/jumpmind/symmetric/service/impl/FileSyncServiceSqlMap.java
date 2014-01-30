@@ -86,7 +86,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " delete from $(file_incoming)");
 
         putSql("findNodeIdFromFileIncoming",
-                " select node_id from $(file_incoming) where relative_dir=? and file_name=? and file_modified_time=?");
+                " select node_id from $(file_incoming) where relative_dir=? and file_name=? and file_modified_time=? and last_event_type=?");
 
         putSql("deleteFileSnapshotSql",
                 " delete from $(file_snapshot)                                                  " +
