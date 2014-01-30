@@ -115,10 +115,17 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     String filePath = file.getParentFile().getPath().replace('\\', '/');
                                     String fileName = file.getName();
                                     String nodeId = findSourceNodeIdFromFileIncoming(filePath,
-                                            fileName, fileSnapshot.getFileModifiedTime(), fileSnapshot.getLastEventType());
-                                    if (StringUtils.isNotBlank(nodeId)) {
+                                            fileName, fileSnapshot.getFileModifiedTime());
+                                    if (StringUtils.isNotBlank(nodeId)) {                                        
                                         fileSnapshot.setLastUpdateBy(nodeId);
+                                    } else {
+                                        fileSnapshot.setLastUpdateBy(null);
                                     }
+                                    log.info("Captured change " + fileSnapshot.getLastEventType()
+                                            + " change of " + fileSnapshot.getFileName() + " (lastmodified="
+                                            + fileSnapshot.getFileModifiedTime() + ",size="
+                                            + fileSnapshot.getFileSize() + ") from "
+                                            + fileSnapshot.getLastUpdateBy());
                                 }
                                 save(dirSnapshot);
                             } catch (Exception ex) {
@@ -142,9 +149,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     protected String findSourceNodeIdFromFileIncoming(String filePath, String fileName,
-            long lastUpdateDate, LastEventType lastEventType) {
+            long lastUpdateDate) {
         return sqlTemplate.queryForString(getSql("findNodeIdFromFileIncoming"), filePath, fileName,
-                lastUpdateDate, lastEventType.getCode());
+                lastUpdateDate);
     }
 
     protected void deleteFromFileIncoming() {
