@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
@@ -83,6 +84,7 @@ public class TransformWriter extends NestedDataWriter {
         columnTransforms.put(VariableColumnTransform.NAME, new VariableColumnTransform());
         columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
         columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
+        columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
     }
 
     public static void addColumnTransform(IColumnTransform<?> columnTransform) {
@@ -92,7 +94,7 @@ public class TransformWriter extends NestedDataWriter {
     public static Map<String, IColumnTransform<?>> getColumnTransforms() {
         return columnTransforms;
     }
-    
+
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, TransformTable... transforms) {
         super(targetWriter);
@@ -118,7 +120,7 @@ public class TransformWriter extends NestedDataWriter {
         }
         return transformsByTable;
     }
-    
+
     @Override
     public void start(Batch batch) {
         this.batch = batch;
