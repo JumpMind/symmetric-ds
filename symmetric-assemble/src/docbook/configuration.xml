@@ -1901,7 +1901,22 @@ object that represents the node where the data is being loaded.
 
 <listitem>Identity Transform ('identity'): This
 transformation allows you to insert into an identity column by computing
-a new identity, not copying the actual identity value from the source.</listitem>
+a new identity, not copying the actual identity value from the source.
+</listitem>
+
+<listitem>
+Mathimatical Transform ('math'): This transformation allows you to 
+perform mathematical equations in the transform expression. Some 
+variables are provided to the script:
+<code>#{COLUMN_NAME}</code>
+is a variable for a source column in the row, where the variable name
+is the column name in uppercase;
+<code>#{currentValue}</code>
+is the value of the current source column;
+<code>#{oldValue}</code>
+is the old value of the source column for an updated row.
+</listitem>
+
 </itemizedlist>
 </para>
 </section>
