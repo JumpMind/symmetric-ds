@@ -69,6 +69,10 @@ public class Message {
         }
     }
 
+    public static boolean containsKey(String key) {
+    	return bundle != null && bundle.containsKey(key);
+    }
+    
     /*
 
      * 

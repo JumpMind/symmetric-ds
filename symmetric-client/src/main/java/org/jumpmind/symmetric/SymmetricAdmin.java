@@ -133,10 +133,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     @Override
     protected void printHelp(CommandLine line, Options options) {
         String[] args = line.getArgs();
-        if (args.length == 0) {
-            System.out.println("Error: no subcommand was given.  Use '" + app
-                    + " help' for a list of subcommands.\n");
-        } else if (args.length > 1 && args[0].equals(HELP)) {
+        if (args.length > 1 && args[0].equals(HELP)) {
             printHelpCommand(line);
         } else {
             System.out.println(app + " version " + Version.version());
@@ -146,7 +143,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             System.out
                     .println("       symadmin <subcommand> --properties [properties file] [options] [args]");
             System.out
-                    .println("Type 'symadmin help <subcommand>' for help on a specific subcommand.\n");
+                    .println("\nType 'symadmin help <subcommand>' for help on a specific subcommand.\n");
             System.out.println("Available subcommands:");
             PrintWriter pw = new PrintWriter(System.out);
             printHelpLine(pw, CMD_OPEN_REGISTRATION);
@@ -183,6 +180,11 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             PrintWriter writer = new PrintWriter(System.out);
             Options options = new Options();
 
+            if (! Message.containsKey("SymAdmin.Usage." + cmd)) {
+            	System.err.println("ERROR: no help text for subcommand '" + cmd + "' was found.");
+            	System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
+            	return;
+            }
             format.printWrapped(writer, WIDTH,
                     "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
             format.printWrapped(writer, WIDTH, Message.get("SymAdmin.Help." + cmd));
@@ -290,6 +292,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (cmd.equals(CMD_SEND_SCRIPT)) {
             sendScript(line, args);
             return true;
+        } else {
+        	System.err.println("ERROR: no subcommand '" + cmd + "' was found.");
+        	System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
         }
 
         return false;
