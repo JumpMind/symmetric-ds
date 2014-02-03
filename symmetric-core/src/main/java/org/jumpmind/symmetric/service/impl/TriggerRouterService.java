@@ -1202,7 +1202,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 for (Table table : tableArray) {
                     if (trigger.matches(table, platform.getDefaultCatalog(),
                             platform.getDefaultSchema(), ignoreCase)
-                            && !containsExactMatchForSourceTableName(table.getName(), triggers,
+                            && !containsExactMatchForSourceTableName(table, triggers,
                                     ignoreCase)
                             && !table.getName().toLowerCase().startsWith(tablePrefix)) {
                         tables.add(table);
@@ -1222,12 +1222,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return tables;
     }
 
-    private boolean containsExactMatchForSourceTableName(String tableName, List<Trigger> triggers,
+    private boolean containsExactMatchForSourceTableName(Table table, List<Trigger> triggers,
             boolean ignoreCase) {
         for (Trigger trigger : triggers) {
-            if (trigger.getSourceTableName().equals(tableName)) {
+        	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();
+        	String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
+            if (trigger.getSourceTableName().equals(table.getName()) 
+            		&& sourceCatalogName.equals(table.getCatalog()) && sourceSchemaName.equals(table.getSchema())) {
                 return true;
-            } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(tableName)) {
+            } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
+            		&& sourceCatalogName.equalsIgnoreCase(table.getCatalog()) && sourceSchemaName.equalsIgnoreCase(table.getSchema())) {
                 return true;
             }
         }
