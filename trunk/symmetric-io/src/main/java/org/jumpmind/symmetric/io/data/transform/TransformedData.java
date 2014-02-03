@@ -333,51 +333,9 @@ public class TransformedData implements Cloneable {
         if (CopyColumnTransform.NAME.equals(transformType)) {
             values.add(oldSourceValues.get(transformColumn.getSourceColumnName()));
             return;
-        } else if (RemoveColumnTransform.NAME.equalsIgnoreCase(transformType)) {
-            values.add(null);
-            return;
-        } else if (ConstantColumnTransform.NAME.equalsIgnoreCase(transformType)) {
-            values.add(transformColumn.getTransformExpression());
-            return;
-        } else if (SubstrColumnTransform.NAME.equalsIgnoreCase(transformType)) {
-
-            String value = oldSourceValues.get(transformColumn.getSourceColumnName());
-
-            try {
-                values.add(new SubstrColumnTransform().transform(
-                        null, // IDatabasePlatform
-                        null, // DataContext
-                        transformColumn,
-                        null, // TransformedData
-                        null, // Map<String, String> sourceValue
-                        value, // String newValue
-                        null // String oldValue
-                ));
-            } catch (IgnoreColumnException e) {
-                throw new RuntimeException(e);
-            } catch (IgnoreRowException e) {
-                throw new RuntimeException(e);
-            }
-
-            return;
-        } else if (doesSelectedConflictTypeRequireOldData()) {
-            throw new UnsupportedOperationException(
-                    "'" + transformType + "' transformation of OLD values hasn't been implemented"
-            );
-        }
-
+        } 
+        
         values.add(null);
-    }
-
-    private boolean doesSelectedConflictTypeRequireOldData() {
-
-        // TODO return true if USE_OLD_DATA or USE_CHANGED_DATA
-        //      needed to inject DatabaseWriterSettings and invoke the method Conflict pickConflict(Table table, Batch batch)
-
-        // Conflict.DetectConflict type = DatabaseWriterSettings#pickConflict(table, batch).getDetectType();
-        // return type == Conflict.DetectConflict.USE_OLD_DATA || type == Conflict.DetectConflict.USE_CHANGED_DATA;
-
-        return false;
     }
 
     private TransformColumn findTransformColumn(String name) {
