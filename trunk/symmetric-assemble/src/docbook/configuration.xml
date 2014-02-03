@@ -1828,9 +1828,9 @@ is the current system date and time,
 <code>source_node_id</code>
 is the node id of the source,
 <code>target_node_id</code>
-is the node id of the target, and
+is the node id of the target,
 <code>null</code>
-is a null value.
+is a null value, and <code>old_column_value</code> is the column's old value prior to the DML operation.
 </listitem>
 
 <listitem>Additive Transform ('additive'): This
