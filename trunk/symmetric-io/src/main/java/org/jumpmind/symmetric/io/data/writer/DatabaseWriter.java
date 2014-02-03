@@ -596,6 +596,18 @@ public class DatabaseWriter implements IDataWriter {
                         }
                     }
                 }
+                
+                int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
+                
+                if (lookupKeys.size() == 0) {
+                    String msg = "There are no keys defined for "
+                            + targetTable.getFullyQualifiedTableName()
+                            + ".  Cannot build an update statement.  ";
+                    if (lookupKeyCountBeforeLobRemoval > 0) {
+                        msg += "The only keys defined are binary and they have been removed.";
+                    }
+                    throw new IllegalStateException(msg);                        
+                }
 
                 lookupDataMap = getLookupDataMap(data);
 
@@ -723,6 +735,8 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys = targetTable.getColumnsAsList();
                     }
 
+                    int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
+                    
                     if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
                             || data.isNoBinaryOldData()) {
                         Iterator<Column> it = lookupKeys.iterator();
@@ -732,6 +746,16 @@ public class DatabaseWriter implements IDataWriter {
                                 it.remove();
                             }
                         }
+                    }
+                    
+                    if (lookupKeys.size() == 0) {
+                        String msg = "There are no keys defined for "
+                                + targetTable.getFullyQualifiedTableName()
+                                + ".  Cannot build an update statement.  ";
+                        if (lookupKeyCountBeforeLobRemoval > 0) {
+                            msg += "The only keys defined are binary and they have been removed.";
+                        }
+                        throw new IllegalStateException(msg);                        
                     }
 
                     lookupDataMap = getLookupDataMap(data);
