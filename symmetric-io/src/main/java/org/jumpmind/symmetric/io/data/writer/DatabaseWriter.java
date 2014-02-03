@@ -586,6 +586,8 @@ public class DatabaseWriter implements IDataWriter {
                     lookupKeys = targetTable.getColumnsAsList();
                 }
 
+                int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
+                
                 if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
                         || data.isNoBinaryOldData()) {
                     Iterator<Column> it = lookupKeys.iterator();
@@ -596,8 +598,6 @@ public class DatabaseWriter implements IDataWriter {
                         }
                     }
                 }
-                
-                int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
                 
                 if (lookupKeys.size() == 0) {
                     String msg = "There are no keys defined for "
