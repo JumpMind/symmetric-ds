@@ -1,14 +1,5 @@
 package org.jumpmind.symmetric.io.data.transform;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.util.*;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -17,8 +8,20 @@ import static org.jumpmind.symmetric.io.data.transform.CopyColumnTransform.NAME;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 import static org.powermock.reflect.Whitebox.invokeMethod;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({TransformedData.class})
@@ -126,47 +129,6 @@ public class TransformedDataTest {
         invokeMethod(transformedData, ADD_VALUE_METHOD, keyNames, keyValues, values, TARGET_NAME);
 
         assertThat(values.iterator().next(), nullValue());
-    }
-
-    @Test
-    public void addTransformedConstant() throws Exception {
-
-        String someConstantValue = "some constant value";
-        when(transformColumn.getTransformExpression()).thenReturn(someConstantValue);
-        setTransformColumn(TARGET_NAME, SOURCE_NAME, "const");
-
-        oldSourceValues.put(SOURCE_NAME, COLUMN_VALUE);
-
-        invokeMethod(transformedData, ADD_VALUE_METHOD, keyNames, keyValues, values, TARGET_NAME);
-
-        assertThat(values.iterator().next(), equalTo(someConstantValue));
-    }
-
-    @Test
-    public void addTransformedSubstringValue() throws Exception {
-
-        setTransformColumn(TARGET_NAME, SOURCE_NAME, "substr");
-
-        oldSourceValues.put(SOURCE_NAME, COLUMN_VALUE);
-
-        SubstrColumnTransform substrColumnTransform = mock(SubstrColumnTransform.class);
-
-        String substring = COLUMN_VALUE.substring(1, 2);
-        when(substrColumnTransform.transform(
-                null, // IDatabasePlatform
-                null, // DataContext
-                transformColumn,
-                null, // TransformedData
-                null, // Map<String, String> sourceValue
-                COLUMN_VALUE, // String newValue
-                null // String oldValue
-        )).thenReturn(substring);
-
-        whenNew(SubstrColumnTransform.class).withNoArguments().thenReturn(substrColumnTransform);
-
-        invokeMethod(transformedData, ADD_VALUE_METHOD, keyNames, keyValues, values, TARGET_NAME);
-
-        assertThat(values.iterator().next(), equalTo(substring));
     }
 
     private void setTransformColumn(String targetName, String sourceName, String transformType) {
