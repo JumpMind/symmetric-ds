@@ -864,9 +864,8 @@ public class RestService {
     @ResponseBody
     public final void putHeartbeat(@RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
     		@RequestBody Heartbeat heartbeat) {
-
 		if (securityVerified(heartbeat.getNodeId(), getSymmetricEngine(), securityToken)) {	
-	    	putHeartbeat(getSymmetricEngine().getEngineName(),
+	    	putHeartbeat(getSymmetricEngine().getEngineName(), securityToken,
 	    			heartbeat);
         } else {
             throw new NotAllowedException();
