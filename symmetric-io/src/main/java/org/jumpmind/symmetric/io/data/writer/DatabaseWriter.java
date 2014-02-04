@@ -586,16 +586,14 @@ public class DatabaseWriter implements IDataWriter {
                     lookupKeys = targetTable.getColumnsAsList();
                 }
 
-                int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
-                
-                if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
-                        || data.isNoBinaryOldData()) {
-                    Iterator<Column> it = lookupKeys.iterator();
-                    while (it.hasNext()) {
-                        Column col = it.next();
-                        if (col.isOfBinaryType()) {
-                            it.remove();
-                        }
+                int lookupKeyCountBeforeColumnRemoval = lookupKeys.size();
+
+                Iterator<Column> it = lookupKeys.iterator();
+                while (it.hasNext()) {
+                    Column col = it.next();
+                    if ((col.isOfBinaryType() && data.isNoBinaryOldData())
+                            || !platform.canColumnBeUsedInWhereClause(col)) {
+                        it.remove();
                     }
                 }
                 
@@ -603,7 +601,7 @@ public class DatabaseWriter implements IDataWriter {
                     String msg = "There are no keys defined for "
                             + targetTable.getFullyQualifiedTableName()
                             + ".  Cannot build an update statement.  ";
-                    if (lookupKeyCountBeforeLobRemoval > 0) {
+                    if (lookupKeyCountBeforeColumnRemoval > 0) {
                         msg += "The only keys defined are binary and they have been removed.";
                     }
                     throw new IllegalStateException(msg);                        
@@ -735,16 +733,14 @@ public class DatabaseWriter implements IDataWriter {
                         lookupKeys = targetTable.getColumnsAsList();
                     }
 
-                    int lookupKeyCountBeforeLobRemoval = lookupKeys.size();
+                    int lookupKeyCountBeforeColumnRemoval = lookupKeys.size();
                     
-                    if (!platform.getDatabaseInfo().isBlobsWorkInWhereClause()
-                            || data.isNoBinaryOldData()) {
-                        Iterator<Column> it = lookupKeys.iterator();
-                        while (it.hasNext()) {
-                            Column col = it.next();
-                            if (col.isOfBinaryType()) {
-                                it.remove();
-                            }
+                    Iterator<Column> it = lookupKeys.iterator();
+                    while (it.hasNext()) {
+                        Column col = it.next();
+                        if ((col.isOfBinaryType() && data.isNoBinaryOldData())
+                                || !platform.canColumnBeUsedInWhereClause(col)) {
+                            it.remove();
                         }
                     }
                     
@@ -752,7 +748,7 @@ public class DatabaseWriter implements IDataWriter {
                         String msg = "There are no keys defined for "
                                 + targetTable.getFullyQualifiedTableName()
                                 + ".  Cannot build an update statement.  ";
-                        if (lookupKeyCountBeforeLobRemoval > 0) {
+                        if (lookupKeyCountBeforeColumnRemoval > 0) {
                             msg += "The only keys defined are binary and they have been removed.";
                         }
                         throw new IllegalStateException(msg);                        

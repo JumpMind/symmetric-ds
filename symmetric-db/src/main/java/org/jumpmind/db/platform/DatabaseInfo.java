@@ -40,12 +40,6 @@ public class DatabaseInfo {
     private final Logger log = LoggerFactory.getLogger(DatabaseInfo.class);
 
     /**
-     * Indicate whether a blob column will match when used in a SQL where
-     * clause.
-     */
-    private boolean blobsWorkInWhereClause = true;
-
-    /**
      * Whether the database requires the explicit stating of NULL as the default
      * value.
      */
@@ -1251,14 +1245,6 @@ public class DatabaseInfo {
         return requiresAutoCommitForDdl;
     }
 
-    public boolean isBlobsWorkInWhereClause() {
-        return blobsWorkInWhereClause;
-    }
-
-    public void setBlobsWorkInWhereClause(boolean blobsWorkInWhereClause) {
-        this.blobsWorkInWhereClause = blobsWorkInWhereClause;
-    }
-    
     public void setRequiresSavePointsInTransaction(boolean requiresSavePointsInTransaction) {
         this.requiresSavePointsInTransaction = requiresSavePointsInTransaction;
     }

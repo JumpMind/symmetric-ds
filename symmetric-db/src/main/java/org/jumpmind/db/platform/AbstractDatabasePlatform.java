@@ -775,5 +775,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return database;
 
     }
+    
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        return true;
+    }
 
 }

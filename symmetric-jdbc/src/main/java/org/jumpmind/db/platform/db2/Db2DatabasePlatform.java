@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.db2;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -72,6 +73,11 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     public String getDefaultCatalog() {
         return "";
+    }
+    
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        return !column.isOfBinaryType();
     }
     
 }

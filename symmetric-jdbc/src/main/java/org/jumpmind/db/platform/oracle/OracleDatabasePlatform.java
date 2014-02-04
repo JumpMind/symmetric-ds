@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.oracle;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.JdbcUtils;
@@ -91,6 +92,12 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
+    }
+    
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        String jdbcTypeName = column.getJdbcTypeName();
+        return !column.isOfBinaryType() || "RAW".equals(jdbcTypeName);
     }
 
 }

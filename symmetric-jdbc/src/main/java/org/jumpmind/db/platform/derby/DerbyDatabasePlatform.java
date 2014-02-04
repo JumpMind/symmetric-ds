@@ -24,6 +24,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -82,6 +83,11 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     public boolean isClob(int type) {
         return type == Types.CLOB;
+    }
+    
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        return !column.isOfBinaryType();
     }
 
 }
