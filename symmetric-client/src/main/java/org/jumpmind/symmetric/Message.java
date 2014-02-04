@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -70,7 +72,11 @@ public class Message {
     }
 
     public static boolean containsKey(String key) {
-    	return bundle != null && bundle.containsKey(key);
+        try {
+    	    return bundle != null && isNotBlank(bundle.getString(key));
+        } catch (MissingResourceException ex) {
+            return false;
+        }
     }
     
     /*
