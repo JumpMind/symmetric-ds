@@ -44,7 +44,6 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-        databaseInfo.setBlobsWorkInWhereClause(false);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "CHAR {0} FOR BIT DATA");
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);

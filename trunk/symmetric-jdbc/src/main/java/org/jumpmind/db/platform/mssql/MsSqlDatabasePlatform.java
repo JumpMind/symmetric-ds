@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.mssql;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -93,4 +94,9 @@ public class MsSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 type == -10;
     }
 
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        return !column.isOfBinaryType();
+    }
+    
 }

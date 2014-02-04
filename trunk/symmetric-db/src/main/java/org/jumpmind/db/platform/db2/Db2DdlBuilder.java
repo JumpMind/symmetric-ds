@@ -48,8 +48,6 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     public Db2DdlBuilder() {
         super(DatabaseNamesConstants.DB2);
         
-        // the BINARY types are also handled by Db2Builder.getSqlType(Column)
-        databaseInfo.setBlobsWorkInWhereClause(false);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "CHAR {0} FOR BIT DATA");
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
