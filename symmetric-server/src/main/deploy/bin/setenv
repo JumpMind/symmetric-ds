@@ -53,7 +53,7 @@ then
 fi
 
 # Check whether or not we are using Java 5
-if java -version 2>&1 | grep '"1.5' > /dev/null
+if "$SYM_JAVA" -version 2>&1 | grep '"1.5' > /dev/null
 then
    # Build classpath with individual JAR entries
    CLASSPATH="$SYM_HOME/patches"
