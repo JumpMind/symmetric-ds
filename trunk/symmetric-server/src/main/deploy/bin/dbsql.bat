@@ -20,5 +20,7 @@
 @REM
 
 @echo off
+setlocal
 call "%~dp0\setenv.bat"
 "%SYM_JAVA%" -cp "%CLASSPATH%" %SYM_OPTIONS% org.jumpmind.symmetric.DbSqlCommand %*
+endlocal
