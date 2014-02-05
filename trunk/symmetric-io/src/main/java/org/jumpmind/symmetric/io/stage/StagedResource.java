@@ -77,7 +77,7 @@ public class StagedResource implements IStagedResource {
         this.stagingManager = stagingManager;
         this.file = file;
         this.path = file.getAbsolutePath();
-        this.path = this.path.replaceAll("\\", "/");
+        this.path = this.path.replaceAll("\\\\", "/");
         this.path = this.path.substring(directory.getAbsolutePath().length(), file
                 .getAbsolutePath().length());
         this.path = this.path.substring(1, path.lastIndexOf("."));
