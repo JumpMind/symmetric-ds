@@ -146,7 +146,7 @@ public class StagingManager implements IStagingManager {
             }
             buffer.append(part);
             if (i < path.length - 1) {
-                buffer.append(System.getProperty("file.separator"));
+                buffer.append("/");
             }
         }
         return buffer.toString();
