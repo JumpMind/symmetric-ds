@@ -27,6 +27,10 @@ import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
 public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Trigger {
 
+    static String startupTime = Long.toString(System.currentTimeMillis());
+    
+    public static final String TRANSACTION_FUNCTION = "TRANSACTION_ID()";
+    
     /**
      * This method is called by the database engine once when initializing the
      * trigger.
@@ -54,6 +58,13 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
     }
     
     public void remove() throws SQLException {
+    }
+    
+    @Override
+    protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow)
+            throws SQLException {
+        sql = sql.replace(TRANSACTION_FUNCTION, TRANSACTION_FUNCTION + " || '-" + startupTime + "'");
+        return super.fillVirtualTableSql(sql, oldRow, newRow);
     }
 
 }

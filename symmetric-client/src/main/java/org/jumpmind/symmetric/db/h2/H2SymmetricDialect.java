@@ -133,7 +133,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
      */
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "TRANSACTION_ID()";
+        return H2Trigger.TRANSACTION_FUNCTION;
     }
 
     @Override
