@@ -1,23 +1,21 @@
-====
-    Licensed to JumpMind Inc under one or more contributor
-    license agreements.  See the NOTICE file distributed
-    with this work for additional information regarding
-    copyright ownership.  JumpMind Inc licenses this file
-    to you under the GNU General Public License, version 3.0 (GPLv3)
-    (the "License"); you may not use this file except in compliance
-    with the License.
+SymmetricDS - 3.5.16 (Released 2014-02-05) 
+==========================================
+- 0000677: [Improvement] Allow the sym commands to be added to PATH and be called from any location (elong) - closed.
+- 0001542: [Improvement] Need a math transform for transforming columns. (abrougher) - closed.
+- 0001543: [Bug] Upgrade of schema from 3.3 to 3.5 on H2 fails (chenson) - closed.
+- 0001544: [Bug] API - transactions aren't being committed in the sequence service api for applications (outside of symmetricds) that use the api (chenson) - closed.
+- 0001545: [Improvement] Unlock should use symmetricds server time, not database time, for consistency. (chenson) - closed.
+- 0001546: [Bug] Table definition does not update correctly (postgresql) (chenson) - closed.
+- 0001548: [Bug] Subdirectories with file sync from Windows to Linux has backslashes (elong) - closed.
+- 0001549: [Bug] Delete of file is not synced (chenson) - closed.
+- 0001550: [Bug] Sybase ASE : Lost precision from Datetime fields (elong) - closed.
+- 0001553: [Bug] REST API HEARTBEAT returning NotAllowException (chenson) - closed.
+- 0001555: [Bug] API - ddl of type CLOB for sql server tries to change the column type on restarts (chenson) - closed.
+- 0001556: [Bug] Wildcard triggers for tables with same name in different catalog/schema (elong) - closed.
+- 0001529: [Bug] Columns in old data are not transformed causing conflict detection (chenson) - closed.
+- 0001558: [Improvement] Add the ability to use the old column value to the list of variable column transform options (mhanes) - closed.
+- 0001561: [Task] Example of configuring log4j to send errors over email (elong) - closed.
 
-    You should have received a copy of the GNU General Public License,
-    version 3.0 (GPLv3) along with this library; if not, see
-    <http://www.gnu.org/licenses/>.
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-====
 SymmetricDS - 3.5.15 (Released 2014-01-22) 
 ==========================================
 - 0001536: [Improvement] Change to sync.url not picked up (elong) - closed.
