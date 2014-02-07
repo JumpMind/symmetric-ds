@@ -125,6 +125,7 @@ public class AuditTableDataRouter extends AbstractDataRouter {
         for (Column column : columns) {
             column.setRequired(false);
             column.setPrimaryKey(false);
+            column.setAutoIncrement(false);
             auditTable.addColumn(column);
         }
         auditTable.removeAllForeignKeys();
