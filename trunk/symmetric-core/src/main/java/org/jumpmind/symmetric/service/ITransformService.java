@@ -21,7 +21,9 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -43,6 +45,10 @@ public interface ITransformService {
     public void saveTransformTable(TransformTableNodeGroupLink transformTable);
 
     public void deleteTransformTable(String transformTableId);
+    
+    public void addColumnTransform(IColumnTransform<?> columnTransform);
+
+    public Map<String, IColumnTransform<?>> getColumnTransforms();
 
     public void clearCache();
 

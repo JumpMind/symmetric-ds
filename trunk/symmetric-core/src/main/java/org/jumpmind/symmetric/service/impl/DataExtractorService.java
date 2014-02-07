@@ -873,7 +873,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         TransformTable[] transforms = transformsList != null ? transformsList
                 .toArray(new TransformTable[transformsList.size()]) : null;
         TransformWriter transformExtractWriter = new TransformWriter(
-                symmetricDialect.getPlatform(), TransformPoint.EXTRACT, extractWriter, transforms);
+                symmetricDialect.getPlatform(), TransformPoint.EXTRACT, extractWriter, 
+                transformService.getColumnTransforms(), transforms);
         return transformExtractWriter;
     }
 

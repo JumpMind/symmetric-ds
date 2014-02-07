@@ -277,7 +277,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
         if (ext instanceof IColumnTransform) {
             IColumnTransform<?> t = (IColumnTransform<?>) ext;
-            TransformWriter.addColumnTransform(t);
+            engine.getTransformService().addColumnTransform(t);
         }
 
         return installed;

@@ -20,16 +20,20 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.Map;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 
 public class TransformDatabaseWriter extends TransformWriter {
 
     public TransformDatabaseWriter(IDatabasePlatform platform,
-            DatabaseWriterSettings defaultSettings, TransformTable[] transforms) {
+            DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms, 
+            TransformTable[] transforms) {
         super(platform, TransformPoint.LOAD,
-                new DatabaseWriter(platform, defaultSettings), transforms);
+                new DatabaseWriter(platform, defaultSettings), columnTransforms, transforms);
         getDatabaseWriter().setConflictResolver(new DefaultTransformWriterConflictResolver(this));
     }
 
