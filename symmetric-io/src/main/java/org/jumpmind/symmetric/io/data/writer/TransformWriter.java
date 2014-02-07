@@ -50,12 +50,12 @@ import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
+import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformColumnException;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
-import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,10 +70,20 @@ public class TransformWriter extends NestedDataWriter {
     protected Table sourceTable;
     protected List<TransformTable> activeTransforms;
     protected Batch batch;
-
-    static protected Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
-
-    static {
+    protected Map<String, IColumnTransform<?>> columnTransforms;
+    
+    public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
+            IDataWriter targetWriter, Map<String, IColumnTransform<?>> columnTransforms, 
+            TransformTable... transforms) {
+        super(targetWriter);
+        this.columnTransforms = columnTransforms;
+        this.platform = platform;
+        this.transformPoint = transformPoint == null ? TransformPoint.LOAD : transformPoint;
+        this.transformsBySourceTable = toMap(transforms);
+    }
+    
+    public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
+        Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
         columnTransforms.put(AdditiveColumnTransform.NAME, new AdditiveColumnTransform());
         columnTransforms.put(BshColumnTransform.NAME, new BshColumnTransform());
         columnTransforms.put(ConstantColumnTransform.NAME, new ConstantColumnTransform());
@@ -85,22 +95,7 @@ public class TransformWriter extends NestedDataWriter {
         columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
         columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
         columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
-    }
-
-    public static void addColumnTransform(IColumnTransform<?> columnTransform) {
-        columnTransforms.put(columnTransform.getName(), columnTransform);
-    }
-
-    public static Map<String, IColumnTransform<?>> getColumnTransforms() {
         return columnTransforms;
-    }
-
-    public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
-            IDataWriter targetWriter, TransformTable... transforms) {
-        super(targetWriter);
-        this.platform = platform;
-        this.transformPoint = transformPoint == null ? TransformPoint.LOAD : transformPoint;
-        this.transformsBySourceTable = toMap(transforms);
     }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {

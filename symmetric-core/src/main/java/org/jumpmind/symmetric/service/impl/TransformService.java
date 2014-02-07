@@ -34,10 +34,12 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
+import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -52,13 +54,26 @@ public class TransformService extends AbstractService implements ITransformServi
     private IConfigurationService configurationService;
 
     private Date lastUpdateTime;
+    
+    private Map<String, IColumnTransform<?>> columnTransforms;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.configurationService = configurationService;
+        
+        columnTransforms = TransformWriter.buildDefaultColumnTransforms();
+
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+    }    
+    
+    public void addColumnTransform(IColumnTransform<?> columnTransform) {
+        columnTransforms.put(columnTransform.getName(), columnTransform);
+    }
+
+    public Map<String, IColumnTransform<?>> getColumnTransforms() {
+        return columnTransforms;
     }
 
     public boolean refreshFromDatabase() {

@@ -105,7 +105,7 @@ public class TransformWriterTest extends AbstractWriterTest {
     }
 
     protected TransformWriter getTransformWriter() {
-        return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, new TransformTable[] {
+        return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, TransformWriter.buildDefaultColumnTransforms(), new TransformTable[] {
                 new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id",
                         true)),
                 new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id",

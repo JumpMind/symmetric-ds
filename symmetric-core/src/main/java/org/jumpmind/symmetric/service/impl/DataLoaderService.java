@@ -508,7 +508,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         }
 
-        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
+        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null, 
+                transformService.getColumnTransforms(), 
                 transforms);
 
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
