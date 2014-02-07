@@ -45,7 +45,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after insert as                                                                                                                            \n" +
+"create trigger $(triggerName) for $(schemaName)$(tableName) after insert position 5 as                                                                                                                            \n" +
 "   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
 "     if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
@@ -69,7 +69,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "     $(custom_on_insert_text)                                                                                                                                             \n" +
 "   end                                                                                                                                                                    \n" );
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after update as                                                                                                                            \n" +
+"create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
 "   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
 "     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
@@ -95,7 +95,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "     $(custom_on_update_text)                                                                                                                                             \n" +
 "   end                                                                                                                                                                    \n" );
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger  $(triggerName) for $(schemaName)$(tableName) after delete as                                                                                                                           \n" +
+"create trigger  $(triggerName) for $(schemaName)$(tableName) after delete position 5 as                                                                                                                           \n" +
 "   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
 "     if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
