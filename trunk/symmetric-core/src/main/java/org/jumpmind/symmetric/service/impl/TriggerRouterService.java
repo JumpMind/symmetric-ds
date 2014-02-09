@@ -1225,10 +1225,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private boolean containsExactMatchForSourceTableName(Table table, List<Trigger> triggers,
             boolean ignoreCase) {
         for (Trigger trigger : triggers) {
-        	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();
+        	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();        	
         	String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
             if (trigger.getSourceTableName().equals(table.getName()) 
-            		&& sourceCatalogName.equals(table.getCatalog()) && sourceSchemaName.equals(table.getSchema())) {
+            		&& (sourceCatalogName == null || sourceCatalogName.equals(table.getCatalog())) && 
+            		(sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
                 return true;
             } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
             		&& sourceCatalogName.equalsIgnoreCase(table.getCatalog()) && sourceSchemaName.equalsIgnoreCase(table.getSchema())) {
