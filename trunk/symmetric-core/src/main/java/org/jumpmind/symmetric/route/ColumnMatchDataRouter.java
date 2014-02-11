@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
@@ -102,53 +103,37 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             for (Expression e : expressions) {
                 String column = e.tokens[0].trim();
                 String value = e.tokens[1];
+                String columnValue = columnValues.get(column);
+
                 if (value.equalsIgnoreCase(TokenConstants.NODE_ID)) {
                     for (Node node : nodes) {
-                        if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
-                        }
+                        nodeIds = runExpression(e, columnValue, node.getNodeId(), nodes, nodeIds, node);
                     }
                 } else if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_ID)) {
                     for (Node node : nodes) {
-                        if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
-                        }
+                        nodeIds = runExpression(e, columnValue, node.getExternalId(), nodes, nodeIds, node);
                     }
                 } else if (value.equalsIgnoreCase(TokenConstants.NODE_GROUP_ID)) {
                     for (Node node : nodes) {
-                        if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
-                        }
+                        nodeIds = runExpression(e, columnValue, node.getNodeGroupId(), nodes, nodeIds, node);
                     }
-                } else if (e.equals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
+                } else if (e.hasEquals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
                     Map<String, String> redirectMap = getRedirectMap(routingContext);
-                    String nodeId = redirectMap.get(columnValues.get(column));
+                    String nodeId = redirectMap.get(columnValue);
                     if (nodeId != null) {
                         nodeIds = addNodeId(nodeId, nodeIds, nodes);
                     }
-                } else if (value.startsWith(":")) {
-                    String firstValue = columnValues.get(column);
-                    String secondValue = columnValues.get(value.substring(1));
-                    if (e.equals
-                            && ((firstValue == null && secondValue == null) || (firstValue != null
-                                    && secondValue != null && firstValue.equals(secondValue)))) {
-                        nodeIds = toNodeIds(nodes, nodeIds);
-                    } else if (!e.equals
-                            && ((firstValue != null && secondValue == null)
-                                    || (firstValue == null && secondValue != null) || (firstValue != null
-                                    && secondValue != null && !firstValue.equals(secondValue)))) {
-                        nodeIds = toNodeIds(nodes, nodeIds);
-                    }
                 } else {
-                    if (e.equals && (value.equals(columnValues.get(column)) || 
-                            (value.equals(NULL_VALUE) && columnValues.get(column) == null))) {
-                        nodeIds = toNodeIds(nodes, nodeIds);
-                    } else if (!e.equals && ((!value.equals(NULL_VALUE) && !value.equals(columnValues.get(column))) || 
-                            (value.equals(NULL_VALUE) && columnValues.get(column) != null))) {
-                        nodeIds = toNodeIds(nodes, nodeIds);
+                    String compareValue = value;
+                    if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_DATA)) {
+                        compareValue = dataMetaData.getData().getExternalData();
+                    } else if (value.startsWith(":")) {
+                        compareValue = columnValues.get(value.substring(1));
+                    } else if (value.equals(NULL_VALUE)) {
+                        compareValue = null;
                     }
+                    nodeIds = runExpression(e, columnValue, compareValue, nodes, nodeIds, null);
                 }
-
             }
         } else {
             log.warn("There were no columns to match for the data_id of {}", dataMetaData.getData().getDataId());
@@ -162,6 +147,31 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
         return nodeIds;
 
+    }
+
+    protected Set<String> runExpression(Expression e, String columnValue, String compareValue, Set<Node> nodes, Set<String> nodeIds, Node node) {
+        boolean result = false;
+        if (e.hasEquals && ((columnValue == null && compareValue == null) || 
+                (columnValue != null && columnValue.equals(compareValue)))) {
+            result = true;
+        } else if (e.hasNotEquals && ((columnValue == null && compareValue != null) || 
+                (columnValue != null && !columnValue.equals(compareValue)))) {
+            result = true;
+        } else if (e.hasContains && columnValue != null && compareValue != null && 
+                ArrayUtils.contains(columnValue.split(","), compareValue)) {
+            result = true;
+        } else if (e.hasNotContains && columnValue != null && compareValue != null && 
+                !ArrayUtils.contains(columnValue.split(","), compareValue)) {
+            result = true;
+        }
+        if (result) {
+            if (node != null) {
+                nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+            } else {
+                nodeIds = toNodeIds(nodes, nodeIds);
+            }
+        }
+        return nodeIds;
     }
 
     /**
@@ -184,6 +194,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         List<Expression> expressions = new ArrayList<Expression>();       
         if (!StringUtils.isBlank(routerExpression)) {           
             
+            String[] operators = { Expression.NOT_EQUALS, Expression.EQUALS, Expression.NOT_CONTAINS, Expression.CONTAINS};
             String[] expTokens = routerExpression.split("\\s*(\\s+or|\\s+OR)?(\r\n|\r|\n)(or\\s+|OR\\s+)?\\s*" +
             		                                    "|\\s+or\\s+" +
             		                                    "|\\s+OR\\s+");
@@ -191,18 +202,21 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
-                        String[] tokens = null;
-                        boolean equals = !t.contains("!=");
-                        if (!equals) {
-                            tokens = t.split("!=");
-                        } else {
-                            tokens = t.split("=");
+                        boolean isFound = false;
+                        for (String operator : operators) {
+                            if (t.contains(operator)) {
+                                String[] tokens = t.split(operator);
+                                if (tokens.length == 2) {
+                                    tokens[0] = parseColumn(tokens[0]);
+                                    tokens[1] = parseValue(tokens[1]);
+                                    expressions.add(new Expression(operator, tokens));
+                                    isFound = true;
+                                    break;
+                                }
+                            }
                         }
-                        if (tokens.length == 2) {
-                            tokens[0] = parseColumn(tokens[0]);
-                            tokens[1] = parseValue(tokens[1]);
-                            expressions.add(new Expression(equals, tokens));
-                        } else {
+                            
+                        if (!isFound) {
                             log.warn("The provided column match expression was invalid: {}.  The full expression is {}.", t, routerExpression);
                             throw new SyntaxParsingException("The provided column match expression was invalid: " + t + ".  The full expression is " + routerExpression + ".");
                         }
@@ -252,20 +266,49 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     public class Expression {
-        boolean equals;
+        public static final String EQUALS = "=";
+        public static final String NOT_EQUALS = "!=";
+        public static final String CONTAINS = "contains";
+        public static final String NOT_CONTAINS = "not contains";
+        
+        boolean hasEquals;
+        boolean hasNotEquals;
+        boolean hasContains;
+        boolean hasNotContains;
         String[] tokens;
+        String operator;
 
-        public Expression(boolean equals, String[] tokens) {
-            this.equals = equals;
+        public Expression(String operator, String[] tokens) {
             this.tokens = tokens;
+            this.operator = operator;
+            if (operator.equals(EQUALS)) hasEquals = true;
+            else if (operator.equals(NOT_EQUALS)) hasNotEquals = true;
+            else if (operator.equals(CONTAINS)) hasContains = true;
+            else if (operator.equals(NOT_CONTAINS)) hasNotContains = true;
         }
         
         public String[] getTokens() {
             return tokens;
         }
-        
-        public boolean getEquals() {
-            return equals;
+
+        public String getOperator() {
+            return operator;
+        }
+
+        public boolean hasEquals() {
+            return hasEquals;
+        }
+
+        public boolean hasNotEquals() {
+            return hasEquals;
+        }
+
+        public boolean hasContains() {
+            return hasEquals;
+        }
+
+        public boolean hasNotContains() {
+            return hasEquals;
         }
     }
 }
