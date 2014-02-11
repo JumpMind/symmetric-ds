@@ -1191,11 +1191,35 @@ router_expression, create_time, last_update_time) values
 'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp); </programlisting>
 </para>
 
-<para>Note the syntax $(curTriggerValue).$(curColumnPrefix). This
-translates into "OLD_" or "NEW_" based on the DML type being run. In the
-case of Insert or Update, it's NEW_. For Delete, it's OLD_ (since there
-is no new data). In this way, you can access the DML-appropriate value
-for your select statement.</para>
+<para>The following variables can be used with the external select:</para>
+
+<variablelist>
+	<varlistentry>
+		<term>
+    		<command>$(curTriggerValue)</command>
+		</term>	
+		<listitem>
+    		<para>
+    		  Variable to be replaced with the NEW or OLD column alias provided by the trigger context, which is platform specific.
+    		  For insert and update triggers, the NEW alias is used; for delete triggers, the OLD alias is used.
+    		  For example, "$(curTriggerValue).COLUMN" becomes ":new.COLUMN" for an insert trigger on Oracle.
+    		</para>
+		</listitem>
+	</varlistentry>
+
+    <varlistentry>
+        <term>
+            <command>$(curColumnPrefix)</command>
+        </term> 
+        <listitem>
+            <para>
+                Variable to be replaced with the NEW_ or OLD_ column prefix for platforms that don't support column aliases.
+                This is currently only used by the H2 database.  All other platforms will replace the variable with an empty string.
+                For example "$(curColumnPrefix)COLUMN" becomes "NEW_COLUMN" on H2 and "COLUMN" on Oracle.
+            </para>
+        </listitem>
+    </varlistentry>
+</variablelist>
 
 <para>The advantage of this approach over the 'subselect'
 approach is that it guards against the (somewhat unlikely) possibility
