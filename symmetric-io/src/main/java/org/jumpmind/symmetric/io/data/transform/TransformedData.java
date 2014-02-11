@@ -307,15 +307,7 @@ public class TransformedData implements Cloneable {
 
     private void addOldValue(List<String> keyNames, List<String> keyValues, List<String> values, String name) {
 
-        if (keyNames.contains(name)) {
-            /*
-             * Must always use the transformed value for the key else
-             * deletes and updates won't work.
-             */
-            values.add(keyValues.get(keyNames.indexOf(name)));
-            return;
-        }
-
+       
         TransformColumn transformColumn = findTransformColumn(name);
 
         if (null == transformColumn) {
@@ -335,6 +327,15 @@ public class TransformedData implements Cloneable {
             return;
         } 
         
+        if (keyNames.contains(name)) {
+            /*
+             * If we haven't already set a value, we must always use the transformed value 
+             * for the key else deletes and updates won't work.
+             */
+            values.add(keyValues.get(keyNames.indexOf(name)));
+            return;
+        }
+
         values.add(null);
     }
 
