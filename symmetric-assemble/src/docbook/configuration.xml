@@ -2401,19 +2401,24 @@ following figure. </para>
 <section id="file-sync-push-pull">
 <title>File Sync Push and Pull Jobs</title>
 <para>
-In addition to the push and pull jobs used to synchronize database changes, two additional push and pull jobs
-have been introduced as of version 3.5.  These two new jobs are responsible for the sending of
-files resulting from the file synchronization configuration.  These jobs are further discussed
-in <xref linkend="filesync-operation" />.
+The File Sync Push and Pull jobs (introduced in version 3.5) are responsible for synchronizing file changes.
+These jobs work with batches on the <literal>filesync</literal> channel and create ZIP files of changed files
+to be sent and applied on other nodes.
+The parameters <literal>job.file.sync.push.period.time.ms</literal> and <literal>job.file.sync.pull.period.time.ms</literal>
+control how often the jobs runs, which default to every 60 seconds.
+See also <xref linkend="jobs" /> and <xref linkend="filesync-operation" />.
 </para>
 </section>
 
 <section id="file-sync-tracker-job">
 <title>File System Tracker Job</title>
 <para>
-A third background job, also introduced in verison 3.5., is a job responsible for the monitoring and
-recording of file system changes that take place in monitored directories and subdirectories as configured for file
-synchronization.  This job is further discussed in <xref linkend="file-sync" />.
+The File System Tracker job (introduced in version 3.5) is responsible for monitoring and
+recording the events of files being created, modified, or deleted.
+It records the current state of files to the <xref linkend="table_file_snapshot" xrefstyle="table" /> table.
+The parameter <literal>job.file.sync.tracker.cron</literal> controls how often the job runs,
+which defaults to every 5 minutes.
+See also <xref linkend="jobs" /> and <xref linkend="file-sync" />.
 </para>
 </section>
 
