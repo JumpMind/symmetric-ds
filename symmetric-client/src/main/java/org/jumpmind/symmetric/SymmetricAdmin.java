@@ -446,19 +446,24 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private void reloadTable(CommandLine line, List<String> args) {
-        String tableName = popArg(args, "Table Name");
         String catalogName = line.getOptionValue(OPTION_CATALOG);
         String schemaName = line.getOptionValue(OPTION_SCHEMA);
 
-        for (Node node : getNodes(line)) {
-            System.out.println("Reloading table to node '" + node.getNodeId() + "'");
-
-            if (line.hasOption(OPTION_WHERE)) {
-                System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
-                        schemaName, tableName, line.getOptionValue(OPTION_WHERE)));
-            } else {
-                System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
-                        schemaName, tableName));
+        if (args.size() == 0) {
+            System.out.println("ERROR: Expected argument for: Table Name");
+            System.exit(1);
+        }
+        for (String tableName : args) {
+            for (Node node : getNodes(line)) {
+                System.out.println("Reloading table '" + tableName + "' to node '" + node.getNodeId() + "'");
+    
+                if (line.hasOption(OPTION_WHERE)) {
+                    System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                            schemaName, tableName, line.getOptionValue(OPTION_WHERE)));
+                } else {
+                    System.out.println(getSymmetricEngine().getDataService().reloadTable(node.getNodeId(), catalogName,
+                            schemaName, tableName));
+                }
             }
         }
     }
