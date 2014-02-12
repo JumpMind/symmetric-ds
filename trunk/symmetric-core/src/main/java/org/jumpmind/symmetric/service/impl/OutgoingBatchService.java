@@ -218,7 +218,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (StringUtils.isNotBlank(nodeId)) {
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
-                    new OutgoingBatchMapper(true, false), new Object[] { batchId, nodeId },
+                    new OutgoingBatchMapper(true), new Object[] { batchId, nodeId },
                     new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         } else {
             /*
@@ -227,7 +227,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
              */
             list = (List<OutgoingBatch>) sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
-                    new OutgoingBatchMapper(true, false), new Object[] { batchId },
+                    new OutgoingBatchMapper(true), new Object[] { batchId },
                     new int[] { symmetricDialect.getSqlTypeForIds() });
         }
         if (list != null && list.size() > 0) {
@@ -290,7 +290,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
                 ascending ? "order by batch_id asc" : " order by batch_id desc");
-        return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true, false),
+        return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
                 params);
 
     }
@@ -322,7 +322,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
                 maxNumberOfBatchesToSelect,
-                new OutgoingBatchMapper(includeDisabledChannels, true),
+                new OutgoingBatchMapper(includeDisabledChannels),
                 new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
@@ -407,7 +407,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         for (String channel : channels) {
             batchList.addAll(sqlTemplate.query(
                     getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchTimeRangeSql"),
-                    new OutgoingBatchMapper(true, false), nodeId, channel, startDate, endDate));
+                    new OutgoingBatchMapper(true), nodeId, channel, startDate, endDate));
         }
         batches.setBatches(batchList);
         return batches;
@@ -417,7 +417,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"),
-                new OutgoingBatchMapper(true, false), startBatchId,
+                new OutgoingBatchMapper(true), startBatchId,
                 endBatchId));
         return batches;
     }
@@ -426,7 +426,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows,
-                new OutgoingBatchMapper(true, false), null, null));
+                new OutgoingBatchMapper(true), null, null));
         return batches;
     }
 
@@ -562,28 +562,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     class OutgoingBatchMapper implements ISqlRowMapper<OutgoingBatch> {
 
         private boolean includeDisabledChannels = false;
-        private boolean limitBasedOnMaxBatchToSend = false;
         private Map<String, Channel> channels;
-        private Map<String, Integer> countByChannel;
 
-        public OutgoingBatchMapper(boolean includeDisabledChannels,
-                boolean limitBasedOnMaxBatchToSend) {
+        public OutgoingBatchMapper(boolean includeDisabledChannels) {
             this.includeDisabledChannels = includeDisabledChannels;
-            this.limitBasedOnMaxBatchToSend = limitBasedOnMaxBatchToSend;
             this.channels = configurationService.getChannels(false);
-            this.countByChannel = new HashMap<String, Integer>();
         }
 
         public OutgoingBatch mapRow(Row rs) {
             String channelId = rs.getString("channel_id");
             Channel channel = channels.get(channelId);
-            Integer count = countByChannel.get(channelId);
-            if (count == null) {
-                count = 0;
-            }
-            if (channel != null && (includeDisabledChannels || channel.isEnabled())
-                    && (!limitBasedOnMaxBatchToSend || count <= channel.getMaxBatchToSend())) {
-                count++;
+            if (channel != null && (includeDisabledChannels || channel.isEnabled())) {
                 OutgoingBatch batch = new OutgoingBatch();
                 batch.setChannelId(channelId);
                 batch.setNodeId(rs.getString("node_id"));
