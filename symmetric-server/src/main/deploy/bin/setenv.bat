@@ -21,7 +21,7 @@
 
 @echo off
 
-cd %~dp0..
+cd /D %~dp0..
 set SYM_HOME=%CD%
 cd bin
 
