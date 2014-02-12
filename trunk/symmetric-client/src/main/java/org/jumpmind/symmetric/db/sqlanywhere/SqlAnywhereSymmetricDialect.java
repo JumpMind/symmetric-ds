@@ -193,7 +193,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
             public Boolean execute(Connection con) throws SQLException {
                 String previousCatalog = con.getCatalog();
                 PreparedStatement stmt = con
-                        .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
+                        .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
                 try {
                     if (catalogName != null) {
                         con.setCatalog(catalogName);

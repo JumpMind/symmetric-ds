@@ -145,11 +145,11 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
         // for pk indexes
         StringBuffer query = new StringBuffer();
 
-        query.append("SELECT name = sysindexes.name FROM sysindexes, sysobjects WHERE sysobjects.name = '");
+        query.append("SELECT name = si.name FROM dbo.sysindexes si, dbo.sysobjects so WHERE so.name = '");
         query.append(table.getName());
-        query.append("' AND sysindexes.name = '");
+        query.append("' AND si.name = '");
         query.append(index.getName());
-        query.append("' AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
+        query.append("' AND so.id = si.id AND (si.status & 2048) > 0");
 
         Statement stmt = connection.createStatement();
 

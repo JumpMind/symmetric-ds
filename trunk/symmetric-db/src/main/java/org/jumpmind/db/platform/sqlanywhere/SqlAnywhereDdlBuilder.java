@@ -143,7 +143,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         writeQuotationOnStatement(ddl);
-        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
+        ddl.append("IF EXISTS (SELECT 1 FROM dbo.sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(getTableName(table.getName()), ddl);
         println(")", ddl);
         println("BEGIN", ddl);
@@ -159,7 +159,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
 
-        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = ");
+        ddl.append("IF EXISTS (SELECT 1 FROM dbo.sysobjects WHERE type = 'RI' AND name = ");
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
         println(")", ddl);
         printIndent(ddl);
@@ -407,18 +407,18 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(60), @" + constraintNameVar
                 + " nvarchar(60)", ddl);
-        println("  WHILE EXISTS(SELECT sysindexes.name", ddl);
-        println("                 FROM sysindexes, sysobjects", ddl);
-        ddl.append("                 WHERE sysobjects.name = ");
+        println("  WHILE EXISTS(SELECT si.name", ddl);
+        println("                 FROM dbo.sysindexes si, dbo.sysobjects so", ddl);
+        ddl.append("                 WHERE so.name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
-        println(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0)", ddl);
+        println(" AND so.id = si.id AND (si.status & 2048) > 0)", ddl);
         println("  BEGIN", ddl);
-        println("    SELECT @" + tableNameVar + " = sysobjects.name, @" + constraintNameVar
-                + " = sysindexes.name", ddl);
-        println("      FROM sysindexes, sysobjects", ddl);
-        ddl.append("      WHERE sysobjects.name = ");
+        println("    SELECT @" + tableNameVar + " = so.name, @" + constraintNameVar
+                + " = si.name", ddl);
+        println("      FROM dbo.sysindexes si, dbo.sysobjects so", ddl);
+        ddl.append("      WHERE so.name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
-        ddl.append(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
+        ddl.append(" AND so.id = si.id AND (si.status & 2048) > 0");
         println("    EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
                 + constraintNameVar + ")", ddl);
         println("  END", ddl);

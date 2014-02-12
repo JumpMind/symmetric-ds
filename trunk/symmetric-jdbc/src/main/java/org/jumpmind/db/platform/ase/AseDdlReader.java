@@ -161,7 +161,7 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
             query.append(", refs.refkey");
             query.append(idx);
         }
-        query.append(" FROM sysreferences refs, sysobjects refobjs, sysobjects localtables, sysobjects remotetables");
+        query.append(" FROM dbo.sysreferences refs, dbo.sysobjects refobjs, dbo.sysobjects localtables, dbo.sysobjects remotetables");
         query.append(" WHERE refobjs.type = 'RI' AND refs.constrid = refobjs.id AND");
         query.append(" localtables.type = 'U' AND refs.tableid = localtables.id AND localtables.name = '");
         query.append(tableName);
@@ -169,7 +169,7 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
 
         Statement stmt = connection.createStatement();
         PreparedStatement prepStmt = connection
-                .prepareStatement("SELECT name FROM syscolumns WHERE id = ? AND colid = ?");
+                .prepareStatement("SELECT name FROM dbo.syscolumns WHERE id = ? AND colid = ?");
         ArrayList<ForeignKey> result = new ArrayList<ForeignKey>();
 
         try {
@@ -231,11 +231,11 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         // for pk indexes
         StringBuffer query = new StringBuffer();
 
-        query.append("SELECT name = sysindexes.name FROM sysindexes, sysobjects WHERE sysobjects.name = '");
+        query.append("SELECT name = si.name FROM dbo.sysindexes si, dbo.sysobjects so WHERE so.name = '");
         query.append(table.getName());
-        query.append("' AND sysindexes.name = '");
+        query.append("' AND si.name = '");
         query.append(index.getName());
-        query.append("' AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
+        query.append("' AND so.id = si.id AND (si.status & 2048) > 0");
 
         Statement stmt = connection.createStatement();
 
