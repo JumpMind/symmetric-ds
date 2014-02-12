@@ -315,17 +315,15 @@ public class TransformedData implements Cloneable {
                 values.add(oldSourceValues.get(name));
                 return;
             }
-
-            values.add(null);
-            return;
+        } else {
+            String transformType = transformColumn.getTransformType();
+            String sourceColumnName = transformColumn.getSourceColumnName();
+            if (CopyColumnTransform.NAME.equals(transformType) && 
+                    oldSourceValues.containsKey(sourceColumnName)) {                
+                values.add(oldSourceValues.get(sourceColumnName));
+                return;
+            }
         }
-
-        String transformType = transformColumn.getTransformType();
-
-        if (CopyColumnTransform.NAME.equals(transformType)) {
-            values.add(oldSourceValues.get(transformColumn.getSourceColumnName()));
-            return;
-        } 
         
         if (keyNames.contains(name)) {
             /*
