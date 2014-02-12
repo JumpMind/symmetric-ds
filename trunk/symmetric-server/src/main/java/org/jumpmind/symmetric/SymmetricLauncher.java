@@ -61,6 +61,8 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     
     private static final String OPTION_JMX_PORT = "jmx-port";
     
+    private static final String OPTION_WINXP = "winxp";
+    
     public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
     }
@@ -104,6 +106,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "hbap", OPTION_HTTP_BASIC_AUTH_PASSWORD, true);
         addOption(options, "JD", OPTION_JMX_DISABLE, false);
         addOption(options, "J", OPTION_JMX_PORT, true);
+        addOption(options, OPTION_WINXP, OPTION_WINXP, false);
     }
 
     protected boolean executeWithOptions(CommandLine line) throws Exception {
@@ -166,6 +169,25 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                     }
                 }
             }
+        }
+        
+        if (line.hasOption(OPTION_WINXP)) {
+            new Thread() {
+                {
+                    this.setDaemon(true);
+                    this.start();
+                }
+
+                public void run() {
+                    log.info("Starting workaround thread to prevent system clock acceleration on Windows XP");
+                    while (true) {
+                        try {
+                            Thread.sleep(Integer.MAX_VALUE);
+                        } catch (InterruptedException ex) {
+                        }
+                    }
+                }
+            };
         }
 
         if (line.hasOption(OPTION_START_CLIENT)) {
