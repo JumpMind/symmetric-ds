@@ -1462,7 +1462,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     && !routerService.shouldDataBeRouted(routingContext,
                             new DataMetaData((Data) data, targetTable, triggerRouter.getRouter(),
                                     routingContext.getChannel()), node, true, StringUtils
-                                    .isNotBlank(triggerRouter.getInitialLoadSelect())));
+                                    .isNotBlank(triggerRouter.getInitialLoadSelect()), triggerRouter));
 
             if (data != null && outgoingBatch != null && !outgoingBatch.isExtractJobFlag()) {
                 outgoingBatch.incrementDataEventCount();

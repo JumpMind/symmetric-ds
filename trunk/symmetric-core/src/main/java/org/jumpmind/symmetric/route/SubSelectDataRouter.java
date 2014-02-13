@@ -32,6 +32,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -69,7 +70,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         String sql = FormatUtils.replaceToken(SQL, "prefixName", symmetricDialect.getTablePrefix(),
                 true);
         String subSelect = dataMetaData.getRouter().getRouterExpression();

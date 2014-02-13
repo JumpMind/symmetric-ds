@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IRouterService;
 
@@ -45,7 +46,7 @@ public class FileSyncDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         Set<String> nodeIds = new HashSet<String>();
         IFileSyncService fileSyncService = engine.getFileSyncService();
         IRouterService routerService = engine.getRouterService();
@@ -71,30 +72,34 @@ public class FileSyncDataRouter extends AbstractDataRouter {
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId);
         if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
-            if (eventType == null || eventType == LastEventType.DELETE
-                    && fileTriggerRouter.getFileTrigger().isSyncOnDelete()
-                    || eventType == LastEventType.MODIFY
-                    && fileTriggerRouter.getFileTrigger().isSyncOnModified()
-                    || eventType == LastEventType.CREATE
-                    && fileTriggerRouter.getFileTrigger().isSyncOnCreate()) {
+            if (fileTriggerRouter.getRouter().getNodeGroupLink()
+                    .equals(triggerRouter.getRouter().getNodeGroupLink())) {
+                if (eventType == null || eventType == LastEventType.DELETE
+                        && fileTriggerRouter.getFileTrigger().isSyncOnDelete()
+                        || eventType == LastEventType.MODIFY
+                        && fileTriggerRouter.getFileTrigger().isSyncOnModified()
+                        || eventType == LastEventType.CREATE
+                        && fileTriggerRouter.getFileTrigger().isSyncOnCreate()) {
 
-                Router router = fileTriggerRouter.getRouter();
-                Map<String, IDataRouter> routers = routerService.getRouters();
-                IDataRouter dataRouter = null;
-                if (StringUtils.isNotBlank(router.getRouterType())) {
-                    dataRouter = routers.get(router.getRouterType());
-                }
+                    Router router = fileTriggerRouter.getRouter();
+                    Map<String, IDataRouter> routers = routerService.getRouters();
+                    IDataRouter dataRouter = null;
+                    if (StringUtils.isNotBlank(router.getRouterType())) {
+                        dataRouter = routers.get(router.getRouterType());
+                    }
 
-                if (dataRouter == null) {
-                    dataRouter = routers.get("default");
-                }
+                    if (dataRouter == null) {
+                        dataRouter = routers.get("default");
+                    }
 
-                if (context instanceof ChannelRouterContext) {
-                    ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
+                    if (context instanceof ChannelRouterContext) {
+                        ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
+                    }
+                    dataMetaData.setRouter(router);
+                    nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false,
+                            false, triggerRouter));
+                    nodeIds.remove(sourceNodeId);
                 }
-                dataMetaData.setRouter(router);
-                nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false, false));
-                nodeIds.remove(sourceNodeId);
             }
         } else {
             log.error(

@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -53,7 +54,7 @@ public class BshDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad, boolean initialLoadSelectUsed) {
+            boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         try {
             long ts = System.currentTimeMillis();
             Interpreter interpreter = getInterpreter(context);
