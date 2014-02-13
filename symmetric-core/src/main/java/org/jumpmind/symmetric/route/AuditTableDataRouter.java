@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.FormatUtils;
 
@@ -58,7 +59,7 @@ public class AuditTableDataRouter extends AbstractDataRouter {
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE
                 || eventType == DataEventType.DELETE) {

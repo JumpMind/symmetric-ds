@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
 
         Set<String> nodeIds = null;
         Router router = dataMetaData.getRouter();

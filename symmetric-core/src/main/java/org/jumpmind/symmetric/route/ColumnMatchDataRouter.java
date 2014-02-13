@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 
 /**
@@ -94,7 +95,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
-            DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);

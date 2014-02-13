@@ -26,6 +26,7 @@ import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
  * The data router is an extension point that allows the end user to target
@@ -44,7 +45,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed);
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter);
 
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch);
 

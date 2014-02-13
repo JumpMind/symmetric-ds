@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
 
@@ -81,7 +82,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
 
         // the list of nodeIds that we will return
         Set<String> nodeIds = null;

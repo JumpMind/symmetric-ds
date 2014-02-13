@@ -25,6 +25,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
  * This data router will route data to all of the nodes that are passed to it.
@@ -32,7 +33,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 public class DefaultDataRouter extends AbstractDataRouter {
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad, boolean initialLoadSelectUsed) {
+            boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         return toNodeIds(nodes, null);
     }
 

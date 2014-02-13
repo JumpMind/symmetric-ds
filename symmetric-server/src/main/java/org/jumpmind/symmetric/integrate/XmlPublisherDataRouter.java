@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 
@@ -58,7 +59,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed) {
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
             Element xml = getXmlFromCache(context, engine.getSymmetricDialect().getBinaryEncoding(),

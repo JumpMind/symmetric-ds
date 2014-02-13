@@ -132,7 +132,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(1, result.size());
         assertEquals(true, result.contains("100"));
     }
@@ -159,7 +159,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(2, result.size());
         assertEquals(true, result.contains("200"));
         assertEquals(true, result.contains("300"));
@@ -187,7 +187,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(1, result.size());
         assertEquals(true, result.contains("100"));
     }
@@ -216,7 +216,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(3, result.size());
         assertEquals(true, result.contains("1"));
         assertEquals(true, result.contains("2"));
@@ -244,7 +244,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(2, result.size());
         assertEquals(true, result.contains("100"));
         assertEquals(true, result.contains("200"));
@@ -271,7 +271,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(0, result.size());
     }
 
@@ -298,7 +298,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(1, result.size());
         assertEquals(true, result.contains("100"));
     }
@@ -327,7 +327,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(2, result.size());
         assertEquals(true, result.contains("1000"));
         assertEquals(true, result.contains("200"));        
@@ -357,7 +357,7 @@ public class ColumnMatchDataRouterTest {
         route.setRouterId("route1");
         DataMetaData dataMetaData = new DataMetaData(data, table, route, nodeChannel);
         
-        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false);
+        Set<String> result = router.routeToNodes(routingContext, dataMetaData, nodes, false, false, null);
         assertEquals(2, result.size());
         assertEquals(true, result.contains("100"));
         assertEquals(true, result.contains("300"));
