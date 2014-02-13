@@ -71,6 +71,12 @@ public class Channel implements Serializable {
         this.channelId = id;
         this.processingOrder = processingOrder;
     }
+    
+    public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
+            long extractPeriodMillis, boolean containsBigLobs, String batchAlgorithm) {
+        this(id, processingOrder, maxBatchSize, maxBatchToSend, enabled, extractPeriodMillis, containsBigLobs);
+        this.batchAlgorithm = batchAlgorithm;
+    }
 
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
             long extractPeriodMillis, boolean containsBigLobs) {
