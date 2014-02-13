@@ -323,10 +323,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount,
             ISqlReadCursor<Data> cursor) throws SQLException {
         boolean moreData = true;
-        int toRead = peekAheadCount - peekAheadQueue.size();
         int dataCount = 0;
         long ts = System.currentTimeMillis();
-        while (reading && dataCount < toRead) {
+        while (reading && dataCount < peekAheadCount) {
             Data data = cursor.next();
             if (data != null) {
                 if (process(data)) {
