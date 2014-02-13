@@ -723,7 +723,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
         public FileTrigger mapRow(Row rs) {
             FileTrigger fileTrigger = new FileTrigger();
-            fileTrigger.setBaseDir(rs.getString("base_dir").replace('\\', '/'));
+            fileTrigger.setBaseDir(rs.getString("base_dir")==null?null:rs.getString("base_dir").replace('\\', '/'));
             fileTrigger.setCreateTime(rs.getDateTime("create_time"));
             fileTrigger.setExcludesFiles(rs.getString("excludes_files"));
             fileTrigger.setIncludesFiles(rs.getString("includes_files"));
@@ -753,7 +753,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileTriggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileTriggerRouter.setEnabled(rs.getBoolean("enabled"));
             fileTriggerRouter.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
-            fileTriggerRouter.setTargetBaseDir(rs.getString("target_base_dir").replace('\\', '/'));
+            fileTriggerRouter.setTargetBaseDir((rs.getString("target_base_dir")==null)?null:rs.getString("target_base_dir").replace('\\', '/'));
             fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
                     rs.getString("router_id")));
             return fileTriggerRouter;
@@ -769,7 +769,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileSnapshot.setFileModifiedTime(rs.getLong("file_modified_time"));
             fileSnapshot.setFileName(rs.getString("file_name"));
-            fileSnapshot.setRelativeDir(rs.getString("relative_dir").replace('\\', '/'));
+            fileSnapshot.setRelativeDir(rs.getString("relative_dir")==null?null:rs.getString("relative_dir").replace('\\', '/'));
             fileSnapshot.setFileSize(rs.getLong("file_size"));
             fileSnapshot.setLastEventType(LastEventType.fromCode(rs.getString("last_event_type")));
             fileSnapshot.setTriggerId(rs.getString("trigger_id"));
