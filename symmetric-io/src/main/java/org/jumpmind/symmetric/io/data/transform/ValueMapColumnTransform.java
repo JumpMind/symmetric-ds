@@ -60,9 +60,9 @@ public class ValueMapColumnTransform implements ISingleValueColumnTransform, IBu
 			int equalIndex = keyValue.indexOf("=");
 			if (equalIndex != -1) {
 				if (keyValue.substring(0, equalIndex).equals(value)) {
-					return keyValue.substring(equalIndex);
+					return keyValue.substring(equalIndex+1);
 				} else if (keyValue.substring(0, equalIndex).equals("*")) {
-					defaultValue = keyValue.substring(equalIndex);
+					defaultValue = keyValue.substring(equalIndex+1);
 				}
 			}
 		}
