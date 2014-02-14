@@ -172,6 +172,14 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         command.append("processFile = true;\n");
                         command.append("sourceFileName = \"").append(snapshot.getFileName())
                                 .append("\";\n");
+                        command.append("targetRelativeDir = \""); 
+                        if (!snapshot.getRelativeDir().equals(".")) {
+                            command.append(StringEscapeUtils.escapeJava(snapshot
+                                    .getRelativeDir()));
+                            command.append("\";\n");
+                        } else {
+                            command.append("\";\n");
+                        }
                         command.append("targetFileName = sourceFileName;\n");                        
                         command.append("sourceFilePath = \"");
                         command.append(StringEscapeUtils.escapeJava(snapshot.getRelativeDir()))
@@ -193,9 +201,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
                             command.append(fileTrigger.getBeforeCopyScript()).append("\n");
                         }
-                        
+                                                                        
                         command.append("if (processFile) {\n");
-
+                        String targetFile = "targetBaseDir + \"/\" + targetRelativeDir + \"/\" + targetFileName"; 
+                        
                         switch (eventType) {
                             case CREATE:
                             case MODIFY:
@@ -212,14 +221,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     command.append(");\n");
                                     
                                     command.append("  java.io.File targetFile = new java.io.File(");
-                                    StringBuilder targetFile = new StringBuilder(
-                                            "targetBaseDir + \"/");
-                                    if (!snapshot.getRelativeDir().equals(".")) {
-                                        targetFile.append(StringEscapeUtils.escapeJava(snapshot
-                                                .getRelativeDir()));
-                                        targetFile.append("/");
-                                    }
-                                    targetFile.append("\" + targetFileName");
                                     command.append(targetFile);
                                     command.append(");\n");
                                     
@@ -259,13 +260,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 break;
                             case DELETE:
                                 command.append("  org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
-                                StringBuilder targetFile = new StringBuilder("targetBaseDir + \"/");
-                                if (!snapshot.getRelativeDir().equals(".")) {
-                                    targetFile.append(StringEscapeUtils.escapeJava(snapshot
-                                            .getRelativeDir()));
-                                    targetFile.append("/");
-                                }
-                                targetFile.append("\" + targetFileName");
                                 command.append(targetFile);
                                 command.append("));\n");
                                 command.append("  fileList.put(").append(targetFile).append(",\"");

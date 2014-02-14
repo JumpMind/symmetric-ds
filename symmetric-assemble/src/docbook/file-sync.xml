@@ -145,6 +145,24 @@ overwritten in <xref linkend="table_file_trigger_router" xrefstyle="table" />. T
 </varlistentry>
 <varlistentry>
 <term>
+<command>targetRelativeDir</command>
+</term>
+<listitem>
+<para> The name of a directory relative to the target base directory to which the target file will be copied.  The 
+default value of this variable is the relative directory of the source.  For example, if the source base directory is 
+<literal>/src</literal> and the target base directory is <literal>/tgt</literal> and the file <literal>/src/subfolder/1.txt</literal>
+is changed, then the default targetRelativeDir will be <literal>subfolder</literal>.
+This variable can be overwritten by the
+<literal>before_copy_script</literal> to change the relative directory at the target. In the above example, if the variable is
+set to blank using the following script, then the target file will be copied to <literal>/tgt/1.txt</literal>.
+<programlisting>
+targetRelativeDir = "";
+</programlisting>
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
 <command>processFile</command>
 </term>
 <listitem>
