@@ -85,7 +85,12 @@ public class DataGapRouteReader implements IDataToRouteReader {
         this.peekAheadCount = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
         this.takeTimeout = engine.getParameterService().getInt(
                 ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
-        this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
+        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+            /* there will not be a separate thread to read a blocked queue so make sure the queue is big enough that it can be filled */
+            this.dataQueue = new LinkedBlockingQueue<Data>();
+        } else {
+            this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
+        }
         this.context = context;
         
         String engineName = parameterService.getEngineName();
