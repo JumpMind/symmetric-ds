@@ -157,6 +157,57 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-startup-parameters</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+		                            <includePluginDependencies>true</includePluginDependencies>
+		                            <mainClass>org.jumpmind.properties.DefaultParameterParser</mainClass>
+		                            <arguments>
+		                                <argument>/symmetric-default.properties</argument>
+		                                <argument>${docbook.build}/startup-parameters.xml</argument>
+		                                <argument>false</argument>
+		                            </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-runtime-parameters</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <mainClass>org.jumpmind.properties.DefaultParameterParser</mainClass>
+                                    <arguments>
+                                        <argument>/symmetric-default.properties</argument>
+                                        <argument>${docbook.build}/runtime-parameters.xml</argument>
+                                        <argument>true</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jumpmind.symmetric</groupId>
+                                <artifactId>symmetric-util</artifactId>
+                                <version>3.5.17-SNAPSHOT</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.jumpmind.symmetric</groupId>
+                                <artifactId>symmetric-core</artifactId>
+                                <version>3.5.17-SNAPSHOT</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                    <plugin>
                         <groupId>com.agilejava.docbkx</groupId>
                         <artifactId>docbkx-maven-plugin</artifactId>
                         <version>2.0.6</version>

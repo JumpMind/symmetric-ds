@@ -20,6 +20,7 @@
  */
 package org.jumpmind.properties;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -59,7 +60,7 @@ public class DefaultParameterParser {
     public Map<String, ParameterMetaData> parse() {
         return parse(propertiesFilePath);
     }
-
+    
     public Map<String, ParameterMetaData> parse(String fileName) {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
@@ -104,6 +105,27 @@ public class DefaultParameterParser {
             log.error(e.getMessage(), e);
         }
         return metaData;
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
+            System.err.println("Usage: <input_properties_file> <output_docbook_file> [true|false]");
+        }
+        DefaultParameterParser parmParser = new DefaultParameterParser(args[0]);
+        FileWriter writer = new FileWriter(args[1]);
+        boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
+        Map<String, ParameterMetaData> map = parmParser.parse();
+        writer.write("<variablelist>\n");
+
+        for (ParameterMetaData parm : map.values()) {
+            if ((isDatabaseOverridable && parm.isDatabaseOverridable()) || (!isDatabaseOverridable && !parm.isDatabaseOverridable())) {
+                writer.write("<varlistentry>\n<term><command>" + parm.getKey() + "</command></term>\n");
+                writer.write("<listitem><para>" + parm.getDescription()
+                        + " [ Default: " + parm.getDefaultValue() + " ]</para></listitem>\n</varlistentry>\n");
+            }
+        }
+        writer.write("</variablelist>\n");
+        writer.close();
     }
 
     public static class ParameterMetaData implements Serializable {
