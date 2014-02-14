@@ -20,6 +20,7 @@
  */
 package org.jumpmind.properties;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -111,7 +113,12 @@ public class DefaultParameterParser {
         if (args.length == 0) {
             System.err.println("Usage: <input_properties_file> <output_docbook_file> [true|false]");
         }
-        DefaultParameterParser parmParser = new DefaultParameterParser(args[0]);
+        DefaultParameterParser parmParser = null;
+        if (args[0].startsWith("classpath:")) {
+            parmParser = new DefaultParameterParser(args[0].replaceAll("classpath:", ""));
+        } else {
+            parmParser = new DefaultParameterParser(FileUtils.openInputStream(new File(args[0])));
+        }
         FileWriter writer = new FileWriter(args[1]);
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         Map<String, ParameterMetaData> map = parmParser.parse();

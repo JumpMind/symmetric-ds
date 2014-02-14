@@ -131,4 +131,13 @@
             <xi:include href="runtime-parameters.xml" />
         </para>
     </section>
+    <section id="ap01-server">
+        <title>Server Configuration</title>
+        <para>
+            Server configuration is read from <literal>conf/symmetric-server.conf</literal> for settings needed by the server
+            before the parameter system has been initialized.
+            <xi:include href="server-parameters.xml" />
+        </para>
+    </section>
+
 </appendix>

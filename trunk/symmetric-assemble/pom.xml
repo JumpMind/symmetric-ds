@@ -162,6 +162,22 @@
                         <version>1.2.1</version>
                         <executions>
                             <execution>
+                                <id>generate-server-parameters</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <mainClass>org.jumpmind.properties.DefaultParameterParser</mainClass>
+                                    <arguments>
+                                        <argument>${basedir}/../symmetric-server/src/main/deploy/conf/symmetric-server.properties</argument>
+                                        <argument>${docbook.build}/server-parameters.xml</argument>
+                                        <argument>false</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>generate-startup-parameters</id>
                                 <phase>generate-sources</phase>
                                 <goals>
@@ -171,7 +187,7 @@
 		                            <includePluginDependencies>true</includePluginDependencies>
 		                            <mainClass>org.jumpmind.properties.DefaultParameterParser</mainClass>
 		                            <arguments>
-		                                <argument>/symmetric-default.properties</argument>
+		                                <argument>classpath:/symmetric-default.properties</argument>
 		                                <argument>${docbook.build}/startup-parameters.xml</argument>
 		                                <argument>false</argument>
 		                            </arguments>
@@ -187,7 +203,7 @@
                                     <includePluginDependencies>true</includePluginDependencies>
                                     <mainClass>org.jumpmind.properties.DefaultParameterParser</mainClass>
                                     <arguments>
-                                        <argument>/symmetric-default.properties</argument>
+                                        <argument>classpath:/symmetric-default.properties</argument>
                                         <argument>${docbook.build}/runtime-parameters.xml</argument>
                                         <argument>true</argument>
                                     </arguments>
