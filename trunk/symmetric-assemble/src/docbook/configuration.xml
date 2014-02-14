@@ -1929,7 +1929,7 @@ a new identity, not copying the actual identity value from the source.
 </listitem>
 
 <listitem>
-Mathimatical Transform ('math'): This transformation allows you to 
+Mathematical Transform ('math'): This transformation allows you to 
 perform mathematical equations in the transform expression. Some 
 variables are provided to the script:
 <code>#{COLUMN_NAME}</code>
@@ -1941,6 +1941,15 @@ is the value of the current source column;
 is the old value of the source column for an updated row.
 </listitem>
 
+
+<listitem>
+Value Map Transform ('valueMap'):  This transformation allows for simple value substitutions through use of the transform expression.
+The transform expresion should consist of a space separated list of value pairs of the format sourceValue=TargetValue.  The column value is used to 
+locate the correct sourceValue, and the transform will change the value into the corresponding targetValue.  A sourceValue of * can be used to
+represent a default target value in the event that the sourceValue is not found.  Otherwise, if no default value is found,
+the result will be null.  For example, consider the following transform expression:  s1=t1 s2=t2 s3=t3 *=t4.  A source value of
+s1 will be transformed to t1, s2 to t2, s3 to t3, s4 to t4, s5 to t4, null to t4, etc.
+</listitem>
 </itemizedlist>
 </para>
 </section>
