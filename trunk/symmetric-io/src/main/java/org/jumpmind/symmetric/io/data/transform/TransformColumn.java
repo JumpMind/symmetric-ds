@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
-public class TransformColumn {
+public class TransformColumn implements Comparable<TransformColumn> {
 
     public enum IncludeOnType {
         INSERT, UPDATE, DELETE, ALL;
@@ -207,6 +207,10 @@ public class TransformColumn {
         clone.setLastUpdateTime(lastUpdateTime == null ? null : new Date(lastUpdateTime.getTime()));
         clone.setLastUpdateBy(lastUpdateBy);
         return clone;
+    }
+    
+    public int compareTo(TransformColumn o) {
+        return new Integer(transformOrder).compareTo(new Integer(o.transformOrder));
     }
 
 }
