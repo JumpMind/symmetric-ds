@@ -1,3 +1,24 @@
+SymmetricDS - 3.5.17 (Released 2014-02-15)
+==========================================
+- 0001420: [Task] Generate parameter documentation automatically from symmetric-default.properties. (elong) - resolved.
+- 0001578: [Bug] Jobs can lock up if jobs.synchronized.enable is on and routing.peek.ahead.window.after.max.size is smaller then data rows (chenson) - resolved.
+- 0001566: [Improvement] Column match router support for "contains" and "not contains" (elong) - resolved.
+- 0000810: [Improvement] symadmin reload-table - pass multiple tables (elong) - closed.
+- 0001568: [Bug] NullPointerException when initial.load.create.first is on using wildcard trigger definitions on postgres (chenson) - closed.
+- 0001455: [Bug] Audit tables don't get created (chenson) - closed.
+- 0001484: [Improvement] Firebird trigger should be created at a position other than 0 so that users can define triggers that fire before the sym trigger (chenson) - closed.
+- 0001562: [Bug] Routing using TransactionId causes bad routing when H2 DB is restarted (chenson) - closed.
+- 0001565: [Bug] Ambiguous reference to sysindexes (elong) - closed.
+- 0001567: [Bug] Transforms that are symmetric aware can get the wrong symmetric engine when multi-homed (chenson) - closed.
+- 0001569: [Bug] System clock goes too fast (elong) - closed.
+- 0001572: [Bug] Windows Problem Calling sym.bat from Another Drive (chenson) - closed.
+- 0001573: [Bug] Peek ahead window smaller than expected (chenson) - closed.
+- 0001574: [Bug] Too many routers are run when file sync targets more than one node group (chenson) - closed.
+- 0001576: [Improvement] File Sync's default batch algorithm should be nontransactional (chenson) - closed.
+- 0001579: [Bug] target_base_dir can be null in file_trigger. causes null pointer in filesyncservice save of snapshot due to / replacement (mhanes) - closed.
+- 0001580: [New Feature] Expose the relative target directory as a variable that can be scripted in order to flatten the directory structure in file sync (chenson) - closed.
+- 0001583: [Improvement] Create new value map column transform (mhanes) - closed.
+
 SymmetricDS - 3.5.16 (Released 2014-02-05) 
 ==========================================
 - 0000677: [Improvement] Allow the sym commands to be added to PATH and be called from any location (elong) - closed.
