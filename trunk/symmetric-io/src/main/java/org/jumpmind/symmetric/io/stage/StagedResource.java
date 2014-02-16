@@ -103,6 +103,10 @@ public class StagedResource implements IStagedResource {
         this.state = State.CREATE;
     }
     
+    public boolean isInUse() {
+        return readers.size() > 0 || writers.size() > 0;
+    }
+    
     public boolean isFileResource() {     
         return file != null && file.exists();
     }
@@ -250,7 +254,7 @@ public class StagedResource implements IStagedResource {
                 log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
                 file.delete();
             } else if (this.memoryBuffer != null) {
-                log.warn("We had to delete the memory buffer because it already existed");
+                log.warn("We had to delete the memory buffer for {} because it already existed", getPath());
                 this.memoryBuffer = null;
             }
             this.memoryBuffer = new StringBuilder();
@@ -283,12 +287,15 @@ public class StagedResource implements IStagedResource {
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
-    public void delete() {
+    public boolean delete() {
+        
+        boolean deleted = true;
         
         close();
         
         if (file.exists()) {
             FileUtils.deleteQuietly(file);
+            deleted = !file.exists();            
         }
 
         if (memoryBuffer != null) {
@@ -296,7 +303,11 @@ public class StagedResource implements IStagedResource {
             memoryBuffer = null;
         }
         
-        stagingManager.resourceList.remove(getPath());
+        if (deleted) {
+            stagingManager.resourceList.remove(getPath());
+        }
+        
+        return deleted;
         
     }
 
