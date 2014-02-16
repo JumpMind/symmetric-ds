@@ -91,7 +91,7 @@ public class StagingManager implements IStagingManager {
             for (String key : keys) {
                 IStagedResource resource = resourceList.get(key);
                 boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
-                if (resource.isInUse() && (resource.getState() == State.READY || resource.getState() == State.DONE)
+                if ((resource.getState() == State.READY || resource.getState() == State.DONE)
                         && (resourceIsOld || !resource.exists())) {                    
                     if (!resource.isInUse()) {
                         boolean file = resource.isFileResource();
