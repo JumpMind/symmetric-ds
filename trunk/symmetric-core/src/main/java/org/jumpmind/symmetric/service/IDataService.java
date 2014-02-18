@@ -149,6 +149,8 @@ public interface IDataService {
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
     
+    public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
+    
     public List<IReloadListener> getReloadListeners();
         
 }

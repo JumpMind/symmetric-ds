@@ -153,6 +153,8 @@
         <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are created." />
         <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are modified." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and remove files when they are deleted." />
+        <column name="sync_on_ctl_file" type="BOOLEANINT" size="1" required="true" default="0"  description="Combined with sync_on_create, determines whether to capture and send files when a matching control file exists.  The control file is a file of the same name with a '.ctl' extension appended to the end." />
+        <column name="delete_after_sync" type="BOOLEANINT" size="1" required="true" default="0"  description="Determines whether to delete the file after it has synced successfully." />
         <column name="before_copy_script" type="LONGVARCHAR" description="A bsh script that is run right before the file copy." />
         <column name="after_copy_script" type="LONGVARCHAR" description="A bsh script that is run right after the file copy." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />

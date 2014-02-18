@@ -1355,7 +1355,21 @@ public class DataService extends AbstractService implements IDataService {
                         dataMapper, new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
                         new int[] { Types.NUMERIC });
     }
-
+    
+    public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId) {
+        return sqlTemplate
+                .queryForCursor(getDataSelectByBatchSql(batchId, -1l, channelId),
+                        dataMapper, new Object[] { batchId },
+                        new int[] { Types.NUMERIC });
+    }
+    
+    protected String getDataSelectByBatchSql(long batchId, long startDataId, String channelId) {
+        String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
+        return symmetricDialect.massageDataExtractionSql(
+                getSql("selectEventDataByBatchIdSql", startAtDataIdSql, " order by d.data_id asc"),
+                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+    }
+    
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(

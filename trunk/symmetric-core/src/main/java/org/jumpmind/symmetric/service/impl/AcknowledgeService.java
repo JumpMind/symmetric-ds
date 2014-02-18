@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -51,14 +52,17 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     private IRegistrationService registrationService;
 
     private IStagingManager stagingManger;
+    
+    private ISymmetricEngine engine;
 
     public AcknowledgeService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
-            IRegistrationService registrationService, IStagingManager stagingManager) {
+            IRegistrationService registrationService, IStagingManager stagingManager, ISymmetricEngine engine) {
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.registrationService = registrationService;
         this.stagingManger = stagingManager;
+        this.engine = engine;
         setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -128,6 +132,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 //TODO: I should really be able to catch errors here, but can't do to how this is coded
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                if (status == Status.OK) {
+                    if (outgoingBatch.getChannelId().equals(Constants.CHANNEL_FILESYNC)){
+                        //Acknowledge the file_sync in case the file needs deleted.
+                        engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
+                    }
+                }
             } else {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});
