@@ -32,12 +32,13 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
 
         putSql("selectFileTriggersSql",
-                " select trigger_id, base_dir, recurse,                                     " +
+                " select trigger_id, base_dir, recurse,                                       " +
                 "        includes_files, excludes_files,                                      " +
         		"        sync_on_create, sync_on_modified, sync_on_delete,                    " +
+        		"        sync_on_ctl_file, delete_after_sync,                                 " +
                 "        before_copy_script,                                                  " +
                 "        after_copy_script,                                                   " +
-        		"        create_time, last_update_by,                                          " +
+        		"        create_time, last_update_by,                                         " +
         		"        last_update_time                                                     " +
         		" from $(file_trigger)                                                        ");
 
@@ -46,16 +47,18 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
 
         putSql("updateFileTriggerSql",
                 " update $(file_trigger) set base_dir=?, recurse=?, includes_files=?,         " +
-        		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,    " +
-                "  before_copy_script=?, after_copy_script=?,                                   " +
-        		"  last_update_by=?, last_update_time=? where trigger_id=?                      ");
+        		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,  " +
+        		"  sync_on_ctl_file=?, delete_after_sync=?,                                   " +
+                "  before_copy_script=?, after_copy_script=?,                                 " +
+        		"  last_update_by=?, last_update_time=? where trigger_id=?                    ");
 
         putSql("insertFileTriggerSql",
                 " insert into $(file_trigger) (base_dir, recurse, includes_files,             " +
-                "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,            " +
-                "  before_copy_script, after_copy_script,                                       " +
-                "  last_update_by, last_update_time, trigger_id, create_time)                   " +
-                " values(?,?,?,?,?,?,?,?,?,?,?,?,?)                                             ");
+                "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,          " +
+                "  sync_on_ctl_file, delete_after_sync,                                       " +
+                "  before_copy_script, after_copy_script,                                     " +
+                "  last_update_by, last_update_time, trigger_id, create_time)                 " +
+                " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                       ");
 
         putSql("selectFileSnapshotSql",
                 " select trigger_id, router_id, relative_dir, file_name, last_event_type, crc32_checksum, " +

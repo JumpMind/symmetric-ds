@@ -12,7 +12,7 @@ catalog,
 schema,
 table,SYM_FILE_TRIGGER
 keys,TRIGGER_ID
-columns,TRIGGER_ID,BASE_DIR,RECURSE,INCLUDES_FILES,EXCLUDES_FILES,SYNC_ON_CREATE,SYNC_ON_MODIFIED,SYNC_ON_DELETE,BEFORE_COPY_SCRIPT,AFTER_COPY_SCRIPT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
+columns,TRIGGER_ID,BASE_DIR,RECURSE,INCLUDES_FILES,EXCLUDES_FILES,SYNC_ON_CREATE,SYNC_ON_MODIFIED,SYNC_ON_DELETE,SYNC_ON_CTL_FILE,DELETE_AFTER_SYNC,BEFORE_COPY_SCRIPT,AFTER_COPY_SCRIPT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
 sql,delete from sym_file_trigger
 catalog,
 schema,
@@ -127,11 +127,11 @@ insert,"client_2_server",,,,"client","server","default",,"1","1","1","2013-05-19
 catalog,
 schema,
 table,SYM_FILE_TRIGGER
-insert,"all","target/fs_svr/all","1",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"create_only","target/fs_svr/create_only","1",,,"1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"all_recursive","target/fs_svr/all_recursive","1",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"csv_only","target/fs_svr/csv_only","1","*.txt",,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"choose_target","target/fs_svr/choose_target","1",,,"1","1","1","
+insert,"all","target/fs_svr/all","1",,,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"create_only","target/fs_svr/create_only","1",,,"1","0","0","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"all_recursive","target/fs_svr/all_recursive","1",,,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"csv_only","target/fs_svr/csv_only","1","*.txt",,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"choose_target","target/fs_svr/choose_target","1",,,"1","1","1","0","0","
 a = new java.io.File(\"target/fs_clnt/choose_target/a\");
 b = new java.io.File(\"target/fs_clnt/choose_target/b\");
 if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.FileUtils.sizeOfDirectory(b)) {
@@ -140,10 +140,10 @@ if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.F
    targetBaseDir = a.getAbsolutePath();
 }
 ",,"2013-05-19 10:14:04.830","unit_test","2013-05-19 10:14:04.830"
-insert,"client_src","target/fs_clnt/client_src","1",,,"1","1","1",,,"2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
-insert,"ping_back_clnt","target/fs_clnt/ping_back","1",,,"1","1","1",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
-insert,"ping_back_svr","target/fs_svr/ping_back","1",,,"1","1","1",,,"2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
-insert,"test_change_filename","target/fs_svr/change_name","0","source.txt",,"1","1","1","targetFileName = \"target.txt\";",,"2013-07-11 14:25:27.690","admin","2013-07-11 14:25:27.690"
+insert,"client_src","target/fs_clnt/client_src","1",,,"1","1","1","0","0",,,"2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
+insert,"ping_back_clnt","target/fs_clnt/ping_back","1",,,"1","1","1","0","0",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
+insert,"ping_back_svr","target/fs_svr/ping_back","1",,,"1","1","1","0","0",,,"2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
+insert,"test_change_filename","target/fs_svr/change_name","0","source.txt",,"1","1","1","0","0","targetFileName = \"target.txt\";",,"2013-07-11 14:25:27.690","admin","2013-07-11 14:25:27.690"
 catalog,
 schema,
 table,SYM_FILE_TRIGGER_ROUTER
