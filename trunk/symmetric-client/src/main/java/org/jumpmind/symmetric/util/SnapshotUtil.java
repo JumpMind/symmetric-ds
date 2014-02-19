@@ -245,7 +245,9 @@ public class SnapshotUtil {
         fos = null;
         try {
             fos = new FileOutputStream(new File(tmpDir, "system.properties"));
-            System.getProperties().store(fos, "system.properties");
+            SortedProperties props = new SortedProperties();
+            props.putAll(System.getProperties());
+            props.store(fos, "system.properties");
         } catch (IOException e) {
             log.warn("Failed to export thread information", e);
         } finally {
