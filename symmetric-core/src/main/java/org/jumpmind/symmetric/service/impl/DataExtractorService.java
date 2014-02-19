@@ -963,9 +963,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batch.getBatchId(), batch.getBatchId(), batch.getNodeId());
     }
 
-    public void requestExtractRequest(String nodeId, TriggerRouter triggerRouter,
-            long startBatchId, long endBatchId) {
-        sqlTemplate.insertWithGeneratedKey(getSql("insertExtractRequestSql"),
+    public void requestExtractRequest(ISqlTransaction transaction, String nodeId,
+            TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
+        transaction.insertWithGeneratedKey(
+        getSql("insertExtractRequestSql"),
                 symmetricDialect.getSequenceKeyName(SequenceIdentifier.REQUEST),
                 symmetricDialect.getSequenceName(SequenceIdentifier.REQUEST), new Object[] {
                         nodeId, ExtractStatus.NE.name(), startBatchId, endBatchId,
