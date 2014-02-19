@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -20,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -90,7 +94,7 @@ public class SnapshotUtil {
             Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
                     triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
                     false);
-            if (table != null) {
+            if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
                 tables.add(table);
             }
         }
@@ -197,10 +201,40 @@ public class SnapshotUtil {
         try {
             fos = new FileOutputStream(new File(tmpDir, "parameters.properties"));
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
-            effectiveParameters.remove("db.password");
-            effectiveParameters.store(fos, "parameters.properties");
+            SortedProperties parameters = new SortedProperties();
+            parameters.putAll(effectiveParameters);
+            parameters.remove("db.password");            
+            parameters.store(fos, "parameters.properties");
         } catch (IOException e) {
-            log.warn("Failed to export thread information", e);
+            log.warn("Failed to export parameter information", e);
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
+
+        fos = null;
+        try {
+            fos = new FileOutputStream(new File(tmpDir, "parameters-changed.properties"));
+            Properties defaultParameters = new Properties();
+            InputStream in = SnapshotUtil.class.getResourceAsStream("/symmetric-default.properties");
+            defaultParameters.load(in);
+            IOUtils.closeQuietly(in);
+            in = SnapshotUtil.class.getResourceAsStream("/symmetric-console-default.properties");
+            defaultParameters.load(in);
+            IOUtils.closeQuietly(in);
+            Properties effectiveParameters = engine.getParameterService().getAllParameters();
+            Properties changedParameters = new SortedProperties();
+            Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
+            for (String key: parameters.keySet()) {
+                String defaultValue = defaultParameters.getProperty((String) key);
+                String currentValue = effectiveParameters.getProperty((String) key);
+                if (defaultValue == null  && currentValue != null || (defaultValue != null && ! defaultValue.equals(currentValue))) {
+                    changedParameters.put(key, currentValue == null ? "" : currentValue);
+                }
+            }
+            changedParameters.remove("db.password");
+            changedParameters.store(fos, "parameters-changed.properties");
+        } catch (IOException e) {
+            log.warn("Failed to export parameters-changed information", e);
         } finally {
             IOUtils.closeQuietly(fos);
         }
@@ -329,5 +363,14 @@ public class SnapshotUtil {
                     .getLastFinishTime());
         }
     }
+
+    static class SortedProperties extends Properties {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public synchronized Enumeration<Object> keys() {
+            return Collections.enumeration(new TreeSet<Object>(super.keySet()));
+        }
+    };
 
 }
