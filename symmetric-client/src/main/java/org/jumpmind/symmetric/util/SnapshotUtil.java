@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
@@ -291,9 +292,13 @@ public class SnapshotUtil {
 
             }
             
+            RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+            List<String> arguments = runtimeMxBean.getInputArguments();
+            runtimeProperties.setProperty("jvm.arguments", arguments.toString());
+            
             runtimeProperties.store(fos, "runtime-stats.properties");
         } catch (IOException e) {
-            log.warn("Failed to export thread information", e);
+            log.warn("Failed to export runtime-stats information", e);
         } finally {
             IOUtils.closeQuietly(fos);
         }
