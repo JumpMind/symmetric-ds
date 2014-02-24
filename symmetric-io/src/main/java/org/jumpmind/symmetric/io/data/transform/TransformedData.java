@@ -332,7 +332,7 @@ public class TransformedData implements Cloneable {
         } else {
             String transformType = transformColumn.getTransformType();
             String sourceColumnName = transformColumn.getSourceColumnName();
-            if (CopyColumnTransform.NAME.equals(transformType) && 
+            if (transformType!=null && transformType.startsWith(CopyColumnTransform.NAME) && 
                     oldSourceValues.containsKey(sourceColumnName)) {                
                 values.add(oldSourceValues.get(sourceColumnName));
                 return;
