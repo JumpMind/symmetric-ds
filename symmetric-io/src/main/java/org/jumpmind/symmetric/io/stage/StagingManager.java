@@ -92,16 +92,25 @@ public class StagingManager implements IStagingManager {
                 IStagedResource resource = resourceList.get(key);
                 boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
                 if ((resource.getState() == State.READY || resource.getState() == State.DONE)
-                        && (resourceIsOld || !resource.exists())) {
-                    if (resource.isFileResource()) {
-                        purgedFileCount++;
-                        purgedFileSize += resource.getSize();
+                        && (resourceIsOld || !resource.exists())) {                    
+                    if (!resource.isInUse()) {
+                        boolean file = resource.isFileResource();
+                        long size = resource.getSize(); 
+                        if (resource.delete()) {                            
+                            if (file) {
+                                purgedFileCount++;
+                                purgedFileSize += size;
+                            } else {
+                                purgedMemCount++;
+                                purgedMemSize += size;
+                            }
+                           resourceList.remove(key);
+                        } else {
+                            log.warn("Failed to delete the '{}' staging resource", resource.getPath());
+                        }
                     } else {
-                        purgedMemCount++;
-                        purgedMemSize += resource.getSize();
+                        log.warn("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
                     }
-                    resource.delete();
-                    resourceList.remove(key);
                 }
             }
             if (purgedFileCount > 0) {

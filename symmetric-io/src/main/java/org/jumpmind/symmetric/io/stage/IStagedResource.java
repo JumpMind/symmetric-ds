@@ -63,8 +63,10 @@ public interface IStagedResource {
     
     public boolean isFileResource();
     
-    public void delete();
+    public boolean delete();
     
     public boolean exists();
+    
+    public boolean isInUse();
 
 }
