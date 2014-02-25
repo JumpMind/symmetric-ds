@@ -46,9 +46,13 @@ public class ColumnsToRowsValueColumnTransform  implements ISingleValueColumnTra
 		return true;
 	}
 
+	protected String processColumn(TransformedData data, String newValue, String oldValue) throws IgnoreRowException, IgnoreColumnException {
+		return newValue;
+	}
+	
 	public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
 			TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-			throws IgnoreRowException {
+			throws IgnoreRowException, IgnoreColumnException {
 		
 		String contextBase = ColumnsToRowsKeyColumnTransform.getContextBase(column.getTransformId());
 				
@@ -70,7 +74,7 @@ public class ColumnsToRowsValueColumnTransform  implements ISingleValueColumnTra
 		if (pkValue!=null) {
 			 value = reverseMap.get(pkValue);
 			 if (value!=null) {
-				 return data.getSourceValues().get(value);
+				 return processColumn(data,data.getSourceValues().get(value),data.getOldSourceValues().get(value));
 			 } else {
 				 throw new RuntimeException("Unable to locate column name for pk value "+pkValue);
 			 }

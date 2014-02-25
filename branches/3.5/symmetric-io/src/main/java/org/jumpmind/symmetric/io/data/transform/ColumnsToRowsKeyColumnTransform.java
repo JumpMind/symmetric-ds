@@ -62,7 +62,7 @@ public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTran
 			throws IgnoreRowException {
 		
 		if (StringUtils.trimToNull(column.getTransformExpression()) == null) {
-			throw new RuntimeException("Transform configured incorrectly.  A map reprenting PK and column names must be defined as part of the transform expression");
+			throw new RuntimeException("Transform configured incorrectly.  A map represnting PK and column names must be defined as part of the transform expression");
 		}
 		String mapAsString = StringUtils.trimToEmpty(column.getTransformExpression());
 
@@ -85,8 +85,8 @@ public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTran
 			
 		}
 		
-		context.put(NAME+":"+column.getTransformId()+":Map", reverseMap);
-		context.put(NAME+":"+column.getTransformId()+":Field", column.getTargetColumnName());
+		context.put(getContextBase(column.getTransformId())+CONTEXT_MAP, reverseMap);
+		context.put(getContextBase(column.getTransformId())+CONTEXT_PK_COLUMN, column.getTargetColumnName());
 		
 		return result;		
 	}
