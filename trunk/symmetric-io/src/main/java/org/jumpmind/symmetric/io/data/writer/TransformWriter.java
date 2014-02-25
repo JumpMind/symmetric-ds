@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform;
@@ -99,6 +100,7 @@ public class TransformWriter extends NestedDataWriter {
         columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
         columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
         columnTransforms.put(ValueMapColumnTransform.NAME, new ValueMapColumnTransform());
+        columnTransforms.put(CopyIfChangedColumnTransform.NAME, new CopyIfChangedColumnTransform());
         columnTransforms.put(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
         columnTransforms.put(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
         return columnTransforms;
