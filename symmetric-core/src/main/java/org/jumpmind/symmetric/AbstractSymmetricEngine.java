@@ -668,9 +668,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 }
             }
 
-            // this should remove all triggers because we have removed all the
-            // trigger configuration
-            triggerRouterService.syncTriggers();      
+            if (table != null) {
+                // this should remove all triggers because we have removed all the
+                // trigger configuration
+                triggerRouterService.syncTriggers();
+            }
             
         } catch (SqlException ex) {
             log.warn("Error while trying remove triggers on tables", ex);
