@@ -35,4 +35,6 @@
     
     <bean id="mssqlBulkLoaderFactory" class="org.jumpmind.symmetric.ext.MsSqlBulkDataLoaderFactory" />
 
+    <bean id="mysqlBulkLoaderFactory" class="org.jumpmind.symmetric.ext.MySqlBulkDataLoaderFactory" />
+
 </beans>
