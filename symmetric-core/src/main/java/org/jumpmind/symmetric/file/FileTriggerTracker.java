@@ -111,25 +111,10 @@ public class FileTriggerTracker {
         }
 
         public void onFileCreate(File file) {
-            if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()){
-                onCtlFile(file);
-            } else {
                 log.debug("File create detected: {}", file.getAbsolutePath());
                 this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
                         LastEventType.CREATE));
-            }
         }
-        
-        public void onCtlFile(File file) {
-          if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()){
-              File ctlFile = new File(file.getAbsolutePath() + ".ctl");
-              if (ctlFile.exists()) {
-                  log.debug("Control file detected: {}", file.getAbsolutePath());
-                  this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
-                          LastEventType.CREATE));
-              }
-          }
-      }
 
         public void onFileChange(File file) {
                 log.debug("File change detected: {}", file.getAbsolutePath());
