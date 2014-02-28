@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class CopyIfChangedColumnTransform extends CopyColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -41,7 +42,8 @@ public class CopyIfChangedColumnTransform extends CopyColumnTransform implements
 			TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
 			throws IgnoreColumnException, IgnoreRowException {
 
-		if (StringUtils.trimToEmpty(newValue).equals(StringUtils.trimToEmpty(oldValue))) {
+		if (!DataEventType.DELETE.equals(context.getData().getDataEventType()) 
+				&& (StringUtils.trimToEmpty(newValue).equals(StringUtils.trimToEmpty(oldValue)))) {
 			if (EXPRESSION_IGNORE_COLUMN.equalsIgnoreCase(column.getTransformExpression())) {
 				throw new IgnoreColumnException();
 			} else {
