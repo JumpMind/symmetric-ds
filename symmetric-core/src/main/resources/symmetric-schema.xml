@@ -282,8 +282,11 @@
 
     <table name="lock" description="Contains semaphores that are set when processes run, so that only one server can run a process at a time.  Enable this feature by using the cluster.lock.during.xxxx parameters.">
         <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" description="The process that needs a lock."/>
+        <column name="lock_type" type="VARCHAR" size="50" required="true" description="Type of lock that indicates differently locking behavior.  Types include cluster, exclusive, and shared.  Cluster lock is used to allow one server to run at a time, but any process from the same server can overtake the lock, which avoids stalled processing.  Exclusive lock is owned by one process, regardless of which server it is on, but another process can acquire the lock after lock_time is older than exclusive.lock.timeout.ms.  Shared lock allows multiple processes to use the same lock, incrementing the shared_count, but requires no exclusive lock exists and prevents an exclusive lock. " />
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="lock_time" type="TIMESTAMP" description="The time a lock is aquired.  Use the cluster.lock.timeout.ms to specify a lock timeout period." />
+        <column name="shared_count" type="INTEGER" required="true" default="0" description="For a lock_type of SHARED, this is the number of processes sharing the same lock.  After the shared_count drops to zero, a shared lock is removed." />
+        <column name="shared_enable" type="INTEGER" required="true" default="0" description="For a lock_type of SHARED, this flag set to 1 indicates that more processes can share the lock.  If an exclusive lock is needed, the flag is set to 0 to prevent further shared locks from accumulating." />
         <column name="last_lock_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
