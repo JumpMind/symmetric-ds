@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
@@ -89,7 +90,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(FILE_SYNC_PULL);
         initLockTable(FILE_SYNC_PUSH);
         initLockTable(FILE_SYNC_TRACKER);
-        initLockTable(FILE_SYNC_TRACKER, TYPE_SHARED);
+        initLockTable(FILE_SYNC_SHARED, TYPE_SHARED);
         initLockTable(INITIAL_LOAD_EXTRACT);
     }
 
