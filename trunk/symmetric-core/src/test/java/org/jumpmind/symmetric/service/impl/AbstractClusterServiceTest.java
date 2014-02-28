@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AbstractClusterServiceTest extends AbstractServiceTest {
+public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
 
     @Before
     public void setupForTest() {
@@ -46,84 +46,84 @@ public class AbstractClusterServiceTest extends AbstractServiceTest {
 
     @Test
     public void testLockShare() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
 
         // Should allow multiple shared locks and increase shared count
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 2);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 2);
 
         // Should prevent an exclusive lock
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE));
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE));
 
         // Releasing shared lock should decrease shared count
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
 
         // Releasing final shared lock
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
 
     @Test
     public void testLockShareAfterExclusive() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
 
     @Test
     public void testLockShareAbandoned() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
         getClusterService().init();
-        checkUnlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0, false);
+        checkUnlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0, false);
     }
 
     @Test
     public void testLockExclusive() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
 
         // Should prevent a second exclusive lock
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE));
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE));
 
         // Should prevent a shared lock
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED));
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED));
 
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE);
     }
 
     @Test
     public void testLockExclusiveAfterShare() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0);
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
     }
 
     @Test
     public void testLockExclusiveAbandoned() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
         getClusterService().init();
-        checkUnlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0, false);
+        checkUnlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0, false);
     }
 
     @Test
     public void testLockExclusiveWait() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 1));
-        checkLock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1, false);
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED));
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0);
-        Assert.assertTrue(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 1));
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 1));
+        checkLock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1, false);
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED));
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
+        Assert.assertTrue(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 1));
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
     }
 
     @Test
     public void testLockSharedWait() {
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1));
-        checkLock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0, false);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_EXCLUSIVE, 0);
-        lock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 1);
-        unlock(ClusterConstants.FILE_SYNC_TRACKER, ClusterConstants.TYPE_SHARED, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1));
+        checkLock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0, false);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
+        lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
+        unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
 
     private void lock(String action, String lockType, int expectedSharedCount) {

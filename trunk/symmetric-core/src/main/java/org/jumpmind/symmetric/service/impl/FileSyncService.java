@@ -93,7 +93,6 @@ import bsh.TargetError;
 public class FileSyncService extends AbstractOfflineDetectorService implements IFileSyncService,
         INodeCommunicationExecutor {
 
-    private Object trackerLock = new Object();
     private ISymmetricEngine engine;
     
     // TODO cache trigger routers
@@ -105,8 +104,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     public void trackChanges(boolean force) {
-        synchronized (trackerLock) {
-            if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER) || force) {
+        if (force || engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER)) {
+            if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 
+                    getParameterService().getLong(ParameterConstants.FILE_SYNC_LOCK_WAIT_MS))) {
                 try {
                     List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
                     for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
@@ -144,13 +144,16 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
                     deleteFromFileIncoming();
                 } finally {
+                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE);
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
                     }
                 }
             } else {
-                log.debug("Did not run the track file sync changes process because it was locked");
+                log.debug("Did not run the track file sync changes process because it was shared locked");    
             }
+        } else {
+            log.debug("Did not run the track file sync changes process because it was cluster locked");
         }
     }
 
@@ -636,13 +639,16 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 if (syncScript.exists()) {
                     String script = FileUtils.readFileToString(syncScript);
                     Interpreter interpreter = new Interpreter();
+                    boolean isLocked = false;
                     try {
                         interpreter.set("log", log);
                         interpreter.set("batchDir", batchDir.getAbsolutePath().replace('\\',  '/'));
                         interpreter.set("engine", engine);
                         interpreter.set("sourceNodeId", sourceNodeId);
 
-                        synchronized (trackerLock) {
+                        long waitMillis = getParameterService().getLong(ParameterConstants.FILE_SYNC_LOCK_WAIT_MS);
+                        isLocked = engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, waitMillis);
+                        if (isLocked) {
                             @SuppressWarnings("unchecked")
                             Map<String, String> filesToEventType = (Map<String, String>) interpreter
                                     .eval(script);
@@ -650,6 +656,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             incomingBatch
                                     .setStatementCount(filesToEventType != null ? filesToEventType
                                             .size() : 0);
+                        } else {
+                            throw new RuntimeException("Could not obtain file sync shared lock within " + waitMillis + " millis");
                         }
                         incomingBatch.setStatus(IncomingBatch.Status.OK);
                         if (incomingBatchService.isRecordOkBatchesEnabled()) {
@@ -683,7 +691,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         }
                         processInfo.setStatus(ProcessInfo.Status.ERROR);
                         break;
-
+                    } finally {
+                        if (isLocked) {
+                            engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED);
+                        }
                     }
                 } else {
                     log.error("Could not find the sync.bsh script for batch {}", batchId);
