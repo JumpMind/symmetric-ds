@@ -42,5 +42,9 @@ public class ClusterConstants {
     public static final String FILE_SYNC_TRACKER = "FILE_SYNC_TRACKER";
     public static final String FILE_SYNC_PULL = "FILE_SYNC_PULL";
     public static final String FILE_SYNC_PUSH = "FILE_SYNC_PUSH";
-    
+
+    public static final String TYPE_CLUSTER = "CLUSTER";
+    public static final String TYPE_EXCLUSIVE = "EXCLUSIVE";
+    public static final String TYPE_SHARED = "SHARED";
+
 }
