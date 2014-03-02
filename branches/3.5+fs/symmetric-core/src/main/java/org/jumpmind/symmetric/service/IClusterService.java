@@ -37,7 +37,13 @@ public interface IClusterService {
 
     public boolean lock(String action);
     
+    public boolean lock(String action, String lockType);
+
+    public boolean lock(String action, String lockType, long waitMillis);
+
     public void unlock(String action);
+    
+    public void unlock(String action, String lockType);
     
     public void clearAllLocks();
     

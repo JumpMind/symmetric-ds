@@ -198,6 +198,8 @@ final public class ParameterConstants {
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
+    public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
+    public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";
 
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES = "purge.extract.request.retention.minutes";
@@ -240,6 +242,8 @@ final public class ParameterConstants {
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
 
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
+
+    public final static String FILE_SYNC_LOCK_WAIT_MS = "file.sync.lock.wait.ms";
 
     public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";
 

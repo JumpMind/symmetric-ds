@@ -29,22 +29,48 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
     public ClusterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
-        putSql("aquireLockSql",
-                ""
-                        + "update $(lock) set locking_server_id=?, lock_time=? where                   "
-                        + "  lock_action=? and (lock_time is null or lock_time < ? or locking_server_id=?)   ");
+        putSql("acquireClusterLockSql",
+            "update $(lock) set locking_server_id=?, lock_time=? " +
+            "where lock_action=? and lock_type=? and (lock_time is null or lock_time < ? or locking_server_id=?)");
 
-        putSql("releaseLockSql",
-                ""
-                        + "update $(lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=?   "
-                        + "  where lock_action=? and locking_server_id=?                                                                                 ");
+        putSql("acquireSharedLockSql",
+            "update $(lock) set lock_type=?, locking_server_id=?, lock_time=?, shared_count=shared_count+1, " +
+            "shared_enable=(case when shared_count = 0 then 1 else shared_enable end) " +
+            "where lock_action=? and (lock_type=? or lock_time is null or lock_time < ?) " +
+            "and (shared_enable = 1 or shared_count = 0)");
 
-        putSql("insertLockSql", "" + "insert into $(lock) (lock_action) values(?)   ");
-        
+        putSql("disableSharedLockSql",
+            "update $(lock) set shared_enable=0 where lock_action=? and lock_type=?");
+
+        putSql("acquireExclusiveLockSql",
+            "update $(lock) set lock_type=?, locking_server_id=?, lock_time=? " +
+            "where lock_action=? and ((lock_type=? and shared_count = 0) or lock_time is null or lock_time < ?)");
+
+        putSql("releaseClusterLockSql",
+            "update $(lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=? " +
+            "where lock_action=? and lock_type=? and locking_server_id=?");
+
+        putSql("releaseSharedLockSql",
+            "update $(lock) set last_lock_time=?, last_locking_server_id=?, shared_count=shared_count-1, " +
+            "shared_enable=(case when shared_count = 1 then 0 else shared_enable end), " +
+            "locking_server_id = (case when shared_count = 1 then null else locking_server_id end), " +
+            "lock_time = (case when shared_count = 1 then null else lock_time end) " +
+            "where lock_action=? and lock_type=?");
+
+        putSql("releaseExclusiveLockSql",
+            "update $(lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=? " +
+            "where lock_action=? and lock_type=?");
+
+        putSql("initLockSql", 
+            "update $(lock) set locking_server_id=null, lock_time=null, shared_count=0, shared_enable=0 " +
+            "where locking_server_id=?");
+
+        putSql("insertLockSql", "insert into $(lock) (lock_action, lock_type) values(?,?)");
+
         putSql("findLocksSql",
-                ""
-                        + "select lock_action, locking_server_id, lock_time, last_locking_server_id, last_lock_time   "
-                        + "  from $(lock)                                                                       ");
+            "select lock_action, lock_type, locking_server_id, lock_time, shared_count, shared_enable, " +
+            "last_locking_server_id, last_lock_time " +
+            "from $(lock)");
 
     }
 
