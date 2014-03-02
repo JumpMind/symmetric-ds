@@ -166,7 +166,6 @@ public class TransformedData implements Cloneable {
         return retrieve(columnsBy);
     }
 
-    
     public String[] getKeyNames() {
 
         List<String> list = retrieve(keysBy, true);

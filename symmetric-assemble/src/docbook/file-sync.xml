@@ -246,9 +246,9 @@ directory. A before copy script will set the targetBaseDir to
 
 <programlisting>INSERT INTO sym_file_trigger
   (trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,
-   sync_on_modified,sync_on_delete,sync_on_ctl_file,delete_after_sync,before_copy_script,after_copy_script,
+   sync_on_modified,sync_on_delete,before_copy_script,after_copy_script,
    create_time,last_update_by,last_update_time)
-VALUES ('sync_directory','/filesync/server/all',1,'*.txt',null,1,1,1,0,0,
+VALUES ('sync_directory','/filesync/server/all',1,'*.txt',null,1,1,1,
   'targetBaseDir = "/filesync/clients/" +
   engine.getParameterService().getExternalId();',null,current_timestamp,'example',
   current_timestamp);
@@ -290,10 +290,10 @@ of node_id/subdir which would not match.
 <![CDATA[
 INSERT INTO sym_file_trigger
   (trigger_id,base_dir,recurse,includes_files,excludes_files,sync_on_create,
-  sync_on_modified,sync_on_delete,sync_on_ctl_file,delete_after_sync,before_copy_script,after_copy_script,create_time,
+  sync_on_modified,sync_on_delete,before_copy_script,after_copy_script,create_time,
   last_update_by,last_update_time)
 VALUES
-  ('node_specific','/filesync/server/nodes',1,null,null,1,1,1,0,0,'',null,
+  ('node_specific','/filesync/server/nodes',1,null,null,1,1,1,'',null,
   current_timestamp,'example',current_timestamp);
 
 INSERT INTO sym_file_trigger_router

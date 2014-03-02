@@ -46,8 +46,6 @@ public class FileTrigger implements Serializable {
     private boolean syncOnCreate = true;
     private boolean syncOnModified = true;
     private boolean syncOnDelete = true;
-    private boolean syncOnCtlFile = false;
-    private boolean deleteAfterSync = false;
     private String beforeCopyScript;
     private String afterCopyScript;
     private Date createTime = new Date();
@@ -130,22 +128,6 @@ public class FileTrigger implements Serializable {
         this.syncOnDelete = syncOnDelete;
     }
 
-    public boolean isSyncOnCtlFile() {
-        return syncOnCtlFile;
-    }
-
-    public void setSyncOnCtlFile(boolean syncOnCtlFile) {
-        this.syncOnCtlFile = syncOnCtlFile;
-    }
-    
-    public boolean isDeleteAfterSync() {
-        return deleteAfterSync;
-    }
-
-    public void setDeleteAfterSync(boolean deleteAfterSync) {
-        this.deleteAfterSync = deleteAfterSync;
-    }
-    
     public Date getCreateTime() {
         return createTime;
     }

@@ -69,7 +69,5 @@ public interface IFileSyncService {
     public RemoteNodeStatuses pushFilesToNodes(boolean force);
 
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node node, IOutgoingTransport outgoingTransport);
-    
-    public void acknowledgeFiles(OutgoingBatch outgoingBatch);
 
 }

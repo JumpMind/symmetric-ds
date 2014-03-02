@@ -299,7 +299,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataExtractorService, dataService, dataLoaderService,
                 transportManager, statisticManager, configurationService);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
-                outgoingBatchService, registrationService, stagingManager, this);
+                outgoingBatchService, registrationService, stagingManager);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager);
@@ -672,7 +672,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 // this should remove all triggers because we have removed all the
                 // trigger configuration
                 triggerRouterService.syncTriggers();
-            }
+            }      
             
         } catch (SqlException ex) {
             log.warn("Error while trying remove triggers on tables", ex);

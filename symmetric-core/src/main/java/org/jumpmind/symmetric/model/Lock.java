@@ -30,11 +30,8 @@ public class Lock implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String lockAction;
-    private String lockType;
     private String lockingServerId;
     private Date lockTime;
-    private int sharedCount;
-    private boolean sharedEnable;
     private Date lastLockTime;
     private String lastLockingServerId;
 
@@ -84,30 +81,6 @@ public class Lock implements Serializable {
 
     public void setLastLockingServerId(String lastLockingServerId) {
         this.lastLockingServerId = lastLockingServerId;
-    }
-
-    public String getLockType() {
-        return lockType;
-    }
-
-    public void setLockType(String lockType) {
-        this.lockType = lockType;
-    }
-
-    public int getSharedCount() {
-        return sharedCount;
-    }
-
-    public void setSharedCount(int sharedCount) {
-        this.sharedCount = sharedCount;
-    }
-
-    public boolean isSharedEnable() {
-        return sharedEnable;
-    }
-
-    public void setSharedEnable(boolean sharedEnable) {
-        this.sharedEnable = sharedEnable;
     }
 
 }
