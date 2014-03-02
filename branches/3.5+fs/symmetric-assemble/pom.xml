@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.5.17+fs.2</version>
+    <version>3.5.17+fs.3-SNAPSHOT</version>
     <name>assemble</name>
     <licenses>
         <license>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.5.17+fs.2</version>
+        <version>3.5.17+fs.3-SNAPSHOT</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <properties>
@@ -214,12 +214,12 @@
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-util</artifactId>
-                                <version>3.5.17+fs.2</version>
+                                <version>3.5.17+fs.3-SNAPSHOT</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-core</artifactId>
-                                <version>3.5.17+fs.2</version>
+                                <version>3.5.17+fs.3-SNAPSHOT</version>
                             </dependency>
                         </dependencies>
                     </plugin>
