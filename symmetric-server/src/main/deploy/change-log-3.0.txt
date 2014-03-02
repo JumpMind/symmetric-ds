@@ -1,15 +1,3 @@
-SymmetricDS - 3.5.18 (Released 2014-03-02) 
-==========================================
-- 0001586: [Bug] Stage manager doesn't check to see if a file is actually deleted when it qualifies for cleaning. (chenson) - closed.
-- 0001593: [Bug] Background initial load extract can get stuck. (chenson) - closed.
-- 0001597: [Bug] Overlapping database pull processes after connection outage - Default pull.thread.per.server.count=1 (chenson) - closed.
-- 0001601: [Improvement] Add Map-based methods to TransformData so one can more easily lookup target transform data (mhanes) - closed.
-- 0001602: [Improvement] Allow old source values to be accessible to other column transforms than just copy column (mhanes) - closed.
-- 0001603: [Improvement] Create new 'copy if the value has changed' column transform (mhanes) - closed.
-- 0001604: [Improvement] Create a set of two transforms that can map a series of columns to a series of rows based on a Map (mhanes) - closed.
-- 0001608: [Improvement] Reduce default purge retention period (elong) - closed.
-- 0001610: [Bug] CopyIfChangedTransform should only evaluate on non-delete DML (mhanes) - closed.
-
 SymmetricDS - 3.5.17 (Released 2014-02-15)
 ==========================================
 - 0001420: [Task] Generate parameter documentation automatically from symmetric-default.properties. (elong) - resolved.

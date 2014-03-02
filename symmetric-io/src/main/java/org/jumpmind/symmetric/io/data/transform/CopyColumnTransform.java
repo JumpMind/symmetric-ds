@@ -43,8 +43,7 @@ public class CopyColumnTransform implements ISingleValueColumnTransform, IBuiltI
     }
 
     public String transform(IDatabasePlatform platform, DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                    throws IgnoreColumnException, IgnoreRowException {
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) {
         return newValue;
     }
 

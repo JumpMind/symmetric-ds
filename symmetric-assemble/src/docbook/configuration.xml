@@ -1941,13 +1941,6 @@ is the value of the current source column;
 is the old value of the source column for an updated row.
 </listitem>
 
-<listitem>
-Copy If Changed Transform ('copyIfChanged'):  This transformation will copy the value to the target column if the source value has changed.  More
-specifically, the copy will occur if the the old value of the source does not equal the new value.  If the old and new are, in fact, equal, then either
-the column will be ignored or the row will be ignored, based on the setting of the transform expression.  If the transform expression is euqal
-to the string 'IgnoreColumn', the column will be ignored; otherwise, the row will be ignored.
-</listitem>
-
 
 <listitem>
 Value Map Transform ('valueMap'):  This transformation allows for simple value substitutions through use of the transform expression.

@@ -36,11 +36,8 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform;
@@ -53,13 +50,13 @@ import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
+import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformColumnException;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
-import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,9 +97,6 @@ public class TransformWriter extends NestedDataWriter {
         columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
         columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
         columnTransforms.put(ValueMapColumnTransform.NAME, new ValueMapColumnTransform());
-        columnTransforms.put(CopyIfChangedColumnTransform.NAME, new CopyIfChangedColumnTransform());
-        columnTransforms.put(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
-        columnTransforms.put(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
         return columnTransforms;
     }
 
