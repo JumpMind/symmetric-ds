@@ -38,6 +38,8 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.DdlBuilderFactory;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -355,6 +357,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
 
             if (activeBatches.size() > 0) {
+                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetNode
+                        .getDatabaseType());
+                if (builder == null) {
+                    throw new IllegalStateException(
+                            "Could not find a ddl builder registered for the database type of "
+                                    + targetNode.getDatabaseType()
+                                    + ".  Please check the database type setting for node '"
+                                    + targetNode.getNodeId() + "'");
+                }
                 StructureDataWriter writer = new StructureDataWriter(
                         symmetricDialect.getPlatform(), targetNode.getDatabaseType(), payloadType,
                         useDelimiterIdentifiers, symmetricDialect.getBinaryEncoding(),
