@@ -128,8 +128,9 @@ public class Batch {
         return targetNodeId;
     }
     
-    public String getSourceNodeBatchId() {
-        return String.format("%s-%d", sourceNodeId, batchId);
+    public String getNodeBatchId() {
+        String nodeId = batchType == BatchType.EXTRACT ? targetNodeId : sourceNodeId;
+        return String.format("%s-%d", nodeId, batchId);
     }
     
     public long getBatchId() {
