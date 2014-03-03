@@ -964,7 +964,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             } catch (Exception e) {
                 log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
-                                .getBatch().getSourceNodeBatchId(), e);
+                                .getBatch().getNodeBatchId(), e);
             }
         }
         
