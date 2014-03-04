@@ -114,7 +114,7 @@ public class DataProcessor {
                         forEachTableInBatch(context, processBatch, currentBatch);
                         
                         if (currentBatch != null && !currentBatch.isComplete()) {
-                            throw new ProtocolException("The batch %s was not complete", currentBatch.getNodeBatchId());
+                            throw new ProtocolException("The batch %s was not complete.  Note that this is the error you receive on Oracle when the total size of row_data in sym_data is greater than 4k.  You can work around this by changing the contains_big_lobs in sym_channel to 1.", currentBatch.getNodeBatchId());
                         }
 
                         if (processBatch) {
