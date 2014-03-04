@@ -165,6 +165,10 @@ public class Batch {
         return common;
     }
     
+    public BatchType getBatchType() {
+        return batchType;
+    }
+    
     public String getStagedLocation() {
         if (batchType == BatchType.EXTRACT) {
             return getStagedLocation(common, targetNodeId);            
