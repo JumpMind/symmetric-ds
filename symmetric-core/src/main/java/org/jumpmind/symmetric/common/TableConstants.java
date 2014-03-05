@@ -71,6 +71,7 @@ public class TableConstants {
     public static final String SYM_FILE_TRIGGER_ROUTER = "file_trigger_router";
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
+    public static final String SYM_CONSOLE_USER = "console_user";
 
     private static List<String> tablesWithPrefix;
 
