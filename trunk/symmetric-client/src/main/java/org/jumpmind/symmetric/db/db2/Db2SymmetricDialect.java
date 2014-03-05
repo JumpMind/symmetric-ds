@@ -61,7 +61,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
                 .getDefaultSchema()) : schema;
         return platform.getSqlTemplate().queryForInt(
-                "select count(*) from syscat.triggers where trigname = ? and trigschema = ?",
+                "SELECT COUNT(*) FROM SYSIBM.SYSTRIGGERS WHERE NAME = ? AND SCHEMA = ?",
                 new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
     }
     
