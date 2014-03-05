@@ -23,6 +23,7 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
 		ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     private int maxRowsBeforeFlush;
+    private boolean fireTriggers;
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
 
@@ -42,12 +43,14 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
 			List<? extends Conflict> conflictSettings,
 			List<ResolvedData> resolvedData) {
 		return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
-				stagingManager, jdbcExtractor, maxRowsBeforeFlush);
+				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers);
 	}
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.maxRowsBeforeFlush = engine.getParameterService().getInt(
                 "mssql.bulk.load.max.rows.before.flush", 100000);
+        this.fireTriggers = engine.getParameterService().is(
+                "mssql.bulk.load.fire.triggers", false);
         //TODO: pass information about the destination database such that we can do the 
         //TODO: bulk load to the remote server vs using the T-SQL  BULK INSERT statement
         this.stagingManager = engine.getStagingManager();
