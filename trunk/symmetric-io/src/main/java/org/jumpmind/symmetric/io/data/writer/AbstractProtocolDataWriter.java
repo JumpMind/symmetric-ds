@@ -47,7 +47,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     protected Table table;
 
-    protected Map<String, Table> processedTables = new HashMap<String, Table>();
+    protected Map<String, String> processedTables = new HashMap<String, String>();    
 
     protected String delimiter = ",";
 
@@ -132,12 +132,13 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             }
             
             String tableKey = table.getTableKey();
+            String fullyQualifiedTableName = table.getFullyQualifiedTableName();
+            String previousTableKey = processedTables.get(fullyQualifiedTableName);
             println(CsvConstants.TABLE, table.getName());
-            if (!processedTables.containsKey(tableKey) || 
-                    !processedTables.get(tableKey).equals(table)) {
+            if (!tableKey.equals(previousTableKey)) {
                 println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
                 println(CsvConstants.COLUMNS, table.getColumns());
-                this.processedTables.put(tableKey, table);
+                this.processedTables.put(fullyQualifiedTableName, tableKey);
             }
             return true;
         } else {
