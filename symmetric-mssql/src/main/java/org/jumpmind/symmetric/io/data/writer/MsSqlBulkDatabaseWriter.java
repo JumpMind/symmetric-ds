@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
@@ -23,6 +26,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
     protected boolean fireTriggers;
+    protected boolean needsBinaryConversion;
 
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
@@ -36,6 +40,13 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
     public boolean start(Table table) {
         if (super.start(table)) {
+            needsBinaryConversion = false;
+            for (Column column : targetTable.getColumns()) {
+                if (column.isOfBinaryType()) {
+                    needsBinaryConversion = true;
+                    break;
+                }
+            }
         	//TODO: Did this because start is getting called multiple times
         	//      for the same table in a single batch before end is being called
         	if (this.stagedInputFile == null) {
@@ -67,11 +78,17 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
-                    String formattedData = CsvUtils.escapeCsvData(
-                            data.getParsedData(CsvData.ROW_DATA), '\0', '\0', 
-                            CsvWriter.ESCAPE_MODE_DOUBLED);
-                    byte[] dataToLoad = formattedData.getBytes();
-                    this.stagedInputFile.getOutputStream().write(dataToLoad);
+                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+                    if (needsBinaryConversion) {
+                        Column[] columns = targetTable.getColumns();
+                        for (int i = 0; i < columns.length; i++) {
+                            if (columns[i].isOfBinaryType()) {
+                                parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            }
+                        }
+                    }
+                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\0', '\0', CsvWriter.ESCAPE_MODE_DOUBLED);
+                    this.stagedInputFile.getOutputStream().write(formattedData.getBytes());
                     this.stagedInputFile.getOutputStream().write('\r');
                     this.stagedInputFile.getOutputStream().write('\n');                    
                     loadedRows++;
