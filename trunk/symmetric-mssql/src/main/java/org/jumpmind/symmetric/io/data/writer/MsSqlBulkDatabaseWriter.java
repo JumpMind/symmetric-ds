@@ -4,12 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import oracle.jdbc.internal.OracleCallableStatement;
-import oracle.sql.ARRAY;
-
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.BulkSqlException;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -26,14 +22,16 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
+    protected boolean fireTriggers;
 
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-			int maxRowsBeforeFlush) {
+			int maxRowsBeforeFlush, boolean fireTriggers) {
 		super(platform);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
+		this.fireTriggers = fireTriggers;
 	}
 
     public boolean start(Table table) {
@@ -106,7 +104,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
 	            		" FROM '" + stagedInputFile.getFile().getAbsolutePath()) + "'" +
-	            		" WITH ( FIELDTERMINATOR=',');";
+	            		" WITH ( FIELDTERMINATOR=',', KEEPIDENTITY, " + (fireTriggers ? "FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
