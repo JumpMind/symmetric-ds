@@ -73,12 +73,9 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
                     String formattedData = CsvUtils.escapeCsvData(
-                            data.getParsedData(CsvData.ROW_DATA), ' ', '"', 
+                            data.getParsedData(CsvData.ROW_DATA), '\n', '"', 
                             CsvWriter.ESCAPE_MODE_DOUBLED);
-                    byte[] dataToLoad = formattedData.getBytes();
-                    this.stagedInputFile.getOutputStream().write(dataToLoad);
-                    this.stagedInputFile.getOutputStream().write('\r');
-                    this.stagedInputFile.getOutputStream().write('\n');                    
+                    this.stagedInputFile.getOutputStream().write(formattedData.getBytes());                   
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
@@ -107,14 +104,14 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
-	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()) + "' " + 
+                                "INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getFullyQualifiedTableName() +
 	            		" FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
-	            log.error(sql);
+	            log.debug(sql);
 	            stmt.execute(sql);
 	            stmt.close();
 	
