@@ -68,7 +68,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
                     String formattedData = CsvUtils.escapeCsvData(
-                            data.getParsedData(CsvData.ROW_DATA), ' ', ' ', 
+                            data.getParsedData(CsvData.ROW_DATA), '\0', '\0', 
                             CsvWriter.ESCAPE_MODE_DOUBLED);
                     byte[] dataToLoad = formattedData.getBytes();
                     this.stagedInputFile.getOutputStream().write(dataToLoad);
@@ -104,7 +104,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
 	            		" FROM '" + stagedInputFile.getFile().getAbsolutePath()) + "'" +
-	            		" WITH ( FIELDTERMINATOR=',', KEEPIDENTITY, " + (fireTriggers ? "FIRE_TRIGGERS" : "") + ");";
+	            		" WITH ( FIELDTERMINATOR=',', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?

@@ -106,10 +106,14 @@ public class CsvUtils {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(escapeMode);
-        writer.setRecordDelimiter(recordDelimiter);
-        writer.setTextQualifier(textQualifier);
-        writer.setUseTextQualifier(true);
-        writer.setForceQualifier(true);
+        if (recordDelimiter != '\0') {
+            writer.setRecordDelimiter(recordDelimiter);
+	    }
+	    if (textQualifier != '\0') {
+            writer.setTextQualifier(textQualifier);
+            writer.setUseTextQualifier(true);
+            writer.setForceQualifier(true);
+	    }
         try {
             writer.writeRecord(data);
         } catch (IOException e) {
