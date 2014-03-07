@@ -39,7 +39,7 @@ import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class PostgresBulkDatabaseWriter extends DatabaseWriter {
+public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
 

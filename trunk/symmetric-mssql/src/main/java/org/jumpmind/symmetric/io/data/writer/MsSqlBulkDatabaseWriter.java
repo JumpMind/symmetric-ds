@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;

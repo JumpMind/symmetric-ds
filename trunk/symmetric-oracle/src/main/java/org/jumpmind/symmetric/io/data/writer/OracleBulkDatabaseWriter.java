@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class OracleBulkDatabaseWriter extends DatabaseWriter {
+public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected String procedurePrefix;
 

@@ -58,7 +58,7 @@ import org.jumpmind.symmetric.io.data.reader.XmlDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterErrorIgnorer;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
@@ -196,28 +196,28 @@ public class DbImport {
 
         CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
-        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
-        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
     
     protected void importTablesFromSymXml(InputStream in) {
         SymXmlDataReader reader = new SymXmlDataReader(in);
-        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromSql(InputStream in) {
         SqlDataReader reader = new SqlDataReader(in);
-        DatabaseWriter writer = new DatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
