@@ -152,73 +152,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super.rollback();
     }
 
-    protected boolean requireNewStatement(DmlType currentType, CsvData data,
-            boolean applyChangesOnly, boolean useConflictDetection,
-            Conflict.DetectConflict detectType) {
-        boolean requiresNew = currentDmlStatement == null || lastData == null
-                || currentDmlStatement.getDmlType() != currentType
-                || lastData.getDataEventType() != data.getDataEventType()
-                || lastApplyChangesOnly != applyChangesOnly
-                || lastUseConflictDetection != useConflictDetection;
-        if (!requiresNew && currentType == DmlType.UPDATE) {
-            String currentChanges = Arrays.toString(data.getChangedDataIndicators());
-            String lastChanges = Arrays.toString(lastData.getChangedDataIndicators());
-            requiresNew = !currentChanges.equals(lastChanges);
-        }
-
-        if (!requiresNew) {
-            requiresNew |= containsNullLookupKeyDataSinceLastStatement(currentType, data,
-                    detectType);
-        }
-
-        return requiresNew;
-    }
-
-    protected boolean containsNullLookupKeyDataSinceLastStatement(DmlType currentType,
-            CsvData data, DetectConflict detectType) {
-        boolean foundNullValueChange = false;
-        if (currentType == DmlType.UPDATE || currentType == DmlType.DELETE) {
-            if (detectType != null
-                    && (detectType == DetectConflict.USE_CHANGED_DATA || detectType == DetectConflict.USE_OLD_DATA)) {
-                String[] lastOldData = lastData.getParsedData(CsvData.OLD_DATA);
-                String[] newOldData = data.getParsedData(CsvData.OLD_DATA);
-                if (lastOldData != null && newOldData != null) {
-                    for (int i = 0; i < lastOldData.length && i < newOldData.length; i++) {
-                        String lastValue = lastOldData[i];
-                        String value = newOldData[i];
-                        if ((lastValue != null && value == null)
-                                || (value != null && lastValue == null)) {
-                            foundNullValueChange = true;
-                        }
-                    }
-                }
-            } else {
-                String[] lastpkData = lastData.getParsedData(CsvData.PK_DATA);
-                String[] newpkData = data.getParsedData(CsvData.PK_DATA);
-                if (lastpkData != null && newpkData != null) {
-                    for (int i = 0; i < lastpkData.length && i < newpkData.length; i++) {
-                        String lastValue = lastpkData[i];
-                        String value = newpkData[i];
-                        if ((lastValue != null && value == null)
-                                || (value != null && lastValue == null)) {
-                            foundNullValueChange = true;
-                        }
-                    }
-                }
-            }
-        }
-        return foundNullValueChange;
-    }
-    
-    @Override
-    protected void targetTableWasChangedByFilter(Table oldTargetTable) {
-        // allow for auto increment columns to be inserted into if appropriate
-        if (oldTargetTable!=null) {
-            allowInsertIntoAutoIncrementColumns(false, oldTargetTable);            
-        }
-        allowInsertIntoAutoIncrementColumns(true, targetTable);
-    }
-
     @Override
     protected LoadStatus insert(CsvData data) {
         try {
@@ -544,6 +477,133 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
+    
+    @Override
+    protected boolean create(CsvData data) {
+        String xml = null;
+        try {
+            transaction.commit();
+
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            xml = data.getParsedData(CsvData.ROW_DATA)[0];
+            log.info("About to create table using the following definition: {}", xml);
+            StringReader reader = new StringReader(xml);
+            Database db = DatabaseXmlUtil.read(reader, false);
+            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
+                platform.alterCaseToMatchDatabaseDefaultCase(db);
+            }
+
+            if (writerSettings.isAlterTable()) {
+                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+            } else {
+                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+            }
+
+            platform.resetCachedTableModel();
+            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
+            return true;
+        } catch (RuntimeException ex) {
+            log.error("Failed to alter table using the following xml: {}", xml);
+            throw ex;
+        } finally {
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        }
+    }
+
+    @Override
+    protected boolean sql(CsvData data) {
+        try {
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            String script = data.getParsedData(CsvData.ROW_DATA)[0];
+            List<String> sqlStatements = getSqlStatements(script);
+            long count = 0;
+            for (String sql : sqlStatements) {
+
+                sql = preprocessSqlStatement(sql);
+                transaction.prepare(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to run: {}", sql);
+                }
+                count += transaction.prepareAndExecute(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} rows updated when running: {}", count, sql);
+                }
+            }
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
+                    count);
+            return true;
+        } finally {
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        }
+    }
+    
+    protected boolean requireNewStatement(DmlType currentType, CsvData data,
+            boolean applyChangesOnly, boolean useConflictDetection,
+            Conflict.DetectConflict detectType) {
+        boolean requiresNew = currentDmlStatement == null || lastData == null
+                || currentDmlStatement.getDmlType() != currentType
+                || lastData.getDataEventType() != data.getDataEventType()
+                || lastApplyChangesOnly != applyChangesOnly
+                || lastUseConflictDetection != useConflictDetection;
+        if (!requiresNew && currentType == DmlType.UPDATE) {
+            String currentChanges = Arrays.toString(data.getChangedDataIndicators());
+            String lastChanges = Arrays.toString(lastData.getChangedDataIndicators());
+            requiresNew = !currentChanges.equals(lastChanges);
+        }
+
+        if (!requiresNew) {
+            requiresNew |= containsNullLookupKeyDataSinceLastStatement(currentType, data,
+                    detectType);
+        }
+
+        return requiresNew;
+    }
+
+    protected boolean containsNullLookupKeyDataSinceLastStatement(DmlType currentType,
+            CsvData data, DetectConflict detectType) {
+        boolean foundNullValueChange = false;
+        if (currentType == DmlType.UPDATE || currentType == DmlType.DELETE) {
+            if (detectType != null
+                    && (detectType == DetectConflict.USE_CHANGED_DATA || detectType == DetectConflict.USE_OLD_DATA)) {
+                String[] lastOldData = lastData.getParsedData(CsvData.OLD_DATA);
+                String[] newOldData = data.getParsedData(CsvData.OLD_DATA);
+                if (lastOldData != null && newOldData != null) {
+                    for (int i = 0; i < lastOldData.length && i < newOldData.length; i++) {
+                        String lastValue = lastOldData[i];
+                        String value = newOldData[i];
+                        if ((lastValue != null && value == null)
+                                || (value != null && lastValue == null)) {
+                            foundNullValueChange = true;
+                        }
+                    }
+                }
+            } else {
+                String[] lastpkData = lastData.getParsedData(CsvData.PK_DATA);
+                String[] newpkData = data.getParsedData(CsvData.PK_DATA);
+                if (lastpkData != null && newpkData != null) {
+                    for (int i = 0; i < lastpkData.length && i < newpkData.length; i++) {
+                        String lastValue = lastpkData[i];
+                        String value = newpkData[i];
+                        if ((lastValue != null && value == null)
+                                || (value != null && lastValue == null)) {
+                            foundNullValueChange = true;
+                        }
+                    }
+                }
+            }
+        }
+        return foundNullValueChange;
+    }
+    
+    @Override
+    protected void targetTableWasChangedByFilter(Table oldTargetTable) {
+        // allow for auto increment columns to be inserted into if appropriate
+        if (oldTargetTable!=null) {
+            allowInsertIntoAutoIncrementColumns(false, oldTargetTable);            
+        }
+        allowInsertIntoAutoIncrementColumns(true, targetTable);
+    }
 
     private void removeExcludedColumns(Conflict conflict,
             ArrayList<Column> lookupColumns) {
@@ -624,66 +684,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             } catch (Exception e) {
                 log.warn("Had trouble looking up the datasource used by the sql template", e);
             }
-        }
-    }
-
-    @Override
-    protected boolean create(CsvData data) {
-        String xml = null;
-        try {
-            transaction.commit();
-
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            xml = data.getParsedData(CsvData.ROW_DATA)[0];
-            log.info("About to create table using the following definition: {}", xml);
-            StringReader reader = new StringReader(xml);
-            Database db = DatabaseXmlUtil.read(reader, false);
-            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                platform.alterCaseToMatchDatabaseDefaultCase(db);
-            }
-
-            if (writerSettings.isAlterTable()) {
-                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
-            } else {
-                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
-            }
-
-            platform.resetCachedTableModel();
-            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
-            return true;
-        } catch (RuntimeException ex) {
-            log.error("Failed to alter table using the following xml: {}", xml);
-            throw ex;
-        } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-        }
-    }
-
-    @Override
-    protected boolean sql(CsvData data) {
-        try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String script = data.getParsedData(CsvData.ROW_DATA)[0];
-            List<String> sqlStatements = getSqlStatements(script);
-            long count = 0;
-            for (String sql : sqlStatements) {
-
-                sql = preprocessSqlStatement(sql);
-                transaction.prepare(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("About to run: {}", sql);
-                }
-                count += transaction.prepareAndExecute(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("{} rows updated when running: {}", count, sql);
-                }
-            }
-            statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
-            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
-                    count);
-            return true;
-        } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
     
