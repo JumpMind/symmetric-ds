@@ -47,8 +47,11 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDataLoaderFactory.class);
 
-    private IParameterService parameterService;
+    protected IParameterService parameterService;
 
+    public DefaultDataLoaderFactory() {
+    }
+    
     public DefaultDataLoaderFactory(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
@@ -86,7 +89,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                             }
                         }
                     }
-                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
+                        resolvedData));
         return writer;
     }
 
@@ -95,20 +99,21 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings,
-            List<ResolvedData> resolvedDatas) {
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         settings.setMaxRowsBeforeCommit(parameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
-        settings.setCommitSleepInterval(parameterService.getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
-        settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
+        settings.setCommitSleepInterval(parameterService
+                .getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
+        settings.setIgnoreMissingTables(parameterService
+                .is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
-        settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
+        settings.setSaveCurrentValueOnError(parameterService.is(
+                ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
