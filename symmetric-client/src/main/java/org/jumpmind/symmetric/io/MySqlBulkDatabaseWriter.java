@@ -12,12 +12,12 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MySqlBulkDatabaseWriter extends DatabaseWriter {
+public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
 
     protected NativeJdbcExtractor jdbcExtractor;

@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -64,13 +64,13 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
             final ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        DatabaseWriter writer = new DatabaseWriter(symmetricDialect.getPlatform(),
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricDialect.getPlatform(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                            DatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DatabaseWriter.class);
+                            DefaultDatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.enableSyncTriggers(transaction);
@@ -81,8 +81,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DatabaseWriter.class);
+                            DefaultDatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);

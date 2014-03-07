@@ -36,7 +36,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
     }
 
     @Override
-    protected void performFallbackToInsert(DatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
+    protected void performFallbackToInsert(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
         if (transformedData != null && retransform) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(
@@ -48,15 +48,14 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                         || newlyTransformedData.isGeneratedIdentityNeeded()) {
                     Table table = newlyTransformedData.buildTargetTable();
                     CsvData newData = newlyTransformedData.buildTargetCsvData();
-                    String quote = writer.getPlatform().getDatabaseInfo().getDelimiterToken();
                     if (newlyTransformedData.isGeneratedIdentityNeeded()) {
                         if (log.isDebugEnabled()) {
                             log.debug("Enabling generation of identity for {}",
                                     newlyTransformedData.getTableName());
                         }
-                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(false, table, quote);
+                        writer.allowInsertIntoAutoIncrementColumns(false, table);
                     } else if (table.hasAutoIncrementColumn()) {
-                        writer.getTransaction().allowInsertIntoAutoIncrementColumns(true, table, quote);
+                        writer.allowInsertIntoAutoIncrementColumns(true, table);
                     }
 
                     writer.start(table);
@@ -70,7 +69,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
     }
 
     @Override
-    protected void performFallbackToUpdate(DatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
+    protected void performFallbackToUpdate(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, boolean retransform) {
         TransformedData transformedData = data.getAttribute(TransformedData.class.getName());
         if (transformedData != null && retransform) {
             List<TransformedData> newlyTransformedDatas = transformWriter.transform(

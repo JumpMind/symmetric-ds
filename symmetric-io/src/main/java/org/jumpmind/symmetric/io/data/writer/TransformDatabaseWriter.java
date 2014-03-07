@@ -33,12 +33,12 @@ public class TransformDatabaseWriter extends TransformWriter {
             DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms, 
             TransformTable[] transforms) {
         super(platform, TransformPoint.LOAD,
-                new DatabaseWriter(platform, defaultSettings), columnTransforms, transforms);
+                new DefaultDatabaseWriter(platform, defaultSettings), columnTransforms, transforms);
         getDatabaseWriter().setConflictResolver(new DefaultTransformWriterConflictResolver(this));
     }
 
-    public DatabaseWriter getDatabaseWriter() {
-        return getNestedWriterOfType(DatabaseWriter.class);
+    public DefaultDatabaseWriter getDatabaseWriter() {
+        return getNestedWriterOfType(DefaultDatabaseWriter.class);
     }
 
 }
