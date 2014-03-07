@@ -97,8 +97,13 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("updateTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
-"                                begin                                                                                                                                                                  " +
+"                                declare var_row_data text; " +        
+"                                declare var_old_data text; " +
+"                                begin" +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
+"                                    var_row_data := $(columns); " +
+"                                    var_old_data := $(oldColumns); " +
+"                                    if $(dataHasChangedCondition) then " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                     " +
 "                                    values(                                                                                                                                                            " +
@@ -106,14 +111,15 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'U',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
-"                                      $(columns),                                                                                                                                                      " +
-"                                      $(oldColumns),                                                                                                                                                   " +
+"                                      var_row_data,                                                                                                                                                      " +
+"                                      var_old_data,                                                                                                                                                   " +
 "                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +
+"                                  end if;                                                                                                                                                              " +
 "                                  end if;                                                                                                                                                              " +
 "                                  $(custom_on_update_text)                                                                                                                                             " +
 "                                  return null;                                                                                                                                                         " +

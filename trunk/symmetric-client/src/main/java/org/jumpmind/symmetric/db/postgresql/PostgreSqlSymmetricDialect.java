@@ -240,4 +240,9 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         return Types.BIGINT;
     }
 
+    @Override
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
+        return "var_old_data is null or var_row_data != var_old_data";
+    }
+
 }
