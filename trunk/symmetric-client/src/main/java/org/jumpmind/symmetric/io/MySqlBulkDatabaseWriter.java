@@ -27,6 +27,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
+    protected Table table = null;
 
     public MySqlBulkDatabaseWriter(IDatabasePlatform platform,
             IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
@@ -40,11 +41,12 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     public boolean start(Table table) {
+    	this.table = table;
         if (super.start(table)) {
         	//TODO: Did this because start is getting called multiple times
         	//      for the same table in a single batch before end is being called
         	if (this.stagedInputFile == null) {
-        		createStagingFile(table);
+        		createStagingFile();
         	}
             return true;
         } else {
@@ -55,9 +57,9 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     @Override
     public void end(Table table) {
         try {
-            this.stagedInputFile.close();
         	flush();
-            this.stagedInputFile.delete();
+        	this.stagedInputFile.close();
+        	this.stagedInputFile.delete();
         } finally {
             super.end(table);
         }
@@ -98,13 +100,14 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
     
     protected void flush() {
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         if (loadedRows > 0) {
+                this.stagedInputFile.close();
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
 	        try {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
-                                "INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
+	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getFullyQualifiedTableName() +
 	            		" FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''";
@@ -114,16 +117,17 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            log.debug(sql);
 	            stmt.execute(sql);
 	            stmt.close();
-	
 	        } catch (SQLException ex) {
 	            throw platform.getSqlTemplate().translate(ex);
 	        } finally {
 	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
 	        }
+	        this.stagedInputFile.delete();
+	        createStagingFile();
         }
     }
     
-    protected void createStagingFile(Table table) {
+    protected void createStagingFile() {
     	//TODO: We should use constants for dir structure path, 
     	//      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create(0, "bulkloaddir",
