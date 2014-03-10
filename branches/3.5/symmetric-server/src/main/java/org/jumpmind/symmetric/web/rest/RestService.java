@@ -55,6 +55,8 @@ import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -63,6 +65,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -1050,7 +1053,47 @@ public class RestService {
         nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "restapi");
         
     }    
-    
+
+    @ApiOperation(value = "Outgoing summary of batches and data counts waiting for a node")
+    @RequestMapping(value = "/engine/outgoingBatchSummary", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final OutgoingBatchSummary getOutgoingBatchSummary(
+            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+        return getOutgoingBatchSummary(getSymmetricEngine().getEngineName(), nodeId, securityToken);
+    }
+            
+    @ApiOperation(value = "Outgoing summary of batches and data counts waiting for a node")
+    @RequestMapping(value = "/engine/{engine}/outgoingBatchSummary", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final OutgoingBatchSummary getOutgoingBatchSummary(@PathVariable("engine") String engineName,
+            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        OutgoingBatchSummary summary = new OutgoingBatchSummary();
+        summary.setNodeId(nodeId);
+        summary.setStatus(OutgoingBatch.Status.OK);
+
+        if (securityVerified(nodeId, engine, securityToken)) {
+            IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+            List<OutgoingBatchSummary> summaries = outgoingBatchService.findOutgoingBatchSummary(OutgoingBatch.Status.RQ, 
+                    OutgoingBatch.Status.QY, OutgoingBatch.Status.NE, OutgoingBatch.Status.SE,
+                    OutgoingBatch.Status.LD, OutgoingBatch.Status.ER);
+            for (OutgoingBatchSummary sum : summaries) {
+                if (sum.getNodeId().equals(nodeId)) {
+                    summary = sum;
+                    break;
+                }
+            }
+        } else {
+            throw new NotAllowedException();
+        }
+        return summary;
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public RestError handleError(Exception ex, HttpServletRequest req) {
