@@ -51,7 +51,9 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.util.AppUtils;
 import org.junit.After;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,9 +65,9 @@ abstract public class AbstractTest {
 
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
 
-    private static final int REGISTRATION_PORT = 9995;
+    private static final String REGISTRATION_PORT = "9995";
 
-    private int port = REGISTRATION_PORT;
+    private int port;
 
     /**
      * The registration server should always be the first group in the list
@@ -92,12 +94,13 @@ abstract public class AbstractTest {
         properties.setProperty(ParameterConstants.SYNC_URL, "http://localhost:" + port + "/sync/"
                 + name);
         properties.setProperty(ParameterConstants.REGISTRATION_URL, "http://localhost:"
-                + REGISTRATION_PORT + "/sync/" + getGroupNames()[0]);
+                + port + "/sync/" + getGroupNames()[0]);
         return properties;
     }
 
     @Before
     public void setup() {
+        port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, REGISTRATION_PORT));
         TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
         for (String group : groups) {
@@ -172,14 +175,14 @@ abstract public class AbstractTest {
 
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJmxEnabled(false);
-                server.setHttpPort(port++);
+                server.setHttpPort(port);
                 server.setJoin(false);
                 server.start();
 
                 server.waitForEnginesToComeOnline(240000);
 
                 webServers.put(name, server);
-
+                port += 200;
             }
             return webServers.get(name);
 
