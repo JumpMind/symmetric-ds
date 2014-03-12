@@ -65,7 +65,9 @@ abstract public class AbstractTest {
 
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
 
-    private static final String REGISTRATION_PORT = "9995";
+    private static final String DEFAULT_PORT = "9995";
+    
+    private int registrationPort;
 
     private int port;
 
@@ -94,13 +96,14 @@ abstract public class AbstractTest {
         properties.setProperty(ParameterConstants.SYNC_URL, "http://localhost:" + port + "/sync/"
                 + name);
         properties.setProperty(ParameterConstants.REGISTRATION_URL, "http://localhost:"
-                + port + "/sync/" + getGroupNames()[0]);
+                + registrationPort + "/sync/" + getGroupNames()[0]);
         return properties;
     }
 
     @Before
     public void setup() {
-        port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, REGISTRATION_PORT));
+        port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
+        registrationPort = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
         TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
         for (String group : groups) {
