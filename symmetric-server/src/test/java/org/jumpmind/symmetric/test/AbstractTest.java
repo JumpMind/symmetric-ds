@@ -104,6 +104,7 @@ abstract public class AbstractTest {
     public void setup() {
         port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
         registrationPort = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
+        log.info("Running " + getClass().getSimpleName() + " test on port " + port);
         TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
         for (String group : groups) {
@@ -179,6 +180,7 @@ abstract public class AbstractTest {
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJmxEnabled(false);
                 server.setHttpPort(port);
+                log.info("Starting " + name + " on port " + port);
                 server.setJoin(false);
                 server.start();
 
