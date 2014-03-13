@@ -459,5 +459,20 @@ public class DmlStatement {
     public boolean isUpsertSupported() {
         return false;
     }
+    
+    public String[] getLookupKeyData(Map<String, String> lookupDataMap) {
+        Column[] lookupColumns = getKeys();
+        if (lookupColumns != null && lookupColumns.length > 0) {
+            if (lookupDataMap != null && lookupDataMap.size() > 0) {
+                String[] keyDataAsArray = new String[lookupColumns.length];
+                int index = 0;
+                for (Column keyColumn : lookupColumns) {
+                    keyDataAsArray[index++] = lookupDataMap.get(keyColumn.getName());
+                }
+                return keyDataAsArray;
+            }
+        }
+        return null;
+    }
 
 }

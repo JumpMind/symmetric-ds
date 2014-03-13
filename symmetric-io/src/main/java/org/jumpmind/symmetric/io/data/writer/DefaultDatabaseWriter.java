@@ -166,7 +166,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
             try {
                 String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
-                        getLookupKeyData(getLookupDataMap(data), this.currentDmlStatement));
+                        this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data)));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 if (count > 0) {
@@ -286,7 +286,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
             try {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
-                long count = execute(data, getLookupKeyData(lookupDataMap, currentDmlStatement));
+                long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
@@ -445,7 +445,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         .toArray(new String[changedColumnValueList.size()]);
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
                 String[] values = (String[]) ArrayUtils.addAll(rowData,
-                        getLookupKeyData(lookupDataMap, currentDmlStatement));
+                        this.currentDmlStatement.getLookupKeyData(lookupDataMap));
 
                 try {
                     long count = execute(data, values);

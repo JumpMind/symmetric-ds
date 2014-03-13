@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -425,21 +424,6 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
             }
         }
         return keyData;
-    }
-
-    protected String[] getLookupKeyData(Map<String, String> lookupDataMap, DmlStatement dmlStatement) {
-        Column[] lookupColumns = dmlStatement.getKeys();
-        if (lookupColumns != null && lookupColumns.length > 0) {
-            if (lookupDataMap != null && lookupDataMap.size() > 0) {
-                String[] keyDataAsArray = new String[lookupColumns.length];
-                int index = 0;
-                for (Column keyColumn : lookupColumns) {
-                    keyDataAsArray[index++] = lookupDataMap.get(keyColumn.getName());
-                }
-                return keyDataAsArray;
-            }
-        }
-        return null;
     }
 
     protected String getPkDataFor(CsvData data, Column column) {
