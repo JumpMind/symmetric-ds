@@ -103,6 +103,10 @@ public class CsvUtils {
     }
     
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode) {
+        return escapeCsvData(data, recordDelimiter, textQualifier, escapeMode, null);
+    }
+    
+    public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode, String nullString) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(escapeMode);
@@ -113,6 +117,9 @@ public class CsvUtils {
             writer.setTextQualifier(textQualifier);
             writer.setUseTextQualifier(true);
             writer.setForceQualifier(true);
+        }
+        if (nullString != null) {
+            writer.setNullString(nullString);
         }
         try {
             writer.writeRecord(data);

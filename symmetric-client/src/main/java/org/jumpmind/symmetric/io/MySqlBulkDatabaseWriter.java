@@ -76,7 +76,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                 try {
                     String formattedData = CsvUtils.escapeCsvData(
                             data.getParsedData(CsvData.ROW_DATA), '\n', '"', 
-                            CsvWriter.ESCAPE_MODE_DOUBLED);
+                            CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
                     this.stagedInputFile.getOutputStream().write(formattedData.getBytes());                   
                     loadedRows++;
                 } catch (Exception ex) {
