@@ -38,7 +38,6 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
         return NAME;
     }
     
-    
     public boolean isExtractColumnTransform() {
         return false;
     }
