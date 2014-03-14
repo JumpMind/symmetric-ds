@@ -246,6 +246,14 @@ public class CsvWriter {
         userSettings.ForceQualifier = forceQualifier;
     }
 
+    public String getNullString() {
+    	return userSettings.NullString;
+    }
+    
+    public void setNullString(String nullString) {
+    	userSettings.NullString = nullString;
+    }
+
     /**
      * Writes another column of data to this record.
      * 
@@ -278,7 +286,7 @@ public class CsvWriter {
         // BEGIN <erilong@users.sourceforge.net>
         // We want a null to be an empty unquoted element
         if (content == null) {
-            content = "";
+            content = userSettings.NullString;
             textQualify = false;
         }
         // We want an empty string to be a quoted element
@@ -555,6 +563,8 @@ public class CsvWriter {
         public int EscapeMode;
 
         public boolean ForceQualifier;
+        
+        public String NullString;
 
         public UserSettings() {
             TextQualifier = Letters.QUOTE;
@@ -564,6 +574,7 @@ public class CsvWriter {
             Comment = Letters.POUND;
             EscapeMode = ESCAPE_MODE_DOUBLED;
             ForceQualifier = false;
+            NullString = "";
         }
     }
 
