@@ -88,22 +88,26 @@ public class TransformWriter extends NestedDataWriter {
     
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
         Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
-        columnTransforms.put(AdditiveColumnTransform.NAME, new AdditiveColumnTransform());
-        columnTransforms.put(BshColumnTransform.NAME, new BshColumnTransform());
-        columnTransforms.put(ConstantColumnTransform.NAME, new ConstantColumnTransform());
-        columnTransforms.put(CopyColumnTransform.NAME, new CopyColumnTransform());
-        columnTransforms.put(IdentityColumnTransform.NAME, new IdentityColumnTransform());
-        columnTransforms.put(MultiplierColumnTransform.NAME, new MultiplierColumnTransform());
-        columnTransforms.put(SubstrColumnTransform.NAME, new SubstrColumnTransform());
-        columnTransforms.put(VariableColumnTransform.NAME, new VariableColumnTransform());
-        columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
-        columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
-        columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
-        columnTransforms.put(ValueMapColumnTransform.NAME, new ValueMapColumnTransform());
-        columnTransforms.put(CopyIfChangedColumnTransform.NAME, new CopyIfChangedColumnTransform());
-        columnTransforms.put(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
-        columnTransforms.put(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
+        addColumnTransform(columnTransforms, new AdditiveColumnTransform());
+        addColumnTransform(columnTransforms, new BshColumnTransform());
+        addColumnTransform(columnTransforms, new ConstantColumnTransform());
+        addColumnTransform(columnTransforms, new CopyColumnTransform());
+        addColumnTransform(columnTransforms, new IdentityColumnTransform());
+        addColumnTransform(columnTransforms, new MultiplierColumnTransform());
+        addColumnTransform(columnTransforms, new SubstrColumnTransform());
+        addColumnTransform(columnTransforms, new VariableColumnTransform());
+        addColumnTransform(columnTransforms, new LookupColumnTransform());
+        addColumnTransform(columnTransforms, new RemoveColumnTransform());
+        addColumnTransform(columnTransforms, new MathColumnTransform());
+        addColumnTransform(columnTransforms, new ValueMapColumnTransform());
+        addColumnTransform(columnTransforms, new CopyIfChangedColumnTransform());
+        addColumnTransform(columnTransforms, new ColumnsToRowsKeyColumnTransform());
+        addColumnTransform(columnTransforms, new ColumnsToRowsValueColumnTransform());
         return columnTransforms;
+    }
+    
+    public static void addColumnTransform(Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
+        columnTransforms.put(columnTransform.getName(), columnTransform);
     }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
