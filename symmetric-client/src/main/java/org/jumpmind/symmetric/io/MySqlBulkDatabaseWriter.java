@@ -95,7 +95,6 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 
         if (loadedRows >= maxRowsBeforeFlush) {
             flush();
-            loadedRows = 0;
         }
     }
     
@@ -110,7 +109,8 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getFullyQualifiedTableName() +
-	            		" FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''";
+	            		" FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
+	            		" (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -124,6 +124,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
+            loadedRows = 0;
         }
     }
     
