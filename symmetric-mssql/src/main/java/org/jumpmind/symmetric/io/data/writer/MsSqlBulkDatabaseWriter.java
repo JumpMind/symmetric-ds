@@ -109,7 +109,6 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
         if (loadedRows >= maxRowsBeforeFlush) {
             flush();
-            loadedRows = 0;
         }
     }
     
@@ -137,6 +136,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
+	        loadedRows = 0;
         }
     }
     
