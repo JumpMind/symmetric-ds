@@ -122,8 +122,7 @@ public abstract class AbstractCommandLauncher {
 
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    log.info("Option: name={}, value={}", new Object[] { 
-                            option.getLongOpt() != null ? option.getLongOpt() : option.getOpt(),
+                    log.info("Option: name={}, value={}", new Object[] { option.getLongOpt(),
                             ArrayUtils.toString(option.getValues()) });
                 }
             }

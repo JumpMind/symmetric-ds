@@ -247,11 +247,11 @@ public class CsvWriter {
     }
 
     public String getNullString() {
-        return userSettings.NullString;
+    	return userSettings.NullString;
     }
     
     public void setNullString(String nullString) {
-        userSettings.NullString = nullString;
+    	userSettings.NullString = nullString;
     }
 
     /**

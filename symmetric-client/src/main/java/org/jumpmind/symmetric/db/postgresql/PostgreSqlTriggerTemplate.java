@@ -99,7 +99,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                declare var_row_data text; " +        
 "                                declare var_old_data text; " +
-"                                begin" +
+"                                begin                                                                                                                                                                  " +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    var_row_data := $(columns); " +
 "                                    var_old_data := $(oldColumns); " +

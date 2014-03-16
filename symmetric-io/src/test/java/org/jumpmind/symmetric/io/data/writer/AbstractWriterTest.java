@@ -116,7 +116,7 @@ abstract public class AbstractWriterTest {
     }
 
     protected long writeData(TableCsvData... datas) {
-        return writeData(new DefaultDatabaseWriter(platform, writerSettings), datas);
+        return writeData(new DatabaseWriter(platform, writerSettings), datas);
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {

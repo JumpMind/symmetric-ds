@@ -12,12 +12,12 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 
 
     protected NativeJdbcExtractor jdbcExtractor;
@@ -100,8 +100,8 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     
     protected void flush() {
         if (loadedRows > 0) {
-                this.stagedInputFile.close();
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        	this.stagedInputFile.close();
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
 	        try {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
@@ -109,8 +109,8 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getFullyQualifiedTableName() +
-                                " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
-                                " (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
+	            		" FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
+	            		" (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -124,7 +124,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

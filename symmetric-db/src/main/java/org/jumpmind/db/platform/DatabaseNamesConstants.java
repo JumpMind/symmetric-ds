@@ -38,7 +38,6 @@ final public class DatabaseNamesConstants {
     public final static String ORACLE = "oracle";
     public final static String MYSQL = "mysql";
     public final static String DB2 = "db2";
-    public final static String DB2ZOS = "db2zos";
     public final static String POSTGRESQL = "postgres";
     public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";

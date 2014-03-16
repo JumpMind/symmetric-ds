@@ -1948,7 +1948,6 @@ the column will be ignored or the row will be ignored, based on the setting of t
 to the string 'IgnoreColumn', the column will be ignored; otherwise, the row will be ignored.
 </listitem>
 
-
 <listitem>
 Value Map Transform ('valueMap'):  This transformation allows for simple value substitutions through use of the transform expression.
 The transform expresion should consist of a space separated list of value pairs of the format sourceValue=TargetValue.  The column value is used to 

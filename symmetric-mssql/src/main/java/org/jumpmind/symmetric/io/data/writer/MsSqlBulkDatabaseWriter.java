@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
@@ -136,7 +136,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

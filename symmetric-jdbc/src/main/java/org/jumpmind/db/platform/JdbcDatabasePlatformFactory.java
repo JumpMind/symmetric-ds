@@ -33,7 +33,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
@@ -93,7 +92,6 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
@@ -208,12 +206,6 @@ public class JdbcDatabasePlatformFactory {
             if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.MARIADB;
-                }
-            }
-
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.DB2)) {
-                if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
-                    nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
                 }
             }
 
