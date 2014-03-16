@@ -1,14 +1,16 @@
-SymmetricDS - 3.5.18 (Released 2014-03-02) 
+SymmetricDS - 3.5.19 (Released 2014-03-16) [ View Issues ] 
 ==========================================
-- 0001586: [Bug] Stage manager doesn't check to see if a file is actually deleted when it qualifies for cleaning. (chenson) - closed.
-- 0001593: [Bug] Background initial load extract can get stuck. (chenson) - closed.
-- 0001597: [Bug] Overlapping database pull processes after connection outage - Default pull.thread.per.server.count=1 (chenson) - closed.
-- 0001601: [Improvement] Add Map-based methods to TransformData so one can more easily lookup target transform data (mhanes) - closed.
-- 0001602: [Improvement] Allow old source values to be accessible to other column transforms than just copy column (mhanes) - closed.
-- 0001603: [Improvement] Create new 'copy if the value has changed' column transform (mhanes) - closed.
-- 0001604: [Improvement] Create a set of two transforms that can map a series of columns to a series of rows based on a Map (mhanes) - closed.
-- 0001608: [Improvement] Reduce default purge retention period (elong) - closed.
-- 0001610: [Bug] CopyIfChangedTransform should only evaluate on non-delete DML (mhanes) - closed.
+- 0001629: [Improvement] SQL Server bulk loader option to fire triggers (elong) - closed.
+- 0001630: [Bug] SQL Server bulk loader extra spaces causes truncation error (elong) - closed.
+- 0001631: [Bug] CSV is missing "columns" row when two different sets of columns are being used with three different inserts or updates (chenson) - closed.
+- 0001632: [Bug] SQL Server bulk loader does not handle BLOB (elong) - closed.
+- 0001633: [Bug] MySQL bulk loader error with Windows-based server (elong) - closed.
+- 0001634: [Improvement] Snapshot utility properties show changes, remove passwords, and sort (elong) - closed.
+- 0001636: [New Feature] Add capture changed data only to Postgres (elong) - closed.
+- 0001638: [Improvement] REST call for client to know how many batches and rows are waiting (elong) - closed.
+- 0001639: [Improvement] MySQL and SQL-Server bulk loaders loading rows multiple times (elong) - closed.
+- 0001645: [Bug] MySQL bulk loader does not load NULL (elong) - closed.
+- 0001646: [Bug] MySQL bulk loader columns out of order (elong) - closed.
 
 SymmetricDS - 3.5.18 (Released 2014-03-02) 
 ==========================================
