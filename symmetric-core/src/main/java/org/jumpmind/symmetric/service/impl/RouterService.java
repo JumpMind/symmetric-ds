@@ -69,6 +69,7 @@ import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
+import org.jumpmind.symmetric.route.JavaDataRouter;
 import org.jumpmind.symmetric.route.LookupTableDataRouter;
 import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
@@ -109,6 +110,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers = new HashMap<String, IDataRouter>();
         this.routers.put(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
         this.routers.put("bsh", new BshDataRouter(engine));
+        this.routers.put("java", new JavaDataRouter(engine));
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
