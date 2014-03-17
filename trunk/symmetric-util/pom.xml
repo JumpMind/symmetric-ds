@@ -61,5 +61,12 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-annotations</artifactId>
+          <version>1.10</version>
+          <optional>true</optional>
+          <scope>provided</scope>
+        </dependency>
+    	</dependencies>
 </project>

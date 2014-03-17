@@ -42,6 +42,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,7 @@ import org.slf4j.LoggerFactory;
  * is passed again, the cached object is returned.  Otherwise, a new class is compiled, loaded, and an instance returned.
  *
  */
+@IgnoreJRERequirement
 @SuppressWarnings({ "rawtypes", "restriction" })
 public class SimpleClassCompiler {
 
@@ -111,6 +113,7 @@ public class SimpleClassCompiler {
         return getClass().getSimpleName() + (classSuffix++);
     }
 
+    @IgnoreJRERequirement
     class JavaObjectFromString extends SimpleJavaFileObject {
         private String data = null;
 
@@ -123,7 +126,8 @@ public class SimpleClassCompiler {
             return data;
         }
     }
-    
+
+    @IgnoreJRERequirement
     class JavaClassObject extends SimpleJavaFileObject {
         protected final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -141,6 +145,7 @@ public class SimpleClassCompiler {
         }
     }
     
+    @IgnoreJRERequirement
     public class ClassFileManager extends ForwardingJavaFileManager {
         private JavaClassObject jclassObject;
 
