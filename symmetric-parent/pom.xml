@@ -381,7 +381,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.9</version>
+                <version>1.10</version>
                 <configuration>
                     <signature>
                       <groupId>org.codehaus.mojo.signature</groupId>
@@ -827,6 +827,11 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlets</artifactId>
+                <version>${version.jetty}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-webapp</artifactId>
                 <version>${version.jetty}</version>
             </dependency>
@@ -937,7 +942,14 @@
                 <artifactId>powermock-core</artifactId>
                 <version>${version.powermock}</version>
                 <scope>test</scope>
-            </dependency>            
-        </dependencies>
+            </dependency>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>animal-sniffer-annotations</artifactId>
+              <version>1.10</version>
+              <optional>true</optional>
+              <scope>test</scope>
+            </dependency>
+            </dependencies>
     </dependencyManagement>
 </project>
