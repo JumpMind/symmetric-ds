@@ -76,9 +76,9 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.load.BshDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
+import org.jumpmind.symmetric.load.DynamicDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.model.Channel;
@@ -87,6 +87,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.LoadFilter;
+import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -478,18 +479,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         parameterService.getNodeGroupId());
             }
 
-            Map<String, List<LoadFilter>> loadFilters = loadFilterService.findLoadFiltersFor(link,
-                    true);
+            Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters = loadFilterService.findLoadFiltersFor(link, true);
+            List<DynamicDatabaseWriterFilter> databaseWriterFilters = DynamicDatabaseWriterFilter.getDatabaseWriterFilters(
+                    engine, loadFilters);
 
             if (loadFilters != null && loadFilters.size() > 0) {
-                BshDatabaseWriterFilter bshFilter = new BshDatabaseWriterFilter(this.engine, loadFilters);
                 dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size() + 1);
                 dynamicFilters.addAll(filters);
-                dynamicFilters.add(bshFilter);
+                dynamicFilters.addAll(databaseWriterFilters);
                 
                 dynamicErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>(errorHandlers.size() + 1);
                 dynamicErrorHandlers.addAll(errorHandlers);
-                dynamicErrorHandlers.add(bshFilter);
+                dynamicErrorHandlers.addAll(databaseWriterFilters);
             }
 
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
