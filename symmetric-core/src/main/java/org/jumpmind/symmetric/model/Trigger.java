@@ -57,6 +57,8 @@ public class Trigger implements Serializable {
     private String sourceCatalogName;
 
     private String channelId = Constants.CHANNEL_DEFAULT;
+    
+    private String reloadChannelId = Constants.CHANNEL_RELOAD;
 
     private boolean syncOnUpdate = true;
 
@@ -281,6 +283,14 @@ public class Trigger implements Serializable {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
+    }
+    
+    public String getReloadChannelId() {
+        return reloadChannelId;
+    }
+    
+    public void setReloadChannelId(String reloadChannelId) {
+        this.reloadChannelId = reloadChannelId;
     }
 
     public boolean isSyncOnUpdate() {

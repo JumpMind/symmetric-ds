@@ -228,8 +228,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of
      * commit/error status is sent separately after the data is processed.
      */
-    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException {
-        RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null);
+    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException {        
+        RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null, configurationService.getChannels(false));
         loadDataFromPull(remote, status);
         return status;
     }

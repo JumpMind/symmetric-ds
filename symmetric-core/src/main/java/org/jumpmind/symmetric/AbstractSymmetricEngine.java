@@ -302,9 +302,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 outgoingBatchService, registrationService, stagingManager, this);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService, nodeCommunicationService, statisticManager);
+                clusterService, nodeCommunicationService, statisticManager, configurationService);
         this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
-                dataLoaderService, registrationService, clusterService, nodeCommunicationService);
+                dataLoaderService, registrationService, clusterService, nodeCommunicationService, configurationService);
         this.fileSyncService = new FileSyncService(this);
         this.jobManager = createJobManager();
 

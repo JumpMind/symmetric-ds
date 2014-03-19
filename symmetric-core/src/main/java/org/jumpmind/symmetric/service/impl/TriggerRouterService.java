@@ -932,7 +932,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (0 == sqlTemplate.update(
                 getSql("updateTriggerSql"),
                 new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), trigger.getChannelId(),
+                        trigger.getSourceTableName(), trigger.getChannelId(), trigger.getReloadChannelId(),
                         trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                         trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                         trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
@@ -945,7 +945,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
                         trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
                         trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -955,7 +955,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
                     new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            trigger.getSourceTableName(), trigger.getChannelId(),
+                            trigger.getSourceTableName(), trigger.getChannelId(), trigger.getChannelId(),
                             trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                             trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                             trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
@@ -969,7 +969,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getCreateTime(), trigger.getLastUpdateBy(),
                             trigger.getLastUpdateTime(), trigger.getExternalSelect(),
                             trigger.getTriggerId() }, new int[] {
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -1711,6 +1711,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Trigger trigger = new Trigger();
             trigger.setTriggerId(rs.getString("trigger_id"));
             trigger.setChannelId(rs.getString("channel_id"));
+            trigger.setReloadChannelId(rs.getString("reload_channel_id"));
             trigger.setSourceTableName(rs.getString("source_table_name"));
             trigger.setSyncOnInsert(rs.getBoolean("sync_on_insert"));
             trigger.setSyncOnUpdate(rs.getBoolean("sync_on_update"));

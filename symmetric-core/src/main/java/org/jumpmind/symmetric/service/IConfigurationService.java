@@ -81,6 +81,8 @@ public interface IConfigurationService {
     
     public Channel getChannel (String channelId);
     
+    public List<Channel> getFileSyncChannels();
+    
     public Map<String, Channel> getChannels(boolean refreshCache);
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);

@@ -70,7 +70,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTriggersColumnList",
                 ""
-                        + "  t.trigger_id,t.channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,        "
+                        + "  t.trigger_id,t.channel_id,t.reload_channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,        "
                         + "  t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.use_stream_lobs,   "
                         + "  t.use_capture_lobs,t.use_capture_old_data,t.use_handle_key_updates,                              "
                         + "  t.excluded_column_names, t.sync_key_names,                                                       "
@@ -131,17 +131,17 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("insertTriggerSql",
                 ""
                         + "insert into $(trigger)                                                                                                         "
-                        + "  (source_catalog_name,source_schema_name,source_table_name,channel_id,sync_on_update,sync_on_insert,sync_on_delete,                 "
+                        + "  (source_catalog_name,source_schema_name,source_table_name,channel_id,reload_channel_id,sync_on_update,sync_on_insert,sync_on_delete,                 "
                         + "  sync_on_incoming_batch,use_stream_lobs,use_capture_lobs,use_capture_old_data,use_handle_key_updates,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,   "
                         + "  sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,custom_on_update_text,custom_on_insert_text,custom_on_delete_text,tx_id_expression,excluded_column_names, sync_key_names,            "
                         + "  create_time,last_update_by,last_update_time,external_select,trigger_id)                                                            "
-                        + "  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                             ");
+                        + "  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                             ");
 
         putSql("updateTriggerSql",
                 ""
                         + "update $(trigger)                                                                                                                                "
                         + "  set source_catalog_name=?,source_schema_name=?,source_table_name=?,                                                                            "
-                        + "  channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                                               "
+                        + "  channel_id=?,reload_channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                                               "
                         + "  sync_on_incoming_batch=?,use_stream_lobs=?,use_capture_lobs=?,use_capture_old_data=?,use_handle_key_updates=?,name_for_update_trigger=?,name_for_insert_trigger=?,        "
                         + "  name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,sync_on_delete_condition=?,custom_on_update_text=?,custom_on_insert_text=?,custom_on_delete_text=?,                                             "
                         + "  tx_id_expression=?,excluded_column_names=?,sync_key_names=?,last_update_by=?,last_update_time=?,external_select=?   "

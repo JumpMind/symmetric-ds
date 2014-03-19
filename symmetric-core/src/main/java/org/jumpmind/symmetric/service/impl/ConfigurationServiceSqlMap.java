@@ -66,19 +66,19 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         putSql("isChannelInUseSql", "select count(*) from $(trigger) where channel_id = ?   ");
 
         putSql("selectChannelsSql",
-          "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled,    " +
-          "  c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route,     " +
-          "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob,   " +
-          "  c.batch_algorithm, c.extract_period_millis, c.data_loader_type, " +
-          "  c.last_update_time, c.last_update_by, c.create_time         " +
-          " from $(channel) c order by c.processing_order asc, c.channel_id         ");
+          "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled,                   " +
+          "  c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route,                    " +
+          "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob,                  " +
+          "  c.batch_algorithm, c.extract_period_millis, c.data_loader_type,                       " +
+          "  c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag  " +
+          " from $(channel) c order by c.processing_order asc, c.channel_id                        ");
 
         putSql("selectNodeChannelsSql",
           "select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,       "
         + "  c.max_batch_size, c.enabled, c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, "
         + "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, c.batch_algorithm,         "
-        + "  nc.last_extract_time, c.extract_period_millis, c.data_loader_type," +
-        "    last_update_time, last_update_by, create_time                               "
+        + "  nc.last_extract_time, c.extract_period_millis, c.data_loader_type,                              " +
+        "    last_update_time, last_update_by, create_time, c.reload_flag, c.file_sync_flag                  "
         + "  from $(channel) c left outer join                                                               "
         + "  $(node_channel_ctl) nc on c.channel_id = nc.channel_id and nc.node_id = ?                       "
         + "  order by c.processing_order asc, c.channel_id                                                   ");
@@ -92,15 +92,16 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
            "insert into $(channel) (channel_id, processing_order, max_batch_size,                 "
          + "  max_batch_to_send, max_data_to_route, use_old_data_to_route, use_row_data_to_route, "
          + "  use_pk_data_to_route, contains_big_lob, enabled, batch_algorithm, description,      "
-         + "  extract_period_millis, data_loader_type, last_update_time, last_update_by, create_time)                                            "
-         + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?)                                ");
+         + "  extract_period_millis, data_loader_type, last_update_time, last_update_by,          "
+         + "  create_time, reload_flag, file_sync_flag)                                           "
+         + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, ?, ?)                 ");
 
         putSql("updateChannelSql",
-           "update $(channel) set processing_order=?, max_batch_size=?,                                                              "
-         + "  max_batch_to_send=?, max_data_to_route=?, use_old_data_to_route=?, use_row_data_to_route=?,                            "
+           "update $(channel) set processing_order=?, max_batch_size=?,                                          "
+         + "  max_batch_to_send=?, max_data_to_route=?, use_old_data_to_route=?, use_row_data_to_route=?,        "
          + "  use_pk_data_to_route=?, contains_big_lob=?, enabled=?, batch_algorithm=?, extract_period_millis=?, "
-         + "  data_loader_type=?, last_update_time=?, last_update_by=?"
-         + " where channel_id=?   ");
+         + "  data_loader_type=?, last_update_time=?, last_update_by=?, reload_flag=?, file_sync_flag=?          "
+         + " where channel_id=?                                                                                  ");
 
         putSql("deleteNodeGroupLinkSql",
            "delete from $(node_group_link) where source_node_group_id=? and target_node_group_id=?   ");

@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -130,11 +131,11 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 }
 
-                //TODO: I should really be able to catch errors here, but can't do to how this is coded
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                 if (status == Status.OK) {
-                    if (outgoingBatch.getChannelId().equals(Constants.CHANNEL_FILESYNC)){
-                        //Acknowledge the file_sync in case the file needs deleted.
+                    Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
+                    if (channel != null && channel.isFileSyncFlag()){
+                        /* Acknowledge the file_sync in case the file needs deleted. */
                         engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
                     }
                 }

@@ -39,7 +39,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 "        before_copy_script,                                                  " +
                 "        after_copy_script,                                                   " +
         		"        create_time, last_update_by,                                         " +
-        		"        last_update_time                                                     " +
+        		"        last_update_time, channel_id, reload_channel_id                      " +
         		" from $(file_trigger)                                                        ");
 
         putSql("triggerIdWhere", "where trigger_id=?");
@@ -50,15 +50,17 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,  " +
         		"  sync_on_ctl_file=?, delete_after_sync=?,                                   " +
                 "  before_copy_script=?, after_copy_script=?,                                 " +
-        		"  last_update_by=?, last_update_time=? where trigger_id=?                    ");
+        		"  last_update_by=?, last_update_time=?, channel_id=?, reload_channel_id=?    " +
+        		"where trigger_id=?                                                           ");
 
         putSql("insertFileTriggerSql",
                 " insert into $(file_trigger) (base_dir, recurse, includes_files,             " +
                 "  excludes_files, sync_on_create, sync_on_modified, sync_on_delete,          " +
                 "  sync_on_ctl_file, delete_after_sync,                                       " +
                 "  before_copy_script, after_copy_script,                                     " +
-                "  last_update_by, last_update_time, trigger_id, create_time)                 " +
-                " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                       ");
+                "  last_update_by, last_update_time, trigger_id, create_time,                 " +
+                "channel_id, reload_channel_id)                                               " +
+                " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                   ");
 
         putSql("selectFileSnapshotSql",
                 " select trigger_id, router_id, relative_dir, file_name, last_event_type, crc32_checksum, " +
