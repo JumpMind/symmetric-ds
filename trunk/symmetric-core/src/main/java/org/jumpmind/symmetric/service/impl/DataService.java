@@ -136,7 +136,7 @@ public class DataService extends AbstractService implements IDataService {
                                             transaction,
                                             triggerHistory,
                                             trigger.getChannelId(),
-                                            targetNode,
+                                            targetNode,                                           
                                             String.format(
                                                     "delete from %s where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
                                                     TableConstants
@@ -258,7 +258,7 @@ public class DataService extends AbstractService implements IDataService {
             triggerHistory = lookupTriggerHistory(triggerRouter.getTrigger());
         }
         
-        String channelId = getChannelIdForTrigger(triggerRouter.getTrigger());
+        String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine.getConfigurationService().getChannels(false));
 
         // initial_load_select for table can be overridden by populating the
         // row_data
@@ -274,11 +274,22 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    private String getChannelIdForTrigger(Trigger trigger) {
-        String channelId = trigger.getChannelId();
-        if (!Constants.CHANNEL_FILESYNC.equals(trigger.getChannelId()) &&
-                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
-            channelId = Constants.CHANNEL_RELOAD;
+    private String getReloadChannelIdForTrigger(Trigger trigger, Map<String, Channel> channels) {
+        String channelId = trigger != null ? trigger.getChannelId() : Constants.CHANNEL_DEFAULT;
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
+            Channel normalChannel = channels.get(channelId);
+            Channel reloadChannel = channels.get(trigger != null ? trigger.getReloadChannelId() : Constants.CHANNEL_RELOAD);
+            if (normalChannel.isFileSyncFlag()) {
+                if (reloadChannel != null && reloadChannel.isFileSyncFlag()) {
+                    channelId = reloadChannel.getChannelId();
+                }
+            } else {
+                if (reloadChannel != null && reloadChannel.isReloadFlag()) {
+                    channelId = reloadChannel.getChannelId();
+                } else {
+                    channelId = Constants.CHANNEL_RELOAD;
+                }
+            }
         }
         return channelId;
     }
@@ -472,6 +483,7 @@ public class DataService extends AbstractService implements IDataService {
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
             ISqlTransaction transaction) {
+        Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -480,10 +492,8 @@ public class DataService extends AbstractService implements IDataService {
                         engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                     if (parameterService.is(ParameterConstants.INTITAL_LOAD_USE_EXTRACT_JOB)) {
                         Trigger trigger = triggerRouter.getTrigger();
-                        Channel channel = engine.getConfigurationService().getChannel(trigger.getChannelId());
-                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
-                            channel = engine.getConfigurationService().getChannel(Constants.CHANNEL_RELOAD);
-                        }
+                        String reloadChannel = getReloadChannelIdForTrigger(trigger, channels);
+                        Channel channel = channels.get(reloadChannel);
                         // calculate the number of batches needed for table.
                         int numberOfBatches = triggerRouter.getInitialLoadBatchCount();
                         if (numberOfBatches <= 0) {
@@ -574,7 +584,7 @@ public class DataService extends AbstractService implements IDataService {
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
-        String channelId = getChannelIdForTrigger(triggerRouter.getTrigger());
+        String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine.getConfigurationService().getChannels(false));
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, triggerHistory, channelId, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
@@ -587,9 +597,11 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy) {
         TriggerHistory history = engine.getTriggerRouterService().findTriggerHistoryForGenericSync();
-        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(), false);
+        String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService().getChannels(false));
+
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD : Constants.CHANNEL_CONFIG, null, null);
+                CsvUtils.escapeCsvData(sql), null, history, isLoad ? reloadChannelId : Constants.CHANNEL_CONFIG, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy);
@@ -608,9 +620,10 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
             String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
-        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(), false);
+        String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService().getChannels(false));
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
-                CsvUtils.escapeCsvData(sql), null, history, useReloadChannel && isLoad ? Constants.CHANNEL_RELOAD
+                CsvUtils.escapeCsvData(sql), null, history, isLoad ? reloadChannelId
                         : channelId, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
@@ -660,13 +673,17 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String xml, boolean isLoad, long loadId, String createBy) {
+
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(triggerHistory.getTriggerId(), false);
+        String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService().getChannels(false));
+        
         Data data = new Data(
                 triggerHistory.getSourceTableName(),
                 DataEventType.CREATE,
                 CsvUtils.escapeCsvData(xml),
                 null,
                 triggerHistory,
-                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD
+                isLoad ? reloadChannelId
                         : Constants.CHANNEL_CONFIG, null, null);
         try {
             if (isLoad) {                
@@ -827,7 +844,15 @@ public class DataService extends AbstractService implements IDataService {
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
             String nodeId, String routerId, boolean isLoad, long loadId, String createBy, Status status) {
         long dataId = insertData(transaction, data);
-        return insertDataEventAndOutgoingBatch(transaction, dataId, data.getChannelId(), nodeId,
+        String channelId = data.getChannelId();
+        if (isLoad) {
+            TriggerHistory history = data.getTriggerHistory();
+            if (history != null) {
+                Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId());                
+                channelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService().getChannels(false));
+            }
+        }
+        return insertDataEventAndOutgoingBatch(transaction, dataId, channelId, nodeId,
                 data.getDataEventType(), routerId, isLoad, loadId, createBy, status);
     }
 
@@ -838,8 +863,6 @@ public class DataService extends AbstractService implements IDataService {
     protected long insertDataEventAndOutgoingBatch(ISqlTransaction transaction, long dataId,
             String channelId, String nodeId, DataEventType eventType, String routerId,
             boolean isLoad, long loadId, String createBy, Status status) {
-        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
-        channelId = useReloadChannel && isLoad && !Constants.CHANNEL_FILESYNC.equals(channelId) ? Constants.CHANNEL_RELOAD : channelId;
         OutgoingBatch outgoingBatch = new OutgoingBatch(
                 nodeId,
                 channelId, status);

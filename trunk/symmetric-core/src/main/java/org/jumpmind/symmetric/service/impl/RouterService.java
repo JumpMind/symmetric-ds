@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -301,7 +302,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
                             sourceNode,
-                            producesCommonBatches(nodeChannel.getChannelId(),
+                            producesCommonBatches(nodeChannel.getChannel(),
                                     triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
                 } else {
                     if (log.isDebugEnabled()) {
@@ -319,11 +320,12 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean producesCommonBatches(String channelId,
+    protected boolean producesCommonBatches(Channel channel,
             List<TriggerRouter> allTriggerRoutersForChannel) {
+        String channelId = channel.getChannelId();
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !Constants.CHANNEL_FILESYNC.equals(channelId)
-                && !Constants.CHANNEL_RELOAD.equals(channelId) 
+                && !channel.isFileSyncFlag()
+                && !channel.isReloadFlag() 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {

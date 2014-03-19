@@ -202,5 +202,13 @@ public class NodeChannel implements Serializable {
     public String getDataLoaderType() {
         return channel.getDataLoaderType();
     }
+    
+    public void setReloadFlag(boolean value) {
+        this.channel.setReloadFlag(value);
+    }
+    
+    public void setFileSyncFlag(boolean value) {
+        this.channel.setFileSyncFlag(value);
+    }
 
 }

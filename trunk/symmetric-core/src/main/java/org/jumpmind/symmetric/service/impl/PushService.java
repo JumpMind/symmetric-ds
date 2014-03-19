@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
@@ -72,13 +73,15 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private INodeCommunicationService nodeCommunicationService;
     
     private IStatisticManager statisticManager;
+    
+    private IConfigurationService configurationService;
 
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager) {
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager, IConfigurationService configrationService) {
         super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
@@ -87,6 +90,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         this.clusterService = clusterService;
         this.nodeCommunicationService = nodeCommunicationService;
         this.statisticManager = statisticManager;
+        this.configurationService = configrationService;
     }
 
     public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
@@ -94,7 +98,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     }
 
     synchronized public RemoteNodeStatuses pushData(boolean force) {
-        RemoteNodeStatuses statuses = new RemoteNodeStatuses();
+        RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         
         Node identity = nodeService.findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {

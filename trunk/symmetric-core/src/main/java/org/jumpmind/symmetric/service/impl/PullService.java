@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
@@ -62,21 +63,24 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     private INodeCommunicationService nodeCommunicationService;
     
     private IDataLoaderService dataLoaderService;
+    
+    private IConfigurationService configurationService;
 
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService,
-            INodeCommunicationService nodeCommunicationService) {
+            INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.registrationService = registrationService;
         this.clusterService = clusterService;
         this.nodeCommunicationService = nodeCommunicationService;
         this.dataLoaderService = dataLoaderService;
+        this.configurationService = configurationService;
     }
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);

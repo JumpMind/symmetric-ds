@@ -305,7 +305,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ChannelMap suspendIgnoreChannelsList) {
 
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            batches.filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
+            List<Channel> fileSyncChannels = configurationService.getFileSyncChannels();
+            for (Channel channel : fileSyncChannels) {
+                batches.filterBatchesForChannel(channel);    
+            }            
         }
 
         // We now have either our local suspend/ignore list, or the combined
@@ -929,7 +932,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public RemoteNodeStatuses queueWork(boolean force) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         Node identity = nodeService.findIdentity();
         if (identity != null) {
             if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {

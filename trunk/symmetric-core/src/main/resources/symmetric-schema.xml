@@ -36,6 +36,8 @@
         <column name="use_old_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the old data during routing."/>
         <column name="use_row_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the row data during routing."/>
         <column name="use_pk_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the pk data during routing."/>
+        <column name="reload_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for reloads."/>
+        <column name="file_sync_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for file sync."/>
         <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column.  Note, when switching this value back and forth triggers need to be forced to regenerate."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
@@ -146,6 +148,8 @@
 
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" default="filesync"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="reload_channel_id" type="VARCHAR" size="20" required="true" default="reload" description="The channel_id of the channel that will be used for reloads." />        
         <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
         <column name="recurse" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />
         <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to include in synchronization." />
@@ -662,6 +666,7 @@
         <column name="source_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in." />
         <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="reload_channel_id" type="VARCHAR" size="20" required="true" default="reload" description="The channel_id of the channel that will be used for reloads." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an update trigger." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an insert trigger." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an delete trigger." />
@@ -689,6 +694,9 @@
         <foreign-key foreignTable="channel" name="fk_trg_2_chnl">
             <reference local="channel_id" foreign="channel_id" />
         </foreign-key>
+        <foreign-key foreignTable="channel" name="fk_trg_2_rld_chnl">
+            <reference local="reload_channel_id" foreign="channel_id" />
+        </foreign-key>        
     </table>
 
     <table name="trigger_hist" description="A history of a table's definition and the trigger used to capture data from the table. When a database trigger captures a data change, it references a trigger_hist entry so it is possible to know which columns the data represents. trigger_hist entries are made during the sync trigger process, which runs at each startup, each night in the syncTriggersJob, or any time the syncTriggers() JMX method is manually invoked. A new entry is made when a table definition or a trigger definition is changed, which causes a database trigger to be created or rebuilt.">
