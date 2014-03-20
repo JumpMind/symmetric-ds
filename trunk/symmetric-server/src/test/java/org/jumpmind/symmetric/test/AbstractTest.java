@@ -138,6 +138,7 @@ abstract public class AbstractTest {
 
     protected SymmetricWebServer getWebServer(String name) {
         try {
+            System.setProperty("java.io.tmpdir", "target/tmp");
             if (!webServers.containsKey(name)) {
 
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
