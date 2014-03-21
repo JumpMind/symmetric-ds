@@ -207,8 +207,16 @@ public class NodeChannel implements Serializable {
         this.channel.setReloadFlag(value);
     }
     
+    public boolean isReloadFlag() {
+        return this.channel.isReloadFlag();
+    }
+    
     public void setFileSyncFlag(boolean value) {
         this.channel.setFileSyncFlag(value);
+    }
+    
+    public boolean isFileSyncFlag() {
+        return this.channel.isFileSyncFlag();
     }
 
 }
