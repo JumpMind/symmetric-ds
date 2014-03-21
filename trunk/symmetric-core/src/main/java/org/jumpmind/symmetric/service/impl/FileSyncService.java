@@ -26,9 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,7 +155,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     }
                 }
             } else {
-                log.debug("Did not run the track file sync changes process because it was shared locked");
+                log.warn("Did not run the track file sync changes process because it was shared locked");
             }
         } else {
             log.debug("Did not run the track file sync changes process because it was cluster locked");
@@ -366,113 +364,112 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport outgoingTransport) {
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>();
+        List<OutgoingBatch> batchesToProcess = new ArrayList<OutgoingBatch>();
         List<Channel> fileSyncChannels = engine.getConfigurationService().getFileSyncChannels();
         for (Channel channel : fileSyncChannels) {
-
             OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(
                     targetNode.getNodeId(), false);
-            List<OutgoingBatch> activeBatches = batches.filterBatchesForChannel(channel);
+            batchesToProcess.addAll(batches.filterBatchesForChannel(channel));
+        }
 
-            OutgoingBatch currentBatch = null;
+        OutgoingBatch currentBatch = null;
 
-            IStagingManager stagingManager = engine.getStagingManager();
-            long memoryThresholdInBytes = parameterService
-                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-            IStagedResource stagedResource = stagingManager.create(memoryThresholdInBytes,
-                    Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
-                    targetNode.getNodeId(), "filesync.zip");
+        IStagingManager stagingManager = engine.getStagingManager();
+        long memoryThresholdInBytes = parameterService
+                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        IStagedResource stagedResource = stagingManager.create(memoryThresholdInBytes,
+                Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
+                targetNode.getNodeId(), "filesync.zip");
+
+        try {
+
+            long maxBytesToSync = parameterService
+                    .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+
+            FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
+                    engine.getNodeService(), stagedResource);
+            try {
+                for (int i = 0; i < batchesToProcess.size(); i++) {
+                    currentBatch = batchesToProcess.get(i);
+                    processInfo.incrementBatchCount();
+                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
+
+                    ((DataExtractorService) engine.getDataExtractorService()).extractOutgoingBatch(
+                            processInfo, targetNode, dataWriter, currentBatch, false, true,
+                            DataExtractorService.ExtractMode.FOR_SYM_CLIENT);
+
+                    processedBatches.add(currentBatch);
+
+                    /*
+                     * check to see if max bytes to sync has been reached and
+                     * stop processing batches
+                     */
+                    if (dataWriter.readyToSend()) {
+                        break;
+                    }
+                }
+            } finally {
+                dataWriter.finish();
+            }
+
+            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+
+            for (int i = 0; i < batchesToProcess.size(); i++) {
+                batchesToProcess.get(i).setStatus(Status.SE);
+            }
+            engine.getOutgoingBatchService().updateOutgoingBatches(batchesToProcess);
 
             try {
-
-                long maxBytesToSync = parameterService
-                        .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
-
-                FileSyncZipDataWriter dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
-                        engine.getNodeService(), stagedResource);
-                try {
-                    for (int i = 0; i < activeBatches.size(); i++) {
-                        currentBatch = activeBatches.get(i);
-                        processInfo.incrementBatchCount();
-                        processInfo.setCurrentBatchId(currentBatch.getBatchId());
-
-                        ((DataExtractorService) engine.getDataExtractorService())
-                                .extractOutgoingBatch(processInfo, targetNode, dataWriter,
-                                        currentBatch, false, true,
-                                        DataExtractorService.ExtractMode.FOR_SYM_CLIENT);
-
-                        /*
-                         * check to see if max bytes to sync has been reached
-                         * and stop processing batches
-                         */
-                        if (dataWriter.readyToSend()) {
-                            break;
-                        }
+                if (stagedResource.exists()) {
+                    InputStream is = stagedResource.getInputStream();
+                    try {
+                        OutputStream os = outgoingTransport.openStream();
+                        IOUtils.copy(is, os);
+                        os.flush();
+                    } catch (IOException e) {
+                        throw new IoException(e);
                     }
-                } finally {
-                    dataWriter.finish();
                 }
 
-                processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-
-                for (int i = 0; i < activeBatches.size(); i++) {
-                    activeBatches.get(i).setStatus(Status.SE);
+                for (int i = 0; i < batchesToProcess.size(); i++) {
+                    batchesToProcess.get(i).setStatus(Status.LD);
                 }
-                engine.getOutgoingBatchService().updateOutgoingBatches(activeBatches);
+                engine.getOutgoingBatchService().updateOutgoingBatches(batchesToProcess);
 
-                try {
-                    if (stagedResource.exists()) {
-                        InputStream is = stagedResource.getInputStream();
-                        try {
-                            OutputStream os = outgoingTransport.openStream();
-                            IOUtils.copy(is, os);
-                            os.flush();
-                        } catch (IOException e) {
-                            throw new IoException(e);
-                        }
-                    }
-
-                    for (int i = 0; i < activeBatches.size(); i++) {
-                        activeBatches.get(i).setStatus(Status.LD);
-                    }
-                    engine.getOutgoingBatchService().updateOutgoingBatches(activeBatches);
-
-                } finally {
-                    stagedResource.close();
-                }
-
-                processedBatches.addAll(activeBatches);
-
-            } catch (RuntimeException e) {
-                if (currentBatch != null) {
-                    engine.getStatisticManager().incrementDataExtractedErrors(
-                            currentBatch.getChannelId(), 1);
-                    currentBatch.setSqlMessage(getRootMessage(e));
-                    currentBatch.revertStatsOnError();
-                    if (currentBatch.getStatus() != Status.IG) {
-                        currentBatch.setStatus(Status.ER);
-                    }
-                    currentBatch.setErrorFlag(true);
-                    engine.getOutgoingBatchService().updateOutgoingBatch(currentBatch);
-
-                    if (isStreamClosedByClient(e)) {
-                        log.warn(
-                                "Failed to extract batch {}.  The stream was closed by the client.  The error was: {}",
-                                currentBatch, getRootMessage(e));
-                    } else {
-                        log.error("Failed to extract batch {}", currentBatch, e);
-                    }
-                } else {
-                    log.error("Could not log the outgoing batch status because the batch was null",
-                            e);
-                }
-
-                throw e;
             } finally {
-                if (stagedResource != null) {
-                    stagedResource.delete();
+                stagedResource.close();
+            }
+
+        } catch (RuntimeException e) {
+            if (currentBatch != null) {
+                engine.getStatisticManager().incrementDataExtractedErrors(
+                        currentBatch.getChannelId(), 1);
+                currentBatch.setSqlMessage(getRootMessage(e));
+                currentBatch.revertStatsOnError();
+                if (currentBatch.getStatus() != Status.IG) {
+                    currentBatch.setStatus(Status.ER);
                 }
+                currentBatch.setErrorFlag(true);
+                engine.getOutgoingBatchService().updateOutgoingBatch(currentBatch);
+
+                if (isStreamClosedByClient(e)) {
+                    log.warn(
+                            "Failed to extract batch {}.  The stream was closed by the client.  The error was: {}",
+                            currentBatch, getRootMessage(e));
+                } else {
+                    log.error("Failed to extract batch {}", currentBatch, e);
+                }
+            } else {
+                log.error("Could not log the outgoing batch status because the batch was null", e);
+            }
+
+            throw e;
+        } finally {
+            if (stagedResource != null) {
+                stagedResource.delete();
             }
         }
+
         return processedBatches;
     }
 
@@ -643,17 +640,28 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             processInfo.setCurrentBatchId(batchId);
             processInfo.incrementBatchCount();
             File batchDir = new File(unzipDir, Long.toString(batchId));
-            File syncScript = new File(batchDir, "sync.bsh");
 
             IncomingBatch incomingBatch = new IncomingBatch();
-            /* TODO need to get the actual channel id from the zip */
-            incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
+            
+            File batchInfo = new File(batchDir, "batch-info.txt");
+            if (batchInfo.exists()) {
+               List<String> info = FileUtils.readLines(batchInfo);
+               if (info != null && info.size() > 0) {
+                   incomingBatch.setChannelId(info.get(0).trim());
+               } else {
+                   incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
+               }
+            } else {
+                incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
+            }
+            
             incomingBatch.setBatchId(batchId);
             incomingBatch.setStatus(IncomingBatch.Status.LD);
             incomingBatch.setNodeId(sourceNodeId);
             incomingBatch.setByteCount(FileUtils.sizeOfDirectory(batchDir));
             batchesProcessed.add(incomingBatch);
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
+                File syncScript = new File(batchDir, "sync.bsh");
                 if (syncScript.exists()) {
                     String script = FileUtils.readFileToString(syncScript);
                     Interpreter interpreter = new Interpreter();
