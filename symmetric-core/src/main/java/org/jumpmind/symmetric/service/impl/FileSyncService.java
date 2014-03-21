@@ -219,10 +219,12 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         fileTrigger.getAfterCopyScript(), fileTrigger.getLastUpdateBy(),
                         fileTrigger.getLastUpdateTime(), fileTrigger.getChannelId(),
                         fileTrigger.getReloadChannelId(), fileTrigger.getTriggerId() }, new int[] {
-                        Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
-                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.SMALLINT, 
+                        Types.VARCHAR, Types.VARCHAR,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, 
+                        Types.SMALLINT, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR,  
+                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
             fileTrigger.setCreateTime(fileTrigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertFileTriggerSql"),
@@ -238,7 +240,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             fileTrigger.getTriggerId(), fileTrigger.getCreateTime(),
                             fileTrigger.getChannelId(), fileTrigger.getReloadChannelId() },
                     new int[] { Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
