@@ -105,9 +105,12 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     public void trackChanges(boolean force) {
         if (force || engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER)) {
+            try {
+            log.debug("Attempting to get exclusive lock for file sync track changes");
             if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 
                     getParameterService().getLong(ParameterConstants.FILE_SYNC_LOCK_WAIT_MS))) {
                 try {
+                    log.debug("Tracking changes for file sync");
                     List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
                     for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                         if (fileTriggerRouter.isEnabled()) {
@@ -144,13 +147,16 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
                     deleteFromFileIncoming();
                 } finally {
-                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE);
-                    if (!force) {
-                        engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
-                    }
+                    log.debug("Done tracking changes for file sync");
+                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE);                    
                 }
             } else {
-                log.debug("Did not run the track file sync changes process because it was shared locked");    
+                log.warn("Did not run the track file sync changes process because it was shared locked");    
+            }
+            } finally {
+                if (!force) {
+                    engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_TRACKER);
+                }
             }
         } else {
             log.debug("Did not run the track file sync changes process because it was cluster locked");
@@ -647,8 +653,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         interpreter.set("sourceNodeId", sourceNodeId);
 
                         long waitMillis = getParameterService().getLong(ParameterConstants.FILE_SYNC_LOCK_WAIT_MS);
+                        log.debug("The {} node is attempting to get shared lock for to update incoming status", sourceNodeId);
                         isLocked = engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, waitMillis);
                         if (isLocked) {
+                            log.debug("The {} node got a shared file sync lock", sourceNodeId);
                             @SuppressWarnings("unchecked")
                             Map<String, String> filesToEventType = (Map<String, String>) interpreter
                                     .eval(script);
@@ -692,6 +700,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         processInfo.setStatus(ProcessInfo.Status.ERROR);
                         break;
                     } finally {
+                        log.debug("The {} node is done processing file sync files", sourceNodeId);
                         if (isLocked) {
                             engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED);
                         }
