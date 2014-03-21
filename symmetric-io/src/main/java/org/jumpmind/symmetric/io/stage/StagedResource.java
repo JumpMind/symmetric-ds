@@ -124,7 +124,28 @@ public class StagedResource implements IStagedResource {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
                 if (newFile.exists()) {
-                    FileUtils.deleteQuietly(newFile);
+                    if (!FileUtils.deleteQuietly(newFile)) {
+                        log.warn("Failed to delete '{}' in preparation for renaming '{}'", newFile.getAbsolutePath(), file.getAbsoluteFile());
+                        if (readers.size() > 0) {
+                            for (Thread thread : readers.keySet()) {
+                                BufferedReader reader = readers.get(thread);
+                                log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
+                                IOUtils.closeQuietly(reader);                                
+                            }
+                        }
+                        
+                        if (writers.size() > 0) {
+                            for (Thread thread : writers.keySet()) {
+                                BufferedWriter writer = writers.get(thread);
+                                log.warn("Closing unwanted writer for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
+                                IOUtils.closeQuietly(writer);                                
+                            }
+                        }
+                        
+                        if (FileUtils.deleteQuietly(newFile)) {
+                            log.warn("Failed to delete '{}' for a second time", newFile.getAbsolutePath());
+                        }
+                    }
                 }
                 if (!file.renameTo(newFile)) {
                     String msg = String
