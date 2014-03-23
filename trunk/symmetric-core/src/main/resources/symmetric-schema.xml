@@ -145,6 +145,9 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <index name="idx_f_snpsht_chid">
+            <index-column name="channel_id" />
+        </index>
     </table>
 
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
