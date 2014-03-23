@@ -63,7 +63,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                   ");
 
         putSql("selectFileSnapshotSql",
-                " select trigger_id, router_id, relative_dir, file_name, last_event_type, crc32_checksum, " +
+                " select trigger_id, router_id, channel_id, relative_dir, file_name, " +
+                " last_event_type, crc32_checksum, " +
                 "  file_size, file_modified_time, create_time, last_update_time, last_update_by        " +
                 " from $(file_snapshot) where trigger_id=? and router_id=?                             ");
 
@@ -71,7 +72,7 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " update $(file_snapshot) set   " +
                         "  last_event_type=?, crc32_checksum=?,                                 " +
                         "  file_size=?, file_modified_time=?, last_update_time=?,               " +
-                        "  last_update_by=?                                                     " +
+                        "  last_update_by=?, channel_id=?                                       " +
                         " where                                                                 " +
                         "  trigger_id=? and router_id=? and relative_dir=? and file_name=?         ");
 
@@ -102,8 +103,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " insert into $(file_snapshot) (                                                " +
                 "  last_event_type, crc32_checksum,                                             " +
                 "  file_size, file_modified_time, create_time, last_update_time,                " +
-                "  last_update_by, trigger_id, router_id, relative_dir, file_name                  " +
-                " ) values(?,?,?,?,?,?,?,?,?,?,?)                                                 ");
+                "  last_update_by, channel_id, trigger_id, router_id, relative_dir, file_name   " +
+                " ) values(?,?,?,?,?,?,?,?,?,?,?, ?)                                                 ");
 
         putSql("selectFileTriggerRoutersSql",
                 " select                                                                        " +
