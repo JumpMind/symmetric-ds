@@ -335,10 +335,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 getSql("updateFileSnapshotSql"),
                 new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
                         snapshot.getFileSize(), snapshot.getFileModifiedTime(),
-                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
                         snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
                         snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
             snapshot.setCreateTime(snapshot.getLastUpdateTime());
             sqlTransaction.prepareAndExecute(
@@ -346,11 +346,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     new Object[] { snapshot.getLastEventType().getCode(),
                             snapshot.getCrc32Checksum(), snapshot.getFileSize(),
                             snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
-                            snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(),
+                            snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
                             snapshot.getTriggerId(), snapshot.getRouterId(),
                             snapshot.getRelativeDir(), snapshot.getFileName() }, new int[] {
                             Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                            Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
         // now that we have captured an update, delete the row for cleanup
@@ -904,6 +904,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             FileSnapshot fileSnapshot = new FileSnapshot();
             fileSnapshot.setCrc32Checksum(rs.getLong("crc32_checksum"));
             fileSnapshot.setCreateTime(rs.getDateTime("create_time"));
+            fileSnapshot.setChannelId(rs.getString("channel_id"));
             fileSnapshot.setLastUpdateBy(rs.getString("last_update_by"));
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileSnapshot.setFileModifiedTime(rs.getLong("file_modified_time"));

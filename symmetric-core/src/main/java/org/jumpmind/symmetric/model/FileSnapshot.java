@@ -65,6 +65,7 @@ public class FileSnapshot implements Serializable {
     private String relativeDir;
     private String fileName;
     private LastEventType lastEventType;
+    private String channelId;
     private long crc32Checksum;
     private long oldCrc32Checksum;
     private long fileSize;
@@ -88,11 +89,13 @@ public class FileSnapshot implements Serializable {
         this.createTime = copy.createTime;
         this.lastUpdateBy = copy.lastUpdateBy;
         this.lastUpdateTime = copy.lastUpdateTime;
+        this.channelId = copy.channelId;
     }
 
     public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType) {
         boolean isDelete = lastEventType == LastEventType.DELETE;
         this.triggerId = fileTriggerRouter.getFileTrigger().getTriggerId();
+        this.channelId = fileTriggerRouter.getFileTrigger().getChannelId();
         this.routerId = fileTriggerRouter.getRouter().getRouterId();
         this.lastEventType = lastEventType;
         this.lastUpdateTime = new Date();
@@ -152,6 +155,14 @@ public class FileSnapshot implements Serializable {
 
     public void setRouterId(String routerId) {
         this.routerId = routerId;
+    }
+    
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+    
+    public String getChannelId() {
+        return channelId;
     }
 
     public String getRelativeDir() {

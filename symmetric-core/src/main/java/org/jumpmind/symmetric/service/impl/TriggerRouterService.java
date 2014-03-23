@@ -393,7 +393,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)
                 .equals(tableName)) {
-            trigger.setChannelId(Constants.CHANNEL_FILESYNC);
+            trigger.setChannelId(Constants.CHANNEL_DYNAMIC);
+            trigger.setChannelExpression("$(curTriggerValue).$(curColumnPrefix)" + platform.alterCaseToMatchDatabaseDefaultCase("channel_id"));
+            trigger.setReloadChannelId(Constants.CHANNEL_FILESYNC_RELOAD);
             trigger.setUseCaptureOldData(true);
             trigger.setSyncOnIncomingBatch(false);
             boolean syncEnabled = parameterService.is(ParameterConstants.FILE_SYNC_ENABLE);
