@@ -62,7 +62,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " call $(prefixName)_save_data(                                                   \n" +
 "   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
 "   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
-"   '$(channelName)', 'I', $(triggerHistoryId),                           \n" + 
+"   $(channelExpression), 'I', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
 "   '$(columnNames)',                                                       \n" + 
@@ -76,7 +76,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " call $(prefixName)_save_data(                                                   \n" + 
 "   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
 "   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
-"   '$(channelName)', 'U', $(triggerHistoryId),                           \n" + 
+"   $(channelExpression), 'U', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
 "   '$(columnNames)',                                                       \n" + 
@@ -90,7 +90,7 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 " call $(prefixName)_save_data(                                                   \n" + 
 "   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then 1 else 0 end, \n" + 
 "   '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',                      \n" + 
-"   '$(channelName)', 'D', $(triggerHistoryId),                           \n" + 
+"   $(channelExpression), 'D', $(triggerHistoryId),                           \n" + 
 "   $(txIdExpression),                                                    \n" + 
 "   $(externalSelect),                                                    \n" + 
 "   '$(columnNames)',                                                       \n" + 

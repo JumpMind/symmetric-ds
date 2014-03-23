@@ -304,6 +304,9 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
+        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(getChannelExpression(trigger)),
+                ddl);
+        
         ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
@@ -431,6 +434,14 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
+    }
+    
+    protected String getChannelExpression(Trigger trigger) {
+        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
+            return trigger.getChannelExpression();
+        } else {
+            return "'" + trigger.getChannelId() + "'";
+        }
     }
 
     protected String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,

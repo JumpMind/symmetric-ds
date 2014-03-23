@@ -83,7 +83,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())                                   " +
+"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, $(channelExpression), @txid, @clientname, $(externalSelect), getdate())                                   " +
 "                                           fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
@@ -124,7 +124,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, $(channelExpression), @txid, @clientname, $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +
@@ -157,7 +157,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
+"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, $(channelExpression), @txid, @clientname, $(externalSelect), getdate())" +
 "                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
 "                                       end                                                                                                                                                             " +
 "                                       close DataCursor                                                                                                                                                " +

@@ -79,7 +79,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -113,7 +113,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      var_row_data,                                                                                                                                                      " +
 "                                      var_old_data,                                                                                                                                                   " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -142,7 +142,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +

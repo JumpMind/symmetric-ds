@@ -43,7 +43,7 @@ public class FileTrigger implements Serializable {
     
     private String channelId = Constants.CHANNEL_FILESYNC;
     
-    private String reloadChannelId = Constants.CHANNEL_FILESYNC;
+    private String reloadChannelId = Constants.CHANNEL_FILESYNC_RELOAD;
     
     private String baseDir;
     

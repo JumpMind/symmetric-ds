@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.db;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.model.Channel;
@@ -76,10 +77,14 @@ abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetric
 
     @Override
     public String preProcessTriggerSqlClause(String sqlClause) {
-        sqlClause = sqlClause.replace("$(newTriggerValue).", "$(newTriggerValue)");
-        sqlClause = sqlClause.replace("$(oldTriggerValue).", "$(oldTriggerValue)");
-        sqlClause = sqlClause.replace("$(curTriggerValue).", "$(curTriggerValue)");
-        return sqlClause.replace("'", "''");
+        if (StringUtils.isNotBlank(sqlClause)) {
+            sqlClause = sqlClause.replace("$(newTriggerValue).", "$(newTriggerValue)");
+            sqlClause = sqlClause.replace("$(oldTriggerValue).", "$(oldTriggerValue)");
+            sqlClause = sqlClause.replace("$(curTriggerValue).", "$(curTriggerValue)");
+            return sqlClause.replace("'", "''");
+        } else {
+            return sqlClause;
+        }
     }
     
     @Override
