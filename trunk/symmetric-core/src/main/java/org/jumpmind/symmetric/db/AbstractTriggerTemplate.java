@@ -438,7 +438,11 @@ abstract public class AbstractTriggerTemplate {
     
     protected String getChannelExpression(Trigger trigger) {
         if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
-            return trigger.getChannelExpression();
+            if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
+                return trigger.getChannelExpression();
+            } else {
+                throw new IllegalStateException("When the channel is set to '" + Constants.CHANNEL_DYNAMIC + "', a channel expression must be provided.");
+            }
         } else {
             return "'" + trigger.getChannelId() + "'";
         }
