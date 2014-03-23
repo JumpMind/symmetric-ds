@@ -87,6 +87,8 @@ public class Trigger implements Serializable {
     private String syncOnInsertCondition = DEFAULT_CONDITION;
 
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
+    
+    private String channelExpression = "'" + Constants.CHANNEL_DEFAULT + "'";
 
     private String customOnUpdateText;
 
@@ -255,6 +257,14 @@ public class Trigger implements Serializable {
 
     public boolean isSourceTableNameWildCarded() {
         return sourceTableName != null && sourceTableName.contains(FormatUtils.WILDCARD);
+    }
+    
+    public String getChannelExpression() {
+        return channelExpression;
+    }
+    
+    public void setChannelExpression(String channelExpression) {
+        this.channelExpression = channelExpression;
     }
 
     public void setSourceTableName(String sourceTableName) {

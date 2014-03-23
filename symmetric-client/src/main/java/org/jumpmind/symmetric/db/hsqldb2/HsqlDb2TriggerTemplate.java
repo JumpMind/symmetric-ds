@@ -54,7 +54,7 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                    " +
+"                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                    " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +
@@ -76,7 +76,7 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 "	                                      $(oldKeys),                                                                                                                                                     " +
 "	                                      $(columns),                                                                                                                                                     " +
 "	                                      $(oldColumns),                                                                                                                                                  " +
-"	                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                   " +
+"	                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                   " +
 "	                                      $(externalSelect),                                                                                                                                              " +
 "	                                      CURRENT_TIMESTAMP                                                                                                                                               " +
 "	                                    );                                                                                                                                                                " +
@@ -96,7 +96,7 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      '$(channelName)', $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                    " +
+"                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                    " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +

@@ -55,7 +55,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      concat($(columns)                                                                                                                                                " +
 "                                       ),                                                                                                                                                              " +
-"                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                        " +
+"                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +
@@ -81,7 +81,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "	                                       ),                                                                                                                                                             " +
 "	                                      var_row_data,                                                                                                                                                   " +
 "	                                      var_old_data,                                                                                                                                                   " +
-"	                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                       " +
+"	                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                       " +
 "	                                      $(externalSelect),                                                                                                                                              " +
 "	                                      CURRENT_TIMESTAMP                                                                                                                                               " +
 "	                                    );                                                                                                                                                                " +
@@ -103,7 +103,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                       ),                                                                                                                                                              " +
 "                                       concat($(oldColumns)                                                                                                                                            " +
 "                                       ),                                                                                                                                                              " +
-"                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                        " +
+"                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +

@@ -137,6 +137,7 @@
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the router that caused this snapshot to be taken." />
         <column name="relative_dir" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir" />
         <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="The name of the file that changed." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" default="filesync"  description="The channel_id of the channel that data changes will flow through." />
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="crc32_checksum" type="BIGINT" description="File checksum.  Can be used to determine if file content has changed." />
         <column name="file_size" type="BIGINT" description="The size in bytes of the file at the time this change was detected." />
@@ -682,6 +683,7 @@
         <column name="custom_on_delete_text" type="LONGVARCHAR"  description="Specify delete trigger text to execute after the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
         <column name="external_select" type="LONGVARCHAR"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
         <column name="tx_id_expression" type="LONGVARCHAR"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
+        <column name="channel_expression" type="LONGVARCHAR"  description="An expression that will be used to capture the channel id in the trigger.  This expression will only be used if the channel_id is set to 'dynamic.'" />        
         <column name="excluded_column_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should not be synchronized from this table.  Note that if a primary key is found in this list, it will be ignored." />
         <column name="sync_key_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should be used as the key for synchronization operations.  By default, if not specified, then the primary key of the table will be used." />
         <column name="use_stream_lobs" type="BOOLEANINT" size="1" required="true" default="0"  description="Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction. A value of 1 indicates to stream from the source via callback; a value of 0, lob data is captured by the trigger." />

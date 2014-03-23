@@ -103,6 +103,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         this.engine = engine;
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
+    
+    public boolean refreshFromDatabase() {
+        // TODO implement with cache
+        return false;
+    }
 
     public void trackChanges(boolean force) {
         if (force || engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER)) {

@@ -944,13 +944,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
                         trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
                         trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                        trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
+                        trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
@@ -967,7 +967,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
                             trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
                             trigger.getCreateTime(), trigger.getLastUpdateBy(),
-                            trigger.getLastUpdateTime(), trigger.getExternalSelect(),
+                            trigger.getLastUpdateTime(), trigger.getExternalSelect(), trigger.getChannelExpression(),
                             trigger.getTriggerId() }, new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
@@ -976,7 +976,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.VARCHAR });
+                            Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -1760,6 +1760,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 trigger.setExternalSelect(condition);
             }
 
+            trigger.setChannelExpression(rs.getString("channel_expression"));
             trigger.setTxIdExpression(rs.getString("tx_id_expression"));
 
             trigger.setCreateTime(rs.getDateTime("t_create_time"));

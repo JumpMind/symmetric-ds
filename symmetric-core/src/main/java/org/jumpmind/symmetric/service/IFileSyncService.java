@@ -71,5 +71,7 @@ public interface IFileSyncService {
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node node, IOutgoingTransport outgoingTransport);
     
     public void acknowledgeFiles(OutgoingBatch outgoingBatch);
+    
+    public boolean refreshFromDatabase();
 
 }

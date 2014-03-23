@@ -60,7 +60,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -89,7 +89,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(columns),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -116,7 +116,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      '$(channelName)',                                                                                                                                                " +
+"                                      $(channelExpression),                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +

@@ -71,8 +71,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));        
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0, false));
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0, false, "nontransactional", false, true));
+            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100, true, 0, false, "nontransactional", true, true));
         }
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));

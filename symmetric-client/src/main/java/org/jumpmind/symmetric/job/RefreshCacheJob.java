@@ -43,6 +43,7 @@ public class RefreshCacheJob extends AbstractJob {
         engine.getTransformService().refreshFromDatabase();
         engine.getDataLoaderService().refreshFromDatabase();
         engine.getLoadFilterService().refreshFromDatabase();
+        engine.getFileSyncService().refreshFromDatabase();
     }
     
     public String getClusterLockName() {
