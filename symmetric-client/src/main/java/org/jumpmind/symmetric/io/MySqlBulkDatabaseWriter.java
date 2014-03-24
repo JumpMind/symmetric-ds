@@ -172,6 +172,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
 	            log.debug(sql);
 	            stmt.execute(sql);
 	            stmt.close();
+	            transaction.commit();
 	        } catch (SQLException ex) {
 	            throw platform.getSqlTemplate().translate(ex);
 	        } finally {
