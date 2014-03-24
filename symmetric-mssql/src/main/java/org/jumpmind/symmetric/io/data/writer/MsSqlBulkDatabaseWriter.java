@@ -10,6 +10,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
@@ -42,11 +43,13 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
     public boolean start(Table table) {
         if (super.start(table)) {
             needsBinaryConversion = false;
-            for (Column column : targetTable.getColumns()) {
-                if (column.isOfBinaryType()) {
-                    needsBinaryConversion = true;
-                    break;
-                }
+            if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+	            for (Column column : targetTable.getColumns()) {
+	                if (column.isOfBinaryType()) {
+	                    needsBinaryConversion = true;
+	                    break;
+	                }
+	            }
             }
         	//TODO: Did this because start is getting called multiple times
         	//      for the same table in a single batch before end is being called
@@ -84,7 +87,9 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                            		parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            	}
                             }
                         }
                     }
