@@ -23,6 +23,7 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetri
         IBuiltInExtensionPoint {
 
     private int maxRowsBeforeFlush;
+    private long maxBytesBeforeFlush;
     private boolean isLocal;
     private boolean isReplace;
     private NativeJdbcExtractor jdbcExtractor;
@@ -44,12 +45,14 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetri
 			List<? extends Conflict> conflictSettings,
 			List<ResolvedData> resolvedData) {
 		return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
-				stagingManager, jdbcExtractor, maxRowsBeforeFlush, isLocal, isReplace);
+				stagingManager, jdbcExtractor, maxRowsBeforeFlush, maxBytesBeforeFlush, isLocal, isReplace);
 	}
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.maxRowsBeforeFlush = engine.getParameterService().getInt(
                 "mysql.bulk.load.max.rows.before.flush", 100000);
+        this.maxBytesBeforeFlush = engine.getParameterService().getLong(
+                "mysql.bulk.load.max.bytes.before.flush", 1000000000);
         this.isLocal = Boolean.parseBoolean(engine.getParameterService().getString(
         		"mysql.bulk.load.local", "true"));
         this.isReplace = Boolean.parseBoolean(engine.getParameterService().getString(
