@@ -590,7 +590,7 @@ public class DataService extends AbstractService implements IDataService {
             for (Channel channel : channels) {
                 if (channel.isReloadFlag()) {
                     insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
-                            fileSyncSnapshotHistory, "channel_id='" + channel.getChannelId() + "'",
+                            fileSyncSnapshotHistory, "reload_channel_id='" + channel.getChannelId() + "'",
                             true, loadId, createBy, Status.NE, channel.getChannelId());
                     if (!transactional) {
                         transaction.commit();

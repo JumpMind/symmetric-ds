@@ -211,7 +211,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
+            String channelId = triggerRouter.getTrigger().getChannelId();
+            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, triggerRouter.getTrigger()
@@ -244,7 +245,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
+            String channelId = triggerRouter.getTrigger().getChannelId();
+            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, null);

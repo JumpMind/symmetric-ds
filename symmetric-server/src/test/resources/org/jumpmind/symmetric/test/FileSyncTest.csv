@@ -84,7 +84,7 @@ catalog,
 schema,
 table,SYM_CHANNEL
 keys,CHANNEL_ID
-columns,CHANNEL_ID,PROCESSING_ORDER,MAX_BATCH_SIZE,MAX_BATCH_TO_SEND,MAX_DATA_TO_ROUTE,EXTRACT_PERIOD_MILLIS,ENABLED,USE_OLD_DATA_TO_ROUTE,USE_ROW_DATA_TO_ROUTE,USE_PK_DATA_TO_ROUTE,CONTAINS_BIG_LOB,BATCH_ALGORITHM,DATA_LOADER_TYPE,DESCRIPTION,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
+columns,CHANNEL_ID,PROCESSING_ORDER,MAX_BATCH_SIZE,MAX_BATCH_TO_SEND,MAX_DATA_TO_ROUTE,EXTRACT_PERIOD_MILLIS,ENABLED,USE_OLD_DATA_TO_ROUTE,USE_ROW_DATA_TO_ROUTE,USE_PK_DATA_TO_ROUTE,RELOAD_FLAG,FILE_SYNC_FLAG,CONTAINS_BIG_LOB,BATCH_ALGORITHM,DATA_LOADER_TYPE,DESCRIPTION,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
 sql,delete from sym_channel
 catalog,
 schema,
@@ -114,11 +114,13 @@ insert,"server","client","W",,,
 catalog,
 schema,
 table,SYM_CHANNEL
-insert,"config","0","2000","100","10000","0","1","1","1","1","1","default","default",,"2013-05-19 10:00:36.654",,"2013-05-19 10:00:36.648"
-insert,"reload","1","1","1","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.656",,"2013-05-19 10:00:36.656"
-insert,"heartbeat","2","100","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.657",,"2013-05-19 10:00:36.657"
-insert,"default","99999","1000","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.658",,"2013-05-19 10:00:36.658"
-insert,"filesync","3","100","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.659",,"2013-05-19 10:00:36.659"
+insert,"config","0","2000","100","10000","0","1","1","1","1","0","0","1","default","default",,"2014-03-21 13:07:51.515",,"2014-03-21 13:07:51.514"
+insert,"reload","1","1","1","10000","0","1","1","1","1","1","0","0","default","default",,"2014-03-21 13:07:51.516",,"2014-03-21 13:07:51.515"
+insert,"heartbeat","2","100","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-21 13:07:51.517",,"2014-03-21 13:07:51.516"
+insert,"default","99999","1000","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-21 13:07:51.517",,"2014-03-21 13:07:51.517"
+insert,"filesync","3","100","100","10000","0","1","1","1","1","0","1","0","nontransactional","default",,"2014-03-21 13:07:51.518",,"2014-03-21 13:07:51.518"
+insert,"dynamic","99999","1000","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-22 18:48:35.485",,"2014-03-22 18:48:35.482"
+insert,"filesync_reload","1","100","100","10000","0","1","1","1","1","1","1","0","nontransactional","default",,"2014-03-22 18:48:35.497",,"2014-03-22 18:48:35.497"
 catalog,
 schema,
 table,SYM_ROUTER
