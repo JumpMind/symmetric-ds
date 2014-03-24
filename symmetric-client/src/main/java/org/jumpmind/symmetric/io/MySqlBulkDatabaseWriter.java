@@ -108,7 +108,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
             	    	writer.setNullString("\\N");
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
-                            if (columns[i].isOfBinaryType()) {
+                            if (columns[i].isOfBinaryType() && parsedData[i] != null) {
                             	if (i > 0) {
                             		out.write(',');
                             	}

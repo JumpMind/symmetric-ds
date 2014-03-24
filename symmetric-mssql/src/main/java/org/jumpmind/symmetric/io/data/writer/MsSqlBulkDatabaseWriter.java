@@ -87,7 +87,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
                             		parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
                             	}
                             }
