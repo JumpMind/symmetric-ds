@@ -100,7 +100,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
                     if (needsBinaryConversion) {
                     	ByteArrayOutputStream out = new ByteArrayOutputStream();
                         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-                        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+                        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
                         writer.setRecordDelimiter('\n');
                         writer.setTextQualifier('"');
                         writer.setUseTextQualifier(true);
@@ -128,7 +128,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
                         writer.close();
                         byteData = out.toByteArray();
                     } else {
-	                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
+	                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_BACKSLASH, "\\N");
 	                    byteData = formattedData.getBytes();
                     }
                     this.stagedInputFile.getOutputStream().write(byteData);
@@ -188,10 +188,7 @@ public class MySqlBulkDatabaseWriter extends DatabaseWriter {
     protected byte[] escape(byte[] byteData) {
     	ArrayList<Integer> indexes = new ArrayList<Integer>();
     	for (int i = 0; i < byteData.length; i++) {
-    		if (byteData[i] == '"' || byteData[i] == '\\' || byteData[i] == '\n') {
-	    		if (byteData[i] == '\n') {
-	    			byteData[i] = 'n';
-	    		}
+    		if (byteData[i] == '"' || byteData[i] == '\\') {
 	    		indexes.add(i + indexes.size());
     		}
     	}
