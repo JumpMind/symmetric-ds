@@ -503,7 +503,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
                         triggerRouterService.syncTriggers();
 
-                        if (Version.isOlderVersion(node.getSymmetricVersion())
+                        if (Version.isOlderMinorVersion(node.getSymmetricVersion())
                                 && !parameterService.isRegistrationServer()
                                 && parameterService.is(
                                         ParameterConstants.AUTO_RELOAD_SYM_ON_UPGRADE, true)) {
@@ -828,11 +828,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "The {} property must be a longer period of time than the {} property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
                     ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
                     ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
-        } else if (node != null && Version.isOlderThanVersion(Version.version(), node.getSymmetricVersion())) {
+        } else if (node != null && Version.isOlderMinorVersion(Version.version(), node.getSymmetricVersion())) {
             log.warn("SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}", 
                     Version.version(), node.getSymmetricVersion());
         } else {
-            if (node != null && Version.isOlderThanVersion(node.getSymmetricVersion(), Version.version())) {
+            if (node != null && Version.isOlderMinorVersion(node.getSymmetricVersion(), Version.version())) {
                 log.debug("The current version of {} is newer than the last running version of {}", 
                         Version.version(), node.getSymmetricVersion());
             }
