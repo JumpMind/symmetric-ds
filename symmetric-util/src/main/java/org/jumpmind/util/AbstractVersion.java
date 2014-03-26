@@ -170,13 +170,17 @@ abstract public class AbstractVersion {
     }
 
     public boolean isOlderMinorVersion(String oldVersion) {
-        String currentVersion = version();
-        if (noVersion(currentVersion) || noVersion(oldVersion)) {
+        return isOlderMinorVersion(version, version());
+    }
+
+    public boolean isOlderMinorVersion(String checkVersion, String targetVersion) {
+
+        if (noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
         }
 
-        int[] checkVersions = parseVersion(oldVersion);
-        int[] targetVersions = parseVersion(currentVersion);
+        int[] checkVersions = parseVersion(checkVersion);
+        int[] targetVersions = parseVersion(targetVersion);
 
         if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
@@ -186,4 +190,5 @@ abstract public class AbstractVersion {
         }
         return false;
     }
+
 }

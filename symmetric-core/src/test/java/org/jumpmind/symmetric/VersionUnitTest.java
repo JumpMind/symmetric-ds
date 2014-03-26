@@ -46,4 +46,27 @@ public class VersionUnitTest {
         assertTrue(Version.isOlderVersion("1.6.1"));
         assertFalse(Version.isOlderVersion("3.6.1"));
     }
+    
+    @Test
+    public void testIsMinorOlderVersion() {
+        assertTrue(Version.isOlderMinorVersion("1.5", "1.6"));
+        assertTrue(Version.isOlderMinorVersion("1.5.0", "1.6"));
+        assertTrue(Version.isOlderMinorVersion("1.5.7", "1.6"));
+        assertTrue(Version.isOlderMinorVersion("1.5.2", "1.6.1"));
+
+        assertTrue(Version.isOlderMinorVersion("1.5", "1.6.0"));
+        assertTrue(Version.isOlderMinorVersion("1.5.0", "1.6.0"));
+        assertTrue(Version.isOlderMinorVersion("1.5.7", "1.6.0"));
+        assertTrue(Version.isOlderMinorVersion("1.5.2", "1.6"));
+
+        assertFalse(Version.isOlderMinorVersion("1.6.1", "1.6.0"));
+        assertFalse(Version.isOlderMinorVersion("1.6", "1.6"));
+        assertFalse(Version.isOlderMinorVersion("1.6.0", "1.6"));
+        assertFalse(Version.isOlderMinorVersion("1.6.0", "1.6.0"));
+        assertFalse(Version.isOlderMinorVersion("1.6.15", "1.6.10"));
+        assertFalse(Version.isOlderMinorVersion("1.6.15", "1.6"));
+        assertFalse(Version.isOlderMinorVersion("1.7.10", "1.6.15"));
+        assertFalse(Version.isOlderMinorVersion("2.6.0", "1.7.15"));
+    }
+
 }
