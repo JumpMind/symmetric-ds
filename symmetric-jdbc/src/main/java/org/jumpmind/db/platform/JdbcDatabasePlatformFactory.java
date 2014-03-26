@@ -52,6 +52,8 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -68,6 +70,8 @@ public class JdbcDatabasePlatformFactory {
      * name.
      */
     private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
+
+    private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
 
     static {
 
@@ -188,7 +192,8 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             nameVersion[2] = url;
-
+            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
+            
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
