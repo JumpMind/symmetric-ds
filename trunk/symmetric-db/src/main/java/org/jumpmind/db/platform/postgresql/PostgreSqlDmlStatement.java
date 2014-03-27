@@ -123,6 +123,8 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                     sql.append("cast(? as bit varying)").append(",");
                 } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
                     sql.append("cast(? as interval)").append(",");
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append("ST_GEOMFROMTEXT(?)").append(",");
                 } else {
                     sql.append("?").append(",");
                 }
@@ -153,6 +155,9 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                           .append(" = cast(? as interval)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                    .append(" = ST_GEOMFROMTEXT(?)").append(separator);
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
                             .append(separator);
