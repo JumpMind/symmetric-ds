@@ -12,7 +12,7 @@ public class PostgreSqlDdlTypesTest extends AbstractDdlTypesTest {
 
     @Override
     protected String[] getDdlTypes() {
-        return new String[] { "serial", "bigserial", "decimal", "numeric", "geometry" };
+        return new String[] { "serial", "bigserial", "decimal", "numeric" };
     }
 
 }
