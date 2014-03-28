@@ -15,3 +15,7 @@ Dave Michels <dmichels2@users.sourceforge.net>
   
 Jon Krajewski <jkrajewski@users.sourceforge.net>
   Contributed several extension points      
+  
+Cronje Fourie
+  Contributed improvements for the PostgreSQL dialect, including PostGIS support
+  
