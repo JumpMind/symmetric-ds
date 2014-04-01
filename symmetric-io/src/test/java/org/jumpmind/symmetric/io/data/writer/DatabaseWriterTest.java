@@ -417,7 +417,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] values = new String[TEST_COLUMNS.length];
         values[0] = getNextId();
         values[1] = "  two spaces before";
-        values[2] = "two spaces after  ";
+        if (!(platform instanceof AseDatabasePlatform)) {
+        	values[2] = "two spaces after  ";
+        }
         values[3] = " one space before";
         values[4] = "one space after ";
         writeData(new CsvData(DataEventType.INSERT, values), values);
@@ -435,7 +437,10 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     public void testStringEmpty() throws Exception {
         String[] values = new String[TEST_COLUMNS.length];
         values[0] = getNextId();
-        values[1] = values[2] = values[3] = values[4] = "";
+        if (!(platform instanceof AseDatabasePlatform)) {
+        	values[1] = values[2] = "";
+        }
+        values[3] = values[4] = "";
         writeData(new CsvData(DataEventType.INSERT, values), values);
     }
 
