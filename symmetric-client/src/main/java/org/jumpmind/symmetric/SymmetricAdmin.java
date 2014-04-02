@@ -32,7 +32,9 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -42,6 +44,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.h2.util.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -82,6 +85,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_OPEN_REGISTRATION = "open-registration";
 
     private static final String CMD_SYNC_TRIGGERS = "sync-triggers";
+    
+    private static final String CMD_DROP_TRIGGERS = "drop-triggers";
 
     private static final String CMD_EXPORT_PROPERTIES = "export-properties";
     
@@ -104,6 +109,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_WHERE = "where";
 
     private static final String OPTION_FORCE = "force";
+    
+    private static final String OPTION_OUT = "out";
 
     private static final String OPTION_NODE_GROUP = "node-group";
 
@@ -157,6 +164,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_CREATE_SYM_TABLES);
             printHelpLine(pw, CMD_EXPORT_SYM_TABLES);
             printHelpLine(pw, CMD_SYNC_TRIGGERS);
+            printHelpLine(pw, CMD_DROP_TRIGGERS);
             printHelpLine(pw, CMD_EXPORT_PROPERTIES);
             printHelpLine(pw, CMD_SEND_SQL);
             printHelpLine(pw, CMD_SEND_SCHEMA);
@@ -200,6 +208,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "w", OPTION_WHERE, true);
             }
             if (cmd.equals(CMD_SYNC_TRIGGERS)) {
+                addOption(options, "o", OPTION_OUT, false);
                 addOption(options, "f", OPTION_FORCE, false);
             }
 
@@ -234,6 +243,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, "s", OPTION_SCHEMA, true);
         addOption(options, "w", OPTION_WHERE, true);
         addOption(options, "f", OPTION_FORCE, false);
+        addOption(options, "o", OPTION_OUT, true);
         buildCryptoOptions(options);
     }
 
@@ -267,6 +277,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_SYNC_TRIGGERS)) {
             syncTrigger(line, args);
+            return true;
+        } else if (cmd.equals(CMD_DROP_TRIGGERS)) {
+            dropTrigger(line, args);
             return true;
         } else if (cmd.equals(CMD_CREATE_SYM_TABLES)) {
             createSymTables();
@@ -373,18 +386,47 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void syncTrigger(CommandLine line, List<String> args) throws IOException {
         boolean genAlways = line.hasOption(OPTION_FORCE);
+        String filename = line.getOptionValue(OPTION_OUT);
+        String catalogName = line.getOptionValue(OPTION_CATALOG);
+        String schemaName = line.getOptionValue(OPTION_SCHEMA);
         File file = null;
-        if (args.size() > 0) {
-            file = new File(args.get(0));
+        if (filename != null) {
+            file = new File(filename);
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
             }
         }
         ITriggerRouterService triggerService = getSymmetricEngine().getTriggerRouterService();
         StringBuilder sqlBuffer = new StringBuilder();
-        triggerService.syncTriggers(sqlBuffer, genAlways);
+        if (args.size() == 0) {
+            triggerService.syncTriggers(sqlBuffer, genAlways);
+        } else {
+            for (String tablename : args) {
+                Table table = platform.getTableFromCache(catalogName, schemaName, tablename, true);
+                if (table != null) {
+                    triggerService.syncTriggers(table, genAlways);
+                } else {
+                    System.out.println("Unable to find table " + tablename);
+                }
+            }
+        }
         if (file != null) {
             FileUtils.writeStringToFile(file, sqlBuffer.toString());
+        }
+    }
+
+    private void dropTrigger(CommandLine line, List<String> args) throws IOException {
+        ITriggerRouterService triggerService = getSymmetricEngine().getTriggerRouterService();
+        if (args.size() == 0) {
+            System.out.println("Dropping all triggers...");
+            triggerService.dropTriggers();
+        } else {
+            for (String tablename : args) {
+                System.out.println("Dropping trigger for table " + tablename);
+                Set<String> tables = new HashSet<String>();
+                tables.add(tablename);
+                triggerService.dropTriggers(tables);
+            }
         }
     }
 
