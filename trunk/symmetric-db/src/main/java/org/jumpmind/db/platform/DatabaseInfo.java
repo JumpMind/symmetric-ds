@@ -253,6 +253,11 @@ public class DatabaseInfo {
      */
     private int minIsolationLevelToPreventPhantomReads = Connection.TRANSACTION_READ_COMMITTED;
     
+    /**
+     * Specifies if an empty string entered into a required char column will be read out as null (Sql Anywhere).
+     */
+    private boolean requiredCharColumnEmptyStringSameAsNull;
+    
 	/**
      * Creates a new platform info object.
      */
@@ -1261,4 +1266,15 @@ public class DatabaseInfo {
 			int minIsolationLevelToPreventPhantomReads) {
 		this.minIsolationLevelToPreventPhantomReads = minIsolationLevelToPreventPhantomReads;
 	}
+
+    public boolean isRequiredCharColumnEmptyStringSameAsNull() {
+        return requiredCharColumnEmptyStringSameAsNull;
+    }
+
+    public void setRequiredCharColumnEmptyStringSameAsNull(
+            boolean requiredCharColumnEmptyStringSameAsNull) {
+        this.requiredCharColumnEmptyStringSameAsNull = requiredCharColumnEmptyStringSameAsNull;
+    }
+	
+	
 }

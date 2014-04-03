@@ -206,7 +206,10 @@ abstract public class AbstractWriterTest {
 
     protected String translateExpectedCharString(String value, int size, boolean isRequired) {
         if (isRequired && value == null) {
-            value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
+            if (!platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull() ||
+                    platform.getDatabaseInfo().isEmptyStringNulled()) {
+                value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
+            }
         }
         if (value != null
                 && ((StringUtils.isBlank(value) && platform.getDatabaseInfo()
