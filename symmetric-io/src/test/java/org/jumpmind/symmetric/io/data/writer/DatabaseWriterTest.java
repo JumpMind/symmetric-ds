@@ -32,12 +32,14 @@ import java.util.UUID;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -377,6 +379,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         values[10] = "-0.0747663551401869";
         String[] expectedValues = (String[]) ArrayUtils.clone(values);
         massageExpectectedResultsForDialect(expectedValues);
+        
+        if (platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull()) {
+            expectedValues[4] = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
+        }
+        
         writeData(new CsvData(DataEventType.INSERT, values), expectedValues);
     }
 
@@ -387,6 +394,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         values[10] = "123456,99";
         String[] expectedValues = (String[]) ArrayUtils.clone(values);
         massageExpectectedResultsForDialect(expectedValues);
+        if (platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull()) {
+            expectedValues[4] = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
+        }
         writeData(new CsvData(DataEventType.INSERT, values), expectedValues);
     }
 
@@ -441,14 +451,22 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         	values[1] = values[2] = "";
         }
         values[3] = values[4] = "";
-        writeData(new CsvData(DataEventType.INSERT, values), values);
+        String[] expectedValues = (String[]) ArrayUtils.clone(values);
+        if (platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull()) {
+            expectedValues[4] = null;
+        }
+        writeData(new CsvData(DataEventType.INSERT, values), expectedValues);
     }
 
     @Test
     public void testStringNull() throws Exception {
         String[] values = new String[TEST_COLUMNS.length];
         values[0] = getNextId();
-        writeData(new CsvData(DataEventType.INSERT, values), values);
+        String[] expectedValues = (String[]) ArrayUtils.clone(values);
+        if (platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull()) {
+            expectedValues[4] = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
+        }
+        writeData(new CsvData(DataEventType.INSERT, values), expectedValues);
     }
 
     @Test
@@ -602,7 +620,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         
         if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform
-                        || platform instanceof MsSqlDatabasePlatform || platform instanceof AseDatabasePlatform))) {
+                        || platform instanceof MsSqlDatabasePlatform 
+                        || platform instanceof AseDatabasePlatform
+                        || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
         if (values[10] != null) {
@@ -617,6 +637,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             DecimalFormat df = new DecimalFormat("0.00####################################");
             values[10] = df.format(new BigDecimal(values[10]).setScale(scale,mode));
         }
+        
+        // Adjust character fields that may have been adjusted from null to a default space with appropriate padding
+        values[3] = translateExpectedCharString(values[3], 50, false);
+        values[4] = translateExpectedCharString(values[4], 50, true);
+        
         return values;
     }
 

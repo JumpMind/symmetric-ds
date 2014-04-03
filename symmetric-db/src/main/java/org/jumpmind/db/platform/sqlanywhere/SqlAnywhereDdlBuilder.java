@@ -91,13 +91,14 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
 
         databaseInfo.setDateOverridesToTimestamp(true);
-        databaseInfo.setNonBlankCharColumnSpacePadded(true);
-        databaseInfo.setBlankCharColumnSpacePadded(true);
+        databaseInfo.setNonBlankCharColumnSpacePadded(false);
+        databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
-
+        databaseInfo.setRequiredCharColumnEmptyStringSameAsNull(true);
+        
         addEscapedCharSequence("'", "''");
     }
 
