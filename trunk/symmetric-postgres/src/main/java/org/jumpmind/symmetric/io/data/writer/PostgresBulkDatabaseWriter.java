@@ -23,11 +23,14 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -51,6 +54,8 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected int loadedRows = 0;
 
+    protected boolean needsBinaryConversion;
+
     public PostgresBulkDatabaseWriter(IDatabasePlatform platform,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
         super(platform);
@@ -68,9 +73,20 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
-                    String formattedData = CsvUtils.escapeCsvData(
-                            data.getParsedData(CsvData.ROW_DATA), '\n', '\'', 
-                            CsvWriter.ESCAPE_MODE_DOUBLED);
+                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+                    if (needsBinaryConversion) {
+                        Column[] columns = targetTable.getColumns();
+                        for (int i = 0; i < columns.length; i++) {
+                            if (columns[i].isOfBinaryType() && parsedData[i] != null) {
+                                if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                                    parsedData[i] = encode(Hex.decodeHex(parsedData[i].toCharArray()));
+                                } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                                    parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes()));
+                                }
+                            }
+                        }
+                    }
+                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED);
                     byte[] dataToLoad = formattedData.getBytes();
                     copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
                     loadedRows++;
@@ -98,7 +114,9 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (copyIn != null) {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             try {
-                copyIn.flushCopy();
+                if (copyIn.isActive()) {
+                    copyIn.flushCopy();
+                }
             } catch (SQLException ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
             } finally {
@@ -139,13 +157,33 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                 flush();
             } finally {
                 try {
-                    copyIn.endCopy();
+                    if (copyIn.isActive()) {
+                        copyIn.endCopy();
+                    }
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
                     copyIn = null;
                 }
             }
+        }
+    }
+
+    @Override
+    public boolean start(Table table) {
+        if (super.start(table)) {
+            needsBinaryConversion = false;
+            if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
+                for (Column column : targetTable.getColumns()) {
+                    if (column.isOfBinaryType()) {
+                        needsBinaryConversion = true;
+                        break;
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -190,6 +228,23 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
         sql.replace(sql.length() - 1, sql.length(), ")");
         sql.append("FROM STDIN with delimiter ',' csv quote ''''");
         return sql.toString();
+    }
+    
+    protected String encode(byte[] byteData) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : byteData) {
+            int i = b & 0xff;
+            if (i >= 0 && i <= 7) {
+                sb.append("\\00").append(Integer.toString(i, 8));
+            } else if (i >= 8 && i <= 31) {
+                sb.append("\\0").append(Integer.toString(i, 8));
+            } else if (i == 92 || i >= 127) {
+                sb.append("\\").append(Integer.toString(i, 8));
+            } else {
+                sb.append(Character.toChars(i));
+            }
+        }
+        return sb.toString();
     }
 
 }
