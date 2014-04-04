@@ -25,27 +25,21 @@ import java.util.List;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
-import org.jumpmind.symmetric.io.MySqlBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
-public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
-
-    protected static IStagingManager stagingManager;
+public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT).get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER)
-                .equals("com.mysql.jdbc.Driver")) {
+                .equals("org.postgresql.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("tmp");
         }
     }
 
@@ -55,13 +49,12 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return platform != null && platform instanceof MySqlDatabasePlatform;
+        return platform != null && platform instanceof PostgreSqlDatabasePlatform;
     }
 
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MySqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,
-                true, true), new TableCsvData(table, data));
+        return writeData(new PostgresBulkDatabaseWriter(platform, new CommonsDbcpNativeJdbcExtractor(), 1000), new TableCsvData(table, data));
     }
 
 }
