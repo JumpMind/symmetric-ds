@@ -55,6 +55,7 @@ import org.junit.After;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +99,11 @@ abstract public class AbstractTest {
         properties.setProperty(ParameterConstants.REGISTRATION_URL, "http://localhost:"
                 + registrationPort + "/sync/" + getGroupNames()[0]);
         return properties;
+    }
+    
+    @BeforeClass
+    public static void tmpDir() {
+        System.setProperty("java.io.tmpdir", "target/tmp");
     }
 
     @Before

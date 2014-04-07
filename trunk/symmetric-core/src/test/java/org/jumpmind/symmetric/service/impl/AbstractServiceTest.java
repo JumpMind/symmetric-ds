@@ -52,9 +52,10 @@ public abstract class AbstractServiceTest {
     static protected ISymmetricEngine engine;
 
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
-
+    
     @BeforeClass
-    public static void setup() throws Exception {        
+    public static void setup() throws Exception {
+        System.setProperty("java.io.tmpdir", "target/tmp");
         if (engine == null) {
             //Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
