@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
+import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,11 @@ public abstract class AbstractIntegrationTest {
     protected static TestTablesService serverTestService;
 
     protected static TestTablesService clientTestService;
+
+    @BeforeClass
+    public static void tmpDir() {
+        System.setProperty("java.io.tmpdir", "target/tmp");
+    }
 
     protected ISymmetricEngine getClient() {
         if (client == null) {
