@@ -101,11 +101,6 @@ abstract public class AbstractTest {
         return properties;
     }
     
-    @BeforeClass
-    public static void tmpDir() {
-        System.setProperty("java.io.tmpdir", "target/tmp");
-    }
-
     @Before
     public void setup() {
         port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));

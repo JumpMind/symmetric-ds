@@ -64,14 +64,8 @@ public abstract class AbstractIntegrationTest {
 
     protected static TestTablesService clientTestService;
 
-    @BeforeClass
-    public static void tmpDir() {
-        System.setProperty("java.io.tmpdir", "target/tmp");
-    }
-
     protected ISymmetricEngine getClient() {
         if (client == null) {
-            System.setProperty("java.io.tmpdir", "target/tmp");
             EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
                     TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
                     TestSetupUtil.getResource("/symmetric-test.properties") }, "test.client",
@@ -90,7 +84,6 @@ public abstract class AbstractIntegrationTest {
     protected ISymmetricEngine getServer() {
         try {
             if (server == null) {
-                System.setProperty("java.io.tmpdir", "target/tmp");
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
                         new URL[] { TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
                                 TestSetupUtil.getResource("/symmetric-test.properties") },
