@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.statistic.RouterStats;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 /**
@@ -122,6 +123,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     log.error(
                             "Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.",
                             outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
+                    RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
+                    if (routerStats != null) {
+                        log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
+                    }
                 } else if (!outgoingBatch.isCommonFlag()) {
                     IStagedResource stagingResource = stagingManger.find(
                             Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
@@ -138,6 +143,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         /* Acknowledge the file_sync in case the file needs deleted. */
                         engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
                     }
+                    engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
                 }
             } else {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
