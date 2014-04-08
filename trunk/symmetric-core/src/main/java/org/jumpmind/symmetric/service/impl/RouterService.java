@@ -440,7 +440,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
-                context.logStats(log, totalTime);                
+                context.logStats(log, totalTime);
                 boolean detectGaps = context.isRequestGapDetection();
                 context.cleanup();
                 if (detectGaps) {
@@ -455,6 +455,13 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
         context.commit();
+
+        if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
+            engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
+                    context.getDataReadCount(), context.getPeekAheadFillCount(),
+                    context.getDataGaps(), context.getTransactions(), batches);
+        }
+
         for (OutgoingBatch batch : batches) {
             batch.setRouterMillis(System.currentTimeMillis() - batch.getCreateTime().getTime());
             for (IDataRouter dataRouter : usedRouters) {
