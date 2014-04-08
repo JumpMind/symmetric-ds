@@ -55,7 +55,6 @@ public abstract class AbstractServiceTest {
     
     @BeforeClass
     public static void setup() throws Exception {
-        System.setProperty("java.io.tmpdir", "target/tmp");
         if (engine == null) {
             //Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
