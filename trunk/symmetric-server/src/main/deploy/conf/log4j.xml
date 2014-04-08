@@ -99,6 +99,10 @@
     <category name="org.springframework">
         <priority value="ERROR" />
     </category>
+    
+    <category name="com.vaadin.server.DefaultDeploymentConfiguration">
+        <priority value="ERROR" />
+    </category>
 
     <!-- Uncomment to see CSV protocol from sending batches -->
     <!--
