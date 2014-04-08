@@ -783,6 +783,8 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.CHAR:
                 case Types.VARCHAR:
+                case ColumnTypes.NVARCHAR:
+                case ColumnTypes.LONGNVARCHAR:
                 case Types.LONGVARCHAR:
                     text += "varchar(1000)\n";
                     break;
