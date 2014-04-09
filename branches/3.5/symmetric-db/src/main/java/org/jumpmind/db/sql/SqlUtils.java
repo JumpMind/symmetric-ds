@@ -21,9 +21,10 @@
 package org.jumpmind.db.sql;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,13 +35,13 @@ abstract public class SqlUtils {
 
     private static boolean captureOwner = false;
 
-    private static List<ISqlTransaction> sqlTransactions = new ArrayList<ISqlTransaction>();
+    private static List<ISqlTransaction> sqlTransactions = Collections.synchronizedList(new ArrayList<ISqlTransaction>());
 
-    private static List<ISqlReadCursor<?>> sqlReadCursors = new ArrayList<ISqlReadCursor<?>>();
+    private static List<ISqlReadCursor<?>> sqlReadCursors = Collections.synchronizedList(new ArrayList<ISqlReadCursor<?>>());
 
-    private static Map<ISqlTransaction, Exception> sqlTransactionsOwnerMap = new HashMap<ISqlTransaction, Exception>();
+    private static Map<ISqlTransaction, Exception> sqlTransactionsOwnerMap = new ConcurrentHashMap<ISqlTransaction, Exception>();
 
-    private static Map<ISqlReadCursor<?>, Exception> sqlReadCursorsOwnerMap = new HashMap<ISqlReadCursor<?>, Exception>();
+    private static Map<ISqlReadCursor<?>, Exception> sqlReadCursorsOwnerMap = new ConcurrentHashMap<ISqlReadCursor<?>, Exception>();
 
     protected static void addSqlTransaction(ISqlTransaction transaction) {
         sqlTransactions.add(transaction);
@@ -103,3 +104,4 @@ abstract public class SqlUtils {
     }
 
 }
+
