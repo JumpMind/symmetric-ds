@@ -66,7 +66,7 @@ public class StatisticManager implements IStatisticManager {
 
     private HostStats hostStats;
 
-    private HashMap<Long, RouterStats> routerStatsByBatch = new HashMap<Long, RouterStats>(); 
+    private ConcurrentHashMap<Long, RouterStats> routerStatsByBatch = new ConcurrentHashMap<Long, RouterStats>(); 
     
     protected INodeService nodeService;
 
