@@ -41,6 +41,7 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 	}
 
     public boolean start(Table table) {
+        this.table = table;
         if (super.start(table)) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
