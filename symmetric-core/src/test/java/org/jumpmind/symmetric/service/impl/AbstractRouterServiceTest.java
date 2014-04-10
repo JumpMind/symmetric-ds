@@ -555,7 +555,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         trigger2.getRouter().setRouterType("column");
         trigger2.getRouter().setRouterExpression("EXTERNAL_DATA=:NODE_ID");
         String name = getPlatform().getName();
-        if (name.equals(DatabaseNamesConstants.DERBY) || name.equals(DatabaseNamesConstants.MSSQL)) {
+        if (name.equals(DatabaseNamesConstants.DERBY) || name.equals(DatabaseNamesConstants.MSSQL) || name.equals(DatabaseNamesConstants.SQLANYWHERE)) {
             // TODO could not get subselect to work in trigger text for derby or
             // mssql. probably need to work on derby's support of
             // external_select a bit more
