@@ -90,6 +90,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
+    public void removingIncomingBatches(String nodeId) {
+        sqlTemplate.update(getSql("deleteIncomingBatchByNodeSql"), nodeId);
+    }
+
     public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId) {
         return sqlTemplate.query(
                 getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"),
