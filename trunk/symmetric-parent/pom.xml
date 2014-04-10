@@ -373,8 +373,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                     <optimize>true</optimize>
                 </configuration>
             </plugin>
@@ -606,6 +606,11 @@
                 <artifactId>junit</artifactId>
                 <version>4.7</version>
             </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${version.slf4j}</version>
+            </dependency>            
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
