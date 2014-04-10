@@ -67,9 +67,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteIncomingBatchSql" ,"" + 
 "delete from $(incoming_batch) where batch_id = ? and node_id = ?                                                                                     " );
-    
+
+        putSql("deleteIncomingBatchByNodeSql" ,"delete from $(incoming_batch) where node_id = ?");
     }
-    
-    
 
 }
