@@ -34,8 +34,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return false;
-        //return platform != null && platform instanceof MsSqlDatabasePlatform;
+        return platform != null && platform instanceof MsSqlDatabasePlatform;
     }
 
     protected long writeData(List<CsvData> data) {
