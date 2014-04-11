@@ -139,6 +139,15 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     }
 
     @Test
+    public void testInsertWithNonEscaped() {
+        if (shouldTestRun(platform)) {
+            String[] values = { getNextId(), null, "\n\0\r\t\f\'\"", null, "\n\0\r\t\f\'\"",
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode("\n\0\r\t\f\'\"") };
+            insertAndVerify(values);
+        }
+    }
+
+    @Test
     public void testInsertWithSpecialEscape() {
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "\\n\\N\\0\\r\\t\\b\\f\\", "\\n\\N\\0\\r\\t\\b\\f\\", "\\x31\\x32\\x33", "\\061\\062\\063",
