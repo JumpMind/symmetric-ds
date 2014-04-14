@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
+import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -56,7 +56,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();

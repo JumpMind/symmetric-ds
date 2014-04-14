@@ -49,44 +49,44 @@ import org.slf4j.LoggerFactory;
  * has changed. If it has, it will take the correct action to apply the
  * configuration change to the current node.
  */
-public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter implements
+public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilterAdapter implements
         IBuiltInExtensionPoint, ILoadSyncLifecycleListener {
 
-    static final Logger log = LoggerFactory.getLogger(ConfigurationChangedFilter.class);
+    static final Logger log = LoggerFactory.getLogger(ConfigurationChangedDatabaseWriterFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_FLUSH_GROUPLETS_NEEDED = "FlushGrouplets."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_RESYNC_TABLE_NEEDED = "Resync.Table"
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();    
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();    
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_FLUSH_CONFLICTS_NEEDED = "FlushConflicts."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_REINITIALIZED = "Reinitialized."
-            + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
     private ISymmetricEngine engine;
 
-    public ConfigurationChangedFilter(ISymmetricEngine engine) {
+    public ConfigurationChangedDatabaseWriterFilter(ISymmetricEngine engine) {
         this.engine = engine;
     }
     
@@ -103,7 +103,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
                 engine.start();
                 context.put(CTX_KEY_REINITIALIZED, Boolean.TRUE);
             }
-        }
+        } 
         
         return true;
     }

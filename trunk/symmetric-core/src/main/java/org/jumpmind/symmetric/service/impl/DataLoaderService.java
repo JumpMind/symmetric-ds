@@ -76,7 +76,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
+import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.DynamicDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
@@ -168,7 +168,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.syncLifecycleListeners = new ArrayList<ILoadSyncLifecycleListener>();
         
-        ConfigurationChangedFilter configChangedFilter = new ConfigurationChangedFilter(engine);
+        ConfigurationChangedDatabaseWriterFilter configChangedFilter = new ConfigurationChangedDatabaseWriterFilter(engine);
         this.filters.add(configChangedFilter);
         this.syncLifecycleListeners.add(configChangedFilter);
         
