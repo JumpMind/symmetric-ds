@@ -112,7 +112,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
         }
         if (this.targetTable != null) {
             return true;
-        } else if (writerSettings.isIgnoreMissingTables()) {
+        } else if (writerSettings.isIgnoreMissingTables() || sourceTable.getName().toLowerCase().endsWith("console_user")) {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
             if (!missingTables.contains(qualifiedName)) {
                 log.warn("Did not find the {} table in the target database", qualifiedName);
