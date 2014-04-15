@@ -34,62 +34,62 @@ import org.slf4j.LoggerFactory;
 
 public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTransform {
 
-        public final static String NAME = "columnsToRowsKeyColumnTransform";
+	public final static String NAME = "columnsToRowsKeyColumnTransform";
 
-        public final static String CONTEXT_MAP="Map";
-        public final static String CONTEXT_PK_COLUMN="PKColumn";
-        
-        private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsKeyColumnTransform.class);
-        
-        public String getName() {
-                return NAME;
-        }
-        
-        public static String getContextBase(String transformId) {
-                return NAME + ":" + transformId + ":";
-        }
-        
-        public boolean isExtractColumnTransform() {
-                return true;
-        }
+	public final static String CONTEXT_MAP="Map";
+	public final static String CONTEXT_PK_COLUMN="PKColumn";
+	
+	private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsKeyColumnTransform.class);
+	
+	public String getName() {
+		return NAME;
+	}
+	
+	public static String getContextBase(String transformId) {
+		return NAME + ":" + transformId + ":";
+	}
+	
+	public boolean isExtractColumnTransform() {
+		return true;
+	}
 
-        public boolean isLoadColumnTransform() {
-                return true;
-        }
+	public boolean isLoadColumnTransform() {
+		return true;
+	}
 
-        public List<String> transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
-                        TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                        throws IgnoreRowException {
-                
-                if (StringUtils.trimToNull(column.getTransformExpression()) == null) {
-                        throw new RuntimeException("Transform configured incorrectly.  A map represnting PK and column names must be defined as part of the transform expression");
-                }
-                String mapAsString = StringUtils.trimToEmpty(column.getTransformExpression());
+	public List<String> transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
+			TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
+			throws IgnoreRowException {
+		
+		if (StringUtils.trimToNull(column.getTransformExpression()) == null) {
+			throw new RuntimeException("Transform configured incorrectly.  A map represnting PK and column names must be defined as part of the transform expression");
+		}
+		String mapAsString = StringUtils.trimToEmpty(column.getTransformExpression());
 
-                // Build reverse map, while also building up array to return
-                
-                List<String> result = new ArrayList<String>();
-                Map<String,String> reverseMap = new HashMap<String,String>();
-                
-                StringTokenizer tokens = new StringTokenizer(mapAsString);
+		// Build reverse map, while also building up array to return
+		
+		List<String> result = new ArrayList<String>();
+		Map<String,String> reverseMap = new HashMap<String,String>();
+		
+		StringTokenizer tokens = new StringTokenizer(mapAsString);
 
-                while (tokens.hasMoreElements()) {
-                        String keyValue = (String) tokens.nextElement();
-                        int equalIndex = keyValue.indexOf("=");
-                        if (equalIndex != -1) {
-                                reverseMap.put(keyValue.substring(equalIndex+1),keyValue.substring(0, equalIndex));
-                                result.add(keyValue.substring(equalIndex+1));
-                        } else {
-                                throw new RuntimeException("Map string for "+column.getTransformExpression()+" is invalid format: "+mapAsString);
-                        }
-                        
-                }
-                
-                context.put(getContextBase(column.getTransformId())+CONTEXT_MAP, reverseMap);
-                context.put(getContextBase(column.getTransformId())+CONTEXT_PK_COLUMN, column.getTargetColumnName());
-                
-                return result;          
-        }
+		while (tokens.hasMoreElements()) {
+			String keyValue = (String) tokens.nextElement();
+			int equalIndex = keyValue.indexOf("=");
+			if (equalIndex != -1) {
+				reverseMap.put(keyValue.substring(equalIndex+1),keyValue.substring(0, equalIndex));
+				result.add(keyValue.substring(equalIndex+1));
+			} else {
+				throw new RuntimeException("Map string for "+column.getTransformExpression()+" is invalid format: "+mapAsString);
+			}
+			
+		}
+		
+		context.put(getContextBase(column.getTransformId())+CONTEXT_MAP, reverseMap);
+		context.put(getContextBase(column.getTransformId())+CONTEXT_PK_COLUMN, column.getTargetColumnName());
+		
+		return result;		
+	}
 
 
 }

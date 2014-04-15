@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
@@ -434,17 +433,6 @@ public class RestService {
         syncTriggersImpl(getSymmetricEngine(), force);
     }
 
-    @ApiOperation(value = "Sync triggers on the single engine for a table")
-    @RequestMapping(value = "engine/synctriggers/{table}", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postSyncTriggersByTable(@PathVariable("table") String tableName,
-            @RequestParam(required = false, value = "catalog") String catalogName,
-            @RequestParam(required = false, value = "schema") String schemaName,
-            @RequestParam(required = false, value = "force") boolean force) {
-        syncTriggersByTableImpl(getSymmetricEngine(), catalogName, schemaName, tableName, force);
-    }
-
     /**
      * Creates instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
@@ -456,17 +444,6 @@ public class RestService {
     public final void postSyncTriggersByEngine(@PathVariable("engine") String engineName,
             @RequestParam(required = false, value = "force") boolean force) {
         syncTriggersImpl(getSymmetricEngine(engineName), force);
-    }
-
-    @ApiOperation(value = "Sync triggers on the specific engine for a table")
-    @RequestMapping(value = "engine/{engine}/synctriggers/{table}", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postSyncTriggersByTable(@PathVariable("engine") String engineName, @PathVariable("table") String tableName,
-            @RequestParam(required = false, value = "catalog") String catalogName,
-            @RequestParam(required = false, value = "schema") String schemaName,
-            @RequestParam(required = false, value = "force") boolean force) {
-        syncTriggersByTableImpl(getSymmetricEngine(engineName), catalogName, schemaName, tableName, force);
     }
 
     /**
@@ -1143,16 +1120,6 @@ public class RestService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         StringBuilder buffer = new StringBuilder();
         triggerRouterService.syncTriggers(buffer, force);
-    }
-
-    private void syncTriggersByTableImpl(ISymmetricEngine engine, String catalogName, String schemaName, String tableName, boolean force) {
-
-        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-        Table table = getSymmetricEngine().getDatabasePlatform().getTableFromCache(catalogName, schemaName, tableName, true);
-        if (table == null) {
-            throw new NotFoundException();
-        }
-        triggerRouterService.syncTriggers(table, force);
     }
 
     private void dropTriggersImpl(ISymmetricEngine engine) {

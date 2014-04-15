@@ -34,7 +34,6 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.LoadFilter;
-import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
@@ -43,7 +42,7 @@ import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
 
-    private Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> loadFilterCacheByNodeGroupLink;
+    private Map<NodeGroupLink, Map<String, List<LoadFilter>>> loadFilterCacheByNodeGroupLink;
 
     private long lastCacheTimeInMs;
 
@@ -59,7 +58,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                 createSqlReplacementTokens()));
     }
 
-    public Map<LoadFilterType, Map<String, List<LoadFilter>>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
+    public Map<String, List<LoadFilter>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
             boolean useCache) {
 
         // get the cache timeout
@@ -76,7 +75,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
 
         if (loadFilterCacheByNodeGroupLink != null) {
-            Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters = loadFilterCacheByNodeGroupLink
+            Map<String, List<LoadFilter>> loadFilters = loadFilterCacheByNodeGroupLink
                     .get(nodeGroupLink);
             return loadFilters;
         }
@@ -93,7 +92,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
                     || loadFilterCacheByNodeGroupLink == null) {
 
-                loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>>();
+                loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, Map<String, List<LoadFilter>>>();
                 List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
                 boolean ignoreCase = this.parameterService
                         .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
@@ -101,16 +100,10 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                 for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
                     NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
                     if (nodeGroupLink != null) {
-                        Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFiltersByType= loadFilterCacheByNodeGroupLink
+                        Map<String, List<LoadFilter>> loadFiltersByNodeGroup = loadFilterCacheByNodeGroupLink
                                 .get(nodeGroupLink);
-                        if (loadFiltersByType == null) {
-                            loadFiltersByType = new HashMap<LoadFilterType, Map<String, List<LoadFilter>>>();
-                            loadFilterCacheByNodeGroupLink.put(nodeGroupLink, loadFiltersByType);
-                        }
-                        Map<String, List<LoadFilter>> loadFiltersByTable = loadFiltersByType.get(loadFilter.getLoadFilterType());
-                        if (loadFiltersByTable == null) {
-                            loadFiltersByTable = new HashMap<String, List<LoadFilter>>();
-                            loadFiltersByType.put(loadFilter.getLoadFilterType(), loadFiltersByTable);
+                        if (loadFiltersByNodeGroup == null) {
+                            loadFiltersByNodeGroup = new HashMap<String, List<LoadFilter>>();
                         }
                         String tableName = loadFilter.getTargetTableName();
                         if (StringUtils.isBlank(tableName)) {
@@ -121,12 +114,15 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                         String qualifiedName = Table.getFullyQualifiedTableName(
                                 loadFilter.getTargetCatalogName(),
                                 loadFilter.getTargetSchemaName(), tableName);
-                        List<LoadFilter> loadFiltersForTable = loadFiltersByTable.get(qualifiedName);
+                        List<LoadFilter> loadFiltersForTable = loadFiltersByNodeGroup
+                                .get(qualifiedName);
                         if (loadFiltersForTable == null) {
                             loadFiltersForTable = new ArrayList<LoadFilter>();
-                            loadFiltersByTable.put(qualifiedName, loadFiltersForTable);
                         }
                         loadFiltersForTable.add(loadFilter);
+                        loadFiltersByNodeGroup.put(qualifiedName,
+                                loadFiltersForTable);
+                        loadFilterCacheByNodeGroupLink.put(nodeGroupLink, loadFiltersByNodeGroup);
                     }
                 }
                 lastCacheTimeInMs = System.currentTimeMillis();

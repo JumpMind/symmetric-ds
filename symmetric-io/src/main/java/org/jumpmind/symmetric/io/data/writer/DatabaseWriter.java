@@ -25,9 +25,12 @@ import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -49,17 +52,27 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectExpressionKey;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
+import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
+import bsh.EvalError;
+import bsh.Interpreter;
 
-    protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
-    
+public class DatabaseWriter implements IDataWriter {
+
+    protected final static Logger log = LoggerFactory.getLogger(DatabaseWriter.class);
+
+    public static enum LoadStatus {
+        SUCCESS, CONFLICT
+    };
+
     public static final String CUR_DATA="DatabaseWriter.CurData";
 
     protected IDatabasePlatform platform;
@@ -68,57 +81,193 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     protected DmlStatement currentDmlStatement;
 
-    public DefaultDatabaseWriter(IDatabasePlatform platform) {
+    protected boolean lastUseConflictDetection = true;
+
+    protected boolean lastApplyChangesOnly = false;
+
+    protected Table sourceTable;
+
+    protected Table targetTable;
+
+    protected Map<String, Table> targetTables = new HashMap<String, Table>();
+
+    protected CsvData lastData;
+
+    protected Batch batch;
+
+    protected DataContext context;
+
+    protected long uncommittedCount = 0;
+
+    protected DatabaseWriterSettings writerSettings;
+
+    protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
+
+    protected IDatabaseWriterConflictResolver conflictResolver;
+
+    protected Set<String> missingTables = new HashSet<String>();
+
+    public DatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
     }
 
-    public DefaultDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings) {
+    public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings) {
         this(platform, null, settings);
     }
 
-    public DefaultDatabaseWriter(IDatabasePlatform platform,
+    public DatabaseWriter(IDatabasePlatform platform,
             IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings) {
-        super(conflictResolver, settings);
         this.platform = platform;
+        this.conflictResolver = conflictResolver == null ? new DefaultDatabaseWriterConflictResolver()
+                : conflictResolver;
+        this.writerSettings = settings == null ? new DatabaseWriterSettings() : settings;
     }
 
-    @Override
     public void open(DataContext context) {
-        super.open(context);
+        this.context = context;
         this.transaction = platform.getSqlTemplate().startSqlTransaction();
     }
 
-    @Override
+    public void start(Batch batch) {
+        this.batch = batch;
+        this.statistics.put(batch, new Statistics());
+    }
+
     public boolean start(Table table) {
+        if (table == null) {
+            throw new NullPointerException("Cannot load a null table");
+        }
+        this.lastData = null;
         this.currentDmlStatement = null;
-        boolean process = super.start(table);
-        if (process && targetTable != null) {
-            allowInsertIntoAutoIncrementColumns(true, this.targetTable);
-        } 
-        return process;
-    }    
-
-    @Override
-    public void end(Table table) {
-        super.end(table);
-        allowInsertIntoAutoIncrementColumns(false, this.targetTable);
-    }
-
-    @Override
-    public void end(Batch batch, boolean inError) {
-        this.currentDmlStatement = null;
-        super.end(batch, inError);
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        if (transaction != null) {
-            this.transaction.close();
+        this.sourceTable = table;
+        this.targetTable = lookupTableAtTarget(this.sourceTable);
+        this.sourceTable.copyColumnTypesFrom(this.targetTable);
+        if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
+            this.targetTable = table;
+        }
+        if (this.targetTable != null) {
+            String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable, quote);
+            return true;
+        } else if (writerSettings.isIgnoreMissingTables() || sourceTable.getName().toLowerCase().endsWith("console_user")) {
+            String qualifiedName = sourceTable.getFullyQualifiedTableName();
+            if (!missingTables.contains(qualifiedName)) {
+                log.warn("Did not find the {} table in the target database", qualifiedName);
+                missingTables.add(qualifiedName);
+            }
+            return false;
+        } else {
+            // The first data should fail because the table will not be found
+            return true;
         }
     }
 
-    @Override
+
+    public void write(CsvData data) {
+        write(data, false);
+    }
+
+
+    protected void write(CsvData data, boolean fallback) {
+        if (data.requiresTable() &&
+                (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
+            // if we cross batches and the table isn't specified, then
+            // use the last table we used
+            start(context.getLastParsedTable());
+        }
+        if (targetTable != null || !data.requiresTable() ||
+                (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
+            try {
+                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+                if (filterBefore(data)) {
+                    LoadStatus loadStatus = LoadStatus.SUCCESS;
+                    switch (data.getDataEventType()) {
+                        case UPDATE:
+                            loadStatus = update(data, true, true);
+                            break;
+                        case INSERT:
+                            loadStatus = insert(data);
+                            break;
+                        case DELETE:
+                            loadStatus = delete(data, true);
+                            break;
+                        case BSH:
+                            script(data);
+                            break;
+                        case SQL:
+                            sql(data);
+                            break;
+                        case CREATE:
+                            create(data);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (loadStatus == LoadStatus.CONFLICT) {
+                        if (conflictResolver != null && !fallback) {
+                            conflictResolver.needsResolved(this, data, loadStatus);
+                        } else {
+                            throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
+                        }
+                    } else {
+                        uncommittedCount++;
+                    }
+
+                    lastData = data;
+
+                    filterAfter(data);
+
+                    checkForEarlyCommit();
+
+                }
+
+            } catch (IgnoreBatchException ex) {
+                rollback();
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (filterError(data, ex)) {
+                    throw ex;
+                } else {
+                    uncommittedCount++;
+                    statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+                    checkForEarlyCommit();
+                }
+            }
+        } else {
+            if (sourceTable != null) {
+                // If the source table was found but the target table is still unknown throw an exception
+                throw new SqlException(String.format("Could not find the target table %s",
+                        sourceTable.getFullyQualifiedTableName()));
+            } else {
+                throw new SqlException("The target table was not specified");
+            }
+        }
+    }
+
+    protected void checkForEarlyCommit() {
+        if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
+            commit(true);
+
+            long sleep = writerSettings.getCommitSleepInterval();
+            if (sleep > 0) {
+                /*
+                 * Chances are if SymmetricDS is configured to commit early in a
+                 * batch we want to give other threads a chance to do work and
+                 * access the database. This was added to support H2 clients
+                 * that are loading big batches while an application is doing
+                 * work.
+                 */
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    log.warn("{}", e.getMessage());
+                }
+            }
+        }
+    }
+
     protected void commit(boolean earlyCommit) {
         if (transaction != null) {
             try {
@@ -134,10 +283,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
 
         }
-        super.commit(earlyCommit);
+        uncommittedCount = 0;
     }
 
-    @Override
     protected void rollback() {
         if (transaction != null) {
             try {
@@ -149,10 +297,183 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
 
         }
-        super.rollback();
+        uncommittedCount = 0;
     }
 
-    @Override
+    protected boolean requireNewStatement(DmlType currentType, CsvData data,
+            boolean applyChangesOnly, boolean useConflictDetection,
+            Conflict.DetectConflict detectType) {
+        boolean requiresNew = currentDmlStatement == null || lastData == null
+                || currentDmlStatement.getDmlType() != currentType
+                || lastData.getDataEventType() != data.getDataEventType()
+                || lastApplyChangesOnly != applyChangesOnly
+                || lastUseConflictDetection != useConflictDetection;
+        if (!requiresNew && currentType == DmlType.UPDATE) {
+            String currentChanges = Arrays.toString(data.getChangedDataIndicators());
+            String lastChanges = Arrays.toString(lastData.getChangedDataIndicators());
+            requiresNew = !currentChanges.equals(lastChanges);
+        }
+
+        if (!requiresNew) {
+            requiresNew |= containsNullLookupKeyDataSinceLastStatement(currentType, data,
+                    detectType);
+        }
+
+        return requiresNew;
+    }
+
+    protected boolean containsNullLookupKeyDataSinceLastStatement(DmlType currentType,
+            CsvData data, DetectConflict detectType) {
+        boolean foundNullValueChange = false;
+        if (currentType == DmlType.UPDATE || currentType == DmlType.DELETE) {
+            if (detectType != null
+                    && (detectType == DetectConflict.USE_CHANGED_DATA || detectType == DetectConflict.USE_OLD_DATA)) {
+                String[] lastOldData = lastData.getParsedData(CsvData.OLD_DATA);
+                String[] newOldData = data.getParsedData(CsvData.OLD_DATA);
+                if (lastOldData != null && newOldData != null) {
+                    for (int i = 0; i < lastOldData.length && i < newOldData.length; i++) {
+                        String lastValue = lastOldData[i];
+                        String value = newOldData[i];
+                        if ((lastValue != null && value == null)
+                                || (value != null && lastValue == null)) {
+                            foundNullValueChange = true;
+                        }
+                    }
+                }
+            } else {
+                String[] lastpkData = lastData.getParsedData(CsvData.PK_DATA);
+                String[] newpkData = data.getParsedData(CsvData.PK_DATA);
+                if (lastpkData != null && newpkData != null) {
+                    for (int i = 0; i < lastpkData.length && i < newpkData.length; i++) {
+                        String lastValue = lastpkData[i];
+                        String value = newpkData[i];
+                        if ((lastValue != null && value == null)
+                                || (value != null && lastValue == null)) {
+                            foundNullValueChange = true;
+                        }
+                    }
+                }
+            }
+        }
+        return foundNullValueChange;
+    }
+
+    protected boolean filterError(CsvData data, Exception ex) {
+        boolean process = true;
+        List<IDatabaseWriterErrorHandler> filters = this.writerSettings
+                .getDatabaseWriterErrorHandlers();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterErrorHandler filter : filters) {
+                    process &= filter.handleError(context, targetTable, data, ex);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+        return process;
+    }
+
+    protected boolean filterBefore(CsvData data) {
+        boolean process = true;
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    process &= filter.beforeWrite(this.context, this.sourceTable, data);
+                }
+                // re-lookup target table in case the source table has changed
+                Table oldTargetTable = targetTable;
+                if (this.sourceTable!=null) {
+                    targetTable = lookupTableAtTarget(this.sourceTable);
+                }
+                if (targetTable!=null && !targetTable.equals(oldTargetTable)) {
+                    // allow for auto increment columns to be inserted into if appropriate
+                    String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+                    if (oldTargetTable!=null) {
+                        transaction.allowInsertIntoAutoIncrementColumns(false, oldTargetTable, quote);
+                    }
+                    transaction.allowInsertIntoAutoIncrementColumns(true, targetTable, quote);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+        return process;
+    }
+
+    protected void notifyFiltersEarlyCommit() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    filter.earlyCommit(context);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+    }
+
+    protected void notifyFiltersBatchComplete() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    filter.batchComplete(context);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+    }
+
+    protected void notifyFiltersBatchCommitted() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    filter.batchCommitted(context);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+    }
+
+    protected void notifyFiltersBatchRolledback() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    filter.batchRolledback(context);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+    }
+
+    protected void filterAfter(CsvData data) {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
+        if (filters != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
+                for (IDatabaseWriterFilter filter : filters) {
+                    filter.afterWrite(this.context, this.sourceTable, data);
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
+            }
+        }
+    }
+
     protected LoadStatus insert(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -166,7 +487,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
             try {
                 String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
-                        this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data)));
+                        getLookupKeyData(getLookupDataMap(data), this.currentDmlStatement));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 if (count > 0) {
@@ -196,7 +517,26 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
     }
 
-    @Override
+    protected String[] getRowData(CsvData data, String dataType) {
+        String[] targetValues = new String[targetTable.getColumnCount()];
+        String[] targetColumnNames = targetTable.getColumnNames();
+
+        String[] originalValues = data.getParsedData(dataType);
+        String[] sourceColumnNames = sourceTable.getColumnNames();
+
+        if (originalValues != null) {
+            for (int i = 0; i < sourceColumnNames.length && i < originalValues.length; i++) {
+                for (int t = 0; t < targetColumnNames.length; t++) {
+                    if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
+                        targetValues[t] = originalValues[i];
+                        break;
+                    }
+                }
+            }
+        }
+        return targetValues;
+    }
+
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -286,7 +626,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
             try {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
-                long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
+                long count = execute(data, getLookupKeyData(lookupDataMap, currentDmlStatement));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
@@ -312,7 +652,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     }
 
-    @Override
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -445,7 +784,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         .toArray(new String[changedColumnValueList.size()]);
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
                 String[] values = (String[]) ArrayUtils.addAll(rowData,
-                        this.currentDmlStatement.getLookupKeyData(lookupDataMap));
+                        getLookupKeyData(lookupDataMap, currentDmlStatement));
 
                 try {
                     long count = execute(data, values);
@@ -476,133 +815,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
-    }
-    
-    @Override
-    protected boolean create(CsvData data) {
-        String xml = null;
-        try {
-            transaction.commit();
-
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            xml = data.getParsedData(CsvData.ROW_DATA)[0];
-            log.info("About to create table using the following definition: {}", xml);
-            StringReader reader = new StringReader(xml);
-            Database db = DatabaseXmlUtil.read(reader, false);
-            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                platform.alterCaseToMatchDatabaseDefaultCase(db);
-            }
-
-            if (writerSettings.isAlterTable()) {
-                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
-            } else {
-                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
-            }
-
-            platform.resetCachedTableModel();
-            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
-            return true;
-        } catch (RuntimeException ex) {
-            log.error("Failed to alter table using the following xml: {}", xml);
-            throw ex;
-        } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-        }
-    }
-
-    @Override
-    protected boolean sql(CsvData data) {
-        try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String script = data.getParsedData(CsvData.ROW_DATA)[0];
-            List<String> sqlStatements = getSqlStatements(script);
-            long count = 0;
-            for (String sql : sqlStatements) {
-
-                sql = preprocessSqlStatement(sql);
-                transaction.prepare(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("About to run: {}", sql);
-                }
-                count += transaction.prepareAndExecute(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("{} rows updated when running: {}", count, sql);
-                }
-            }
-            statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
-            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
-                    count);
-            return true;
-        } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-        }
-    }
-    
-    protected boolean requireNewStatement(DmlType currentType, CsvData data,
-            boolean applyChangesOnly, boolean useConflictDetection,
-            Conflict.DetectConflict detectType) {
-        boolean requiresNew = currentDmlStatement == null || lastData == null
-                || currentDmlStatement.getDmlType() != currentType
-                || lastData.getDataEventType() != data.getDataEventType()
-                || lastApplyChangesOnly != applyChangesOnly
-                || lastUseConflictDetection != useConflictDetection;
-        if (!requiresNew && currentType == DmlType.UPDATE) {
-            String currentChanges = Arrays.toString(data.getChangedDataIndicators());
-            String lastChanges = Arrays.toString(lastData.getChangedDataIndicators());
-            requiresNew = !currentChanges.equals(lastChanges);
-        }
-
-        if (!requiresNew) {
-            requiresNew |= containsNullLookupKeyDataSinceLastStatement(currentType, data,
-                    detectType);
-        }
-
-        return requiresNew;
-    }
-
-    protected boolean containsNullLookupKeyDataSinceLastStatement(DmlType currentType,
-            CsvData data, DetectConflict detectType) {
-        boolean foundNullValueChange = false;
-        if (currentType == DmlType.UPDATE || currentType == DmlType.DELETE) {
-            if (detectType != null
-                    && (detectType == DetectConflict.USE_CHANGED_DATA || detectType == DetectConflict.USE_OLD_DATA)) {
-                String[] lastOldData = lastData.getParsedData(CsvData.OLD_DATA);
-                String[] newOldData = data.getParsedData(CsvData.OLD_DATA);
-                if (lastOldData != null && newOldData != null) {
-                    for (int i = 0; i < lastOldData.length && i < newOldData.length; i++) {
-                        String lastValue = lastOldData[i];
-                        String value = newOldData[i];
-                        if ((lastValue != null && value == null)
-                                || (value != null && lastValue == null)) {
-                            foundNullValueChange = true;
-                        }
-                    }
-                }
-            } else {
-                String[] lastpkData = lastData.getParsedData(CsvData.PK_DATA);
-                String[] newpkData = data.getParsedData(CsvData.PK_DATA);
-                if (lastpkData != null && newpkData != null) {
-                    for (int i = 0; i < lastpkData.length && i < newpkData.length; i++) {
-                        String lastValue = lastpkData[i];
-                        String value = newpkData[i];
-                        if ((lastValue != null && value == null)
-                                || (value != null && lastValue == null)) {
-                            foundNullValueChange = true;
-                        }
-                    }
-                }
-            }
-        }
-        return foundNullValueChange;
-    }
-    
-    @Override
-    protected void targetTableWasChangedByFilter(Table oldTargetTable) {
-        // allow for auto increment columns to be inserted into if appropriate
-        if (oldTargetTable!=null) {
-            allowInsertIntoAutoIncrementColumns(false, oldTargetTable);            
-        }
-        allowInsertIntoAutoIncrementColumns(true, targetTable);
     }
 
     private void removeExcludedColumns(Conflict conflict,
@@ -671,19 +883,99 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         log.error(failureMessage.toString());
 
     }
-    
-    @Override
-    protected void bindVariables(Map<String, Object> variables) {
-        super.bindVariables(variables);
-        ISqlTemplate template = platform.getSqlTemplate();
-        Class<?> templateClass = template.getClass();
-        if (templateClass.getSimpleName().equals("JdbcSqlTemplate")) {
-            try {
-                Method method = templateClass.getMethod("getDataSource");
-                variables.put("DATASOURCE", method.invoke(template));
-            } catch (Exception e) {
-                log.warn("Had trouble looking up the datasource used by the sql template", e);
+
+    protected boolean script(CsvData data) {
+        try {
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            String script = data.getParsedData(CsvData.ROW_DATA)[0];
+            Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put("SOURCE_NODE_ID", batch.getSourceNodeId());
+            variables.put("TARGET_NODE_ID", batch.getTargetNodeId());
+            variables.putAll(context.getContext());
+            ISqlTemplate template = platform.getSqlTemplate();
+            Class<?> templateClass = template.getClass();
+            if (templateClass.getSimpleName().equals("JdbcSqlTemplate")) {
+                try {
+                    Method method = templateClass.getMethod("getDataSource");
+                    variables.put("DATASOURCE", method.invoke(template));
+                } catch (Exception e) {
+                    log.warn("Had trouble looking up the datasource used by the sql template", e);
+                }
             }
+
+            Interpreter interpreter = new Interpreter();
+            if (variables != null) {
+                for (String variableName : variables.keySet()) {
+                    interpreter.set(variableName, variables.get(variableName));
+                }
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("About to run: {}", script);
+            }
+            interpreter.eval(script);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SCRIPTCOUNT);
+        } catch (EvalError e) {
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
+
+    protected boolean create(CsvData data) {
+        String xml = null;
+        try {
+            transaction.commit();
+
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            xml = data.getParsedData(CsvData.ROW_DATA)[0];
+            log.info("About to create table using the following definition: {}", xml);
+            StringReader reader = new StringReader(xml);
+            Database db = DatabaseXmlUtil.read(reader, false);
+            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
+                platform.alterCaseToMatchDatabaseDefaultCase(db);
+            }
+
+            if (writerSettings.isAlterTable()) {
+                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+            } else {
+                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+            }
+
+            platform.resetCachedTableModel();
+            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
+            return true;
+        } catch (RuntimeException ex) {
+            log.error("Failed to alter table using the following xml: {}", xml);
+            throw ex;
+        } finally {
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        }
+    }
+
+    protected boolean sql(CsvData data) {
+        try {
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            String script = data.getParsedData(CsvData.ROW_DATA)[0];
+            List<String> sqlStatements = getSqlStatements(script);
+            long count = 0;
+            for (String sql : sqlStatements) {
+
+                sql = preprocessSqlStatement(sql);
+                transaction.prepare(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to run: {}", sql);
+                }
+                count += transaction.prepareAndExecute(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} rows updated when running: {}", count, sql);
+                }
+            }
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
+                    count);
+            return true;
+        } finally {
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
     
@@ -701,6 +993,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             IOUtils.closeQuietly(scriptReader);
         }
     }
+
 
     protected String preprocessSqlStatement(String sql) {
 		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
@@ -777,6 +1070,61 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return needsUpdated;
     }
 
+    protected Map<String, String> getLookupDataMap(CsvData data) {
+        Map<String, String> keyData = null;
+        if (data.getDataEventType() == DataEventType.INSERT) {
+            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(), CsvData.ROW_DATA);
+        } else {
+            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
+                    CsvData.OLD_DATA);
+            if (keyData == null || keyData.size() == 0) {
+                keyData = data.toColumnNameValuePairs(sourceTable.getPrimaryKeyColumnNames(),
+                        CsvData.PK_DATA);
+            }
+            if (keyData == null || keyData.size() == 0) {
+                keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
+                        CsvData.ROW_DATA);
+            }
+        }
+        return keyData;
+    }
+
+    protected String[] getLookupKeyData(Map<String, String> lookupDataMap, DmlStatement dmlStatement) {
+        Column[] lookupColumns = dmlStatement.getKeys();
+        if (lookupColumns != null && lookupColumns.length > 0) {
+            if (lookupDataMap != null && lookupDataMap.size() > 0) {
+                String[] keyDataAsArray = new String[lookupColumns.length];
+                int index = 0;
+                for (Column keyColumn : lookupColumns) {
+                    keyDataAsArray[index++] = lookupDataMap.get(keyColumn.getName());
+                }
+                return keyDataAsArray;
+            }
+        }
+
+        return null;
+
+    }
+
+    protected String getPkDataFor(CsvData data, Column column) {
+        String[] values = data.getParsedData(CsvData.PK_DATA);
+        if (values != null) {
+            Column[] columns = targetTable.getColumns();
+            int index = -1;
+            for (Column column2 : columns) {
+                if (column2.isPrimaryKey()) {
+                    index++;
+                }
+                if (column2.equals(column)) {
+                    return values[index];
+                }
+            }
+        } else {
+            return data.getParsedData(CsvData.ROW_DATA)[targetTable.getColumnIndex(column)];
+        }
+        return null;
+    }
+
     protected int execute(CsvData data, String[] values) {
         Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData());
@@ -787,7 +1135,42 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return transaction.addRow(data, objectValues, this.currentDmlStatement.getTypes());
     }
 
-    @Override
+    public void end(Table table) {
+        String quote = getPlatform().getDatabaseInfo().getDelimiterToken();
+        this.transaction.allowInsertIntoAutoIncrementColumns(false, this.targetTable, quote);
+    }
+
+    public void end(Batch batch, boolean inError) {
+        this.lastData = null;
+        this.currentDmlStatement = null;
+        if (batch.isIgnored()) {
+            getStatistics().get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+        }
+        if (!inError) {
+            notifyFiltersBatchComplete();
+            commit(false);
+        } else {
+            rollback();
+        }
+    }
+
+    public void close() {
+        if (transaction != null) {
+            this.transaction.close();
+        }
+    }
+
+    protected boolean hasFilterThatHandlesMissingTable(Table table) {
+        if (writerSettings.getDatabaseWriterFilters() != null) {
+            for (IDatabaseWriterFilter filter : writerSettings.getDatabaseWriterFilters()) {
+                if (filter.handlesMissingTable(context, table)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected Table lookupTableAtTarget(Table sourceTable) {
         String tableNameKey = sourceTable.getTableKey();
         Table table = targetTables.get(tableNameKey);
@@ -824,8 +1207,36 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return table;
     }
 
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public DataContext getContext() {
+        return context;
+    }
+
+    public IDatabaseWriterConflictResolver getConflictResolver() {
+        return conflictResolver;
+    }
+
+    public void setConflictResolver(IDatabaseWriterConflictResolver conflictResolver) {
+        this.conflictResolver = conflictResolver;
+    }
+
     public DmlStatement getCurrentDmlStatement() {
         return currentDmlStatement;
+    }
+
+    public Table getTargetTable() {
+        return targetTable;
+    }
+
+    public Table getSourceTable() {
+        return sourceTable;
+    }
+
+    public Map<Batch, Statistics> getStatistics() {
+        return statistics;
     }
 
     public ISqlTransaction getTransaction() {
@@ -839,6 +1250,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     public DatabaseWriterSettings getWriterSettings() {
         return writerSettings;
     }
+
+
 
     protected String getCurData(ISqlTransaction transaction) {
         String curVal = null;
@@ -899,11 +1312,4 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return curVal;
 
     }
-    
-    @Override
-    protected void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
-        String quote = platform.getDatabaseInfo().getDelimiterToken();
-        transaction.allowInsertIntoAutoIncrementColumns(value, table, quote);
-    }
-    
 }

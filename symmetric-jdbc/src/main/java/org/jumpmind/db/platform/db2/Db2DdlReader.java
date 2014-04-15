@@ -76,9 +76,9 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         if (table != null) {
             // DB2 does not return the auto-increment status via the database
             // metadata
-            String sql = "SELECT NAME FROM SYSIBM.SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
+            String sql = "SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME=? AND IDENTITY=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
-                sql = sql + " AND TBCREATOR=?";
+                sql = sql + " AND TABSCHEMA=?";
             }
 
             PreparedStatement pstmt = null;

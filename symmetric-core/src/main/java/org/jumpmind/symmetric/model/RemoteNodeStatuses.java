@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.model;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.util.AppUtils;
@@ -29,12 +28,6 @@ import org.jumpmind.util.AppUtils;
 public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
 
     private static final long serialVersionUID = 1L;
-    
-    Map<String, Channel> channels;
-    
-    public RemoteNodeStatuses(Map<String, Channel> channels) {
-        this.channels = channels;
-    }
 
     public boolean wasDataProcessed() {
         boolean dataProcessed = false;
@@ -71,7 +64,7 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
     public RemoteNodeStatus add(String nodeId) {
         RemoteNodeStatus status = null;
         if (nodeId != null) {
-            status = new RemoteNodeStatus(nodeId, channels);
+            status = new RemoteNodeStatus(nodeId);
             add(status);
         }
         return status;

@@ -79,7 +79,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -99,7 +99,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                declare var_row_data text; " +        
 "                                declare var_old_data text; " +
-"                                begin" +
+"                                begin                                                                                                                                                                  " +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    var_row_data := $(columns); " +
 "                                    var_old_data := $(oldColumns); " +
@@ -113,7 +113,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      var_row_data,                                                                                                                                                      " +
 "                                      var_old_data,                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -142,7 +142,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +

@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
@@ -44,12 +44,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (super.start(table)) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                for (Column column : targetTable.getColumns()) {
-                    if (column.isOfBinaryType()) {
-                        needsBinaryConversion = true;
-                        break;
-                    }
-                }
+	            for (Column column : targetTable.getColumns()) {
+	                if (column.isOfBinaryType()) {
+	                    needsBinaryConversion = true;
+	                    break;
+	                }
+	            }
             }
         	//TODO: Did this because start is getting called multiple times
         	//      for the same table in a single batch before end is being called
@@ -87,13 +87,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
-                                }
+                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
+                            		parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            	}
                             }
                         }
                     }
-
                     OutputStream out =  this.stagedInputFile.getOutputStream();
                     for (int i = 0; i < parsedData.length; i++) {
                         if (parsedData[i] != null) {
@@ -135,7 +134,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
 	            		" FROM '" + stagedInputFile.getFile().getAbsolutePath()) + "'" +
-	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
+                        " WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -149,7 +148,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

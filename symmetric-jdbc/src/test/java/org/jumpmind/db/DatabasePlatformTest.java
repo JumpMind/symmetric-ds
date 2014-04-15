@@ -172,8 +172,7 @@ public class DatabasePlatformTest {
                 && !platform.getName().equals(DatabaseNamesConstants.HSQLDB2)
                 && !platform.getName().equals(DatabaseNamesConstants.INFORMIX)
                 && !platform.getName().equals(DatabaseNamesConstants.DB2)
-                && !platform.getName().equals(DatabaseNamesConstants.ASE)
-                && !platform.getName().equals(DatabaseNamesConstants.SQLANYWHERE);
+                && !platform.getName().equals(DatabaseNamesConstants.ASE);
 
         if (upgradeSupported) {
             Table table = new Table("TEST_UPGRADE");

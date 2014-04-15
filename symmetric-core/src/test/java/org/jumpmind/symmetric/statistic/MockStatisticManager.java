@@ -20,13 +20,10 @@
  */
 package org.jumpmind.symmetric.statistic;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 
@@ -152,17 +149,5 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void incrementTriggersCreatedCount(long count) {
 
-    }
-
-    public void addRouterStats(long startDataId, long endDataId, long dataReadCount,
-            long peekAheadFillCount, List<DataGap> dataGaps, Set<String> transactions,
-            Collection<OutgoingBatch> batches) {
-    }
-
-    public RouterStats getRouterStatsByBatch(Long batchId) {
-        return null;
-    }
-
-    public void removeRouterStatsByBatch(Long batchId) {
     }
 }

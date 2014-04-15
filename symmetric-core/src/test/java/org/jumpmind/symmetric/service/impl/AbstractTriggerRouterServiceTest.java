@@ -162,9 +162,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
         assertTrue(match, "The full string we pulled from the database was " + csvString
                 + " however, we expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
@@ -195,9 +192,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
@@ -255,9 +249,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                 + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -279,9 +270,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
             csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
             // Informix captures decimal differently
             csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-            // ASA captures decimal differently
-            csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-            
             boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
             assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                     + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -403,9 +391,8 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     protected static boolean isBooleanSupported(ISymmetricDialect dbDialect) {
-        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) 
-                || DatabaseNamesConstants.DB2.equals(dbDialect.getPlatform().getName())
-                || DatabaseNamesConstants.SQLANYWHERE.equals(dbDialect.getPlatform().getName()));
+        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) || DatabaseNamesConstants.DB2
+                .equals(dbDialect.getPlatform().getName()));
     }
 
     protected static Object[] filterValues(Object[] values, ISymmetricDialect dbDialect) {

@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IFileSyncService {
-    
+
     public void trackChanges(boolean force);
 
     public List<FileTrigger> getFileTriggers();
@@ -69,9 +69,5 @@ public interface IFileSyncService {
     public RemoteNodeStatuses pushFilesToNodes(boolean force);
 
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node node, IOutgoingTransport outgoingTransport);
-    
-    public void acknowledgeFiles(OutgoingBatch outgoingBatch);
-    
-    public boolean refreshFromDatabase();
 
 }

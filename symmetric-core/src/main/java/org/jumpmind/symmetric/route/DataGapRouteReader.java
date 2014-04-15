@@ -139,7 +139,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     processInfo.incrementDataCount();
                     processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
-                    context.addTransaction(lastTransactionId);
                 } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                     Iterator<Data> datas = peekAheadQueue.iterator();
                     int dataWithSameTransactionIdCount = 0;
@@ -152,8 +151,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                             dataCount++;                            
                             processInfo.incrementDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
-                        } else {
-                            context.addTransaction(data.getTransactionId());
                         }
                     }
 
@@ -222,9 +219,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
         int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
 
         this.dataGaps = engine.getDataService().findDataGaps();
-        if (this.dataGaps != null) {
-            context.setDataGaps(new ArrayList<DataGap>(this.dataGaps));
-        }
                 
         boolean useGreaterThanDataId = false;
         if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
@@ -336,10 +330,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
         boolean moreData = true;
         int dataCount = 0;
         long ts = System.currentTimeMillis();
-        Data data = null;
-        boolean isFirstRead = context.getStartDataId() == 0;
         while (reading && dataCount < peekAheadCount) {
-            data = cursor.next();
+            Data data = cursor.next();
             if (data != null) {
                 if (process(data)) {
                     peekAheadQueue.add(data);
@@ -350,11 +342,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_REREAD_DATA_MS);
                 }
-                if (isFirstRead) {
-                    context.setStartDataId(data.getDataId());
-                    isFirstRead = false;
-                }
-                context.setEndDataId(data.getDataId());
+
                 ts = System.currentTimeMillis();
             } else {
                 moreData = false;
@@ -362,8 +350,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
 
         }
-        context.incrementDataReadCount(dataCount);
-        context.incrementPeekAheadFillCount(1);
         return moreData;
     }
 

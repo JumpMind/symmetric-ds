@@ -32,12 +32,10 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
-import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.slf4j.Logger;
 
 public class ChannelRouterContext extends SimpleRouterContext {
 
@@ -62,12 +60,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
     private long lastLoadId = -1;
-    private long startDataId;   
-    private long endDataId;
-    private long dataReadCount;
-    private long peekAheadFillCount;
-    private List<DataGap> dataGaps = new ArrayList<DataGap>();
-    private Set<String> transactions = new HashSet<String>();
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -133,16 +125,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
         }
     }
 
-    @Override
-    synchronized public void logStats(Logger log, long totalTimeInMs) {
-        super.logStats(log, totalTimeInMs);
-        if (log.isDebugEnabled()) {
-            log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId + 
-                    ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
-                    ", transactions=" + transactions.toString() + ", dataGaps=" + dataGaps.toString()); 
-        }
-    }
-
     public void setNeedsCommitted(boolean b) {
         this.needsCommitted = b;
     }
@@ -193,54 +175,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     
     public long getLastLoadId() {
         return lastLoadId;
-    }
-
-    public long getStartDataId() {
-        return startDataId;
-    }
-
-    public void setStartDataId(long startDataId) {
-        this.startDataId = startDataId;
-    }
-
-    public long getEndDataId() {
-        return endDataId;
-    }
-
-    public void setEndDataId(long endDataId) {
-        this.endDataId = endDataId;
-    }
-
-    public long getDataReadCount() {
-        return dataReadCount;
-    }
-
-    public void incrementDataReadCount(long dataReadCount) {
-        this.dataReadCount += dataReadCount;
-    }
-
-    public long getPeekAheadFillCount() {
-        return peekAheadFillCount;
-    }
-
-    public void incrementPeekAheadFillCount(long peekAheadFillCount) {
-        this.peekAheadFillCount += peekAheadFillCount;
-    }
-
-    public List<DataGap> getDataGaps() {
-        return dataGaps;
-    }
-
-    public void setDataGaps(List<DataGap> dataGaps) {
-        this.dataGaps = dataGaps;
-    }
-
-    public Set<String> getTransactions() {
-        return transactions;
-    }
-
-    public void addTransaction(String transactionId) {
-        this.transactions.add(transactionId);
     }
 
 }

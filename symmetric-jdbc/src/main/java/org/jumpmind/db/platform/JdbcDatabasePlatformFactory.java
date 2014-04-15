@@ -33,7 +33,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
@@ -52,8 +51,6 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -70,8 +67,6 @@ public class JdbcDatabasePlatformFactory {
      * name.
      */
     private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
-
-    private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
 
     static {
 
@@ -97,7 +92,6 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
@@ -192,8 +186,7 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             nameVersion[2] = url;
-            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
-            
+
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
@@ -213,12 +206,6 @@ public class JdbcDatabasePlatformFactory {
             if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.MARIADB;
-                }
-            }
-
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.DB2)) {
-                if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
-                    nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
                 }
             }
 

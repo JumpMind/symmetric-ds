@@ -52,7 +52,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'I',    \n"
                                 + "      $(triggerHistoryId),                                          \n"
-                                + "      $(columns),    \n" + "      $(channelExpression), null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
+                                + "      $(columns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
                                 + "        $(custom_on_insert_text)                                                                            \n"
                                 + "end");
@@ -67,7 +67,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'U',   \n"
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
-                                + "      $(channelExpression), null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),   \n" + "      $(externalSelect),   \n"
+                                + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),   \n" + "      $(externalSelect),   \n"
                                 + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
                                 + "      $(custom_on_insert_text)                                                                            \n"
                                 + "end  ");
@@ -81,7 +81,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
-                                + "       $(oldColumns),    \n" + "      $(channelExpression), null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
+                                + "       $(oldColumns),    \n" + "      '$(channelName)', null,(select context_value from $(prefixName)_context where id = 'sync_node_disabled'),    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );     \n"
                                 + "      $(custom_on_insert_text)                                                                            \n"
                                 + "end");

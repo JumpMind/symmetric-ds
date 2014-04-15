@@ -57,8 +57,6 @@ public class Trigger implements Serializable {
     private String sourceCatalogName;
 
     private String channelId = Constants.CHANNEL_DEFAULT;
-    
-    private String reloadChannelId = Constants.CHANNEL_RELOAD;
 
     private boolean syncOnUpdate = true;
 
@@ -87,8 +85,6 @@ public class Trigger implements Serializable {
     private String syncOnInsertCondition = DEFAULT_CONDITION;
 
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
-    
-    private String channelExpression = "'" + Constants.CHANNEL_DEFAULT + "'";
 
     private String customOnUpdateText;
 
@@ -258,14 +254,6 @@ public class Trigger implements Serializable {
     public boolean isSourceTableNameWildCarded() {
         return sourceTableName != null && sourceTableName.contains(FormatUtils.WILDCARD);
     }
-    
-    public String getChannelExpression() {
-        return channelExpression;
-    }
-    
-    public void setChannelExpression(String channelExpression) {
-        this.channelExpression = channelExpression;
-    }
 
     public void setSourceTableName(String sourceTableName) {
         this.sourceTableName = sourceTableName;
@@ -293,14 +281,6 @@ public class Trigger implements Serializable {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
-    }
-    
-    public String getReloadChannelId() {
-        return reloadChannelId;
-    }
-    
-    public void setReloadChannelId(String reloadChannelId) {
-        this.reloadChannelId = reloadChannelId;
     }
 
     public boolean isSyncOnUpdate() {

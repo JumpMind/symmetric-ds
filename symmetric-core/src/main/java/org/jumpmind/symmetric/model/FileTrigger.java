@@ -33,44 +33,23 @@ import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.OrFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.Constants;
 
 public class FileTrigger implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String triggerId;
-    
-    private String channelId = Constants.CHANNEL_FILESYNC;
-    
-    private String reloadChannelId = Constants.CHANNEL_FILESYNC_RELOAD;
-    
     private String baseDir;
-    
     private boolean recurse;
-    
     private String includesFiles;
-    
     private String excludesFiles;
-    
     private boolean syncOnCreate = true;
-    
     private boolean syncOnModified = true;
-    
     private boolean syncOnDelete = true;
-    
-    private boolean syncOnCtlFile = false;
-    
-    private boolean deleteAfterSync = false;
-    
     private String beforeCopyScript;
-    
     private String afterCopyScript;
-    
     private Date createTime = new Date();
-    
     private String lastUpdateBy;
-    
     private Date lastUpdateTime;
 
     public FileTrigger() {
@@ -92,23 +71,7 @@ public class FileTrigger implements Serializable {
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
     }
-    
-    public String getChannelId() {
-        return channelId;
-    }
-    
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
 
-    public String getReloadChannelId() {
-        return reloadChannelId;
-    }
-    
-    public void setReloadChannelId(String reloadChannelId) {
-        this.reloadChannelId = reloadChannelId;
-    }
-    
     public String getBaseDir() {
         return baseDir;
     }
@@ -165,22 +128,6 @@ public class FileTrigger implements Serializable {
         this.syncOnDelete = syncOnDelete;
     }
 
-    public boolean isSyncOnCtlFile() {
-        return syncOnCtlFile;
-    }
-
-    public void setSyncOnCtlFile(boolean syncOnCtlFile) {
-        this.syncOnCtlFile = syncOnCtlFile;
-    }
-    
-    public boolean isDeleteAfterSync() {
-        return deleteAfterSync;
-    }
-
-    public void setDeleteAfterSync(boolean deleteAfterSync) {
-        this.deleteAfterSync = deleteAfterSync;
-    }
-    
     public Date getCreateTime() {
         return createTime;
     }

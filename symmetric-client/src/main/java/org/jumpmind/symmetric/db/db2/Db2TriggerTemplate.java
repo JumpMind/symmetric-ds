@@ -60,7 +60,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " +
 "                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         " +
 "                                            $(columns),                                                                                                                                                " +
-"                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                              " +
+"                                            '$(channelName)', $(txIdExpression), $(sourceNodeExpression),                                                                                              " +
 "                                            $(externalSelect),                                                                                                                                         " +
 "                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
 "                                    END IF;                                                                                                                                                            " +
@@ -85,7 +85,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                                $(oldKeys),                                                                                                                                            " +
 "                                                var_row_data,                                                                                                                                          " +
 "                                                var_old_data,                                                                                                                                          " +
-"                                                $(channelExpression),                                                                                                                                      " +
+"                                                '$(channelName)',                                                                                                                                      " +
 "                                                $(txIdExpression),                                                                                                                                     " +
 "                                                $(sourceNodeExpression),                                                                                                                               " +
 "                                                $(externalSelect),                                                                                                                                     " +
@@ -107,7 +107,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        " +
 "                                            $(oldKeys),                                                                                                                                                " +
 "                                            $(oldColumns),                                                                                                                                             " +
-"                                            $(channelExpression),                                                                                                                                          " +
+"                                            '$(channelName)',                                                                                                                                          " +
 "                                            $(txIdExpression),                                                                                                                                         " +
 "                                            $(sourceNodeExpression),                                                                                                                                   " +
 "                                            $(externalSelect),                                                                                                                                         " +

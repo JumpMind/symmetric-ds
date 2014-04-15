@@ -38,8 +38,6 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DdlBuilderFactory;
-import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -211,8 +209,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            String channelId = triggerRouter.getTrigger().getChannelId();
-            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, triggerRouter.getTrigger()
@@ -245,8 +242,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            String channelId = triggerRouter.getTrigger().getChannelId();
-            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, null);
@@ -307,10 +303,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ChannelMap suspendIgnoreChannelsList) {
 
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            List<Channel> fileSyncChannels = configurationService.getFileSyncChannels();
-            for (Channel channel : fileSyncChannels) {
-                batches.filterBatchesForChannel(channel);    
-            }            
+            batches.filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
         }
 
         // We now have either our local suspend/ignore list, or the combined
@@ -362,15 +355,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
 
             if (activeBatches.size() > 0) {
-                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetNode
-                        .getDatabaseType());
-                if (builder == null) {
-                    throw new IllegalStateException(
-                            "Could not find a ddl builder registered for the database type of "
-                                    + targetNode.getDatabaseType()
-                                    + ".  Please check the database type setting for node '"
-                                    + targetNode.getNodeId() + "'");
-                }
                 StructureDataWriter writer = new StructureDataWriter(
                         symmetricDialect.getPlatform(), targetNode.getDatabaseType(), payloadType,
                         useDelimiterIdentifiers, symmetricDialect.getBinaryEncoding(),
@@ -902,12 +886,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table table = null;
         if (useDatabaseDefinition) {
             table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
-            if (table != null) {
             table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                     triggerHistory.getParsedPkColumnNames(), true);
-            } else {
-                throw new SymmetricException("Could not find the followig table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-            }
         } else {
             table = new Table(tableName);
             table.addColumns(triggerHistory.getParsedColumnNames());
@@ -938,7 +918,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public RemoteNodeStatuses queueWork(boolean force) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity();
         if (identity != null) {
             if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {

@@ -44,7 +44,6 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,11 +114,9 @@ public abstract class AbstractIntegrationTest {
 
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
-                String port = System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, "31415"); 
                 SymmetricWebServer server = new SymmetricWebServer();
-                server.setJmxEnabled(false);
                 server.setJoin(false);
-                server.start(Integer.parseInt(port));
+                server.start(51413);
 
                 server.waitForEnginesToComeOnline(240000);
 

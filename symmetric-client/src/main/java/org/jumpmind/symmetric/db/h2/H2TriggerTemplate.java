@@ -49,7 +49,7 @@ public class H2TriggerTemplate extends AbstractTriggerTemplate {
 "                                INSERT INTO $(schemaName)$(triggerName)_CONFIG values(                                                                                                                              " + 
 "                                'select count(*) from $(virtualOldNewTable) where $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)',                                                       " + 
 "                                'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns), $(channelExpression), $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))' " + 
+"                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns), ''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))' " + 
 "                                );                                                                                                                                                                     " + 
 "                                CREATE TRIGGER $(schemaName)$(triggerName) AFTER INSERT ON $(schemaName)$(tableName) FOR EACH ROW CALL \"org.jumpmind.symmetric.db.h2.H2Trigger\";                                               " );
         sqlTemplates.put("updateTriggerTemplate" ,
@@ -57,7 +57,7 @@ public class H2TriggerTemplate extends AbstractTriggerTemplate {
 "                                INSERT INTO $(schemaName)$(triggerName)_CONFIG values(                                                                                                                              " + 
 "                                  'select count(*) from $(virtualOldNewTable) where $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)',                                                     " + 
 "                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns), $(channelExpression), $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
+"                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns), ''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
 "                                );                                                                                                                                                                     " + 
 "                                CREATE TRIGGER $(schemaName)$(triggerName) AFTER UPDATE ON $(schemaName)$(tableName) FOR EACH ROW CALL \"org.jumpmind.symmetric.db.h2.H2Trigger\";                                               " );
         sqlTemplates.put("deleteTriggerTemplate" ,
@@ -65,7 +65,7 @@ public class H2TriggerTemplate extends AbstractTriggerTemplate {
 "                                INSERT INTO $(schemaName)$(triggerName)_CONFIG values(                                                                                                                              " + 
 "                                  'select count(*) from $(virtualOldNewTable) where $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)',                                                     " + 
 "                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                    (select ''$(targetTableName)'',''D'',$(triggerHistoryId),$(oldKeys),$(oldColumns),$(channelExpression), $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
+"                                    (select ''$(targetTableName)'',''D'',$(triggerHistoryId),$(oldKeys),$(oldColumns),''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
 "                                );                                                                                                                                                                     " + 
 "                                CREATE TRIGGER $(schemaName)$(triggerName) AFTER DELETE ON $(schemaName)$(tableName) FOR EACH ROW CALL \"org.jumpmind.symmetric.db.h2.H2Trigger\";                                               " );
         sqlTemplates.put("initialLoadSqlTemplate" ,

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.db;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
@@ -43,7 +42,6 @@ import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
-import org.jumpmind.symmetric.db.db2.Db2zOsSymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
@@ -117,8 +115,6 @@ public class JdbcSymmetricDialectFactory {
             } else {
                 dialect = new Db2v9SymmetricDialect(parameterService, platform);
             }
-        } else if (platform instanceof Db2zOsDatabasePlatform) {
-            dialect = new Db2zOsSymmetricDialect(parameterService, platform);
         } else if (platform instanceof FirebirdDatabasePlatform) {
             dialect = new FirebirdSymmetricDialect(parameterService, platform);
         } else if (platform instanceof AseDatabasePlatform) {

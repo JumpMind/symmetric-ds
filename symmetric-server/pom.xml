@@ -3,12 +3,12 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-server</artifactId>
     <packaging>jar</packaging>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>3.5.20</version>
     <name>server</name>
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.6.0-SNAPSHOT</version>
+        <version>3.5.20</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <build>
@@ -188,11 +188,6 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
