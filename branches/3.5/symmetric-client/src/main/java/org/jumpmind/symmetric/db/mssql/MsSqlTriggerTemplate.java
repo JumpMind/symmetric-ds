@@ -116,8 +116,10 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          open DataCursor                                                                                                                                                 " +
 "          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
+"            if ($(dataHasChangedCondition)) begin                                                                                                                                " +
 "            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
+"            end " +
 "            fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "          end                                                                                                                                                             " +
 "          close DataCursor                                                                                                                                                " +
@@ -157,8 +159,10 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
 "          fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                    " +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
+"            if ($(dataHasChangedCondition)) begin                                                                                                                                " +
 "            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
 "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
+"            end " +
 "            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      " +
 "            fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "          end                                                                                                                                                             " +

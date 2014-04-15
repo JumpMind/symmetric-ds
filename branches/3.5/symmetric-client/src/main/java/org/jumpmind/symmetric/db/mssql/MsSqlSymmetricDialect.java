@@ -280,5 +280,10 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public boolean needsToSelectLobData() {
         return true;
     }
+    
+    @Override
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
+        return "@DataRow != @OldDataRow";
+    }
 
 }
