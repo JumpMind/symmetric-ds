@@ -1,3 +1,12 @@
+SymmetricDS - 3.5.20 (Released 2014-04-14) 
+==========================================
+- 0001651: [Bug] MySQL and SQL-Server bulk loaders handle BLOBs between different platforms (elong) - closed.
+- 0001662: [Bug] SqlUtils is not thread safe. Can result in OOM errors. (chenson) - closed.
+- 0001664: [Bug] NullPointer with MSSQL Bulk Loader (elong) - closed.
+- 0001666: [Bug] SQL Server bulk loader does not handle comma (elong) - closed.
+- 0001667: [Improvement] Support capturing only changed data (trigger.update.capture.changed.data.only.enabled) on SQL Server (chenson) - closed.
+
+
 SymmetricDS - 3.5.19 (Released 2014-03-16)
 ==========================================
 - 0001629: [Improvement] SQL Server bulk loader option to fire triggers (elong) - closed.
