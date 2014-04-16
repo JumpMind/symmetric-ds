@@ -900,7 +900,7 @@ public class DataService extends AbstractService implements IDataService {
             String nodeId, String routerId, boolean isLoad, long loadId, String createBy,
             Status status) {
         long dataId = insertData(transaction, data);
-        String channelId = data.getChannelId();
+        String channelId = null;
         if (isLoad) {
             TriggerHistory history = data.getTriggerHistory();
             if (history != null && channelId == null) {
@@ -909,6 +909,8 @@ public class DataService extends AbstractService implements IDataService {
                 channelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService()
                         .getChannels(false));
             }
+        } else {
+            channelId = data.getChannelId();
         }
         return insertDataEventAndOutgoingBatch(transaction, dataId, channelId, nodeId,
                 data.getDataEventType(), routerId, isLoad, loadId, createBy, status);
