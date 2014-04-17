@@ -761,18 +761,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void end(DataContext ctx, Batch batch, IStagedResource resource) {
+            
+            long networkMillis = System.currentTimeMillis()
+                    - batchStartsToArriveTimeInMs;
 
-            if (listener.currentBatch != null) {
-                log.info(batch.getNodeBatchId() + " recording network millis");
-                listener.currentBatch.setNetworkMillis(System.currentTimeMillis()
-                        - batchStartsToArriveTimeInMs);
-                if (batch.isIgnored()) {
-                    listener.currentBatch.incrementIgnoreCount();
-                }
-            }
-
-            try {
-                
+            try {                
                 processInfo.setStatus(ProcessInfo.Status.LOADING);
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
                         batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
@@ -785,6 +778,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 processor.process(ctx);
             } finally {
+                if (listener.currentBatch != null) {
+                    listener.currentBatch.setNetworkMillis(networkMillis);
+                    if (batch.isIgnored()) {
+                        listener.currentBatch.incrementIgnoreCount();
+                    }
+                }
                 resource.setState(State.DONE);
             }
         }
