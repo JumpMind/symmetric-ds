@@ -220,8 +220,10 @@ public class SnapshotUtil {
             defaultParameters.load(in);
             IOUtils.closeQuietly(in);
             in = SnapshotUtil.class.getResourceAsStream("/symmetric-console-default.properties");
-            defaultParameters.load(in);
-            IOUtils.closeQuietly(in);
+            if (in != null) {
+                defaultParameters.load(in);
+                IOUtils.closeQuietly(in);
+            }
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
             Properties changedParameters = new SortedProperties();
             Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
