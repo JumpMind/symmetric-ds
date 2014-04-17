@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IConfigurationService;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
 
@@ -203,16 +204,22 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
 
             } else {
+                IConfigurationService configurationService = engine.getConfigurationService();
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType()) &&
-                            !nodeThatMayBeRoutedTo.requires13Compatiblity() && (
-                            !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode,
-                            me)
-                            || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad))) {
-                        if (nodeIds == null) {
-                            nodeIds = new HashSet<String>();
+                    if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
+                            .getDeploymentType())
+                            && !nodeThatMayBeRoutedTo.requires13Compatiblity()
+                            && (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
+                                    rootNetworkedNode, me) || (nodeThatMayBeRoutedTo.getNodeId()
+                                    .equals(me.getNodeId()) && initialLoad))) {
+                        NodeGroupLink link = configurationService.getNodeGroupLinkFor(
+                                me.getNodeGroupId(), nodeThatMayBeRoutedTo.getNodeGroupId(), false);
+                        if (link != null && link.isSyncConfigEnabled()) {
+                            if (nodeIds == null) {
+                                nodeIds = new HashSet<String>();
+                            }
+                            nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                         }
-                        nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                     }
                 }
 
@@ -272,7 +279,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         List<NodeGroupLink> list = (List<NodeGroupLink>) routingContext.get(
                 NodeGroupLink.class.getName());
         if (list == null) {
-            list = engine.getConfigurationService().getNodeGroupLinks();
+            list = engine.getConfigurationService().getNodeGroupLinks(false);
             routingContext.put(NodeGroupLink.class.getName(), list);
         }
         return list;

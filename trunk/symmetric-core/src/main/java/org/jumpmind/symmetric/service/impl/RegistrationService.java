@@ -178,7 +178,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
              * that is requesting registration
              */
             NodeGroupLink link = configurationService.getNodeGroupLinkFor(
-                    identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+                    identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
             if (link == null
                     && parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK,
                             true)) {

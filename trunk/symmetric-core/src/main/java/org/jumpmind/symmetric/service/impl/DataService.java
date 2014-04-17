@@ -1130,7 +1130,7 @@ public class DataService extends AbstractService implements IDataService {
             transaction = sqlTemplate.startSqlTransaction();
             String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
             List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(
-                    parameterService.getNodeGroupId());
+                    parameterService.getNodeGroupId(), false);
             for (NodeGroupLink nodeGroupLink : links) {
                 if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
                     Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService()

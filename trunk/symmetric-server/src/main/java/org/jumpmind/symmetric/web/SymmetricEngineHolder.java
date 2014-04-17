@@ -296,7 +296,7 @@ public class SymmetricEngineHolder {
 
                         boolean foundLink = false;
                         List<NodeGroupLink> links = configurationService
-                                .getNodeGroupLinksFor(serverNodeGroupId);
+                                .getNodeGroupLinksFor(serverNodeGroupId, false);
                         for (NodeGroupLink nodeGroupLink : links) {
                             if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
                                 foundLink = true;

@@ -33,12 +33,14 @@ public class NodeGroupLink implements Serializable {
     private String targetNodeGroupId;
 
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
+    
+    private boolean syncConfigEnabled = true;
         
     private Date createTime;
     
     private Date lastUpdateTime;
     
-    private String lastUpdateBy;
+    private String lastUpdateBy;    
 
     public NodeGroupLink() {   
     }
@@ -59,6 +61,14 @@ public class NodeGroupLink implements Serializable {
 
     public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         this.dataEventAction = dataEventAction;
+    }
+    
+    public void setSyncConfigEnabled(boolean syncConfigEnabled) {
+        this.syncConfigEnabled = syncConfigEnabled;
+    }
+     
+    public boolean isSyncConfigEnabled() {
+        return syncConfigEnabled;
     }
 
     public String getSourceNodeGroupId() {
