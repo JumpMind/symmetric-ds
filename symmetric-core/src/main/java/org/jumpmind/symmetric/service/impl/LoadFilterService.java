@@ -147,7 +147,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
 
             loadFilter.setLoadFilterId(rs.getString("load_filter_id"));
             loadFilter.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
             loadFilter.setTargetCatalogName(rs.getString("target_catalog_name"));
             loadFilter.setTargetSchemaName(rs.getString("target_schema_name"));
             loadFilter.setTargetTableName(rs.getString("target_table_name"));

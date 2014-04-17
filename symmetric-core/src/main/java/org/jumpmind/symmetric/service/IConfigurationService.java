@@ -48,11 +48,11 @@ public interface IConfigurationService {
     
     public void deleteNodeGroupLink(NodeGroupLink link);
     
-    public List<NodeGroupLink> getNodeGroupLinks();
+    public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
 
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);
     
-    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId);
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId, boolean refreshCache);
     
     /**
      * Check to see if the channel is currently being used in the system.

@@ -235,7 +235,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                             }
                                         }
                                     } else {
-                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId());
+                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId(), false);
                                         if (links == null || links.size() == 0) {
                                             log.warn("Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered", security.getNodeId());
                                         } else {
@@ -489,7 +489,7 @@ public class RouterService extends AbstractService implements IRouterService {
             Router router = triggerRouter.getRouter();
             NodeGroupLink link = engine.getConfigurationService().getNodeGroupLinkFor(
                     router.getNodeGroupLink().getSourceNodeGroupId(),
-                    router.getNodeGroupLink().getTargetNodeGroupId());
+                    router.getNodeGroupLink().getTargetNodeGroupId(), false);
             if (link != null) {
                 nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(
                         router.getNodeGroupLink().getTargetNodeGroupId()));

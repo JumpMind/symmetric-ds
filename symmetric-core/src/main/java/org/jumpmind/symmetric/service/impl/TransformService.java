@@ -321,7 +321,7 @@ public class TransformService extends AbstractService implements ITransformServi
             TransformTableNodeGroupLink table = new TransformTableNodeGroupLink();
             table.setTransformId(rs.getString("transform_id"));
             table.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
             table.setSourceCatalogName(rs.getString("source_catalog_name"));
             table.setSourceSchemaName(rs.getString("source_schema_name"));
             table.setSourceTableName(rs.getString("source_table_name"));

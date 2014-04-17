@@ -690,7 +690,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public ConflictNodeGroupLink mapRow(Row rs) {
             ConflictNodeGroupLink setting = new ConflictNodeGroupLink();
             setting.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
             setting.setTargetChannelId(rs.getString("target_channel_id"));
             setting.setTargetCatalogName(rs.getString("target_catalog_name"));
             setting.setTargetSchemaName(rs.getString("target_schema_name"));
@@ -761,7 +761,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void end(DataContext ctx, Batch batch, IStagedResource resource) {
+
             if (listener.currentBatch != null) {
+                log.info(batch.getNodeBatchId() + " recording network millis");
                 listener.currentBatch.setNetworkMillis(System.currentTimeMillis()
                         - batchStartsToArriveTimeInMs);
                 if (batch.isIgnored()) {

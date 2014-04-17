@@ -475,7 +475,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<TriggerRouter> getTriggerRouters() {
-        return sqlTemplate.query(getTriggerRouterSql(), new TriggerRouterMapper(configurationService.getNodeGroupLinks()));
+        return sqlTemplate.query(getTriggerRouterSql(), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)));
     }
 
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalogName,
@@ -542,7 +542,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected List<TriggerRouter> getConfigurationTablesTriggerRoutersForCurrentNode(
             String sourceNodeGroupId) {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
-        List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(sourceNodeGroupId);
+        List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(sourceNodeGroupId, false);
         for (NodeGroupLink nodeGroupLink : links) {
             triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(),
                     nodeGroupLink));
@@ -666,7 +666,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<Router> getRoutersByGroupLink(NodeGroupLink link) {
         return sqlTemplate.query(
                 getSql("select", "selectRoutersColumnList", "selectRouterByNodeGroupLinkWhereSql"),
-                new RouterMapper(configurationService.getNodeGroupLinks()), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+                new RouterMapper(configurationService.getNodeGroupLinks(false)), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
     }
 
     public Trigger getTriggerForCurrentNodeById(String triggerId) {
@@ -728,13 +728,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<Router> getRouters() {
         return sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
-                new RouterMapper(configurationService.getNodeGroupLinks()));
+                new RouterMapper(configurationService.getNodeGroupLinks(false)));
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
         List<TriggerRouter> triggerRouters = (List<TriggerRouter>) sqlTemplate.query(
                 getTriggerRouterSql("activeTriggersForSourceNodeGroupSql"),
-                new TriggerRouterMapper(configurationService.getNodeGroupLinks()), sourceNodeGroupId);
+                new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)), sourceNodeGroupId);
         mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggerRouters);
         return triggerRouters;
     }
@@ -742,13 +742,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
         return sqlTemplate.query(
-                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks()),
+                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
                 sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG);
     }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
-                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks()),
+                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
                 triggerId, routerId);
         if (configs.size() > 0) {
             return configs.get(0);
@@ -788,7 +788,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     final  Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
                     this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
                     sqlTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"),
-                            new TriggerRouterMapper(configurationService.getNodeGroupLinks()) {
+                            new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)) {
                                 @Override
                                 public TriggerRouter mapRow(Row rs) {
                                     TriggerRouter tr = super.mapRow(rs);

@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 /**
  * @see IConfigurationService
  */
-public class ConfigurationService extends AbstractService implements IConfigurationService {       
+public class ConfigurationService extends AbstractService implements IConfigurationService {
 
     private INodeService nodeService;
 
@@ -54,12 +54,16 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private Map<String, Channel> channelsCache;
 
+    private List<NodeGroupLink> nodeGroupLinksCache;
+
     private long channelCacheTime;
 
     private long nodeChannelCacheTime;
 
+    private long nodeGroupLinkCacheTime;
+
     private List<Channel> defaultChannels;
-    
+
     private Date lastUpdateTime;
 
     public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
@@ -67,25 +71,35 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         super(parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));        
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0, false));
+        this.defaultChannels
+                .add(new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false,
+                true, false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0,
+                false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0,
+                false));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0,
+                false));
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0, false, "nontransactional", false, true));
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100, true, 0, false, "nontransactional", true, true));
+            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0,
+                    false, "nontransactional", false, true));
+            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100,
+                    true, 0, false, "nontransactional", true, true));
         }
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     public boolean refreshFromDatabase() {
-        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"), Date.class);
-        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLastUpdateTime"), Date.class);
-        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLinkLastUpdateTime"), Date.class);
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"),
+                Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLastUpdateTime"),
+                Date.class);
+        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxNodeGroupLinkLastUpdateTime"),
+                Date.class);
         Date date = maxDate(date1, date2, date3);
-        
+
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
@@ -110,12 +124,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         link.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
-                link.getLastUpdateTime(), link.getLastUpdateBy(), link.getSourceNodeGroupId(),
-                link.getTargetNodeGroupId()) == 0) {
+                link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                link.getLastUpdateBy(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
             link.setCreateTime(new Date());
             sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
                     link.getSourceNodeGroupId(), link.getTargetNodeGroupId(),
-                    link.getLastUpdateTime(), link.getLastUpdateBy(), link.getCreateTime());
+                    link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                    link.getLastUpdateBy(), link.getCreateTime());
         }
     }
 
@@ -152,17 +167,43 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return sqlTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
 
-    public List<NodeGroupLink> getNodeGroupLinks() {
-        return sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
+    public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache) {
+        if (refreshCache) {
+            nodeGroupLinkCacheTime = 0;
+        }
+        long cacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
+        List<NodeGroupLink> links = nodeGroupLinksCache;
+        if (System.currentTimeMillis() - nodeGroupLinkCacheTime >= cacheTimeoutInMs
+                || links == null) {
+            synchronized (this) {
+                links = nodeGroupLinksCache;
+                if (System.currentTimeMillis() - nodeGroupLinkCacheTime >= cacheTimeoutInMs
+                        || links == null) {
+                    links = sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
+                    nodeGroupLinksCache = links;
+                    nodeGroupLinkCacheTime = System.currentTimeMillis();
+                }
+            }
+        }
+
+        return links;
     }
 
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId) {
-        return sqlTemplate.query(getSql("groupsLinksForSql"), new NodeGroupLinkMapper(),
-                sourceNodeGroupId);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId, boolean refreshCache) {
+        List<NodeGroupLink> links = getNodeGroupLinks(refreshCache);
+        List<NodeGroupLink> target = new ArrayList<NodeGroupLink>(links.size());
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getSourceNodeGroupId().equals(sourceNodeGroupId)) {
+                target.add(nodeGroupLink);
+            }
+        }
+        return target;
     }
 
-    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId) {
-        List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId);
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId,
+            boolean refreshCache) {
+        List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId, refreshCache);
         Iterator<NodeGroupLink> it = links.iterator();
         while (it.hasNext()) {
             NodeGroupLink nodeGroupLink = (NodeGroupLink) it.next();
@@ -187,9 +228,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.isUseRowDataToRoute() ? 1 : 0,
                         channel.isUsePkDataToRoute() ? 1 : 0, channel.isContainsBigLob() ? 1 : 0,
                         channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
-                        channel.getExtractPeriodMillis(), channel.getDataLoaderType(), channel.getLastUpdateTime(),
-                        channel.getLastUpdateBy(), channel.isReloadFlag() ? 1 : 0,
-                                channel.isFileSyncFlag() ? 1 : 0,
+                        channel.getExtractPeriodMillis(), channel.getDataLoaderType(),
+                        channel.getLastUpdateTime(), channel.getLastUpdateBy(),
+                        channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
                         channel.getChannelId() })) {
             channel.setCreateTime(new Date());
             sqlTemplate.update(
@@ -201,10 +242,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.isUsePkDataToRoute() ? 1 : 0,
                             channel.isContainsBigLob() ? 1 : 0, channel.isEnabled() ? 1 : 0,
                             channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(),
-                            channel.getDataLoaderType(), channel.getLastUpdateTime(), 
-                            channel.getLastUpdateBy(), channel.getCreateTime()
-                            , channel.isReloadFlag() ? 1 : 0,
-                                    channel.isFileSyncFlag() ? 1 : 0,});
+                            channel.getDataLoaderType(), channel.getLastUpdateTime(),
+                            channel.getLastUpdateBy(), channel.getCreateTime(),
+                            channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0, });
         }
         if (reloadChannels) {
             clearCache();
@@ -317,8 +357,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                                 .getString("data_loader_type"));
                                         nodeChannel.setCreateTime(row.getDateTime("create_time"));
                                         nodeChannel.setLastUpdateBy(row.getString("last_update_by"));
-                                        nodeChannel.setLastUpdateTime(row.getDateTime("last_update_time"));
-                                        nodeChannel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
+                                        nodeChannel.setLastUpdateTime(row
+                                                .getDateTime("last_update_time"));
+                                        nodeChannel.setFileSyncFlag(row
+                                                .getBoolean("file_sync_flag"));
                                         nodeChannel.setReloadFlag(row.getBoolean("reload_flag"));
                                         return nodeChannel;
                                     };
@@ -366,6 +408,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         synchronized (this) {
             nodeChannelCache = null;
             channelsCache = null;
+            nodeGroupLinksCache = null;
         }
     }
 
@@ -385,11 +428,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 if (channel == null) {
                     log.info("Auto-configuring {} channel", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
-                } else if (channel.getChannelId().equals(Constants.CHANNEL_RELOAD) && !channel.isReloadFlag()) {
+                } else if (channel.getChannelId().equals(Constants.CHANNEL_RELOAD)
+                        && !channel.isReloadFlag()) {
                     channel.setReloadFlag(true);
                     saveChannel(channel, true);
-                } else if (channel.getChannelId().equals(Constants.CHANNEL_FILESYNC) && !channel.isFileSyncFlag()) {
-                    channel.setFileSyncFlag(true);                    
+                } else if (channel.getChannelId().equals(Constants.CHANNEL_FILESYNC)
+                        && !channel.isFileSyncFlag()) {
+                    channel.setFileSyncFlag(true);
                     saveChannel(channel, true);
                 } else {
                     log.debug("No need to create channel {}.  It already exists",
@@ -423,7 +468,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return map;
     }
-    
+
     public List<Channel> getFileSyncChannels() {
         List<Channel> list = new ArrayList<Channel>(getChannels(false).values());
         Iterator<Channel> it = list.iterator();
@@ -509,7 +554,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             window.setChannelId(row.getString("channel_id"));
             window.setStartTime(row.getTime("start_time"));
             window.setEndTime(row.getTime("end_time"));
-            window.setEnabled(row.getBoolean("enabled"));            
+            window.setEnabled(row.getBoolean("enabled"));
             return window;
         }
     }
@@ -520,6 +565,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             link.setSourceNodeGroupId(row.getString("source_node_group_id"));
             link.setTargetNodeGroupId(row.getString("target_node_group_id"));
             link.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
+            link.setSyncConfigEnabled(row.getBoolean("sync_config_enabled"));
             link.setCreateTime(row.getDateTime("create_time"));
             link.setLastUpdateBy(row.getString("last_update_by"));
             link.setLastUpdateTime(row.getDateTime("last_update_time"));
