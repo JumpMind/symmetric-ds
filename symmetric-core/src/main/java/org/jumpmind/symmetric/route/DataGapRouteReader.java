@@ -243,7 +243,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (useGreaterThanDataId) {            
             sql = getSql("selectDataUsingStartDataId", context.getChannel().getChannel());
             if (!lastSelectUsedGreaterThanQuery) {
-                log.info("Switching to select from the data table where data_id >= start gap");
+                log.info("Switching to select from the data table where data_id >= start gap because there were {} gaps found "
+                        + "which was more than the configured threshold of {}", dataGaps.size(), maxGapsBeforeGreaterThanQuery);
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
             }
         } else {
