@@ -760,13 +760,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void end(DataContext ctx, Batch batch, IStagedResource resource) {
-            if (listener.currentBatch != null) {
-                listener.currentBatch.setNetworkMillis(System.currentTimeMillis()
-                        - batchStartsToArriveTimeInMs);
-                if (batch.isIgnored()) {
-                    listener.currentBatch.incrementIgnoreCount();
-                }
-            }
+            
+            long networkMillis = System.currentTimeMillis()
+                    - batchStartsToArriveTimeInMs;
 
             try {
                 
@@ -782,6 +778,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 processor.process(ctx);
             } finally {
+                if (listener.currentBatch != null) {
+                    listener.currentBatch.setNetworkMillis(networkMillis);
+                    if (batch.isIgnored()) {
+                        listener.currentBatch.incrementIgnoreCount();
+                    }
+                }
                 resource.setState(State.DONE);
             }
         }
