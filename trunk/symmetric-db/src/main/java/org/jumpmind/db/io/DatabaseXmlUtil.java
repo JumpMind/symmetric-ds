@@ -141,10 +141,14 @@ public class DatabaseXmlUtil {
                                 String attributeValue = parser.getAttributeValue(i);
                                 if (attributeName.equalsIgnoreCase("name")) {
                                     database.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("catalog")) {
+                                    database.setCatalog(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("schema")) {
+                                    database.setSchema(attributeValue);
                                 }
                             }
                         } else if (name.equalsIgnoreCase("table")) {
-                            Table table = nextTable(parser);
+                            Table table = nextTable(parser, database.getCatalog(), database.getSchema());
                             if (table != null) {
                                 database.addTable(table);
                             }
@@ -172,6 +176,10 @@ public class DatabaseXmlUtil {
     }
 
     public static Table nextTable(XmlPullParser parser) {
+        return nextTable(parser, null, null);
+    }
+    
+    public static Table nextTable(XmlPullParser parser, String catalog, String schema) {
         try {
             Table table = null;
             ForeignKey fk = null;
@@ -184,6 +192,8 @@ public class DatabaseXmlUtil {
                         String name = parser.getName();
                         if (name.equalsIgnoreCase("table")) {
                             table = new Table();
+                            table.setCatalog(catalog);
+                            table.setSchema(schema);
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
@@ -383,6 +393,12 @@ public class DatabaseXmlUtil {
             output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + DTD_PREFIX
                     + "\">\n");
             output.write("<database name=\"" + model.getName() + "\"");
+            if (model.getCatalog() != null) {
+                output.write(" catalog=\"" + model.getCatalog() + "\"");
+            }
+            if (model.getSchema() != null) {
+                output.write(" schema=\"" + model.getSchema() + "\"");
+            }
             if (model.getIdMethod() != null) {
                 output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
             }
@@ -403,6 +419,12 @@ public class DatabaseXmlUtil {
         return writer.toString();
     }
 
+    public static String toXml(Database db) {
+        StringWriter writer = new StringWriter();
+        write(db, writer);
+        return writer.toString();
+    }
+    
     public static void write(Table table, Writer output) {
 
         try {
