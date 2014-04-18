@@ -426,7 +426,14 @@ public class DbExport {
                     if (format == Format.SYM_XML) {
                         write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
                     } else if (format == Format.XML) {
-                        write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\">\n");
+                        write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\"");
+                        if (catalog != null && !catalog.equals(platform.getDefaultCatalog())) {
+                            write(" catalog=\"" + catalog + "\"");
+                        }
+                        if (schema != null && !schema.equals(platform.getDefaultSchema())) {
+                            write(" schema=\"" + schema + "\"");
+                        }
+                        write(">\n");
                     }
                     startedWriting = true;
                 }

@@ -32,6 +32,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
@@ -85,6 +86,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
             String columnName = null;
             CsvData data = null;
             Table table = null;
+            String catalog = null;
+            String schema = null;
             int eventType = parser.next();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 switch (eventType) {
@@ -138,10 +141,25 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             next.add(batch);
                             table = DatabaseXmlUtil.nextTable(parser);
                             next.add(table);
-                            String xml = DatabaseXmlUtil.toXml(table);
+                            Database db = new Database();
+                            db.setName("dbimport");
+                            db.setCatalog(catalog);
+                            db.setSchema(schema);
+                            db.addTable(table);
+                            String xml = DatabaseXmlUtil.toXml(db);
                             data = new CsvData(DataEventType.CREATE);
                             data.putCsvData(CsvData.ROW_DATA, CsvUtils.escapeCsvData(xml));
                             next.add(data);
+                        } else if ("database".equalsIgnoreCase(name)) {
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if ("catalog".equalsIgnoreCase(attributeName)) {
+                                    catalog = attributeValue;
+                                } else if ("schema".equalsIgnoreCase(attributeName)) {
+                                    schema = attributeValue;
+                                }
+                            }
                         }
                         break;
 
