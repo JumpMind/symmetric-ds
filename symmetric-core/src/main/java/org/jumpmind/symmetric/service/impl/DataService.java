@@ -1342,7 +1342,8 @@ public class DataService extends AbstractService implements IDataService {
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId,
             final int maxRowsToRetrieve) {
         return sqlTemplate.query(getDataSelectSql(batchId, startDataId, channelId),
-                maxRowsToRetrieve, this.dataMapper, batchId, nodeId, startDataId);
+                maxRowsToRetrieve, this.dataMapper, new Object[] {batchId, nodeId, startDataId}, 
+                new int[] { Types.BIGINT, Types.VARCHAR, Types.BIGINT});
     }
 
     public Data mapData(Row row) {
@@ -1353,7 +1354,7 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate
                 .queryForCursor(getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()),
                         dataMapper, new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
-                        new int[] { Types.NUMERIC });
+                        new int[] { Types.BIGINT, Types.VARCHAR });
     }
 
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
