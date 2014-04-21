@@ -25,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
@@ -183,7 +186,16 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     break;
 
                 case CREATE:
-                    println(CsvConstants.CREATE, data.getCsvData(CsvData.ROW_DATA));
+                    String xml = data.getCsvData(CsvData.ROW_DATA);
+                    if (StringUtils.isBlank(xml)) {
+                        Database db = new Database();
+                        db.setName("datawriter");
+                        db.setCatalog(table.getCatalog());
+                        db.setSchema(table.getSchema());
+                        db.addTable(table);
+                        xml = CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db));
+                    }
+                    println(CsvConstants.CREATE, xml);
                     break;
 
                 case BSH:
