@@ -445,9 +445,13 @@ public class DbExport {
                     csvWriter.setUseTextQualifier(true);
                     csvWriter.setForceQualifier(true);
                 } else if (format == Format.SQL) {
+                    if (table.getCatalog() != null && table.getCatalog().equals(platform.getDefaultCatalog())) { 
+                        table.setCatalog(null);
+                    }
+                    if (table.getSchema() != null && table.getSchema().equals(platform.getDefaultSchema())) {
+                        table.setSchema(null);    
+                    }
                     Table targetTable = table.copy();
-                    targetTable.setSchema(schema);
-                    targetTable.setCatalog(catalog);
                     insertSql = DmlStatementFactory.createDmlStatement(
                             compatible.toString().toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers);
                 }
