@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.io.DatabaseXmlUtil;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
@@ -55,6 +57,7 @@ import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -1384,6 +1387,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     new Object[] { triggerHistory.getTriggerId(),
                                             triggerHistory.getSourceTableName(),
                                             triggerHistory.getTriggerHistoryId() });
+                        }
+                        if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {
+                            this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                    routerId, triggerHistory, true, true);
+                            Database db = new Database();
+                            db.setName("dataextractor");
+                            db.setCatalog(targetTable.getCatalog());
+                            db.setSchema(targetTable.getSchema());
+                            db.addTable(targetTable);
+                            data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
                     }
 
