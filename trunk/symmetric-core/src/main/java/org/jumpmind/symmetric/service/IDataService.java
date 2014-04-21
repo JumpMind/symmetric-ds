@@ -100,7 +100,7 @@ public interface IDataService {
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String xml, boolean isLoad, long loadId, String createBy);
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy);
     
     /**
      * Count the number of data ids in a range
