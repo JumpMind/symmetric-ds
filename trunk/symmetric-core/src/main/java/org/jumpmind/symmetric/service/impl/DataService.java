@@ -465,9 +465,7 @@ public class DataService extends AbstractService implements IDataService {
                     if (triggerRouter.getInitialLoadOrder() >= 0
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
-                        String xml = symmetricDialect.getCreateTableXML(triggerHistory,
-                                triggerRouter);
-                        insertCreateEvent(transaction, targetNode, triggerHistory, xml, true,
+                        insertCreateEvent(transaction, targetNode, triggerHistory, null, true,
                                 loadId, createBy);
                         if (!transactional) {
                             transaction.commit();
