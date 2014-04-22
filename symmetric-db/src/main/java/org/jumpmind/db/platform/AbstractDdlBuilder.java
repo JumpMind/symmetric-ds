@@ -1669,10 +1669,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
         ddl.append("CREATE TABLE ");
         // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
-        if (table.getCatalog() != null) {
+        if (StringUtils.isNotBlank(table.getCatalog())) {
             ddl.append(table.getCatalog()).append(".");
         }
-        if (table.getSchema() != null) {
+        if (StringUtils.isNotBlank(table.getSchema())) {
             ddl.append(table.getSchema()).append(".");
         }
         printlnIdentifier(getTableName(table.getName()), ddl);
