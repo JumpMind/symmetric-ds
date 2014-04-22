@@ -23,7 +23,7 @@
         <version.hsqldb>2.3.2</version.hsqldb>
         <version.h2>1.3.176</version.h2>
         <version.sqlite>3.7.15-M1</version.sqlite>
-        <version.postgresql>9.3-1101-jdbc41</version.postgresql>
+        <version.postgresql>9.2-1002-jdbc4</version.postgresql>
         <version.mysql>5.1.30</version.mysql>        
         <version.mariadb>1.1.7</version.mariadb>
         <version.slf4j>1.6.4</version.slf4j>
@@ -899,7 +899,7 @@
                 <version>${version.mariadb}</version>
             </dependency>
             <dependency>
-                <groupId>org.postgresql</groupId>
+                <groupId>org.jumpmind.symmetric.jdbc</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${version.postgresql}</version>
             </dependency>
