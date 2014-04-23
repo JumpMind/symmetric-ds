@@ -172,9 +172,9 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                         } else {
                             throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
                         }
-                    } else {
-                        uncommittedCount++;
                     }
+                    
+                    uncommittedCount++;
 
                     lastData = data;
 
