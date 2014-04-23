@@ -211,9 +211,9 @@ public class DatabaseWriter implements IDataWriter {
                         } else {
                             throw new ConflictException(data, targetTable, false, writerSettings.pickConflict(targetTable, batch));
                         }
-                    } else {
-                        uncommittedCount++;
-                    }
+                    } 
+
+                    uncommittedCount++;
 
                     lastData = data;
 
