@@ -117,7 +117,7 @@ public class TransformWriter extends NestedDataWriter {
         if (transforms != null) {
             for (TransformTable transformTable : transforms) {
                 if (transformPoint == transformTable.getTransformPoint()) {
-                    String sourceTableName = transformTable.getFullyQualifiedSourceTableName();
+                    String sourceTableName = transformTable.getFullyQualifiedSourceTableName().toLowerCase();
                     List<TransformTable> tables = transformsByTable.get(sourceTableName);
                     if (tables == null) {
                         tables = new ArrayList<TransformTable>();
@@ -138,7 +138,7 @@ public class TransformWriter extends NestedDataWriter {
 
     @Override
     public boolean start(Table table) {
-        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName());
+        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName().toLowerCase());
         if (activeTransforms != null && activeTransforms.size() > 0) {
             this.sourceTable = table;
             return true;
