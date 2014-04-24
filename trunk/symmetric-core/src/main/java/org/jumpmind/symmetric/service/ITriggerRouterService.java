@@ -41,6 +41,8 @@ public interface ITriggerRouterService {
     
     public List<TriggerHistory> getActiveTriggerHistories();
     
+    public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger);
+    
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
     public List<TriggerRouter> getTriggerRouters();
