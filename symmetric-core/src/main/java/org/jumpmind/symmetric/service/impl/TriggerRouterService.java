@@ -289,7 +289,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return history;
     }
 
-    protected List<TriggerHistory> getActiveTriggerHistories(Trigger trigger) {
+    public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger) {
         List<TriggerHistory> active = getActiveTriggerHistories();
         List<TriggerHistory> list = new ArrayList<TriggerHistory>();
         for (TriggerHistory triggerHistory : active) {
