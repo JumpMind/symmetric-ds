@@ -107,17 +107,23 @@ public class StructureDataWriter implements IDataWriter {
          * in the case when the target schema or catalog is set then we need to
          * use the previous schema or catalog to look up the table locally.
          */
-        this.currentTable = platform.getTableFromCache(table.getOldCatalog(), table.getOldSchema(), table.getName(), false);
-        this.currentTable = currentTable.copyAndFilterColumns(table.getColumnNames(),
-                table.getPrimaryKeyColumnNames(), true);   
-        /*
-         * restore the schema and catalog from the passed in table because they
-         * might have not been originally set, but were set when looking up the table locally
-         */
-        this.currentTable.setSchema(table.getSchema());
-        this.currentTable.setCatalog(table.getCatalog());
-        this.currentTable.setName(table.getName());
-        return true;
+        this.currentTable = platform.getTableFromCache(table.getOldCatalog(), table.getOldSchema(),
+                table.getName(), false);
+        if (this.currentTable != null) {
+            this.currentTable = currentTable.copyAndFilterColumns(table.getColumnNames(),
+                    table.getPrimaryKeyColumnNames(), true);
+            /*
+             * restore the schema and catalog from the passed in table because
+             * they might have not been originally set, but were set when
+             * looking up the table locally
+             */
+            this.currentTable.setSchema(table.getSchema());
+            this.currentTable.setCatalog(table.getCatalog());
+            this.currentTable.setName(table.getName());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void write(CsvData data) {
