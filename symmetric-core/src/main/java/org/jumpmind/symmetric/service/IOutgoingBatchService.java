@@ -45,6 +45,8 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId);
     
+    public int cancelLoadBatches(long loadId);
+    
     public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels);
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
