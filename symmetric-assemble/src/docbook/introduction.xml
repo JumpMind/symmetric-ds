@@ -39,8 +39,8 @@
   <section id="requirements">
     <title>System Requirements</title>
 
-    <para>SymmetricDS is written in Java 5 and requires a Java SE Runtime
-    Environment (JRE) or Java SE Development Kit (JDK) version 5.0 or
+    <para>SymmetricDS is written in Java and requires a Java SE Runtime
+    Environment (JRE) or Java SE Development Kit (JDK) version 6.0 or
     above.</para>
 
     <para>Any database with trigger technology and a JDBC driver has the
