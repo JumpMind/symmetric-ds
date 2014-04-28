@@ -1,3 +1,14 @@
+SymmetricDS - 3.5.21 (Released 2014-04-28) 
+==========================================
+- 0001299: [Improvement] Transforms should be case insensitive when matching catalog, schema, tablename and columns to make configuration much easier (chenson) - closed.
+- 0001649: [Improvement] Default auto.reload.sym.tables.on.upgrade to false (chenson) - closed.
+- 0001672: [Bug] network_millis on outgoing batch is incorrect (chenson) - closed.
+- 0001673: [Bug] snapshot functionality null pointers in open source (chenson) - closed.
+- 0001684: [Improvement] Passing the correct data type to select data statement improves performance on Postgres (chenson) - closed.
+- 0001685: [Bug] early commit doesn't work when data rows are in conflict. the uncommitted count doesn't increment (chenson) - closed.
+- 0001697: [Bug] Extract millis aren't captured on outgoing batch when initial.load.use.extract.job.enabled is true (chenson) - closed.
+- 0001698: [Improvement] Provide the ability to pass the load time and network time to be populated in outgoing batch via the rest service (chenson) - closed.
+
 SymmetricDS - 3.5.20 (Released 2014-04-14) 
 ==========================================
 - 0001651: [Bug] MySQL and SQL-Server bulk loaders handle BLOBs between different platforms (elong) - closed.
