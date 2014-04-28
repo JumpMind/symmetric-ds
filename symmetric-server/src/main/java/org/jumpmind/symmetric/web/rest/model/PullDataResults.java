@@ -24,46 +24,64 @@ import java.util.List;
 
 public class PullDataResults {
 
-	/**
-	 * The number of batches that were returned in this pull request
-	 */
-	private int nbrBatches;
-	
-	/**
-	 * The actual list of {@link Batch}
-	 */
-	private List<Batch> batches;
+    /**
+     * The time in milliseconds when this payload was passed to the REST framework to be
+     * marshalled and transferred.
+     */
+    private long transferStartTimeMillis = System.currentTimeMillis();
 
-	/**
-	 * Returns the number of batches that were returned for this pull request
-	 * @return
-	 */
-	public int getNbrBatches() {
-		return nbrBatches;
-	}
+    /**
+     * The number of batches that were returned in this pull request
+     */
+    private int nbrBatches;
 
-	/**
-	 * Setter for the nbr batches field
-	 * @param nbrBatches
-	 */
-	public void setNbrBatches(int nbrBatches) {
-		this.nbrBatches = nbrBatches;
-	}
+    /**
+     * The actual list of {@link Batch}
+     */
+    private List<Batch> batches;
 
-	/**
-	 * Gets the list of batches for this pull request
-	 * @return
-	 */
-	public List<Batch> getBatches() {
-		return batches;
-	}
+    /**
+     * Returns the number of batches that were returned for this pull request
+     * 
+     * @return
+     */
+    public int getNbrBatches() {
+        return nbrBatches;
+    }
 
-	/**
-	 * Setter for the list of batches field
-	 * @param batches
-	 */
-	public void setBatches(List<Batch> batches) {
-		this.batches = batches;
-	}
+    /**
+     * Setter for the nbr batches field
+     * 
+     * @param nbrBatches
+     */
+    public void setNbrBatches(int nbrBatches) {
+        this.nbrBatches = nbrBatches;
+    }
+
+    /**
+     * Gets the list of batches for this pull request
+     * 
+     * @return
+     */
+    public List<Batch> getBatches() {
+        return batches;
+    }
+
+    /**
+     * Setter for the list of batches field
+     * 
+     * @param batches
+     */
+    public void setBatches(List<Batch> batches) {
+        this.batches = batches;
+    }
+
+    public void setTransferStartTimeMillis(long transferStartTimeMillis) {
+        this.transferStartTimeMillis = transferStartTimeMillis;
+    }
+
+    public long getTransferStartTimeMillis() {
+        return transferStartTimeMillis;
+    }
 
 }

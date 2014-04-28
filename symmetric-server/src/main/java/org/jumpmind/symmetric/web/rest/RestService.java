@@ -1001,24 +1001,29 @@ public class RestService {
     }
 
     private List<BatchAck> convertBatchResultsToAck(BatchResults batchResults) {
-    	
-    	BatchAck batchAck=null;
-    	List<BatchAck> batchAcks = new ArrayList<BatchAck>();
-    	for (BatchResult batchResult:batchResults.getBatchResults()) {
-    		batchAck = new BatchAck(batchResult.getBatchId());
-			batchAck.setNodeId(batchResults.getNodeId());
-    		if (batchResult.getStatus().equalsIgnoreCase("OK")) {
-    			batchAck.setOk(true);
-    		} else {
-    			batchAck.setOk(false);
-    			batchAck.setSqlCode(batchResult.getSqlCode());
-				batchAck.setSqlState(batchResult.getSqlState().substring(0,
-						Math.min(batchResult.getSqlState().length(), 10)));
-    			batchAck.setSqlMessage(batchResult.getStatusDescription());
-    		}
-    		batchAcks.add(batchAck);    		
-    	}
-    	return batchAcks;
+        BatchAck batchAck = null;
+        List<BatchAck> batchAcks = new ArrayList<BatchAck>();
+        long transferTimeInMillis = batchResults.getTransferTimeInMillis();
+        if (transferTimeInMillis > 0) {
+            transferTimeInMillis = transferTimeInMillis/batchResults.getBatchResults().size();
+        }
+        for (BatchResult batchResult : batchResults.getBatchResults()) {
+            batchAck = new BatchAck(batchResult.getBatchId());
+            batchAck.setNodeId(batchResults.getNodeId());
+            batchAck.setNetworkMillis(transferTimeInMillis);
+            batchAck.setDatabaseMillis(batchResult.getLoadTimeInMillis());
+            if (batchResult.getStatus().equalsIgnoreCase("OK")) {
+                batchAck.setOk(true);
+            } else {
+                batchAck.setOk(false);
+                batchAck.setSqlCode(batchResult.getSqlCode());
+                batchAck.setSqlState(batchResult.getSqlState().substring(0,
+                        Math.min(batchResult.getSqlState().length(), 10)));
+                batchAck.setSqlMessage(batchResult.getStatusDescription());
+            }
+            batchAcks.add(batchAck);
+        }
+        return batchAcks;
     }
     
     /**

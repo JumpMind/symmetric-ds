@@ -61,6 +61,7 @@ public class Batch {
         this.targetNodeId = targetNodeId;
         this.binaryEncoding = binaryEncoding;
         this.common = common;
+        this.startTime = new Date();
     }
     
     public Batch() {
